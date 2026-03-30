@@ -2,90 +2,214 @@ package com.jian.nemo.core.ui.component
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Interests
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeChild
 
 // 定义颜色常量
 private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
 
 /**
- * Nemo应用底部导航栏
+ * Nemo应用底部导航栏 (悬浮纯色胶囊版)
  *
  * 包含4个主要Tab：学习、进度、测试、个人
- * 移动自 :app 模块以支持跨模块共享
+ * 采用悬浮胶囊布局设计，背景纯色，深浅自适应。
  */
 @Composable
 fun NemoBottomBar(
     currentRoute: String?,
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
-    visible: Boolean = true
+    visible: Boolean = true,
+    hazeState: HazeState? = null
 ) {
     // 根据主题判断深色/浅色模式
     val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5
-    val navigationBarColor = if (isDarkTheme) LearningCardBackgroundDark else Color.White
-    val unselectedColor = Color.Gray
+    
+    // 胶囊容器背景色设置 (纯色实心设计)
+    // 浅色模式下：纯白色带半透明，深色模式下：深灰带半透明
+    val containerColor = if (isDarkTheme) 
+        LearningCardBackgroundDark.copy(alpha = 0.45f)
+    else 
+        Color.White.copy(alpha = 0.65f)
+        
+    // 边框描边颜色：为胶囊提供细微的轮廓感
+    val borderColor = if (isDarkTheme)
+        Color.White.copy(alpha = 0.12f)
+    else
+        Color.White.copy(alpha = 0.45f)
 
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically { it } + fadeIn(animationSpec = tween(durationMillis = 300)),
         exit = slideOutVertically { it } + fadeOut(animationSpec = tween(durationMillis = 300))
     ) {
-        NavigationBar(
-            containerColor = navigationBarColor,
-            tonalElevation = 0.dp,
+        Box(
             modifier = modifier
-                .height(80.dp) // 固定高度，避免 NavigationBarItem 重组时触发测量波动
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .fillMaxWidth()
+                // 悬浮的外边距：与底部留出一些距离形成悬浮胶囊感
+                .padding(horizontal = 20.dp, vertical = 24.dp),
+            contentAlignment = Alignment.Center
         ) {
-            BottomNavItem.entries.forEach { item ->
-                val isSelected = currentRoute == item.route
-
-                NavigationBarItem(
-                    icon = {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    },
-                    label = { Text(item.title) },
-                    selected = isSelected,
-                    onClick = { onNavigate(item.route) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = unselectedColor,
-                        unselectedTextColor = unselectedColor,
-                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f) // MD3浅色背景指示器
+            Row(
+                modifier = Modifier
+                    .shadow(
+                        elevation = 16.dp,
+                        shape = CircleShape,
+                        spotColor = Color.Black.copy(alpha = 0.12f),
+                        ambientColor = Color.Black.copy(alpha = 0.08f)
                     )
-                )
+                    .clip(CircleShape)
+                    .then(
+                        if (hazeState != null) Modifier.hazeChild(state = hazeState, shape = CircleShape) else Modifier
+                    )
+                    // 拦截在此胶囊体上尚未被子条目消费的底层点击事件，防止穿透
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {}
+                    )
+                    // 纯色背景填充
+                    .background(containerColor)
+                    // 悬浮胶囊的外侧微描边
+                    .border(
+                        width = 1.dp,
+                        color = borderColor,
+                        shape = CircleShape
+                    )
+                    .padding(horizontal = 14.dp, vertical = 12.dp) // 内部留白宽度
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BottomNavItem.entries.forEach { item ->
+                    val isSelected = currentRoute == item.route
+                    CapsuleNavItem(
+                        item = item,
+                        isSelected = isSelected,
+                        onClick = { onNavigate(item.route) },
+                        isDarkTheme = isDarkTheme
+                    )
+                }
             }
         }
     }
 }
 
 /**
- * 底部导航栏Tab项
+ * 单个胶囊导航项，支持平滑缩放与选中背景横向伸缩切换
+ */
+@Composable
+private fun CapsuleNavItem(
+    item: BottomNavItem,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    isDarkTheme: Boolean
+) {
+    // 交互无默认波纹效果，模拟 HTML 手感
+    val interactionSource = remember { MutableInteractionSource() }
+    val view = LocalView.current
+    
+    // 动态适配深浅模式对应选项卡的激活颜色与图标文字配色
+    val activeBgColor = if (isDarkTheme) Color(0xFFF3F4F6) else Color(0xFF111827)
+    val activeContentColor = if (isDarkTheme) Color(0xFF111827) else Color.White
+    val inactiveContentColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF9CA3AF)
+
+    // 渐变动画
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) activeBgColor else Color.Transparent,
+        animationSpec = tween(300, easing = FastOutSlowInEasing), 
+        label = "bg_color"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) activeContentColor else inactiveContentColor,
+        animationSpec = tween(300, easing = FastOutSlowInEasing), 
+        label = "content_color"
+    )
+
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .background(backgroundColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    onClick()
+                }
+            )
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = item.icon,
+                contentDescription = item.title,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
+            )
+            
+            // 选中文本内容的横向展开动画
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = expandHorizontally(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeIn(
+                    animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                ),
+                exit = shrinkHorizontally(
+                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                ) + fadeOut(
+                    animationSpec = tween(300, easing = LinearOutSlowInEasing)
+                )
+            ) {
+                Row {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = item.title,
+                        color = contentColor,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 底部导航栏 Tab 项
  */
 enum class BottomNavItem(
     val route: String,

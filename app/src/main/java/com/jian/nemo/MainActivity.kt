@@ -47,6 +47,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
 import androidx.compose.runtime.remember
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
 
 /**
  * Nemo 2.0 应用程序入口
@@ -147,6 +149,8 @@ fun NemoApp(
         label = "BottomBarPadding"
     )
 
+    val hazeState = remember { HazeState() }
+
     Scaffold(
         bottomBar = {
             NemoBottomBar(
@@ -163,7 +167,8 @@ fun NemoApp(
                         }
                     }
                 },
-                visible = showBottomBar
+                visible = showBottomBar,
+                hazeState = hazeState
             )
         },
         // Edge-to-Edge：各页面自行处理系统栏 Insets，禁用 Scaffold 默认 Insets
@@ -176,7 +181,7 @@ fun NemoApp(
                 .then(
                     if (useEdgeToEdge) {
                         // Edge-to-Edge：背景全屏延伸，不使用 padding
-                        Modifier
+                        Modifier.haze(hazeState)
                     } else {
                         // 默认页面：应用标准 Scaffold 内部 padding
                         Modifier.padding(
@@ -184,7 +189,7 @@ fun NemoApp(
                             bottom = animatedBottomPadding,
                             start = innerPadding.calculateLeftPadding(LocalLayoutDirection.current),
                             end = innerPadding.calculateRightPadding(LocalLayoutDirection.current)
-                        )
+                        ).haze(hazeState)
                     }
                 ),
             // Edge-to-Edge：使用透明背景以允许页面自行渲染背景
