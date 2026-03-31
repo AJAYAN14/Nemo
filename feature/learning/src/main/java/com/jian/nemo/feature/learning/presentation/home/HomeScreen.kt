@@ -3,7 +3,9 @@ package com.jian.nemo.feature.learning.presentation.home
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import kotlin.math.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,6 +33,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
@@ -50,6 +61,28 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    // --- 环形进度加载控制逻辑 ---
+    var isInitialLoading by remember { mutableStateOf(true) }
+    var isModeSwitching by remember { mutableStateOf(false) }
+    
+    // 首屏进入加载模拟 (500ms 演示感)
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(500)
+        isInitialLoading = false
+    }
+    
+    // 模式切换加载模拟 (每一次模式变更触发一次 400ms 的旋转转场)
+    LaunchedEffect(uiState.learningMode) {
+        if (!isInitialLoading) {
+            isModeSwitching = true
+            kotlinx.coroutines.delay(400)
+            isModeSwitching = false
+        }
+    }
+    
+    val showLoadingRing = isInitialLoading || isModeSwitching
+    // -------------------------
     
     // 深色模式适配逻辑
     val colorScheme = MaterialTheme.colorScheme
@@ -262,19 +295,26 @@ fun HomeScreen(
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Box(contentAlignment = Alignment.Center) {
-                                    CircularProgressIndicator(
-                                        progress = { uiState.progressFraction },
+                                    NemoCircularProgress(
+                                        progress = uiState.progressFraction,
+                                        isLoading = showLoadingRing,
                                         modifier = Modifier.size(100.dp),
                                         color = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary,
-                                        trackColor = dividerColor,
-                                        strokeWidth = 12.dp,
-                                        strokeCap = StrokeCap.Round
+                                        trackColor = dividerColor
                                     )
-                                    Text(
-                                        text = "${uiState.currentProgress}",
-                                        style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
-                                        color = textMain
-                                    )
+                                    
+                                    // 数字只有在非加载状态下淡入显示
+                                    androidx.compose.animation.AnimatedVisibility(
+                                        visible = !showLoadingRing,
+                                        enter = fadeIn() + scaleIn(initialScale = 0.8f),
+                                        exit = fadeOut()
+                                    ) {
+                                        Text(
+                                            text = "${uiState.currentProgress}",
+                                            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
+                                            color = textMain
+                                        )
+                                    }
                                 }
                                 Spacer(Modifier.height(16.dp))
                                 Text(
@@ -698,3 +738,89 @@ private fun BentoModeSwitchButton(
         }
     }
 }
+
+/**
+ * 自定义高保真环形进度条组件 (直接填充版)
+ * 具备“呼吸缺口”与“数值生长动效”
+ */
+@Composable
+private fun NemoCircularProgress(
+    progress: Float,
+    isLoading: Boolean, // 用于触发归零重填转场
+    color: Color,
+    trackColor: Color,
+    modifier: Modifier = Modifier
+) {
+    val strokeWidth = 12.dp
+    
+    // 进度值从 0 平滑生长至目标值 (Cubic 曲线)
+    val animatedProgress by animateFloatAsState(
+        targetValue = if (isLoading) 0f else progress,
+        animationSpec = tween(
+            durationMillis = 800,
+            easing = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1.0f)
+        ),
+        label = "progress"
+    )
+
+    Canvas(modifier = modifier) {
+        val center = Offset(size.width / 2, size.height / 2)
+        val strokeWidthPx = strokeWidth.toPx()
+        val radius = (size.minDimension - strokeWidthPx) / 2
+        
+        // 显式构造 Rect
+        val rect = Rect(
+            left = center.x - radius,
+            top = center.y - radius,
+            right = center.x + radius,
+            bottom = center.y + radius
+        )
+
+        val gapAngleDegrees = if (radius > 0) (1.5f * strokeWidthPx / radius) * (180f / PI.toFloat()) else 0f
+        val progressSweep = animatedProgress * 360f
+
+        // 1. 绘制进度条 (Progress)
+        if (progressSweep > 0.1f) {
+            drawArc(
+                color = color,
+                startAngle = -90f,
+                sweepAngle = progressSweep,
+                useCenter = false,
+                topLeft = Offset(rect.left, rect.top),
+                size = Size(rect.width, rect.height),
+                style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
+            )
+        }
+
+        // 2. 绘制底轨 (Track) - 包含动态避让缺口逻辑
+        val trackSweepAngle = if (progressSweep > 0.1f) {
+            (360f - progressSweep - 2 * gapAngleDegrees).coerceAtLeast(0f)
+        } else {
+            360f
+        }
+
+        if (trackSweepAngle > 1f) {
+            val trackStartAngle = if (progressSweep > 0.1f) {
+                -90f + progressSweep + gapAngleDegrees
+            } else {
+                -90f
+            }
+
+            drawArc(
+                color = trackColor,
+                startAngle = trackStartAngle,
+                sweepAngle = trackSweepAngle,
+                useCenter = false,
+                topLeft = Offset(rect.left, rect.top),
+                size = Size(rect.width, rect.height),
+                style = Stroke(
+                    width = strokeWidthPx, 
+                    cap = if (progressSweep > 0.1f) StrokeCap.Round else StrokeCap.Butt
+                )
+            )
+        }
+    }
+}
+
+
+
