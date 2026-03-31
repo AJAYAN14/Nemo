@@ -23,7 +23,6 @@ data class SettingsUiState(
     val showDailyGoalDialog: Boolean = false,
     val showGrammarDailyGoalDialog: Boolean = false,
     val showLearningDayResetHourDialog: Boolean = false,
-    val showAdvancedLearningDialog: Boolean = false, // 高级学习设置弹窗
 
 
 
@@ -108,7 +107,6 @@ sealed interface SettingsEvent {
     data class ShowDailyGoalDialog(val show: Boolean) : SettingsEvent
     data class ShowGrammarDailyGoalDialog(val show: Boolean) : SettingsEvent
     data class ShowLearningDayResetHourDialog(val show: Boolean) : SettingsEvent
-    data class ShowAdvancedLearningDialog(val show: Boolean) : SettingsEvent
 
     // 同步
     data object SyncData : SettingsEvent

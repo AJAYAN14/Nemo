@@ -197,7 +197,6 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetLearnAheadLimit -> setLearnAheadLimit(event.limit)
             is SettingsEvent.SetLeechThreshold -> setLeechThreshold(event.threshold)
             is SettingsEvent.SetLeechAction -> setLeechAction(event.action)
-            is SettingsEvent.ShowAdvancedLearningDialog -> _uiState.update { it.copy(showAdvancedLearningDialog = event.show) }
 
             is SettingsEvent.SetTtsSpeechRate -> setTtsSpeechRate(event.rate)
             is SettingsEvent.SetTtsPitch -> setTtsPitch(event.pitch)
@@ -515,4 +514,3 @@ private data class AdvancedSettings(
     val leechThreshold: Int,
     val leechAction: String
 )
-

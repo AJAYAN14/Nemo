@@ -551,6 +551,9 @@ fun NemoNavHost(
                 onNavigateToTtsSettings = {
                     navController.navigate(NavDestination.TTS_SETTINGS)
                 },
+                onNavigateToAdvancedLearning = {
+                    navController.navigate(NavDestination.ADVANCED_LEARNING)
+                },
                 onCheckUpdate = onCheckUpdate
             )
         }
@@ -560,6 +563,13 @@ fun NemoNavHost(
         // TTS设置
         composable(NavDestination.TTS_SETTINGS) {
              TtsSettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+ 
+        // 记忆算法设置
+        composable(NavDestination.ADVANCED_LEARNING) {
+            com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

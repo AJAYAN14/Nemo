@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
 import com.jian.nemo.feature.settings.components.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,6 +39,7 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToTtsSettings: () -> Unit,
+    onNavigateToAdvancedLearning: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -148,16 +150,11 @@ fun SettingsScreen(
                             },
                             showDivider = false,
                             trailing = {
-                                Switch(
+                                NemoGooeyToggle(
                                     checked = uiState.isAutoSyncEnabled,
                                     onCheckedChange = { viewModel.onEvent(SettingsEvent.SetAutoSyncEnabled(it)) },
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                        checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                        uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                    ),
-                                    modifier = Modifier.scale(0.8f)
+                                    activeColor = MaterialTheme.colorScheme.primary,
+                                    inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                 )
                             }
                         )
@@ -290,16 +287,11 @@ fun SettingsScreen(
                         onClick = { viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(!uiState.isRandomNewContentEnabled)) },
                         showDivider = true,
                         trailing = {
-                            Switch(
+                            NemoGooeyToggle(
                                 checked = uiState.isRandomNewContentEnabled,
                                 onCheckedChange = { viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(it)) },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                    uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
-                                ),
-                                modifier = Modifier.scale(0.8f)
+                                activeColor = MaterialTheme.colorScheme.primary,
+                                inactiveColor = MaterialTheme.colorScheme.surfaceVariant
                             )
                         }
                     )
@@ -309,7 +301,7 @@ fun SettingsScreen(
                         iconColor = NemoPurple,
                         title = "记忆算法配置",
                         subtitle = "步进、提前复习与 Leech 策略",
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowAdvancedLearningDialog(true)) },
+                        onClick = onNavigateToAdvancedLearning,
                         showDivider = false,
                         trailing = {
                             Icon(
@@ -455,24 +447,6 @@ fun SettingsScreen(
         )
     }
 
-    if (uiState.showAdvancedLearningDialog) {
-        AdvancedLearningSettingsBottomSheet(
-            learningSteps = uiState.learningSteps,
-            relearningSteps = uiState.relearningSteps,
-            learnAheadLimit = uiState.learnAheadLimit,
-            leechThreshold = uiState.leechThreshold,
-            leechAction = uiState.leechAction,
-            onDismiss = { viewModel.onEvent(SettingsEvent.ShowAdvancedLearningDialog(false)) },
-            onSave = { steps, relearningSteps, limit, leechThreshold, leechAction ->
-                viewModel.onEvent(SettingsEvent.SetLearningSteps(steps))
-                viewModel.onEvent(SettingsEvent.SetRelearningSteps(relearningSteps))
-                viewModel.onEvent(SettingsEvent.SetLearnAheadLimit(limit))
-                viewModel.onEvent(SettingsEvent.SetLeechThreshold(leechThreshold))
-                viewModel.onEvent(SettingsEvent.SetLeechAction(leechAction))
-                viewModel.onEvent(SettingsEvent.ShowAdvancedLearningDialog(false))
-            }
-        )
-    }
 
     // 重置确认对话框
     if (showConfirmDialog) {

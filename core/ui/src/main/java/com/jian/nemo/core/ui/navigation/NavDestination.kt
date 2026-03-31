@@ -13,6 +13,7 @@ object NavDestination {
     const val TEST = "test"          // 测试页
     const val SETTINGS = "settings"  // 个人/设置页
     const val TTS_SETTINGS = "tts_settings" // TTS设置页
+    const val ADVANCED_LEARNING = "advanced_learning" // 记忆算法配置页
 
 
     // 保留HOME作为LEARNING的别名，确保兼容性

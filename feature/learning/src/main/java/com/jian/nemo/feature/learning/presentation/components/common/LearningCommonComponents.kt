@@ -33,7 +33,7 @@ import androidx.compose.material3.IconButton
 import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
 import com.jian.nemo.core.ui.component.common.NemoMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
+import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -366,16 +366,13 @@ fun LearnHeader(
                                                         "翻面自动朗读",
                                                         style = MaterialTheme.typography.bodyLarge
                                                     )
-                                                    Switch(
+                                                    NemoGooeyToggle(
                                                         checked = isAutoAudioEnabled,
                                                         onCheckedChange = {
                                                             onToggleAutoAudio(it)
-                                                            // 保持菜单打开或关闭? 通常 Switch 在菜单里操作体验较好的是保持打开或立即生效
                                                         },
-                                                        modifier = Modifier.size(
-                                                            width = 36.dp,
-                                                            height = 20.dp
-                                                        )
+                                                        activeColor = MaterialTheme.colorScheme.primary,
+                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                                     )
                                                 }
                                             },
@@ -398,15 +395,13 @@ fun LearnHeader(
                                                         "显示答案等待",
                                                         style = MaterialTheme.typography.bodyLarge
                                                     )
-                                                    Switch(
+                                                    NemoGooeyToggle(
                                                         checked = isShowAnswerDelayEnabled,
                                                         onCheckedChange = {
                                                             onToggleShowAnswerDelay(it)
                                                         },
-                                                        modifier = Modifier.size(
-                                                            width = 36.dp,
-                                                            height = 20.dp
-                                                        )
+                                                        activeColor = MaterialTheme.colorScheme.primary,
+                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                                     )
                                                 }
                                             },
