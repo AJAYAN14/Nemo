@@ -43,6 +43,7 @@ object GrammarMapper {
             isFavorite = state?.isFavorite ?: false,
             isSkipped = state?.isSkipped ?: false,
             buriedUntilDay = state?.buriedUntilDay ?: 0,
+            type = state?.type ?: 0, // 🎯 补全 type 映射
             lastModifiedTime = state?.lastModifiedTime ?: 0L
         )
     }
@@ -106,6 +107,7 @@ object GrammarMapper {
             isFavorite = isFavorite,
             isSkipped = isSkipped,
             buriedUntilDay = buriedUntilDay,
+            type = type, // 🎯 补全 type 映射
             lastModifiedTime = lastModifiedTime
         )
     }

@@ -26,7 +26,7 @@ import com.jian.nemo.core.data.local.entity.*
         GrammarStudyStateEntity::class,
         FavoriteQuestionEntity::class
     ],
-    version = 17,  // v17: 单词 ID 步长改为 10000，解决 N4/N5 单词 ID 冲突缺失问题 callback工作callback
+    version = 18,  // v18: 增加 type 字段对齐 Anki 卡片状态定义
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

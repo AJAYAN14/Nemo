@@ -114,11 +114,14 @@ class LearningScheduler @Inject constructor() {
                 stepConfig.getOrElse(currentStep) { 1 }.toLong() * 60 * 1000L
             }
             val dueTime = System.currentTimeMillis() + hardDelayMillis
+            
+            // 计算新状态：如果是新词(0)，转为学习中(1)；如果是重学(3)或已在学习中(1)，保持不变
+            val newType = if (item.type == 0) 1 else item.type
 
             // Hard 依然保持 Learning/Relearning 状态
             val updatedItem = when (item) {
-                is LearningItem.WordItem -> item.copy(step = currentStep, dueTime = dueTime)
-                is LearningItem.GrammarItem -> item.copy(step = currentStep, dueTime = dueTime)
+                is LearningItem.WordItem -> item.copy(step = currentStep, dueTime = dueTime, type = newType)
+                is LearningItem.GrammarItem -> item.copy(step = currentStep, dueTime = dueTime, type = newType)
             }
 
             return ScheduleResult.Requeue(
@@ -136,8 +139,8 @@ class LearningScheduler @Inject constructor() {
             val dueTime = System.currentTimeMillis() + nextStepMin * 60 * 1000L
 
             val updatedItem = when (item) {
-                is LearningItem.WordItem -> item.copy(step = nextStep, dueTime = dueTime)
-                is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime)
+                is LearningItem.WordItem -> item.copy(step = nextStep, dueTime = dueTime, type = if (item.type == 0) 1 else item.type)
+                is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime, type = if (item.type == 0) 1 else item.type)
             }
 
             return ScheduleResult.Requeue(

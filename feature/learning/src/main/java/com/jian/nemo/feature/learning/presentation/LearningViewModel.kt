@@ -92,9 +92,10 @@ sealed class LearningItem {
  * 卡片状态标记
  */
 enum class CardBadge {
-    NEW,      // 新词
-    REVIEW,   // 复习
-    RELEARN   // 重来
+    NEW,      // 新词 (Type 0)
+    LEARNING, // 学习中 (Type 1)
+    REVIEW,   // 复习 (Type 2)
+    RELEARN   // 重学 (Type 3)
 }
 
 /**
@@ -980,6 +981,7 @@ class LearningViewModel @Inject constructor(
             is LearningItem.WordItem -> {
                 val srsResult = srsCalculator.calculate(item.word, quality, today)
                 val updatedWord = item.word.copy(
+                    type = 3, // 🎯 标记为重学 (Relearn)
                     interval = srsResult.interval,
                     repetitionCount = srsResult.repetitionCount,
                     stability = srsResult.stability,
@@ -997,6 +999,7 @@ class LearningViewModel @Inject constructor(
             is LearningItem.GrammarItem -> {
                 val srsResult = srsCalculator.calculate(item.grammar, quality, today)
                 val updatedGrammar = item.grammar.copy(
+                    type = 3, // 🎯 标记为重学 (Relearn)
                     interval = srsResult.interval,
                     repetitionCount = srsResult.repetitionCount,
                     stability = srsResult.stability,
@@ -1034,6 +1037,7 @@ class LearningViewModel @Inject constructor(
                 val interval = word.interval.coerceAtLeast(1)
 
                 val updatedWord = word.copy(
+                    type = 2, // 🎯 毕业进入复习 (Review)
                     interval = interval,
                     repetitionCount = word.repetitionCount + 1,
                     lastReviewedDate = today,
@@ -1049,6 +1053,7 @@ class LearningViewModel @Inject constructor(
                 val interval = grammar.interval.coerceAtLeast(1)
 
                 val updatedGrammar = grammar.copy(
+                    type = 2, // 🎯 毕业进入复习 (Review)
                     interval = interval,
                     repetitionCount = grammar.repetitionCount + 1,
                     lastReviewedDate = today,
@@ -1081,24 +1086,38 @@ class LearningViewModel @Inject constructor(
                 }
             }
             is ScheduleResult.Requeue -> {
-                val item = result.updatedItem
+                var item = result.updatedItem
                 _learningSteps[item.id] = result.nextStepIndex
 
-                // Keep due time logic consistent with Requeue
+                // 🎯 核心修复：同步更新底层模型的 type 字段并持久化
+                val mode = _uiState.value.learningMode
+                when (mode) {
+                    LearningMode.Word -> {
+                        if (item is LearningItem.WordItem) {
+                            val updatedWord = item.word.copy(type = item.type)
+                            item = item.copy(word = updatedWord)
+                            updateWordUseCase(updatedWord)
+                            if (result.isLapse) settingsRepository.incrementWordLapse(item.id)
+                        }
+                    }
+                    LearningMode.Grammar -> {
+                        if (item is LearningItem.GrammarItem) {
+                            val updatedGrammar = item.grammar.copy(type = item.type)
+                            item = item.copy(grammar = updatedGrammar)
+                            updateGrammarUseCase(updatedGrammar)
+                            if (result.isLapse) settingsRepository.incrementGrammarLapse(item.id)
+                        }
+                    }
+                }
+
                 if (result.isLapse) {
                     println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, Due in ${(result.dueTime - System.currentTimeMillis())/1000}s")
-                    // Increase lapse count in DB
-                     val mode = _uiState.value.learningMode
-                     when (mode) {
-                        LearningMode.Word -> settingsRepository.incrementWordLapse(item.id)
-                        LearningMode.Grammar -> settingsRepository.incrementGrammarLapse(item.id)
-                    }
                 } else {
-                     if (result.nextStepIndex == _learningSteps[item.id]) {
-                          println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
-                     } else {
-                          println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
-                     }
+                    if (result.nextStepIndex == _learningSteps[item.id]) {
+                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
+                    } else {
+                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
+                    }
                 }
 
                 reQueueToEnd(item)
@@ -1121,6 +1140,7 @@ class LearningViewModel @Inject constructor(
                 val word = item.word
                 val srsResult = srsCalculator.calculate(word, quality, today)
                 val updatedWord = word.copy(
+                    type = 2, // 🎯 毕业进入复习 (Review)
                     interval = srsResult.interval,
                     repetitionCount = srsResult.repetitionCount,
                     stability = srsResult.stability,
@@ -1140,6 +1160,7 @@ class LearningViewModel @Inject constructor(
                 val grammar = item.grammar
                 val srsResult = srsCalculator.calculate(grammar, quality, today)
                 val updatedGrammar = grammar.copy(
+                    type = 2, // 🎯 毕业进入复习 (Review)
                     interval = srsResult.interval,
                     repetitionCount = srsResult.repetitionCount,
                     stability = srsResult.stability,
@@ -1594,7 +1615,8 @@ class LearningViewModel @Inject constructor(
      */
     fun getCardBadge(item: LearningItem): CardBadge {
         return when (item.type) {
-            0, 1 -> CardBadge.NEW
+            0 -> CardBadge.NEW
+            1 -> CardBadge.LEARNING
             2 -> CardBadge.REVIEW
             3 -> CardBadge.RELEARN
             else -> CardBadge.REVIEW
