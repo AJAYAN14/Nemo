@@ -138,14 +138,16 @@ class SettingsViewModel @Inject constructor(
                  settingsRepository.relearningStepsFlow,
                  settingsRepository.learnAheadLimitFlow,
                  settingsRepository.leechThresholdFlow,
-                 settingsRepository.leechActionFlow
-            ) { steps, relearningSteps, limit, leechThreshold, leechAction ->
+                 settingsRepository.leechActionFlow,
+                 settingsRepository.targetRetentionFlow
+            ) { args ->
                 AdvancedSettings(
-                    learningSteps = steps,
-                    relearningSteps = relearningSteps,
-                    learnAheadLimit = limit,
-                    leechThreshold = leechThreshold,
-                    leechAction = leechAction
+                    learningSteps = args[0] as String,
+                    relearningSteps = args[1] as String,
+                    learnAheadLimit = args[2] as Int,
+                    leechThreshold = args[3] as Int,
+                    leechAction = args[4] as String,
+                    targetRetention = args[5] as Float
                 )
             }
 
@@ -189,6 +191,7 @@ class SettingsViewModel @Inject constructor(
                         learnAheadLimit = advanced.learnAheadLimit,
                         leechThreshold = advanced.leechThreshold,
                         leechAction = advanced.leechAction,
+                        targetRetention = advanced.targetRetention,
                         ttsSpeechRate = rate,
                         ttsPitch = pitch,
                         ttsVoiceName = voiceName,
@@ -226,7 +229,8 @@ class SettingsViewModel @Inject constructor(
                 event.relearningSteps,
                 event.learnAheadLimit,
                 event.leechThreshold,
-                event.leechAction
+                event.leechAction,
+                event.targetRetention
             )
 
             is SettingsEvent.SetTtsSpeechRate -> setTtsSpeechRate(event.rate)
@@ -538,7 +542,8 @@ class SettingsViewModel @Inject constructor(
         relearningSteps: String,
         learnAheadLimit: Int,
         leechThreshold: Int,
-        leechAction: String
+        leechAction: String,
+        targetRetention: Float
     ) {
         viewModelScope.launch {
             settingsRepository.saveAdvancedLearningSettings(
@@ -546,7 +551,8 @@ class SettingsViewModel @Inject constructor(
                 relearningSteps,
                 learnAheadLimit,
                 leechThreshold,
-                leechAction
+                leechAction,
+                targetRetention
             )
             // 可选：在保存成功后给出一个小提示
             // updateStatusMessage("高级学习设置已保存", 3000)
@@ -649,5 +655,6 @@ private data class AdvancedSettings(
     val relearningSteps: String,
     val learnAheadLimit: Int,
     val leechThreshold: Int,
-    val leechAction: String
+    val leechAction: String,
+    val targetRetention: Float
 )

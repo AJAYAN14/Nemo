@@ -42,6 +42,7 @@ fun AdvancedLearningSettingsScreen(
     var leechActionInput by remember(uiState.leechAction) {
         mutableStateOf(if (uiState.leechAction == "bury_today") "bury_today" else "skip")
     }
+    var retentionInput by remember(uiState.targetRetention) { mutableStateOf(uiState.targetRetention.toString()) }
 
     // 判断是否有未保存更改
     val hasUnsavedChanges = remember(stepsInput, relearningStepsInput, limitInput, leechThresholdInput, leechActionInput, uiState) {
@@ -49,7 +50,8 @@ fun AdvancedLearningSettingsScreen(
         relearningStepsInput != uiState.relearningSteps ||
         limitInput.toInt() != uiState.learnAheadLimit ||
         leechThresholdInput != uiState.leechThreshold ||
-        leechActionInput != (if (uiState.leechAction == "bury_today") "bury_today" else "skip")
+        leechActionInput != (if (uiState.leechAction == "bury_today") "bury_today" else "skip") ||
+        retentionInput != uiState.targetRetention.toString()
     }
 
     var showExitConfirmation by remember { mutableStateOf(false) }
@@ -72,7 +74,8 @@ fun AdvancedLearningSettingsScreen(
                 relearningSteps = relearningStepsInput,
                 learnAheadLimit = limitInput.toInt(),
                 leechThreshold = leechThresholdInput,
-                leechAction = leechActionInput
+                leechAction = leechActionInput,
+                targetRetention = retentionInput.toFloatOrNull() ?: uiState.targetRetention
             ))
             onNavigateBack()
         }
@@ -334,6 +337,41 @@ fun AdvancedLearningSettingsScreen(
                             }
                         }
                     }
+
+                    // FSRS Target Retention
+                    Column {
+                        Text(
+                            text = "FSRS 目标保留率",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = retentionInput,
+                            onValueChange = { input ->
+                                if (input.isEmpty() || input.all { it.isDigit() || it == '.' }) {
+                                    retentionInput = input
+                                }
+                            },
+                            placeholder = { Text("0.90") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = accentColor,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                            ),
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
+                            )
+                        )
+                        Text(
+                            text = "建议范围 0.70 - 0.99。较高的保留率会增加复习频率。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
             }
 
@@ -346,7 +384,8 @@ fun AdvancedLearningSettingsScreen(
                              relearningSteps = relearningStepsInput,
                              learnAheadLimit = limitInput.toInt(),
                              leechThreshold = leechThresholdInput,
-                             leechAction = leechActionInput
+                             leechAction = leechActionInput,
+                             targetRetention = retentionInput.toFloatOrNull() ?: uiState.targetRetention
                          ))
                          onNavigateBack()
                     }

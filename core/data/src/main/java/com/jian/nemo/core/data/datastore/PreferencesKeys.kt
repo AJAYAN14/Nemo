@@ -245,6 +245,9 @@ object PreferencesKeys {
     /** 提前学习限制 (分钟) 默认: 20 */
     val LEARN_AHEAD_LIMIT = intPreferencesKey("learn_ahead_limit")
 
+    /** FSRS 目标保留率 默认: 0.9f */
+    val TARGET_RETENTION = androidx.datastore.preferences.core.floatPreferencesKey("target_retention")
+
     /** Leech 阈值 (累计 lapse) 默认: 5 */
     val LEECH_THRESHOLD = intPreferencesKey("leech_threshold")
 

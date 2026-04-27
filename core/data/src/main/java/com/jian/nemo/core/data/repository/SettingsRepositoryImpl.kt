@@ -1270,12 +1270,24 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val targetRetentionFlow: Flow<Float> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.TARGET_RETENTION] ?: 0.9f
+    }
+
+    override suspend fun setTargetRetention(retention: Float) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TARGET_RETENTION] = retention
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     override suspend fun saveAdvancedLearningSettings(
         learningSteps: String,
         relearningSteps: String,
         learnAheadLimit: Int,
         leechThreshold: Int,
-        leechAction: String
+        leechAction: String,
+        targetRetention: Float
     ) {
         // 使用 NonCancellable 确保在页面关闭/ViewModel 销毁时，写入操作不会被取消
         withContext(NonCancellable) {
@@ -1285,6 +1297,7 @@ class SettingsRepositoryImpl @Inject constructor(
                 preferences[PreferencesKeys.LEARN_AHEAD_LIMIT] = learnAheadLimit
                 preferences[PreferencesKeys.LEECH_THRESHOLD] = leechThreshold.coerceAtLeast(1)
                 preferences[PreferencesKeys.LEECH_ACTION] = leechAction
+                preferences[PreferencesKeys.TARGET_RETENTION] = targetRetention
                 
                 // 更新修改时间戳，以便触发云端同步
                 preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
@@ -1531,6 +1544,7 @@ class SettingsRepositoryImpl @Inject constructor(
             learnAheadLimit = prefs[PreferencesKeys.LEARN_AHEAD_LIMIT] ?: 20,
             relearningSteps = prefs[PreferencesKeys.RELEARNING_STEPS] ?: "1 10",
             isRandomNewContentEnabled = prefs[PreferencesKeys.IS_RANDOM_NEW_CONTENT_ENABLED] ?: true,
+            targetRetention = prefs[PreferencesKeys.TARGET_RETENTION] ?: 0.9f,
 
             isSyncOnLearningComplete = prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] ?: true,
             isSyncOnTestComplete = prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] ?: true
@@ -1588,6 +1602,7 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.LEARN_AHEAD_LIMIT] = settings.learnAheadLimit
             prefs[PreferencesKeys.RELEARNING_STEPS] = settings.relearningSteps
             prefs[PreferencesKeys.IS_RANDOM_NEW_CONTENT_ENABLED] = settings.isRandomNewContentEnabled
+            prefs[PreferencesKeys.TARGET_RETENTION] = settings.targetRetention
             prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] = settings.isSyncOnLearningComplete
             prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] = settings.isSyncOnTestComplete
 

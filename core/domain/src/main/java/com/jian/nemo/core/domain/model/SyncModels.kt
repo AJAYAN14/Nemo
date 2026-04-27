@@ -64,6 +64,7 @@ data class AppSettings(
     val learnAheadLimit: Int = 20,
     val relearningSteps: String = "1 10",
     val isRandomNewContentEnabled: Boolean = true,
+    val targetRetention: Float = 0.9f,
 
     // 同步触发策略
     val isSyncOnLearningComplete: Boolean = true,

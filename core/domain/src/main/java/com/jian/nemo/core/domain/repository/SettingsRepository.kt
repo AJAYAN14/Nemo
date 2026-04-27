@@ -492,13 +492,18 @@ interface SettingsRepository {
     val relearningStepsFlow: Flow<String>
     suspend fun setRelearningSteps(steps: String)
 
+    /** FSRS 目标保留率 Flow @see PreferencesKeys.TARGET_RETENTION */
+    val targetRetentionFlow: Flow<Float>
+    suspend fun setTargetRetention(retention: Float)
+
     /** 原子化保存所有高级学习设置，更新修改时间戳 */
     suspend fun saveAdvancedLearningSettings(
         learningSteps: String,
         relearningSteps: String,
         learnAheadLimit: Int,
         leechThreshold: Int,
-        leechAction: String
+        leechAction: String,
+        targetRetention: Float
     )
 
     // ========== TTS 设置 ==========

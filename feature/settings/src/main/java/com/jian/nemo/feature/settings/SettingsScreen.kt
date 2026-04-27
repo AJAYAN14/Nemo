@@ -53,7 +53,7 @@ fun SettingsScreen(
     // 对话框状态
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showConflictDialog by remember { mutableStateOf(false) }
-    var showRepairDialog by remember { mutableStateOf(false) } // Repair Dialog
+
     var isResetting by remember { mutableStateOf(false) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -374,16 +374,7 @@ fun SettingsScreen(
                         },
                         showDivider = false
                     )
-                     SquircleSettingItem(
-                        icon = Icons.Rounded.Build,
-                        iconColor = NemoPrimary,
-                         title = "修复本地数据",
-                        subtitle = "清理重复数据 (同步计数异常时使用)",
-                        onClick = {
-                            showRepairDialog = true
-                        },
-                        showDivider = false
-                    )
+
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -487,29 +478,7 @@ fun SettingsScreen(
         )
     }
 
-    // 修复确认对话框
-    if (showRepairDialog) {
-        AlertDialog(
-            onDismissRequest = { showRepairDialog = false },
-            title = { Text("修复本地数据") },
-            text = { Text("此操作将扫描并删除本地重复的单词和语法数据。\n\n如果您发现同步数量显示异常(例如翻倍)，请尝试此操作。\n\n修复前建议先【立即同步】以防万一。") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onEvent(SettingsEvent.RepairLocalData)
-                        showRepairDialog = false
-                    }
-                ) {
-                    Text("开始修复")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showRepairDialog = false }) {
-                    Text("取消")
-                }
-            }
-        )
-    }
+
 }
 
 /**
