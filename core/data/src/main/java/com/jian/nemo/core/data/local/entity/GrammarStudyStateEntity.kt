@@ -52,6 +52,10 @@ data class GrammarStudyStateEntity(
     @ColumnInfo(name = "first_learned_date")
     val firstLearnedDate: Long? = null,
 
+    /** 卡片类型 (0=New, 1=Learn, 2=Review, 3=Relearn) */
+    @ColumnInfo(name = "type")
+    val type: Int = 0,
+
     // ========== 用户交互字段 ==========
     @ColumnInfo(name = "is_favorite")
     val isFavorite: Boolean = false,

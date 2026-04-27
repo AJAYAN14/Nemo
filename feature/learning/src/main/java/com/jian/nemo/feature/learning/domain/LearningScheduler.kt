@@ -74,9 +74,12 @@ class LearningScheduler @Inject constructor() {
         val firstStepMin = stepConfig.firstOrNull() ?: 1
         val dueTime = System.currentTimeMillis() + firstStepMin * 60 * 1000L
 
+        // 计算新类型
+        val newType = if (item.repetitionCount > 0) 3 else 1 // 3: Relearning, 1: Learning
+
         val updatedItem = when (item) {
-            is LearningItem.WordItem -> item.copy(step = nextStep, dueTime = dueTime)
-            is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime)
+            is LearningItem.WordItem -> item.copy(step = nextStep, dueTime = dueTime, type = newType)
+            is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime, type = newType)
         }
 
         return ScheduleResult.Requeue(
@@ -112,6 +115,7 @@ class LearningScheduler @Inject constructor() {
             }
             val dueTime = System.currentTimeMillis() + hardDelayMillis
 
+            // Hard 依然保持 Learning/Relearning 状态
             val updatedItem = when (item) {
                 is LearningItem.WordItem -> item.copy(step = currentStep, dueTime = dueTime)
                 is LearningItem.GrammarItem -> item.copy(step = currentStep, dueTime = dueTime)
@@ -147,6 +151,10 @@ class LearningScheduler @Inject constructor() {
         // 毕业 (Graduate):
         // 1. 评分是 Easy (5)
         // 2. 评分是 Good (4) 且已经是最后一个台阶
-        return ScheduleResult.Graduate(item, quality)
+        val graduatedItem = when (item) {
+            is LearningItem.WordItem -> item.copy(type = 2) // 2: Review
+            is LearningItem.GrammarItem -> item.copy(type = 2)
+        }
+        return ScheduleResult.Graduate(graduatedItem, quality)
     }
 }

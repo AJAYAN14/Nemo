@@ -51,6 +51,15 @@ interface SrsItem {
      * 首次学习日期（Epoch Day）
      */
     val firstLearnedDate: Long?
+
+    /**
+     * 卡片类型 (对齐 Anki)
+     * - 0: 新学 (New)
+     * - 1: 学习 (Learning)
+     * - 2: 复习 (Review)
+     * - 3: 重学 (Relearning)
+     */
+    val type: Int
 }
 
 /**
@@ -63,5 +72,6 @@ data class SrsUpdateResult(
     val interval: Int,
     val nextReviewDate: Long,
     val lastReviewedDate: Long?,
-    val firstLearnedDate: Long?
+    val firstLearnedDate: Long?,
+    val type: Int
 )

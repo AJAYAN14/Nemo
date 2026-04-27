@@ -61,11 +61,13 @@ sealed class LearningItem {
     // 调度系统必需字段
     abstract val step: Int
     abstract val dueTime: Long
+    abstract val type: Int
 
     data class WordItem(
         val word: Word,
         override val step: Int = 0,
-        override val dueTime: Long = 0
+        override val dueTime: Long = 0,
+        override val type: Int = word.type
     ) : LearningItem() {
         override val id: Int get() = word.id
         override val isNew: Boolean get() = word.repetitionCount == 0
@@ -76,7 +78,8 @@ sealed class LearningItem {
     data class GrammarItem(
         val grammar: Grammar,
         override val step: Int = 0,
-        override val dueTime: Long = 0
+        override val dueTime: Long = 0,
+        override val type: Int = grammar.type
     ) : LearningItem() {
         override val id: Int get() = grammar.id
         override val isNew: Boolean get() = grammar.repetitionCount == 0
@@ -1590,9 +1593,10 @@ class LearningViewModel @Inject constructor(
      * 获取卡片状态标记
      */
     fun getCardBadge(item: LearningItem): CardBadge {
-        return when {
-            _requeuedItems.contains(item.id) -> CardBadge.RELEARN
-            item.isNew -> CardBadge.NEW
+        return when (item.type) {
+            0, 1 -> CardBadge.NEW
+            2 -> CardBadge.REVIEW
+            3 -> CardBadge.RELEARN
             else -> CardBadge.REVIEW
         }
     }

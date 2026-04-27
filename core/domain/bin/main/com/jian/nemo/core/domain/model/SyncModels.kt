@@ -88,6 +88,7 @@ data class WordProgress(
     val lastModifiedTime: Long = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis(),
     val lastReviewedDate: Long? = null,
     val firstLearnedDate: Long? = null,
+    val type: Int = 0,
     // 兼容旧备份
     val japanese: String? = null,
     val hiragana: String? = null,
@@ -112,6 +113,7 @@ data class GrammarProgress(
     val lastModifiedTime: Long = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis(),
     val lastReviewedDate: Long? = null,
     val firstLearnedDate: Long? = null,
+    val type: Int = 0,
     val uuid: String? = null,
     // 兼容旧备份
     val grammar: String? = null,

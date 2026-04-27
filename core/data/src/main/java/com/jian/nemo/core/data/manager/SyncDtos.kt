@@ -24,7 +24,8 @@ data class SyncWordStateDto(
     @SerialName("last_modified_time") val lastModifiedTime: Long,
     @SerialName("first_learned_date") val firstLearnedDate: Long? = null,
     @SerialName("last_reviewed_date") val lastReviewedDate: Long? = null,
-    @SerialName("buried_until_day") val buriedUntilDay: Long = 0
+    @SerialName("buried_until_day") val buriedUntilDay: Long = 0,
+    @SerialName("type") val type: Int = 0
 )
 
 /**
@@ -46,7 +47,8 @@ data class SyncGrammarStateDto(
     @SerialName("last_modified_time") val lastModifiedTime: Long,
     @SerialName("first_learned_date") val firstLearnedDate: Long? = null,
     @SerialName("last_reviewed_date") val lastReviewedDate: Long? = null,
-    @SerialName("buried_until_day") val buriedUntilDay: Long = 0
+    @SerialName("buried_until_day") val buriedUntilDay: Long = 0,
+    @SerialName("type") val type: Int = 0
 )
 
 @Serializable
@@ -144,7 +146,8 @@ fun SyncWordStateDto.toEntity() = WordStudyStateEntity(
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
     firstLearnedDate = firstLearnedDate,
-    buriedUntilDay = buriedUntilDay
+    buriedUntilDay = buriedUntilDay,
+    type = type
 )
 
 fun WordStudyStateEntity.toSyncDto(userId: String) = SyncWordStateDto(
@@ -162,7 +165,8 @@ fun WordStudyStateEntity.toSyncDto(userId: String) = SyncWordStateDto(
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
     firstLearnedDate = firstLearnedDate,
-    buriedUntilDay = buriedUntilDay
+    buriedUntilDay = buriedUntilDay,
+    type = type
 )
 
 fun SyncGrammarStateDto.toEntity() = GrammarStudyStateEntity(
@@ -179,7 +183,8 @@ fun SyncGrammarStateDto.toEntity() = GrammarStudyStateEntity(
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
     firstLearnedDate = firstLearnedDate,
-    buriedUntilDay = buriedUntilDay
+    buriedUntilDay = buriedUntilDay,
+    type = type
 )
 
 fun GrammarStudyStateEntity.toSyncDto(userId: String) = SyncGrammarStateDto(
@@ -197,7 +202,8 @@ fun GrammarStudyStateEntity.toSyncDto(userId: String) = SyncGrammarStateDto(
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
     firstLearnedDate = firstLearnedDate,
-    buriedUntilDay = buriedUntilDay
+    buriedUntilDay = buriedUntilDay,
+    type = type
 )
 
 fun SyncStudyRecordDto.toEntity() = StudyRecordEntity(
@@ -342,7 +348,8 @@ fun SyncWordStateDto.toWordProgress() = WordProgress(
     deletedTime = deletedTime,
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
-    firstLearnedDate = firstLearnedDate
+    firstLearnedDate = firstLearnedDate,
+    type = type
 )
 
 fun SyncGrammarStateDto.toGrammarProgress() = GrammarProgress(
@@ -357,5 +364,6 @@ fun SyncGrammarStateDto.toGrammarProgress() = GrammarProgress(
     deletedTime = deletedTime,
     lastModifiedTime = lastModifiedTime,
     lastReviewedDate = lastReviewedDate,
-    firstLearnedDate = firstLearnedDate
+    firstLearnedDate = firstLearnedDate,
+    type = type
 )

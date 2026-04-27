@@ -43,6 +43,7 @@ data class Grammar(
     override val nextReviewDate: Long = 0,
     override val lastReviewedDate: Long? = null,
     override val firstLearnedDate: Long? = null,
+    override val type: Int = 0,
 
     // ========== 用户交互字段 ==========
     val isFavorite: Boolean = false,

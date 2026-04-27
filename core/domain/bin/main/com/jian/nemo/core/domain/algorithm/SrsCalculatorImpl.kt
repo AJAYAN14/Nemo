@@ -113,6 +113,17 @@ class SrsCalculatorImpl @Inject constructor(
 
         val lastReviewedDate = today
 
+        // 计算类型 (对齐 Anki)
+        val type = if (newRepetitionCount > 0 && quality >= 3) {
+            2 // Review
+        } else if (quality < 3 && item.repetitionCount > 0) {
+            3 // Relearning
+        } else if (quality < 3) {
+            1 // Learning
+        } else {
+            item.type // 保持现状或由 Scheduler 进一步处理
+        }
+
         return SrsUpdateResult(
             repetitionCount = newRepetitionCount,
             stability = newState.stability,
@@ -120,7 +131,8 @@ class SrsCalculatorImpl @Inject constructor(
             interval = newInterval,
             nextReviewDate = nextReviewDate,
             lastReviewedDate = lastReviewedDate,
-            firstLearnedDate = firstLearnedDate
+            firstLearnedDate = firstLearnedDate,
+            type = type
         )
     }
 

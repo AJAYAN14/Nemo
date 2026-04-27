@@ -88,6 +88,11 @@ data class Word(
      */
     override val firstLearnedDate: Long? = null,
 
+    /**
+     * 卡片类型
+     */
+    override val type: Int = 0,
+
     // ========== 用户交互字段 ==========
     /**
      * 是否收藏
