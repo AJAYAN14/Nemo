@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -190,6 +192,21 @@ private fun SearchBar(
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
     val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
 
+    // 关键修复：使用 TextFieldValue 持有本地状态，避免 IME 在重组时丢失组合信息
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(text = query, selection = TextRange(query.length)))
+    }
+
+    // 当外部 query 发生变化时（如点击清除按钮），同步更新本地状态
+    LaunchedEffect(query) {
+        if (query != textFieldValue.text) {
+            textFieldValue = textFieldValue.copy(
+                text = query,
+                selection = TextRange(query.length)
+            )
+        }
+    }
+
     Surface(
         modifier = modifier.fillMaxWidth().height(50.dp),
         shape = RoundedCornerShape(25.dp),
@@ -208,7 +225,7 @@ private fun SearchBar(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Box(modifier = Modifier.weight(1f)) {
-                if (query.isEmpty()) {
+                if (textFieldValue.text.isEmpty()) {
                     Text(
                         text = "搜索：汉字 / 假名 / 释义",
                         style = MaterialTheme.typography.bodyLarge,
@@ -216,8 +233,13 @@ private fun SearchBar(
                     )
                 }
                 BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
+                    value = textFieldValue,
+                    onValueChange = {
+                        textFieldValue = it
+                        if (it.text != query) {
+                            onQueryChange(it.text)
+                        }
+                    },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     ),

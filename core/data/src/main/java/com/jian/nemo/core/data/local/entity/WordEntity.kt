@@ -6,12 +6,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * 单词实体
- *
- * 对应表: words
- * 参考: _reference/old-nemo/app/src/main/java/com/jian/nemo/data/model/Word.kt
- *
- * ⚠️ 兼容性说明:
  * - 数据库列名保持下划线格式(与旧项目一致)，Kotlin属性使用驼峰命名
  * - 使用 @ColumnInfo 映射数据库列名，如: example_1 → example1
  */
@@ -24,8 +18,8 @@ import androidx.room.PrimaryKey
     ]
 )
 data class WordEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    @PrimaryKey(autoGenerate = false)
+    val id: Int,
 
     // ========== 核心内容字段 ==========
     /**

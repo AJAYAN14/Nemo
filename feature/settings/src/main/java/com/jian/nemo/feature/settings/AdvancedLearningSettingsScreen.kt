@@ -17,8 +17,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.activity.compose.BackHandler
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.settings.components.PremiumCard
+import com.jian.nemo.feature.settings.components.UnsavedChangesDialog
 
 /**
  * 记忆算法配置二级页面 (SRS Memory Algorithm Configuration)
@@ -41,17 +43,53 @@ fun AdvancedLearningSettingsScreen(
         mutableStateOf(if (uiState.leechAction == "bury_today") "bury_today" else "skip")
     }
 
+    // 判断是否有未保存更改
+    val hasUnsavedChanges = remember(stepsInput, relearningStepsInput, limitInput, leechThresholdInput, leechActionInput, uiState) {
+        stepsInput != uiState.learningSteps ||
+        relearningStepsInput != uiState.relearningSteps ||
+        limitInput.toInt() != uiState.learnAheadLimit ||
+        leechThresholdInput != uiState.leechThreshold ||
+        leechActionInput != (if (uiState.leechAction == "bury_today") "bury_today" else "skip")
+    }
+
+    var showExitConfirmation by remember { mutableStateOf(false) }
+
+    // 拦截系统返回键
+    BackHandler(enabled = hasUnsavedChanges) {
+        showExitConfirmation = true
+    }
+
     val accentColor = Color(0xFFAF52DE) // NemoPurple
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+
+    // 保存逻辑封装
+    val onSaveAndExit = {
+        if (stepsInput.isNotBlank() && relearningStepsInput.isNotBlank()) {
+            viewModel.onEvent(SettingsEvent.SaveAdvancedLearningSettings(
+                learningSteps = stepsInput,
+                relearningSteps = relearningStepsInput,
+                learnAheadLimit = limitInput.toInt(),
+                leechThreshold = leechThresholdInput,
+                leechAction = leechActionInput
+            ))
+            onNavigateBack()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("记忆算法配置", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(onClick = {
+                        if (hasUnsavedChanges) {
+                            showExitConfirmation = true
+                        } else {
+                            onNavigateBack()
+                        }
+                    }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
                     }
                 },
@@ -62,6 +100,14 @@ fun AdvancedLearningSettingsScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
+        if (showExitConfirmation) {
+            UnsavedChangesDialog(
+                onSaveAndExit = onSaveAndExit,
+                onDiscardChanges = onNavigateBack,
+                onDismiss = { showExitConfirmation = false },
+                accentColor = accentColor
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -295,11 +341,13 @@ fun AdvancedLearningSettingsScreen(
             Button(
                 onClick = {
                     if (stepsInput.isNotBlank() && relearningStepsInput.isNotBlank()) {
-                         viewModel.onEvent(SettingsEvent.SetLearningSteps(stepsInput))
-                         viewModel.onEvent(SettingsEvent.SetRelearningSteps(relearningStepsInput))
-                         viewModel.onEvent(SettingsEvent.SetLearnAheadLimit(limitInput.toInt()))
-                         viewModel.onEvent(SettingsEvent.SetLeechThreshold(leechThresholdInput))
-                         viewModel.onEvent(SettingsEvent.SetLeechAction(leechActionInput))
+                         viewModel.onEvent(SettingsEvent.SaveAdvancedLearningSettings(
+                             learningSteps = stepsInput,
+                             relearningSteps = relearningStepsInput,
+                             learnAheadLimit = limitInput.toInt(),
+                             leechThreshold = leechThresholdInput,
+                             leechAction = leechActionInput
+                         ))
                          onNavigateBack()
                     }
                 },

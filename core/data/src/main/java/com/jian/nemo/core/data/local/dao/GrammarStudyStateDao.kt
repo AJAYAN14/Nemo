@@ -52,6 +52,12 @@ interface GrammarStudyStateDao {
     @Query("UPDATE grammar_study_states SET is_deleted = 1, deleted_time = :time, last_modified_time = :time WHERE grammar_id = :grammarId")
     suspend fun markDeletedByGrammarId(grammarId: Int, time: Long)
 
+    @Query("DELETE FROM grammar_study_states WHERE grammar_id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Int>)
+
+    @Query("SELECT * FROM grammar_study_states WHERE grammar_id = :id")
+    suspend fun getByIdSync(id: Int): GrammarStudyStateEntity?
+
     @Query("DELETE FROM grammar_study_states")
     suspend fun deleteAll()
 }

@@ -121,7 +121,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementLearnedWords(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(learnedWords = record.learnedWords + count)
+            val updated = record.copy(
+                learnedWords = record.learnedWords + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加学习单词数失败: error=${e.message}")
@@ -132,7 +135,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementLearnedGrammars(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(learnedGrammars = record.learnedGrammars + count)
+            val updated = record.copy(
+                learnedGrammars = record.learnedGrammars + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加学习语法数失败: error=${e.message}")
@@ -143,7 +149,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementReviewedWords(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(reviewedWords = record.reviewedWords + count)
+            val updated = record.copy(
+                reviewedWords = record.reviewedWords + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加复习单词数失败: error=${e.message}")
@@ -154,7 +163,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementReviewedGrammars(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(reviewedGrammars = record.reviewedGrammars + count)
+            val updated = record.copy(
+                reviewedGrammars = record.reviewedGrammars + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加复习语法数失败: error=${e.message}")
@@ -165,7 +177,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementSkippedWords(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(skippedWords = record.skippedWords + count)
+            val updated = record.copy(
+                skippedWords = record.skippedWords + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加跳过单词数失败: error=${e.message}")
@@ -176,7 +191,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementSkippedGrammars(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(skippedGrammars = record.skippedGrammars + count)
+            val updated = record.copy(
+                skippedGrammars = record.skippedGrammars + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加跳过语法数失败: error=${e.message}")
@@ -187,7 +205,10 @@ class StudyRecordRepositoryImpl @Inject constructor(
     override suspend fun incrementTestCount(count: Int): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             val record = getOrCreateTodayRecord()
-            val updated = record.copy(testCount = record.testCount + count)
+            val updated = record.copy(
+                testCount = record.testCount + count,
+                timestamp = DateTimeUtils.getCurrentCompensatedMillis()
+            )
             upsertRecord(updated)
         } catch (e: Exception) {
             println("❌ 增加测试次数失败: error=${e.message}")

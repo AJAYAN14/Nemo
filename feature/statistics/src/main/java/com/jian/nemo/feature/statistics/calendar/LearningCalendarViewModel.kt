@@ -10,6 +10,7 @@ import com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewForecastUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetHeatmapDataUseCase
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
+import com.jian.nemo.core.domain.model.ReviewForecast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
@@ -62,7 +63,7 @@ class LearningCalendarViewModel @Inject constructor(
             getReviewForecastUseCase()
                 .catch { e -> _uiState.update { it.copy(error = e.message) } }
                 .collect { forecastList ->
-                    val forecastMap = forecastList.associate { it.date to it.count }
+                    val forecastMap = forecastList.associateBy { it.date }
                     _uiState.update { it.copy(weekForecast = forecastMap) }
                 }
         }
@@ -132,7 +133,7 @@ data class LearningCalendarUiState(
     val isLoading: Boolean = false,
     val selectedDate: Date = Date(),
     val todayStats: LearningStats? = null,
-    val weekForecast: Map<Long, Int> = emptyMap(), // EpochDay -> Count
+    val weekForecast: Map<Long, ReviewForecast> = emptyMap(), // EpochDay -> ReviewForecast
     val heatmapData: List<HeatmapDay> = emptyList(), // Added
     val selectedDateRecord: StudyRecord? = null,
     val todayEpochDay: Long = DateTimeUtils.getCurrentEpochDay(),

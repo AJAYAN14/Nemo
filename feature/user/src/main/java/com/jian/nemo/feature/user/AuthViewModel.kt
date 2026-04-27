@@ -566,6 +566,17 @@ class AuthViewModel @Inject constructor(
                              )
                          }
                     }
+                    is SyncProgress.AlreadyRunning -> {
+                         _uiState.update {
+                             it.copy(
+                                 isSyncLoading = false,
+                                 successMessage = "同步已在后台进行中",
+                                 syncStatus = "后台运行中"
+                             )
+                         }
+                         delay(2000)
+                         _uiState.update { it.copy(successMessage = null) }
+                    }
                     else -> {}
                 }
             }
@@ -631,6 +642,17 @@ class AuthViewModel @Inject constructor(
                                 restoreStatus = "失败"
                             )
                         }
+                    }
+                    is SyncProgress.AlreadyRunning -> {
+                        _uiState.update {
+                            it.copy(
+                                isRestoreLoading = false,
+                                successMessage = "恢复任务已在运行",
+                                restoreStatus = "已在运行"
+                            )
+                        }
+                        delay(2000)
+                        _uiState.update { it.copy(successMessage = null) }
                     }
                     else -> {}
                 }

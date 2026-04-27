@@ -36,20 +36,44 @@ object PreferencesKeys {
     /** 用户头像路径 */
     val USER_AVATAR_PATH = stringPreferencesKey("user_avatar_path")
 
-    /** 每日学习目标（单词数）默认: 50 */
+    /** 每日学习目标（单词数）默认: 20 */
     val DAILY_GOAL = intPreferencesKey("daily_goal")
 
     /** 每日学习目标（语法条数）默认: 10 */
     val GRAMMAR_DAILY_GOAL = intPreferencesKey("grammar_daily_goal")
 
+    /** 待定每日学习目标（单词数）- 次日生效 */
+    val PENDING_DAILY_GOAL = intPreferencesKey("pending_daily_goal")
+
+    /** 待定每日学习目标（语法条数）- 次日生效 */
+    val PENDING_GRAMMAR_DAILY_GOAL = intPreferencesKey("pending_grammar_daily_goal")
+
+    /** 待定目标设置时的逻辑学习日 - 用于确保仅在“下一个”重置点后生效 */
+    val PENDING_GOAL_SET_DATE = longPreferencesKey("pending_goal_set_date")
+
+    /** 主题色 (存储为 ARGB Long 值) 默认: null (使用品牌蓝 0xFF0E68FF) */
+    val THEME_COLOR = longPreferencesKey("theme_color")
+
     /** 深色模式（null=跟随系统） */
     val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
+
+    /** 深色模式策略 (system, scheduled) 默认: system */
+    val DARK_MODE_STRATEGY = stringPreferencesKey("dark_mode_strategy")
+
+    /** 浅色模式开始时间 (HH:mm) 默认: 07:00 */
+    val DARK_MODE_START_TIME = stringPreferencesKey("dark_mode_start_time")
+
+    /** 深色模式开始时间 (HH:mm) 默认: 19:00 */
+    val DARK_MODE_END_TIME = stringPreferencesKey("dark_mode_end_time")
 
     /** 动态颜色（Android 12+）默认: true */
     val IS_DYNAMIC_COLOR_ENABLED = booleanPreferencesKey("is_dynamic_color_enabled")
 
     /** 学习日重置时间（小时,0-23）默认: 4 (凌晨4:00) */
     val LEARNING_DAY_RESET_HOUR = intPreferencesKey("learning_day_reset_hour")
+
+    /** 应用图标名称 默认: "Nemo" */
+    val APP_ICON = stringPreferencesKey("app_icon")
 
     /** 通知开关 默认: true */
     val IS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_notification_enabled")

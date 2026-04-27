@@ -6,10 +6,6 @@ import androidx.room.PrimaryKey
 
 /**
  * 学习记录实体
- *
- * 对应表: study_records
- * 参考: _reference/old-nemo/app/src/main/java/com/jian/nemo/data/model/StudyRecord.kt
- *
  * 用于记录用户每日的学习情况
  */
 @Entity(tableName = "study_records")

@@ -19,8 +19,6 @@ data class SortingAnswerState(
  * 排序题处理器
  *
  * 职责：处理排序题的选中/取消选中逻辑
- * 提取自：TestViewModel.kt 行343-418
- * 参考：旧项目 QuestionLogic.kt 行483-536
  */
 @Singleton
 class SortingHandler @Inject constructor() {

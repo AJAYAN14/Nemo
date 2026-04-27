@@ -34,7 +34,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.designsystem.theme.NemoOrange
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
+
 import com.jian.nemo.core.designsystem.theme.NemoPurple
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoTeal
@@ -170,7 +170,7 @@ fun TestDashboardScreen(
                 title = "综合测试",
                 subtitle = "随机组合所有题型进行全面检测",
                 icon = Icons.Rounded.AllInclusive,
-                gradientColors = listOf(NemoPrimary, NemoPrimary.copy(alpha = 0.8f)),
+                gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
                 onClick = { onNavigateToTestSettings("comprehensive") }
             )
 
@@ -227,7 +227,7 @@ private fun StatsPager(
         CompactStatsPage(
             title = "今日测试",
             icon = Icons.Rounded.Bolt,
-            accent = NemoPrimary,
+            accent = MaterialTheme.colorScheme.primary,
             primaryValue = uiState.todayTestCount.toString(),
             primaryLabel = "已测题目",
             secondaryValue = uiState.consecutiveTestDays.toString(),

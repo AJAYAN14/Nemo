@@ -219,6 +219,7 @@ interface WordDao {
         JOIN word_study_states s ON w.id = s.word_id
         WHERE s.last_reviewed_date = :todayEpochDay
         AND s.repetition_count > 0
+        AND s.first_learned_date < :todayEpochDay
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND s.is_deleted = 0
         AND w.is_delisted = 0

@@ -21,7 +21,7 @@ import com.jian.nemo.feature.test.domain.model.TestConfig
 import com.jian.nemo.feature.test.domain.model.QuestionSource
 import com.jian.nemo.feature.test.domain.model.TestContentType
 import kotlinx.coroutines.launch
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
+
 import com.jian.nemo.feature.test.presentation.settings.components.BasicSettingsSection
 import com.jian.nemo.feature.test.presentation.settings.components.QuizSettingsSection
 import com.jian.nemo.feature.test.presentation.settings.components.TestSettingsBottomSheetContent
@@ -116,7 +116,7 @@ fun TestSettingsScreen(
             "我的错题" to QuestionSource.WRONG.key,
             "我的收藏" to QuestionSource.FAVORITE.key,
             "今日学习的内容 (${uiState.todayLearnedCount}词 / ${uiState.todayLearnedGrammarCount}语法)" to QuestionSource.TODAY.key,
-            "今日复习的内容" to QuestionSource.TODAY_REVIEWED.key,
+            "今日复习的内容 (${uiState.todayReviewedCount}词 / ${uiState.todayReviewedGrammarCount}语法)" to QuestionSource.TODAY_REVIEWED.key,
             "所有已学习过的内容" to QuestionSource.LEARNED.key,
             "所有内容" to QuestionSource.ALL.key
         )
@@ -262,7 +262,7 @@ fun TestSettingsScreen(
                                      "card_matching" -> starterViewModel.startMatchingTest(config)
                                      "sorting" -> starterViewModel.startSortingTest(config)
                                      "multiple_choice" -> starterViewModel.startMultipleChoiceTest(config)
-                                     else -> starterViewModel.startTest(config, com.jian.nemo.core.domain.model.TestMode.JP_TO_CN)
+                                     else -> starterViewModel.startTest(config, com.jian.nemo.core.domain.model.TestMode.RANDOM)
                                  }
                              }
                          }
@@ -270,7 +270,7 @@ fun TestSettingsScreen(
                      enabled = !isGenerating,
                      modifier = Modifier.fillMaxWidth().height(56.dp).shadow(8.dp, RoundedCornerShape(24.dp)),
                      shape = RoundedCornerShape(24.dp),
-                     colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary)
+                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                  ) {
                      if (isGenerating) {
                          CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)

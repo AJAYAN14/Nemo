@@ -21,6 +21,7 @@ import com.jian.nemo.core.domain.usecase.word.GetDueWordsUseCase
 import com.jian.nemo.core.domain.usecase.word.GetNewWordsUseCase
 import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
+import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.feature.learning.domain.LearningSessionPolicy
 import com.jian.nemo.feature.learning.domain.LearningQueueManager
 import com.jian.nemo.feature.learning.domain.LearningScheduler
@@ -133,7 +134,8 @@ class LearningViewModel @Inject constructor(
     private val learningQueueManager: LearningQueueManager,
     private val learningScheduler: LearningScheduler,
     private val learningUndoHelper: LearningUndoHelper,
-    private val audioRepository: AudioRepository
+    private val audioRepository: AudioRepository,
+    private val contentReportRepository: ContentReportRepository
 ) : ViewModel() {
     companion object {
         /** 钉子户阈值：连续失败次数达到此值时暂停学习 */
@@ -187,6 +189,13 @@ class LearningViewModel @Inject constructor(
     private var loadingJob: Job? = null
 
     init {
+        // 0. 监听显示模式设置 (深色/浅色)
+        viewModelScope.launch {
+            settingsRepository.isDarkModeFlow.collect { isDark ->
+                _uiState.update { it.copy(isDarkMode = isDark) }
+            }
+        }
+
         // 1. 监听 TTS 事件以更新播放状态 (必须在 _uiState 初始化后)
         viewModelScope.launch {
             audioRepository.ttsEvents.collect { event ->
@@ -372,6 +381,50 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.ToggleAutoPlayAudio -> toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> toggleShowAnswerDelay(event.enabled)
             is LearningEvent.CycleShowAnswerDelayDuration -> cycleShowAnswerDelayDuration()
+            is LearningEvent.ReportContentError -> handleReportError()
+            is LearningEvent.OpenReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = true) }
+            is LearningEvent.CancelReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = false) }
+            is LearningEvent.ClearSuccessMessage -> _uiState.update { it.copy(successMessage = null) }
+            is LearningEvent.ClearErrorMessage -> _uiState.update { it.copy(error = null) }
+            is LearningEvent.SetDarkMode -> {
+                viewModelScope.launch {
+                    settingsRepository.setDarkMode(event.enabled)
+                }
+            }
+            is LearningEvent.CycleDarkMode -> {
+                val nextMode = when (uiState.value.isDarkMode) {
+                    null -> false  // 系统 -> 浅色
+                    false -> true  // 浅色 -> 深色
+                    true -> null   // 深色 -> 系统
+                }
+                viewModelScope.launch {
+                    settingsRepository.setDarkMode(nextMode)
+                }
+            }
+        }
+    }
+
+    private fun handleReportError() {
+        // 关闭对话框
+        _uiState.update { it.copy(showReportErrorDialog = false) }
+
+        val state = _uiState.value
+        val itemId = if (state.learningMode == LearningMode.Word) {
+            state.currentWord?.id
+        } else {
+            state.currentGrammar?.id
+        } ?: return
+        
+        val itemType = if (state.learningMode == LearningMode.Word) "word" else "grammar"
+
+        viewModelScope.launch {
+            val result = contentReportRepository.reportContentError(itemId, itemType)
+            if (result is Result.Success) {
+                // 使用通用的成功消息提示
+                _uiState.update { it.copy(successMessage = "反馈成功，感谢您的反馈！") }
+            } else if (result is Result.Error) {
+                 _uiState.update { it.copy(error = "反馈失败: ${result.exception.message}") }
+            }
         }
     }
 
@@ -531,6 +584,7 @@ class LearningViewModel @Inject constructor(
             is SessionLoadResult.Restored -> {
                 _learningSteps.clear()
                 _learningSteps.putAll(result.steps)
+                _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
 
                 val items = wrapItems(result.items)
@@ -564,6 +618,7 @@ class LearningViewModel @Inject constructor(
 
             is SessionLoadResult.NewSession -> {
                 _learningSteps.clear()
+                _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
 
                 val items = wrapItems(result.items)
@@ -586,7 +641,8 @@ class LearningViewModel @Inject constructor(
                         error = null,
                         sessionInitialSize = items.size,
                         ratingIntervals = calculateRatingIntervals(firstItem),
-                        sessionProcessedCount = 0
+                        sessionProcessedCount = 0,
+                        waitingUntil = 0L
                     )
                 }
                 armShowAnswerDelay()
@@ -608,7 +664,8 @@ class LearningViewModel @Inject constructor(
                         grammarList = emptyList(),
                         currentWord = null,
                         currentGrammar = null,
-                        showAnswerAvailableAt = 0L
+                        showAnswerAvailableAt = 0L,
+                        waitingUntil = 0L
                     )
                 }
 
@@ -670,10 +727,10 @@ class LearningViewModel @Inject constructor(
 
     private fun cycleShowAnswerDelayDuration() {
         val next = when (_showAnswerDelayMs) {
-            3000L -> 5000L
-            5000L -> 7000L
-            7000L -> 10000L
-            else -> 3000L
+            2000L -> 3000L
+            3000L -> 4000L
+            4000L -> 5000L
+            else -> 2000L
         }
         viewModelScope.launch {
             settingsRepository.setShowAnswerDelayMs(next)
@@ -1561,6 +1618,8 @@ class LearningViewModel @Inject constructor(
 
     private fun changeLearningMode(mode: LearningMode) {
         _uiState.update { it.copy(learningMode = mode) }
+        // 模式切换时，立即触发新模式的会话加载
+        startLearning(_uiState.value.selectedLevel)
     }
 
     private fun changeLevel(level: String) {

@@ -22,6 +22,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Pause
+import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
+import com.jian.nemo.core.ui.component.common.NemoMenuItem
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -361,6 +369,7 @@ fun CardMatchingTestHeader(
     onBack: () -> Unit,
     timeLimitSeconds: Int,
     timeRemainingSeconds: Int,
+    onPause: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -382,13 +391,46 @@ fun CardMatchingTestHeader(
             val seconds = timeRemainingSeconds % 60
             Text(
                 text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = if (timeRemainingSeconds < 60) {
                     MaterialTheme.colorScheme.error
                 } else {
                     MaterialTheme.colorScheme.onSurface
-                }
+                },
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
+        }
+
+        // 菜单入口按钮
+        Box {
+            var expanded by remember { mutableStateOf(false) }
+
+            IconButton(
+                onClick = { expanded = true },
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = "更多选项",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            NemoDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                // 暂停测试选项
+                NemoMenuItem(
+                    text = "暂停测试",
+                    onClick = {
+                        expanded = false
+                        onPause()
+                    },
+                    leadingIcon = Icons.Rounded.Pause
+                )
+            }
         }
     }
 }

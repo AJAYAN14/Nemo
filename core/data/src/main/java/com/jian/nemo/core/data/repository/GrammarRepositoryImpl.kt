@@ -147,7 +147,7 @@ class GrammarRepositoryImpl @Inject constructor(
         return grammarDao.getReviewForecast(startDate, endDate)
             .map { tuples ->
                 tuples.map {
-                    com.jian.nemo.core.domain.model.ReviewForecast(it.date, it.count)
+                    com.jian.nemo.core.domain.model.ReviewForecast(date = it.date, grammarCount = it.count)
                 }
             }
             .catch { e ->

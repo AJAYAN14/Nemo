@@ -22,6 +22,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.feature.test.presentation.theme.TestDanger
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
+import com.jian.nemo.core.ui.component.common.NemoMenuItem
 
 /**
  * 测试头部组件（包含返回按钮、倒计时和收藏按钮）
@@ -36,7 +45,8 @@ fun TestHeader(
     timeRemainingSeconds: Int,
     word: Word?,
     grammar: Grammar? = null,
-    onToggleFavorite: (Int, Boolean) -> Unit
+    onToggleFavorite: (Int, Boolean) -> Unit,
+    onPause: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -72,23 +82,49 @@ fun TestHeader(
             )
         }
 
-        // 收藏按钮
-        // 只有当有单词信息时才显示收藏按钮（例如非打字题或已加载）
-        // 收藏按钮
-        // 只有当有单词或语法信息时才显示收藏按钮
+        // 菜单入口按钮 (替代之前的收藏按钮)
         val isFavorite = word?.isFavorite == true || grammar?.isFavorite == true
         val itemId = word?.id ?: grammar?.id ?: 0
 
-        if (itemId != 0) {
+        Box {
+            var expanded by remember { mutableStateOf(false) }
+
             IconButton(
-                onClick = { onToggleFavorite(itemId, !isFavorite) },
+                onClick = { expanded = true },
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "收藏",
-                    tint = if (isFavorite) TestDanger else MaterialTheme.colorScheme.onBackground,
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = "更多选项",
+                    tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(24.dp)
+                )
+            }
+
+            NemoDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                // 收藏选项 (保留业务逻辑)
+                if (itemId != 0) {
+                    NemoMenuItem(
+                        text = if (isFavorite) "取消收藏" else "收藏",
+                        onClick = {
+                            expanded = false
+                            onToggleFavorite(itemId, !isFavorite)
+                        },
+                        leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+                    )
+                }
+
+                // 暂停测试选项
+                NemoMenuItem(
+                    text = "暂停测试",
+                    onClick = {
+                        expanded = false
+                        onPause()
+                    },
+                    leadingIcon = Icons.Rounded.Pause
                 )
             }
         }

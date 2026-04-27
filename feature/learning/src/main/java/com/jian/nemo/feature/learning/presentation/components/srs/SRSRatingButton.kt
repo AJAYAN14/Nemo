@@ -43,9 +43,9 @@ fun SRSRatingButton(
         modifier = modifier
             .height(56.dp) // h-14 = 56dp
             .scaleOnPress(onTap = onClick)
-            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-            .background(containerColor, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp)), // rounded-xl
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .background(containerColor, RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.dp)),
         contentAlignment = Alignment.Center
     ) {
         Column(

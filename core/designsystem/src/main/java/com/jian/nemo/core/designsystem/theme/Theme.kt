@@ -76,6 +76,7 @@ private val DarkColorScheme = darkColorScheme(
 fun NemoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
+    themeColor: Color? = null,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -85,6 +86,10 @@ fun NemoTheme(
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }.let { scheme ->
+        if (themeColor != null) {
+            scheme.copy(primary = themeColor)
+        } else scheme
     }
 
     MaterialTheme(

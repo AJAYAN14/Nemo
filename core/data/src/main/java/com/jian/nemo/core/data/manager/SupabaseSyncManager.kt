@@ -12,6 +12,7 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
+import com.jian.nemo.core.data.util.DataSeedService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -43,7 +44,8 @@ class SupabaseSyncManager @Inject constructor(
     private val favoriteQuestionDao: FavoriteQuestionDao,
     private val settingsRepository: SettingsRepository,
     private val database: NemoDatabase,
-    private val syncMetadata: com.jian.nemo.core.data.model.sync.SyncMetadata
+    private val syncMetadata: com.jian.nemo.core.data.model.sync.SyncMetadata,
+    private val dataSeedService: DataSeedService
 ) {
     private val syncMutex = kotlinx.coroutines.sync.Mutex()
     companion object {
@@ -74,15 +76,19 @@ class SupabaseSyncManager @Inject constructor(
         mode: SyncMode = SyncMode.TWO_WAY
     ): Flow<SyncProgress> = flow {
         if (!syncMutex.tryLock()) {
-            emit(SyncProgress.Failed("同步已在运行中"))
+            Log.d(TAG, "同步已在运行中，跳过本次触发")
+            emit(SyncProgress.AlreadyRunning)
             return@flow
         }
 
         try {
             Log.d(TAG, "开始执行同步: User $userId, mode=$mode, force=$force")
-            emit(SyncProgress.Running("正在校准服务器时间...", 0, 0))
+            
+            // 0. 核心依赖检查：确保本地词库已初始化（防止重装后外键报错）
+            emit(SyncProgress.Running("正在准备本地库...", 0, 0))
+            dataSeedService.ensureDataSeeded()
 
-            // 0. 时间校验 (RPC)
+            // 0.1 时间校验 (RPC)
             try {
                 val serverTime = supabaseClient.postgrest.rpc("get_server_time").decodeAs<Long>()
                 syncMetadata.updateServerTimeOffset(serverTime)
@@ -223,12 +229,18 @@ class SupabaseSyncManager @Inject constructor(
      */
     suspend fun performRestore(userId: String): Flow<SyncProgress> = flow {
         if (!syncMutex.tryLock()) {
-            emit(SyncProgress.Failed("同步已在运行中"))
+            Log.d(TAG, "恢复已在运行中，跳过本次触发")
+            emit(SyncProgress.AlreadyRunning)
             return@flow
         }
 
         try {
             Log.d(TAG, "开始执行镜像恢复: User $userId")
+            
+            // 确保本地库就绪
+            emit(SyncProgress.Running("正在准备本地库...", 0, 0))
+            dataSeedService.ensureDataSeeded()
+            
             settingsRepository.setIsRestoring(true)
 
             // 0. 检查断点
@@ -777,6 +789,8 @@ class SupabaseSyncManager @Inject constructor(
     ): Int {
         val localChanges = wrongAnswerDao.getModifiedSince(sinceTime)
             .filter { !acceptedIds.contains(it.wordId) }
+            .sortedByDescending { it.timestamp }
+            .distinctBy { it.wordId }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->
@@ -847,6 +861,8 @@ class SupabaseSyncManager @Inject constructor(
     ): Int {
         val localChanges = grammarWrongAnswerDao.getModifiedSince(sinceTime)
             .filter { !acceptedIds.contains(it.grammarId) }
+            .sortedByDescending { it.timestamp }
+            .distinctBy { it.grammarId }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->
@@ -889,6 +905,8 @@ class SupabaseSyncManager @Inject constructor(
     ): Int {
         val localChanges = favoriteQuestionDao.getModifiedSince(sinceTime)
             .filter { !acceptedTimestamps.contains(it.timestamp.toString()) }
+            .sortedByDescending { it.timestamp }
+            .distinctBy { it.timestamp }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->

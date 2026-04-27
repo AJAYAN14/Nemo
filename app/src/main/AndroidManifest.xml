@@ -55,15 +55,67 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.Nemo"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 应用图标别名 (用于动态切换图标) -->
+        <activity-alias
+            android:name=".MainActivityNemo"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_nemo"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_nemo"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityGold"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_gold"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_gold"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityDaruma"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_daruma"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_daruma"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityZen"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_zen"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_zen"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+
     </application>
 
 </manifest>

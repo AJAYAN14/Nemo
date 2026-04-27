@@ -193,6 +193,7 @@ interface GrammarDao {
         JOIN grammar_study_states s ON g.id = s.grammar_id
         WHERE s.last_reviewed_date = :todayEpochDay
         AND s.repetition_count > 0
+        AND s.first_learned_date < :todayEpochDay
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND s.is_deleted = 0
         AND g.is_delisted = 0

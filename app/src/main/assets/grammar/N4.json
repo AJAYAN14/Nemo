@@ -1928,7 +1928,7 @@
                         "isDialog": false
                     },
                     {
-                        "sentence": "明[あした]からたばこをやめるつもりです。",
+                        "sentence": "明日[あした]からたばこをやめるつもりです。",
                         "translation": "我打算明天开始戒烟。",
                         "source": "2008年真题",
                         "isDialog": false

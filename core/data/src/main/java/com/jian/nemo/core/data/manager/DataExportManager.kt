@@ -12,6 +12,7 @@ import com.jian.nemo.core.data.local.entity.WordEntity
 import com.jian.nemo.core.data.local.entity.GrammarEntity
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.jian.nemo.core.data.local.entity.StudyRecordEntity
+import com.jian.nemo.core.data.local.entity.FavoriteQuestionEntity
 import com.jian.nemo.core.domain.model.*
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.DataExportRepository
@@ -215,6 +216,7 @@ class DataExportManager @Inject constructor(
                                     val modeIdx = cursor.getColumnIndexOrThrow("test_mode")
                                     val userAnsIdx = cursor.getColumnIndexOrThrow("user_answer")
                                     val corrAnsIdx = cursor.getColumnIndexOrThrow("correct_answer")
+                                    val uuidIdx = cursor.getColumnIndexOrThrow("uuid")
 
                                     while (cursor.moveToNext()) {
                                         if (!isFirstWaWord) writer.write(",")
@@ -225,7 +227,8 @@ class DataExportManager @Inject constructor(
                                             timestamp = cursor.getLong(tsIdx),
                                             testMode = cursor.getString(modeIdx),
                                             userAnswer = cursor.getString(userAnsIdx),
-                                            correctAnswer = cursor.getString(corrAnsIdx)
+                                            correctAnswer = cursor.getString(corrAnsIdx),
+                                            uuid = cursor.getString(uuidIdx)
                                         )
                                         writer.write(json.encodeToString(item))
                                     }
@@ -240,6 +243,7 @@ class DataExportManager @Inject constructor(
                                     val modeIdx = cursor.getColumnIndexOrThrow("test_mode")
                                     val userAnsIdx = cursor.getColumnIndexOrThrow("user_answer")
                                     val corrAnsIdx = cursor.getColumnIndexOrThrow("correct_answer")
+                                    val uuidIdx = cursor.getColumnIndexOrThrow("uuid")
 
                                     while (cursor.moveToNext()) {
                                         if (!isFirstWaGrammar) writer.write(",")
@@ -250,7 +254,8 @@ class DataExportManager @Inject constructor(
                                             timestamp = cursor.getLong(tsIdx),
                                             testMode = cursor.getString(modeIdx),
                                             userAnswer = cursor.getString(userAnsIdx),
-                                            correctAnswer = cursor.getString(corrAnsIdx)
+                                            correctAnswer = cursor.getString(corrAnsIdx),
+                                            uuid = cursor.getString(uuidIdx)
                                         )
                                         writer.write(json.encodeToString(item))
                                     }
@@ -266,6 +271,7 @@ class DataExportManager @Inject constructor(
                                     val corrIdx = cursor.getColumnIndexOrThrow("correct_answers")
                                     val modeIdx = cursor.getColumnIndexOrThrow("test_mode")
                                     val tsIdx = cursor.getColumnIndexOrThrow("timestamp")
+                                    val uuidIdx = cursor.getColumnIndexOrThrow("uuid")
 
                                     while (cursor.moveToNext()) {
                                         if (!isFirstTestRecord) writer.write(",")
@@ -276,7 +282,8 @@ class DataExportManager @Inject constructor(
                                             totalQuestions = cursor.getInt(totIdx),
                                             correctAnswers = cursor.getInt(corrIdx),
                                             testMode = cursor.getString(modeIdx),
-                                            timestamp = cursor.getLong(tsIdx)
+                                            timestamp = cursor.getLong(tsIdx),
+                                            uuid = cursor.getString(uuidIdx)
                                         )
                                         writer.write(json.encodeToString(item))
                                     }
@@ -309,6 +316,39 @@ class DataExportManager @Inject constructor(
                                             skippedWords = cursor.getInt(swIdx),
                                             skippedGrammars = cursor.getInt(sgIdx),
                                             testCount = cursor.getInt(tcIdx),
+                                            timestamp = cursor.getLong(tsIdx)
+                                        )
+                                        writer.write(json.encodeToString(item))
+                                    }
+                                }
+                                writer.write("],")
+
+                                writer.write("\"favoriteQuestions\":[")
+                                var isFirstFavorite = true
+                                database.favoriteQuestionDao().getExportFavoritesCursor().use { cursor ->
+                                    val idIdx = cursor.getColumnIndexOrThrow("id")
+                                    val grammarIdIdx = cursor.getColumnIndexOrThrow("grammar_id")
+                                    val jsonIdIdx = cursor.getColumnIndexOrThrow("json_id")
+                                    val questionTypeIdx = cursor.getColumnIndexOrThrow("question_type")
+                                    val questionTextIdx = cursor.getColumnIndexOrThrow("question_text")
+                                    val optionsJsonIdx = cursor.getColumnIndexOrThrow("options_json")
+                                    val correctAnswerIdx = cursor.getColumnIndexOrThrow("correct_answer")
+                                    val explanationIdx = cursor.getColumnIndexOrThrow("explanation")
+                                    val tsIdx = cursor.getColumnIndexOrThrow("timestamp")
+
+                                    while (cursor.moveToNext()) {
+                                        if (!isFirstFavorite) writer.write(",")
+                                        isFirstFavorite = false
+
+                                        val item = FavoriteQuestionItem(
+                                            id = cursor.getInt(idIdx),
+                                            grammarId = if (cursor.isNull(grammarIdIdx)) null else cursor.getInt(grammarIdIdx),
+                                            jsonId = if (cursor.isNull(jsonIdIdx)) null else cursor.getString(jsonIdIdx),
+                                            questionType = cursor.getString(questionTypeIdx),
+                                            questionText = cursor.getString(questionTextIdx),
+                                            optionsJson = cursor.getString(optionsJsonIdx),
+                                            correctAnswer = cursor.getString(correctAnswerIdx),
+                                            explanation = if (cursor.isNull(explanationIdx)) null else cursor.getString(explanationIdx),
                                             timestamp = cursor.getLong(tsIdx)
                                         )
                                         writer.write(json.encodeToString(item))
@@ -359,13 +399,36 @@ class DataExportManager @Inject constructor(
             database.withTransaction {
                 val wordDao = database.wordDao()
                 val wordStudyStateDao = database.wordStudyStateDao()
+                
+                // 加载全文映射
                 val localWordStates = wordStudyStateDao.getAllSync().associateBy { it.wordId }
-                val localWordIds = wordDao.getIdsIn(userData.wordProgress.map { it.wordId }).toSet()
+                val allLocalWords = wordDao.getAllWordsSync()
+                val localWordIdMap = allLocalWords.associateBy { it.id }
+                val localWordSemanticGroups = allLocalWords.groupBy { "${it.level}_${it.japanese}" }
 
+                val wordIdRedirectMap = mutableMapOf<Int, Int>()
                 userData.wordProgress.forEach { remoteWord ->
-                    if (!localWordIds.contains(remoteWord.wordId) && !remoteWord.japanese.isNullOrBlank()) {
+                    val remoteKey = "${remoteWord.level}_${remoteWord.japanese}"
+                    
+                    // 确定目标本地 ID
+                    val targetLocalId = when {
+                        localWordIdMap.containsKey(remoteWord.wordId) -> remoteWord.wordId
+                        localWordSemanticGroups.containsKey(remoteKey) -> {
+                            val candidates = localWordSemanticGroups[remoteKey]!!
+                            // 精确匹配 ID 或匹配 ID 偏移量 (处理旧版 ID)
+                            candidates.find { it.id == remoteWord.wordId }?.id 
+                                ?: candidates.find { it.id % 10000 == remoteWord.wordId % 10000 }?.id 
+                                ?: candidates.first().id
+                        }
+                        else -> remoteWord.wordId
+                    }
+                    wordIdRedirectMap[remoteWord.wordId] = targetLocalId
+
+                    if (!localWordIdMap.containsKey(targetLocalId) && 
+                        !localWordSemanticGroups.containsKey(remoteKey) && 
+                        !remoteWord.japanese.isNullOrBlank()) {
                         wordDao.insert(WordEntity(
-                            id = remoteWord.wordId,
+                            id = targetLocalId,
                             japanese = remoteWord.japanese ?: "",
                             hiragana = remoteWord.hiragana ?: "",
                             chinese = remoteWord.chinese ?: "",
@@ -373,15 +436,15 @@ class DataExportManager @Inject constructor(
                         ))
                     }
 
-                    val localState = localWordStates[remoteWord.wordId]
+                    val localState = localWordStates[targetLocalId]
                     if (localState != null) {
                         val result = SmartSyncMerger.mergeWordProgress(localState, remoteWord)
                         if (result is SmartSyncMerger.MergeResult.RemoteUpdated) {
-                            wordStudyStateDao.insert(result.data)
+                            wordStudyStateDao.insert(result.data.copy(wordId = targetLocalId))
                         }
                     } else {
                         wordStudyStateDao.insert(WordStudyStateEntity(
-                            wordId = remoteWord.wordId,
+                            wordId = targetLocalId,
                             repetitionCount = remoteWord.srsLevel,
                             stability = remoteWord.stability,
                             difficulty = remoteWord.difficulty,
@@ -401,27 +464,51 @@ class DataExportManager @Inject constructor(
 
                 val grammarDao = database.grammarDao()
                 val grammarStudyStateDao = database.grammarStudyStateDao()
+                
+                // 加载全文映射，用于语义匹配
                 val localGrammarStates = grammarStudyStateDao.getAllSync().associateBy { it.grammarId }
-                val localGrammarIds = grammarDao.getIdsIn(userData.grammarProgress.map { it.grammarId }).toSet()
+                val allLocalGrammars = grammarDao.getAllGrammarsSync()
+                val localGrammarIdMap = allLocalGrammars.associateBy { it.id }
+                val localGrammarSemanticGroups = allLocalGrammars.groupBy { "${it.grammarLevel.uppercase()}_${it.grammar}" }
 
+                val grammarIdRedirectMap = mutableMapOf<Int, Int>()
                 userData.grammarProgress.forEach { remoteGrammar ->
-                    if (!localGrammarIds.contains(remoteGrammar.grammarId) && !remoteGrammar.grammar.isNullOrBlank()) {
+                    val remoteKey = "${(remoteGrammar.grammarLevel ?: "N5").uppercase()}_${remoteGrammar.grammar ?: ""}"
+                    
+                    // 确定目标本地 ID
+                    val targetLocalId = when {
+                        localGrammarIdMap.containsKey(remoteGrammar.grammarId) -> remoteGrammar.grammarId
+                        localGrammarSemanticGroups.containsKey(remoteKey) -> {
+                            val candidates = localGrammarSemanticGroups[remoteKey]!!
+                            // 优先精确匹配 ID，否则匹配 ID 偏移量（针对旧版 ID），最后选第一个
+                            candidates.find { it.id == remoteGrammar.grammarId }?.id
+                                ?: candidates.find { it.id % 10000 == remoteGrammar.grammarId % 10000 }?.id
+                                ?: candidates.first().id
+                        }
+                        else -> remoteGrammar.grammarId
+                    }
+                    grammarIdRedirectMap[remoteGrammar.grammarId] = targetLocalId
+
+                    // 如果本地完全没有这个语法条目且内容不为空，则插入
+                    if (!localGrammarIdMap.containsKey(targetLocalId) && 
+                        !localGrammarSemanticGroups.containsKey(remoteKey) && 
+                        !remoteGrammar.grammar.isNullOrBlank()) {
                         grammarDao.insert(GrammarEntity(
-                            id = remoteGrammar.grammarId,
+                            id = targetLocalId,
                             grammar = remoteGrammar.grammar ?: "",
                             grammarLevel = remoteGrammar.grammarLevel ?: "N5"
                         ))
                     }
 
-                    val localState = localGrammarStates[remoteGrammar.grammarId]
+                    val localState = localGrammarStates[targetLocalId]
                     if (localState != null) {
                          val result = SmartSyncMerger.mergeGrammarProgress(localState, remoteGrammar)
                          if (result is SmartSyncMerger.MergeResult.RemoteUpdated) {
-                            grammarStudyStateDao.insert(result.data)
+                            grammarStudyStateDao.insert(result.data.copy(grammarId = targetLocalId))
                          }
                     } else {
                          grammarStudyStateDao.insert(GrammarStudyStateEntity(
-                             grammarId = remoteGrammar.grammarId,
+                             grammarId = targetLocalId,
                              repetitionCount = remoteGrammar.srsLevel,
                              stability = remoteGrammar.stability,
                              difficulty = remoteGrammar.difficulty,
@@ -446,7 +533,7 @@ class DataExportManager @Inject constructor(
                     if (local == null) {
                         wrongAnswerDao.insert(WrongAnswerEntity(
                             id = 0,
-                            wordId = remote.wordId,
+                            wordId = wordIdRedirectMap[remote.wordId] ?: remote.wordId,
                             testMode = remote.testMode ?: "",
                             userAnswer = remote.userAnswer ?: "",
                             correctAnswer = remote.correctAnswer ?: "",
@@ -470,7 +557,7 @@ class DataExportManager @Inject constructor(
                     if (local == null) {
                         grammarWrongAnswerDao.insert(GrammarWrongAnswerEntity(
                             id = 0,
-                            grammarId = remote.grammarId,
+                            grammarId = grammarIdRedirectMap[remote.grammarId] ?: remote.grammarId,
                             testMode = remote.testMode ?: "",
                             userAnswer = remote.userAnswer ?: "",
                             correctAnswer = remote.correctAnswer ?: "",
@@ -482,6 +569,25 @@ class DataExportManager @Inject constructor(
                             testMode = remote.testMode ?: local.testMode,
                             userAnswer = remote.userAnswer ?: local.userAnswer,
                             correctAnswer = remote.correctAnswer ?: local.correctAnswer,
+                            timestamp = remote.timestamp
+                        ))
+                    }
+                }
+
+                val favoriteQuestionDao = database.favoriteQuestionDao()
+                val localFavorites = favoriteQuestionDao.getAllFavoriteQuestionsSync().associateBy { it.jsonId ?: it.id.toString() }
+                userData.favoriteQuestions.forEach { remote ->
+                    val local = localFavorites[remote.jsonId ?: remote.id.toString()]
+                    if (local == null) {
+                        favoriteQuestionDao.insert(FavoriteQuestionEntity(
+                            id = 0,
+                            grammarId = remote.grammarId?.let { grammarIdRedirectMap[it] ?: it },
+                            jsonId = remote.jsonId,
+                            questionType = remote.questionType,
+                            questionText = remote.questionText,
+                            optionsJson = remote.optionsJson,
+                            correctAnswer = remote.correctAnswer,
+                            explanation = remote.explanation,
                             timestamp = remote.timestamp
                         ))
                     }
@@ -553,8 +659,11 @@ class DataExportManager @Inject constructor(
                 }
             }
 
+            // 导入成功后，执行一次数据去重修复，清理可能已存在的重复条目
+            repairDataDuplicates()
+
             Log.d(TAG, "导入完成: 单词$importedWords, 语法$importedGrammars")
-            ImportResult(true, "导入成功！\n更新单词: $importedWords\n更新语法: $importedGrammars")
+            ImportResult(true, "导入成功！\n更新单词: $importedWords\n更新语法: $importedGrammars\n已执行数据自动优化修复。")
 
         } catch (e: Exception) {
             Log.e(TAG, "导入失败", e)
@@ -605,6 +714,91 @@ class DataExportManager @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "从文件读取失败", e)
             "读取文件失败: ${e.message}"
+        }
+    }
+
+    /**
+     * 数据自动去重修复工具
+     * 解决语义重复但 ID 不一致的问题
+     */
+    suspend fun repairDataDuplicates() = withContext(Dispatchers.IO) {
+        try {
+            Log.d(TAG, "开始执行数据去重修复...")
+            database.withTransaction {
+                val grammarDao = database.grammarDao()
+                val grammarStudyStateDao = database.grammarStudyStateDao()
+                
+                // 1. 处理语法重复
+                val allGrammars = grammarDao.getAllGrammarsSync()
+                val groups = allGrammars.groupBy { "${it.grammarLevel.uppercase()}_${it.grammar}" }
+                
+                groups.forEach { (key, entities) ->
+                    if (entities.size > 1) {
+                        Log.d(TAG, "发现重复语法标题: $key, 数量: ${entities.size}")
+                        
+                        // 1. 将实体分为“标准类”（种子生成的 ID >= 10000）和“非标类”
+                        val standardEntities = entities.filter { it.id >= 10000 }.sortedBy { it.id }
+                        val redundantEntities = entities.filter { it.id < 10000 }.sortedBy { it.id }
+                        
+                        // 2. 如果标准实体有多个，它们可能是合法的同名不同义项（如 N5 的两个“が”），必须全部保留
+                        // 我们只处理真正的冗余项（非标 ID）
+                        
+                        if (redundantEntities.isNotEmpty()) {
+                            // 确定一个主目标：如果有标准实体，选第一个标准实体；否则选非标实体中 ID 最小的
+                            val standardTarget = standardEntities.firstOrNull() ?: redundantEntities.first()
+                            val duplicateIds = redundantEntities.map { it.id }.filter { it != standardTarget.id }
+                            
+                            if (duplicateIds.isNotEmpty()) {
+                                // 迁移关联数据 (错题记录、收藏题目)
+                                val grammarWrongAnswerDao = database.grammarWrongAnswerDao()
+                                val favoriteQuestionDao = database.favoriteQuestionDao()
+                                
+                                // 初始化合并后的状态
+                                val standardState = grammarStudyStateDao.getByIdSync(standardTarget.id)
+                                var mergedState = standardState
+                                
+                                duplicateIds.forEach { dupId ->
+                                    // 迁移错题
+                                    grammarWrongAnswerDao.migrateGrammarId(dupId, standardTarget.id)
+                                    // 迁移收藏
+                                    favoriteQuestionDao.migrateGrammarId(dupId, standardTarget.id)
+                                    
+                                    // 合并进度
+                                    val dupState = grammarStudyStateDao.getByIdSync(dupId)
+                                    if (dupState != null) {
+                                        mergedState = if (mergedState == null) {
+                                            dupState.copy(grammarId = standardTarget.id)
+                                        } else {
+                                            val localTime = mergedState!!.lastModifiedTime
+                                            val remoteTime = dupState.lastModifiedTime
+                                            if (remoteTime > localTime) {
+                                                dupState.copy(grammarId = standardTarget.id, isFavorite = mergedState!!.isFavorite || dupState.isFavorite)
+                                            } else {
+                                                mergedState!!.copy(isFavorite = mergedState!!.isFavorite || dupState.isFavorite)
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // 更新标准状态
+                                mergedState?.let { grammarStudyStateDao.insert(it) }
+                                
+                                // 删除冗余
+                                grammarDao.deleteByIds(duplicateIds)
+                                grammarStudyStateDao.deleteByIds(duplicateIds)
+                                Log.d(TAG, "已清理语法冗余项: $key, 保留标准 ID: ${standardTarget.id}, 删除重复 ID: $duplicateIds")
+                            }
+                        } else if (standardEntities.size > 1) {
+                            Log.d(TAG, "检测到多个同名标准项 ($key)，已确认为合法项目，不做去重处理。")
+                        }
+                    }
+                }
+
+                // 2. 对单词执行相同逻辑 (略，如果需要可以增加)
+            }
+            Log.d(TAG, "数据去重修复完成")
+        } catch (e: Exception) {
+            Log.e(TAG, "数据修复失败", e)
         }
     }
 

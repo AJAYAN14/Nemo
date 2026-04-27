@@ -155,4 +155,39 @@ sealed interface LearningEvent {
      * 切换显示答案等待时长（循环档位）
      */
     data object CycleShowAnswerDelayDuration : LearningEvent
+
+    /**
+     * 报告当前条目内容错误
+     */
+    data object ReportContentError : LearningEvent
+
+    /**
+     * 弹出报告错误的确认对话框
+     */
+    data object OpenReportErrorDialog : LearningEvent
+
+    /**
+     * 取消报告错误对话框
+     */
+    data object CancelReportErrorDialog : LearningEvent
+
+    /**
+     * 清理成功信息提示
+     */
+    data object ClearSuccessMessage : LearningEvent
+
+    /**
+     * 清理错误信息提示
+     */
+    data object ClearErrorMessage : LearningEvent
+
+    /**
+     * 设置显示模式
+     * @param enabled true=深色, false=浅色, null=跟随系统
+     */
+    data class SetDarkMode(val enabled: Boolean?) : LearningEvent
+    /**
+     * 循环切换显示模式
+     */
+    data object CycleDarkMode : LearningEvent
 }

@@ -22,11 +22,15 @@ import com.jian.nemo.feature.test.domain.usecase.QueryAvailableLevelsUseCase
 import com.jian.nemo.feature.test.domain.usecase.QueryAvailableDataCountUseCase
 import com.jian.nemo.feature.test.domain.usecase.ValidateTestConfigUseCase
 import android.util.Log
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 
 data class TestSettingsUiState(
     val testConfig: TestConfig = TestConfig(),
     val todayLearnedCount: Int = 0,
     val todayLearnedGrammarCount: Int = 0,
+    val todayReviewedCount: Int = 0,
+    val todayReviewedGrammarCount: Int = 0,
     val availableWordLevels: List<Pair<String, Int>> = emptyList(), // Level to Count
     val availableGrammarLevels: List<Pair<String, Int>> = emptyList(),
 
@@ -92,14 +96,52 @@ class TestSettingsViewModel @Inject constructor(
 
     init {
         // loadConfig() 由 setTestModeId() 触发，不在 init 中调用
-        startRefreshingTodayCounts()
+        observeTodayStats()
     }
 
-    private fun startRefreshingTodayCounts() {
+    /**
+     * 响应式观察今日统计数据
+     * 使用 flatMapLatest 确保当重置时间或日期变化时，自动重启对应的采集器，避免协程泄露。
+     */
+    private fun observeTodayStats() {
         viewModelScope.launch {
-            while (true) {
-                refreshTodayCounts()
-                kotlinx.coroutines.delay(60_000L)
+            // 每分钟触发一次刷新检查（用于检测是否跨过了重置小时）
+            val tickFlow = kotlinx.coroutines.flow.flow {
+                while (true) {
+                    emit(Unit)
+                    kotlinx.coroutines.delay(60_000L)
+                }
+            }
+
+            kotlinx.coroutines.flow.combine(
+                settingsRepository.learningDayResetHourFlow,
+                tickFlow
+            ) { resetHour, _ ->
+                DateTimeUtils.getLearningDay(resetHour)
+            }.collectLatest { today ->
+                // 在此处启动并行采集
+                kotlinx.coroutines.coroutineScope {
+                    launch {
+                        wordRepository.getTodayLearnedWords(today).collect { words ->
+                            _uiState.update { it.copy(todayLearnedCount = words.size) }
+                        }
+                    }
+                    launch {
+                        grammarRepository.getTodayLearnedGrammars(today).collect { grammars ->
+                            _uiState.update { it.copy(todayLearnedGrammarCount = grammars.size) }
+                        }
+                    }
+                    launch {
+                        wordRepository.getTodayReviewedWords(today).collect { words ->
+                            _uiState.update { it.copy(todayReviewedCount = words.size) }
+                        }
+                    }
+                    launch {
+                        grammarRepository.getTodayReviewedGrammars(today).collect { grammars ->
+                            _uiState.update { it.copy(todayReviewedGrammarCount = grammars.size) }
+                        }
+                    }
+                }
             }
         }
     }
@@ -172,26 +214,7 @@ class TestSettingsViewModel @Inject constructor(
         }
     }
 
-    fun refreshTodayCounts() {
-        viewModelScope.launch {
-            val resetHour = settingsRepository.learningDayResetHourFlow.first()
-            val today = DateTimeUtils.getLearningDay(resetHour)
-
-            // 获取今日学习单词数
-            launch {
-                wordRepository.getTodayLearnedWords(today).collect { words ->
-                    _uiState.update { it.copy(todayLearnedCount = words.size) }
-                }
-            }
-
-            // 获取今日学习语法数
-            launch {
-                grammarRepository.getTodayLearnedGrammars(today).collect { grammars ->
-                    _uiState.update { it.copy(todayLearnedGrammarCount = grammars.size) }
-                }
-            }
-        }
-    }
+    // 旧的 refreshTodayCounts 已被响应式的 observeTodayStats 替代
 
     fun updateConfig(newConfig: TestConfig) {
         val currentUiState = _uiState.value

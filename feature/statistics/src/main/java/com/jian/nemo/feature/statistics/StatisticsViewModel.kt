@@ -11,6 +11,7 @@ import com.jian.nemo.core.domain.usecase.statistics.GetLearnedGrammarsForDateUse
 import com.jian.nemo.core.domain.usecase.statistics.GetLearnedWordsForDateUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewedGrammarsForDateUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewedWordsForDateUseCase
+import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewForecastUseCase
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
@@ -209,7 +210,7 @@ class StatisticsViewModel @Inject constructor(
                 (stats?.dueWords ?: 0) + (stats?.dueGrammars ?: 0)
             } else if (date > today) {
                 // 未来: 使用预测数据
-                forecast.find { it.date == date }?.count ?: 0
+                forecast.find { it.date == date }?.totalCount ?: 0
             } else {
                 // 过去: 0
                 0

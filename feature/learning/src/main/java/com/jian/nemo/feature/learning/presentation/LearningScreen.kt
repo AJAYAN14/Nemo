@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.learning.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,11 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Report
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,6 +37,7 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
 import androidx.compose.animation.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -80,11 +86,11 @@ fun LearningScreen(
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
 
     val delayDurationLabel = when (uiState.showAnswerDelayMs) {
+        2000L -> "2s"
         3000L -> "3s"
+        4000L -> "4s"
         5000L -> "5s"
-        7000L -> "7s"
-        10000L -> "10s"
-        else -> "${uiState.showAnswerDelayMs}ms"
+        else -> "${uiState.showAnswerDelayMs / 1000}s"
     }
 
     LaunchedEffect(uiState.canUndo) {
@@ -158,7 +164,10 @@ fun LearningScreen(
                     showAnswerDelayDurationLabel = delayDurationLabel,
                     onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
                     canUndo = uiState.canUndo,
-                    onUndo = { viewModel.onEvent(LearningEvent.Undo) }
+                    onUndo = { viewModel.onEvent(LearningEvent.Undo) },
+                    onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
+                    isDarkMode = uiState.isDarkMode,
+                    onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
                 )
 
                 // Content
@@ -180,6 +189,7 @@ fun LearningScreen(
                                 uiState = uiState,
                                 onEvent = viewModel::onEvent,
                                 getCardBadge = viewModel::getCardBadge,
+                                backgroundColor = backgroundColor, // 传递背景色
                                 onShowAnswerBlocked = { remainingSec ->
                                     showAnswerDelayHintSec = remainingSec
                                     showAnswerDelayHint = true
@@ -209,6 +219,32 @@ fun LearningScreen(
                     .padding(top = 8.dp)
             )
 
+            // 反馈成功提示
+            NemoSnackbar(
+                visible = uiState.successMessage != null,
+                message = uiState.successMessage ?: "",
+                type = NemoSnackbarType.SUCCESS,
+                icon = Icons.Rounded.CheckCircle,
+                onDismiss = { viewModel.onEvent(LearningEvent.ClearSuccessMessage) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp)
+            )
+
+            // 错误/异常提示
+            NemoSnackbar(
+                visible = uiState.error != null,
+                message = uiState.error ?: "",
+                type = NemoSnackbarType.ERROR,
+                icon = Icons.Rounded.Report,
+                onDismiss = { viewModel.onEvent(LearningEvent.ClearErrorMessage) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp)
+            )
+
             NemoSnackbar(
                 visible = showAnswerDelayHint,
                 message = "等待中，请先回想 (${showAnswerDelayHintSec}s)",
@@ -227,6 +263,15 @@ fun LearningScreen(
                     onDismiss = { showRatingGuide = false }
                 )
             }
+
+            // 内容报错确认弹窗 (UI/UX Pro Max Style)
+            if (uiState.showReportErrorDialog) {
+                ContentReportDialog(
+                    learningMode = uiState.learningMode,
+                    onDismiss = { viewModel.onEvent(LearningEvent.CancelReportErrorDialog) },
+                    onConfirm = { viewModel.onEvent(LearningEvent.ReportContentError) }
+                )
+            }
         }
     }
 }
@@ -236,6 +281,7 @@ fun LearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     getCardBadge: (LearningItem) -> CardBadge,
+    backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
     if (uiState.learningMode == LearningMode.Word) {
@@ -243,6 +289,7 @@ fun LearningContent(
             uiState = uiState,
             onEvent = onEvent,
             getCardBadge = getCardBadge,
+            backgroundColor = backgroundColor, // 新增
             onShowAnswerBlocked = onShowAnswerBlocked
         )
     } else {
@@ -250,6 +297,7 @@ fun LearningContent(
             uiState = uiState,
             onEvent = onEvent,
             getCardBadge = getCardBadge,
+            backgroundColor = backgroundColor, // 新增
             onShowAnswerBlocked = onShowAnswerBlocked
         )
     }
@@ -260,6 +308,7 @@ fun WordLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     getCardBadge: (LearningItem) -> CardBadge,
+    backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
     // 跟打练习对话框状态
@@ -371,6 +420,23 @@ fun WordLearningContent(
                      }
                  }
 
+                 // 底部边缘自然消失渐变蒙层
+                 Box(
+                     modifier = Modifier
+                         .align(Alignment.BottomCenter)
+                         .fillMaxWidth()
+                         .height(160.dp) // 渐变高度 160.dp
+                         .background(
+                             brush = Brush.verticalGradient(
+                                 colors = listOf(
+                                     Color.Transparent,
+                                     backgroundColor.copy(alpha = 0.8f),
+                                     backgroundColor
+                                 )
+                             )
+                         )
+                 )
+
                  // SRS Action Area (Bottom)
                  SRSActionArea(
                      isAnswerShown = uiState.isAnswerShown,
@@ -399,6 +465,7 @@ fun GrammarLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     getCardBadge: (LearningItem) -> CardBadge,
+    backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
@@ -488,17 +555,34 @@ fun GrammarLearningContent(
                      }
                  }
             }
-                 // SRS Action Area (Bottom)
-                 SRSActionArea(
-                     isAnswerShown = uiState.isAnswerShown,
-                     isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
-                     showAnswerAvailableAt = uiState.showAnswerAvailableAt,
-                     ratingIntervals = uiState.ratingIntervals,
-                     onShowAnswer = { onEvent(LearningEvent.ShowAnswer) },
-                     onShowAnswerBlocked = onShowAnswerBlocked,
-                     onRate = { quality -> onEvent(LearningEvent.RateGrammar(quality)) },
-                     modifier = Modifier.align(Alignment.BottomCenter)
-                 )
+                  // 底部边缘自然消失渐变蒙层
+                  Box(
+                      modifier = Modifier
+                          .align(Alignment.BottomCenter)
+                          .fillMaxWidth()
+                          .height(160.dp) // 渐变高度 160.dp
+                          .background(
+                              brush = Brush.verticalGradient(
+                                  colors = listOf(
+                                      Color.Transparent,
+                                      backgroundColor.copy(alpha = 0.8f),
+                                      backgroundColor
+                                  )
+                              )
+                          )
+                  )
+
+                  // SRS Action Area (Bottom)
+                  SRSActionArea(
+                      isAnswerShown = uiState.isAnswerShown,
+                      isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
+                      showAnswerAvailableAt = uiState.showAnswerAvailableAt,
+                      ratingIntervals = uiState.ratingIntervals,
+                      onShowAnswer = { onEvent(LearningEvent.ShowAnswer) },
+                      onShowAnswerBlocked = onShowAnswerBlocked,
+                      onRate = { quality -> onEvent(LearningEvent.RateGrammar(quality)) },
+                      modifier = Modifier.align(Alignment.BottomCenter)
+                  )
             }
         } else if (uiState.shouldShowDailyGoalMet) {
             DailyGoalMetContent()

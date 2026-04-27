@@ -5,6 +5,8 @@ import android.util.Log
 import com.jian.nemo.core.data.local.NemoDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -21,12 +23,15 @@ import javax.inject.Singleton
 class DataSeedService @Inject constructor(
     @ApplicationContext private val context: Context,
     private val json: Json,
-    private val database: Provider<NemoDatabase>
+    private val database: Provider<NemoDatabase>,
+    private val dataExportManager: Provider<com.jian.nemo.core.data.manager.DataExportManager>
 ) {
 
     companion object {
         private const val TAG = "DataSeedService"
     }
+
+    private val seedMutex = Mutex()
 
     /**
      * 确保基础数据已填充到数据库中。
@@ -37,7 +42,7 @@ class DataSeedService @Inject constructor(
      *
      * 此方法是幂等的，可安全重复调用。
      */
-    suspend fun ensureDataSeeded() {
+    suspend fun ensureDataSeeded() = seedMutex.withLock {
         try {
             val db = database.get()
             val wordDao = db.wordDao()
@@ -75,7 +80,10 @@ class DataSeedService @Inject constructor(
                 )
             }
 
-            Log.i(TAG, "🎉 数据填充完成")
+            Log.i(TAG, "📖 正在检查并修复冗余重复数据...")
+            dataExportManager.get().repairDataDuplicates()
+
+            Log.i(TAG, "🎉 数据填充与修复完成")
         } catch (e: Exception) {
             Log.e(TAG, "❌ 数据填充失败: ${e.message}", e)
         }

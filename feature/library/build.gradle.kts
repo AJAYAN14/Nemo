@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":core:domain"))
     implementation(project(":core:ui"))
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:learning"))
     // implementation(project(":core:data")) // 通常 Feature 不直接依赖 Data，除非为了特定的 Model 转换，这里尽量通过 Domain 交互
 
     implementation(libs.androidx.core.ktx)

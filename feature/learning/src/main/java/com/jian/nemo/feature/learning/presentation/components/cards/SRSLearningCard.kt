@@ -137,6 +137,11 @@ fun SRSLearningCard(
     val labelTextColor = if (isDarkTheme) NemoNeutrals.DarkTextSecondary else NemoNeutrals.Gray500
     val hiraganaColorHidden = if (isDarkTheme) Color.White.copy(alpha = 0.2f) else NemoNeutrals.Gray300
 
+    // Indigo 标签色 (用于等级徽章)
+    val indigoBg = if (isDarkTheme) Color(0xFF1E1B4B) else Color(0xFFEEF2FF)
+    val indigoBorder = if (isDarkTheme) Color(0xFF3730A3) else Color(0xFFE0E7FF)
+    val indigoText = if (isDarkTheme) Color(0xFFA5B4FC) else Color(0xFF4F46E5)
+
     // 跟打按钮颜色 - 根据单词 ID 生成稳定的随机颜色
     val practiceButtonColor = remember(word.id) { getColorForWord(word.id) }
     val practiceButtonBgColor = if (isDarkTheme) {
@@ -168,9 +173,10 @@ fun SRSLearningCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = if (cardBadge != null) 20.dp else 0.dp),
+                    .padding(top = 20.dp), // 预留空间避免与顶部徽章重叠
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Japanese
                 // Japanese
                 Text(
                     text = word.japanese,
@@ -197,6 +203,22 @@ fun SRSLearningCard(
                     modifier = Modifier.then(
                         if (!isAnswerShown) Modifier.blur(8.dp) else Modifier
                     )
+                )
+            }
+
+            // 左上角等级徽章 (镜像对称)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .background(indigoBg, CircleShape)
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = word.level,
+                    color = indigoText,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.2.sp
                 )
             }
 

@@ -13,6 +13,8 @@ import com.jian.nemo.core.common.util.Downloader
 import com.jian.nemo.core.domain.model.AppUpdateConfig
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
+import com.jian.nemo.core.domain.repository.AuthRepository
+import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.TtsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +29,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
+    private val authRepository: AuthRepository,
     private val downloader: Downloader,
     private val audioRepository: AudioRepository
 ) : ViewModel() {
@@ -42,6 +45,12 @@ class MainViewModel @Inject constructor(
     val updateCheckEvents = _updateCheckEvents.receiveAsFlow()
 
     init {
+        viewModelScope.launch {
+            authRepository.getUserFlow().collect { user ->
+                _uiState.update { it.copy(currentUser = user) }
+            }
+        }
+
         viewModelScope.launch {
             audioRepository.ttsEvents.collect { event ->
                 if (event is TtsEvent.GoogleTtsMissing) {
@@ -228,7 +237,8 @@ data class MainUiState(
     val apkFile: File? = null,
     val showGoogleTtsDialog: Boolean = false,
     val isDownloadingGoogleTts: Boolean = false,
-    val googleTtsDownloadProgress: Float = 0f
+    val googleTtsDownloadProgress: Float = 0f,
+    val currentUser: User? = null
 )
 
 sealed interface UpdateCheckEvent {

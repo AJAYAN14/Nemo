@@ -1,8 +1,10 @@
 package com.jian.nemo.feature.statistics.calendar
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +19,7 @@ import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,15 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.LearningStats
+import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import java.util.Calendar
 import java.util.Date
@@ -80,6 +86,7 @@ fun LearningCalendarScreen(
                     stats = todayStats
                 )
             }
+
 
             // 3. 周视图 (Week View)
             item {
@@ -216,6 +223,7 @@ fun TodaySummaryCard(
         }
     }
 }
+
 
 // 统计项组件 (Squircle Style)
 @Composable
@@ -357,15 +365,16 @@ fun WeekDayItem(
     }
 
     val fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Medium
+    val elevation = if (isSelected) 4.dp else 0.dp
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .width(42.dp) // 更符合胶囊型的宽度比例
+            .clip(CircleShape)
             .background(backgroundColor)
             .clickable(onClick = onClick)
-            .padding(vertical = 10.dp, horizontal = 8.dp)
-            .width(28.dp) // Fixed width for alignment
+            .padding(vertical = 14.dp, horizontal = 4.dp)
     ) {
         Text(
             text = dayLabel,
@@ -396,96 +405,121 @@ fun DayDetailPanel(
     val selectedEpoch = (selectedDate.time + TimeZone.getDefault().getOffset(selectedDate.time)) / 86400000L
 
     // 计算显示数据
-    var reviewLabel = "待复习"
-    var reviewValue = 0
-    var learnWordsValue = 0
-    var learnGrammarValue = 0
+    val isToday = selectedEpoch == todayEpoch
+    val isFuture = selectedEpoch > todayEpoch
+
+    var reviewWordsValue = 0
+    var reviewGrammarValue = 0
+    var newWordsValue = 0
+    var newGrammarValue = 0
 
     when {
-        selectedEpoch == todayEpoch -> {
-            // 今天：使用 TodayStats
+        isToday -> {
             val stats = uiState.todayStats
             if (stats != null) {
-                reviewValue = stats.dueWords + stats.dueGrammars
-                learnWordsValue = stats.todayLearnedWords
-                learnGrammarValue = stats.todayLearnedGrammars
+                reviewWordsValue = stats.dueWords
+                reviewGrammarValue = stats.dueGrammars
+                newWordsValue = stats.todayLearnedWords
+                newGrammarValue = stats.todayLearnedGrammars
             }
         }
-        selectedEpoch > todayEpoch -> {
-            // 未来：使用 Forecast
-            reviewLabel = "预计复习"
-            reviewValue = uiState.weekForecast[selectedEpoch] ?: 0
-            learnWordsValue = 0 // Future learning not predicted
-            learnGrammarValue = 0
+        isFuture -> {
+            val forecast = uiState.weekForecast[selectedEpoch]
+            if (forecast != null) {
+                reviewWordsValue = forecast.wordCount
+                reviewGrammarValue = forecast.grammarCount
+            }
         }
         else -> {
-            // 过去：使用 History Record
-            reviewLabel = "已复习"
             val record = uiState.selectedDateRecord
             if (record != null) {
-                reviewValue = record.reviewedWords + record.reviewedGrammars
-                learnWordsValue = record.learnedWords
-                learnGrammarValue = record.learnedGrammars
+                reviewWordsValue = record.reviewedWords
+                reviewGrammarValue = record.reviewedGrammars
+                newWordsValue = record.learnedWords
+                newGrammarValue = record.learnedGrammars
             }
         }
     }
 
+    val reviewLabelSuffix = if (isFuture) "预计复习" else if (isToday) "待复习" else "已复习"
+    val newLabelSuffix = if (isToday || isFuture) "新学" else "已学"
+
     // Check if empty
-    val hasData = reviewValue > 0 || learnWordsValue > 0 || learnGrammarValue > 0
+    val hasData = reviewWordsValue > 0 || reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0
 
     PremiumCard {
-        if (hasData) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                if (reviewValue > 0) {
-                    DetailSquircleItem(
-                        icon = Icons.Rounded.PlayArrow, // Review replaced with PlayArrow
-                        color = NemoOrange,
-                        label = reviewLabel,
-                        value = "$reviewValue 项",
-                        showDivider = (learnWordsValue > 0 || learnGrammarValue > 0)
-                    )
+        AnimatedContent(
+            targetState = selectedEpoch to hasData,
+            transitionSpec = {
+                (fadeIn(animationSpec = tween(220, delayMillis = 90)) + 
+                 slideInVertically(initialOffsetY = { it / 4 })).togetherWith(
+                    fadeOut(animationSpec = tween(90))
+                )
+            },
+            label = "DayDetailAnimation"
+        ) { (epoch, data) ->
+            if (data) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (reviewWordsValue > 0) {
+                        DetailSquircleItem(
+                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.PlayArrow,
+                            color = if (isFuture) NemoIndigo else NemoOrange,
+                            label = "${reviewLabelSuffix}单词",
+                            value = "$reviewWordsValue 个",
+                            showDivider = (reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
+                        )
+                    }
+                    if (reviewGrammarValue > 0) {
+                        DetailSquircleItem(
+                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.PlayArrow,
+                            color = if (isFuture) NemoIndigo.copy(alpha = 0.8f) else NemoOrange.copy(alpha = 0.8f),
+                            label = "${reviewLabelSuffix}语法",
+                            value = "$reviewGrammarValue 条",
+                            showDivider = (newWordsValue > 0 || newGrammarValue > 0)
+                        )
+                    }
+                    if (newWordsValue > 0) {
+                        DetailSquircleItem(
+                            icon = Icons.Rounded.Book,
+                            color = NemoPrimary,
+                            label = "${newLabelSuffix}单词",
+                            value = "$newWordsValue 个",
+                            showDivider = (newGrammarValue > 0)
+                        )
+                    }
+                    if (newGrammarValue > 0) {
+                        DetailSquircleItem(
+                            icon = Icons.Rounded.Create,
+                            color = NemoSecondary,
+                            label = "${newLabelSuffix}语法",
+                            value = "$newGrammarValue 条",
+                            showDivider = false
+                        )
+                    }
                 }
-                if (learnWordsValue > 0) {
-                    DetailSquircleItem(
-                        icon = Icons.Rounded.Book, // Word replaced with Book
-                        color = NemoPrimary,
-                        label = "新学单词",
-                        value = "$learnWordsValue 个",
-                        showDivider = (learnGrammarValue > 0)
-                    )
-                }
-                if (learnGrammarValue > 0) {
-                    DetailSquircleItem(
-                        icon = Icons.Rounded.Create, // Grammar replaced with Create
-                        color = NemoSecondary,
-                        label = "新学语法",
-                        value = "$learnGrammarValue 条",
-                        showDivider = false
-                    )
-                }
-            }
-        } else {
-             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Rounded.Info, // EventBusy replaced with Info
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.surfaceVariant,
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "该日无学习记录",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            } else {
+                 Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "该日无学习记录",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -527,7 +561,7 @@ fun DetailSquircleItem(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )

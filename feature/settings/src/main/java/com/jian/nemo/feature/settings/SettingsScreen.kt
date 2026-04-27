@@ -10,12 +10,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -36,10 +36,10 @@ import java.util.*
  */
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit,
     onNavigateToLogin: () -> Unit,
     onNavigateToTtsSettings: () -> Unit,
     onNavigateToAdvancedLearning: () -> Unit,
+    onNavigateToThemeSettings: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -74,7 +74,21 @@ fun SettingsScreen(
     val useDarkTheme = when (uiState.darkMode) {
         DarkModeOption.LIGHT -> false
         DarkModeOption.DARK -> true
-        DarkModeOption.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        DarkModeOption.AUTO -> {
+            if (uiState.darkModeStrategy == DarkModeStrategy.FOLLOW_SYSTEM) {
+                isSystemInDarkTheme()
+            } else {
+                try {
+                    val now = java.time.LocalTime.now()
+                    val start = java.time.LocalTime.parse(uiState.darkModeStartTime)
+                    val end = java.time.LocalTime.parse(uiState.darkModeEndTime)
+                    if (start < end) now in start..<end
+                    else now !in end..<start
+                } catch (_: Exception) {
+                    isSystemInDarkTheme()
+                }
+            }
+        }
     }
 
     val backgroundColor = MaterialTheme.colorScheme.background
@@ -127,7 +141,7 @@ fun SettingsScreen(
                         val subtitleText = if (conflictCount > 0) {
                             val date = Date(lastSyncTime)
                             val format = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
-                            "上次同步：${format.format(date)} (含 ${conflictCount} 个冲突)"
+                            "上次同步：${format.format(date)} (含 $conflictCount 个冲突)"
                         } else if (lastSyncTime > 0L) {
                             val date = Date(lastSyncTime)
                             val format = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
@@ -177,24 +191,18 @@ fun SettingsScreen(
             item {
                 SettingsSectionTitle("外观") // 使用分组标题
                 PremiumCard {
-                    // 主题选择
-                     SquircleSettingItem(
+                    // 主题外观
+                    SquircleSettingItem(
                         icon = Icons.Rounded.Contrast,
                         iconColor = NemoPurple,
                         title = "主题外观",
-                        subtitle = null,
-                        onClick = {},
-                        showDivider = false,
-                        trailing = {
-                             // 使用更紧凑的 Segmented Button 或者简单的文本显示
-                             // 这里为了更好交互，直接把 ThemeSelector 嵌入
-                             ThemeSelectorRow(
-                                selectedTheme = uiState.darkMode,
-                                onThemeSelected = { option ->
-                                    viewModel.onEvent(SettingsEvent.SetDarkMode(option, 0f, 0f))
-                                }
-                             )
-                        }
+                        subtitle = when (uiState.darkMode) {
+                            DarkModeOption.LIGHT -> "浅色"
+                            DarkModeOption.DARK -> "深色"
+                            DarkModeOption.AUTO -> "自动"
+                        },
+                        onClick = onNavigateToThemeSettings,
+                        showDivider = false
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -231,7 +239,7 @@ fun SettingsScreen(
 
                     SquircleSettingItem(
                         icon = Icons.Rounded.JoinLeft,
-                        iconColor = NemoGreen,
+                        iconColor = NemoSecondary,
                         title = "每日语法目标",
                         subtitle = "设置每天要学习的语法数量",
                         onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
@@ -321,7 +329,7 @@ fun SettingsScreen(
                 SettingsSectionTitle("语音")
                 PremiumCard {
                     SquircleSettingItem(
-                        icon = Icons.Rounded.VolumeUp,
+                        icon = Icons.AutoMirrored.Rounded.VolumeUp,
                         iconColor = Color(0xFFFF2D55), // NemoRed/Pink
                         title = "语音参数",
                         subtitle = "调节语速和音调",
@@ -338,7 +346,7 @@ fun SettingsScreen(
                 PremiumCard {
                     SquircleSettingItem(
                         icon = Icons.Rounded.FileDownload,
-                        iconColor = NemoGreen,
+                        iconColor = NemoSecondary,
                         title = "导出同步数据",
                         subtitle = "导出本地同步文件",
                         onClick = {
@@ -389,7 +397,7 @@ fun SettingsScreen(
 
                     SquircleSettingItem(
                         icon = Icons.Rounded.Info,
-                        iconColor = NemoBlue,
+                        iconColor = NemoPrimary,
                         title = "版本信息",
                         subtitle = "当前版本：$versionName",
                         onClick = { },
@@ -397,7 +405,7 @@ fun SettingsScreen(
                     )
                     SquircleSettingItem(
                         icon = Icons.Rounded.SystemUpdate,
-                        iconColor = NemoGreen,
+                        iconColor = NemoSecondary,
                         title = "检查更新",
                         subtitle = "获取最新版本",
                         onClick = onCheckUpdate,
@@ -457,11 +465,9 @@ fun SettingsScreen(
             useDarkTheme = useDarkTheme,
             onDismiss = {
                 showConfirmDialog = false
-                resetErrorMessage = null
             },
             onConfirm = { includeCloud ->
                 isResetting = true
-                resetErrorMessage = null
                 viewModel.onEvent(SettingsEvent.ResetProgress(includeCloud))
                 showConfirmDialog = false
             }
@@ -559,48 +565,5 @@ private fun UserProfileRow(
     }
 }
 
-/**
- * 主题选择器 Row (嵌入在 Item 中)
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ThemeSelectorRow(
-    selectedTheme: DarkModeOption,
-    onThemeSelected: (DarkModeOption) -> Unit
-) {
-    val options = listOf(
-        DarkModeOption.LIGHT to "浅色",
-        DarkModeOption.DARK to "深色",
-        DarkModeOption.FOLLOW_SYSTEM to "系统"
-    )
-
-    SingleChoiceSegmentedButtonRow(
-        modifier = Modifier.height(32.dp)
-    ) {
-        options.forEachIndexed { index, (themeOption, label) ->
-            SegmentedButton(
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                onClick = {
-                    if (selectedTheme != themeOption) {
-                        onThemeSelected(themeOption)
-                    }
-                },
-                selected = (selectedTheme == themeOption),
-                colors = SegmentedButtonDefaults.colors(
-                    activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    inactiveContainerColor = Color.Transparent,
-                    inactiveContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
 
 

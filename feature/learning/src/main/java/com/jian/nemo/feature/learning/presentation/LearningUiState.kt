@@ -82,7 +82,14 @@ data class LearningUiState(
     val isAutoAudioEnabled: Boolean = false,  // 是否开启翻面自动朗读
     val isShowAnswerDelayEnabled: Boolean = false,
     val showAnswerDelayMs: Long = 5000L,
-    val showAnswerAvailableAt: Long = 0L
+    val showAnswerAvailableAt: Long = 0,
+    
+    // 报告错误相关
+    val showReportErrorDialog: Boolean = false,
+    val successMessage: String? = null,
+
+    /** 当前显示模式 (null=系统, true=深色, false=浅色) */
+    val isDarkMode: Boolean? = null
 ) {
     val hasPendingItems: Boolean
         get() = when (learningMode) {

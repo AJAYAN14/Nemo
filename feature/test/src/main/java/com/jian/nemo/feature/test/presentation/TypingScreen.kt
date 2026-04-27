@@ -54,7 +54,8 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
                     timeLimitSeconds = uiState.timeLimitSeconds,
                     timeRemainingSeconds = uiState.timeRemainingSeconds,
                     word = question.word,
-                    onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) }
+                    onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
+                    onPause = { viewModel.pauseTest() }
                 )
             },
             progressContent = {

@@ -177,7 +177,7 @@ class WordRepositoryImpl @Inject constructor(
         return wordDao.getReviewForecast(startDate, endDate)
             .map { tuples ->
                 tuples.map {
-                    ReviewForecast(it.date, it.count)
+                    ReviewForecast(date = it.date, wordCount = it.count)
                 }
             }
             .catch { e ->

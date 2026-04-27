@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
+
 
 /**
  * BottomSheet 选择器组件 - UI/UX Pro Max 风格
@@ -344,7 +344,7 @@ private fun PremiumSelectorChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (selected) NemoPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+    val containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     val contentColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface
 
     Surface(
@@ -375,7 +375,7 @@ private fun PremiumCustomChip(onClick: () -> Unit) {
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.height(48.dp).fillMaxWidth(),
         colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = NemoPrimary
+            contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
         Text("自定义...", fontWeight = FontWeight.SemiBold)
@@ -399,7 +399,7 @@ private fun QuestionTypeCountRow(
         shape = RoundedCornerShape(26.dp), // 对齐 PremiumCard 圆角
         border = BorderStroke(
             width = 0.5.dp,
-            color = if (isSupported && count > 0) NemoPrimary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+            color = if (isSupported && count > 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
         ),
         shadowElevation = if (isSupported && count > 0) 4.dp else 0.dp,
         modifier = Modifier.fillMaxWidth()
@@ -471,7 +471,7 @@ private fun QuestionTypeCountRow(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
                         fontWeight = FontWeight.Black,
-                        color = if (count > 0) NemoPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (count > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     IconButton(
@@ -482,7 +482,7 @@ private fun QuestionTypeCountRow(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "增加",
-                            tint = if (isSupported) NemoPrimary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
+                            tint = if (isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -589,7 +589,7 @@ fun LevelSelector(
         onClick = onDismiss,
         modifier = Modifier.fillMaxWidth().height(48.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary)
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Text("确定", fontWeight = FontWeight.Bold, color = Color.White)
     }
@@ -611,7 +611,7 @@ private fun PremiumLevelChip(
 ) {
     val targetContainerColor = when {
         !isAvailable -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)
-        isSelected -> NemoPrimary
+        isSelected -> MaterialTheme.colorScheme.primary
         else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
     }
 

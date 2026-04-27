@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +43,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
@@ -96,25 +98,54 @@ fun HomeScreen(
     val textMuted = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else BentoColors.TextMuted
     val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else BentoColors.BgBase
 
-    // 动态生成日期
-    val currentDate = remember {
-        val formatter = SimpleDateFormat("EEEE, M月d日", Locale.CHINA)
-        formatter.format(System.currentTimeMillis())
+    // 动态生成副标题短语 (中文随机版本)
+    val subGreeting = remember {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val phrases = when (hour) {
+            in 5..10 -> listOf(
+                "新的一天，从第一项学习开始。",
+                "晨间微凉，静心学习最相宜。",
+                "早安，今天也要元气满满。",
+                "清晨的学习，是为了遇见更好的自己。",
+                "日积月累，梦想终会开花。"
+            )
+            in 11..17 -> listOf(
+                "享受午后的学习时光吧。",
+                "阳光正好，适合温故而知新。",
+                "午后的宁静，是进步最好的陪伴。",
+                "偶尔小憩，是为了更有力地前进。",
+                "慢慢来，每一步积累都算数。"
+            )
+            in 18..23 -> listOf(
+                "今天辛苦了，收个好尾吧。",
+                "晚风习习，伴你复习今日所得。",
+                "总结今日，满怀期待迎接明天。",
+                "夜晚的学习，是对心灵最好的慰藉。",
+                "今日事今日毕，晚安前的最后冲刺。"
+            )
+            else -> listOf(
+                "夜深了，忙完这项就早点休息哦。",
+                "星光不问赶路人，但也要记得睡觉。",
+                "深夜的灵感，请留给明天的晨曦。",
+                "熬夜是不行的哦，身体才是本钱。",
+                "静谧的夜，愿你带着收获入梦。"
+            )
+        }
+        phrases.random()
     }
 
-    // 动态生成问候语
-    val greeting = remember {
+    // 动态生成问候语 (日文版本)
+    val greeting = remember(uiState.user) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val timeGreeting = when (hour) {
-            in 0..4 -> "夜深了"
-            in 5..8 -> "早上好"
-            in 9..11 -> "上午好"
-            in 12..13 -> "中午好"
-            in 14..18 -> "下午好"
-            in 19..23 -> "晚上好"
-            else -> "你好"
+            in 0..4 -> "こんばんは"    // 凌晨/深夜
+            in 5..10 -> "おはよう"    // 早上
+            in 11..17 -> "こんにちは"  // 中午/下午
+            in 18..23 -> "こんばんは"  // 傍晚/晚上
+            else -> "こんにちは"
         }
-        "$timeGreeting，${uiState.user?.username ?: "Nemo"}"
+        val name = uiState.user?.username ?: "Nemo"
+        "$timeGreeting、$name さん"
     }
 
     if (uiState.showLevelSheet) {
@@ -138,6 +169,19 @@ fun HomeScreen(
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+
+    // --- 主按钮呼吸闪烁动效 ---
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+    // -------------------------
 
     Box(
         modifier = Modifier
@@ -164,21 +208,29 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
-                        Text(
-                            text = currentDate,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                letterSpacing = 0.5.sp
-                            ),
-                            color = textSub
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp)
+                    ) {
                         Text(
                             text = greeting,
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                             color = textMain,
-                            letterSpacing = (-0.5).sp
+                            letterSpacing = (-0.5).sp,
+                            modifier = Modifier.basicMarquee(),
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = subGreeting,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = textSub,
+                            maxLines = 1
                         )
                     }
                     val interactionSource = remember { MutableInteractionSource() }
@@ -365,7 +417,7 @@ fun HomeScreen(
                                                 append(reviewDone.toString())
                                                 withStyle(
                                                     SpanStyle(
-                                                        fontSize = 22.sp,
+                                                        fontSize = 24.sp,
                                                         fontWeight = FontWeight.SemiBold,
                                                         color = textSub
                                                     )
@@ -373,26 +425,27 @@ fun HomeScreen(
                                                     append("/$reviewTotal")
                                                 }
                                             },
-                                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                                            style = MaterialTheme.typography.headlineMedium.copy(
+                                                fontSize = 30.sp,
+                                                fontWeight = FontWeight.Black
+                                            ),
                                             color = textMain
                                         )
                                     } else {
                                         Column {
                                             Text(
                                                 text = "暂无复习项目",
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                                 color = textMain
-                                            )
-                                            Text(
-                                                text = "可以开始新学习内容",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = textMuted
                                             )
                                         }
                                     }
                                     Text(
                                         text = "复习进度",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
                                         color = textSub
                                     )
                                 }
@@ -424,18 +477,19 @@ fun HomeScreen(
                                     Spacer(Modifier.height(12.dp))
                                     Text(
                                         text = "${uiState.dailyCompletionRate}%",
-                                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black),
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            fontSize = 30.sp,
+                                            fontWeight = FontWeight.Black
+                                        ),
                                         color = textMain
                                     )
                                     Text(
                                         text = stringResource(R.string.label_completion_rate),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
                                         color = textSub
-                                    )
-                                    Text(
-                                        text = "仅统计新学目标",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = textMuted
                                     )
                                 }
                             }
@@ -462,11 +516,21 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Text(
-                                text = if (uiState.hasCurrentModeSession) stringResource(R.string.btn_continue_home) else stringResource(R.string.btn_start_home),
+                                text = if (uiState.currentProgress > 0) stringResource(R.string.btn_continue_home) else stringResource(R.string.btn_start_home),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null, modifier = Modifier.size(20.dp))
+                            // 基于学习进度切换图标及应用闪烁动效
+                            val isLearned = uiState.currentProgress > 0
+                            Icon(
+                                imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .graphicsLayer {
+                                        alpha = pulseAlpha
+                                    },
+                                tint = Color.White
+                            )
                         }
                     }
                 }

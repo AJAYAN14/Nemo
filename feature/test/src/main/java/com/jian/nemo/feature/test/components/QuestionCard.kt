@@ -62,5 +62,6 @@ private fun getModeHint(mode: TestMode): String {
         TestMode.CN_TO_JP -> "请选择对应的日语单词"
         TestMode.KANA -> "请选择正确的假名"
         TestMode.EXAMPLE -> "请选择例句的意思"
+        TestMode.RANDOM -> "请选择正确答案"
     }
 }

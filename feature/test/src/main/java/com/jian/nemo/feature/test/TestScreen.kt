@@ -131,9 +131,16 @@ fun TestScreen(
         )
     }
 
+    // 暂停对话框
+    if (uiState.showPauseDialog) {
+        com.jian.nemo.feature.test.components.PauseTestDialog(
+            onConfirm = { viewModel.resumeTest() }
+        )
+    }
+
     // 处理系统返回键（复刻旧项目TestScreen.kt L107-109）
     androidx.activity.compose.BackHandler(
-        enabled = uiState.isTestActive && !uiState.showExitConfirmation
+        enabled = uiState.isTestActive && !uiState.showExitConfirmation && !uiState.showPauseDialog
     ) {
         viewModel.confirmExitTest()
     }
@@ -201,7 +208,7 @@ fun TestScreenContent(
             val currentQuestion = uiState.currentQuestion
 
             if (currentQuestion != null) {
-                // 使用AnimatedContent实现题目切换动画（复刻旧项目 TypingScreen.kt L29-44）
+                // 使用AnimatedContent实现题目切换动画
                 AnimatedContent(
                     targetState = uiState.currentIndex,
                     transitionSpec = {
@@ -219,11 +226,11 @@ fun TestScreenContent(
                     if (question != null) {
                         when (question) {
                             is TestQuestion.MultipleChoice -> {
-                                // 使用选择题界面（从独立文件 MultipleChoiceScreen.kt）
+                                // 使用选择题界面
                                 MultipleChoiceQuestionPage(viewModel = viewModel)
                             }
                             is TestQuestion.Typing -> {
-                                // 使用手打题界面（从独立文件 TypingScreen.kt）
+                                // 使用手打题界面
                                 TypingQuestionPage(viewModel = viewModel)
                             }
                             is TestQuestion.CardMatching -> {
@@ -234,7 +241,7 @@ fun TestScreenContent(
                                 )
                             }
                             is TestQuestion.Sorting -> {
-                                // 使用排序题界面（复刻旧项目SortingScreen.kt）
+                                // 使用排序题界面
                                 com.jian.nemo.feature.test.presentation.SortingScreen(
                                     viewModel = viewModel
                                 )

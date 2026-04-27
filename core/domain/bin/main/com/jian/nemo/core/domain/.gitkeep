@@ -1,0 +1,11 @@
+# Domain Layer
+
+This module contains the business logic layer with:
+- Domain models
+- Repository interfaces
+- Use cases
+
+**Rules:**
+- No Android framework dependencies
+- Pure Kotlin only
+- All use cases should implement `suspend operator fun invoke()`

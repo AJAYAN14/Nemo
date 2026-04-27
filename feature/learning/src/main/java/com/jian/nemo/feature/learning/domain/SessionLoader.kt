@@ -117,7 +117,7 @@ class SessionLoader @Inject constructor(
 
         // 2. 获取到期复习项
         val allDueItems = getDueItems()
-        val dueItems = allDueItems.filter(filterByLevel)
+        val dueItems = allDueItems // 不再按等级过滤复习项，全量复习
         val dueCount = dueItems.size
 
         // 3. 计算新项配额（当前策略：不减载）

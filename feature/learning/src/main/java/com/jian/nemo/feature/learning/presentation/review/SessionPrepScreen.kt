@@ -36,7 +36,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 // --- 颜色定义 ---
-private val NemoPrimary = Color(0xFF0E68FF)
 private val NemoGreen = Color(0xFF50E3C2)
 private val NemoOrange = Color(0xFFFF9F0A)
 
@@ -179,9 +178,9 @@ fun SessionPrepScreen(
                          modifier = Modifier
                              .fillMaxWidth()
                              .height(56.dp)
-                             .shadow(8.dp, RoundedCornerShape(28.dp), spotColor = NemoPrimary.copy(alpha = 0.4f)),
+                             .shadow(8.dp, RoundedCornerShape(28.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
                          shape = RoundedCornerShape(28.dp),
-                         colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary)
+                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                      ) {
                          Text("开始复习", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                      }
@@ -234,7 +233,7 @@ private fun StatisticsSection(
                     value = total.toString(),
                     label = "总计",
                     icon = Icons.AutoMirrored.Rounded.FormatListBulleted, // 使用 Rounded 变体
-                    color = NemoPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -308,7 +307,7 @@ private fun PreviewWordCard(
                     .width(4.dp)
                     .height(40.dp)
                     .clip(RoundedCornerShape(2.dp))
-                    .background(NemoPrimary)
+                    .background(MaterialTheme.colorScheme.primary)
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -392,12 +391,12 @@ private fun PreviewGrammarCard(
 @Composable
 private fun JlptTag(level: String) {
     Surface(
-        color = NemoPrimary.copy(alpha = 0.08f),
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
         shape = RoundedCornerShape(8.dp)
     ) {
         Text(
             text = level,
-            color = NemoPrimary,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

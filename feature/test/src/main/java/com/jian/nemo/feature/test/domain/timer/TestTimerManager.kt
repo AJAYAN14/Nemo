@@ -67,12 +67,46 @@ class TestTimerManager @Inject constructor() {
     }
 
     /**
+     * 暂停计时
+     */
+    fun pause() {
+        stop()
+    }
+
+    /**
      * 停止计时
      */
     fun stop() {
         timerJob?.cancel()
         timerJob = null
         _timerState.value = _timerState.value.copy(isRunning = false)
+    }
+
+    /**
+     * 恢复计时
+     *
+     * @param scope 协程作用域
+     * @param onTimeUp 时间到回调
+     */
+    fun resume(
+        scope: CoroutineScope,
+        onTimeUp: () -> Unit
+    ) {
+        if (_timerState.value.isRunning || _timerState.value.timeRemainingSeconds <= 0) return
+
+        _timerState.value = _timerState.value.copy(isRunning = true)
+
+        timerJob = scope.launch {
+            while (_timerState.value.timeRemainingSeconds > 0) {
+                delay(1000)
+                _timerState.value = _timerState.value.copy(
+                    timeRemainingSeconds = _timerState.value.timeRemainingSeconds - 1
+                )
+            }
+            // 时间到
+            _timerState.value = _timerState.value.copy(isRunning = false)
+            onTimeUp()
+        }
     }
 
     /**

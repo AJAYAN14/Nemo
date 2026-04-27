@@ -144,7 +144,7 @@ class TestStarterViewModel @Inject constructor(
     fun startTypingTest(config: TestConfig) { startTest(config, TestMode.JP_TO_CN, QuestionType.TYPING) }
     fun startMatchingTest(config: TestConfig) { startTest(config, TestMode.JP_TO_CN, QuestionType.CARD_MATCHING) }
     fun startSortingTest(config: TestConfig) { startTest(config, TestMode.JP_TO_CN, QuestionType.SORTING) }
-    fun startMultipleChoiceTest(config: TestConfig) { startTest(config, TestMode.JP_TO_CN, QuestionType.MULTIPLE_CHOICE) }
+    fun startMultipleChoiceTest(config: TestConfig) { startTest(config, TestMode.RANDOM, QuestionType.MULTIPLE_CHOICE) }
 
     fun cancelGeneration() {
         _isGenerating.update { false }

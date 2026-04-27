@@ -72,4 +72,7 @@ interface GrammarWrongAnswerDao {
      */
     @Query("SELECT * FROM grammar_wrong_answers WHERE uuid IN (:uuids)")
     suspend fun getByUuids(uuids: List<String>): List<GrammarWrongAnswerEntity>
+
+    @Query("UPDATE grammar_wrong_answers SET grammar_id = :newId WHERE grammar_id = :oldId")
+    suspend fun migrateGrammarId(oldId: Int, newId: Int)
 }

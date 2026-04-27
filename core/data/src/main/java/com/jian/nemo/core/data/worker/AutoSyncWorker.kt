@@ -26,7 +26,8 @@ class AutoSyncWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val syncRepository: SyncRepository,
     private val settingsRepository: SettingsRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val syncMessageBus: com.jian.nemo.core.common.util.SyncMessageBus
 ) : CoroutineWorker(context, params) {
 
     companion object {
@@ -91,6 +92,10 @@ class AutoSyncWorker @AssistedInject constructor(
                  settingsRepository.setLastSyncTime(System.currentTimeMillis())
                  settingsRepository.setLastSyncSuccess(true)
                  settingsRepository.setLastSyncError("")
+                 
+                 // 优化：静默后台同步。不再发送全局成功通知，仅在失败时提醒。
+                 // syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Success())
+
                  return@withContext Result.success()
 
             } else {
@@ -98,6 +103,9 @@ class AutoSyncWorker @AssistedInject constructor(
 
                  settingsRepository.setLastSyncSuccess(false)
                  settingsRepository.setLastSyncError(syncResult.message)
+
+                 // 发送全局失败通知 (包含具体原因)
+                 syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步失败: ${syncResult.message}"))
 
                  if (syncResult.errorType == SyncErrorType.NETWORK_ERROR) {
                      Log.e(TAG, "检测到网络异常，稍后重试")
@@ -110,6 +118,10 @@ class AutoSyncWorker @AssistedInject constructor(
             Log.e(TAG, "自动同步异常", e)
             settingsRepository.setLastSyncSuccess(false)
             settingsRepository.setLastSyncError(e.message ?: "未知错误")
+
+            // 发送全局异常通知
+            syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步异常: ${e.message ?: "未知错误"}"))
+
             return@withContext Result.retry()
         }
     }

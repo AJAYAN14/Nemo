@@ -1,6 +1,7 @@
 package com.jian.nemo.core.data.repository
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import com.jian.nemo.core.common.util.DateTimeUtils
@@ -18,6 +19,8 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * 设置 Repository 实现
@@ -67,15 +70,18 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 设置每日目标
+     * 设置每日目标 (改为次日生效)
      * @param goal 每日学习单词数
      */
     override suspend fun setDailyGoal(goal: Int) {
+        val resetHour = learningDayResetHourFlow.first()
+        val today = DateTimeUtils.getLearningDay(resetHour)
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DAILY_GOAL] = goal
+            preferences[PreferencesKeys.PENDING_DAILY_GOAL] = goal
+            preferences[PreferencesKeys.PENDING_GOAL_SET_DATE] = today
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
-        Log.d(TAG, "每日目标已更新: $goal")
+        Log.d(TAG, "已暂存每日单词目标: $goal (日期: $today)，将于下一个逻辑日生效")
     }
 
     /** 每日语法学习目标 Flow */
@@ -84,15 +90,40 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 设置每日语法目标
+     * 设置每日语法目标 (改为次日生效)
      * @param goal 每日学习语法条数
      */
     override suspend fun setGrammarDailyGoal(goal: Int) {
+        val resetHour = learningDayResetHourFlow.first()
+        val today = DateTimeUtils.getLearningDay(resetHour)
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GRAMMAR_DAILY_GOAL] = goal
+            preferences[PreferencesKeys.PENDING_GRAMMAR_DAILY_GOAL] = goal
+            preferences[PreferencesKeys.PENDING_GOAL_SET_DATE] = today
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
-        Log.d(TAG, "每日语法目标已更新: $goal")
+        Log.d(TAG, "已暂存每日语法目标: $goal (日期: $today)，将于下一个逻辑日生效")
+    }
+
+    /** 主题色 Flow (ARGB Long, null = 默认品牌蓝) */
+    override val themeColorFlow: Flow<Long?> = dataStore.data.map { preferences ->
+        if (preferences.contains(PreferencesKeys.THEME_COLOR)) {
+            preferences[PreferencesKeys.THEME_COLOR]
+        } else null
+    }
+
+    /**
+     * 设置主题色
+     * @param colorArgb ARGB Long 值，null 表示恢复默认
+     */
+    override suspend fun setThemeColor(colorArgb: Long?) {
+        dataStore.edit { preferences ->
+            if (colorArgb == null) {
+                preferences.remove(PreferencesKeys.THEME_COLOR)
+            } else {
+                preferences[PreferencesKeys.THEME_COLOR] = colorArgb
+            }
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
     }
 
     /** 深色模式 Flow (null = 跟随系统) */
@@ -115,6 +146,40 @@ class SettingsRepositoryImpl @Inject constructor(
             } else {
                 preferences[PreferencesKeys.IS_DARK_MODE] = enabled
             }
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val darkModeStrategyFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.DARK_MODE_STRATEGY] ?: "system"
+    }
+
+    override suspend fun setDarkModeStrategy(strategy: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE_STRATEGY] = strategy
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val darkModeStartTimeFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.DARK_MODE_START_TIME] ?: "22:00"
+    }
+
+    override suspend fun setDarkModeStartTime(time: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE_START_TIME] = time
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val darkModeEndTimeFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.DARK_MODE_END_TIME] ?: "07:00"
+    }
+
+    override suspend fun setDarkModeEndTime(time: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DARK_MODE_END_TIME] = time
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 
@@ -211,6 +276,9 @@ class SettingsRepositoryImpl @Inject constructor(
             if (lastStudyDate != today) {
                 val totalDays = preferences[PreferencesKeys.TOTAL_STUDY_DAYS] ?: 0
                 preferences[PreferencesKeys.TOTAL_STUDY_DAYS] = totalDays + 1
+
+                // 🎯 目标次日生效逻辑: 在检测到跨天时，判断是否应迁移 Pending Goals
+                migratePendingGoals(preferences, today)
             }
         }
     }
@@ -287,6 +355,9 @@ class SettingsRepositoryImpl @Inject constructor(
                 preferences[PreferencesKeys.TODAY_WRONG_WORD_IDS] = emptySet<String>()
                 preferences[PreferencesKeys.TODAY_TESTED_GRAMMAR_IDS] = emptySet<String>()
                 preferences[PreferencesKeys.TODAY_WRONG_GRAMMAR_IDS] = emptySet<String>()
+
+                // 🎯 目标次日生效逻辑: 在检测到日期变更时，判断是否应迁移 Pending Goals
+                migratePendingGoals(preferences, today)
             }
         }
 
@@ -699,6 +770,26 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setLastLearningMode(mode: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_LEARNING_MODE] = mode
+        }
+    }
+
+    override val preferredWordLevelFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.PREFERRED_WORD_LEVEL] ?: "N5"
+    }
+
+    override suspend fun setPreferredWordLevel(level: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PREFERRED_WORD_LEVEL] = level
+        }
+    }
+
+    override val preferredGrammarLevelFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.PREFERRED_GRAMMAR_LEVEL] ?: "N5"
+    }
+
+    override suspend fun setPreferredGrammarLevel(level: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PREFERRED_GRAMMAR_LEVEL] = level
         }
     }
 
@@ -1123,6 +1214,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setLearningSteps(steps: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LEARNING_STEPS] = steps
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
         Log.d(TAG, "学习步进已更新: $steps")
     }
@@ -1134,6 +1226,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setLearnAheadLimit(minutes: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LEARN_AHEAD_LIMIT] = minutes
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
         Log.d(TAG, "提前学习限制已更新: $minutes mins")
     }
@@ -1145,6 +1238,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setLeechThreshold(threshold: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LEECH_THRESHOLD] = threshold.coerceAtLeast(1)
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
         Log.d(TAG, "Leech阈值已更新: ${threshold.coerceAtLeast(1)}")
     }
@@ -1158,6 +1252,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val normalized = if (action == "bury_today") "bury_today" else "skip"
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LEECH_ACTION] = normalized
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
         Log.d(TAG, "Leech行为已更新: $normalized")
     }
@@ -1169,6 +1264,30 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setRelearningSteps(steps: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RELEARNING_STEPS] = steps
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override suspend fun saveAdvancedLearningSettings(
+        learningSteps: String,
+        relearningSteps: String,
+        learnAheadLimit: Int,
+        leechThreshold: Int,
+        leechAction: String
+    ) {
+        // 使用 NonCancellable 确保在页面关闭/ViewModel 销毁时，写入操作不会被取消
+        withContext(NonCancellable) {
+            dataStore.edit { preferences ->
+                preferences[PreferencesKeys.LEARNING_STEPS] = learningSteps
+                preferences[PreferencesKeys.RELEARNING_STEPS] = relearningSteps
+                preferences[PreferencesKeys.LEARN_AHEAD_LIMIT] = learnAheadLimit
+                preferences[PreferencesKeys.LEECH_THRESHOLD] = leechThreshold.coerceAtLeast(1)
+                preferences[PreferencesKeys.LEECH_ACTION] = leechAction
+                
+                // 更新修改时间戳，以便触发云端同步
+                preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+            }
+            Log.d(TAG, "高级学习设置已批量更新并记录时间戳")
         }
     }
 
@@ -1230,7 +1349,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override val showAnswerDelayMsFlow: Flow<Long> = dataStore.data
         .map { preferences ->
             when (preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L) {
-                3000L, 5000L, 7000L, 10000L -> preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L
+                2000L, 3000L, 4000L, 5000L -> preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L
                 else -> 5000L
             }
         }
@@ -1238,7 +1357,7 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setShowAnswerDelayMs(ms: Long) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] = when (ms) {
-                3000L, 5000L, 7000L, 10000L -> ms
+                2000L, 3000L, 4000L, 5000L -> ms
                 else -> 5000L
             }
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
@@ -1483,6 +1602,47 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun updateLastSettingsModifiedTime() {
         dataStore.edit { prefs ->
             prefs[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    // ========== 应用图标实现 ==========
+
+    override val appIconFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.APP_ICON] ?: "Nemo"
+    }
+
+    override suspend fun setAppIcon(iconName: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_ICON] = iconName
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * 迁移待生效的目标
+     */
+    private fun migratePendingGoals(preferences: MutablePreferences, today: Long) {
+        val setDate = preferences[PreferencesKeys.PENDING_GOAL_SET_DATE] ?: 0L
+        // 核心逻辑：只有当当前逻辑日 > 设置暂存目标的逻辑日时，才执行激活转换
+        if (today > setDate) {
+            val pendingWordGoal = preferences[PreferencesKeys.PENDING_DAILY_GOAL]
+            if (pendingWordGoal != null) {
+                preferences[PreferencesKeys.DAILY_GOAL] = pendingWordGoal
+                preferences.remove(PreferencesKeys.PENDING_DAILY_GOAL)
+                Log.i(TAG, "📅 检测到跨天且确认目标已入库一整天，应用新的每日单词目标: $pendingWordGoal")
+            }
+
+            val pendingGrammarGoal = preferences[PreferencesKeys.PENDING_GRAMMAR_DAILY_GOAL]
+            if (pendingGrammarGoal != null) {
+                preferences[PreferencesKeys.GRAMMAR_DAILY_GOAL] = pendingGrammarGoal
+                preferences.remove(PreferencesKeys.PENDING_GRAMMAR_DAILY_GOAL)
+                Log.i(TAG, "📅 检测到跨天且确认目标已入库一整天，应用新的每日语法目标: $pendingGrammarGoal")
+            }
+
+            // 完成迁移后，同步清理暂存日期键值
+            preferences.remove(PreferencesKeys.PENDING_GOAL_SET_DATE)
+        } else {
+            Log.d(TAG, "📅 检测到跨天，但目标是在当前逻辑日内设置的，顺延至下一个重置点生效 (今日: $today, 设置日: $setDate)")
         }
     }
 

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -57,12 +58,17 @@ class SyncRepositoryImpl @Inject constructor(
     ): SyncResult {
         Log.d("SyncRepository", "请求检查并恢复云端数据: User $userId, force=$force, mode=$mode")
         return try {
-            val progress = performSync(userId, force, mode).last()
+            val progress = performSync(userId, force, mode).lastOrNull() ?: SyncProgress.AlreadyRunning
+            
             when (progress) {
                 is SyncProgress.Completed -> SyncResult(
                     success = true,
                     message = "同步成功",
                     syncReport = progress.report
+                )
+                is SyncProgress.AlreadyRunning -> SyncResult(
+                    success = true,
+                    message = "同步已在运行中"
                 )
                 is SyncProgress.Failed -> SyncResult(
                     success = false,

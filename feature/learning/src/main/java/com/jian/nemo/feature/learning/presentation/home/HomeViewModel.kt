@@ -47,6 +47,20 @@ class HomeViewModel @Inject constructor(
             }
         }
 
+        // 恢复上次选择的等级 (单词)
+        viewModelScope.launch {
+            settingsRepository.preferredWordLevelFlow.collect { level ->
+                _uiState.update { it.copy(wordSelectedLevel = level) }
+            }
+        }
+
+        // 恢复上次选择的等级 (语法)
+        viewModelScope.launch {
+            settingsRepository.preferredGrammarLevelFlow.collect { level ->
+                _uiState.update { it.copy(grammarSelectedLevel = level) }
+            }
+        }
+
         // Monitor Active Sessions (SRS Optimization)
         viewModelScope.launch {
             settingsRepository.getWordSession().collect { session ->
@@ -138,6 +152,14 @@ class HomeViewModel @Inject constructor(
                 it.copy(wordSelectedLevel = level)
             } else {
                 it.copy(grammarSelectedLevel = level)
+            }
+        }
+        
+        viewModelScope.launch {
+            if (_uiState.value.learningMode == LearningMode.Word) {
+                settingsRepository.setPreferredWordLevel(level)
+            } else {
+                settingsRepository.setPreferredGrammarLevel(level)
             }
         }
     }

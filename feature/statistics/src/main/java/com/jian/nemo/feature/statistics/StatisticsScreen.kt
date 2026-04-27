@@ -58,7 +58,7 @@ fun StatisticsScreen(
         topBar = {
             Column(modifier = Modifier.background(backgroundColor)) {
                 CommonHeader(
-                    title = "今日学习记录",
+                    title = "今日统计",
                     onBack = onBack
                 )
             }

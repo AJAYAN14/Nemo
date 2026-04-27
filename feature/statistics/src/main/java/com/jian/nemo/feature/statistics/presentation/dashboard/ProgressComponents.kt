@@ -136,8 +136,8 @@ fun LearningSummaryCard(
             title = "日间概览",
             icon = Icons.Rounded.Today,
             accentColor = NemoPrimary,
-            main = BentoMetric("今日已学", todayLearned.toString(), "个"),
-            topRight = BentoMetric("待复习", dueCount.toString(), "词"),
+            main = BentoMetric("今日已学", todayLearned.toString(), "项"),
+            topRight = BentoMetric("待复习", dueCount.toString(), "项"),
             bottomRight = BentoMetric("目标完成度", todayProgress.toString(), "%"),
             visualType = BentoVisualType.Progress
         ),
@@ -146,8 +146,8 @@ fun LearningSummaryCard(
             icon = Icons.Rounded.Timeline,
             accentColor = NemoSecondary,
             main = BentoMetric("连续学习", studyStreak.toString(), "天"),
-            topRight = BentoMetric("累计掌握", masteredCount.toString(), "词"),
-            bottomRight = BentoMetric("待学习", unmasteredCount.toString(), "词"),
+            topRight = BentoMetric("累计掌握", masteredCount.toString(), "项"),
+            bottomRight = BentoMetric("待学习", unmasteredCount.toString(), "项"),
             visualType = BentoVisualType.Dots
         ),
         BentoPageModel(

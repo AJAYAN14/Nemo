@@ -23,6 +23,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
+import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
+import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Report
 
 /**
  * 单词详情界面 (UI/UX Pro Max)
@@ -38,6 +45,30 @@ fun WordDetailScreen(
     val playingAudioId by viewModel.playingAudioId.collectAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
+    // Reporting states
+    val showReportDialog by viewModel.showReportDialog.collectAsState()
+    val successMessage by viewModel.successMessage.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // Swipe Navigation State (Moved to outer scope for Reporting logic)
+    val initialIndex = remember(contextIds, initialWord) {
+        val index = contextIds.indexOf(initialWord?.id ?: -1)
+        if (index >= 0) index else 0
+    }
+
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+        initialPage = initialIndex,
+        pageCount = { if (contextIds.isEmpty()) 1 else contextIds.size }
+    )
+
+    // [FIX] 解决异步加载导致 initialPage 失效的问题
+    // 当 initialIndex 从 0 变为有效值时，强制 Pager 跳转到正确位置
+    androidx.compose.runtime.LaunchedEffect(initialIndex) {
+        if (initialIndex > 0 && pagerState.currentPage == 0) {
+            pagerState.scrollToPage(initialIndex)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +82,8 @@ fun WordDetailScreen(
                     isDark = isDark,
                     playingAudioId = playingAudioId,
                     onPlayAudio = viewModel::playAudio,
-                    onBack = onNavigateBack
+                    onBack = onNavigateBack,
+                    onReportClick = viewModel::openReportDialog
                 )
             } else {
                 Box(
@@ -64,15 +96,7 @@ fun WordDetailScreen(
         } else {
             // Swipe Navigation Enabled
             // Calculate initial page based on the starting word ID
-            val initialIndex = remember(contextIds, initialWord) {
-                val index = contextIds.indexOf(initialWord?.id ?: -1)
-                if (index >= 0) index else 0
-            }
-
-            val pagerState = androidx.compose.foundation.pager.rememberPagerState(
-                initialPage = initialIndex,
-                pageCount = { contextIds.size }
-            )
+            // (Calculation and pagerState moved to outer scope)
 
             androidx.compose.foundation.pager.HorizontalPager(
                 state = pagerState,
@@ -88,7 +112,8 @@ fun WordDetailScreen(
                         isDark = isDark,
                         playingAudioId = playingAudioId,
                         onPlayAudio = viewModel::playAudio,
-                        onBack = onNavigateBack
+                        onBack = onNavigateBack,
+                        onReportClick = viewModel::openReportDialog
                     )
                 } else {
                      Box(
@@ -100,6 +125,41 @@ fun WordDetailScreen(
                 }
             }
         }
+
+        // Result Snackbars
+        NemoSnackbar(
+            visible = successMessage != null,
+            message = successMessage ?: "",
+            type = NemoSnackbarType.SUCCESS,
+            icon = Icons.Rounded.CheckCircle,
+            onDismiss = { viewModel.clearSuccessMessage() },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 8.dp)
+        )
+
+        NemoSnackbar(
+            visible = errorMessage != null,
+            message = errorMessage ?: "",
+            type = NemoSnackbarType.ERROR,
+            icon = Icons.Rounded.Report,
+            onDismiss = { viewModel.clearErrorMessage() },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 8.dp)
+        )
+
+        // Report Dialog
+        if (showReportDialog) {
+            val currentWordId = if (contextIds.isEmpty()) initialWord?.id else contextIds.getOrNull(pagerState.currentPage)
+            ContentReportDialog(
+                learningMode = LearningMode.Word,
+                onDismiss = { viewModel.cancelReportDialog() },
+                onConfirm = { currentWordId?.let { viewModel.reportContentError(it) } }
+            )
+        }
     }
 }
 
@@ -109,7 +169,8 @@ private fun WordDetailContent(
     isDark: Boolean,
     playingAudioId: String?,
     onPlayAudio: (String, String?) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onReportClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -180,7 +241,16 @@ private fun WordDetailContent(
             com.jian.nemo.core.ui.component.common.CommonHeader(
                 title = "", // Empty title for hero section look
                 onBack = onBack,
-                backgroundColor = Color.Transparent
+                backgroundColor = Color.Transparent,
+                actions = {
+                    IconButton(onClick = onReportClick) {
+                        Icon(
+                            imageVector = Icons.Rounded.Report,
+                            contentDescription = "举报内容",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                }
             )
         }
 

@@ -40,6 +40,7 @@ import com.jian.nemo.feature.learning.presentation.home.HomeScreen
 
 import com.jian.nemo.feature.settings.SettingsScreen
 import com.jian.nemo.feature.settings.TtsSettingsScreen
+import com.jian.nemo.feature.settings.ThemeSettingsScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -544,7 +545,6 @@ fun NemoNavHost(
             }
         ) {
             SettingsScreen(
-                onNavigateBack = { navController.popBackStack() },
                 onNavigateToLogin = {
                     navController.navigate(NavDestination.PROFILE) // userGraph 处理登录/资料切换
                 },
@@ -553,6 +553,9 @@ fun NemoNavHost(
                 },
                 onNavigateToAdvancedLearning = {
                     navController.navigate(NavDestination.ADVANCED_LEARNING)
+                },
+                onNavigateToThemeSettings = {
+                    navController.navigate(NavDestination.THEME_SETTINGS)
                 },
                 onCheckUpdate = onCheckUpdate
             )
@@ -564,6 +567,13 @@ fun NemoNavHost(
         composable(NavDestination.TTS_SETTINGS) {
              TtsSettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // 主题设置
+        composable(NavDestination.THEME_SETTINGS) {
+            ThemeSettingsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
  

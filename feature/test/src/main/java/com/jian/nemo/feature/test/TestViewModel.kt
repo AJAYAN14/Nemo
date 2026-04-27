@@ -827,6 +827,34 @@ class TestViewModel @Inject constructor(
     }
 
     /**
+     * 暂停测试
+     */
+    fun pauseTest() {
+        if (_uiState.value.showResult || !_uiState.value.isTestActive) return
+        _uiState.update { it.copy(showPauseDialog = true) }
+        timerManager.pause()
+    }
+
+    /**
+     * 恢复测试
+     */
+    fun resumeTest() {
+        _uiState.update { it.copy(showPauseDialog = false) }
+        // 恢复计时器
+        val timeLimit = _uiState.value.timeLimitSeconds
+        if (timeLimit > 0) {
+            timerManager.resume(
+                scope = viewModelScope,
+                onTimeUp = {
+                    if (!_uiState.value.showResult) {
+                        finishTest()
+                    }
+                }
+            )
+        }
+    }
+
+    /**
      * 显示退出确认对话框（复刻旧项目TestScreen.kt L107-109）
      */
     fun confirmExitTest() {
@@ -988,6 +1016,7 @@ data class TestUiState(
     val isAutoAdvancing: Boolean = false,  // 是否正在自动跳转（复刻旧项目状态）
     val isTestActive: Boolean = false,     // 测试是否激活（复刻旧项目状态）
     val showExitConfirmation: Boolean = false,  // 是否显示退出确认对话框（复刻旧项目）
+    val showPauseDialog: Boolean = false,  // 是否显示暂停对话框
 
     // 统计数据
     val todayTestCount: Int = 0,

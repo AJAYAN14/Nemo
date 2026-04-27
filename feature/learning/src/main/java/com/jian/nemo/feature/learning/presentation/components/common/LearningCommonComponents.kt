@@ -24,6 +24,11 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.Report
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.SettingsBrightness
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -48,7 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.learning.presentation.LearningMode
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import androidx.compose.ui.graphics.toArgb
 import com.jian.nemo.core.designsystem.theme.NemoText
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import androidx.compose.ui.graphics.luminance
@@ -57,10 +62,28 @@ import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.concurrent.TimeUnit
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalDensity
 
 /**
  * 按压缩放效果 (Scale on Press)
@@ -113,6 +136,7 @@ fun LearnHeader(
     onNext: () -> Unit,
     onSuspend: () -> Unit,
     onBury: () -> Unit,
+    onReportError: () -> Unit,
     onShowRatingGuide: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     isAutoAudioEnabled: Boolean = false,
@@ -123,7 +147,9 @@ fun LearnHeader(
     onCycleShowAnswerDelayDuration: (() -> Unit)? = null,
     canUndo: Boolean = false,
     onUndo: (() -> Unit)? = null,
-    menu: @Composable (() -> Unit)? = null
+    menu: @Composable (() -> Unit)? = null,
+    isDarkMode: Boolean? = null,
+    onCycleDarkMode: () -> Unit = {}
 ) {
     val progress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
 
@@ -346,6 +372,15 @@ fun LearnHeader(
                                         leadingIcon = Icons.Rounded.AccessTime
                                     )
 
+                                    NemoMenuItem(
+                                        text = "报告条目错误",
+                                        onClick = {
+                                            expanded = false
+                                            onReportError()
+                                        },
+                                        leadingIcon = Icons.Rounded.Report
+                                    )
+
                                     // 分隔线
                                     androidx.compose.material3.HorizontalDivider(
                                         modifier = Modifier.padding(
@@ -420,6 +455,30 @@ fun LearnHeader(
                                             )
                                         }
                                     }
+
+                                    // 主题切换项 (循环模式)
+                                    val themeLabel = when (isDarkMode) {
+                                        null -> "跟随系统"
+                                        true -> "深色模式"
+                                        false -> "浅色模式"
+                                    }
+                                    val themeIcon = when (isDarkMode) {
+                                        null -> Icons.Rounded.SettingsBrightness
+                                        true -> Icons.Rounded.DarkMode
+                                        false -> Icons.Rounded.LightMode
+                                    }
+
+                                    androidx.compose.material3.HorizontalDivider(
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    )
+
+                                    NemoMenuItem(
+                                        text = "显示模式: $themeLabel",
+                                        onClick = {
+                                            onCycleDarkMode()
+                                        },
+                                        leadingIcon = themeIcon
+                                    )
                                 }
                             }
                         }
@@ -456,14 +515,14 @@ fun LevelIndicator(level: String, onClick: () -> Unit) {
         text = "JLPT $level",
         fontSize = 14.sp,
         fontWeight = FontWeight.Bold,
-        color = com.jian.nemo.core.designsystem.theme.NemoPrimary,
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .clickable(
                 onClick = onClick,
                 indication = null,
                 interactionSource = remember { MutableInteractionSource() }
             )
-            .background(Color(0xFFE6F0FF), RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
             .padding(horizontal = 10.dp, vertical = 4.dp)
     )
 }
@@ -503,86 +562,232 @@ fun GrammarSubHeader(
 // 今日学习任务完成内容组件 (Premium Design)
 @Composable
 fun LearningFinishedContent(
-    title: String = "今日目标达成！",
+    title: String = "今日任务达成！",
     subtitle: String = "坚持就是胜利，明天继续加油",
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // 1. Hero Icon with Glow Effect
-        Box(
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    
+    // 动画状态定义
+    val outerScale = remember { Animatable(0f) }
+    val innerScale = remember { Animatable(0f) }
+    val centerScale = remember { Animatable(0.5f) }
+    val centerAlpha = remember { Animatable(0f) }
+    
+    val titleAlpha = remember { Animatable(0f) }
+    val titleOffsetY = remember { Animatable(30f) }
+    
+    val subtitleAlpha = remember { Animatable(0f) }
+    val subtitleOffsetY = remember { Animatable(30f) }
+    
+    val quoteAlpha = remember { Animatable(0f) }
+    val quoteOffsetY = remember { Animatable(30f) }
+    
+    var showConfetti by remember { mutableStateOf(false) }
+
+    // 震动辅助函数 (分级强度)
+    @android.annotation.SuppressLint("MissingPermission")
+    fun triggerVibrate(duration: Long, amplitude: Int) {
+        try {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            vibrator?.let {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val effect = VibrationEffect.createOneShot(duration, amplitude.coerceIn(1, 255))
+                    it.vibrate(effect)
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.vibrate(duration)
+                }
+            }
+        } catch (e: Exception) {}
+    }
+
+    LaunchedEffect(Unit) {
+        // T+100ms: 外环弹出 (Level 1)
+        launch {
+            delay(100)
+            triggerVibrate(20, 50)
+            outerScale.animateTo(1f, tween(400))
+        }
+
+        // T+200ms: 内环弹出 (Level 2)
+        launch {
+            delay(200)
+            triggerVibrate(20, 100)
+            innerScale.animateTo(1f, tween(400))
+        }
+
+        // T+400ms: 中心图标回弹入场 (Level 3)
+        launch {
+            delay(400)
+            triggerVibrate(40, 180)
+            launch { centerAlpha.animateTo(1f, tween(200)) }
+            centerScale.animateTo(1f, spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow))
+        }
+
+        // T+800ms: 文字滑入 (Level 4)
+        launch {
+            delay(800)
+            triggerVibrate(15, 255)
+            launch { titleAlpha.animateTo(1f, tween(600)) }
+            titleOffsetY.animateTo(0f, tween(600))
+        }
+
+        launch {
+            delay(900)
+            launch { subtitleAlpha.animateTo(1f, tween(600)) }
+            subtitleOffsetY.animateTo(0f, tween(600))
+        }
+
+        // T+1100ms: 卡片滑入
+        launch {
+            delay(1100)
+            launch { quoteAlpha.animateTo(1f, tween(600)) }
+            quoteOffsetY.animateTo(0f, tween(600))
+        }
+
+        // T+1300ms: 核心环动画已完全静止，启动彩花并执行爆破震动 (强度 200)
+        launch {
+            delay(1300)
+            triggerVibrate(50, 200)
+            showConfetti = true
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .size(120.dp)
-                .background(
-                color = NemoPrimary.copy(alpha = 0.1f),
-                    shape = androidx.compose.foundation.shape.CircleShape
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            // 1. Hero Icon with Animation (UPGRADED SIZE)
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(160.dp)
+                    .graphicsLayer {
+                        scaleX = outerScale.value
+                        scaleY = outerScale.value
+                        alpha = outerScale.value.coerceIn(0f, 1f)
+                    }
                     .background(
-                        color = NemoPrimary.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                         shape = androidx.compose.foundation.shape.CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = "完成",
-                    tint = NemoPrimary,
-                    modifier = Modifier.size(48.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(110.dp)
+                        .graphicsLayer {
+                            scaleX = innerScale.value
+                            scaleY = innerScale.value
+                            alpha = innerScale.value.coerceIn(0f, 1f)
+                        }
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            shape = androidx.compose.foundation.shape.CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = "完成",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(72.dp)
+                            .graphicsLayer {
+                                scaleX = centerScale.value
+                                scaleY = centerScale.value
+                                alpha = centerAlpha.value
+                            }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // 2. Title & Subtitle with Animation
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = titleAlpha.value
+                        translationY = with(density) { titleOffsetY.value.dp.toPx() }
+                    }
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = NemoTextLight,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier
+                    .graphicsLayer {
+                        alpha = subtitleAlpha.value
+                        translationY = with(density) { subtitleOffsetY.value.dp.toPx() }
+                    }
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // 3. Quote Card with Animation
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        alpha = quoteAlpha.value
+                        translationY = with(density) { quoteOffsetY.value.dp.toPx() }
+                    }
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 24.dp, horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "“温故而知新，可以为师矣。”",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = NemoText,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // 2. Title & Subtitle
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = NemoTextLight,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // 3. Quote Card (Atmospheric)
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier.fillMaxWidth()
+        // 彩花特效层
+        AnimatedVisibility(
+            visible = showConfetti,
+            enter = fadeIn(animationSpec = tween(500)),
+            exit = fadeOut(animationSpec = tween(1500)),
+            modifier = Modifier.fillMaxSize()
         ) {
-             Column(
-                 modifier = Modifier.padding(vertical = 24.dp, horizontal = 20.dp),
-                 horizontalAlignment = Alignment.CenterHorizontally
-             ) {
-                 Text(
-                    text = "“温故而知新，可以为师矣。”",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = NemoText,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-             }
+            val primaryColorArgb = MaterialTheme.colorScheme.primary.toArgb()
+            val party = Party(
+                speed = 0f,
+                maxSpeed = 30f,
+                damping = 0.9f,
+                spread = 360,
+                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def, 0x10B981, primaryColorArgb),
+                emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
+                position = Position.Relative(0.5, 0.3)
+            )
+
+            KonfettiView(
+                modifier = Modifier.fillMaxSize(),
+                parties = listOf(party)
+            )
         }
     }
 }
@@ -661,7 +866,7 @@ fun WaitingContent(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = NemoPrimary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     shape = androidx.compose.foundation.shape.CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -669,7 +874,7 @@ fun WaitingContent(
             Icon(
                 imageVector = Icons.Rounded.AccessTime, // 需要 import Icons.Rounded.AccessTime
                 contentDescription = "Waiting",
-                tint = NemoPrimary,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -697,7 +902,7 @@ fun WaitingContent(
             text = timeText,
             style = MaterialTheme.typography.displayMedium.copy(
                 fontWeight = FontWeight.Bold,
-                color = NemoPrimary
+                color = MaterialTheme.colorScheme.primary
             ),
             textAlign = androidx.compose.ui.text.style.TextAlign.Center
         )
@@ -715,7 +920,7 @@ fun WaitingContent(
 
         Button(
             onClick = onContinue,
-            colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(25.dp)
         ) {

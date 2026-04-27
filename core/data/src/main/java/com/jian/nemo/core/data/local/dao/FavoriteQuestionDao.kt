@@ -61,4 +61,13 @@ interface FavoriteQuestionDao {
 
     @Query("SELECT * FROM favorite_questions WHERE question_text = :text LIMIT 1")
     suspend fun getByQuestionText(text: String): FavoriteQuestionEntity?
+
+    /**
+     * 获取所有收藏题目 (Cursor) - 用于流式导出
+     */
+    @Query("SELECT * FROM favorite_questions ORDER BY timestamp DESC")
+    fun getExportFavoritesCursor(): android.database.Cursor
+
+    @Query("UPDATE favorite_questions SET grammar_id = :newId WHERE grammar_id = :oldId")
+    suspend fun migrateGrammarId(oldId: Int, newId: Int)
 }

@@ -55,7 +55,8 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
                     timeRemainingSeconds = uiState.timeRemainingSeconds,
                     word = currentQuestion.word,
                     grammar = currentQuestion.grammar,
-                    onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) }
+                    onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) },
+                    onPause = { viewModel.pauseTest() }
                 )
             },
             progressContent = {

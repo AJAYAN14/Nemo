@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import com.jian.nemo.core.domain.model.User
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +31,7 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
+
 
 // 定义颜色常量
 private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
@@ -46,7 +48,8 @@ fun NemoBottomBar(
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
     visible: Boolean = true,
-    hazeState: HazeState? = null
+    hazeState: HazeState? = null,
+    user: User? = null
 ) {
     // 根据主题判断深色/浅色模式
     val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5
@@ -113,7 +116,8 @@ fun NemoBottomBar(
                         item = item,
                         isSelected = isSelected,
                         onClick = { onNavigate(item.route) },
-                        isDarkTheme = isDarkTheme
+                        isDarkTheme = isDarkTheme,
+                        user = user
                     )
                 }
             }
@@ -129,15 +133,16 @@ private fun CapsuleNavItem(
     item: BottomNavItem,
     isSelected: Boolean,
     onClick: () -> Unit,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    user: User? = null
 ) {
     // 交互无默认波纹效果，模拟 HTML 手感
     val interactionSource = remember { MutableInteractionSource() }
     val view = LocalView.current
     
     // 动态适配深浅模式对应选项卡的激活颜色与图标文字配色
-    val activeBgColor = if (isDarkTheme) Color(0xFFF3F4F6) else Color(0xFF111827)
-    val activeContentColor = if (isDarkTheme) Color(0xFF111827) else Color.White
+    val activeBgColor = MaterialTheme.colorScheme.primary // 使用动态主题色
+    val activeContentColor = Color.White // 选中内容统一使用白色
     val inactiveContentColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF9CA3AF)
 
     // 渐变动画
@@ -171,12 +176,24 @@ private fun CapsuleNavItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = item.title,
-                tint = contentColor,
-                modifier = Modifier.size(24.dp)
-            )
+            if (item == BottomNavItem.SETTINGS && user != null) {
+                // 已登录且是“个人”Tab，显示头像
+                AvatarImage(
+                    username = user.username,
+                    avatarPath = user.avatarUrl,
+                    size = 24.dp,
+                    borderWidth = if (isSelected) 1.dp else 0.dp,
+                    borderColor = Color.White.copy(alpha = 0.5f)
+                )
+            } else {
+                // 默认显示 Icon
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = item.title,
+                    tint = contentColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             
             // 选中文本内容的横向展开动画
             AnimatedVisibility(

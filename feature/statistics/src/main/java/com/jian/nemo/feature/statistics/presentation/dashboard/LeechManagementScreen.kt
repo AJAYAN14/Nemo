@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -91,7 +90,7 @@ fun LeechManagementScreen(
                     title = "单词",
                     count = uiState.skippedWords.size,
                     isSelected = uiState.selectedTab == LeechTab.Word,
-                    selectedColor = NemoPrimary,
+                    selectedColor = MaterialTheme.colorScheme.primary,
                     onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Word)) }
                 )
 
@@ -99,7 +98,7 @@ fun LeechManagementScreen(
                     title = "语法",
                     count = uiState.skippedGrammars.size,
                     isSelected = uiState.selectedTab == LeechTab.Grammar,
-                    selectedColor = NemoPrimary,
+                    selectedColor = MaterialTheme.colorScheme.primary,
                     onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Grammar)) }
                 )
             }
@@ -109,7 +108,7 @@ fun LeechManagementScreen(
             // 2. Content Area
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = NemoPrimary)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else {
                 AnimatedContent(
@@ -232,7 +231,7 @@ private fun LeechWordCard(word: Word, onRecover: () -> Unit) {
     LeechItemCardBase(
         title = word.japanese,
         subtitle = "${word.hiragana ?: ""} ${word.chinese}",
-        tagColor = NemoPrimary,
+        tagColor = MaterialTheme.colorScheme.primary,
         onRecover = onRecover
     )
 }
@@ -245,7 +244,7 @@ private fun LeechGrammarCard(grammar: Grammar, onRecover: () -> Unit) {
     LeechItemCardBase(
         title = grammar.grammar,
         subtitle = grammar.getFirstExplanation(),
-        tagColor = NemoPrimary,
+        tagColor = MaterialTheme.colorScheme.primary,
         onRecover = onRecover
     )
 }

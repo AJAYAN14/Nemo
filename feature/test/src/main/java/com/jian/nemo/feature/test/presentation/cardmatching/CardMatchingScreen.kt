@@ -67,7 +67,8 @@ fun CardMatchingScreen(
                 CardMatchingTestHeader(
                     onBack = { viewModel.confirmExitTest() },
                     timeLimitSeconds = uiState.timeLimitSeconds,
-                    timeRemainingSeconds = uiState.timeRemainingSeconds
+                    timeRemainingSeconds = uiState.timeRemainingSeconds,
+                    onPause = { viewModel.pauseTest() }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

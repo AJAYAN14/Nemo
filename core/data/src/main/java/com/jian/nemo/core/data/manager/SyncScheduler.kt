@@ -24,7 +24,7 @@ class SyncScheduler @Inject constructor(
     }
 
     override fun startSync() {
-        Log.d(TAG, "手动触发单次后台同步...")
+        Log.d(TAG, "手动触发单次同步任务 (Unique: manual_sync)...")
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
@@ -34,14 +34,16 @@ class SyncScheduler @Inject constructor(
             .addTag(AutoSyncWorker.WORK_NAME)
             .build()
 
+        // 使用固定名称和 REPLACE 策略，确保队列中只有一个待执行任务，防止堆积
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "one_time_sync_${System.currentTimeMillis()}",
+            "nemo_manual_sync_task",
             ExistingWorkPolicy.REPLACE,
             syncRequest
         )
     }
 
     override fun startPeriodicSync() {
+        // Android 系统要求周期性任务最小间隔为 15 分钟
         Log.d(TAG, "启动周期性后台同步调度 (15分钟/次)...")
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)

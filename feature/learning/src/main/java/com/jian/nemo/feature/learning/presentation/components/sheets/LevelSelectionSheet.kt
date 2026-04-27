@@ -104,18 +104,14 @@ private fun LevelSelectionCard(
     val themePrimary = primaryColor
     val surfaceColor = BentoColors.Surface
     val onSurfaceColor = BentoColors.TextMain
-    val outlineVariant = BentoColors.TextSub.copy(alpha = 0.5f)
+
+    // Premium Gray for Unselected
+    val premiumGrayLow = androidx.compose.ui.graphics.Color(0xFFF2F2F7)
 
     // Animations
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) themePrimary.copy(alpha = 0.08f) else surfaceColor,
+        targetValue = if (isSelected) themePrimary.copy(alpha = 0.12f) else premiumGrayLow,
         label = "cardBg",
-        animationSpec = tween(300)
-    )
-
-    val borderColor by animateColorAsState(
-        targetValue = if (isSelected) themePrimary else outlineVariant.copy(alpha = 0.5f),
-        label = "cardBorder",
         animationSpec = tween(300)
     )
 
@@ -128,9 +124,8 @@ private fun LevelSelectionCard(
     )
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         color = backgroundColor,
-        border = BorderStroke(if (isSelected) 2.dp else 1.dp, borderColor),
         modifier = Modifier
             .graphicsLayer {
                 scaleX = scale
@@ -145,7 +140,7 @@ private fun LevelSelectionCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 24.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -167,7 +162,7 @@ private fun LevelSelectionCard(
             Icon(
                 imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                 contentDescription = null,
-                tint = if (isSelected) themePrimary else BentoColors.TextSub,
+                tint = if (isSelected) themePrimary else BentoColors.TextSub.copy(alpha = 0.5f),
                 modifier = Modifier.size(24.dp)
             )
         }

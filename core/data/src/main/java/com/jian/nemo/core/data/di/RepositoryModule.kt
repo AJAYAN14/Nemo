@@ -18,6 +18,8 @@ import com.jian.nemo.core.data.repository.AuthRepositoryImpl
 import com.jian.nemo.core.data.repository.AudioRepositoryImpl
 import com.jian.nemo.core.domain.repository.AuthRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
+import com.jian.nemo.core.domain.repository.ContentReportRepository
+import com.jian.nemo.core.data.repository.ContentReportRepositoryImpl
 import com.jian.nemo.core.data.repository.SyncRepositoryImpl
 import com.jian.nemo.core.data.repository.ConfigRepositoryImpl
 import com.jian.nemo.core.data.repository.ContentRepositoryImpl
@@ -188,5 +190,10 @@ abstract class RepositoryModule {
         impl: com.jian.nemo.core.data.repository.FavoriteQuestionRepositoryImpl
     ): com.jian.nemo.core.domain.repository.FavoriteQuestionRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindContentReportRepository(
+        impl: ContentReportRepositoryImpl
+    ): ContentReportRepository
 
 }

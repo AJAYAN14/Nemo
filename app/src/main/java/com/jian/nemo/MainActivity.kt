@@ -1,6 +1,7 @@
 package com.jian.nemo
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -49,6 +51,10 @@ import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
 import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import com.jian.nemo.core.common.util.SyncEvent
+import com.jian.nemo.core.common.util.SyncMessageBus
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 
 /**
  * Nemo 2.0 应用程序入口
@@ -65,14 +71,27 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var syncService: SyncService
 
+    @Inject
+    lateinit var syncMessageBus: SyncMessageBus
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onStart() {
+        super.onStart()
+        syncService.onAppForeground()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        syncService.onAppBackground()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // 触发自动同步检查
-        syncService.onAppForeground()
+        // 触发自动同步检查 (初次加载)
+        // syncService.onAppForeground() // 挪到 onStart 中统一管理
 
         // 在首次启动时强制初始化数据库
         applicationScope.launch {
@@ -91,17 +110,63 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            // 获取主题配置
-            val darkMode by settingsRepository.isDarkModeFlow.collectAsState(initial = null)
-            val dynamicColor by settingsRepository.isDynamicColorEnabledFlow.collectAsState(initial = false)
+            // 1. 响应式的时间流：每分钟更新一次当前时间，用于驱动自动主题切换
+            val currentTime by produceState(initialValue = java.time.LocalTime.now()) {
+                while (true) {
+                    kotlinx.coroutines.delay(1000 * 60) // 每分钟检查一次，权衡实时性与功耗
+                    value = java.time.LocalTime.now()
+                }
+            }
 
-            val isDarkTheme = darkMode ?: isSystemInDarkTheme()
+            // 2. 获取主题配置
+            val darkMode by settingsRepository.isDarkModeFlow.collectAsState(initial = null)
+            val strategy by settingsRepository.darkModeStrategyFlow.collectAsState(initial = "system")
+            val startTime by settingsRepository.darkModeStartTimeFlow.collectAsState(initial = "22:00")
+            val endTime by settingsRepository.darkModeEndTimeFlow.collectAsState(initial = "07:00")
+
+            val isSystemDark = isSystemInDarkTheme()
+
+            // 3. 核心主题判定逻辑
+            val isDarkTheme = remember(darkMode, strategy, startTime, endTime, isSystemDark, currentTime) {
+                val result = when {
+                    // 手动强制模式优先
+                    darkMode != null -> darkMode!!
+                    // 自动切换：跟随系统
+                    strategy == "system" -> isSystemDark
+                    // 自动切换：定时深色模式
+                    else -> {
+                        try {
+                            val start = java.time.LocalTime.parse(startTime)
+                            val end = java.time.LocalTime.parse(endTime)
+                            
+                            val isScheduledDark = if (start.isBefore(end)) {
+                                // 场景 A: 08:00 - 18:00 (不跨午夜)
+                                (currentTime.isAfter(start) || currentTime.equals(start)) && currentTime.isBefore(end)
+                            } else {
+                                // 场景 B: 22:00 - 07:00 (跨午夜)
+                                // 如果当前时间不在 [结束时间, 开始时间) 之间，则认为是夜间
+                                !( (currentTime.isAfter(end) || currentTime.equals(end)) && currentTime.isBefore(start) )
+                            }
+                            Log.d("ThemeCheck", "ScheduledDark: $isScheduledDark")
+                            isScheduledDark
+                        } catch (e: Exception) {
+                            Log.e("ThemeCheck", "Parse failed: $startTime/$endTime", e)
+                            isSystemDark
+                        }
+                    }
+                }
+                result
+            }
+
+            // 4. 获取用户自定义主题色
+            val themeColorLong by settingsRepository.themeColorFlow.collectAsState(initial = null)
 
             NemoTheme(
                 darkTheme = isDarkTheme,
-                dynamicColor = false // 禁用动态取色以强制使用品牌色 #0E68FF
+                dynamicColor = false, // 禁用动态取色以强制使用品牌色
+                themeColor = themeColorLong?.let { Color(it.toULong()) }
             ) {
-                NemoApp()
+                NemoApp(syncMessageBus = syncMessageBus)
             }
         }
     }
@@ -109,7 +174,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NemoApp(
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    syncMessageBus: SyncMessageBus
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -168,7 +234,8 @@ fun NemoApp(
                     }
                 },
                 visible = showBottomBar,
-                hazeState = hazeState
+                hazeState = hazeState,
+                user = uiState.currentUser
             )
         },
         // Edge-to-Edge：各页面自行处理系统栏 Insets，禁用 Scaffold 默认 Insets
@@ -213,6 +280,20 @@ fun NemoApp(
                     android.widget.Toast.makeText(context, "已是最新版本", android.widget.Toast.LENGTH_SHORT).show()
                 }
                 is UpdateCheckEvent.Error -> {
+                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    // 监听全局同步事件
+    LaunchedEffect(Unit) {
+        syncMessageBus.syncEvents.collect { event: SyncEvent ->
+            when (event) {
+                is SyncEvent.Success -> {
+                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
+                }
+                is SyncEvent.Error -> {
                     android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
                 }
             }

@@ -5,8 +5,13 @@ package com.jian.nemo.feature.settings
  */
 data class SettingsUiState(
     // 外观设置
-    val darkMode: DarkModeOption = DarkModeOption.FOLLOW_SYSTEM,
+    val darkMode: DarkModeOption = DarkModeOption.AUTO,
+    val themeColor: Long? = null,  // null = 默认品牌蓝
+    val darkModeStrategy: DarkModeStrategy = DarkModeStrategy.FOLLOW_SYSTEM,
+    val darkModeStartTime: String = "07:00",
+    val darkModeEndTime: String = "19:00",
     val isDynamicColorEnabled: Boolean = true,
+    val appIcon: String = "Nemo", // 当前应用图标名称
 
     // 学习设置
     val dailyGoal: Int = 20,
@@ -59,9 +64,17 @@ data class SettingsUiState(
  * 深色模式选项
  */
 enum class DarkModeOption {
-    FOLLOW_SYSTEM,  // 跟随系统
+    AUTO,           // 自动
     LIGHT,          // 浅色
     DARK            // 深色
+}
+
+/**
+ * 自动模式下的策略
+ */
+enum class DarkModeStrategy {
+    FOLLOW_SYSTEM,  // 跟随系统
+    SCHEDULED       // 定时切换
 }
 
 /**
@@ -76,16 +89,20 @@ enum class ConflictResolutionOption {
  * 设置界面事件
  */
 sealed interface SettingsEvent {
-    // 外观设置
     data class SetDarkMode(
         val option: DarkModeOption,
         val triggerX: Float = 0f,
         val triggerY: Float = 0f
     ) : SettingsEvent
+    data class SetDarkModeStrategy(val strategy: DarkModeStrategy) : SettingsEvent
+    data class SetDarkModeStartTime(val time: String) : SettingsEvent
+    data class SetDarkModeEndTime(val time: String) : SettingsEvent
     data class SetDynamicColor(val enabled: Boolean) : SettingsEvent
+    data class SetThemeColor(val colorArgb: Long?) : SettingsEvent
 
     // 学习设置
     data class SetDailyGoal(val goal: Int) : SettingsEvent
+    data class SetAppIcon(val iconName: String) : SettingsEvent
     data class SetGrammarDailyGoal(val goal: Int) : SettingsEvent
     data class SetLearningDayResetHour(val hour: Int) : SettingsEvent
     data class SetRandomNewContentEnabled(val enabled: Boolean) : SettingsEvent
@@ -94,6 +111,17 @@ sealed interface SettingsEvent {
     data class SetLearnAheadLimit(val limit: Int) : SettingsEvent
     data class SetLeechThreshold(val threshold: Int) : SettingsEvent
     data class SetLeechAction(val action: String) : SettingsEvent
+
+    /**
+     * 原子保存高级学习设置
+     */
+    data class SaveAdvancedLearningSettings(
+        val learningSteps: String,
+        val relearningSteps: String,
+        val learnAheadLimit: Int,
+        val leechThreshold: Int,
+        val leechAction: String
+    ) : SettingsEvent
 
     // TTS 设置
     data class SetTtsSpeechRate(val rate: Float) : SettingsEvent

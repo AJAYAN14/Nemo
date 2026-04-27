@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.jian.nemo.core.domain.repository.SyncRepository
+import android.util.Log
 import javax.inject.Inject
 
 /**
@@ -28,7 +29,8 @@ class SettingsViewModel @Inject constructor(
     private val resetProgressUseCase: com.jian.nemo.core.domain.usecase.settings.ResetProgressUseCase,
     private val repairDataUseCase: com.jian.nemo.core.domain.usecase.settings.RepairDataUseCase,
     private val playTtsUseCase: com.jian.nemo.core.domain.usecase.audio.PlayTtsUseCase,
-    private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository
+    private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
+    private val application: android.app.Application
 ) : ViewModel() {
 
     // UI状态
@@ -100,8 +102,18 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val appearanceFlow = combine(
                 settingsRepository.isDarkModeFlow,
-                settingsRepository.isDynamicColorEnabledFlow
-            ) { darkMode, dynamicColor -> Pair(darkMode, dynamicColor) }
+                settingsRepository.isDynamicColorEnabledFlow,
+                settingsRepository.darkModeStrategyFlow,
+                settingsRepository.darkModeStartTimeFlow,
+                settingsRepository.darkModeEndTimeFlow
+            ) { darkMode, dynamicColor, strategy, startTime, endTime ->
+                ThemeSettings(darkMode, dynamicColor, strategy, startTime, endTime)
+            }.combine(settingsRepository.themeColorFlow) { theme, themeColor ->
+                theme.copy(themeColor = themeColor)
+            }.combine(settingsRepository.appIconFlow) { theme, appIcon ->
+                 _uiState.update { it.copy(appIcon = appIcon) }
+                 theme // return theme for next combined
+            }
 
             val goalsFlow = combine(
                 settingsRepository.dailyGoalFlow,
@@ -149,15 +161,22 @@ class SettingsViewModel @Inject constructor(
                 syncFlow,
                 advancedFlow,
                 ttsFlow
-            ) { (darkMode, dynamicColor), (dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring), (lastSyncTime, isAutoSyncEnabled, conflictCount), advanced, (rate, pitch, voiceName) ->
+            ) { theme, (dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring), (lastSyncTime, isAutoSyncEnabled, conflictCount), advanced, (rate, pitch, voiceName) ->
                 _uiState.update { state ->
                     state.copy(
-                        darkMode = when (darkMode) {
-                            null -> DarkModeOption.FOLLOW_SYSTEM
+                        darkMode = when (theme.darkMode) {
+                            null -> DarkModeOption.AUTO
                             true -> DarkModeOption.DARK
                             false -> DarkModeOption.LIGHT
                         },
-                        isDynamicColorEnabled = dynamicColor,
+                        darkModeStrategy = when (theme.strategy) {
+                            "scheduled" -> DarkModeStrategy.SCHEDULED
+                            else -> DarkModeStrategy.FOLLOW_SYSTEM
+                        },
+                        darkModeStartTime = theme.startTime,
+                        darkModeEndTime = theme.endTime,
+                        isDynamicColorEnabled = theme.dynamicColor,
+                        themeColor = theme.themeColor,
                         dailyGoal = dailyGoal,
                         grammarDailyGoal = grammarDailyGoal,
                         learningDayResetHour = resetHour,
@@ -184,8 +203,13 @@ class SettingsViewModel @Inject constructor(
     fun onEvent(event: SettingsEvent) {
         when (event) {
             is SettingsEvent.SetDarkMode -> setDarkMode(event.option)
+            is SettingsEvent.SetDarkModeStrategy -> setDarkModeStrategy(event.strategy)
+            is SettingsEvent.SetDarkModeStartTime -> setDarkModeStartTime(event.time)
+            is SettingsEvent.SetDarkModeEndTime -> setDarkModeEndTime(event.time)
             is SettingsEvent.SetDynamicColor -> setDynamicColor(event.enabled)
+            is SettingsEvent.SetThemeColor -> setThemeColor(event.colorArgb)
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
+            is SettingsEvent.SetAppIcon -> setAppIcon(event.iconName)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
             is SettingsEvent.SetLearningDayResetHour -> setLearningDayResetHour(event.hour)
             is SettingsEvent.SetRandomNewContentEnabled -> setRandomNewContentEnabled(event.enabled)
@@ -197,6 +221,13 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetLearnAheadLimit -> setLearnAheadLimit(event.limit)
             is SettingsEvent.SetLeechThreshold -> setLeechThreshold(event.threshold)
             is SettingsEvent.SetLeechAction -> setLeechAction(event.action)
+            is SettingsEvent.SaveAdvancedLearningSettings -> saveAdvancedLearningSettings(
+                event.learningSteps,
+                event.relearningSteps,
+                event.learnAheadLimit,
+                event.leechThreshold,
+                event.leechAction
+            )
 
             is SettingsEvent.SetTtsSpeechRate -> setTtsSpeechRate(event.rate)
             is SettingsEvent.SetTtsPitch -> setTtsPitch(event.pitch)
@@ -331,11 +362,33 @@ class SettingsViewModel @Inject constructor(
     private fun setDarkMode(option: DarkModeOption) {
         viewModelScope.launch {
             val value = when (option) {
-                DarkModeOption.FOLLOW_SYSTEM -> null
+                DarkModeOption.AUTO -> null
                 DarkModeOption.LIGHT -> false
                 DarkModeOption.DARK -> true
             }
             settingsRepository.setDarkMode(value)
+        }
+    }
+
+    private fun setDarkModeStrategy(strategy: DarkModeStrategy) {
+        viewModelScope.launch {
+            val value = when (strategy) {
+                DarkModeStrategy.FOLLOW_SYSTEM -> "system"
+                DarkModeStrategy.SCHEDULED -> "scheduled"
+            }
+            settingsRepository.setDarkModeStrategy(value)
+        }
+    }
+
+    private fun setDarkModeStartTime(time: String) {
+        viewModelScope.launch {
+            settingsRepository.setDarkModeStartTime(time)
+        }
+    }
+
+    private fun setDarkModeEndTime(time: String) {
+        viewModelScope.launch {
+            settingsRepository.setDarkModeEndTime(time)
         }
     }
 
@@ -349,12 +402,25 @@ class SettingsViewModel @Inject constructor(
     }
 
     /**
+     * 设置主题色
+     */
+    private fun setThemeColor(colorArgb: Long?) {
+        viewModelScope.launch {
+            settingsRepository.setThemeColor(colorArgb)
+        }
+    }
+
+    /**
      * 设置每日目标
      */
     private fun setDailyGoal(goal: Int) {
         viewModelScope.launch {
             settingsRepository.setDailyGoal(goal)
             _uiState.update { it.copy(showDailyGoalDialog = false) }
+
+            // 🎯 动态提示次日生效时间
+            val resetHour = _uiState.value.learningDayResetHour
+            updateStatusMessage("目标设置成功，将于明天凌晨${resetHour}:00后生效", 5000)
         }
     }
 
@@ -365,6 +431,54 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setGrammarDailyGoal(goal)
             _uiState.update { it.copy(showGrammarDailyGoalDialog = false) }
+
+            // 🎯 动态提示次日生效时间
+            val resetHour = _uiState.value.learningDayResetHour
+            updateStatusMessage("目标设置成功，将于明天凌晨${resetHour}:00后生效", 5000)
+        }
+    }
+
+    /**
+     * 设置应用图标
+     */
+    private fun setAppIcon(iconName: String) {
+        viewModelScope.launch {
+            // 1. 保存到 DataStore
+            settingsRepository.setAppIcon(iconName)
+            
+            // 2. 执行物理切换 (PackageManager)
+            try {
+                val packageManager = application.packageManager
+                val packageName = application.packageName
+                
+                // 定义所有的图标组件别名 (必须与 AndroidManifest.xml 一致)
+                val icons = listOf("Nemo", "Gold", "Daruma", "Zen")
+                
+                icons.forEach { name ->
+                    val componentName = android.content.ComponentName(
+                        packageName,
+                        "$packageName.MainActivity$name"
+                    )
+                    
+                    val newState = if (name == iconName) {
+                        android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                    } else {
+                        android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+                    }
+                    
+                    packageManager.setComponentEnabledSetting(
+                        componentName,
+                        newState,
+                        android.content.pm.PackageManager.DONT_KILL_APP
+                    )
+                }
+                
+                Log.i("SettingsViewModel", "App icon changed to: $iconName")
+                updateStatusMessage("应用图标已切换为 [$iconName]，桌面图标更新可能需要几秒钟")
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Failed to change app icon", e)
+                updateStatusMessage("切换图标失败: ${e.message}")
+            }
         }
     }
 
@@ -422,6 +536,26 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val normalized = if (action == "bury_today") "bury_today" else "skip"
             settingsRepository.setLeechAction(normalized)
+        }
+    }
+
+    private fun saveAdvancedLearningSettings(
+        learningSteps: String,
+        relearningSteps: String,
+        learnAheadLimit: Int,
+        leechThreshold: Int,
+        leechAction: String
+    ) {
+        viewModelScope.launch {
+            settingsRepository.saveAdvancedLearningSettings(
+                learningSteps,
+                relearningSteps,
+                learnAheadLimit,
+                leechThreshold,
+                leechAction
+            )
+            // 可选：在保存成功后给出一个小提示
+            // updateStatusMessage("高级学习设置已保存", 3000)
         }
     }
 
@@ -504,6 +638,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 }
+
+private data class ThemeSettings(
+    val darkMode: Boolean?,
+    val dynamicColor: Boolean,
+    val strategy: String,
+    val startTime: String,
+    val endTime: String,
+    val themeColor: Long? = null
+)
 
 data class Quintuple<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)
 

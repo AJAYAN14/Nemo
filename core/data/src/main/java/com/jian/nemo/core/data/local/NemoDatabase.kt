@@ -26,7 +26,7 @@ import com.jian.nemo.core.data.local.entity.*
         GrammarStudyStateEntity::class,
         FavoriteQuestionEntity::class
     ],
-    version = 15,  // v15: FSRS 6 - 添加 stability/difficulty 替代 easiness_factor
+    version = 17,  // v17: 单词 ID 步长改为 10000，解决 N4/N5 单词 ID 冲突缺失问题 callback工作callback
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

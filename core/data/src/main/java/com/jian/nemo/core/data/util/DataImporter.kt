@@ -28,6 +28,21 @@ class DataImporter(
 ) {
     companion object {
         private const val TAG = "DataImporter"
+
+        /**
+         * 从字符串 ID 提取数字 ID
+         *
+         * 转换规则：
+         * - "N1_001" -> 1001
+         * - "N2_050" -> 2050
+         * - "N5_123" -> 5123
+         */
+        fun extractNumericId(id: String): Int {
+            val parts = id.split("_")
+            val level = parts[0].substring(1).toInt() // "N1" -> 1
+            val num = parts[1].toInt()                // "001" -> 1
+            return level * 10000 + num
+        }
     }
     /**
      * 导入所有单词数据 (智能同步版)
@@ -245,6 +260,7 @@ class DataImporter(
  */
 fun WordDto.toEntity(): WordEntity {
     return WordEntity(
+        id = DataImporter.extractNumericId(rawId),
         japanese = japanese,
         hiragana = hiragana,
         chinese = chinese,
@@ -269,7 +285,7 @@ fun WordDto.toEntity(): WordEntity {
  */
 fun GrammarDto.toGrammarEntity(): GrammarEntity {
     return GrammarEntity(
-        id = extractNumericId(id),
+        id = DataImporter.extractNumericId(id),
         grammar = title,
         grammarLevel = level.uppercase(),
         isDelisted = delisted
@@ -280,7 +296,7 @@ fun GrammarDto.toGrammarEntity(): GrammarEntity {
  * 将 GrammarDto 的 usages 转换为 GrammarUsageEntity 列表
  */
 fun GrammarDto.toUsageEntities(): List<GrammarUsageEntity> {
-    val grammarId = extractNumericId(id)
+    val grammarId = DataImporter.extractNumericId(id)
     return usages.mapIndexed { index, usage ->
         GrammarUsageEntity(
             grammarId = grammarId,
@@ -317,19 +333,4 @@ fun GrammarDto.toExampleEntities(usageIds: List<Long>): List<GrammarExampleEntit
     }
 
     return result
-}
-
-/**
- * 从字符串 ID 提取数字 ID
- *
- * 转换规则：
- * - "N1_001" -> 1001
- * - "N2_050" -> 2050
- * - "N5_123" -> 5123
- */
-private fun extractNumericId(id: String): Int {
-    val parts = id.split("_")
-    val level = parts[0].substring(1).toInt() // "N1" -> 1
-    val num = parts[1].toInt()                // "001" -> 1
-    return level * 1000 + num
 }
