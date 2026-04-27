@@ -43,3 +43,6 @@ keystore/
 *.keystore
 local.properties
 gradle.properties
+
+# Build output
+bin/
