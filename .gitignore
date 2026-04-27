@@ -46,3 +46,7 @@ gradle.properties
 
 # Build output
 bin/
+
+# Local sync tool output
+实时同步的nemo/
+
