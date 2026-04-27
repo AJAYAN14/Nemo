@@ -323,14 +323,25 @@ class LearningViewModel @Inject constructor(
 
         _uiState.update { it.copy(dailyGoal = newGoal) }
 
+        if (state.status == LearningStatus.Learning || state.status == LearningStatus.Waiting) {
+            println("每日目标变更 ($newGoal)，正在触发热重载以同步队列...")
+            
+            // 1. 立即保存当前进度到 DataStore，确保重载时能恢复到当前位置
+            saveSessionState(
+                ids = if (state.learningMode == LearningMode.Word) state.wordList.map { it.id } else state.grammarList.map { it.id },
+                index = state.currentIndex,
+                level = state.selectedLevel
+            )
+
+            // 2. 重新触发启动逻辑（利用 SessionLoader 的恢复模式进行动态裁剪）
+            startLearning(state.selectedLevel)
+        }
+
         if (completedToday >= newGoal) {
-            // 已达标，但不强制结束
             println("豁免机制: 目标改为 $newGoal，已学 $completedToday，今日已达标")
             _uiState.update {
                 it.copy(error = "今日目标已达标！可继续学习或退出")
             }
-        } else {
-            println("目标更新: $newGoal (已学 $completedToday)")
         }
     }
 
@@ -546,7 +557,8 @@ class LearningViewModel @Inject constructor(
                 if (r is Result.Success) r.data else emptyList()
             },
             getItemId = { it.id },
-            filterByLevel = { it.level == level }
+            filterByLevel = { it.level == level },
+            isItemNew = { it.repetitionCount == 0 }
         )
     }
 
@@ -572,7 +584,8 @@ class LearningViewModel @Inject constructor(
                 if (r is Result.Success) r.data else emptyList()
             },
             getItemId = { it.id },
-            filterByLevel = { it.grammarLevel == level }
+            filterByLevel = { it.grammarLevel == level },
+            isItemNew = { it.repetitionCount == 0 }
         )
     }
 

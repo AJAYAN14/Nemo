@@ -24,25 +24,29 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
 
-// Heatmap Colors (GitHub Style)
 // Heatmap Colors (Fire Style)
-private val Level0 = Color(0xFFEBEDF0) // Empty
-private val Level1 = Color(0xFFFFD7D5) // Low (Pale Red)
-private val Level2 = Color(0xFFFFA39E) // Medium (Light Red)
-private val Level3 = Color(0xFFFF4D4F) // High (Bright Red)
-private val Level4 = Color(0xFFCF1322) // Intense (Deep Red)
+private val Level0 = Color(0xFFEBEDF0)
+private val Level1 = Color(0xFFFFD7D5)
+private val Level2 = Color(0xFFFFA39E)
+private val Level3 = Color(0xFFFF4D4F)
+private val Level4 = Color(0xFFCF1322)
 
 // Dark Mode Colors (Fire Style)
 private val Level0Dark = Color(0xFF161B22)
-private val Level1Dark = Color(0xFF3A1C1C) // Dark Pale Red
-private val Level2Dark = Color(0xFF682424) // Dark Medium Red
-private val Level3Dark = Color(0xFFB52A2A) // Dark Bright Red
-private val Level4Dark = Color(0xFFE63E3E) // Dark Intense Red
+private val Level1Dark = Color(0xFF3A1C1C)
+private val Level2Dark = Color(0xFF682424)
+private val Level3Dark = Color(0xFFB52A2A)
+private val Level4Dark = Color(0xFFE63E3E)
+
+private val WEEKDAYS = listOf("", "二", "", "四", "", "六", "")
+private val MONTHS = listOf("1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月")
 
 @Composable
 fun LearningHeatmapCard(
@@ -98,60 +102,139 @@ private fun HeatmapContent(
     val blockSizePx = with(density) { blockSize.toPx() }
     val spacingPx = with(density) { spacing.toPx() }
 
-    // Logic: 7 rows
-    val totalDays = data.size
+    // Monday start: padding to align first row to Monday
+    val paddedData = remember(data) {
+        if (data.isEmpty()) return@remember emptyList<HeatmapDay?>()
+        val calendar = java.util.Calendar.getInstance().apply { 
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+            timeInMillis = data[0].date * 86400000L 
+        }
+        val firstDayOfWeek = (calendar.get(java.util.Calendar.DAY_OF_WEEK) - java.util.Calendar.MONDAY + 7) % 7
+        List(firstDayOfWeek) { null } + data
+    }
+
+    val totalDays = paddedData.size
     val weeks = (totalDays + 6) / 7
 
-    val totalWidth = (blockSize + spacing) * weeks
-    val totalHeight = (blockSize + spacing) * 7
+    val weekdayLabelWidth = 28.dp
+    val monthHeaderHeight = 20.dp
+    val totalWidth = (blockSize + spacing) * weeks + weekdayLabelWidth
+    val totalHeight = (blockSize + spacing) * 7 + monthHeaderHeight
 
-    // Auto scroll to end on first load
-    LaunchedEffect(Unit) {
-        scrollState.scrollTo(scrollState.maxValue)
+    // Auto scroll to end when layout is ready
+    LaunchedEffect(scrollState.maxValue) {
+        if (scrollState.maxValue > 0) {
+            scrollState.scrollTo(scrollState.maxValue)
+        }
     }
 
     // Selected Info
     var selectedDay by remember { mutableStateOf<HeatmapDay?>(null) }
+    
+    // Month Labels Calculation
+    val monthLabels = remember(paddedData) {
+        val labels = mutableListOf<Pair<String, Int>>()
+        var currentMonth = -1
+        paddedData.forEachIndexed { index, day ->
+            if (day != null) {
+                val calendar = java.util.Calendar.getInstance().apply { 
+                    timeZone = java.util.TimeZone.getTimeZone("UTC")
+                    timeInMillis = day.date * 86400000L 
+                }
+                val month = calendar.get(java.util.Calendar.MONTH)
+                val weekIndex = index / 7
+                if (month != currentMonth) {
+                    if (labels.isEmpty() || weekIndex > labels.last().second + 2) {
+                        labels.add(MONTHS[month] to weekIndex)
+                        currentMonth = month
+                    }
+                }
+            }
+        }
+        labels
+    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .horizontalScroll(scrollState)
-    ) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        // 1. Fixed Sidebar (Weekday Labels)
+        val textPaint = android.graphics.Paint().apply {
+            color = if (isDarkTheme) android.graphics.Color.parseColor("#8B949E") else android.graphics.Color.parseColor("#64748B")
+            textSize = with(density) { 10.sp.toPx() }
+            isAntiAlias = true
+        }
+
         Canvas(
             modifier = Modifier
-                .size(width = totalWidth, height = totalHeight)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { offset ->
-                            val col = (offset.x / (blockSizePx + spacingPx)).toInt()
-                            val row = (offset.y / (blockSizePx + spacingPx)).toInt()
-                            val index = col * 7 + row
-                            if (index in data.indices) {
-                                selectedDay = data[index]
-                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                            }
-                            tryAwaitRelease()
-                            selectedDay = null
-                        }
+                .size(width = weekdayLabelWidth, height = totalHeight)
+        ) {
+            val headerHeightPx = monthHeaderHeight.toPx()
+            WEEKDAYS.forEachIndexed { index, label ->
+                if (label.isNotEmpty()) {
+                    drawContext.canvas.nativeCanvas.drawText(
+                        label,
+                        0f,
+                        headerHeightPx + index * (blockSizePx + spacingPx) + blockSizePx * 0.8f,
+                        textPaint
                     )
                 }
+            }
+        }
+
+        // 2. Scrollable Content (Months + Heatmap Grid)
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .horizontalScroll(scrollState)
         ) {
-            data.forEachIndexed { index, day ->
-                val col = index / 7
-                val row = index % 7
+            Canvas(
+                modifier = Modifier
+                    .size(width = totalWidth - weekdayLabelWidth, height = totalHeight)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = { offset ->
+                                val col = (offset.x / (blockSizePx + spacingPx)).toInt()
+                                val row = ((offset.y - with(density) { monthHeaderHeight.toPx() }) / (blockSizePx + spacingPx)).toInt()
+                                val index = col * 7 + row
+                                if (index in paddedData.indices && col >= 0 && row >= 0) {
+                                    selectedDay = paddedData[index]
+                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                }
+                                tryAwaitRelease()
+                                selectedDay = null
+                            }
+                        )
+                    }
+            ) {
+                val headerHeightPx = monthHeaderHeight.toPx()
 
-                val x = col * (blockSizePx + spacingPx)
-                val y = row * (blockSizePx + spacingPx)
+                // Draw Month Labels
+                monthLabels.forEach { (name, weekIndex) ->
+                    drawContext.canvas.nativeCanvas.drawText(
+                        name,
+                        weekIndex * (blockSizePx + spacingPx),
+                        headerHeightPx * 0.7f,
+                        textPaint
+                    )
+                }
 
-                val color = getHeatmapColor(day.level, isDarkTheme)
+                // Draw Heatmap Cells
+                paddedData.forEachIndexed { index, day ->
+                    if (day != null) {
+                        val col = index / 7
+                        val row = index % 7
 
-                drawRoundRect(
-                    color = color,
-                    topLeft = Offset(x, y),
-                    size = Size(blockSizePx, blockSizePx),
-                    cornerRadius = CornerRadius(with(density) { 2.dp.toPx() })
-                )
+                        val x = col * (blockSizePx + spacingPx)
+                        val y = headerHeightPx + row * (blockSizePx + spacingPx)
+
+                        val color = getHeatmapColor(day.level, isDarkTheme)
+
+                        drawRoundRect(
+                            color = color,
+                            topLeft = Offset(x, y),
+                            size = Size(blockSizePx, blockSizePx),
+                            cornerRadius = CornerRadius(with(density) { 2.dp.toPx() })
+                        )
+                    }
+                }
             }
         }
     }

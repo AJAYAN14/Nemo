@@ -417,10 +417,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setDailyGoal(goal)
             _uiState.update { it.copy(showDailyGoalDialog = false) }
-
-            // 🎯 动态提示次日生效时间
-            val resetHour = _uiState.value.learningDayResetHour
-            updateStatusMessage("目标设置成功，将于明天凌晨${resetHour}:00后生效", 5000)
+            updateStatusMessage("每日单词目标已更新为 ${goal} 个", 3000)
         }
     }
 
@@ -431,10 +428,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setGrammarDailyGoal(goal)
             _uiState.update { it.copy(showGrammarDailyGoalDialog = false) }
-
-            // 🎯 动态提示次日生效时间
-            val resetHour = _uiState.value.learningDayResetHour
-            updateStatusMessage("目标设置成功，将于明天凌晨${resetHour}:00后生效", 5000)
+            updateStatusMessage("每日语法目标已更新为 ${goal} 条", 3000)
         }
     }
 

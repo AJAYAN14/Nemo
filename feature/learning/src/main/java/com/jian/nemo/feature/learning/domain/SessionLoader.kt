@@ -89,7 +89,8 @@ class SessionLoader @Inject constructor(
         getDueItems: suspend () -> List<T>,
         getNewItems: suspend () -> List<T>,
         getItemId: (T) -> Int,
-        filterByLevel: (T) -> Boolean
+        filterByLevel: (T) -> Boolean,
+        isItemNew: (T) -> Boolean // 新增：判断是否为新词
     ): SessionLoadResult<T> {
 
         // 1. 尝试恢复会话
@@ -101,16 +102,80 @@ class SessionLoader @Inject constructor(
             val itemMap = allItems.associateBy { getItemId(it) }
             val restoredItems = ids.mapNotNull { itemMap[it] }
 
+            // [逻辑调整] 如果是恢复会话，我们需要根据新的 dailyGoal 重新检查剩余新词配额
+            // 计算当前还允许的新词数量
+            val remainingNewQuota = (dailyGoal - completedToday).coerceAtLeast(0)
+
+            // 对 currentIndex 之后的项目进行裁剪
+            val prunedItems = mutableListOf<T>()
+            var newItemsRemaining = remainingNewQuota
+
+            restoredItems.forEachIndexed { i, item ->
+                if (i < index) {
+                    // 索引之前的词（已经学完并计入 completedToday 的词）
+                    // 它们已经在 dailyGoal - completedToday 中扣除过了，直接保留即可
+                    prunedItems.add(item)
+                } else if (i == index) {
+                    // 当前正在学的这一张，必须保留以防止 UI 崩溃
+                    prunedItems.add(item)
+                    // [关键修正]：如果当前这张是新词，它还没计入已完成，必须扣掉 1 个配额
+                    if (isItemNew(item)) {
+                        newItemsRemaining--
+                    }
+                } else {
+                    // 索引之后的词（还没见过的词）
+                    if (isItemNew(item)) {
+                        // 如果是新词，检查配额
+                        if (newItemsRemaining > 0) {
+                            prunedItems.add(item)
+                            newItemsRemaining--
+                        } else {
+                            // 配额用尽，该新词被移除
+                            println("✂️ 热重载裁剪: 移除超出配额的新词 ID=${getItemId(item)}")
+                        }
+                    } else {
+                        // 如果是复习词/步进词，无论如何都要保留
+                        prunedItems.add(item)
+                    }
+                }
+            }
+
             // 确保恢复后的列表不为空，且索引有效
-            if (restoredItems.isNotEmpty() && index < restoredItems.size) {
-                println("✅ 恢复上次学习会话: Index $index / ${restoredItems.size}")
+            if (prunedItems.isNotEmpty() && index < prunedItems.size) {
+                
+                // [新增逻辑] 如果配额还有剩余（newItemsRemaining > 0），说明目标调大了，需要补货
+                var finalItems = prunedItems.toList()
+                if (newItemsRemaining > 0) {
+                    println("📦 热重载补货: 发现配额缺口 $newItemsRemaining，正在从词库抓取新词...")
+                    val supplementalNewItems = getNewItems()
+                    val existingIds = finalItems.map { getItemId(it) }.toSet()
+                    
+                    // 过滤掉已经在队列里的，取前 N 个
+                    val newSupplement = supplementalNewItems
+                        .filter { getItemId(it) !in existingIds }
+                        .take(newItemsRemaining)
+                    
+                    if (newSupplement.isNotEmpty()) {
+                        finalItems = finalItems + newSupplement
+                        println("✅ 补货成功: 增加了 ${newSupplement.size} 个新词")
+                    }
+                }
+
+                println("✅ 恢复并同步学习会话: Index $index / ${finalItems.size} (目标: $dailyGoal)")
                 return SessionLoadResult.Restored(
-                    items = restoredItems,
+                    items = finalItems,
                     index = index,
                     steps = steps,
                     dailyGoal = dailyGoal,
                     completedToday = completedToday,
-                    waitingUntil = savedSession.waitingUntil // 传递恢复的等待状态
+                    waitingUntil = savedSession.waitingUntil
+                )
+            } else if (prunedItems.isNotEmpty() && index >= prunedItems.size) {
+                // 边界情况：如果当前索引因为裁剪而变为了最后一个之后，说明任务已完成
+                println("🏁 目标缩减导致会话提前完成")
+                return SessionLoadResult.Completed(
+                    dailyGoal = dailyGoal,
+                    completedToday = completedToday
                 )
             }
         }

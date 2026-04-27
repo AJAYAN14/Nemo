@@ -70,18 +70,19 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 设置每日目标 (改为次日生效)
+     * 设置每日目标 (立即生效)
      * @param goal 每日学习单词数
      */
     override suspend fun setDailyGoal(goal: Int) {
-        val resetHour = learningDayResetHourFlow.first()
-        val today = DateTimeUtils.getLearningDay(resetHour)
+        val validGoal = goal.coerceAtLeast(1)
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PENDING_DAILY_GOAL] = goal
-            preferences[PreferencesKeys.PENDING_GOAL_SET_DATE] = today
+            preferences[PreferencesKeys.DAILY_GOAL] = validGoal
+            // 清除可能残留的暂存值，避免跨天迁移覆盖
+            preferences.remove(PreferencesKeys.PENDING_DAILY_GOAL)
+            preferences.remove(PreferencesKeys.PENDING_GOAL_SET_DATE)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
-        Log.d(TAG, "已暂存每日单词目标: $goal (日期: $today)，将于下一个逻辑日生效")
+        Log.d(TAG, "每日单词目标已更新: $validGoal (立即生效)")
     }
 
     /** 每日语法学习目标 Flow */
@@ -90,18 +91,19 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     /**
-     * 设置每日语法目标 (改为次日生效)
+     * 设置每日语法目标 (立即生效)
      * @param goal 每日学习语法条数
      */
     override suspend fun setGrammarDailyGoal(goal: Int) {
-        val resetHour = learningDayResetHourFlow.first()
-        val today = DateTimeUtils.getLearningDay(resetHour)
+        val validGoal = goal.coerceAtLeast(1)
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.PENDING_GRAMMAR_DAILY_GOAL] = goal
-            preferences[PreferencesKeys.PENDING_GOAL_SET_DATE] = today
+            preferences[PreferencesKeys.GRAMMAR_DAILY_GOAL] = validGoal
+            // 清除可能残留的暂存值，避免跨天迁移覆盖
+            preferences.remove(PreferencesKeys.PENDING_GRAMMAR_DAILY_GOAL)
+            preferences.remove(PreferencesKeys.PENDING_GOAL_SET_DATE)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
-        Log.d(TAG, "已暂存每日语法目标: $goal (日期: $today)，将于下一个逻辑日生效")
+        Log.d(TAG, "每日语法目标已更新: $validGoal (立即生效)")
     }
 
     /** 主题色 Flow (ARGB Long, null = 默认品牌蓝) */

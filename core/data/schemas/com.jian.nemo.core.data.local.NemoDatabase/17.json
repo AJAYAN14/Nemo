@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 17,
-    "identityHash": "0b8b1d9a266e4944cd767f555b498d90",
+    "identityHash": "8dea1ba271f9c060178e2599f412c4bb",
     "entities": [
       {
         "tableName": "words",
@@ -881,7 +881,7 @@
       },
       {
         "tableName": "word_study_states",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`word_id`), FOREIGN KEY(`word_id`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`word_id`), FOREIGN KEY(`word_id`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "wordId",
@@ -930,6 +930,12 @@
             "columnName": "first_learned_date",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "isFavorite",
@@ -1010,7 +1016,7 @@
       },
       {
         "tableName": "grammar_study_states",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`grammar_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`grammar_id`), FOREIGN KEY(`grammar_id`) REFERENCES `grammars`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`grammar_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`grammar_id`), FOREIGN KEY(`grammar_id`) REFERENCES `grammars`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "grammarId",
@@ -1059,6 +1065,12 @@
             "columnName": "first_learned_date",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "isFavorite",
@@ -1209,7 +1221,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0b8b1d9a266e4944cd767f555b498d90')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8dea1ba271f9c060178e2599f412c4bb')"
     ]
   }
 }
