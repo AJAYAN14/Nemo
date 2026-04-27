@@ -96,11 +96,21 @@ class LearningScheduler @Inject constructor() {
         currentStep: Int,
         stepConfig: List<Int>
     ): ScheduleResult {
-        // Hard (3): 保持当前 Step，使用当前 Step 的时间（原地踏步）
+        // Hard (3): 对齐 Anki 逻辑
         if (quality == 3) {
-            // 获取当前 Step 对应的分钟数，若越界则默认 1 分钟
-            val currentStepMin = stepConfig.getOrElse(currentStep) { 1 }
-            val dueTime = System.currentTimeMillis() + currentStepMin * 60 * 1000L
+            val hardDelayMillis = if (currentStep == 0) {
+                val againSecs = (stepConfig.getOrNull(0) ?: 1) * 60L
+                if (stepConfig.size > 1) {
+                    val nextSecs = (stepConfig.getOrNull(1) ?: 10) * 60L
+                    (againSecs + nextSecs) / 2 * 1000L
+                } else {
+                    // 只有一步时，取 1.5 倍，最高不超过 1 天
+                    (againSecs * 1.5 * 1000L).toLong().coerceAtMost((againSecs + 86400L) * 1000L)
+                }
+            } else {
+                stepConfig.getOrElse(currentStep) { 1 }.toLong() * 60 * 1000L
+            }
+            val dueTime = System.currentTimeMillis() + hardDelayMillis
 
             val updatedItem = when (item) {
                 is LearningItem.WordItem -> item.copy(step = currentStep, dueTime = dueTime)
