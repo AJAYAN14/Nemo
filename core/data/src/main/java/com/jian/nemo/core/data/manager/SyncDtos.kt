@@ -360,6 +360,7 @@ fun SyncGrammarStateDto.toGrammarProgress() = GrammarProgress(
     interval = interval,
     nextReviewDate = nextReviewDate,
     isFavorite = isFavorite,
+    isSkipped = isSkipped,
     isDeleted = isDeleted,
     deletedTime = deletedTime,
     lastModifiedTime = lastModifiedTime,

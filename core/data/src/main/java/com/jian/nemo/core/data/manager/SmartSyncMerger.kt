@@ -44,6 +44,7 @@ object SmartSyncMerger {
                 isSkipped = remote.isSkipped,
                 isDeleted = remote.isDeleted,
                 deletedTime = remote.deletedTime,
+                type = remote.type,
                 lastModifiedTime = remoteTime
             ))
         } else {
@@ -73,8 +74,10 @@ object SmartSyncMerger {
                 firstLearnedDate = remote.firstLearnedDate,
                 lastReviewedDate = remote.lastReviewedDate,
                 isFavorite = remote.isFavorite,
+                isSkipped = remote.isSkipped,
                 isDeleted = remote.isDeleted,
                 deletedTime = remote.deletedTime,
+                type = remote.type,
                 lastModifiedTime = remoteTime
             ))
         } else {

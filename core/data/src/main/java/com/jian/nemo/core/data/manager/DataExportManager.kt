@@ -460,6 +460,7 @@ class DataExportManager @Inject constructor(
                             lastModifiedTime = remoteWord.lastModifiedTime,
                             lastReviewedDate = remoteWord.lastReviewedDate,
                             firstLearnedDate = remoteWord.firstLearnedDate,
+                            type = remoteWord.type,
                             isDeleted = remoteWord.isDeleted,
                             deletedTime = remoteWord.deletedTime
                         ))
@@ -524,7 +525,8 @@ class DataExportManager @Inject constructor(
                              lastModifiedTime = remoteGrammar.lastModifiedTime,
                              lastReviewedDate = remoteGrammar.lastReviewedDate,
                              firstLearnedDate = remoteGrammar.firstLearnedDate,
-                             isSkipped = false,
+                             type = remoteGrammar.type,
+                             isSkipped = remoteGrammar.isSkipped,
                              isDeleted = remoteGrammar.isDeleted,
                              deletedTime = remoteGrammar.deletedTime
                          ))

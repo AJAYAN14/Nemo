@@ -1627,7 +1627,11 @@ class LearningViewModel @Inject constructor(
      * 获取卡片状态标记
      */
     fun getCardBadge(item: LearningItem): CardBadge {
-        return when (item.type) {
+        // [容错处理] 如果复习次数大于0，但类型仍然标记为 NEW (0)，则修正为 REVIEW (2)
+        // 这种情况通常发生于导入没有 type 字段的历史数据或同步字段缺失
+        val effectiveType = if (item.repetitionCount > 0 && item.type == 0) 2 else item.type
+        
+        return when (effectiveType) {
             0 -> CardBadge.NEW
             1 -> CardBadge.LEARNING
             2 -> CardBadge.REVIEW

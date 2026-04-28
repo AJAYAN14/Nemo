@@ -110,6 +110,7 @@ data class GrammarProgress(
     val interval: Int,
     val nextReviewDate: Long,
     val isFavorite: Boolean,
+    val isSkipped: Boolean = false,
     val isDeleted: Boolean = false,
     val deletedTime: Long = 0,
     val lastModifiedTime: Long = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis(),
