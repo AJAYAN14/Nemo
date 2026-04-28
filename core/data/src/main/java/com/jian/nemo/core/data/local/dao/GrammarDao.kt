@@ -61,6 +61,12 @@ interface GrammarDao {
     suspend fun deleteByIds(ids: List<Int>)
 
     /**
+     * 清空所有语法 (用于数据重置)
+     */
+    @Query("DELETE FROM grammars")
+    suspend fun deleteAll()
+
+    /**
      * 获取所有语法 (包含已逻辑删除的)
      */
     /**

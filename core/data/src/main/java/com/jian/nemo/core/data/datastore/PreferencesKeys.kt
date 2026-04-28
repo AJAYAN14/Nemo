@@ -161,6 +161,9 @@ object PreferencesKeys {
     /** 词库 JSON 云更新：上次已应用的内容版本号 */
     val LAST_CONTENT_VERSION = intPreferencesKey("last_content_version")
 
+    /** 词库云更新：上次同步成功时的最大时间戳（用于增量同步） */
+    val LAST_DICTIONARY_SYNC_TIMESTAMP = longPreferencesKey("last_dictionary_sync_timestamp")
+
     /** 已关闭的通知 ID 集合 */
     val DISMISSED_NOTIFICATION_IDS = stringSetPreferencesKey("dismissed_notification_ids")
 

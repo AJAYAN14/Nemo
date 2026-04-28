@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import com.jian.nemo.core.common.util.GrammarSearchUtils
+import com.jian.nemo.core.domain.repository.SyncRepository
 import javax.inject.Inject
 
 /**
@@ -22,7 +24,8 @@ data class GrammarListUiState(
     val grammarsByLevel: Map<String, List<Grammar>> = emptyMap(),
     val isLoading: Boolean = true,
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val isRefreshing: Boolean = false
 )
 
 /**
@@ -31,15 +34,18 @@ data class GrammarListUiState(
  */
 @HiltViewModel
 class GrammarListViewModel @Inject constructor(
-    private val grammarRepository: GrammarRepository
+    private val grammarRepository: GrammarRepository,
+    private val syncRepository: SyncRepository
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
+    private val _isRefreshing = MutableStateFlow(false)
 
     val uiState: StateFlow<GrammarListUiState> = combine(
         grammarRepository.getGrammarsByLevels(listOf("N1", "N2", "N3", "N4", "N5")),
-        _searchQuery
-    ) { allGrammars, query ->
+        _searchQuery,
+        _isRefreshing
+    ) { allGrammars, query, isRefreshing ->
         // 过滤
         val filteredList = if (query.isBlank()) {
             allGrammars
@@ -71,7 +77,8 @@ class GrammarListViewModel @Inject constructor(
         GrammarListUiState(
             grammarsByLevel = grouped,
             isLoading = false,
-            searchQuery = query
+            searchQuery = query,
+            isRefreshing = isRefreshing
         )
     }
     .flowOn(Dispatchers.Default) // 后台计算
@@ -83,5 +90,19 @@ class GrammarListViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onRefresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                // 刷新词库，force = true 以便清理并全量同步
+                syncRepository.performDictionarySync(force = true)
+            } catch (e: Exception) {
+                // 处理错误
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
     }
 }

@@ -1,5 +1,8 @@
 package com.jian.nemo.core.domain.repository
 
+import com.jian.nemo.core.domain.model.WordDto
+import com.jian.nemo.core.domain.model.GrammarDto
+
 /**
  * 词库内容云更新
  *
@@ -24,4 +27,26 @@ interface ContentRepository {
      * @param level N1～N5
      */
     suspend fun downloadGrammarJson(level: String): String?
+
+    /**
+     * [New] 从 Supabase 数据库拉取全量单词数据
+     */
+    suspend fun fetchAllRemoteWords(): List<WordDto>
+
+    /**
+     * 从 Supabase 数据库拉取全量语法数据
+     */
+    suspend fun fetchAllRemoteGrammars(): List<GrammarDto>
+
+    /**
+     * [New] 增量拉取自指定时间以来修改过的单词
+     * @param timestamp ISO 8601 格式时间戳
+     */
+    suspend fun fetchWordsModifiedSince(timestamp: String): List<WordDto>
+
+    /**
+     * [New] 增量拉取自指定时间以来修改过的语法
+     * @param timestamp ISO 8601 格式时间戳
+     */
+    suspend fun fetchGrammarsModifiedSince(timestamp: String): List<GrammarDto>
 }

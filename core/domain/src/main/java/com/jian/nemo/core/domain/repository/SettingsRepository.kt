@@ -458,6 +458,11 @@ interface SettingsRepository {
     suspend fun getLastContentVersion(): Int
     suspend fun setLastContentVersion(version: Int)
 
+    /** 词库云更新：上次同步成功时的最大时间戳（用于增量同步，0 = 未同步过） */
+    val lastDictionarySyncTimestampFlow: Flow<Long>
+    suspend fun getLastDictionarySyncTimestamp(): Long
+    suspend fun setLastDictionarySyncTimestamp(timestamp: Long)
+
     /** 上次同步冲突数量Flow */
     val lastSyncConflictCountFlow: Flow<Int>
     suspend fun setLastSyncConflictCount(count: Int)

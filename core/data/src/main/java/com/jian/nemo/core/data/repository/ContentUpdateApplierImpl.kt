@@ -9,8 +9,10 @@ import com.jian.nemo.core.data.util.toGrammarEntity
 import com.jian.nemo.core.data.util.toUsageEntities
 import com.jian.nemo.core.data.util.toExampleEntities
 import com.jian.nemo.core.data.local.dao.GrammarDao
-import com.jian.nemo.core.data.local.dto.WordDto
-import com.jian.nemo.core.data.local.dto.GrammarDto
+import com.jian.nemo.core.data.local.dto.WordDto as LocalWordDto
+import com.jian.nemo.core.data.local.dto.GrammarDto as LocalGrammarDto
+import com.jian.nemo.core.domain.model.WordDto as NetworkWordDto
+import com.jian.nemo.core.domain.model.GrammarDto as NetworkGrammarDto
 import com.jian.nemo.core.domain.repository.ContentUpdateApplier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -36,7 +38,7 @@ class ContentUpdateApplierImpl @Inject constructor(
     override suspend fun applyWordsFromJson(level: String, jsonString: String): Int? =
         withContext(Dispatchers.IO) {
             try {
-                val dtos = json.decodeFromString<List<WordDto>>(jsonString)
+                val dtos = json.decodeFromString<List<LocalWordDto>>(jsonString)
                 var updated = 0
                 val jsonIds = dtos.map { it.japanese } // WordDto 用 japanese 作为内容唯一标识
                 dtos.forEach { dto ->
@@ -75,7 +77,7 @@ class ContentUpdateApplierImpl @Inject constructor(
     override suspend fun applyGrammarsFromJson(level: String, jsonString: String): Int? =
         withContext(Dispatchers.IO) {
             try {
-                val dtos = json.decodeFromString<List<GrammarDto>>(jsonString)
+                val dtos = json.decodeFromString<List<LocalGrammarDto>>(jsonString)
                 var count = 0
                 val jsonIntIds = mutableListOf<Int>()
                 dtos.forEach { dto ->
@@ -102,6 +104,49 @@ class ContentUpdateApplierImpl @Inject constructor(
             }
         }
 
+    override suspend fun applyAllWords(words: List<NetworkWordDto>) {
+        withContext(Dispatchers.IO) {
+            try {
+                Log.i(TAG, "applyAllWords: processing ${words.size} words")
+                // 采用分批插入策略
+                words.chunked(500).forEach { batch ->
+                    val entities = batch.map { it.toEntity() }
+                    wordDao.upsertAll(entities)
+                }
+                Log.i(TAG, "applyAllWords: success")
+            } catch (e: Exception) {
+                Log.e(TAG, "applyAllWords failed", e)
+            }
+        }
+    }
+
+    override suspend fun applyAllGrammars(grammars: List<NetworkGrammarDto>) {
+        withContext(Dispatchers.IO) {
+            try {
+                Log.i(TAG, "applyAllGrammars: processing ${grammars.size} grammars")
+                grammars.forEach { dto ->
+                    // 1. 插入主表 (Upsert)
+                    val grammarEntity = dto.toGrammarEntity()
+                    grammarDao.upsertAll(listOf(grammarEntity))
+                    val grammarId = grammarEntity.id
+
+                    // 2. 重写用法和例句 (先删后增，保证数据最新且不重复)
+                    grammarUsageDao.deleteByGrammarId(grammarId)
+                    val usageEntities = dto.toUsageEntities()
+                    if (usageEntities.isNotEmpty()) {
+                        val usageIds = grammarUsageDao.insertAll(usageEntities)
+                        val exampleEntities = dto.toExampleEntities(usageIds)
+                        if (exampleEntities.isNotEmpty()) {
+                            grammarExampleDao.insertAll(exampleEntities)
+                        }
+                    }
+                }
+                Log.i(TAG, "applyAllGrammars: success")
+            } catch (e: Exception) {
+                Log.e(TAG, "applyAllGrammars failed", e)
+            }
+        }
+    }
     companion object {
         private const val TAG = "ContentUpdateApplier"
     }

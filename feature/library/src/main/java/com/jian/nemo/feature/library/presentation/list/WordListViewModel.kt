@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
+import com.jian.nemo.core.domain.repository.SyncRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,21 +13,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class WordListUiState(
     val isLoading: Boolean = true,
     val wordsByLevel: Map<String, List<Word>> = emptyMap(),
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val isRefreshing: Boolean = false,
+    val syncMessage: String? = null
 )
 
 @HiltViewModel
 class WordListViewModel @Inject constructor(
-    private val wordRepository: WordRepository
+    private val wordRepository: WordRepository,
+    private val syncRepository: SyncRepository
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
+    private val _isRefreshing = MutableStateFlow(false)
+    private val _syncMessage = MutableStateFlow<String?>(null)
 
     // 所有单词聚合 Flow
     private val allWordsFlow = combine(
@@ -41,8 +48,10 @@ class WordListViewModel @Inject constructor(
 
     val uiState: StateFlow<WordListUiState> = combine(
         allWordsFlow,
-        _searchQuery
-    ) { allWords, query ->
+        _searchQuery,
+        _isRefreshing,
+        _syncMessage
+    ) { allWords, query, isRefreshing, syncMessage ->
         // Perform filtering on IO thread via flowOn below
         val filteredList = if (query.isBlank()) {
             allWords
@@ -64,6 +73,8 @@ class WordListViewModel @Inject constructor(
             isLoading = false,
             wordsByLevel = grouped,
             searchQuery = query,
+            isRefreshing = isRefreshing,
+            syncMessage = syncMessage,
             error = null
         )
     }
@@ -76,5 +87,35 @@ class WordListViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onRefresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                // 默认执行增量同步 (force = false)
+                val result = syncRepository.performDictionarySync(force = false)
+                
+                if (result.updatedWords > 0 || result.updatedGrammars > 0) {
+                    val message = buildString {
+                        append("词库已更新：")
+                        if (result.updatedWords > 0) append("${result.updatedWords}条单词 ")
+                        if (result.updatedGrammars > 0) append("${result.updatedGrammars}条语法")
+                    }
+                    _syncMessage.value = message
+                } else {
+                    // 如果没有更新，显示更详细的信息（用于排查）
+                    _syncMessage.value = "词库已是最新 (本地:V${result.localVersion}, 远程:V${result.remoteVersion})"
+                }
+            } catch (e: Exception) {
+                _syncMessage.value = "同步失败: ${e.message}"
+            } finally {
+                _isRefreshing.value = false
+            }
+        }
+    }
+
+    fun clearSyncMessage() {
+        _syncMessage.value = null
     }
 }

@@ -4,6 +4,11 @@ import android.util.Log
 import com.jian.nemo.core.domain.repository.ContentRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.storage.storage
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
+import com.jian.nemo.core.domain.model.WordDto
+import com.jian.nemo.core.domain.model.GrammarDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -26,10 +31,11 @@ class ContentRepositoryImpl @Inject constructor(
 
     override suspend fun getRemoteContentVersion(): Int? = withContext(Dispatchers.IO) {
         try {
-            val url = supabase.storage.from(CONTENT_BUCKET).publicUrl(CONTENT_VERSION_FILE)
-            val bytes = URL(url).openStream().use { it.readBytes() }
-            val dto = json.decodeFromString<ContentVersionDto>(bytes.decodeToString())
-            dto.version
+            // 从 sync_meta 表获取内容版本
+            val meta = supabase.postgrest["sync_meta"]
+                .select()
+                .decodeSingleOrNull<ContentMetaDto>()
+            meta?.contentVersion
         } catch (e: Exception) {
             Log.w(TAG, "getRemoteContentVersion failed: ${e.message}")
             null
@@ -58,6 +64,122 @@ class ContentRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun fetchAllRemoteWords(): List<WordDto> = withContext(Dispatchers.IO) {
+        val allWords = mutableListOf<WordDto>()
+        var offset = 0L
+        val pageSize = 1000L
+        try {
+            while (true) {
+                val batch = supabase.postgrest["dictionary_words"]
+                    .select(columns = Columns.ALL) {
+                        filter {
+                            eq("is_delisted", false)
+                        }
+                        order("id", Order.ASCENDING)
+                        range(offset, offset + pageSize - 1)
+                    }.decodeList<WordDto>()
+
+                if (batch.isEmpty()) break
+                
+                // 诊断日志：捕获染色数据，验证数据源是否包含修改
+                batch.find { it.hiragana.contains("14安卓") }?.let {
+                    Log.w(TAG, "🎯 捕获到目标单词: ID=${it.id}, Japanese=${it.japanese}, Hiragana=${it.hiragana}")
+                }
+
+                allWords.addAll(batch)
+                Log.d(TAG, "已拉取单词批次: ${batch.size} 条 (总计: ${allWords.size})")
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allWords
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchAllRemoteWords failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    override suspend fun fetchAllRemoteGrammars(): List<GrammarDto> = withContext(Dispatchers.IO) {
+        val allGrammars = mutableListOf<GrammarDto>()
+        var offset = 0L
+        val pageSize = 1000L
+        try {
+            while (true) {
+                val batch = supabase.postgrest["dictionary_grammars"]
+                    .select(columns = Columns.ALL) {
+                        filter {
+                            eq("is_delisted", false)
+                        }
+                        order("id", Order.ASCENDING)
+                        range(offset, offset + pageSize - 1)
+                    }.decodeList<GrammarDto>()
+
+                if (batch.isEmpty()) break
+                allGrammars.addAll(batch)
+                Log.d(TAG, "已拉取语法批次: ${batch.size} 条 (总计: ${allGrammars.size})")
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allGrammars
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchAllRemoteGrammars failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    override suspend fun fetchWordsModifiedSince(timestamp: String): List<WordDto> = withContext(Dispatchers.IO) {
+        val allWords = mutableListOf<WordDto>()
+        var offset = 0L
+        val pageSize = 1000L
+        try {
+            while (true) {
+                val batch = supabase.postgrest["dictionary_words"]
+                    .select(columns = Columns.ALL) {
+                        filter {
+                            gt("updated_at", timestamp)
+                        }
+                        order("updated_at", Order.ASCENDING)
+                        range(offset, offset + pageSize - 1)
+                    }.decodeList<WordDto>()
+
+                if (batch.isEmpty()) break
+                allWords.addAll(batch)
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allWords
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchWordsModifiedSince failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    override suspend fun fetchGrammarsModifiedSince(timestamp: String): List<GrammarDto> = withContext(Dispatchers.IO) {
+        val allGrammars = mutableListOf<GrammarDto>()
+        var offset = 0L
+        val pageSize = 1000L
+        try {
+            while (true) {
+                val batch = supabase.postgrest["dictionary_grammars"]
+                    .select(columns = Columns.ALL) {
+                        filter {
+                            gt("updated_at", timestamp)
+                        }
+                        order("updated_at", Order.ASCENDING)
+                        range(offset, offset + pageSize - 1)
+                    }.decodeList<GrammarDto>()
+
+                if (batch.isEmpty()) break
+                allGrammars.addAll(batch)
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allGrammars
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchGrammarsModifiedSince failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+
     companion object {
         private const val TAG = "ContentRepository"
         const val CONTENT_BUCKET = "content"
@@ -66,6 +188,6 @@ class ContentRepositoryImpl @Inject constructor(
 }
 
 @Serializable
-private data class ContentVersionDto(
-    @SerialName("version") val version: Int
+private data class ContentMetaDto(
+    @SerialName("content_version") val contentVersion: Int
 )

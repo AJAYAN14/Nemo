@@ -1173,6 +1173,20 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val lastDictionarySyncTimestampFlow: Flow<Long> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_DICTIONARY_SYNC_TIMESTAMP] ?: 0L
+    }
+
+    override suspend fun getLastDictionarySyncTimestamp(): Long {
+        return dataStore.data.map { it[PreferencesKeys.LAST_DICTIONARY_SYNC_TIMESTAMP] ?: 0L }.first()
+    }
+
+    override suspend fun setLastDictionarySyncTimestamp(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_DICTIONARY_SYNC_TIMESTAMP] = timestamp
+        }
+    }
+
     override val lastSyncConflictCountFlow: Flow<Int> = dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.LAST_SYNC_CONFLICT_COUNT] ?: 0

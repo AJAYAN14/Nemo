@@ -8,22 +8,30 @@ import com.jian.nemo.core.data.local.NemoDatabase
 import com.jian.nemo.core.domain.model.SyncProgress
 import com.jian.nemo.core.domain.model.SyncReport
 import com.jian.nemo.core.domain.model.SyncStats
+import com.jian.nemo.core.domain.model.WordDto
+import com.jian.nemo.core.domain.model.DictionarySyncResult
+import com.jian.nemo.core.domain.model.GrammarDto
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import com.jian.nemo.core.data.util.DataSeedService
+import com.jian.nemo.core.domain.repository.ContentRepository
+import com.jian.nemo.core.domain.repository.ContentUpdateApplier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import com.jian.nemo.core.domain.model.sync.SyncMode
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.room.withTransaction
+import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 
 @Serializable
 data class SyncMetaDto(
@@ -45,9 +53,110 @@ class SupabaseSyncManager @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val database: NemoDatabase,
     private val syncMetadata: com.jian.nemo.core.data.model.sync.SyncMetadata,
-    private val dataSeedService: DataSeedService
+    private val dataSeedService: DataSeedService,
+    private val contentRepository: ContentRepository,
+    private val contentUpdateApplier: ContentUpdateApplier
 ) {
     private val syncMutex = kotlinx.coroutines.sync.Mutex()
+    /**
+     * 公开触发字典同步逻辑
+     * @param force 是否强制重新下载（会清空本地词库）
+     */
+    suspend fun performDictionarySync(force: Boolean = false): DictionarySyncResult {
+        return performDictionarySyncInternal(force)
+    }
+
+    private suspend fun performDictionarySyncInternal(force: Boolean = false): DictionarySyncResult = withContext(Dispatchers.IO) {
+        Log.d(TAG, "开始检查字典同步...")
+        try {
+            val remoteVersion = contentRepository.getRemoteContentVersion()
+            val lastVersion = settingsRepository.getLastContentVersion()
+            val lastSyncTimestamp = if (force) 0L else settingsRepository.getLastDictionarySyncTimestamp()
+
+            // 如果版本不一致，或者本地数据库为空，则触发同步
+            val wordCount = wordDao.getWordCount()
+            val grammarCount = grammarDao.getGrammarCount()
+            val isDatabaseEmpty = wordCount == 0 || grammarCount == 0
+
+            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, LastSyncTime=$lastSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force")
+
+            if (force || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || lastSyncTimestamp == 0L))) {
+                val isFullSync = force || isDatabaseEmpty || lastSyncTimestamp == 0L
+                Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, V$lastVersion -> V$remoteVersion")
+
+                if (force) {
+                    Log.w(TAG, "强制重置模式：正在清空本地词库数据...")
+                    wordDao.deleteAll()
+                    grammarDao.deleteAll()
+                }
+
+                // 执行同步拉取
+                val (allWords: List<WordDto>, allGrammars: List<GrammarDto>) = coroutineScope {
+                    if (isFullSync) {
+                        val w = async { contentRepository.fetchAllRemoteWords() }
+                        val g = async { contentRepository.fetchAllRemoteGrammars() }
+                        w.await() to g.await()
+                    } else {
+                        // 增量模式：使用时间戳拉取
+                        val timestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastSyncTimestamp))
+                        val w = async { contentRepository.fetchWordsModifiedSince(timestampStr) }
+                        val g = async { contentRepository.fetchGrammarsModifiedSince(timestampStr) }
+                        w.await() to g.await()
+                    }
+                }
+
+                Log.i(TAG, "下载完成: ${allWords.size} 单词, ${allGrammars.size} 语法")
+
+                // 应用变更
+                if (allWords.isNotEmpty()) {
+                    contentUpdateApplier.applyAllWords(allWords)
+                }
+                if (allGrammars.isNotEmpty()) {
+                    contentUpdateApplier.applyAllGrammars(allGrammars)
+                }
+
+                // 计算并更新新的同步锚点时间戳 (取结果中最大的 updated_at)
+                val maxWordTimestamp = allWords.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
+                val maxGrammarTimestamp = allGrammars.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
+                
+                // 如果是全量同步且数据中没有时间戳（如从 Storage 下载的初始 JSON），
+                // 则使用当前时间作为锚点，确保下次能够正常进行增量同步。
+                var newSyncTimestamp = maxOf(lastSyncTimestamp, maxOf(maxWordTimestamp, maxGrammarTimestamp))
+                if (isFullSync && newSyncTimestamp == 0L) {
+                    newSyncTimestamp = System.currentTimeMillis()
+                }
+
+                if (newSyncTimestamp > lastSyncTimestamp) {
+                    settingsRepository.setLastDictionarySyncTimestamp(newSyncTimestamp)
+                    Log.d(TAG, "更新词库同步时间戳锚点: $newSyncTimestamp")
+                }
+
+                // 更新本地版本号
+                remoteVersion?.let {
+                    settingsRepository.setLastContentVersion(it)
+                }
+                Log.i(TAG, "词库同步任务结束: 已成功更新至 V$remoteVersion")
+                
+                return@withContext DictionarySyncResult(
+                    updatedWords = allWords.size,
+                    updatedGrammars = allGrammars.size,
+                    isFullSync = isFullSync,
+                    localVersion = lastVersion,
+                    remoteVersion = remoteVersion ?: lastVersion
+                )
+            } else {
+                Log.i(TAG, "词库检查结果: 无需更新 (本地 V$lastVersion, 远程 V$remoteVersion)")
+                return@withContext DictionarySyncResult(
+                    localVersion = lastVersion,
+                    remoteVersion = remoteVersion ?: lastVersion
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "字典同步失败: ${e.message}", e)
+            return@withContext DictionarySyncResult()
+        }
+    }
+
     companion object {
         private const val TAG = "SupabaseSyncManager"
         private const val TABLE_WORD_STATES = "user_word_states"
@@ -84,7 +193,10 @@ class SupabaseSyncManager @Inject constructor(
         try {
             Log.d(TAG, "开始执行同步: User $userId, mode=$mode, force=$force")
             
-            // 0. 核心依赖检查：确保本地词库已初始化（防止重装后外键报错）
+            // 0. 核心依赖检查：确保本地词库已初始化（优先尝试网络同步，失败则使用本地兜底）
+            emit(SyncProgress.Running("正在检查词库更新...", 0, 0))
+            performDictionarySync()
+            
             emit(SyncProgress.Running("正在准备本地库...", 0, 0))
             dataSeedService.ensureDataSeeded()
 
@@ -399,11 +511,33 @@ class SupabaseSyncManager @Inject constructor(
             .select(columns = Columns.ALL) {
                 filter { eq("user_id", userId) }
                 range(offset.toLong(), (offset + limit - 1).toLong())
-                // 假设所有表都有 created_at 或某种排序键。如果没有，分页可能不稳定。
-                // 鉴于 Nemo 表结构，这里暂时不加 order，默认由 DB 决定 (通常是插入顺序)。
-                // 为了保险，最好加上 order，但需要知道每个表的排序字段。
-                // 暂时假定不加 order 在单用户静态同步场景下问题不大。
             }.decodeList<T>()
+    }
+
+    /** 泛型全量分页拉取辅助方法 */
+    private suspend inline fun <reified T : Any> pullAllPaged(
+        tableName: String,
+        userId: String,
+        crossinline filterBlock: PostgrestFilterBuilder.() -> Unit = {}
+    ): List<T> {
+        val all = mutableListOf<T>()
+        var offset = 0L
+        val pageSize = 1000L
+        while (true) {
+            val batch = supabaseClient.postgrest[tableName]
+                .select(columns = Columns.ALL) {
+                    filter {
+                        eq("user_id", userId)
+                        filterBlock()
+                    }
+                    range(offset, offset + pageSize - 1)
+                }.decodeList<T>()
+            if (batch.isEmpty()) break
+            all.addAll(batch)
+            if (batch.size < pageSize) break
+            offset += pageSize
+        }
+        return all
     }
 
 
@@ -457,13 +591,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<WordStudyStateEntity, Int> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_WORD_STATES]
-            .select(columns = Columns.ALL) {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("last_modified_time", sinceTime)
-                }
-            }.decodeList<SyncWordStateDto>()
+        val remoteChanges = pullAllPaged<SyncWordStateDto>(TABLE_WORD_STATES, userId) {
+            if (!isFullReset) gt("last_modified_time", sinceTime)
+        }
 
         Log.d(TAG, "Pull WordStates: Found ${remoteChanges.size} changes from cloud")
 
@@ -536,13 +666,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<GrammarStudyStateEntity, Int> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_GRAMMAR_STATES]
-            .select(columns = Columns.ALL) {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("last_modified_time", sinceTime)
-                }
-            }.decodeList<SyncGrammarStateDto>()
+        val remoteChanges = pullAllPaged<SyncGrammarStateDto>(TABLE_GRAMMAR_STATES, userId) {
+            if (!isFullReset) gt("last_modified_time", sinceTime)
+        }
 
         val toUpsert = mutableListOf<GrammarStudyStateEntity>()
         val acceptedIds = mutableSetOf<Int>()
@@ -606,13 +732,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<StudyRecordEntity, Long> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_STUDY_RECORDS]
-            .select {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("timestamp", sinceTime)
-                }
-            }.decodeList<SyncStudyRecordDto>()
+        val remoteChanges = pullAllPaged<SyncStudyRecordDto>(TABLE_STUDY_RECORDS, userId) {
+            if (!isFullReset) gt("timestamp", sinceTime)
+        }
 
         val toUpsert = mutableListOf<StudyRecordEntity>()
         val acceptedIds = mutableSetOf<Long>()
@@ -671,13 +793,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<TestRecordEntity, String> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_TEST_RECORDS]
-            .select {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("timestamp", sinceTime)
-                }
-            }.decodeList<SyncTestRecordDto>()
+        val remoteChanges = pullAllPaged<SyncTestRecordDto>(TABLE_TEST_RECORDS, userId) {
+            if (!isFullReset) gt("timestamp", sinceTime)
+        }
 
         val toUpsert = mutableListOf<TestRecordEntity>()
         val acceptedIds = mutableSetOf<String>() // UUID
@@ -740,13 +858,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<WrongAnswerEntity, Int> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_WRONG_ANSWERS]
-            .select(columns = Columns.ALL) {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("timestamp", sinceTime)
-                }
-            }.decodeList<SyncWrongAnswerDto>()
+        val remoteChanges = pullAllPaged<SyncWrongAnswerDto>(TABLE_WRONG_ANSWERS, userId) {
+            if (!isFullReset) gt("timestamp", sinceTime)
+        }
 
         val toUpsert = mutableListOf<WrongAnswerEntity>()
         val acceptedIds = mutableSetOf<Int>() // WordId
@@ -812,13 +926,9 @@ class SupabaseSyncManager @Inject constructor(
         sinceTime: Long,
         isFullReset: Boolean
     ): PullResult<GrammarWrongAnswerEntity, Int> {
-        val remoteChanges = supabaseClient.postgrest[TABLE_GRAMMAR_WRONG_ANSWERS]
-            .select(columns = Columns.ALL) {
-                filter {
-                    eq("user_id", userId)
-                    if (!isFullReset) gt("timestamp", sinceTime)
-                }
-            }.decodeList<SyncGrammarWrongAnswerDto>()
+        val remoteChanges = pullAllPaged<SyncGrammarWrongAnswerDto>(TABLE_GRAMMAR_WRONG_ANSWERS, userId) {
+            if (!isFullReset) gt("timestamp", sinceTime)
+        }
 
         val toUpsert = mutableListOf<GrammarWrongAnswerEntity>()
         val acceptedIds = mutableSetOf<Int>() // GrammarId
@@ -882,12 +992,9 @@ class SupabaseSyncManager @Inject constructor(
     ): PullResult<com.jian.nemo.core.data.local.entity.FavoriteQuestionEntity, String> {
         val queryTime = if (forceAll) 0L else sinceTime
         val remoteDtos = try {
-            supabaseClient.postgrest[TABLE_FAVORITE_QUESTIONS].select(columns = Columns.ALL) {
-                filter {
-                    eq("user_id", userId)
-                    gt("timestamp", queryTime)
-                }
-            }.decodeList<com.jian.nemo.core.data.manager.SyncFavoriteQuestionDto>()
+            pullAllPaged<com.jian.nemo.core.data.manager.SyncFavoriteQuestionDto>(TABLE_FAVORITE_QUESTIONS, userId) {
+                gt("timestamp", queryTime)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Pull favorite questions failed: ${e.message}")
             emptyList()

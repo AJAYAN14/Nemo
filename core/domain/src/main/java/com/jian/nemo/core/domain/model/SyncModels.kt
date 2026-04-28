@@ -266,6 +266,17 @@ data class SyncStats(
 )
 
 /**
+ * 词库同步结果
+ */
+data class DictionarySyncResult(
+    val updatedWords: Int = 0,
+    val updatedGrammars: Int = 0,
+    val isFullSync: Boolean = false,
+    val localVersion: Int = 0,
+    val remoteVersion: Int = 0
+)
+
+/**
  * 冲突信息
  */
 @Serializable
