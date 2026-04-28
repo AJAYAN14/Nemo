@@ -197,7 +197,7 @@ class SupabaseSyncManager @Inject constructor(
             
             // 0. 核心依赖检查：确保本地词库已初始化（优先尝试网络同步，失败则使用本地兜底）
             emit(SyncProgress.Running("正在检查词库更新...", 0, 0))
-            performDictionarySync()
+            performDictionarySync(forceIncremental = true)
             
             emit(SyncProgress.Running("正在准备本地库...", 0, 0))
             dataSeedService.ensureDataSeeded()

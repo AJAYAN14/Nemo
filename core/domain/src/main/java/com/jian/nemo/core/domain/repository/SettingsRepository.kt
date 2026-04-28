@@ -455,6 +455,7 @@ interface SettingsRepository {
     suspend fun setLastRestoreTime(time: Long)
 
     /** 词库云更新：上次已应用的内容版本号（0 = 未更新过） */
+    val lastContentVersionFlow: Flow<Int>
     suspend fun getLastContentVersion(): Int
     suspend fun setLastContentVersion(version: Int)
 

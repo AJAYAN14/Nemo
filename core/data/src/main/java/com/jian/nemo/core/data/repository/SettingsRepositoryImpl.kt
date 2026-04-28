@@ -1157,6 +1157,10 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.LAST_RESTORE_TIME] ?: 0L
         }
 
+    override val lastContentVersionFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_CONTENT_VERSION] ?: 0
+    }
+
     override suspend fun setLastRestoreTime(time: Long) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.LAST_RESTORE_TIME] = time

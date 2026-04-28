@@ -39,6 +39,8 @@ data class SettingsUiState(
     val isAutoSyncEnabled: Boolean = true,
     val lastSyncTime: Long = 0,
     val lastSyncConflictCount: Int = 0,
+    val lastDictionarySyncTimestamp: Long = 0, // 词库最后同步时间
+    val lastContentVersion: Int = 0,           // 词库内容版本号
     val showRestoreConfirmDialog: Boolean = false,
     val isRestoring: Boolean = false, // 恢复被中断的标识
     val syncMessage: String? = null,

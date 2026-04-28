@@ -128,9 +128,17 @@ class SettingsViewModel @Inject constructor(
             val syncFlow = combine(
                 settingsRepository.lastSyncTimeFlow,
                 settingsRepository.isAutoSyncEnabledFlow,
-                settingsRepository.lastSyncConflictCountFlow
-            ) { lastSyncTime, isAutoSyncEnabled, conflictCount ->
-                Triple(lastSyncTime, isAutoSyncEnabled, conflictCount)
+                settingsRepository.lastSyncConflictCountFlow,
+                settingsRepository.lastDictionarySyncTimestampFlow,
+                settingsRepository.lastContentVersionFlow
+            ) { args ->
+                SyncSettings(
+                    lastSyncTime = args[0] as Long,
+                    isAutoSyncEnabled = args[1] as Boolean,
+                    lastSyncConflictCount = args[2] as Int,
+                    lastDictionarySyncTimestamp = args[3] as Long,
+                    lastContentVersion = args[4] as Int
+                )
             }
 
             val advancedFlow = combine(
@@ -163,7 +171,7 @@ class SettingsViewModel @Inject constructor(
                 syncFlow,
                 advancedFlow,
                 ttsFlow
-            ) { theme, (dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring), (lastSyncTime, isAutoSyncEnabled, conflictCount), advanced, (rate, pitch, voiceName) ->
+            ) { theme, (dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring), sync, advanced, (rate, pitch, voiceName) ->
                 _uiState.update { state ->
                     state.copy(
                         darkMode = when (theme.darkMode) {
@@ -183,9 +191,11 @@ class SettingsViewModel @Inject constructor(
                         grammarDailyGoal = grammarDailyGoal,
                         learningDayResetHour = resetHour,
                         isRandomNewContentEnabled = isRandom,
-                        lastSyncTime = lastSyncTime,
-                        isAutoSyncEnabled = isAutoSyncEnabled,
-                        lastSyncConflictCount = conflictCount,
+                        lastSyncTime = sync.lastSyncTime,
+                        isAutoSyncEnabled = sync.isAutoSyncEnabled,
+                        lastSyncConflictCount = sync.lastSyncConflictCount,
+                        lastDictionarySyncTimestamp = sync.lastDictionarySyncTimestamp,
+                        lastContentVersion = sync.lastContentVersion,
                         learningSteps = advanced.learningSteps,
                         relearningSteps = advanced.relearningSteps,
                         learnAheadLimit = advanced.learnAheadLimit,
@@ -657,4 +667,12 @@ private data class AdvancedSettings(
     val leechThreshold: Int,
     val leechAction: String,
     val targetRetention: Float
+)
+
+private data class SyncSettings(
+    val lastSyncTime: Long,
+    val isAutoSyncEnabled: Boolean,
+    val lastSyncConflictCount: Int,
+    val lastDictionarySyncTimestamp: Long,
+    val lastContentVersion: Int
 )

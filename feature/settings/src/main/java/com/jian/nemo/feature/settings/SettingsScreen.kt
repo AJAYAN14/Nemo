@@ -385,12 +385,26 @@ fun SettingsScreen(
                 PremiumCard {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
+                    
+                    val dictionarySubtitle = remember(uiState.lastDictionarySyncTimestamp, uiState.lastContentVersion) {
+                        val versionStr = if (uiState.lastContentVersion > 0) "词库版本：${uiState.lastContentVersion}" else "词库版本：未同步"
+                        val timeStr = if (uiState.lastDictionarySyncTimestamp > 0) {
+                            val diff = System.currentTimeMillis() - uiState.lastDictionarySyncTimestamp
+                            val diffMinutes = diff / (1000 * 60)
+                            when {
+                                diffMinutes < 1 -> "刚刚同步"
+                                diffMinutes < 60 -> "${diffMinutes}分钟前同步"
+                                diffMinutes < 1440 -> "${diffMinutes / 60}小时前同步"
+                                else -> "${diffMinutes / 1440}天前同步"
+                            }
+                        } else ""
+                        if (timeStr.isNotEmpty()) "$versionStr ($timeStr)" else versionStr
+                    }
 
                     SquircleSettingItem(
                         icon = Icons.Rounded.Info,
                         iconColor = NemoPrimary,
-                        title = "版本信息",
-                        subtitle = "当前版本：$versionName",
+                        title = "词库信息",
                         onClick = { },
                         showDivider = true
                     )
