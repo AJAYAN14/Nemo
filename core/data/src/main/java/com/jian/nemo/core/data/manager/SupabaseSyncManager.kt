@@ -58,15 +58,17 @@ class SupabaseSyncManager @Inject constructor(
     private val contentUpdateApplier: ContentUpdateApplier
 ) {
     private val syncMutex = kotlinx.coroutines.sync.Mutex()
-    /**
-     * 公开触发字典同步逻辑
-     * @param force 是否强制重新下载（会清空本地词库）
-     */
-    suspend fun performDictionarySync(force: Boolean = false): DictionarySyncResult {
-        return performDictionarySyncInternal(force)
+    suspend fun performDictionarySync(
+        force: Boolean = false,
+        forceIncremental: Boolean = false
+    ): DictionarySyncResult {
+        return performDictionarySyncInternal(force, forceIncremental)
     }
 
-    private suspend fun performDictionarySyncInternal(force: Boolean = false): DictionarySyncResult = withContext(Dispatchers.IO) {
+    private suspend fun performDictionarySyncInternal(
+        force: Boolean = false,
+        forceIncremental: Boolean = false
+    ): DictionarySyncResult = withContext(Dispatchers.IO) {
         Log.d(TAG, "开始检查字典同步...")
         try {
             val remoteVersion = contentRepository.getRemoteContentVersion()
@@ -78,11 +80,11 @@ class SupabaseSyncManager @Inject constructor(
             val grammarCount = grammarDao.getGrammarCount()
             val isDatabaseEmpty = wordCount == 0 || grammarCount == 0
 
-            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, LastSyncTime=$lastSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force")
+            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, LastSyncTime=$lastSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force, forceIncremental=$forceIncremental")
 
-            if (force || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || lastSyncTimestamp == 0L))) {
+            if (force || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || lastSyncTimestamp == 0L))) {
                 val isFullSync = force || isDatabaseEmpty || lastSyncTimestamp == 0L
-                Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, V$lastVersion -> V$remoteVersion")
+                Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
 
                 if (force) {
                     Log.w(TAG, "强制重置模式：正在清空本地词库数据...")

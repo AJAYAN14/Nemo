@@ -487,6 +487,7 @@ private fun WordCardPreview() {
     MaterialTheme {
         val word = Word(
             id = 1,
+            rawId = "1",
             japanese = "食べる",
             hiragana = "たべる",
             chinese = "吃",

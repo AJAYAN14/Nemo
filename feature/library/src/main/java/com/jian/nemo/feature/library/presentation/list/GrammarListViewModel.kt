@@ -96,8 +96,8 @@ class GrammarListViewModel @Inject constructor(
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
-                // 刷新词库，force = true 以便清理并全量同步
-                syncRepository.performDictionarySync(force = true)
+                // 触发强制增量同步，绕过版本号检查，且不会清空本地库
+                syncRepository.performDictionarySync(forceIncremental = true)
             } catch (e: Exception) {
                 // 处理错误
             } finally {

@@ -61,6 +61,10 @@ interface SyncRepository {
     /**
      * 专门触发字典（单词+语法）的同步
      * @param force 是否强制重置（清空本地词库并全量重新拉取）
+     * @param forceIncremental 是否强制增量同步（绕过版本号检查，直接根据时间戳拉取）
      */
-    suspend fun performDictionarySync(force: Boolean = false): com.jian.nemo.core.domain.model.DictionarySyncResult
+    suspend fun performDictionarySync(
+        force: Boolean = false,
+        forceIncremental: Boolean = false
+    ): com.jian.nemo.core.domain.model.DictionarySyncResult
 }

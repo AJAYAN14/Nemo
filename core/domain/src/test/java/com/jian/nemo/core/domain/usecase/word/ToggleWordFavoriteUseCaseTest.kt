@@ -76,6 +76,7 @@ class ToggleWordFavoriteUseCaseTest {
 
     private fun createTestWord(isFavorite: Boolean = false) = Word(
         id = 1,
+        rawId = "1",
         japanese = "テスト",
         hiragana = "てすと",
         chinese = "测试",

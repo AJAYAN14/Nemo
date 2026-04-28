@@ -64,6 +64,7 @@ data class AppSettings(
     val learnAheadLimit: Int = 20,
     val relearningSteps: String = "1 10",
     val isRandomNewContentEnabled: Boolean = true,
+    val targetRetention: Float = 0.9f,
 
     // 同步触发策略
     val isSyncOnLearningComplete: Boolean = true,
@@ -262,6 +263,17 @@ data class SyncStats(
     val addedItems: Int = 0,
     val updatedItems: Int = 0,
     val deletedItems: Int = 0
+)
+
+/**
+ * 词库同步结果
+ */
+data class DictionarySyncResult(
+    val updatedWords: Int = 0,
+    val updatedGrammars: Int = 0,
+    val isFullSync: Boolean = false,
+    val localVersion: Int = 0,
+    val remoteVersion: Int = 0
 )
 
 /**

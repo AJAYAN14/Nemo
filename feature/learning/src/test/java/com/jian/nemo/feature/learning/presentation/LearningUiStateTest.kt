@@ -14,6 +14,7 @@ class LearningUiStateTest {
             completedToday = 20,
             currentWord = com.jian.nemo.core.domain.model.Word(
                 id = 1,
+                rawId = "1",
                 japanese = "行く",
                 hiragana = "いく",
                 chinese = "去",
@@ -22,6 +23,7 @@ class LearningUiStateTest {
             wordList = listOf(
                 com.jian.nemo.core.domain.model.Word(
                     id = 1,
+                    rawId = "1",
                     japanese = "行く",
                     hiragana = "いく",
                     chinese = "去",
@@ -69,6 +71,7 @@ class LearningUiStateTest {
             completedToday = 10,
             currentGrammar = com.jian.nemo.core.domain.model.Grammar(
                 id = 1,
+                rawId = "1",
                 grammar = "〜ている",
                 grammarLevel = "N5",
                 usages = emptyList()
@@ -76,6 +79,7 @@ class LearningUiStateTest {
             grammarList = listOf(
                 com.jian.nemo.core.domain.model.Grammar(
                     id = 1,
+                    rawId = "1",
                     grammar = "〜ている",
                     grammarLevel = "N5",
                     usages = emptyList()

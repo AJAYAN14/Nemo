@@ -96,6 +96,7 @@ class ToggleGrammarFavoriteUseCaseTest {
         isFavorite: Boolean = false
     ) = Grammar(
         id = id,
+        rawId = id.toString(),
         grammar = "～について",
         grammarLevel = "n5",
         usages = listOf(

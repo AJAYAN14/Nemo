@@ -94,7 +94,8 @@ data class WordProgress(
     val japanese: String? = null,
     val hiragana: String? = null,
     val chinese: String? = null,
-    val level: String? = null
+    val level: String? = null,
+    val rawId: String? = null
 )
 
 /**
@@ -118,7 +119,8 @@ data class GrammarProgress(
     val uuid: String? = null,
     // 兼容旧备份
     val grammar: String? = null,
-    val grammarLevel: String? = null
+    val grammarLevel: String? = null,
+    val rawId: String? = null
 )
 
 /**

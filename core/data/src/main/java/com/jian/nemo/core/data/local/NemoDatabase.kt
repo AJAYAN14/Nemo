@@ -26,7 +26,7 @@ import com.jian.nemo.core.data.local.entity.*
         GrammarStudyStateEntity::class,
         FavoriteQuestionEntity::class
     ],
-    version = 18,  // v18: 增加 type 字段对齐 Anki 卡片状态定义
+    version = 19,  // v19: 增加 raw_id 字段对齐后端同步逻辑
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

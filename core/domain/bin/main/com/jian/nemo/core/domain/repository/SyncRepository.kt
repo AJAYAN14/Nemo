@@ -57,5 +57,10 @@ interface SyncRepository {
     suspend fun deleteAllCloudData(userId: String): Boolean
 
     suspend fun hasUnsyncedChanges(sinceTimestamp: Long): Boolean
-
+    
+    /**
+     * 专门触发字典（单词+语法）的同步
+     * @param force 是否强制重置（清空本地词库并全量重新拉取）
+     */
+    suspend fun performDictionarySync(force: Boolean = false): com.jian.nemo.core.domain.model.DictionarySyncResult
 }

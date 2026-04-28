@@ -297,7 +297,7 @@ interface GrammarDao {
      */
     @Query("""
         SELECT
-            g.id, g.grammar, g.grammar_level,
+            g.id, g.grammar, g.grammar_level, g.raw_id,
             s.repetition_count AS repetitionCount,
             s.stability AS stability,
             s.difficulty AS difficulty,

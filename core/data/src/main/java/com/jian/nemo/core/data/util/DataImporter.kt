@@ -112,6 +112,7 @@ class DataImporter(
                         gloss2 = newEntityData.gloss2,
                         example3 = newEntityData.example3,
                         gloss3 = newEntityData.gloss3,
+                        rawId = newEntityData.rawId, // 补充 rawId 同步
                         // 强制复活: 如果 JSON 里有, 且 JSON 没说 delisted, 那么就是 false
                         isDelisted = newEntityData.isDelisted 
                     )
@@ -260,7 +261,8 @@ class DataImporter(
  */
 fun WordDto.toEntity(): WordEntity {
     return WordEntity(
-        id = DataImporter.extractNumericId(rawId),
+        id = DataImporter.extractNumericId(rawId ?: ""),
+        rawId = rawId ?: "",
         japanese = japanese,
         hiragana = hiragana,
         chinese = chinese,
@@ -286,6 +288,7 @@ fun WordDto.toEntity(): WordEntity {
 fun GrammarDto.toGrammarEntity(): GrammarEntity {
     return GrammarEntity(
         id = DataImporter.extractNumericId(id),
+        rawId = id, // GrammarDto 的 id 字段就是字符串 ID (如 N1_001)
         grammar = title,
         grammarLevel = level.uppercase(),
         isDelisted = delisted

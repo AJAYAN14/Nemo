@@ -22,12 +22,19 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "grammars",
     indices = [
-        Index(value = ["grammar_level"])
+        Index(value = ["grammar_level"]),
+        Index(value = ["raw_id"], unique = true)
     ]
 )
 data class GrammarEntity(
     @PrimaryKey
     val id: Int,
+
+    /**
+     * 后端唯一标识符 (例如: N1_001)
+     */
+    @ColumnInfo(name = "raw_id")
+    val rawId: String,
 
     // ========== 核心内容字段 ==========
     /**

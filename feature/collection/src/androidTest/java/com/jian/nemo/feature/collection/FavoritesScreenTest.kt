@@ -83,20 +83,22 @@ class FavoritesScreenTest {
         val testWords = listOf(
             Word(
                 id = 1,
-                word = "こんにちは",
-                meaning = "你好",
-                pronunciation = "konnichiwa",
+                rawId = "1",
+                japanese = "こんにちは",
+                chinese = "你好",
+                hiragana = "konnichiwa",
                 level = "N5",
-                partOfSpeech = "名詞",
+                pos = "名詞",
                 isFavorite = true
             ),
             Word(
                 id = 2,
-                word = "ありがとう",
-                meaning = "谢谢",
-                pronunciation = "arigatou",
+                rawId = "2",
+                japanese = "ありがとう",
+                chinese = "谢谢",
+                hiragana = "arigatou",
                 level = "N5",
-                partOfSpeech = "感動詞",
+                pos = "感動詞",
                 isFavorite = true
             )
         )
@@ -129,11 +131,12 @@ class FavoritesScreenTest {
         val testWords = listOf(
             Word(
                 id = 1,
-                word = "こんにちは",
-                meaning = "你好",
-                pronunciation = "konnichiwa",
+                rawId = "1",
+                japanese = "こんにちは",
+                chinese = "你好",
+                hiragana = "konnichiwa",
                 level = "N5",
-                partOfSpeech = "名詞",
+                pos = "名詞",
                 isFavorite = true
             )
         )
@@ -309,11 +312,11 @@ private fun SimpleWordListItem(
         ) {
             androidx.compose.foundation.layout.Column {
                 androidx.compose.material3.Text(
-                    text = word.word,
+                    text = word.japanese,
                     style = androidx.compose.material3.MaterialTheme.typography.titleMedium
                 )
                 androidx.compose.material3.Text(
-                    text = word.meaning,
+                    text = word.chinese,
                     style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                     color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -133,6 +133,7 @@ class DataExportManager @Inject constructor(
                                     val hiraIdx = cursor.getColumnIndexOrThrow("hiragana")
                                     val chiIdx = cursor.getColumnIndexOrThrow("chinese")
                                     val lvlIdx = cursor.getColumnIndexOrThrow("level")
+                                    val rawIdIdx = cursor.getColumnIndexOrThrow("raw_id")
                                     val delIdx = cursor.getColumnIndexOrThrow("isDeleted")
 
                                     while (cursor.moveToNext()) {
@@ -156,7 +157,8 @@ class DataExportManager @Inject constructor(
                                             japanese = cursor.getString(japIdx),
                                             hiragana = cursor.getString(hiraIdx),
                                             chinese = cursor.getString(chiIdx),
-                                            level = cursor.getString(lvlIdx)
+                                            level = cursor.getString(lvlIdx),
+                                            rawId = if (cursor.isNull(rawIdIdx)) null else cursor.getString(rawIdIdx)
                                         )
                                         writer.write(json.encodeToString(word))
                                         wordCount++
@@ -179,6 +181,7 @@ class DataExportManager @Inject constructor(
                                     val firstLearnIdx = cursor.getColumnIndexOrThrow("firstLearnedDate")
                                     val gramIdx = cursor.getColumnIndexOrThrow("grammar")
                                     val lvlIdx = cursor.getColumnIndexOrThrow("grammar_level")
+                                    val rawIdIdx = cursor.getColumnIndexOrThrow("raw_id")
                                     val delIdx = cursor.getColumnIndexOrThrow("isDeleted")
 
                                     while (cursor.moveToNext()) {
@@ -199,7 +202,8 @@ class DataExportManager @Inject constructor(
                                             isDeleted = cursor.getInt(delIdx) == 1,
                                             deletedTime = cursor.getLong(cursor.getColumnIndexOrThrow("deletedTime")),
                                             grammar = cursor.getString(gramIdx),
-                                            grammarLevel = cursor.getString(lvlIdx)
+                                            grammarLevel = cursor.getString(lvlIdx),
+                                            rawId = if (cursor.isNull(rawIdIdx)) null else cursor.getString(rawIdIdx)
                                         )
                                         writer.write(json.encodeToString(grammar))
                                         grammarCount++
@@ -432,7 +436,8 @@ class DataExportManager @Inject constructor(
                             japanese = remoteWord.japanese ?: "",
                             hiragana = remoteWord.hiragana ?: "",
                             chinese = remoteWord.chinese ?: "",
-                            level = remoteWord.level ?: "N5"
+                            level = remoteWord.level ?: "N5",
+                            rawId = remoteWord.rawId ?: ""
                         ))
                     }
 
@@ -496,7 +501,8 @@ class DataExportManager @Inject constructor(
                         grammarDao.insert(GrammarEntity(
                             id = targetLocalId,
                             grammar = remoteGrammar.grammar ?: "",
-                            grammarLevel = remoteGrammar.grammarLevel ?: "N5"
+                            grammarLevel = remoteGrammar.grammarLevel ?: "N5",
+                            rawId = remoteGrammar.rawId ?: ""
                         ))
                     }
 

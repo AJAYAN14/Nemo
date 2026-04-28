@@ -125,7 +125,10 @@ class SyncRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun performDictionarySync(force: Boolean): com.jian.nemo.core.domain.model.DictionarySyncResult {
-        return syncManager.performDictionarySync(force)
+    override suspend fun performDictionarySync(
+        force: Boolean,
+        forceIncremental: Boolean
+    ): com.jian.nemo.core.domain.model.DictionarySyncResult {
+        return syncManager.performDictionarySync(force, forceIncremental)
     }
 }

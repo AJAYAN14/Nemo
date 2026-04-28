@@ -1,5 +1,8 @@
 package com.jian.nemo.core.domain.repository
 
+import com.jian.nemo.core.domain.model.WordDto
+import com.jian.nemo.core.domain.model.GrammarDto
+
 /**
  * 将云端词库 JSON 合并到本地 DB（按等级）
  *
@@ -19,4 +22,14 @@ interface ContentUpdateApplier {
      * @return 本等级更新/插入的条数，失败返回 null
      */
     suspend fun applyGrammarsFromJson(level: String, jsonString: String): Int?
+    
+    /**
+     * [New] 批量应用从 Supabase 获取的单词 DTO
+     */
+    suspend fun applyAllWords(words: List<WordDto>)
+
+    /**
+     * [New] 批量应用从 Supabase 获取的语法 DTO
+     */
+    suspend fun applyAllGrammars(grammars: List<GrammarDto>)
 }

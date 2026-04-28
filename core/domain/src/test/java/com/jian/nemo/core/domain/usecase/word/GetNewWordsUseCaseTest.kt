@@ -108,6 +108,7 @@ class GetNewWordsUseCaseTest {
         repetitionCount: Int = 0
     ) = Word(
         id = id,
+        rawId = id.toString(),
         japanese = japanese,
         hiragana = hiragana,
         chinese = chinese,

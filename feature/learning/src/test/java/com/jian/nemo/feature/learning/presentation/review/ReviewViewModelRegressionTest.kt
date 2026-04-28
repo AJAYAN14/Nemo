@@ -84,6 +84,7 @@ class ReviewViewModelRegressionTest {
     fun `due list should be globally mixed by due day`() = runTest {
         val dueWord = Word(
             id = 1,
+            rawId = "1",
             japanese = "行く",
             hiragana = "いく",
             chinese = "去",
@@ -99,6 +100,7 @@ class ReviewViewModelRegressionTest {
         )
         val dueGrammar = Grammar(
             id = 2,
+            rawId = "2",
             grammar = "〜ている",
             grammarLevel = "N5",
             usages = listOf(
@@ -182,6 +184,7 @@ class ReviewViewModelRegressionTest {
     ): Harness {
         val defaultDueWord = Word(
             id = 1,
+            rawId = "1",
             japanese = "行く",
             hiragana = "いく",
             chinese = "去",
@@ -255,7 +258,8 @@ class ReviewViewModelRegressionTest {
                 interval = interval,
                 nextReviewDate = today + interval,
                 lastReviewedDate = today,
-                firstLearnedDate = item.firstLearnedDate ?: today
+                firstLearnedDate = item.firstLearnedDate ?: today,
+                type = item.type
             )
         }
     }

@@ -8,6 +8,7 @@ import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -59,6 +60,8 @@ class GetLearningStatsUseCaseTest {
         allRecords: List<StudyRecord> = emptyList(),
         todayLearnedWords: List<Word> = emptyList(),
         todayLearnedGrammars: List<Grammar> = emptyList(),
+        todayReviewedWords: List<Word> = emptyList(),
+        todayReviewedGrammars: List<Grammar> = emptyList(),
         allLearnedWords: List<Word> = emptyList(),
         allLearnedGrammars: List<Grammar> = emptyList(),
         wordDailyGoal: Int = 50,
@@ -72,10 +75,13 @@ class GetLearningStatsUseCaseTest {
         every { studyRecordRepository.getAllRecords() } returns flowOf(allRecords)
         every { studyRecordRepository.getTotalStudyDays() } returns flowOf(totalStudyDays)
         every { studyRecordRepository.getRecordsBetween(any(), any()) } returns flowOf(emptyList())
+        coEvery { settingsRepository.isDateChanged() } returns false
         every { wordRepository.getDueWordsCount(100L) } returns flowOf(dueWords)
         every { grammarRepository.getDueGrammarsCount(100L) } returns flowOf(dueGrammars)
         every { wordRepository.getTodayLearnedWords(100L) } returns flowOf(todayLearnedWords)
         every { grammarRepository.getTodayLearnedGrammars(100L) } returns flowOf(todayLearnedGrammars)
+        every { wordRepository.getTodayReviewedWords(100L) } returns flowOf(todayReviewedWords)
+        every { grammarRepository.getTodayReviewedGrammars(100L) } returns flowOf(todayReviewedGrammars)
         every { wordRepository.getAllLearnedWords() } returns flowOf(allLearnedWords)
         every { grammarRepository.getAllLearnedGrammars() } returns flowOf(allLearnedGrammars)
         every { wordRepository.getAllWordsByLevel("N1") } returns flowOf(emptyList())
@@ -114,6 +120,8 @@ class GetLearningStatsUseCaseTest {
             },
             todayLearnedWords = mockWords,
             todayLearnedGrammars = mockGrammars,
+            todayReviewedWords = List(15) { mockk<Word>() },
+            todayReviewedGrammars = List(8) { mockk<Grammar>() },
             allLearnedWords = allLearnedWords,
             allLearnedGrammars = allLearnedGrammars
         )
@@ -215,7 +223,9 @@ class GetLearningStatsUseCaseTest {
                 StudyRecord(date, 1, 0, 0, 0, 0)
             },
             todayLearnedWords = mockWords,
-            todayLearnedGrammars = mockGrammars
+            todayLearnedGrammars = mockGrammars,
+            todayReviewedWords = List(30) { mockk<Word>() },
+            todayReviewedGrammars = List(15) { mockk<Grammar>() }
         )
 
         // When

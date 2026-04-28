@@ -103,6 +103,7 @@ class GetTodayLearnedGrammarsCountUseCaseTest {
 
     private fun createTestGrammar(id: Int) = com.jian.nemo.core.domain.model.Grammar(
         id = id,
+        rawId = id.toString(),
         grammar = "～について$id",
         grammarLevel = "n5",
         usages = listOf(

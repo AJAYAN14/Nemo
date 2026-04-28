@@ -13,6 +13,11 @@ package com.jian.nemo.core.domain.model
 data class Word(
     val id: Int,
 
+    /**
+     * 后端唯一标识符
+     */
+    val rawId: String,
+
     // ========== 核心内容 ==========
     /**
      * 日语原文

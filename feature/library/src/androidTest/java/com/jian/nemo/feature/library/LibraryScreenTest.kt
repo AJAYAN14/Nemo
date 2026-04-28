@@ -81,19 +81,21 @@ class LibraryScreenTest {
         val testWords = listOf(
             Word(
                 id = 1,
-                word = "こんにちは",
-                meaning = "你好",
-                pronunciation = "konnichiwa",
+                rawId = "1",
+                japanese = "こんにちは",
+                chinese = "你好",
+                hiragana = "konnichiwa",
                 level = "N5",
-                partOfSpeech = "名詞"
+                pos = "名詞"
             ),
             Word(
                 id = 2,
-                word = "ありがとう",
-                meaning = "谢谢",
-                pronunciation = "arigatou",
+                rawId = "2",
+                japanese = "ありがとう",
+                chinese = "谢谢",
+                hiragana = "arigatou",
                 level = "N5",
-                partOfSpeech = "感動詞"
+                pos = "感動詞"
             )
         )
         val state = LibraryUiState(
@@ -126,17 +128,29 @@ class LibraryScreenTest {
         val testGrammars = listOf(
             Grammar(
                 id = 1,
-                pattern = "～ている",
-                meaning = "正在进行",
-                explanation = "表示动作正在进行",
-                level = "N5"
+                rawId = "1",
+                grammar = "～ている",
+                grammarLevel = "N5",
+                usages = listOf(
+                    com.jian.nemo.core.domain.model.GrammarUsage(
+                        connection = "",
+                        explanation = "正在进行",
+                        examples = emptyList()
+                    )
+                )
             ),
             Grammar(
                 id = 2,
-                pattern = "～てください",
-                meaning = "请...",
-                explanation = "表示请求",
-                level = "N5"
+                rawId = "2",
+                grammar = "～てください",
+                grammarLevel = "N5",
+                usages = listOf(
+                    com.jian.nemo.core.domain.model.GrammarUsage(
+                        connection = "",
+                        explanation = "请...",
+                        examples = emptyList()
+                    )
+                )
             )
         )
         val state = LibraryUiState(
@@ -422,11 +436,11 @@ private fun SimpleWordCard(
             modifier = androidx.compose.ui.Modifier.padding(16.dp)
         ) {
             androidx.compose.material3.Text(
-                text = word.word,
+                text = word.japanese,
                 style = androidx.compose.material3.MaterialTheme.typography.titleMedium
             )
             androidx.compose.material3.Text(
-                text = word.meaning,
+                text = word.chinese,
                 style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -443,11 +457,11 @@ private fun SimpleGrammarCard(grammar: Grammar) {
             modifier = androidx.compose.ui.Modifier.padding(16.dp)
         ) {
             androidx.compose.material3.Text(
-                text = grammar.pattern,
+                text = grammar.grammar,
                 style = androidx.compose.material3.MaterialTheme.typography.titleMedium
             )
             androidx.compose.material3.Text(
-                text = grammar.meaning,
+                text = grammar.getFirstExplanation(),
                 style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
             )

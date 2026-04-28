@@ -28,6 +28,7 @@ object GrammarMapper {
     fun GrammarWithUsages.toDomainModel(): Grammar {
         return Grammar(
             id = grammar.id,
+            rawId = grammar.rawId,
             grammar = grammar.grammar,
             grammarLevel = grammar.grammarLevel,
             isDelisted = grammar.isDelisted,
@@ -85,6 +86,7 @@ object GrammarMapper {
     fun Grammar.toEntity(): GrammarEntity {
         return GrammarEntity(
             id = id,
+            rawId = rawId,
             grammar = grammar,
             grammarLevel = grammarLevel,
             isDelisted = isDelisted

@@ -510,7 +510,7 @@ interface WordDao {
      */
     @Query("""
         SELECT
-            w.id, w.japanese, w.hiragana, w.chinese, w.level,
+            w.id, w.japanese, w.hiragana, w.chinese, w.level, w.raw_id,
             s.repetition_count AS repetitionCount,
             s.stability AS stability,
             s.difficulty AS difficulty,

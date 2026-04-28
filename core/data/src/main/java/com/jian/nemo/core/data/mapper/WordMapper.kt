@@ -21,6 +21,7 @@ object WordMapper {
     fun toDomainModel(entity: WordEntity, state: WordStudyStateEntity?): Word {
         return Word(
             id = entity.id,
+            rawId = entity.rawId,
             japanese = entity.japanese,
             hiragana = entity.hiragana,
             chinese = entity.chinese,
@@ -62,6 +63,7 @@ object WordMapper {
     fun Word.toEntity(): WordEntity {
         return WordEntity(
             id = id,
+            rawId = rawId,
             japanese = japanese,
             hiragana = hiragana,
             chinese = chinese,

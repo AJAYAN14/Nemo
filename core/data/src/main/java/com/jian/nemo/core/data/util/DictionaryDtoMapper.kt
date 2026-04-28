@@ -13,6 +13,7 @@ import com.jian.nemo.core.domain.model.WordDto
 fun WordDto.toEntity(): WordEntity {
     return WordEntity(
         id = id,
+        rawId = rawId ?: "",
         japanese = japanese,
         hiragana = hiragana,
         chinese = chinese,
@@ -34,6 +35,7 @@ fun WordDto.toEntity(): WordEntity {
 fun GrammarDto.toGrammarEntity(): GrammarEntity {
     return GrammarEntity(
         id = id,
+        rawId = rawId ?: "",
         grammar = title,
         grammarLevel = level.uppercase(),
         isDelisted = isDelisted

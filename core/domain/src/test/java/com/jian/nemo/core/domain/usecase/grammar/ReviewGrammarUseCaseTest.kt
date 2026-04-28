@@ -57,7 +57,8 @@ class ReviewGrammarUseCaseTest {
             interval = 7,
             nextReviewDate = 107L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 90L
+            firstLearnedDate = 90L,
+            type = 2
         )
         every { srsCalculator.calculate(any(), 4, 100L) } returns srsResult
 
@@ -91,7 +92,8 @@ class ReviewGrammarUseCaseTest {
             interval = 3,
             nextReviewDate = 103L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 95L
+            firstLearnedDate = 95L,
+            type = 2
         )
         every { srsCalculator.calculate(any(), 3, 100L) } returns srsResult
 
@@ -133,7 +135,8 @@ class ReviewGrammarUseCaseTest {
             interval = 3,
             nextReviewDate = 103L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 95L
+            firstLearnedDate = 95L,
+            type = 2
         )
         every { srsCalculator.calculate(any(), capture(qualitySlot), 100L) } returns srsResult
 
@@ -154,6 +157,7 @@ class ReviewGrammarUseCaseTest {
         difficulty: Float = 5.0f
     ) = Grammar(
         id = id,
+        rawId = id.toString(),
         grammar = "～について",
         grammarLevel = "n5",
         usages = listOf(

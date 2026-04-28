@@ -106,6 +106,7 @@ class GetDueGrammarsUseCaseTest {
         repetitionCount: Int = 0
     ) = Grammar(
         id = id,
+        rawId = id.toString(),
         grammar = grammar,
         grammarLevel = "n5",
         usages = listOf(

@@ -93,8 +93,8 @@ class WordListViewModel @Inject constructor(
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
-                // 默认执行增量同步 (force = false)
-                val result = syncRepository.performDictionarySync(force = false)
+                // 触发强制增量同步 (forceIncremental = true)，绕过版本号检查
+                val result = syncRepository.performDictionarySync(forceIncremental = true)
                 
                 if (result.updatedWords > 0 || result.updatedGrammars > 0) {
                     val message = buildString {

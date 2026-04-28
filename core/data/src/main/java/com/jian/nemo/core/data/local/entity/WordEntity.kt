@@ -14,12 +14,19 @@ import androidx.room.PrimaryKey
     indices = [
         Index(value = ["level"]),
         Index(value = ["pos"]),
+        Index(value = ["raw_id"], unique = true),
         Index(value = ["japanese", "level"], unique = true)
     ]
 )
 data class WordEntity(
     @PrimaryKey(autoGenerate = false)
     val id: Int,
+
+    /**
+     * 后端唯一标识符 (例如: N1_0001)
+     */
+    @ColumnInfo(name = "raw_id")
+    val rawId: String,
 
     // ========== 核心内容字段 ==========
     /**
