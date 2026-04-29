@@ -113,7 +113,11 @@ class ContentUpdateApplierImpl @Inject constructor(
                     val entities = batch.map { it.toEntity() }
                     wordDao.upsertAll(entities)
                 }
-                Log.i(TAG, "applyAllWords: success")
+                
+                // [MOD] 全量更新后，标记本地存在但云端已消失的词条为已下架，防止遗留脏数据
+                val remoteIds = words.map { it.id }
+                val delistedCount = wordDao.markAllMissingAsDelisted(remoteIds)
+                Log.i(TAG, "applyAllWords: success. $delistedCount items marked as delisted.")
             } catch (e: Exception) {
                 Log.e(TAG, "applyAllWords failed", e)
             }
@@ -141,7 +145,10 @@ class ContentUpdateApplierImpl @Inject constructor(
                         }
                     }
                 }
-                Log.i(TAG, "applyAllGrammars: success")
+                // [MOD] 全量更新后，标记本地存在但云端已消失的语法为已下架
+                val remoteIds = grammars.map { it.id }
+                val delistedCount = grammarDao.markAllMissingAsDelisted(remoteIds)
+                Log.i(TAG, "applyAllGrammars: success. $delistedCount items marked as delisted.")
             } catch (e: Exception) {
                 Log.e(TAG, "applyAllGrammars failed", e)
             }

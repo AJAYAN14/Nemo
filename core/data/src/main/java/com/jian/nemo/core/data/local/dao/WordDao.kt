@@ -611,6 +611,9 @@ interface WordDao {
      */
     @Query("UPDATE words SET is_delisted = 1 WHERE level = :level AND japanese NOT IN (:jsonJapaneseList)")
     suspend fun markMissingAsDelisted(level: String, jsonJapaneseList: List<String>): Int
+
+    @Query("UPDATE words SET is_delisted = 1 WHERE id NOT IN (:ids)")
+    suspend fun markAllMissingAsDelisted(ids: List<Int>): Int
 }
 
 data class ReviewForecastTuple(

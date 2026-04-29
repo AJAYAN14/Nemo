@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "897f8ca133c6302ed6382af175131a73",
+    "identityHash": "456494ede766c254bccf8ec3d05e6c33",
     "entities": [
       {
         "tableName": "words",
@@ -911,7 +911,7 @@
       },
       {
         "tableName": "word_study_states",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`word_id`), FOREIGN KEY(`word_id`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`word_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`word_id`), FOREIGN KEY(`word_id`) REFERENCES `words`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "wordId",
@@ -1033,7 +1033,7 @@
         "foreignKeys": [
           {
             "table": "words",
-            "onDelete": "CASCADE",
+            "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
               "word_id"
@@ -1046,7 +1046,7 @@
       },
       {
         "tableName": "grammar_study_states",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`grammar_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`grammar_id`), FOREIGN KEY(`grammar_id`) REFERENCES `grammars`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`grammar_id` INTEGER NOT NULL, `repetition_count` INTEGER NOT NULL, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `interval` INTEGER NOT NULL, `next_review_date` INTEGER NOT NULL, `last_reviewed_date` INTEGER, `first_learned_date` INTEGER, `type` INTEGER NOT NULL, `is_favorite` INTEGER NOT NULL, `is_skipped` INTEGER NOT NULL, `buried_until_day` INTEGER NOT NULL, `last_modified_time` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `deleted_time` INTEGER NOT NULL, PRIMARY KEY(`grammar_id`), FOREIGN KEY(`grammar_id`) REFERENCES `grammars`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "grammarId",
@@ -1168,7 +1168,7 @@
         "foreignKeys": [
           {
             "table": "grammars",
-            "onDelete": "CASCADE",
+            "onDelete": "NO ACTION",
             "onUpdate": "NO ACTION",
             "columns": [
               "grammar_id"
@@ -1251,7 +1251,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '897f8ca133c6302ed6382af175131a73')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '456494ede766c254bccf8ec3d05e6c33')"
     ]
   }
 }

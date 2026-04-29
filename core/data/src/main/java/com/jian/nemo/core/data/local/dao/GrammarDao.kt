@@ -545,6 +545,9 @@ interface GrammarDao {
      */
     @Query("UPDATE grammars SET is_delisted = 1 WHERE UPPER(grammar_level) = UPPER(:level) AND id NOT IN (:jsonIds)")
     suspend fun markMissingAsDelisted(level: String, jsonIds: List<Int>): Int
+
+    @Query("UPDATE grammars SET is_delisted = 1 WHERE id NOT IN (:ids)")
+    suspend fun markAllMissingAsDelisted(ids: List<Int>): Int
 }
 
 data class GrammarReviewForecastTuple(

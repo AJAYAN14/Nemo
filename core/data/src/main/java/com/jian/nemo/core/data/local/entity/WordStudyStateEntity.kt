@@ -22,7 +22,7 @@ import com.jian.nemo.core.common.util.DateTimeUtils
             entity = WordEntity::class,
             parentColumns = ["id"],
             childColumns = ["word_id"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.NO_ACTION
         )
     ]
 )

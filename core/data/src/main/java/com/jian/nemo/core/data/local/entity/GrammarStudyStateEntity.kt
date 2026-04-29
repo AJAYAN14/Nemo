@@ -21,7 +21,7 @@ import com.jian.nemo.core.common.util.DateTimeUtils
             entity = GrammarEntity::class,
             parentColumns = ["id"],
             childColumns = ["grammar_id"],
-            onDelete = ForeignKey.CASCADE
+            onDelete = ForeignKey.NO_ACTION
         )
     ]
 )

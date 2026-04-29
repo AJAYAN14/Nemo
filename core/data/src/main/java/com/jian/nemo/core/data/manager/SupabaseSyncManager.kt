@@ -32,6 +32,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.room.withTransaction
 import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.put
 
 @Serializable
 data class SyncMetaDto(
@@ -87,9 +91,7 @@ class SupabaseSyncManager @Inject constructor(
                 Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
 
                 if (force) {
-                    Log.w(TAG, "强制重置模式：正在清空本地词库数据...")
-                    wordDao.deleteAll()
-                    grammarDao.deleteAll()
+                    Log.w(TAG, "强制重置模式：将执行全量覆盖并逻辑下架过时数据")
                 }
 
                 // 执行同步拉取
@@ -295,13 +297,13 @@ class SupabaseSyncManager @Inject constructor(
             if (mode != SyncMode.PULL_ONLY) {
                 emit(SyncProgress.Running("正在上传本地变更...", 0, 0))
 
-                pushedCount += pushWords(userId, queryTime, wordPull.acceptedIds)
-                pushedCount += pushGrammars(userId, queryTime, grammarPull.acceptedIds)
-                pushedCount += pushStudyRecords(userId, queryTime, studyPull.acceptedIds)
-                pushedCount += pushTestRecords(userId, queryTime, testPull.acceptedIds)
-                pushedCount += pushWrongAnswers(userId, queryTime, wordWrongPull.acceptedIds)
-                pushedCount += pushGrammarWrongAnswers(userId, queryTime, grammarWrongPull.acceptedIds)
-                pushedCount += pushFavoriteQuestions(userId, queryTime, favoritePull.acceptedIds)
+                pushedCount += pushWords(userId, queryTime, wordPull.acceptedVersions)
+                pushedCount += pushGrammars(userId, queryTime, grammarPull.acceptedVersions)
+                pushedCount += pushStudyRecords(userId, queryTime, studyPull.acceptedVersions)
+                pushedCount += pushTestRecords(userId, queryTime, testPull.acceptedVersions)
+                pushedCount += pushWrongAnswers(userId, queryTime, wordWrongPull.acceptedVersions)
+                pushedCount += pushGrammarWrongAnswers(userId, queryTime, grammarWrongPull.acceptedVersions)
+                pushedCount += pushFavoriteQuestions(userId, queryTime, favoritePull.acceptedVersions)
                 pushedCount += pushSettings(userId)
             }
 
@@ -402,7 +404,7 @@ class SupabaseSyncManager @Inject constructor(
         Log.d(TAG, "Pull WordStates: Found ${remoteChanges.size} changes from cloud")
 
         val toUpsert = mutableListOf<WordStudyStateEntity>()
-        val acceptedIds = mutableSetOf<Int>()
+        val acceptedVersions = mutableMapOf<Int, Long>()
 
         if (remoteChanges.isNotEmpty()) {
             val remoteIds = remoteChanges.map { it.wordId }
@@ -410,7 +412,7 @@ class SupabaseSyncManager @Inject constructor(
             if (isFullReset) {
                 // 全量覆盖
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteIds)
+                acceptedVersions.putAll(remoteChanges.associate { it.wordId to it.lastModifiedTime })
             } else {
                 // 增量合并
                 val localStatesMap = wordStudyStateDao.getStatesByIds(remoteIds).associateBy { it.wordId }
@@ -423,39 +425,42 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeWordProgress(localState, remoteProgress)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.wordId)
+                                acceptedVersions[remoteDto.wordId] = remoteDto.lastModifiedTime
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> {
-                                // Local is newer, keep it. Do NOT add to acceptedIds (so we can push local)
+                                // Local is newer, keep it. Do NOT add to acceptedVersions (so we can push local)
                             }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.wordId)
+                        acceptedVersions[remoteDto.wordId] = remoteDto.lastModifiedTime
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushWords(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<Int>
+        acceptedVersions: Map<Int, Long>
     ): Int {
         val localChanges = wordStudyStateDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.wordId) } // 仅过滤掉明确被云端更新覆盖的记录
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.wordId]
+                pulledVersion == null || entity.lastModifiedTime > pulledVersion
+            }
 
         Log.d(TAG, "Push WordStates: Found ${localChanges.size} changes to push")
 
         if (localChanges.isNotEmpty()) {
              localChanges.chunked(BATCH_SIZE).forEach { chunk ->
                 val dtos = chunk.map { it.toSyncDto(userId) }
-                supabaseClient.postgrest[TABLE_WORD_STATES].upsert(dtos) {
-                    onConflict = "user_id, word_id"
-                    ignoreDuplicates = false
-                }
+                // [MOD] 使用 RPC 替代直接 upsert，以支持服务器端 last_modified_time 校验
+                supabaseClient.postgrest.rpc("upsert_user_word_states", buildJsonObject {
+                    put("p_json", Json.encodeToJsonElement(dtos))
+                })
             }
         }
         return localChanges.size
@@ -475,14 +480,14 @@ class SupabaseSyncManager @Inject constructor(
         }
 
         val toUpsert = mutableListOf<GrammarStudyStateEntity>()
-        val acceptedIds = mutableSetOf<Int>()
+        val acceptedVersions = mutableMapOf<Int, Long>()
 
         if (remoteChanges.isNotEmpty()) {
             val remoteIds = remoteChanges.map { it.grammarId }
 
             if (isFullReset) {
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteIds)
+                acceptedVersions.putAll(remoteChanges.associate { it.grammarId to it.lastModifiedTime })
             } else {
                 val localStatesMap = grammarStudyStateDao.getStatesByIds(remoteIds).associateBy { it.grammarId }
 
@@ -494,34 +499,38 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeGrammarProgress(localState, remoteProgress)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.grammarId)
+                                acceptedVersions[remoteDto.grammarId] = remoteDto.lastModifiedTime
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> { }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.grammarId)
+                        acceptedVersions[remoteDto.grammarId] = remoteDto.lastModifiedTime
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushGrammars(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<Int>
+        acceptedVersions: Map<Int, Long>
     ): Int {
         val localChanges = grammarStudyStateDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.grammarId) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.grammarId]
+                pulledVersion == null || entity.lastModifiedTime > pulledVersion
+            }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->
                 val dtos = chunk.map { it.toSyncDto(userId) }
-                supabaseClient.postgrest[TABLE_GRAMMAR_STATES].upsert(dtos) {
-                    onConflict = "user_id, grammar_id"
-                }
+                // [MOD] 使用 RPC 替代直接 upsert，以支持服务器端 last_modified_time 校验
+                supabaseClient.postgrest.rpc("upsert_user_grammar_states", buildJsonObject {
+                    put("p_json", Json.encodeToJsonElement(dtos))
+                })
             }
         }
         return localChanges.size
@@ -541,12 +550,12 @@ class SupabaseSyncManager @Inject constructor(
         }
 
         val toUpsert = mutableListOf<StudyRecordEntity>()
-        val acceptedIds = mutableSetOf<Long>()
+        val acceptedVersions = mutableMapOf<Long, Long>()
 
         if (remoteChanges.isNotEmpty()) {
             if (isFullReset) {
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteChanges.map { it.date })
+                acceptedVersions.putAll(remoteChanges.associate { it.date to it.timestamp })
             } else {
                 remoteChanges.forEach { remoteDto ->
                     val localState = studyRecordDao.getByDate(remoteDto.date).first()
@@ -555,27 +564,30 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeStudyRecord(localState, remoteDto)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.date)
+                                acceptedVersions[remoteDto.date] = result.data.timestamp
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> { }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.date)
+                        acceptedVersions[remoteDto.date] = remoteDto.timestamp
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushStudyRecords(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<Long>
+        acceptedVersions: Map<Long, Long>
     ): Int {
         val localChanges = studyRecordDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.date) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.date]
+                pulledVersion == null || entity.timestamp > pulledVersion
+            }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->
@@ -602,14 +614,14 @@ class SupabaseSyncManager @Inject constructor(
         }
 
         val toUpsert = mutableListOf<TestRecordEntity>()
-        val acceptedIds = mutableSetOf<String>() // UUID
+        val acceptedVersions = mutableMapOf<String, Long>()
 
         if (remoteChanges.isNotEmpty()) {
             val remoteUuids = remoteChanges.map { it.uuid }
 
             if (isFullReset) {
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteUuids)
+                acceptedVersions.putAll(remoteChanges.associate { it.uuid to it.timestamp })
             } else {
                 val localStatesMap = testRecordDao.getByUuids(remoteUuids).associateBy { it.uuid }
 
@@ -620,27 +632,30 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeTestRecord(localState, remoteDto)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.uuid)
+                                acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> { }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.uuid)
+                        acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushTestRecords(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<String>
+        acceptedVersions: Map<String, Long>
     ): Int {
         val localChanges = testRecordDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.uuid) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.uuid]
+                pulledVersion == null || entity.timestamp > pulledVersion
+            }
 
         if (localChanges.isNotEmpty()) {
             localChanges.chunked(BATCH_SIZE).forEach { chunk ->
@@ -661,20 +676,18 @@ class SupabaseSyncManager @Inject constructor(
         userId: String,
         sinceTime: Long,
         isFullReset: Boolean
-    ): PullResult<WrongAnswerEntity, Int> {
+    ): PullResult<WrongAnswerEntity, String> {
         val remoteChanges = pullAllPaged<SyncWrongAnswerDto>(TABLE_WRONG_ANSWERS, userId) {
             if (!isFullReset) gt("timestamp", sinceTime)
         }
 
         val toUpsert = mutableListOf<WrongAnswerEntity>()
-        val acceptedIds = mutableSetOf<Int>() // WordId
+        val acceptedVersions = mutableMapOf<String, Long>() // UUID -> Timestamp
 
         if (remoteChanges.isNotEmpty()) {
-            val remoteWordIds = remoteChanges.map { it.wordId }
-
             if (isFullReset) {
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteWordIds)
+                acceptedVersions.putAll(remoteChanges.associate { it.uuid to it.timestamp })
             } else {
                 val remoteUuids = remoteChanges.map { it.uuid }
                 val localStatesMap = wrongAnswerDao.getByUuids(remoteUuids).associateBy { it.uuid }
@@ -686,27 +699,30 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeWrongAnswer(localState, remoteDto)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.wordId)
+                                acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> { }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.wordId)
+                        acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushWrongAnswers(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<Int>
+        acceptedVersions: Map<String, Long>
     ): Int {
         val localChanges = wrongAnswerDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.wordId) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.uuid]
+                pulledVersion == null || entity.timestamp > pulledVersion
+            }
             .sortedByDescending { it.timestamp }
             .distinctBy { it.wordId }
 
@@ -729,20 +745,18 @@ class SupabaseSyncManager @Inject constructor(
         userId: String,
         sinceTime: Long,
         isFullReset: Boolean
-    ): PullResult<GrammarWrongAnswerEntity, Int> {
+    ): PullResult<GrammarWrongAnswerEntity, String> {
         val remoteChanges = pullAllPaged<SyncGrammarWrongAnswerDto>(TABLE_GRAMMAR_WRONG_ANSWERS, userId) {
             if (!isFullReset) gt("timestamp", sinceTime)
         }
 
         val toUpsert = mutableListOf<GrammarWrongAnswerEntity>()
-        val acceptedIds = mutableSetOf<Int>() // GrammarId
+        val acceptedVersions = mutableMapOf<String, Long>() // UUID -> Timestamp
 
         if (remoteChanges.isNotEmpty()) {
-            val remoteIds = remoteChanges.map { it.grammarId }
-
             if (isFullReset) {
                 toUpsert.addAll(remoteChanges.filter { !it.isDeleted }.map { it.toEntity() })
-                acceptedIds.addAll(remoteIds)
+                acceptedVersions.putAll(remoteChanges.associate { it.uuid to it.timestamp })
             } else {
                 val remoteUuids = remoteChanges.map { it.uuid }
                 val localStatesMap = grammarWrongAnswerDao.getByUuids(remoteUuids).associateBy { it.uuid }
@@ -754,27 +768,30 @@ class SupabaseSyncManager @Inject constructor(
                         when (val result = SmartSyncMerger.mergeGrammarWrongAnswer(localState, remoteDto)) {
                             is SmartSyncMerger.MergeResult.RemoteUpdated -> {
                                 toUpsert.add(result.data)
-                                acceptedIds.add(remoteDto.grammarId)
+                                acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                             }
                             is SmartSyncMerger.MergeResult.LocalKept -> { }
                         }
                     } else if (!remoteDto.isDeleted) {
                         toUpsert.add(remoteDto.toEntity())
-                        acceptedIds.add(remoteDto.grammarId)
+                        acceptedVersions[remoteDto.uuid] = remoteDto.timestamp
                     }
                 }
             }
         }
-        return PullResult(toUpsert, acceptedIds, remoteChanges.size)
+        return PullResult(toUpsert, acceptedVersions, remoteChanges.size)
     }
 
     private suspend fun pushGrammarWrongAnswers(
         userId: String,
         sinceTime: Long,
-        acceptedIds: Set<Int>
+        acceptedVersions: Map<String, Long>
     ): Int {
         val localChanges = grammarWrongAnswerDao.getModifiedSince(sinceTime)
-            .filter { !acceptedIds.contains(it.grammarId) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.uuid]
+                pulledVersion == null || entity.timestamp > pulledVersion
+            }
             .sortedByDescending { it.timestamp }
             .distinctBy { it.grammarId }
 
@@ -805,17 +822,20 @@ class SupabaseSyncManager @Inject constructor(
         }
 
         val entities = remoteDtos.map { it.toEntity() }
-        val acceptedIds = remoteDtos.map { it.timestamp.toString() }.toSet()
-        return PullResult(entities, acceptedIds, entities.size)
+        val acceptedVersions = remoteDtos.associate { it.timestamp.toString() to it.timestamp }
+        return PullResult(entities, acceptedVersions, entities.size)
     }
 
     private suspend fun pushFavoriteQuestions(
         userId: String,
         sinceTime: Long,
-        acceptedTimestamps: Set<String>
+        acceptedVersions: Map<String, Long>
     ): Int {
         val localChanges = favoriteQuestionDao.getModifiedSince(sinceTime)
-            .filter { !acceptedTimestamps.contains(it.timestamp.toString()) }
+            .filter { entity ->
+                val pulledVersion = acceptedVersions[entity.timestamp.toString()]
+                pulledVersion == null || entity.timestamp > pulledVersion
+            }
             .sortedByDescending { it.timestamp }
             .distinctBy { it.timestamp }
 
@@ -924,6 +944,6 @@ class SupabaseSyncManager @Inject constructor(
  */
 private data class PullResult<T, ID>(
     val toUpsert: List<T>,
-    val acceptedIds: Set<ID>, // 用于 Push 时的过滤，存储已从云端接受的 ID
+    val acceptedVersions: Map<ID, Long>, // 用于 Push 时的过滤，存储已从云端拉取的版本时间戳
     val pulledCount: Int
 )
