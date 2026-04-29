@@ -24,9 +24,10 @@ import com.jian.nemo.core.data.local.entity.*
         SyncMetadataEntity::class,
         WordStudyStateEntity::class,
         GrammarStudyStateEntity::class,
-        FavoriteQuestionEntity::class
+        FavoriteQuestionEntity::class,
+        AIExerciseEntity::class
     ],
-    version = 19,  // v19: 增加 raw_id 字段对齐后端同步逻辑
+    version = 20,  // v20: 增加 AI 练习历史记录表
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {
@@ -47,6 +48,7 @@ abstract class NemoDatabase : RoomDatabase() {
     abstract fun wordStudyStateDao(): WordStudyStateDao
     abstract fun grammarStudyStateDao(): GrammarStudyStateDao
     abstract fun favoriteQuestionDao(): FavoriteQuestionDao
+    abstract fun aiExerciseDao(): AIExerciseDao
 
     companion object {
         const val DATABASE_NAME = "nemo_database"

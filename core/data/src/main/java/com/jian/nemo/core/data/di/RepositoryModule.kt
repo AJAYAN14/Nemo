@@ -28,6 +28,8 @@ import com.jian.nemo.core.domain.repository.SyncRepository
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.ContentRepository
 import com.jian.nemo.core.domain.repository.ContentUpdateApplier
+import com.jian.nemo.core.domain.repository.AIWorkshopRepository
+import com.jian.nemo.core.data.repository.AIWorkshopRepositoryImpl
 import com.jian.nemo.core.data.manager.DataExportManager
 import com.jian.nemo.core.domain.repository.DataExportRepository
 import com.jian.nemo.core.domain.service.SyncService
@@ -195,5 +197,11 @@ abstract class RepositoryModule {
     abstract fun bindContentReportRepository(
         impl: ContentReportRepositoryImpl
     ): ContentReportRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAIWorkshopRepository(
+        impl: AIWorkshopRepositoryImpl
+    ): AIWorkshopRepository
 
 }

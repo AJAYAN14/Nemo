@@ -59,6 +59,7 @@ fun HomeScreen(
     onNavigateToKanaChart: () -> Unit,
     onNavigateToGrammarList: () -> Unit,
     onNavigateToHeatmap: () -> Unit,
+    onNavigateToAIWorkshop: () -> Unit,
     onNavigateToProfile: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -680,7 +681,7 @@ fun HomeScreen(
                                 }
                             }
 
-                            // 右边半宽: 语法点
+                            // 右边半宽: AI 工坊
                             Surface(
                                 modifier = Modifier
                                     .weight(1f)
@@ -689,7 +690,7 @@ fun HomeScreen(
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null,
-                                        onClick = onNavigateToGrammarList
+                                        onClick = onNavigateToAIWorkshop
                                     ),
                                 shape = RoundedCornerShape(24.dp),
                                 color = surfaceColor,
@@ -708,12 +709,12 @@ fun HomeScreen(
                                     ) {
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
-                                            color = BentoColors.IconBgGreen
+                                            color = BentoColors.IconBgPurple
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.Create,
+                                                imageVector = Icons.Rounded.AutoAwesome,
                                                 contentDescription = null,
-                                                tint = BentoColors.AccentGreen,
+                                                tint = BentoColors.AccentPurple,
                                                 modifier = Modifier.padding(10.dp).size(20.dp)
                                             )
                                         }
@@ -726,13 +727,13 @@ fun HomeScreen(
                                     }
                                     Column {
                                         Text(
-                                            text = stringResource(R.string.menu_grammar_book_title),
+                                            text = stringResource(R.string.menu_ai_workshop_title),
                                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                             color = textMain
                                         )
                                         Spacer(Modifier.height(2.dp))
                                         Text(
-                                            text = stringResource(R.string.menu_grammar_book_subtitle),
+                                            text = stringResource(R.string.menu_ai_workshop_subtitle),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = textSub
                                         )

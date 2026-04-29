@@ -274,6 +274,20 @@ object PreferencesKeys {
     /** 显示答案等待时长 (毫秒) 默认: 5000 */
     val SHOW_ANSWER_DELAY_MS = longPreferencesKey("show_answer_delay_ms")
 
+    // ========== AI 工坊配置 ==========
+    /** AI 平台 (openai, gemini, claude, deepseek, doubao, mimo) */
+    val AI_PLATFORM = stringPreferencesKey("ai_platform")
+    /** AI API 密钥 */
+    val AI_API_KEY = stringPreferencesKey("ai_api_key")
+    /** AI API 基础路径 (兼容 OpenAI 格式的第三方) */
+    val AI_BASE_URL = stringPreferencesKey("ai_base_url")
+    /** AI 模型名称 */
+    val AI_MODEL = stringPreferencesKey("ai_model")
+    /** AI 工坊练习难度 (N5, N4, N3, N2, N1) */
+    val AI_WORKSHOP_DIFFICULTY = stringPreferencesKey("ai_workshop_difficulty")
+    /** AI 工坊当前生成的题目 (JSON 格式) */
+    val AI_CURRENT_EXERCISE = stringPreferencesKey("ai_current_exercise")
+
 
     // ========== 动态 Key 生成辅助方法 ==========
 

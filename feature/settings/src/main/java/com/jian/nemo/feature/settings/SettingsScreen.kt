@@ -40,6 +40,7 @@ fun SettingsScreen(
     onNavigateToTtsSettings: () -> Unit,
     onNavigateToAdvancedLearning: () -> Unit,
     onNavigateToThemeSettings: () -> Unit,
+    onNavigateToAiSettings: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -310,6 +311,23 @@ fun SettingsScreen(
                         title = "记忆算法配置",
                         subtitle = "步进、提前复习与 Leech 策略",
                         onClick = onNavigateToAdvancedLearning,
+                        showDivider = false,
+                        trailing = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    )
+
+                    SquircleSettingItem(
+                        icon = Icons.Rounded.AutoAwesome,
+                        iconColor = NemoCyan,
+                        title = "AI 工坊配置",
+                        subtitle = "设置 API Key 与 AI 模型",
+                        onClick = onNavigateToAiSettings,
                         showDivider = false,
                         trailing = {
                             Icon(

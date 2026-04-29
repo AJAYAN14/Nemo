@@ -124,4 +124,8 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideFavoriteQuestionDao(database: NemoDatabase): FavoriteQuestionDao = database.favoriteQuestionDao()
+
+    @Provides
+    @Singleton
+    fun provideAIExerciseDao(database: NemoDatabase): AIExerciseDao = database.aiExerciseDao()
 }

@@ -68,7 +68,15 @@ data class AppSettings(
 
     // 同步触发策略
     val isSyncOnLearningComplete: Boolean = true,
-    val isSyncOnTestComplete: Boolean = true
+    val isSyncOnTestComplete: Boolean = true,
+
+    // AI 工坊配置
+    val aiPlatform: String = "openai",
+    val aiApiKey: String = "",
+    val aiBaseUrl: String = "",
+    val aiModel: String = "",
+    val aiWorkshopDifficulty: String = "N5",
+    val aiCurrentExercise: String = ""
 )
 
 /**

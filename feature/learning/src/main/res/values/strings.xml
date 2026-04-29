@@ -30,6 +30,8 @@
     <string name="menu_kana_chart_subtitle">平假名与片假名</string>
     <string name="menu_grammar_book_title">语法点</string>
     <string name="menu_grammar_book_subtitle">语法精讲</string>
+    <string name="menu_ai_workshop_title">AI 工坊</string>
+    <string name="menu_ai_workshop_subtitle">造句与翻译实时批改</string>
 
     <string name="kana_chart_title">五十音图</string>
     <string name="kana_tab_hiragana">平假名</string>

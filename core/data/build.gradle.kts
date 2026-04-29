@@ -76,6 +76,10 @@ dependencies {
     implementation(libs.supabase.functions) // Add Functions module
     implementation(libs.ktor.client.android)
 
+    // OkHttp
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+
     // Data Storage
     implementation(libs.datastore.preferences)
 

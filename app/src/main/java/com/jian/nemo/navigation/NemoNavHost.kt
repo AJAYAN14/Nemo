@@ -36,11 +36,14 @@ import com.jian.nemo.core.ui.animation.NemoNavigationAnimations
 
 
 import com.jian.nemo.feature.learning.presentation.home.HomeScreen
+import com.jian.nemo.feature.learning.presentation.ai.AIWorkshopScreen
 
 
 import com.jian.nemo.feature.settings.SettingsScreen
 import com.jian.nemo.feature.settings.TtsSettingsScreen
 import com.jian.nemo.feature.settings.ThemeSettingsScreen
+import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
+import com.jian.nemo.feature.settings.AISettingsScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -262,9 +265,25 @@ fun NemoNavHost(
                 onNavigateToHeatmap = {
                     navController.navigate(NavDestination.ACTIVITY_HEATMAP)
                 },
+                onNavigateToAIWorkshop = {
+                    navController.navigate(NavDestination.AI_WORKSHOP)
+                },
                 onNavigateToProfile = {
                     navController.navigate(NavDestination.PROFILE)
                 }
+            )
+        }
+
+        // AI 工坊
+        composable(NavDestination.AI_WORKSHOP) {
+            AIWorkshopScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavDestination.AI_SETTINGS) {
+            AISettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -553,6 +572,9 @@ fun NemoNavHost(
                 },
                 onNavigateToAdvancedLearning = {
                     navController.navigate(NavDestination.ADVANCED_LEARNING)
+                },
+                onNavigateToAiSettings = {
+                    navController.navigate(NavDestination.AI_SETTINGS)
                 },
                 onNavigateToThemeSettings = {
                     navController.navigate(NavDestination.THEME_SETTINGS)

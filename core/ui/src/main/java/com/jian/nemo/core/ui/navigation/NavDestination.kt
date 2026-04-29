@@ -15,6 +15,8 @@ object NavDestination {
     const val TTS_SETTINGS = "tts_settings" // TTS设置页
     const val THEME_SETTINGS = "theme_settings" // 主题设置页
     const val ADVANCED_LEARNING = "advanced_learning" // 记忆算法配置页
+    const val AI_WORKSHOP = "ai_workshop"       // AI 工坊
+    const val AI_SETTINGS = "ai_settings"       // AI 设置页
 
 
     // 保留HOME作为LEARNING的别名，确保兼容性

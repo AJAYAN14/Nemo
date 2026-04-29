@@ -1514,7 +1514,14 @@ class SettingsRepositoryImpl @Inject constructor(
             targetRetention = prefs[PreferencesKeys.TARGET_RETENTION] ?: 0.9f,
 
             isSyncOnLearningComplete = prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] ?: true,
-            isSyncOnTestComplete = prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] ?: true
+            isSyncOnTestComplete = prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] ?: true,
+
+            aiPlatform = prefs[PreferencesKeys.AI_PLATFORM] ?: "openai",
+            aiApiKey = prefs[PreferencesKeys.AI_API_KEY] ?: "",
+            aiBaseUrl = prefs[PreferencesKeys.AI_BASE_URL] ?: "",
+            aiModel = prefs[PreferencesKeys.AI_MODEL] ?: "",
+            aiWorkshopDifficulty = prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] ?: "N5",
+            aiCurrentExercise = prefs[PreferencesKeys.AI_CURRENT_EXERCISE] ?: ""
         )
     }
 
@@ -1573,6 +1580,13 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] = settings.isSyncOnLearningComplete
             prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] = settings.isSyncOnTestComplete
 
+            prefs[PreferencesKeys.AI_PLATFORM] = settings.aiPlatform
+            prefs[PreferencesKeys.AI_API_KEY] = settings.aiApiKey
+            prefs[PreferencesKeys.AI_BASE_URL] = settings.aiBaseUrl
+            prefs[PreferencesKeys.AI_MODEL] = settings.aiModel
+            prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] = settings.aiWorkshopDifficulty
+            prefs[PreferencesKeys.AI_CURRENT_EXERCISE] = settings.aiCurrentExercise
+
             // Update timestamp
             prefs[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
@@ -1598,6 +1612,74 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAppIcon(iconName: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.APP_ICON] = iconName
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    // ========== AI 工坊配置 ==========
+
+    override val aiPlatformFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_PLATFORM] ?: "openai"
+    }
+
+    override suspend fun setAiPlatform(platform: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_PLATFORM] = platform
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiApiKeyFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_API_KEY] ?: ""
+    }
+
+    override suspend fun setAiApiKey(key: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_API_KEY] = key
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiBaseUrlFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_BASE_URL] ?: ""
+    }
+
+    override suspend fun setAiBaseUrl(url: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_BASE_URL] = url
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiModelFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_MODEL] ?: ""
+    }
+
+    override suspend fun setAiModel(model: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_MODEL] = model
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiWorkshopDifficultyFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] ?: "N5"
+    }
+
+    override suspend fun setAiWorkshopDifficulty(difficulty: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] = difficulty
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiCurrentExerciseFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_CURRENT_EXERCISE] ?: ""
+    }
+
+    override suspend fun setAiCurrentExercise(json: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_CURRENT_EXERCISE] = json
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

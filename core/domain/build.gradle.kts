@@ -17,9 +17,11 @@ dependencies {
     // Core Modules
     api(project(":core:common"))
     
+    // Serialization
+    api(libs.kotlinx.serialization.json)
+    
     // Kotlin
     implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.json)
     
     // Dependency Injection
     implementation(libs.javax.inject)

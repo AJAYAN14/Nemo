@@ -593,6 +593,32 @@ interface SettingsRepository {
      * 设置应用图标
      */
     suspend fun setAppIcon(iconName: String)
+
+    // ========== AI 工坊配置 ==========
+
+    /** AI 平台 Flow */
+    val aiPlatformFlow: Flow<String>
+    suspend fun setAiPlatform(platform: String)
+
+    /** AI API 密钥 Flow */
+    val aiApiKeyFlow: Flow<String>
+    suspend fun setAiApiKey(key: String)
+
+    /** AI API 基础路径 Flow */
+    val aiBaseUrlFlow: Flow<String>
+    suspend fun setAiBaseUrl(url: String)
+
+    /** AI 模型名称 Flow */
+    val aiModelFlow: Flow<String>
+    suspend fun setAiModel(model: String)
+
+    /** AI 工坊练习难度 Flow */
+    val aiWorkshopDifficultyFlow: Flow<String>
+    suspend fun setAiWorkshopDifficulty(difficulty: String)
+
+    /** AI 工坊当前生成的题目 (JSON 格式) Flow */
+    val aiCurrentExerciseFlow: Flow<String>
+    suspend fun setAiCurrentExercise(json: String)
 }
 
 /**
