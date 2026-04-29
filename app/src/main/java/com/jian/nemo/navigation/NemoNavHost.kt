@@ -37,6 +37,7 @@ import com.jian.nemo.core.ui.animation.NemoNavigationAnimations
 
 import com.jian.nemo.feature.learning.presentation.home.HomeScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIWorkshopScreen
+import com.jian.nemo.feature.learning.presentation.ai.AIHistoryScreen
 
 
 import com.jian.nemo.feature.settings.SettingsScreen
@@ -277,6 +278,13 @@ fun NemoNavHost(
         // AI 工坊
         composable(NavDestination.AI_WORKSHOP) {
             AIWorkshopScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) }
+            )
+        }
+
+        composable(NavDestination.AI_HISTORY) {
+            AIHistoryScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

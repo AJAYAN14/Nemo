@@ -24,8 +24,7 @@ data class AIWorkshopUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isConfigured: Boolean = false,
-    val difficulty: String = "N5",
-    val history: List<AIExerciseHistory> = emptyList()
+    val difficulty: String = "N5"
 )
 
 sealed interface AIWorkshopEvent {
@@ -33,6 +32,7 @@ sealed interface AIWorkshopEvent {
     data class UpdateUserAnswer(val answer: String) : AIWorkshopEvent
     object SubmitAnswer : AIWorkshopEvent
     object ClearError : AIWorkshopEvent
+    data class UpdateDifficulty(val difficulty: String) : AIWorkshopEvent
 }
 
 @HiltViewModel
@@ -52,17 +52,9 @@ class AIWorkshopViewModel @Inject constructor(
 
     init {
         observeSettings()
-        observeHistory()
         cleanupOldHistory()
     }
 
-    private fun observeHistory() {
-        viewModelScope.launch {
-            aiWorkshopRepository.getExerciseHistory().collect { history ->
-                _uiState.update { it.copy(history = history) }
-            }
-        }
-    }
 
     private fun cleanupOldHistory() {
         viewModelScope.launch {
@@ -120,6 +112,11 @@ class AIWorkshopViewModel @Inject constructor(
             is AIWorkshopEvent.SubmitAnswer -> submitAnswer()
             is AIWorkshopEvent.ClearError -> {
                 _uiState.update { it.copy(error = null) }
+            }
+            is AIWorkshopEvent.UpdateDifficulty -> {
+                viewModelScope.launch {
+                    settingsRepository.setAiWorkshopDifficulty(event.difficulty)
+                }
             }
         }
     }

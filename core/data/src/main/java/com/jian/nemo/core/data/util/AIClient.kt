@@ -30,7 +30,30 @@ class AIClient @Inject constructor(
         model: String,
         difficulty: String
     ): Result<AIExercise> {
-        val systemPrompt = "你是一位专业的日语老师。请为日语等级为 $difficulty 的学习者生成一道翻译练习题。题目可以是'中译日'或'日译中'。请直接返回 JSON 格式，不要有任何多余的文字。格式如下：{\"question\": \"题目内容\", \"type\": \"CN_TO_JP\" 或 \"JP_TO_CN\", \"difficulty\": \"$difficulty\", \"answer\": \"标准答案\", \"hints\": [\"提示1\", \"提示2\"]}"
+        val systemPrompt = """
+            你是一位资深的日语教育专家。请根据指定的日语等级 ($difficulty) 生成一道具有挑战性且实用的翻译练习题。
+            
+            难度要求：
+            - N5: 涵盖基础助词、判断句、动词基本分类，贴近初级生活场景。
+            - N4: 涵盖基础敬语、授受关系、可能态/意志态，涉及日常社交。
+            - N3: 涵盖中级语法（如被动、使役、假定），涉及社会新闻、个人观点表达。
+            - N2: 涵盖复杂书面语、商务场景、抽象概念讨论，要求用词精准、地道。
+            - N1: 涵盖专业领域、文学性表达、微妙的语气差别及高度抽象的话题，极具挑战性。
+            
+            严禁行为：
+            1. 严禁生成过于简单的问候语或基础自我介绍（如“我是学生”）。
+            2. 严禁生成不符合 $difficulty 等级词汇量要求的题目。
+            
+            请返回如下 JSON 格式：
+            {
+              "question": "题目内容",
+              "type": "CN_TO_JP" 或 "JP_TO_CN",
+              "difficulty": "$difficulty",
+              "answer": "地道的标准答案",
+              "hints": ["关键语法点提示", "难点词汇提示"]
+            }
+            直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字。
+        """.trimIndent()
         
         val url = getApiUrl(platform, baseUrl)
         val requestBody = buildChatCompletionRequest(model, systemPrompt, "生成一道练习题", platform)
@@ -54,7 +77,25 @@ class AIClient @Inject constructor(
         exercise: AIExercise,
         userAnswer: String
     ): Result<AIGradeResult> {
-        val systemPrompt = "你是一位专业的日语老师。请对用户的翻译练习进行评分。题目：${exercise.question}，标准答案：${exercise.answer}，用户答案：$userAnswer。请直接返回 JSON 格式，不要有任何多余的文字。格式如下：{\"score\": 0-100, \"feedback\": \"详细点评（使用中文）\", \"is_correct\": true/false}"
+        val systemPrompt = """
+            你是一位资深的日语教育专家。请对用户的翻译练习进行专业评分。
+            题目：${exercise.question}
+            标准参考答案：${exercise.answer}
+            用户提交的答案：$userAnswer
+            
+            评分标准：
+            1. 语法准确性 (Grammar)
+            2. 用词地道程度 (Lexical Choice)
+            3. 语境适配度 (Contextual Accuracy)
+            
+            请返回如下 JSON 格式：
+            {
+              "score": 0-100,
+              "feedback": "详细的点评，请包含：1. 优点；2. 改进建议（如有）；3. 相关的语法点解析。请使用中文回复。",
+              "is_correct": true/false
+            }
+            直接返回 JSON 字符串。
+        """.trimIndent()
         
         val url = getApiUrl(platform, baseUrl)
         val requestBody = buildChatCompletionRequest(model, systemPrompt, "对我提交的答案进行评分", platform)
