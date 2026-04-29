@@ -11,6 +11,8 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.functions.Functions
+import io.github.jan.supabase.serializer.KotlinXSerializer
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -25,7 +27,14 @@ object SupabaseModule {
     ) {
         install(Auth)
         install(Storage)
-        install(Postgrest)
+        install(Postgrest) {
+            serializer = KotlinXSerializer(Json {
+                ignoreUnknownKeys = true
+                coerceInputValues = true
+                encodeDefaults = true
+                isLenient = true
+            })
+        }
         install(Functions)
 
         applyHttpConfig()
