@@ -464,6 +464,7 @@ private fun ExerciseMainView(
         } else {
             FeedbackSection(
                 result = uiState.gradeResult,
+                userAnswer = uiState.userAnswer,
                 onNext = { onEvent(AIWorkshopEvent.GenerateNewExercise) }
             )
         }
@@ -531,6 +532,7 @@ private fun InputSection(
 @Composable
 private fun FeedbackSection(
     result: AIGradeResult,
+    userAnswer: String,
     onNext: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -585,9 +587,31 @@ private fun FeedbackSection(
                     }
                 }
                 
+                // 我的答案
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "我的答案",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = if (isDark) 0.15f else 0.05f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = userAnswer,
+                        modifier = Modifier.padding(16.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
                 // 参考答案展示
                 result.standard_answer?.let { answer ->
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
                         text = "标准参考答案",
                         style = MaterialTheme.typography.labelMedium,
