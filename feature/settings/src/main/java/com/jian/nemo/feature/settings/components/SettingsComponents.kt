@@ -13,6 +13,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.jian.nemo.core.designsystem.theme.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -70,12 +72,14 @@ fun PremiumCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val shadowElevation = if (isDark) 4.dp else 12.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f)
+    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100
 
     Surface(
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
+        border = BorderStroke(1.dp, borderColor),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
         modifier = modifier.fillMaxWidth(),
         content = { Column(content = content) }
     )
@@ -182,9 +186,10 @@ fun SquircleSettingItem(
 fun SettingsSectionTitle(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
     )
 }
 

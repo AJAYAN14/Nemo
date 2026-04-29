@@ -17,7 +17,8 @@ data class AIExercise(
 data class AIGradeResult(
     val score: Int,
     val feedback: String,
-    val is_correct: Boolean
+    val is_correct: Boolean,
+    val standard_answer: String? = null
 )
 
 data class AIExerciseHistory(

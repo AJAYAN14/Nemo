@@ -3,10 +3,16 @@ package com.jian.nemo.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.data.util.AIClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class AITestResult(
+    val success: Boolean,
+    val message: String
+)
 
 data class AISettingsUiState(
     val platform: String = "openai",
@@ -14,7 +20,9 @@ data class AISettingsUiState(
     val baseUrl: String = "",
     val model: String = "",
     val difficulty: String = "N5",
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val isTesting: Boolean = false,
+    val testResult: AITestResult? = null
 )
 
 sealed interface AISettingsEvent {
@@ -23,11 +31,13 @@ sealed interface AISettingsEvent {
     data class SetBaseUrl(val url: String) : AISettingsEvent
     data class SetModel(val model: String) : AISettingsEvent
     data class SetDifficulty(val difficulty: String) : AISettingsEvent
+    object TestConnection : AISettingsEvent
 }
 
 @HiltViewModel
 class AISettingsViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val aiClient: AIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AISettingsUiState())
@@ -62,12 +72,33 @@ class AISettingsViewModel @Inject constructor(
 
     fun onEvent(event: AISettingsEvent) {
         viewModelScope.launch {
+            val currentPlatform = _uiState.value.platform
             when (event) {
                 is AISettingsEvent.SetPlatform -> settingsRepository.setAiPlatform(event.platform)
-                is AISettingsEvent.SetApiKey -> settingsRepository.setAiApiKey(event.key)
-                is AISettingsEvent.SetBaseUrl -> settingsRepository.setAiBaseUrl(event.url)
-                is AISettingsEvent.SetModel -> settingsRepository.setAiModel(event.model)
+                is AISettingsEvent.SetApiKey -> settingsRepository.setAiApiKey(currentPlatform, event.key)
+                is AISettingsEvent.SetBaseUrl -> settingsRepository.setAiBaseUrl(currentPlatform, event.url)
+                is AISettingsEvent.SetModel -> settingsRepository.setAiModel(currentPlatform, event.model)
                 is AISettingsEvent.SetDifficulty -> settingsRepository.setAiWorkshopDifficulty(event.difficulty)
+                is AISettingsEvent.TestConnection -> {
+                    _uiState.update { it.copy(isTesting = true, testResult = null) }
+                    val state = _uiState.value
+                    val result = aiClient.generateExercise(
+                        platform = state.platform,
+                        apiKey = state.apiKey,
+                        baseUrl = state.baseUrl.ifBlank { null },
+                        model = state.model,
+                        difficulty = "N5"
+                    )
+                    _uiState.update { it.copy(
+                        isTesting = false,
+                        testResult = if (result.isSuccess) {
+                            AITestResult(true, "连接成功")
+                        } else {
+                            val msg = result.exceptionOrNull()?.message ?: "未知错误"
+                            AITestResult(false, msg)
+                        }
+                    ) }
+                }
             }
         }
     }

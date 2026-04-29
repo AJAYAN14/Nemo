@@ -1629,34 +1629,56 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override val aiApiKeyFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.AI_API_KEY] ?: ""
+    // --- API Key ---
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val aiApiKeyFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
+        getAiApiKeyFlow(platform)
     }
 
-    override suspend fun setAiApiKey(key: String) {
+    override fun getAiApiKeyFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.getAiApiKeyKey(platform)] ?: ""
+    }
+
+    override suspend fun setAiApiKey(platform: String, key: String) {
         dataStore.edit { preferences ->
+            preferences[PreferencesKeys.getAiApiKeyKey(platform)] = key
+            // 同时更新旧的全局 Key 以保证向后兼容性
             preferences[PreferencesKeys.AI_API_KEY] = key
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 
-    override val aiBaseUrlFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.AI_BASE_URL] ?: ""
+    // --- Base URL ---
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val aiBaseUrlFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
+        getAiBaseUrlFlow(platform)
     }
 
-    override suspend fun setAiBaseUrl(url: String) {
+    override fun getAiBaseUrlFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.getAiBaseUrlKey(platform)] ?: ""
+    }
+
+    override suspend fun setAiBaseUrl(platform: String, url: String) {
         dataStore.edit { preferences ->
+            preferences[PreferencesKeys.getAiBaseUrlKey(platform)] = url
             preferences[PreferencesKeys.AI_BASE_URL] = url
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 
-    override val aiModelFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.AI_MODEL] ?: ""
+    // --- Model ---
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val aiModelFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
+        getAiModelFlow(platform)
     }
 
-    override suspend fun setAiModel(model: String) {
+    override fun getAiModelFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.getAiModelKey(platform)] ?: ""
+    }
+
+    override suspend fun setAiModel(platform: String, model: String) {
         dataStore.edit { preferences ->
+            preferences[PreferencesKeys.getAiModelKey(platform)] = model
             preferences[PreferencesKeys.AI_MODEL] = model
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }

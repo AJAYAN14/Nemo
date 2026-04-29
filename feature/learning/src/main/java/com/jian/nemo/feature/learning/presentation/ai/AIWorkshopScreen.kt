@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,23 +42,35 @@ fun AIWorkshopScreen(
     val scrollState = rememberScrollState()
     var showHelp by remember { mutableStateOf(false) }
 
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    
+    // 语义化颜色映射
+    val backgroundColor = colorScheme.background
+    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
+    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    val textPrimary = colorScheme.onSurface
+    val textSecondary = colorScheme.onSurfaceVariant
+    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+    val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100
+
     Scaffold(
         topBar = {
             CommonHeader(
                 title = "AI 例文工坊",
                 onBack = onNavigateBack,
-                backgroundColor = NemoNeutrals.Gray50,
+                backgroundColor = backgroundColor,
                 actions = {
                     IconButton(onClick = onNavigateToHistory) {
-                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = NemoNeutrals.Gray900)
+                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
                     }
                     IconButton(onClick = { showHelp = true }) {
-                        Icon(Icons.Rounded.HelpOutline, contentDescription = "帮助", tint = NemoNeutrals.Gray900)
+                        Icon(Icons.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
                     }
                 }
             )
         },
-        containerColor = NemoNeutrals.Gray50
+        containerColor = backgroundColor
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -90,7 +103,7 @@ fun AIWorkshopScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White.copy(alpha = 0.7f))
+                        .background(if (isDark) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.7f))
                         .clickable(enabled = false) {},
                     contentAlignment = Alignment.Center
                 ) {
@@ -178,14 +191,22 @@ private fun DifficultySection(
     onLevelChange: (String) -> Unit,
     enabled: Boolean
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val textPrimary = colorScheme.onSurface
+    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
     val selectedIndex = levels.indexOf(currentLevel)
     
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
+        color = surfaceColor,
         shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, NemoNeutrals.Gray100)
+        border = BorderStroke(1.dp, borderColor),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -207,7 +228,7 @@ private fun DifficultySection(
                     "日语能力等级",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = NemoNeutrals.Gray900
+                    color = textPrimary
                 )
             }
             
@@ -218,7 +239,7 @@ private fun DifficultySection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp)
-                    .background(NemoNeutrals.Gray50, RoundedCornerShape(14.dp))
+                    .background(secondarySurface, RoundedCornerShape(14.dp))
                     .padding(3.dp)
             ) {
                 val segmentWidth = maxWidth / levels.size
@@ -238,8 +259,8 @@ private fun DifficultySection(
                         .offset(x = offset)
                         .width(segmentWidth)
                         .fillMaxHeight()
-                        .background(Color.White, RoundedCornerShape(12.dp))
-                        .border(0.5.dp, NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                        .background(if (isDark) colorScheme.surfaceContainerHigh else Color.White, RoundedCornerShape(12.dp))
+                        .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
                 )
                 
                 // Interactive Labels
@@ -276,11 +297,19 @@ private fun DifficultySection(
 
 @Composable
 private fun HeroStartView(onStart: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val textPrimary = colorScheme.onSurface
+    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
+        color = surfaceColor,
         shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, NemoNeutrals.Gray100)
+        border = BorderStroke(1.dp, borderColor),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
     ) {
         Column(
             modifier = Modifier.padding(32.dp),
@@ -346,13 +375,19 @@ private fun ExerciseMainView(
 ) {
     val exercise = uiState.currentExercise ?: return
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+
     Column(modifier = Modifier.fillMaxWidth()) {
         // 题目面板
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
+            color = surfaceColor,
             shape = RoundedCornerShape(24.dp),
-            border = BorderStroke(1.dp, NemoNeutrals.Gray100)
+            border = BorderStroke(1.dp, borderColor),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -383,14 +418,14 @@ private fun ExerciseMainView(
                     text = exercise.question,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = NemoNeutrals.Gray900,
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 34.sp
                 )
                 
                 if (exercise.hints.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(20.dp))
                     Surface(
-                        color = NemoNeutrals.Gray50,
+                        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -407,7 +442,7 @@ private fun ExerciseMainView(
                             Text(
                                 text = "提示: ${exercise.hints.joinToString(", ")}",
                                 style = MaterialTheme.typography.bodySmall,
-                                color = NemoNeutrals.Gray600,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 18.sp
                             )
                         }
@@ -442,6 +477,9 @@ private fun InputSection(
     onSubmit: () -> Unit,
     enabled: Boolean
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+
     Column {
         OutlinedTextField(
             value = answer,
@@ -452,17 +490,20 @@ private fun InputSection(
             placeholder = { 
                 Text(
                     "在这里输入您的翻译答案...",
-                    color = NemoNeutrals.Gray400,
+                    color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyMedium
                 ) 
             },
             shape = RoundedCornerShape(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = NemoPrimary,
-                unfocusedBorderColor = NemoNeutrals.Gray200,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = NemoNeutrals.Gray50
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.4f),
+                focusedContainerColor = inputBgColor,
+                unfocusedContainerColor = inputBgColor,
+                disabledContainerColor = inputBgColor,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = NemoPrimary
             ),
             enabled = enabled
         )
@@ -492,6 +533,9 @@ private fun FeedbackSection(
     result: AIGradeResult,
     onNext: () -> Unit
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+
     val scoreColor = when {
         result.score >= 80 -> NemoSecondary
         result.score >= 60 -> Color(0xFFFBBF24)
@@ -501,9 +545,11 @@ private fun FeedbackSection(
     Column {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
+            color = surfaceColor,
             shape = RoundedCornerShape(24.dp),
-            border = BorderStroke(2.dp, scoreColor.copy(alpha = 0.3f))
+            border = BorderStroke(2.dp, scoreColor.copy(alpha = 0.3f)),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(
@@ -516,12 +562,12 @@ private fun FeedbackSection(
                             text = if (result.is_correct) "完成得很棒！" else "继续加油！",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = NemoNeutrals.Gray900
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "AI 综合评分结果",
                             style = MaterialTheme.typography.labelSmall,
-                            color = NemoNeutrals.Gray400
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     
@@ -539,21 +585,46 @@ private fun FeedbackSection(
                     }
                 }
                 
+                // 参考答案展示
+                result.standard_answer?.let { answer ->
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "标准参考答案",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = NemoSecondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = NemoSecondary.copy(alpha = if (isDark) 0.15f else 0.05f),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, NemoSecondary.copy(alpha = if (isDark) 0.3f else 0.1f))
+                    ) {
+                        Text(
+                            text = answer,
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                
                 Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = NemoNeutrals.Gray100)
+                HorizontalDivider(color = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray100)
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
                     text = "AI 详细点评",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = NemoPrimary
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = result.feedback,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = NemoNeutrals.Gray800,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 24.sp
                 )
             }
@@ -567,7 +638,7 @@ private fun FeedbackSection(
                 .fillMaxWidth()
                 .height(60.dp),
             shape = RoundedCornerShape(18.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             elevation = null
         ) {
             Text("下一题", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -579,6 +650,8 @@ private fun FeedbackSection(
 
 @Composable
 private fun ConfigRequiredView() {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -587,7 +660,7 @@ private fun ConfigRequiredView() {
     ) {
         Surface(
             modifier = Modifier.size(100.dp),
-            color = NemoNeutrals.Gray100,
+            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
             shape = CircleShape
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -595,7 +668,7 @@ private fun ConfigRequiredView() {
                     Icons.Rounded.SettingsSuggest,
                     contentDescription = null,
                     modifier = Modifier.size(48.dp),
-                    tint = NemoNeutrals.Gray400
+                    tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
                 )
             }
         }
@@ -604,13 +677,13 @@ private fun ConfigRequiredView() {
             text = "未配置 AI 服务",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = NemoNeutrals.Gray900
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "请前往“设置 -> AI 工坊配置”\n填写 API Key 即可开启智能练习",
             style = MaterialTheme.typography.bodyMedium,
-            color = NemoNeutrals.Gray500,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             lineHeight = 22.sp
         )
@@ -619,13 +692,15 @@ private fun ConfigRequiredView() {
 
 @Composable
 private fun HelpDialog(onDismiss: () -> Unit) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = onDismiss,
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 elevation = null
             ) {
                 Text("我知道了", fontWeight = FontWeight.Bold)
@@ -636,7 +711,7 @@ private fun HelpDialog(onDismiss: () -> Unit) {
                 "工坊使用指南", 
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = NemoNeutrals.Gray900
+                color = MaterialTheme.colorScheme.onSurface
             ) 
         },
         text = {
@@ -648,7 +723,7 @@ private fun HelpDialog(onDismiss: () -> Unit) {
             }
         },
         shape = RoundedCornerShape(28.dp),
-        containerColor = Color.White,
+        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
         tonalElevation = 0.dp
     )
 }
@@ -658,14 +733,14 @@ private fun HelpItem(index: String, title: String, content: String) {
     Row(modifier = Modifier.padding(vertical = 10.dp)) {
         Surface(
             modifier = Modifier.size(24.dp),
-            color = NemoPrimary.copy(alpha = 0.1f),
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
             shape = CircleShape
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Text(
                     text = index,
                     style = MaterialTheme.typography.labelSmall,
-                    color = NemoPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -676,12 +751,12 @@ private fun HelpItem(index: String, title: String, content: String) {
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
-                color = NemoNeutrals.Gray900
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = content,
                 style = MaterialTheme.typography.bodySmall,
-                color = NemoNeutrals.Gray600,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp
             )
         }

@@ -602,15 +602,18 @@ interface SettingsRepository {
 
     /** AI API 密钥 Flow */
     val aiApiKeyFlow: Flow<String>
-    suspend fun setAiApiKey(key: String)
+    fun getAiApiKeyFlow(platform: String): Flow<String>
+    suspend fun setAiApiKey(platform: String, key: String)
 
     /** AI API 基础路径 Flow */
     val aiBaseUrlFlow: Flow<String>
-    suspend fun setAiBaseUrl(url: String)
+    fun getAiBaseUrlFlow(platform: String): Flow<String>
+    suspend fun setAiBaseUrl(platform: String, url: String)
 
     /** AI 模型名称 Flow */
     val aiModelFlow: Flow<String>
-    suspend fun setAiModel(model: String)
+    fun getAiModelFlow(platform: String): Flow<String>
+    suspend fun setAiModel(platform: String, model: String)
 
     /** AI 工坊练习难度 Flow */
     val aiWorkshopDifficultyFlow: Flow<String>

@@ -22,6 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
@@ -306,7 +309,7 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.Settings, // or SettingsSuggest
+                        icon = ImageVector.vectorResource(DesignR.drawable.ic_neurology),
                         iconColor = NemoPurple,
                         title = "记忆算法配置",
                         subtitle = "步进、提前复习与 Leech 策略",

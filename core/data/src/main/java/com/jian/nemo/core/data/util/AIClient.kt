@@ -55,12 +55,12 @@ class AIClient @Inject constructor(
             直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字。
         """.trimIndent()
         
-        val url = getApiUrl(platform, baseUrl)
-        val requestBody = buildChatCompletionRequest(model, systemPrompt, "生成一道练习题", platform)
+        val url = getApiUrl(platform, baseUrl, apiKey, model)
+        val requestBody = buildChatRequest(platform, model, systemPrompt, "生成一道练习题")
         
         return try {
-            val response = executeRequest(url, apiKey, requestBody)
-            val content = extractContentFromChatResponse(response)
+            val response = executeRequest(platform, url, apiKey, requestBody)
+            val content = extractContentFromChatResponse(platform, response)
             val exercise = json.decodeFromString<AIExercise>(content)
             Result.success(exercise)
         } catch (e: Exception) {
@@ -92,17 +92,18 @@ class AIClient @Inject constructor(
             {
               "score": 0-100,
               "feedback": "详细的点评，请包含：1. 优点；2. 改进建议（如有）；3. 相关的语法点解析。请使用中文回复。",
-              "is_correct": true/false
+              "is_correct": true/false,
+              "standard_answer": "地道的标准参考答案"
             }
             直接返回 JSON 字符串。
         """.trimIndent()
         
-        val url = getApiUrl(platform, baseUrl)
-        val requestBody = buildChatCompletionRequest(model, systemPrompt, "对我提交的答案进行评分", platform)
+        val url = getApiUrl(platform, baseUrl, apiKey, model)
+        val requestBody = buildChatRequest(platform, model, systemPrompt, "对我提交的答案进行评分")
         
         return try {
-            val response = executeRequest(url, apiKey, requestBody)
-            val content = extractContentFromChatResponse(response)
+            val response = executeRequest(platform, url, apiKey, requestBody)
+            val content = extractContentFromChatResponse(platform, response)
             val grade = json.decodeFromString<AIGradeResult>(content)
             Result.success(grade)
         } catch (e: Exception) {
@@ -111,30 +112,70 @@ class AIClient @Inject constructor(
         }
     }
 
-    private fun getApiUrl(platform: String, baseUrl: String?): String {
-        if (!baseUrl.isNullOrBlank()) return if (baseUrl.endsWith("/")) "${baseUrl}chat/completions" else "$baseUrl/chat/completions"
+    private fun getApiUrl(platform: String, baseUrl: String?, apiKey: String, model: String): String {
+        val cleanModel = model.ifBlank {
+            if (platform == "gemini") "gemini-3-flash-preview" else "gpt-3.5-turbo"
+        }.removePrefix("models/")
+
+        if (platform == "gemini") {
+            val base = baseUrl?.takeIf { it.isNotBlank() }?.removeSuffix("/") 
+                ?: "https://generativelanguage.googleapis.com/v1beta"
+            return "$base/models/$cleanModel:generateContent?key=$apiKey"
+        }
+        
+        val effectiveBaseUrl = baseUrl?.takeIf { it.isNotBlank() }
+        
+        if (effectiveBaseUrl != null) {
+            val base = if (effectiveBaseUrl.endsWith("/")) effectiveBaseUrl else "$effectiveBaseUrl/"
+            return "${base}chat/completions"
+        }
         
         return when (platform) {
             "openai" -> "https://api.openai.com/v1/chat/completions"
             "deepseek" -> "https://api.deepseek.com/chat/completions"
-            "claude" -> "https://api.anthropic.com/v1/messages" // Claude has a different API structure, but many use OpenAI compatible proxies
-            "gemini" -> "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent" // Gemini also different
             else -> "https://api.openai.com/v1/chat/completions"
         }
     }
 
-    private fun buildChatCompletionRequest(model: String, systemPrompt: String, userPrompt: String, platform: String): String {
-        val effectiveModel = if (model.isBlank()) {
+    private fun buildChatRequest(
+        platform: String,
+        model: String,
+        systemPrompt: String,
+        userPrompt: String
+    ): String {
+        val effectiveModel = model.ifBlank {
             when (platform) {
-                "deepseek" -> "deepseek-v4-flash"
-                "openai" -> "gpt-3.5-turbo"
-                "gemini" -> "gemini-pro"
+                "deepseek" -> "deepseek-chat"
+                "gemini" -> "gemini-3-flash-preview"
                 else -> "gpt-3.5-turbo"
             }
-        } else model
+        }
 
-        // Default to OpenAI format as most platforms (DeepSeek, Doubao, etc.) support it
-        return """
+        return if (platform == "gemini") {
+            // 原生 Gemini 格式
+            val geminiModel = if (model.isBlank()) "gemini-3-flash-preview" else model
+            val useThinking = geminiModel.contains("gemini-3")
+            
+            """
+            {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [
+                            {"text": ${Json.encodeToString(systemPrompt + "\n\n" + userPrompt)}}
+                        ]
+                    }
+                ],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    ${if (useThinking) "\"thinkingConfig\": { \"thinkingLevel\": \"high\" }," else ""}
+                    "topP": 0.95
+                }
+            }
+            """.trimIndent()
+        } else {
+            // 标准 OpenAI 格式 (兼容 DeepSeek 等)
+            """
             {
                 "model": "$effectiveModel",
                 "messages": [
@@ -143,30 +184,55 @@ class AIClient @Inject constructor(
                 ],
                 "temperature": 0.7
             }
-        """.trimIndent()
-    }
-
-    private suspend fun executeRequest(url: String, apiKey: String, bodyJson: String): String = withContext(Dispatchers.IO) {
-        val request = Request.Builder()
-            .url(url)
-            .header("Authorization", "Bearer $apiKey")
-            .header("Content-Type", "application/json")
-            .post(bodyJson.toRequestBody(mediaType))
-            .build()
-
-        okHttpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw Exception("API 请求失败: ${response.code} ${response.message}")
-            response.body?.string() ?: throw Exception("响应体为空")
+            """.trimIndent()
         }
     }
 
-    private fun extractContentFromChatResponse(responseJson: String): String {
-        // Parse OpenAI style response
-        val root = json.parseToJsonElement(responseJson)
-        val choices = root.asJsonObject()["choices"]?.asJsonArray()
-        val content = choices?.get(0)?.asJsonObject()?.get("message")?.asJsonObject()?.get("content")?.asJsonPrimitive()?.content
+    private suspend fun executeRequest(platform: String, url: String, apiKey: String, bodyJson: String): String = withContext(Dispatchers.IO) {
+        val builder = Request.Builder()
+            .url(url)
+            .header("Content-Type", "application/json")
         
-        return content?.trim()?.removePrefix("```json")?.removeSuffix("```")?.trim() ?: throw Exception("无法解析 AI 响应内容")
+        if (platform != "gemini") {
+            builder.header("Authorization", "Bearer $apiKey")
+        }
+
+        val request = builder.post(bodyJson.toRequestBody(mediaType)).build()
+
+        okHttpClient.newCall(request).execute().use { response ->
+            if (response.isSuccessful) {
+                response.body?.string() ?: throw Exception("响应体为空")
+            } else {
+                val errorBody = response.body?.string()
+                val errorMsg = if (response.code == 404) {
+                    "模型不存在 (404): 请检查模型名称是否正确，建议尝试在末尾带上 -preview 后缀（如 gemini-3-flash-preview）。"
+                } else {
+                    "API 请求失败: ${response.code}\n$errorBody"
+                }
+                throw Exception(errorMsg)
+            }
+        }
+    }
+
+    private fun extractContentFromChatResponse(platform: String, responseJson: String): String {
+        val root = json.parseToJsonElement(responseJson)
+        
+        return if (platform == "gemini") {
+            // 解析原生 Gemini 响应
+            val candidates = root.asJsonObject()["candidates"]?.asJsonArray()
+            val text = candidates?.get(0)?.asJsonObject()?.get("content")
+                ?.asJsonObject()?.get("parts")?.asJsonArray()?.get(0)
+                ?.asJsonObject()?.get("text")?.asJsonPrimitive()?.content
+            text?.trim() ?: throw Exception("无法解析 Gemini 响应内容")
+        } else {
+            // 解析 OpenAI 风格响应
+            val choices = root.asJsonObject()["choices"]?.asJsonArray()
+            val content = choices?.get(0)?.asJsonObject()?.get("message")?.asJsonObject()?.get("content")?.asJsonPrimitive()?.content
+            content?.trim() ?: throw Exception("无法解析 OpenAI 风格响应内容")
+        }
+        .removePrefix("```json")
+        .removeSuffix("```")
+        .trim()
     }
     
     // Helper extensions for JsonElement to keep it simple without full serialization of the response wrapper

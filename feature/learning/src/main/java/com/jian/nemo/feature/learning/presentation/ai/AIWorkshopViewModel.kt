@@ -172,7 +172,7 @@ class AIWorkshopViewModel @Inject constructor(
                     question = exercise.question,
                     type = exercise.type,
                     difficulty = exercise.difficulty,
-                    standardAnswer = exercise.answer,
+                    standardAnswer = grade.standard_answer ?: exercise.answer,
                     userAnswer = answer,
                     score = grade.score,
                     feedback = grade.feedback

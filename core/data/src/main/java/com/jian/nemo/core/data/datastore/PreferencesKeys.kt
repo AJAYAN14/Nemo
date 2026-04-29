@@ -287,6 +287,10 @@ object PreferencesKeys {
     val AI_WORKSHOP_DIFFICULTY = stringPreferencesKey("ai_workshop_difficulty")
     /** AI 工坊当前生成的题目 (JSON 格式) */
     val AI_CURRENT_EXERCISE = stringPreferencesKey("ai_current_exercise")
+    
+    fun getAiApiKeyKey(platform: String) = stringPreferencesKey("ai_${platform}_api_key")
+    fun getAiBaseUrlKey(platform: String) = stringPreferencesKey("ai_${platform}_base_url")
+    fun getAiModelKey(platform: String) = stringPreferencesKey("ai_${platform}_model")
 
 
     // ========== 动态 Key 生成辅助方法 ==========

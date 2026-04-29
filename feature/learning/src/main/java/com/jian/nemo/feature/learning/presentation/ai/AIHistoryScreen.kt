@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -34,22 +35,27 @@ fun AIHistoryScreen(
     var showClearConfirm by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<AIExerciseHistory?>(null) }
 
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val backgroundColor = colorScheme.background
+    val textPrimary = colorScheme.onSurface
+
     Scaffold(
         topBar = {
             CommonHeader(
                 title = "练习历史",
                 onBack = onNavigateBack,
-                backgroundColor = NemoNeutrals.Gray50,
+                backgroundColor = backgroundColor,
                 actions = {
                     if (historyList.isNotEmpty()) {
                         IconButton(onClick = { showClearConfirm = true }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "清空历史")
+                            Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
                         }
                     }
                 }
             )
         },
-        containerColor = NemoNeutrals.Gray50
+        containerColor = backgroundColor
     ) { padding ->
         if (historyList.isEmpty()) {
             Box(
@@ -81,7 +87,7 @@ fun AIHistoryScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(historyList.reversed()) { history ->
+                items(historyList) { history ->
                     HistoryItemCard(history, onClick = { selectedItem = history })
                 }
             }
@@ -97,8 +103,8 @@ fun AIHistoryScreen(
         if (showClearConfirm) {
             AlertDialog(
                 onDismissRequest = { showClearConfirm = false },
-                title = { Text("清空历史记录", fontWeight = FontWeight.Bold) },
-                text = { Text("确定要清空所有的练习历史吗？此操作不可撤销。") },
+                title = { Text("清空历史记录", fontWeight = FontWeight.Bold, color = colorScheme.onSurface) },
+                text = { Text("确定要清空所有的练习历史吗？此操作不可撤销。", color = colorScheme.onSurfaceVariant) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -111,11 +117,11 @@ fun AIHistoryScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = { showClearConfirm = false }) {
-                        Text("取消", color = NemoNeutrals.Gray600)
+                        Text("取消", color = colorScheme.onSurfaceVariant)
                     }
                 },
                 shape = RoundedCornerShape(24.dp),
-                containerColor = Color.White,
+                containerColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White,
                 tonalElevation = 0.dp
             )
         }
@@ -131,12 +137,19 @@ private fun HistoryItemCard(
     val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()) }
     val dateStr = dateFormat.format(Date(history.createdAt))
 
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, NemoNeutrals.Gray100)
+        color = surfaceColor,
+        border = BorderStroke(1.dp, borderColor),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -148,14 +161,14 @@ private fun HistoryItemCard(
             ) {
                 // 类型标签
                 Surface(
-                    color = NemoPrimary.copy(alpha = 0.1f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
                         text = if (history.type == "CN_TO_JP") "中翻日" else "日翻中",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = NemoPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -173,7 +186,7 @@ private fun HistoryItemCard(
                 text = history.question,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
-                color = NemoNeutrals.Gray900,
+                color = colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -185,7 +198,7 @@ private fun HistoryItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 分数展示
-                val scoreColor = if (history.score >= 60) NemoSecondary else NemoDanger
+                val scoreColor = if (history.score >= 60) colorScheme.secondary else NemoDanger
                 Box(
                     modifier = Modifier
                         .size(32.dp)
@@ -205,7 +218,7 @@ private fun HistoryItemCard(
                 Text(
                     text = "难度: ${history.difficulty}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = NemoNeutrals.Gray600
+                    color = colorScheme.onSurfaceVariant
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
@@ -226,13 +239,16 @@ private fun DetailDialog(
     history: AIExerciseHistory,
     onDismiss: () -> Unit
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val colorScheme = MaterialTheme.colorScheme
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = onDismiss,
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary)
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
             ) {
                 Text("我知道了", fontWeight = FontWeight.Bold)
             }
@@ -242,45 +258,45 @@ private fun DetailDialog(
                 if (history.type == "CN_TO_JP") "中翻日练习" else "日翻中练习",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = NemoNeutrals.Gray900
+                color = colorScheme.onSurface
             ) 
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                DetailSection("题目", history.question, NemoPrimary)
-                DetailSection("您的答案", history.userAnswer, NemoNeutrals.Gray700)
-                DetailSection("标准答案", history.standardAnswer, NemoSecondary)
+                DetailSection("题目", history.question, colorScheme.primary)
+                DetailSection("您的答案", history.userAnswer, colorScheme.onSurface)
+                DetailSection("标准答案", history.standardAnswer, colorScheme.secondary)
                 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = NemoNeutrals.Gray100)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = colorScheme.outlineVariant.copy(0.2f))
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("AI 评分：", style = MaterialTheme.typography.labelLarge, color = NemoNeutrals.Gray600)
+                    Text("AI 评分：", style = MaterialTheme.typography.labelLarge, color = colorScheme.onSurfaceVariant)
                     Text(
                         "${history.score} 分",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.ExtraBold,
-                        color = if (history.score >= 60) NemoSecondary else NemoDanger
+                        color = if (history.score >= 60) colorScheme.secondary else NemoDanger
                     )
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Surface(
-                    color = NemoNeutrals.Gray50,
+                    color = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50,
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, NemoNeutrals.Gray100)
+                    border = BorderStroke(1.dp, colorScheme.outlineVariant.copy(0.1f))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
                             "AI 点评：",
                             style = MaterialTheme.typography.labelMedium,
-                            color = NemoNeutrals.Gray500
+                            color = colorScheme.onSurfaceVariant.copy(0.7f)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             history.feedback,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = NemoNeutrals.Gray800,
+                            color = colorScheme.onSurface,
                             lineHeight = 22.sp
                         )
                     }
@@ -288,8 +304,9 @@ private fun DetailDialog(
             }
         },
         shape = RoundedCornerShape(24.dp),
-        containerColor = Color.White,
-        tonalElevation = 0.dp
+        containerColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White,
+        tonalElevation = 0.dp,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = true)
     )
 }
 
@@ -306,7 +323,7 @@ private fun DetailSection(label: String, content: String, color: Color) {
         Text(
             text = content,
             style = MaterialTheme.typography.bodyMedium,
-            color = NemoNeutrals.Gray900,
+            color = MaterialTheme.colorScheme.onSurface,
             lineHeight = 20.sp
         )
     }
