@@ -338,183 +338,8 @@ class SupabaseSyncManager @Inject constructor(
 
 
 
-    /**
-     * 执行全量镜像恢复 (分批 + 断点续传)
-     */
-    suspend fun performRestore(userId: String): Flow<SyncProgress> = flow {
-        if (!syncMutex.tryLock()) {
-            Log.d(TAG, "恢复已在运行中，跳过本次触发")
-            emit(SyncProgress.AlreadyRunning)
-            return@flow
-        }
 
-        try {
-            Log.d(TAG, "开始执行镜像恢复: User $userId")
-            
-            // 确保本地库就绪
-            emit(SyncProgress.Running("正在准备本地库...", 0, 0))
-            dataSeedService.ensureDataSeeded()
-            
-            settingsRepository.setIsRestoring(true)
 
-            // 0. 检查断点
-            val checkpoint = settingsRepository.getRestoreCheckpoint()
-            val isResuming = checkpoint != null
-            val startTableRaw = checkpoint?.first ?: ""
-            val startOffset = checkpoint?.second ?: 0
-
-            // 表名列表（有序）
-            val tables = listOf(
-                TABLE_WORD_STATES,
-                TABLE_GRAMMAR_STATES,
-                TABLE_STUDY_RECORDS,
-                TABLE_TEST_RECORDS,
-                TABLE_WRONG_ANSWERS,
-                TABLE_GRAMMAR_WRONG_ANSWERS,
-                TABLE_FAVORITE_QUESTIONS,
-                TABLE_USER_SETTINGS
-            )
-
-            // 如果不是断点续传，先清空本地数据
-            if (!isResuming) {
-                emit(SyncProgress.Running("正在清理本地数据...", 0, 0))
-                clearLocalUserData()
-            } else {
-                emit(SyncProgress.Running("检测到断点，从 $startTableRaw 偏移量 $startOffset 继续...", 0, 0))
-            }
-
-            // 确定开始的表索引
-            val startTableIndex = if (isResuming && startTableRaw.isNotEmpty()) {
-                tables.indexOf(startTableRaw).takeIf { it >= 0 } ?: 0
-            } else {
-                0
-            }
-
-            // 1. 逐表处理
-            for (i in startTableIndex until tables.size) {
-                val tableName = tables[i]
-                // 如果是当前断点表，使用断点 offset；否则从 0 开始
-                var currentOffset = if (i == startTableIndex) startOffset else 0
-                val pageSize = 1000
-
-                emit(SyncProgress.Running("正在恢复 $tableName...", currentOffset, 0))
-
-                while (true) {
-                    val batchCount = processBatch(tableName, userId, currentOffset, pageSize)
-
-                    if (batchCount == 0) break
-
-                    currentOffset += batchCount
-                    // 记录断点
-                    settingsRepository.setRestoreCheckpoint(tableName, currentOffset)
-                    emit(SyncProgress.Running("正在恢复 $tableName...", currentOffset, 0))
-
-                    if (batchCount < pageSize) break
-                }
-            }
-
-            // 2. 完成
-            settingsRepository.setLastSyncTime(DateTimeUtils.getCurrentCompensatedMillis())
-            settingsRepository.setLastSyncSuccess(true)
-            settingsRepository.setIsRestoring(false)
-            settingsRepository.clearRestoreCheckpoint()
-
-            emit(SyncProgress.Completed(SyncReport(timestamp = System.currentTimeMillis())))
-
-        } catch (e: Exception) {
-            Log.e(TAG, "恢复过程发生严重错误", e)
-            settingsRepository.setIsRestoring(false)
-            emit(SyncProgress.Failed("Restore failed: ${e.message}"))
-        } finally {
-            syncMutex.unlock()
-        }
-    }
-
-    /**
-     * 处理单个批次：拉取 -> 写入 -> 返回数量
-     * 使用 when 来分发类型，避免泛型擦除问题
-     */
-    private suspend fun processBatch(
-        tableName: String,
-        userId: String,
-        offset: Int,
-        limit: Int
-    ): Int {
-        return when (tableName) {
-            TABLE_WORD_STATES -> {
-                val dtos = pullBatch<SyncWordStateDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    wordStudyStateDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_GRAMMAR_STATES -> {
-                val dtos = pullBatch<SyncGrammarStateDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    grammarStudyStateDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_STUDY_RECORDS -> {
-                val dtos = pullBatch<SyncStudyRecordDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    studyRecordDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_FAVORITE_QUESTIONS -> {
-                val dtos = pullBatch<SyncFavoriteQuestionDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    favoriteQuestionDao.upsertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_USER_SETTINGS -> {
-                // Settings imply only 1 batch (at offset 0)
-                if (offset == 0) {
-                    pullSettings(userId)
-                } else {
-                    0
-                }
-            }
-            TABLE_TEST_RECORDS -> {
-                val dtos = pullBatch<SyncTestRecordDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    testRecordDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_WRONG_ANSWERS -> {
-                val dtos = pullBatch<SyncWrongAnswerDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    wrongAnswerDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            TABLE_GRAMMAR_WRONG_ANSWERS -> {
-                val dtos = pullBatch<SyncGrammarWrongAnswerDto>(tableName, userId, offset, limit)
-                if (dtos.isNotEmpty()) database.withTransaction {
-                    grammarWrongAnswerDao.insertAll(dtos.map { it.toEntity() })
-                }
-                dtos.size
-            }
-            else -> 0
-        }
-    }
-
-    /** 泛型分页拉取辅助方法 */
-    private suspend inline fun <reified T : Any> pullBatch(
-        tableName: String,
-        userId: String,
-        offset: Int,
-        limit: Int
-    ): List<T> {
-        return supabaseClient.postgrest[tableName]
-            .select(columns = Columns.ALL) {
-                filter { eq("user_id", userId) }
-                range(offset.toLong(), (offset + limit - 1).toLong())
-            }.decodeList<T>()
-    }
 
     /** 泛型全量分页拉取辅助方法 */
     private suspend inline fun <reified T : Any> pullAllPaged(
@@ -543,24 +368,7 @@ class SupabaseSyncManager @Inject constructor(
     }
 
 
-    /** 辅助方法：全量拉取指定表的数据 */
-    private suspend inline fun <reified T : Any> pullAllFromCloud(tableName: String, userId: String): List<T> {
-        return supabaseClient.postgrest[tableName]
-            .select(columns = Columns.ALL) {
-                filter { eq("user_id", userId) }
-            }.decodeList<T>()
-    }
 
-    /** 事务内清空本地所有用户业务数据 */
-    private suspend fun clearLocalUserDataInTransaction() {
-        wordStudyStateDao.deleteAll()
-        grammarStudyStateDao.deleteAll()
-        studyRecordDao.deleteAll()
-        testRecordDao.deleteAll()
-        wrongAnswerDao.deleteAll()
-        grammarWrongAnswerDao.deleteAll()
-        favoriteQuestionDao.deleteAll()
-    }
 
 
     /** 从云端获取最低兼容版本号 */
@@ -576,12 +384,6 @@ class SupabaseSyncManager @Inject constructor(
         }
     }
 
-    private suspend fun clearLocalUserData(): Unit = withContext(Dispatchers.IO) {
-        Log.d(TAG, "正在清空本地用户数据表...")
-        database.withTransaction {
-            clearLocalUserDataInTransaction()
-        }
-    }
 
 
     // ===================================

@@ -56,8 +56,8 @@ fun LoginScreen(
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(uiState.isLoggedIn, uiState.isRestoreLoading) {
-        if (uiState.isLoggedIn && !uiState.isRestoreLoading) {
+    LaunchedEffect(uiState.isLoggedIn, uiState.isSyncLoading) {
+        if (uiState.isLoggedIn && !uiState.isSyncLoading) {
             onLoginSuccess()
         }
     }
@@ -76,12 +76,6 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(uiState.restoreMessage) {
-        uiState.restoreMessage?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            viewModel.clearRestoreMessage()
-        }
-    }
 
     LaunchedEffect(Unit) {
         emailFocusRequester.requestFocus()
@@ -243,11 +237,11 @@ fun LoginScreen(
         }
     }
 
-    // --- 阻塞式恢复进度指示器 ---
-    if (uiState.isRestoreLoading) {
-        RestoreProgressIndicator(
-            progress = uiState.restoreProgress,
-            status = uiState.restoreStatus
+    // --- 阻塞式同步进度指示器 ---
+    if (uiState.isSyncLoading) {
+        SyncProgressIndicator(
+            progress = uiState.syncProgress,
+            status = uiState.syncStatus
         )
     }
 
@@ -304,12 +298,12 @@ private fun RowScope.TabButton(
 }
 
 /**
- * 阻塞式同步/恢复进度指示器
- * 用于卸载重装后全量拉取数据时锁定用户操作
+ * 阻塞式同步进度指示器
+ * 用于登录后全量拉取数据时锁定用户操作
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RestoreProgressIndicator(
+fun SyncProgressIndicator(
     progress: Float,
     status: String
 ) {
@@ -365,7 +359,7 @@ fun RestoreProgressIndicator(
 
             // 3. Subtitle/Status
             Text(
-                text = status.ifEmpty { "正在准备恢复数据，请稍候..." },
+                text = status.ifEmpty { "正在准备同步数据，请稍候..." },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,

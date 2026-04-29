@@ -23,7 +23,7 @@ class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val authRepository: com.jian.nemo.core.domain.repository.AuthRepository,
     private val syncRepository: SyncRepository,
-    private val restoreDataUseCase: com.jian.nemo.core.domain.usecase.sync.RestoreDataUseCase,
+
     private val exportDataUseCase: com.jian.nemo.core.domain.usecase.settings.ExportDataUseCase,
     private val importDataUseCase: com.jian.nemo.core.domain.usecase.settings.ImportDataUseCase,
     private val resetProgressUseCase: com.jian.nemo.core.domain.usecase.settings.ResetProgressUseCase,
@@ -119,10 +119,9 @@ class SettingsViewModel @Inject constructor(
                 settingsRepository.dailyGoalFlow,
                 settingsRepository.grammarDailyGoalFlow,
                 settingsRepository.learningDayResetHourFlow,
-                settingsRepository.isRandomNewContentEnabledFlow,
-                settingsRepository.isRestoringFlow
-            ) { dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring ->
-                Quintuple(dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring)
+                settingsRepository.isRandomNewContentEnabledFlow
+            ) { dailyGoal, grammarDailyGoal, resetHour, isRandom ->
+                GoalSettings(dailyGoal, grammarDailyGoal, resetHour, isRandom)
             }
 
             val syncFlow = combine(
@@ -171,7 +170,9 @@ class SettingsViewModel @Inject constructor(
                 syncFlow,
                 advancedFlow,
                 ttsFlow
-            ) { theme, (dailyGoal, grammarDailyGoal, resetHour, isRandom, isRestoring), sync, advanced, (rate, pitch, voiceName) ->
+            ) { theme, goals, sync, advanced, tts ->
+                val (dailyGoal, grammarDailyGoal, resetHour, isRandom) = goals
+                val (rate, pitch, voiceName) = tts
                 _uiState.update { state ->
                     state.copy(
                         darkMode = when (theme.darkMode) {
@@ -205,7 +206,6 @@ class SettingsViewModel @Inject constructor(
                         ttsSpeechRate = rate,
                         ttsPitch = pitch,
                         ttsVoiceName = voiceName,
-                        isRestoring = isRestoring,
                         isLoading = false
                     )
                 }
@@ -251,7 +251,6 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text)
 
             is SettingsEvent.SyncData -> syncData()
-            is SettingsEvent.RestoreData -> restoreData()
             is SettingsEvent.SetAutoSyncEnabled -> setAutoSyncEnabled(event.enabled)
             is SettingsEvent.ResolveConflict -> resolveConflict(event.option)
             is SettingsEvent.ExportData -> exportData(event.uri)
@@ -301,7 +300,7 @@ class SettingsViewModel @Inject constructor(
 
     private fun resolveConflict(option: ConflictResolutionOption) {
         when (option) {
-            ConflictResolutionOption.FORCE_CLOUD -> restoreData()
+            ConflictResolutionOption.FORCE_CLOUD -> syncData(force = true)
             ConflictResolutionOption.FORCE_LOCAL -> syncData(force = true)
         }
     }
@@ -338,28 +337,6 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun restoreData() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            restoreDataUseCase().collect { progress ->
-                when(progress) {
-                    is com.jian.nemo.core.domain.model.SyncProgress.Running -> {
-                         _uiState.update { it.copy(syncMessage = "正在从云端恢复: ${progress.section}") }
-                    }
-                    is com.jian.nemo.core.domain.model.SyncProgress.Completed -> {
-                        _uiState.update { it.copy(isLoading = false, syncMessage = null) }
-                        updateStatusMessage("镜像恢复成功，本地数据已更新")
-                    }
-                    is com.jian.nemo.core.domain.model.SyncProgress.Failed -> {
-                        _uiState.update { it.copy(isLoading = false, syncMessage = null) }
-                        updateStatusMessage("恢复失败: ${progress.error}", 5000)
-                    }
-                    else -> {}
-                }
-            }
-        }
-    }
 
     private fun setAutoSyncEnabled(enabled: Boolean) {
         viewModelScope.launch {
@@ -656,6 +633,13 @@ private data class ThemeSettings(
     val startTime: String,
     val endTime: String,
     val themeColor: Long? = null
+)
+
+private data class GoalSettings(
+    val dailyGoal: Int,
+    val grammarDailyGoal: Int,
+    val resetHour: Int,
+    val isRandom: Boolean
 )
 
 data class Quintuple<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)

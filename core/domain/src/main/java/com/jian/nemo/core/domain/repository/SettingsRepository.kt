@@ -426,11 +426,6 @@ interface SettingsRepository {
     suspend fun resetWordLapse(wordId: Int)
     suspend fun resetGrammarLapse(grammarId: Int)
 
-    // ========== 恢复状态管理 ==========
-
-    /** 是否正在恢复中（用于识别被异常中断的任务） */
-    val isRestoringFlow: Flow<Boolean>
-    suspend fun setIsRestoring(isRestoring: Boolean)
 
     // ========== 自动同步配置 ==========
 
@@ -450,9 +445,6 @@ interface SettingsRepository {
     val lastSyncErrorFlow: Flow<String>
     suspend fun setLastSyncError(error: String)
 
-    /** 上次恢复时间Flow */
-    val lastRestoreTimeFlow: Flow<Long>
-    suspend fun setLastRestoreTime(time: Long)
 
     /** 词库云更新：上次已应用的内容版本号（0 = 未更新过） */
     val lastContentVersionFlow: Flow<Int>
@@ -562,25 +554,6 @@ interface SettingsRepository {
      */
     suspend fun repairLocalData(): Int
 
-    // ========== 恢复断点续传 ==========
-
-    /**
-     * 设置恢复断点
-     * @param table 当前正在恢复的表名
-     * @param offset 当前已恢复的偏移量
-     */
-    suspend fun setRestoreCheckpoint(table: String, offset: Int)
-
-    /**
-     * 获取恢复断点
-     * @return Pair(TableName, Offset)，如果没有断点则返回 null 或默认值
-     */
-    suspend fun getRestoreCheckpoint(): Pair<String, Int>?
-
-    /**
-     * 清除恢复断点
-     */
-    suspend fun clearRestoreCheckpoint()
 
     // ========== App Settings Sync ==========
 

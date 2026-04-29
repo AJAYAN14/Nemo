@@ -37,10 +37,6 @@ interface SyncRepository {
         mode: SyncMode = SyncMode.TWO_WAY
     ): Flow<SyncProgress>
 
-    /**
-     * 执行全量镜像恢复
-     */
-    suspend fun performRestore(userId: String): Flow<SyncProgress>
 
     /**
      * 检查并从云端恢复数据（同步版本，返回结果）

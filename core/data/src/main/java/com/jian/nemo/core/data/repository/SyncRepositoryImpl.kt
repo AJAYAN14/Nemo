@@ -48,8 +48,6 @@ class SyncRepositoryImpl @Inject constructor(
         mode: SyncMode
     ): Flow<SyncProgress> = syncManager.performSync(userId, force, mode)
 
-    override suspend fun performRestore(userId: String): Flow<SyncProgress> =
-        syncManager.performRestore(userId)
 
     override suspend fun checkAndRestoreCloudData(
         userId: String,

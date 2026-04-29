@@ -18,12 +18,9 @@ object PreferencesKeys {
     val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
     val LAST_SYNC_SUCCESS = booleanPreferencesKey("last_sync_success")
     val LAST_SYNC_ERROR = stringPreferencesKey("last_sync_error")
-    val LAST_RESTORE_TIME = longPreferencesKey("last_restore_time")
     /** 上次同步冲突数量 */
     val LAST_SYNC_CONFLICT_COUNT = intPreferencesKey("last_sync_conflict_count")
 
-    /** 是否正在恢复中（用于处理恢复中断） */
-    val IS_RESTORING = booleanPreferencesKey("is_restoring")
 
     /** 学习完成后同步 默认: true */
     val SYNC_ON_LEARNING_COMPLETE = booleanPreferencesKey("sync_on_learning_complete")
@@ -277,13 +274,6 @@ object PreferencesKeys {
     /** 显示答案等待时长 (毫秒) 默认: 5000 */
     val SHOW_ANSWER_DELAY_MS = longPreferencesKey("show_answer_delay_ms")
 
-    // ========== 恢复断点续传 ==========
-
-    /** 恢复断点表名 默认: "" */
-    val RESTORE_CHECKPOINT_TABLE = stringPreferencesKey("restore_checkpoint_table")
-
-    /** 恢复断点偏移量 默认: 0 */
-    val RESTORE_CHECKPOINT_OFFSET = intPreferencesKey("restore_checkpoint_offset")
 
     // ========== 动态 Key 生成辅助方法 ==========
 

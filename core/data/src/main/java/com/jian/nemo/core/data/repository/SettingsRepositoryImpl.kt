@@ -1031,48 +1031,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
 
 
-    // ========== 恢复状态管理 ==========
 
-    override val isRestoringFlow: Flow<Boolean> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.IS_RESTORING] ?: false
-    }
-
-    override suspend fun setIsRestoring(isRestoring: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.IS_RESTORING] = isRestoring
-        }
-    }
-
-    // ========== 恢复断点续传 ==========
-
-    override suspend fun setRestoreCheckpoint(table: String, offset: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.RESTORE_CHECKPOINT_TABLE] = table
-            preferences[PreferencesKeys.RESTORE_CHECKPOINT_OFFSET] = offset
-        }
-        Log.d(TAG, "设置恢复断点: table=$table, offset=$offset")
-    }
-
-    override suspend fun getRestoreCheckpoint(): Pair<String, Int>? {
-        val checkpoint = dataStore.data.map { preferences ->
-            val table = preferences[PreferencesKeys.RESTORE_CHECKPOINT_TABLE]
-            val offset = preferences[PreferencesKeys.RESTORE_CHECKPOINT_OFFSET]
-            if (!table.isNullOrEmpty() && offset != null) {
-                table to offset
-            } else {
-                null
-            }
-        }.first()
-        return checkpoint
-    }
-
-    override suspend fun clearRestoreCheckpoint() {
-        dataStore.edit { preferences ->
-            preferences.remove(PreferencesKeys.RESTORE_CHECKPOINT_TABLE)
-            preferences.remove(PreferencesKeys.RESTORE_CHECKPOINT_OFFSET)
-        }
-        Log.d(TAG, "已清除恢复断点")
-    }
 
 
 
@@ -1152,20 +1111,11 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override val lastRestoreTimeFlow: Flow<Long> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.LAST_RESTORE_TIME] ?: 0L
-        }
 
     override val lastContentVersionFlow: Flow<Int> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.LAST_CONTENT_VERSION] ?: 0
     }
 
-    override suspend fun setLastRestoreTime(time: Long) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_RESTORE_TIME] = time
-        }
-    }
 
     override suspend fun getLastContentVersion(): Int {
         return dataStore.data.map { it[PreferencesKeys.LAST_CONTENT_VERSION] ?: 0 }.first()
@@ -1470,7 +1420,6 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.LAST_SYNC_TIME)
             preferences.remove(PreferencesKeys.LAST_SYNC_SUCCESS)
             preferences.remove(PreferencesKeys.LAST_SYNC_ERROR)
-            preferences.remove(PreferencesKeys.LAST_RESTORE_TIME)
             preferences.remove(PreferencesKeys.LAST_SYNC_CONFLICT_COUNT)
             preferences.remove(PreferencesKeys.SYNC_ON_LEARNING_COMPLETE)
             preferences.remove(PreferencesKeys.SYNC_ON_TEST_COMPLETE)

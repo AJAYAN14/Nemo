@@ -62,12 +62,6 @@ fun AccountManagementScreen(
             viewModel.clearSuccessMessage()
         }
     }
-    LaunchedEffect(uiState.restoreMessage) {
-        uiState.restoreMessage?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            viewModel.clearRestoreMessage()
-        }
-    }
 
     // Handle Logout Redirect
     LaunchedEffect(uiState.isLoggedIn, uiState.isLoading, uiState.isAuthChecked) {
@@ -193,53 +187,6 @@ fun AccountManagementScreen(
                             if (!uiState.isSyncLoading) {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.syncToCloud()
-                            }
-                        }
-                    )
-                     HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.CloudDownload,
-                        iconTint = Color(0xFF32ADE6), // Cyan
-                        title = "从云端恢复",
-                        subtitle = when {
-                            uiState.isRestoreLoading -> "正在恢复数据..."
-                            uiState.showRestoreSuccess -> "恢复成功"
-                            else -> uiState.lastRestoreTimeText
-                        },
-                        trailingContent = {
-                            AnimatedContent(
-                                targetState = when {
-                                    uiState.isRestoreLoading -> 1 // Loading
-                                    uiState.showRestoreSuccess -> 2 // Success
-                                    else -> 0 // Default
-                                },
-                                label = "RestoreStatusAnimation"
-                            ) { state ->
-                                when (state) {
-                                    1 -> CircularProgressIndicator(
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    2 -> Icon(
-                                        imageVector = Icons.Rounded.CheckCircle,
-                                        contentDescription = null,
-                                        tint = Color(0xFF34C759), // Green
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    else -> Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (!uiState.isRestoreLoading) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                viewModel.restoreFromCloud()
                             }
                         }
                     )
@@ -372,15 +319,6 @@ fun AccountManagementScreen(
         else -> {}
     }
 
-    // Restore Confirm Dialog
-    if (uiState.showRestoreConfirmDialog) {
-        RestoreConfirmDialog(
-            isLoading = uiState.isRestoreLoading,
-            onDismiss = { viewModel.cancelRestoreConfirmation() },
-            onConfirm = { viewModel.confirmRestoreAfterWarning() },
-            useDarkTheme = useDarkTheme
-        )
-    }
 }
 
 
@@ -554,13 +492,3 @@ fun PremiumSettingsItem(
     }
 }
 
-private fun getLastRestoreTimeText(lastRestoreTime: Long): String {
-    if (lastRestoreTime == 0L) return "从未恢复"
-    val diff = System.currentTimeMillis() - lastRestoreTime
-    return when {
-        diff < 60 * 1000 -> "刚刚恢复"
-        diff < 60 * 60 * 1000 -> "${diff / (60 * 1000)}分钟前恢复"
-        diff < 24 * 60 * 60 * 1000 -> "${diff / (60 * 60 * 1000)}小时前恢复"
-        else -> "${diff / (24 * 60 * 60 * 1000)}天前恢复"
-    }
-}

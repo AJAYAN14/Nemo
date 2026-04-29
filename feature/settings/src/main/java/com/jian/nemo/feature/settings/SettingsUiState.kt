@@ -42,7 +42,7 @@ data class SettingsUiState(
     val lastDictionarySyncTimestamp: Long = 0, // 词库最后同步时间
     val lastContentVersion: Int = 0,           // 词库内容版本号
     val showRestoreConfirmDialog: Boolean = false,
-    val isRestoring: Boolean = false, // 恢复被中断的标识
+ // 恢复被中断的标识
     val syncMessage: String? = null,
 
     // TTS 设置
@@ -142,7 +142,7 @@ sealed interface SettingsEvent {
 
     // 同步
     data object SyncData : SettingsEvent
-    data object RestoreData : SettingsEvent
+
     data class SetAutoSyncEnabled(val enabled: Boolean) : SettingsEvent
     data class ResolveConflict(val option: ConflictResolutionOption) : SettingsEvent
 
