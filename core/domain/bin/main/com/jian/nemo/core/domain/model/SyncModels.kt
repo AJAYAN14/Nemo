@@ -94,7 +94,8 @@ data class WordProgress(
     val japanese: String? = null,
     val hiragana: String? = null,
     val chinese: String? = null,
-    val level: String? = null
+    val level: String? = null,
+    val rawId: String? = null
 )
 
 /**
@@ -109,6 +110,7 @@ data class GrammarProgress(
     val interval: Int,
     val nextReviewDate: Long,
     val isFavorite: Boolean,
+    val isSkipped: Boolean = false,
     val isDeleted: Boolean = false,
     val deletedTime: Long = 0,
     val lastModifiedTime: Long = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis(),
@@ -118,7 +120,8 @@ data class GrammarProgress(
     val uuid: String? = null,
     // 兼容旧备份
     val grammar: String? = null,
-    val grammarLevel: String? = null
+    val grammarLevel: String? = null,
+    val rawId: String? = null
 )
 
 /**

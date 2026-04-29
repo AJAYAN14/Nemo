@@ -326,6 +326,7 @@ class GenerateTestQuestionsUseCaseTest {
     ): Grammar {
         return Grammar(
             id = id,
+            rawId = id.toString(),
             grammar = grammarText,
             grammarLevel = "N5",
             usages = listOf(
@@ -365,6 +366,7 @@ class GenerateTestQuestionsUseCaseTest {
         chinese: String = "测试"
     ) = Word(
         id = id,
+        rawId = id.toString(),
         japanese = japanese,
         hiragana = hiragana,
         chinese = chinese,

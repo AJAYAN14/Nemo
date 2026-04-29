@@ -276,6 +276,7 @@ class SubmitTestResultUseCaseTest {
 
     private fun createTestWord(id: Int) = Word(
         id = id,
+        rawId = id.toString(),
         japanese = "単語$id",
         hiragana = "たんご$id",
         chinese = "单词$id",

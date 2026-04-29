@@ -149,7 +149,8 @@ class SrsCalculatorImplTest {
             interval = 0,
             nextReviewDate = 0,
             lastReviewedDate = null,
-            firstLearnedDate = null
+            firstLearnedDate = null,
+            type = 0
         )
     }
 
@@ -168,7 +169,8 @@ class SrsCalculatorImplTest {
             interval = interval,
             nextReviewDate = nextReviewDate,
             lastReviewedDate = lastReviewedDate,
-            firstLearnedDate = 80
+            firstLearnedDate = 80,
+            type = 2
         )
     }
 
@@ -179,6 +181,7 @@ class SrsCalculatorImplTest {
         override val interval: Int,
         override val nextReviewDate: Long,
         override val lastReviewedDate: Long?,
-        override val firstLearnedDate: Long?
+        override val firstLearnedDate: Long?,
+        override val type: Int
     ) : SrsItem
 }

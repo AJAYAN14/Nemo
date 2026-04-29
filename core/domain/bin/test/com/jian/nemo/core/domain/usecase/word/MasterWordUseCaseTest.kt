@@ -60,7 +60,8 @@ class MasterWordUseCaseTest {
             interval = 1,
             nextReviewDate = 101L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 100L
+            firstLearnedDate = 100L,
+            type = 0
         )
         every { srsCalculator.calculate(any(), 3, 100L) } returns srsResult
 
@@ -91,7 +92,8 @@ class MasterWordUseCaseTest {
             interval = 7,
             nextReviewDate = 107L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 90L
+            firstLearnedDate = 90L,
+            type = 2
         )
         every { srsCalculator.calculate(any(), 3, 100L) } returns srsResult
 
@@ -122,7 +124,8 @@ class MasterWordUseCaseTest {
             interval = 1,
             nextReviewDate = 101L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 100L
+            firstLearnedDate = 100L,
+            type = 0
         )
         every { srsCalculator.calculate(any(), 3, 100L) } returns srsResult
 
@@ -163,7 +166,8 @@ class MasterWordUseCaseTest {
             interval = 1,
             nextReviewDate = 101L,
             lastReviewedDate = 100L,
-            firstLearnedDate = 100L
+            firstLearnedDate = 100L,
+            type = 0
         )
 
         val qualitySlot = slot<Int>()
@@ -187,6 +191,7 @@ class MasterWordUseCaseTest {
         isSkipped: Boolean = false
     ) = Word(
         id = id,
+        rawId = id.toString(),
         japanese = "テスト",
         hiragana = "てすと",
         chinese = "测试",

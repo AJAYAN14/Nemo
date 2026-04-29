@@ -88,6 +88,7 @@ class GetDueWordsUseCaseTest {
         repetitionCount: Int = 1
     ) = Word(
         id = id,
+        rawId = id.toString(),
         japanese = "テスト",
         hiragana = "てすと",
         chinese = "测试",
