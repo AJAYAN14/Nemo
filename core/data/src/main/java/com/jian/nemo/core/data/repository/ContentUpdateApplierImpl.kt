@@ -104,7 +104,7 @@ class ContentUpdateApplierImpl @Inject constructor(
             }
         }
 
-    override suspend fun applyAllWords(words: List<NetworkWordDto>) {
+    override suspend fun applyAllWords(words: List<NetworkWordDto>, isFullSync: Boolean) {
         withContext(Dispatchers.IO) {
             try {
                 Log.i(TAG, "applyAllWords: processing ${words.size} words")
@@ -114,17 +114,22 @@ class ContentUpdateApplierImpl @Inject constructor(
                     wordDao.upsertAll(entities)
                 }
                 
-                // [MOD] 全量更新后，标记本地存在但云端已消失的词条为已下架，防止遗留脏数据
-                val remoteIds = words.map { it.id }
-                val delistedCount = wordDao.markAllMissingAsDelisted(remoteIds)
-                Log.i(TAG, "applyAllWords: success. $delistedCount items marked as delisted.")
+                // [MOD] 仅在全量更新后，标记本地存在但云端已消失的词条为已下架，防止遗留脏数据
+                // 增量同步绝不能执行此操作，否则会导致未包含在本次增量包中的词条被误隐藏
+                if (isFullSync) {
+                    val remoteIds = words.map { it.id }
+                    val delistedCount = wordDao.markAllMissingAsDelisted(remoteIds)
+                    Log.i(TAG, "applyAllWords (FullSync): $delistedCount items marked as delisted.")
+                } else {
+                    Log.i(TAG, "applyAllWords (Incremental): ${words.size} items updated.")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "applyAllWords failed", e)
             }
         }
     }
 
-    override suspend fun applyAllGrammars(grammars: List<NetworkGrammarDto>) {
+    override suspend fun applyAllGrammars(grammars: List<NetworkGrammarDto>, isFullSync: Boolean) {
         withContext(Dispatchers.IO) {
             try {
                 Log.i(TAG, "applyAllGrammars: processing ${grammars.size} grammars")
@@ -145,10 +150,14 @@ class ContentUpdateApplierImpl @Inject constructor(
                         }
                     }
                 }
-                // [MOD] 全量更新后，标记本地存在但云端已消失的语法为已下架
-                val remoteIds = grammars.map { it.id }
-                val delistedCount = grammarDao.markAllMissingAsDelisted(remoteIds)
-                Log.i(TAG, "applyAllGrammars: success. $delistedCount items marked as delisted.")
+                // [MOD] 仅在全量更新后，标记本地存在但云端已消失的语法为已下架
+                if (isFullSync) {
+                    val remoteIds = grammars.map { it.id }
+                    val delistedCount = grammarDao.markAllMissingAsDelisted(remoteIds)
+                    Log.i(TAG, "applyAllGrammars (FullSync): $delistedCount items marked as delisted.")
+                } else {
+                    Log.i(TAG, "applyAllGrammars (Incremental): ${grammars.size} items updated.")
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "applyAllGrammars failed", e)
             }

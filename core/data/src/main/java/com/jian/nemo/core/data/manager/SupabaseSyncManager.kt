@@ -113,10 +113,10 @@ class SupabaseSyncManager @Inject constructor(
 
                 // 应用变更
                 if (allWords.isNotEmpty()) {
-                    contentUpdateApplier.applyAllWords(allWords)
+                    contentUpdateApplier.applyAllWords(allWords, isFullSync)
                 }
                 if (allGrammars.isNotEmpty()) {
-                    contentUpdateApplier.applyAllGrammars(allGrammars)
+                    contentUpdateApplier.applyAllGrammars(allGrammars, isFullSync)
                 }
 
                 // 计算并更新新的同步锚点时间戳 (取结果中最大的 updated_at)

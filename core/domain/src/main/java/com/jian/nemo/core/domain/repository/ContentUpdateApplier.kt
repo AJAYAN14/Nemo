@@ -25,11 +25,13 @@ interface ContentUpdateApplier {
     
     /**
      * [New] 批量应用从 Supabase 获取的单词 DTO
+     * @param isFullSync 是否为全量同步。全量同步时会下架不在列表中的词条。
      */
-    suspend fun applyAllWords(words: List<WordDto>)
+    suspend fun applyAllWords(words: List<WordDto>, isFullSync: Boolean = false)
 
     /**
      * [New] 批量应用从 Supabase 获取的语法 DTO
+     * @param isFullSync 是否为全量同步
      */
-    suspend fun applyAllGrammars(grammars: List<GrammarDto>)
+    suspend fun applyAllGrammars(grammars: List<GrammarDto>, isFullSync: Boolean = false)
 }
