@@ -321,6 +321,8 @@ fun AISettingTextField(
     icon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
@@ -342,8 +344,8 @@ fun AISettingTextField(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.2f else 0.3f),
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f), // 使用 surfaceContainer 替代 surfaceVariant
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f),
+                focusedContainerColor = inputBgColor,
+                unfocusedContainerColor = inputBgColor,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface
             ),

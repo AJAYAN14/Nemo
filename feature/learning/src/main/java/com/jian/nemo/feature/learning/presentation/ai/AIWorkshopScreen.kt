@@ -478,7 +478,7 @@ private fun InputSection(
     enabled: Boolean
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     Column {
         OutlinedTextField(
@@ -498,9 +498,9 @@ private fun InputSection(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = NemoPrimary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.4f),
-                focusedContainerColor = inputBgColor,
-                unfocusedContainerColor = inputBgColor,
-                disabledContainerColor = inputBgColor,
+                focusedContainerColor = surfaceColor,
+                unfocusedContainerColor = surfaceColor,
+                disabledContainerColor = surfaceColor,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = NemoPrimary
