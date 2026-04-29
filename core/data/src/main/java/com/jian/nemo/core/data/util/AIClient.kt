@@ -44,6 +44,10 @@ class AIClient @Inject constructor(
             1. 严禁生成过于简单的问候语或基础自我介绍（如“我是学生”）。
             2. 严禁生成不符合 $difficulty 等级词汇量要求的题目。
             
+            请从以下两种模式中随机选择一种（确保两种方向的出现概率各占 50%）：
+            1. CN_TO_JP: 中译日。
+            2. JP_TO_CN: 日译中。
+            
             请返回如下 JSON 格式：
             {
               "question": "题目内容",
