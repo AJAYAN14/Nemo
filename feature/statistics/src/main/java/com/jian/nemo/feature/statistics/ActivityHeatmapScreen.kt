@@ -2,6 +2,7 @@ package com.jian.nemo.feature.statistics
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -26,6 +28,8 @@ import com.jian.nemo.feature.statistics.presentation.components.LearningHeatmapC
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.draw.clip
 
 /**
  * 学习热力图与数据高光专属界面 (Activity Heatmap Pro Max)
@@ -38,10 +42,7 @@ fun ActivityHeatmapScreen(
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
+
 
     Scaffold(
         topBar = {
@@ -63,62 +64,60 @@ fun ActivityHeatmapScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
 
-            // 1. Heatmap (Top Centerpiece)
             item {
-                AnimatedVisibility(
-                    visible = isVisible
-                ) {
-                    Column {
-                        HeatmapSectionTitle("年度回顾")
-                        if (uiState.isLoading) {
-                            Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
-                            }
-                        } else {
-                            LearningHeatmapCard(
-                                heatmapData = uiState.heatmapData,
-                                isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f,
-                                cardColor = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) MaterialTheme.colorScheme.surfaceContainer else Color.White
-                            )
+                Column {
+                    HeatmapSectionTitle("年度回顾")
+                    if (uiState.isLoading) {
+                        Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
+                    } else {
+                        LearningHeatmapCard(
+                            heatmapData = uiState.heatmapData,
+                            isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f,
+                            cardColor = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) MaterialTheme.colorScheme.surfaceContainer else Color.White
+                        )
                     }
                 }
             }
 
-            // 2. Rich Stats
+            item {
+                if (!uiState.isLoading) {
+                    Column {
+                        HeatmapSectionTitle("记忆全景")
+                        MemoryPanoramaCard(
+                            data = uiState.panoramaData,
+                            isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                        )
+                    }
+                }
+            }
+
             if (!uiState.isLoading) {
                 item {
-                    AnimatedVisibility(
-                        visible = isVisible
-                    ) {
-                        Column {
-                            HeatmapSectionTitle("数据高光")
-                            RichStatsGrid(
-                                streak = uiState.streak,
-                                longestStreak = uiState.longestStreak,
-                                totalActiveDays = uiState.totalActiveDays,
-                                bestDayCount = uiState.bestDayCount,
-                                bestDayDate = uiState.bestDayDate,
-                                dailyAverage = uiState.dailyAverage,
-                                todayCount = uiState.todayCount
-                            )
-                        }
+                    Column {
+                        HeatmapSectionTitle("数据高光")
+                        RichStatsGrid(
+                            streak = uiState.streak,
+                            longestStreak = uiState.longestStreak,
+                            totalActiveDays = uiState.totalActiveDays,
+                            bestDayCount = uiState.bestDayCount,
+                            bestDayDate = uiState.bestDayDate,
+                            dailyAverage = uiState.dailyAverage,
+                            todayCount = uiState.todayCount
+                        )
                     }
                 }
 
                 // 3. Motivational Footer
                 item {
-                   AnimatedVisibility(
-                        visible = isVisible
-                   ) {
-                       Box(modifier = Modifier.fillMaxWidth().padding(top = 20.dp), contentAlignment = Alignment.Center) {
-                           Text(
-                               text = "每一天都在进步，保持连胜！",
-                               style = MaterialTheme.typography.bodySmall,
-                               color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                           )
-                       }
-                   }
+                    Box(modifier = Modifier.fillMaxWidth().padding(top = 20.dp), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "每一天都在进步，保持连胜！",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                    }
                 }
             }
         }
@@ -136,27 +135,27 @@ private fun RichStatsGrid(
     dailyAverage: Int,
     todayCount: Int
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Streak
             RichStatItem(
                 label = "当前坚持",
-                value = "$streak 天",
+                value = streak.toString(),
+                unit = "天",
                 subLabel = "最长 $longestStreak 天",
-                icon = Icons.Rounded.EmojiEvents, // Trophy icon
-                color = NemoOrange,
+                color = Color(0xFFFF9500), // Vibrant Orange
                 modifier = Modifier.weight(1f)
             )
 
             // Total Days
             RichStatItem(
                 label = "累计活跃",
-                value = "$totalActiveDays 天",
-                subLabel = "持续进步",
-                icon = Icons.Rounded.History, // History icon
+                value = totalActiveDays.toString(),
+                unit = "天",
+                subLabel = "坚持不懈",
                 color = NemoPrimary,
                 modifier = Modifier.weight(1f)
             )
@@ -164,7 +163,7 @@ private fun RichStatsGrid(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Best Day
             val dateStr = if (bestDayDate > 0) {
@@ -174,20 +173,20 @@ private fun RichStatsGrid(
 
             RichStatItem(
                 label = "单日最佳",
-                value = "$bestDayCount 项",
+                value = bestDayCount.toString(),
+                unit = "项",
                 subLabel = dateStr,
-                icon = Icons.Rounded.Create,
-                color = NemoSecondary,
+                color = Color(0xFF34C759), // Success Green
                 modifier = Modifier.weight(1f)
             )
 
-             // Encouragement -> Daily Average
+             // Daily Average
              RichStatItem(
                 label = "日均学习",
-                value = "$dailyAverage 词",
-                subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "状态极佳" else "保持节奏",
-                icon = Icons.Rounded.Book,
-                color = NemoIndigo,
+                value = dailyAverage.toString(),
+                unit = "项",
+                subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "超过平均" else "稳步前进",
+                color = Color(0xFF5856D6), // Premium Purple
                 modifier = Modifier.weight(1f)
             )
         }
@@ -198,53 +197,71 @@ private fun RichStatsGrid(
 private fun RichStatItem(
     label: String,
     value: String,
+    unit: String,
     subLabel: String,
-    icon: Any,
     color: Color,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val shadowElevation = if (isDark) 2.dp else 10.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else Color.White
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f)
 
     Surface(
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedCornerShape(16.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
-        shadowElevation = shadowElevation,
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            )
+        border = BorderStroke(1.dp, borderColor),
+        modifier = modifier.fillMaxWidth()
     ) {
-         Column(
-             horizontalAlignment = Alignment.Start,
-             modifier = Modifier.padding(20.dp)
-         ) {
-             Text(
-                 text = label,
-                 style = MaterialTheme.typography.labelMedium,
-                 color = MaterialTheme.colorScheme.onSurfaceVariant
-             )
-             Spacer(modifier = Modifier.height(8.dp))
-             Text(
-                 text = value,
-                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
-                 color = color
-             )
-             Spacer(modifier = Modifier.height(4.dp))
-             Text(
-                 text = subLabel,
-                 style = MaterialTheme.typography.bodySmall,
-                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-             )
-         }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Left Accent Bar
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(40.dp)
+                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
+                    .background(color)
+            )
+
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = unit,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        modifier = Modifier.padding(bottom = 3.dp)
+                    )
+                }
+
+                Text(
+                    text = subLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = color.copy(alpha = 0.8f),
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.5.sp
+                )
+            }
+        }
     }
 }
 
@@ -257,4 +274,182 @@ private fun HeatmapSectionTitle(text: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
     )
+}
+
+@Composable
+private fun MemoryPanoramaCard(
+    data: MemoryPanoramaData,
+    isDarkTheme: Boolean
+) {
+    val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+    val shadowElevation = if (isDarkTheme) 2.dp else 10.dp
+    val shadowColor = if (isDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
+
+    Surface(
+        shape = RoundedCornerShape(26.dp),
+        color = containerColor,
+        border = BorderStroke(0.5.dp, borderColor),
+        shadowElevation = shadowElevation,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = shadowElevation,
+                shape = RoundedCornerShape(26.dp),
+                spotColor = shadowColor,
+                ambientColor = shadowColor
+            )
+    ) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            // Header: Icon and Title
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = if (isDarkTheme) NemoPrimary.copy(alpha = 0.2f) else Color(0xFFF0F0FF),
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.EmojiEvents, // Replace with appropriate star-like icon if available
+                            contentDescription = null,
+                            tint = NemoPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = "全库记忆全景",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "${data.totalCount} 项",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Stacked Progress Bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            ) {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    data.buckets.forEach { bucket ->
+                        if (bucket.ratio > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxHeight()
+                                    .weight(bucket.ratio)
+                                    .background(Color(android.graphics.Color.parseColor(bucket.color)))
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Legend
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                data.buckets.forEach { bucket ->
+                    LegendItem(bucket)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            // Divider
+            HorizontalDivider(
+                modifier = Modifier.fillMaxWidth(),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Grid Stats
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                data.buckets.forEach { bucket ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = bucket.count.toString(),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = bucket.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "${(bucket.ratio * 100).toInt()}%",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LegendItem(bucket: PanoramaBucket) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .background(
+                    color = Color(android.graphics.Color.parseColor(bucket.color)),
+                    shape = RoundedCornerShape(2.dp)
+                )
+        )
+        Text(
+            text = bucket.label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            fontWeight = FontWeight.Medium
+        )
+    }
 }

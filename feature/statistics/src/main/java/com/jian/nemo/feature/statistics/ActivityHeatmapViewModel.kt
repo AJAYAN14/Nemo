@@ -5,16 +5,21 @@ import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.usecase.statistics.GetHeatmapDataUseCase
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
+import com.jian.nemo.core.domain.repository.GrammarRepository
+import com.jian.nemo.core.domain.repository.WordRepository
+import com.jian.nemo.core.domain.model.SrsItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ActivityHeatmapUiState(
     val heatmapData: List<HeatmapDay> = emptyList(),
+    val panoramaData: MemoryPanoramaData = MemoryPanoramaData(),
     val streak: Int = 0,
     val longestStreak: Int = 0,
     val totalActiveDays: Int = 0,
@@ -25,9 +30,24 @@ data class ActivityHeatmapUiState(
     val isLoading: Boolean = true
 )
 
+data class MemoryPanoramaData(
+    val totalCount: Int = 0,
+    val buckets: List<PanoramaBucket> = emptyList()
+)
+
+data class PanoramaBucket(
+    val id: String,
+    val label: String,
+    val count: Int,
+    val ratio: Float,
+    val color: String
+)
+
 @HiltViewModel
 class ActivityHeatmapViewModel @Inject constructor(
-    private val getHeatmapDataUseCase: GetHeatmapDataUseCase
+    private val getHeatmapDataUseCase: GetHeatmapDataUseCase,
+    private val wordRepository: WordRepository,
+    private val grammarRepository: GrammarRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ActivityHeatmapUiState())
@@ -39,20 +59,36 @@ class ActivityHeatmapViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            getHeatmapDataUseCase().collect { heatmap ->
-                // Calculate Rich Stats
+            combine(
+                getHeatmapDataUseCase(),
+                wordRepository.getAllLearnedWords(),
+                grammarRepository.getAllLearnedGrammars()
+            ) { heatmap, learnedWords, learnedGrammars ->
+                // 1. Calculate Panorama Data
+                val allItems = learnedWords.filter { !it.isDelisted } + learnedGrammars.filter { !it.isDelisted }
+                val totalCount = allItems.size
+                
+                val buckets = if (totalCount > 0) {
+                    listOf(
+                        createBucket("young_early", "初识", allItems.count { it.stability < 3f }, totalCount, "#EF4444"),
+                        createBucket("young_developing", "熟悉", allItems.count { it.stability >= 3f && it.stability < 21f }, totalCount, "#3B82F6"),
+                        createBucket("mature", "稳固", allItems.count { it.stability >= 21f && it.stability < 90f }, totalCount, "#22C55E"),
+                        createBucket("expert", "长效", allItems.count { it.stability >= 90f }, totalCount, "#8B5CF6")
+                    )
+                } else emptyList()
+
+                val panoramaData = MemoryPanoramaData(totalCount, buckets)
+
+                // 2. Calculate Rich Stats (Existing logic)
                 val activeDays = heatmap.filter { it.count > 0 }
                 val totalActiveDays = activeDays.size
-                val totalCount = activeDays.sumOf { it.count }
-                val dailyAverage = if (totalActiveDays > 0) totalCount / totalActiveDays else 0
+                val dailyAverage = if (totalActiveDays > 0) activeDays.sumOf { it.count } / totalActiveDays else 0
 
                 val bestDay = activeDays.maxByOrNull { it.count }
                 val bestDayCount = bestDay?.count ?: 0
                 val bestDayDate = bestDay?.date ?: 0L
 
-                // Calculate Streaks
                 val sortedActiveDates = activeDays.map { it.date }.sorted()
-
                 var currentStreak = 0
                 var maxStreak = 0
                 var tempStreak = 0
@@ -64,14 +100,13 @@ class ActivityHeatmapViewModel @Inject constructor(
                     } else if (date == lastDate + 1) {
                         tempStreak++
                     } else {
-                         maxStreak = maxOf(maxStreak, tempStreak)
-                         tempStreak = 1
+                        maxStreak = maxOf(maxStreak, tempStreak)
+                        tempStreak = 1
                     }
                     lastDate = date
                 }
                 maxStreak = maxOf(maxStreak, tempStreak)
 
-                // Check if current streak is active
                 val todayEpoch = DateTimeUtils.timestampToEpochDay(DateTimeUtils.getCurrentCompensatedMillis())
                 val todayCount = heatmap.find { it.date == todayEpoch }?.count ?: 0
                 val isTodayActive = sortedActiveDates.contains(todayEpoch)
@@ -86,7 +121,6 @@ class ActivityHeatmapViewModel @Inject constructor(
                     }
                     currentStreak = streak
                 } else if (isYesterdayActive) {
-                     // Count backwards from yesterday
                     var streak = 0
                     var checkDate = todayEpoch - 1
                     while (sortedActiveDates.contains(checkDate)) {
@@ -98,20 +132,41 @@ class ActivityHeatmapViewModel @Inject constructor(
                     currentStreak = 0
                 }
 
+                Triple(heatmap, panoramaData, object {
+                    val streak = currentStreak
+                    val longestStreak = maxStreak
+                    val totalActiveDays = totalActiveDays
+                    val bestDayCount = bestDayCount
+                    val bestDayDate = bestDayDate
+                    val dailyAverage = dailyAverage
+                    val todayCount = todayCount
+                })
+            }.collect { (heatmap, panorama, stats) ->
                 _uiState.update {
                     it.copy(
                         heatmapData = heatmap,
-                        streak = currentStreak,
-                        longestStreak = maxStreak,
-                        totalActiveDays = totalActiveDays,
-                        bestDayCount = bestDayCount,
-                        bestDayDate = bestDayDate,
-                        dailyAverage = dailyAverage,
-                        todayCount = todayCount,
+                        panoramaData = panorama,
+                        streak = stats.streak,
+                        longestStreak = stats.longestStreak,
+                        totalActiveDays = stats.totalActiveDays,
+                        bestDayCount = stats.bestDayCount,
+                        bestDayDate = stats.bestDayDate,
+                        dailyAverage = stats.dailyAverage,
+                        todayCount = stats.todayCount,
                         isLoading = false
                     )
                 }
             }
         }
+    }
+
+    private fun createBucket(id: String, label: String, count: Int, total: Int, color: String): PanoramaBucket {
+        return PanoramaBucket(
+            id = id,
+            label = label,
+            count = count,
+            ratio = if (total > 0) count.toFloat() / total else 0f,
+            color = color
+        )
     }
 }

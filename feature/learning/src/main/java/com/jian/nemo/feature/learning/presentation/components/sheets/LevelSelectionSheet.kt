@@ -23,6 +23,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import androidx.compose.foundation.clickable
 
@@ -43,10 +45,16 @@ fun LevelSelectionBottomSheet(
     onLevelSelected: (String) -> Unit
 ) {
     if (show) {
+        val colorScheme = MaterialTheme.colorScheme
+        val isDark = colorScheme.background.luminance() < 0.5f
+
+        val sheetBackgroundColor = if (isDark) colorScheme.surfaceContainer else BentoColors.Surface
+        val titleTextColor = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+
         ModalBottomSheet(
             onDismissRequest = onDismiss,
-            containerColor = BentoColors.Surface,
-            contentColor = BentoColors.TextMain,
+            containerColor = sheetBackgroundColor,
+            contentColor = titleTextColor,
             dragHandle = { BottomSheetDefaults.DragHandle() }
         ) {
             Column(
@@ -59,7 +67,7 @@ fun LevelSelectionBottomSheet(
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = BentoColors.TextMain,
+                    color = titleTextColor,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
 
@@ -101,12 +109,15 @@ private fun LevelSelectionCard(
     primaryColor: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+
     val themePrimary = primaryColor
-    val surfaceColor = BentoColors.Surface
-    val onSurfaceColor = BentoColors.TextMain
+    val onSurfaceColor = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+    val textSubColor = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
 
     // Premium Gray for Unselected
-    val premiumGrayLow = androidx.compose.ui.graphics.Color(0xFFF2F2F7)
+    val premiumGrayLow = if (isDark) colorScheme.surfaceVariant else Color(0xFFF2F2F7)
 
     // Animations
     val backgroundColor by animateColorAsState(
@@ -154,7 +165,7 @@ private fun LevelSelectionCard(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isSelected) themePrimary.copy(alpha = 0.8f) else BentoColors.TextSub,
+                    color = if (isSelected) themePrimary.copy(alpha = 0.8f) else textSubColor,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -162,7 +173,7 @@ private fun LevelSelectionCard(
             Icon(
                 imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                 contentDescription = null,
-                tint = if (isSelected) themePrimary else BentoColors.TextSub.copy(alpha = 0.5f),
+                tint = if (isSelected) themePrimary else textSubColor.copy(alpha = 0.5f),
                 modifier = Modifier.size(24.dp)
             )
         }

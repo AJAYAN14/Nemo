@@ -97,7 +97,7 @@ class WordRepositoryImpl @Inject constructor(
     override fun getTodayLearnedWords(today: Long): Flow<List<Word>> {
         return wordDao.getTodayLearnedWords(today)
             .map { entities ->
-                entities.toDomainModels()
+                mapWithStudyState(entities)
             }
             .catch { e ->
                 emit(emptyList())
@@ -107,7 +107,7 @@ class WordRepositoryImpl @Inject constructor(
     override fun getTodayReviewedWords(today: Long): Flow<List<Word>> {
         return wordDao.getTodayReviewedWords(today)
             .map { entities ->
-                entities.toDomainModels()
+                mapWithStudyState(entities)
             }
             .catch { e ->
                 emit(emptyList())
@@ -116,7 +116,7 @@ class WordRepositoryImpl @Inject constructor(
 
     override fun getFavoriteWords(): Flow<List<Word>> {
         return wordDao.getFavoriteWords()
-            .map { it.toDomainModels() }
+            .map { mapWithStudyState(it) }
             .catch { e ->
                 emit(emptyList())
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
@@ -126,7 +126,7 @@ class WordRepositoryImpl @Inject constructor(
         try {
             if (levels.isEmpty()) return@withContext emptyList()
             val entities = wordDao.getWordsSortedByNextReviewDate(levels, limit)
-            entities.toDomainModels()
+            mapWithStudyState(entities)
         } catch (e: Exception) {
             emptyList()
         }
@@ -151,7 +151,7 @@ class WordRepositoryImpl @Inject constructor(
 
     override fun getAllLearnedWords(): Flow<List<Word>> {
         return wordDao.getAllLearnedWords()
-            .map { it.toDomainModels() }
+            .map { mapWithStudyState(it) }
             .catch { e ->
                 emit(emptyList())
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
@@ -160,7 +160,7 @@ class WordRepositoryImpl @Inject constructor(
     override fun getAllLearnedWordsByLevel(level: String): Flow<List<Word>> {
         val upperLevel = level.uppercase()
         return wordDao.getLearnedWordsByLevel(upperLevel)
-            .map { it.toDomainModels() }
+            .map { mapWithStudyState(it) }
             .catch { e ->
                 emit(emptyList())
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
@@ -188,7 +188,7 @@ class WordRepositoryImpl @Inject constructor(
 
     override fun searchWords(query: String): Flow<List<Word>> {
         return wordDao.searchWords(query)
-            .map { it.toDomainModels() }
+            .map { mapWithStudyState(it) }
             .catch { e ->
                 emit(emptyList())
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)

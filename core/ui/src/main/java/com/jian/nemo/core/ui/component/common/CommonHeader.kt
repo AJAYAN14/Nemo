@@ -42,62 +42,62 @@ fun CommonHeader(
 ) {
     // MD3 TopAppBar 使用 Surface 提供容器
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding(), // 自动处理状态栏padding，避免与状态栏重叠
+        modifier = Modifier.fillMaxWidth(),
         color = backgroundColor,
         tonalElevation = 0.dp
     ) {
-        // MD3: TopAppBar 标准内容高度 64dp (包含 padding)
-        TopAppBar(
-            title = {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge, // MD3: 标准 titleLarge (22sp)
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            },
-            navigationIcon = {
-                // MD3: 标准 48dp × 48dp 触摸目标
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "返回",
-                        tint = MaterialTheme.colorScheme.onSurface // MD3: 使用主题颜色
+        Column(modifier = Modifier.statusBarsPadding()) {
+            // MD3: TopAppBar 标准内容高度 64dp (包含 padding)
+            TopAppBar(
+                title = {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge, // MD3: 标准 titleLarge (22sp)
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
-            },
-            actions = {
-                // 如果提供了 actions，则显示
-                actions?.invoke(this)
-
-                // Avatar Area
-                if (username != null) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .size(36.dp) // Optimized size
-                            .clickable(enabled = onAvatarClick != null, onClick = { onAvatarClick?.invoke() }),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        com.jian.nemo.core.ui.component.AvatarImage(
-                            username = username,
-                            avatarPath = avatarUrl,
-                            size = 36.dp,
-                            borderWidth = 1.dp, // Subtle border
-                            borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                },
+                navigationIcon = {
+                    // MD3: 标准 48dp × 48dp 触摸目标
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.onSurface // MD3: 使用主题颜色
                         )
                     }
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = backgroundColor,
-                titleContentColor = MaterialTheme.colorScheme.onSurface,
-                navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
+                },
+                actions = {
+                    // 如果提供了 actions，则显示
+                    actions?.invoke(this)
+
+                    // Avatar Area
+                    if (username != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .size(36.dp) // Optimized size
+                                .clickable(enabled = onAvatarClick != null, onClick = { onAvatarClick?.invoke() }),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            com.jian.nemo.core.ui.component.AvatarImage(
+                                username = username,
+                                avatarPath = avatarUrl,
+                                size = 36.dp,
+                                borderWidth = 1.dp, // Subtle border
+                                borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = backgroundColor,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
