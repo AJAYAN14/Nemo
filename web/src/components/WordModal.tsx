@@ -19,6 +19,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
     chinese: "",
     level: "N3",
     pos: "",
+    is_delisted: false,
     example_1: "",
     gloss_1: "",
     example_2: "",
@@ -40,6 +41,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
         chinese: "",
         level: "N3",
         pos: "",
+        is_delisted: false,
         example_1: "",
         gloss_1: "",
         example_2: "",
@@ -160,15 +162,29 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
           />
         </div>
 
-        <div>
-          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>词性</label>
-          <input 
-            className="input" 
-            style={{ width: '100%' }}
-            value={formData.pos}
-            onChange={(e) => setFormData({ ...formData, pos: e.target.value })}
-            placeholder="例如: 形容词"
-          />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>词性</label>
+            <input 
+              className="input" 
+              style={{ width: '100%' }}
+              value={formData.pos}
+              onChange={(e) => setFormData({ ...formData, pos: e.target.value })}
+              placeholder="例如: 形容词"
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>上架状态</label>
+            <select 
+              className="input" 
+              style={{ width: '100%' }}
+              value={formData.is_delisted ? "true" : "false"}
+              onChange={(e) => setFormData({ ...formData, is_delisted: e.target.value === "true" })}
+            >
+              <option value="false">上架 (正常显示)</option>
+              <option value="true">下架 (暂不显示)</option>
+            </select>
+          </div>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px' }}>

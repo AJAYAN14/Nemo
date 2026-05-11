@@ -3,39 +3,31 @@
 import React, { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/DashboardShell";
 import { supabase } from "@/lib/supabase";
-import { Search, Plus, Filter, MoreHorizontal, Edit2, Trash2, RefreshCcw } from "lucide-react";
-import { WordModal } from "@/components/WordModal";
+import { Search, Plus, Filter, Edit2, RefreshCcw } from "lucide-react";
+import { GrammarModal } from "@/components/GrammarModal";
 
-interface Word {
+interface Grammar {
   id: number;
   raw_id?: string;
-  japanese: string;
-  hiragana: string;
-  chinese: string;
+  title: string;
   level: string;
-  pos: string | null;
+  content: any;
   is_delisted: boolean;
   updated_at: string;
-  example_1: string;
-  gloss_1: string;
-  example_2: string;
-  gloss_2: string;
-  example_3: string;
-  gloss_3: string;
 }
 
-export default function WordsPage() {
-  const [words, setWords] = useState<Word[]>([]);
+export default function GrammarsPage() {
+  const [grammars, setGrammars] = useState<Grammar[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [levelCounts, setLevelCounts] = useState<Record<string, number>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingWord, setEditingWord] = useState<Word | undefined>(undefined);
+  const [editingGrammar, setEditingGrammar] = useState<Grammar | undefined>(undefined);
 
   useEffect(() => {
-    fetchWords();
+    fetchGrammars();
     fetchLevelCounts();
   }, [searchTerm, levelFilter, statusFilter]);
 
@@ -45,7 +37,7 @@ export default function WordsPage() {
     
     await Promise.all(levels.map(async (lvl) => {
       const { count } = await supabase
-        .from("dictionary_words")
+        .from("dictionary_grammars")
         .select("*", { count: 'exact', head: true })
         .eq("level", lvl);
       counts[lvl] = count || 0;
@@ -54,16 +46,16 @@ export default function WordsPage() {
     setLevelCounts(counts);
   }
 
-  async function fetchWords() {
+  async function fetchGrammars() {
     setLoading(true);
     let query = supabase
-      .from("dictionary_words")
+      .from("dictionary_grammars")
       .select("*")
       .order("id", { ascending: true })
       .limit(100);
 
     if (searchTerm) {
-      query = query.or(`japanese.ilike.%${searchTerm}%,hiragana.ilike.%${searchTerm}%,chinese.ilike.%${searchTerm}%`);
+      query = query.ilike("title", `%${searchTerm}%`);
     }
 
     if (levelFilter !== "All") {
@@ -78,28 +70,28 @@ export default function WordsPage() {
 
     const { data, error } = await query;
 
-    if (data) setWords(data);
+    if (data) setGrammars(data);
     setLoading(false);
   }
 
-  const handleEdit = (word: Word) => {
-    setEditingWord(word);
+  const handleEdit = (grammar: Grammar) => {
+    setEditingGrammar(grammar);
     setIsModalOpen(true);
   };
 
   const handleAdd = () => {
-    setEditingWord(undefined);
+    setEditingGrammar(undefined);
     setIsModalOpen(true);
   };
 
   const handleStatusChange = async (id: number, isDelisted: boolean) => {
     const { error } = await supabase
-      .from("dictionary_words")
+      .from("dictionary_grammars")
       .update({ is_delisted: isDelisted })
       .eq("id", id);
     
     if (!error) {
-      fetchWords();
+      fetchGrammars();
     } else {
       alert("更新状态失败: " + error.message);
     }
@@ -113,7 +105,7 @@ export default function WordsPage() {
             <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
             <input 
               type="text" 
-              placeholder="搜索词汇、假名或释义..." 
+              placeholder="搜索语法标题..." 
               className="input"
               style={{ width: '100%', paddingLeft: '40px' }}
               value={searchTerm}
@@ -150,7 +142,7 @@ export default function WordsPage() {
           </div>
           <button 
             className="input" 
-            onClick={() => { fetchWords(); fetchLevelCounts(); }}
+            onClick={() => { fetchGrammars(); fetchLevelCounts(); }}
             disabled={loading}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '42px', padding: 0 }}
             title="刷新数据"
@@ -164,7 +156,7 @@ export default function WordsPage() {
           onClick={handleAdd}
         >
           <Plus size={18} />
-          新增词汇
+          新增语法
         </button>
       </div>
 
@@ -173,11 +165,8 @@ export default function WordsPage() {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-tertiary)' }}>
               <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>Raw ID</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>日语</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>假名</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>中文释义</th>
+              <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>语法标题</th>
               <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>等级</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>词性</th>
               <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>更新时间</th>
               <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem' }}>上架状态</th>
               <th style={{ padding: '12px 16px', fontWeight: '600', fontSize: '0.9rem', textAlign: 'right' }}>操作</th>
@@ -186,39 +175,36 @@ export default function WordsPage() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>加载中...</td>
+                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>加载中...</td>
               </tr>
-            ) : words.length === 0 ? (
+            ) : grammars.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>未找到相关词汇</td>
+                <td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>未找到相关语法</td>
               </tr>
             ) : (
-              words.map((word) => (
-                <tr key={word.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.2s' }}>
-                  <td style={{ padding: '12px 16px', fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{word.raw_id}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: '600' }}>{word.japanese}</td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{word.hiragana}</td>
-                  <td style={{ padding: '12px 16px' }}>{word.chinese}</td>
+              grammars.map((grammar) => (
+                <tr key={grammar.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background-color 0.2s' }}>
+                  <td style={{ padding: '12px 16px', fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{grammar.raw_id}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: '600' }}>{grammar.title}</td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '0.8rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
-                      {word.level}
+                      {grammar.level}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>{word.pos || "-"}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                    {new Date(word.updated_at).toLocaleString('zh-CN', { hour12: false })}
+                    {new Date(grammar.updated_at).toLocaleString('zh-CN', { hour12: false })}
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <select 
-                      value={word.is_delisted ? "true" : "false"}
-                      onChange={(e) => handleStatusChange(word.id, e.target.value === "true")}
+                      value={grammar.is_delisted ? "true" : "false"}
+                      onChange={(e) => handleStatusChange(grammar.id, e.target.value === "true")}
                       className="input"
                       style={{ 
                         padding: '4px 8px', 
                         fontSize: '0.8rem', 
                         height: 'auto',
-                        backgroundColor: word.is_delisted ? 'rgba(255, 59, 48, 0.1)' : 'rgba(52, 199, 89, 0.1)',
-                        color: word.is_delisted ? 'var(--danger)' : 'var(--success)',
+                        backgroundColor: grammar.is_delisted ? 'rgba(255, 59, 48, 0.1)' : 'rgba(52, 199, 89, 0.1)',
+                        color: grammar.is_delisted ? 'var(--danger)' : 'var(--success)',
                         border: 'none'
                       }}
                     >
@@ -230,7 +216,7 @@ export default function WordsPage() {
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                       <button 
                         style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                        onClick={() => handleEdit(word)}
+                        onClick={() => handleEdit(grammar)}
                         title="编辑"
                       >
                         <Edit2 size={16} />
@@ -244,11 +230,11 @@ export default function WordsPage() {
         </table>
       </div>
 
-      <WordModal 
+      <GrammarModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onSaved={fetchWords}
-        wordToEdit={editingWord}
+        onSaved={fetchGrammars}
+        grammarToEdit={editingGrammar}
       />
     </DashboardShell>
   );
