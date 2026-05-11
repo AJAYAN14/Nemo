@@ -258,7 +258,12 @@ fun LearningScreen(
                     .padding(top = 72.dp)
             )
 
-            if (showRatingGuide) {
+            // 评分说明覆盖层 (Edge-to-Edge with Animation)
+            AnimatedVisibility(
+                visible = showRatingGuide,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
+            ) {
                 RatingGuideScreen(
                     onDismiss = { showRatingGuide = false }
                 )
