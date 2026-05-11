@@ -26,11 +26,12 @@ data class LearningUiState(
     val currentWord: Word? = null,
     val currentIndex: Int = 0,
 
-    // 单词列表
+    // 单词列表 (代表当前活动队列。注意：其 size 即为 UI 显示的“剩余数量”)
     val wordList: List<Word> = emptyList(),
 
     // 语法列表（Phase 10）
     val currentGrammar: Grammar? = null,
+    // 语法列表 (代表当前活动队列。其 size 即为 UI 显示的“剩余数量”)
     val grammarList: List<Grammar> = emptyList(),
     val currentGrammarIndex: Int = 0,           // 当前语法索引
     val isGrammarDetailVisible: Boolean = false, // 语法详情是否可见

@@ -234,6 +234,10 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // 【硬约束】剩余数量 (Remaining Count) 定义：
+                    // 这里显示的是当前学习队列（wordList/grammarList）中的总数。
+                    // 它是“待处理任务量”，而不是“页面浏览进度”。
+                    // 只要卡片没有被评分（Rate）并移出队列，该数字在滑动浏览时不应减小。
                     val remainingCount = totalCount
 
                     if (remainingCount > 0) {

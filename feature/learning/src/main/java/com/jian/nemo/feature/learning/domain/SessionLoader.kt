@@ -109,24 +109,32 @@ class SessionLoader @Inject constructor(
             val remainingNewQuota = (dailyGoal - completedToday).coerceAtLeast(0)
 
             // 对 currentIndex 之后的项目进行裁剪
+            // 【重要原则】：
+            // 1. “剩余数量”由 prunedItems 的长度决定。
+            // 2. 在 Pager 模式下，currentIndex 之前的词虽已滑过，但只要未评分就仍留在队列中。
+            // 3. 因此在恢复会话时，i < index 的新词也必须扣除配额，以保持队列总数稳定。
             val prunedItems = mutableListOf<T>()
             var newItemsRemaining = remainingNewQuota
 
             restoredItems.forEachIndexed { i, item ->
+                val isNew = isItemNew(item)
                 if (i < index) {
-                    // 索引之前的词（已经学完并计入 completedToday 的词）
-                    // 它们已经在 dailyGoal - completedToday 中扣除过了，直接保留即可
+                    // 索引之前的词，直接保留（支持 Pager 回划）
                     prunedItems.add(item)
+                    // [关键修正]：索引之前的词如果是新词，也必须占用配额，否则会导致重复补货
+                    if (isNew) {
+                        newItemsRemaining--
+                    }
                 } else if (i == index) {
                     // 当前正在学的这一张，必须保留以防止 UI 崩溃
                     prunedItems.add(item)
-                    // [关键修正]：如果当前这张是新词，它还没计入已完成，必须扣掉 1 个配额
-                    if (isItemNew(item)) {
+                    // 如果当前这张是新词，它还没计入已完成，必须扣掉 1 个配额
+                    if (isNew) {
                         newItemsRemaining--
                     }
                 } else {
                     // 索引之后的词（还没见过的词）
-                    if (isItemNew(item)) {
+                    if (isNew) {
                         // 如果是新词，检查配额
                         if (newItemsRemaining > 0) {
                             prunedItems.add(item)
