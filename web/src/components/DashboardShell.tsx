@@ -18,7 +18,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <h1 className={styles.pageTitle}>控制面板</h1>
           </div>
           <div className={styles.headerRight}>
-            <button className={styles.themeToggle} onClick={toggleTheme}>
+            <button className={styles.themeToggle} onClick={(e) => toggleTheme(e)}>
               {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
             </button>
             <div className={styles.userProfile}>

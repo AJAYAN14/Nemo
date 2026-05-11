@@ -65,7 +65,34 @@ html, body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* View Transitions - Circular Ripple Effect from click point */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 999;
+  animation: reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+}
+
+@keyframes reveal {
+  from {
+    clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
+  }
+  to {
+    /* 150% ensures it covers the largest possible screen distance */
+    clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
+  }
 }
 
 /* Scrollbar Styles */
