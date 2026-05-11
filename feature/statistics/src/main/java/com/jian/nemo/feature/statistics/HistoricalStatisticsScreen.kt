@@ -1,15 +1,20 @@
 package com.jian.nemo.feature.statistics
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,10 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+
+import com.jian.nemo.feature.statistics.components.LevelBreakdownDialog
 
 /**
  * 历史统计界面 (UI/UX Pro Max)
@@ -42,6 +53,21 @@ fun HistoricalStatisticsScreen(
     val words = uiState.learnedWords
     val grammars = uiState.learnedGrammars
     val backgroundColor = MaterialTheme.colorScheme.background
+
+    var showWordDialog by remember { mutableStateOf(false) }
+    var showGrammarDialog by remember { mutableStateOf(false) }
+
+    // 处理数据分组
+    val wordLevelData = remember(words) {
+        words.groupBy { it.level }
+            .mapValues { it.value.size }
+            .toSortedMap()
+    }
+    val grammarLevelData = remember(grammars) {
+        grammars.groupBy { it.level }
+            .mapValues { it.value.size }
+            .toSortedMap()
+    }
 
     Scaffold(
         topBar = {
@@ -70,7 +96,9 @@ fun HistoricalStatisticsScreen(
                 StatisticsSectionTitle("累计学习")
                 HistoricalSummaryCard(
                     totalWords = words.size,
-                    totalGrammars = grammars.size
+                    totalGrammars = grammars.size,
+                    onWordsClick = { if (words.isNotEmpty()) showWordDialog = true },
+                    onGrammarsClick = { if (grammars.isNotEmpty()) showGrammarDialog = true }
                 )
             }
 
@@ -116,13 +144,37 @@ fun HistoricalStatisticsScreen(
             }
         }
     }
+
+    // 单词级别分布弹窗
+    if (showWordDialog) {
+        LevelBreakdownDialog(
+            title = "单词等级分布",
+            data = wordLevelData,
+            totalCount = words.size,
+            themeColor = NemoPrimary,
+            onDismiss = { showWordDialog = false }
+        )
+    }
+
+    // 语法级别分布弹窗
+    if (showGrammarDialog) {
+        LevelBreakdownDialog(
+            title = "语法等级分布",
+            data = grammarLevelData,
+            totalCount = grammars.size,
+            themeColor = NemoSecondary,
+            onDismiss = { showGrammarDialog = false }
+        )
+    }
 }
 
 
 @Composable
 fun HistoricalSummaryCard(
     totalWords: Int,
-    totalGrammars: Int
+    totalGrammars: Int,
+    onWordsClick: () -> Unit,
+    onGrammarsClick: () -> Unit
 ) {
     PremiumCard {
         Row(
@@ -134,7 +186,8 @@ fun HistoricalSummaryCard(
                 value = totalWords.toString(),
                 label = "单词总数",
                 color = NemoPrimary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onWordsClick
             )
 
             // Grammar
@@ -142,7 +195,8 @@ fun HistoricalSummaryCard(
                 value = totalGrammars.toString(),
                 label = "语法总数",
                 color = NemoSecondary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                onClick = onGrammarsClick
             )
         }
     }
@@ -154,12 +208,30 @@ fun StatItem(
     value: String,
     label: String,
     color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow),
+        label = "statItemScale"
+    )
+
     Column(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clip(RoundedCornerShape(20.dp))
             .background(color.copy(alpha = 0.06f))
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
             .padding(vertical = 16.dp, horizontal = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

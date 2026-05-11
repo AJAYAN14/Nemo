@@ -130,7 +130,12 @@ class GrammarDetailViewModel @Inject constructor(
             if (result is Result.Success) {
                 _successMessage.value = "反馈成功，感谢您的反馈！"
             } else if (result is Result.Error) {
-                _errorMessage.value = "反馈失败: ${result.exception.message}"
+                val message = result.exception.message ?: ""
+                if (message.contains("unique_user_item_report")) {
+                    _errorMessage.value = "您已经提交过对此内容的反馈了，请勿重复提交。"
+                } else {
+                    _errorMessage.value = "反馈失败: $message"
+                }
             }
         }
     }

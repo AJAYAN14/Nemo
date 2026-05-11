@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExerciseHistory
+import androidx.compose.animation.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -40,64 +41,77 @@ fun AIHistoryScreen(
     val backgroundColor = colorScheme.background
     val textPrimary = colorScheme.onSurface
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "练习历史",
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    if (historyList.isNotEmpty()) {
-                        IconButton(onClick = { showClearConfirm = true }) {
-                            Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CommonHeader(
+                    title = "练习历史",
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        if (historyList.isNotEmpty()) {
+                            IconButton(onClick = { showClearConfirm = true }) {
+                                Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
+                            }
                         }
                     }
+                )
+            },
+            containerColor = backgroundColor
+        ) { padding ->
+            if (historyList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            Icons.Rounded.History,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "暂无练习历史",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
-            )
-        },
-        containerColor = backgroundColor
-    ) { padding ->
-        if (historyList.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Rounded.History,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.outline
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "暂无练习历史",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(historyList) { history ->
-                    HistoryItemCard(history, onClick = { selectedItem = history })
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(historyList) { history ->
+                        HistoryItemCard(history, onClick = { selectedItem = history })
+                    }
                 }
             }
         }
 
-        if (selectedItem != null) {
-            DetailDialog(
-                history = selectedItem!!,
-                onDismiss = { selectedItem = null }
-            )
+        // 全景详情覆盖层 (Edge-to-Edge)
+        // 使用 AnimatedContent 确保在 selectedItem 置空时退出动画能完整播放
+        AnimatedContent(
+            targetState = selectedItem,
+            transitionSpec = {
+                (fadeIn() + slideInVertically(initialOffsetY = { it / 2 }))
+                    .togetherWith(fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }))
+            },
+            label = "DetailOverlay"
+        ) { targetItem ->
+            if (targetItem != null) {
+                AIExerciseDetailDialog(
+                    history = targetItem,
+                    onDismiss = { selectedItem = null }
+                )
+            }
         }
 
         if (showClearConfirm) {
@@ -234,97 +248,4 @@ private fun HistoryItemCard(
     }
 }
 
-@Composable
-private fun DetailDialog(
-    history: AIExerciseHistory,
-    onDismiss: () -> Unit
-) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val colorScheme = MaterialTheme.colorScheme
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
-            ) {
-                Text("我知道了", fontWeight = FontWeight.Bold)
-            }
-        },
-        title = { 
-            Text(
-                if (history.type == "CN_TO_JP") "中翻日练习" else "日翻中练习",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = colorScheme.onSurface
-            ) 
-        },
-        text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                DetailSection("题目", history.question, colorScheme.primary)
-                DetailSection("您的答案", history.userAnswer, colorScheme.onSurface)
-                DetailSection("标准答案", history.standardAnswer, colorScheme.secondary)
-                
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = colorScheme.outlineVariant.copy(0.2f))
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("AI 评分：", style = MaterialTheme.typography.labelLarge, color = colorScheme.onSurfaceVariant)
-                    Text(
-                        "${history.score} 分",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = if (history.score >= 60) colorScheme.secondary else NemoDanger
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Surface(
-                    color = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50,
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, colorScheme.outlineVariant.copy(0.1f))
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            "AI 点评：",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colorScheme.onSurfaceVariant.copy(0.7f)
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            history.feedback,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colorScheme.onSurface,
-                            lineHeight = 22.sp
-                        )
-                    }
-                }
-            }
-        },
-        shape = RoundedCornerShape(24.dp),
-        containerColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White,
-        tonalElevation = 0.dp,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = true)
-    )
-}
-
-@Composable
-private fun DetailSection(label: String, content: String, color: Color) {
-    Column(modifier = Modifier.padding(vertical = 6.dp)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = color.copy(alpha = 0.8f),
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = content,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
-        )
-    }
-}

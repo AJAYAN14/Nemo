@@ -797,7 +797,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     // ========== 学习会话持久化 (单词) ==========
 
-    override suspend fun saveWordSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long) {
+    override suspend fun saveWordSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long, isAnswerShown: Boolean) {
         val resetHour = learningDayResetHourFlow.first()
         val today = DateTimeUtils.getLearningDay(resetHour)
         val idsString = ids.joinToString(",")
@@ -811,6 +811,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.SESSION_START_DATE] = today
             preferences[PreferencesKeys.SESSION_WORD_STEPS] = stepsString
             preferences[PreferencesKeys.SESSION_WAITING_UNTIL] = waitingUntil // 保存等待时间
+            preferences[PreferencesKeys.SESSION_WORD_ANSWER_SHOWN] = isAnswerShown // 保存答案显示状态
         }
     }
 
@@ -854,7 +855,8 @@ class SettingsRepositoryImpl @Inject constructor(
 
                     if (ids.isNotEmpty()) {
                          val waitingUntil = preferences[PreferencesKeys.SESSION_WAITING_UNTIL] ?: 0L
-                         SessionData(ids, currentIndex, level, steps, waitingUntil)
+                         val isAnswerShown = preferences[PreferencesKeys.SESSION_WORD_ANSWER_SHOWN] ?: false
+                         SessionData(ids, currentIndex, level, steps, waitingUntil, isAnswerShown)
                     } else {
                         null
                     }
@@ -874,13 +876,14 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.SESSION_LEVEL)
             preferences.remove(PreferencesKeys.SESSION_START_DATE)
             preferences.remove(PreferencesKeys.SESSION_WORD_STEPS)
+            preferences.remove(PreferencesKeys.SESSION_WORD_ANSWER_SHOWN)
         }
     }
 
 
     // ========== 学习会话持久化 (语法) ==========
 
-    override suspend fun saveGrammarSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long) {
+    override suspend fun saveGrammarSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long, isAnswerShown: Boolean) {
         val resetHour = learningDayResetHourFlow.first()
         val today = DateTimeUtils.getLearningDay(resetHour)
         val idsString = ids.joinToString(",")
@@ -893,6 +896,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.SESSION_GRAMMAR_START_DATE] = today
             preferences[PreferencesKeys.SESSION_GRAMMAR_STEPS] = stepsString
             preferences[PreferencesKeys.SESSION_WAITING_UNTIL] = waitingUntil // 复用同一个 key
+            preferences[PreferencesKeys.SESSION_GRAMMAR_ANSWER_SHOWN] = isAnswerShown // 保存答案显示状态
         }
     }
 
@@ -921,8 +925,9 @@ class SettingsRepositoryImpl @Inject constructor(
                     }
 
                     if (ids.isNotEmpty()) {
-                         val waitingUntil = preferences[PreferencesKeys.SESSION_WAITING_UNTIL] ?: 0L
-                         SessionData(ids, currentIndex, level, steps, waitingUntil)
+                        val waitingUntil = preferences[PreferencesKeys.SESSION_WAITING_UNTIL] ?: 0L
+                        val isAnswerShown = preferences[PreferencesKeys.SESSION_GRAMMAR_ANSWER_SHOWN] ?: false
+                        SessionData(ids, currentIndex, level, steps, waitingUntil, isAnswerShown)
                     } else {
                         null
                     }
@@ -942,6 +947,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.SESSION_GRAMMAR_LEVEL)
             preferences.remove(PreferencesKeys.SESSION_GRAMMAR_START_DATE)
             preferences.remove(PreferencesKeys.SESSION_GRAMMAR_STEPS)
+            preferences.remove(PreferencesKeys.SESSION_GRAMMAR_ANSWER_SHOWN)
         }
     }
 

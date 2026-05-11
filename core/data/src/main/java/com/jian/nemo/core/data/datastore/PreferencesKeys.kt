@@ -145,6 +145,12 @@ object PreferencesKeys {
     /** 当前会话等待结束时间 (Epoch Millis) */
     val SESSION_WAITING_UNTIL = longPreferencesKey("session_waiting_until")
 
+    /** 当前会话是否已显示答案 (单词) */
+    val SESSION_WORD_ANSWER_SHOWN = booleanPreferencesKey("session_word_answer_shown")
+
+    /** 当前会话是否已显示答案 (语法) */
+    val SESSION_GRAMMAR_ANSWER_SHOWN = booleanPreferencesKey("session_grammar_answer_shown")
+
 
 
     // ========== 应用配置 ==========

@@ -142,9 +142,6 @@ class LearningViewModel @Inject constructor(
     private val contentReportRepository: ContentReportRepository
 ) : ViewModel() {
     companion object {
-        /** 钉子户阈值：连续失败次数达到此值时暂停学习 */
-        private const val LEECH_THRESHOLD = 5
-
         /** 导航防抖延迟 (ms) */
         private const val NAVIGATION_DEBOUNCE_MS = 400L
 
@@ -175,6 +172,7 @@ class LearningViewModel @Inject constructor(
 
     /** 学习日重置时间 (小时) */
     private var _resetHour: Int = 4
+    private var _leechThreshold: Int = 5
 
     /** 学习步进配置 (分钟列表) */
     private var _learningStepsConfig: List<Int> = listOf(1, 10)
@@ -197,6 +195,13 @@ class LearningViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.isDarkModeFlow.collect { isDark ->
                 _uiState.update { it.copy(isDarkMode = isDark) }
+            }
+        }
+
+        // 监听 Leech 阈值设置
+        viewModelScope.launch {
+            settingsRepository.leechThresholdFlow.collect { threshold ->
+                _leechThreshold = threshold.coerceAtLeast(1)
             }
         }
 
@@ -438,7 +443,12 @@ class LearningViewModel @Inject constructor(
                 // 使用通用的成功消息提示
                 _uiState.update { it.copy(successMessage = "反馈成功，感谢您的反馈！") }
             } else if (result is Result.Error) {
-                 _uiState.update { it.copy(error = "反馈失败: ${result.exception.message}") }
+                val message = result.exception.message ?: ""
+                if (message.contains("unique_user_item_report")) {
+                    _uiState.update { it.copy(error = "您已经提交过对此内容的反馈了，请勿重复提交。") }
+                } else {
+                    _uiState.update { it.copy(error = "反馈失败: $message") }
+                }
             }
         }
     }
@@ -530,7 +540,8 @@ class LearningViewModel @Inject constructor(
                 index = it.currentIndex,
                 level = it.level,
                 steps = it.steps,
-                waitingUntil = it.waitingUntil
+                waitingUntil = it.waitingUntil,
+                isAnswerShown = it.isAnswerShown
             )
         }
     }
@@ -617,8 +628,8 @@ class LearningViewModel @Inject constructor(
                         currentGrammarIndex = if (mode == LearningMode.Grammar) result.index else 0,
                         dailyGoal = result.dailyGoal,
                         completedToday = result.completedToday,
-                        isAnswerShown = false,
-                        isCardFlipped = false,
+                        isAnswerShown = result.isAnswerShown,
+                        isCardFlipped = result.isAnswerShown,
                         isGrammarDetailVisible = false,
                         error = null,
                         sessionInitialSize = items.size,
@@ -725,9 +736,10 @@ class LearningViewModel @Inject constructor(
                      speakWord(word.hiragana) // 优先朗读假名/发音
                  }
              }
-             // 语法模式即使开启也不自动朗读
-             // else if (state.learningMode == LearningMode.Grammar) { ... }
         }
+
+        // 保存当前会话状态（主要是为了记录 isAnswerShown = true）
+        saveCurrentSessionState()
     }
 
     private fun toggleAutoPlayAudio(enabled: Boolean) {
@@ -941,7 +953,8 @@ class LearningViewModel @Inject constructor(
                             val result = learningScheduler.scheduleFailure(
                                 penalizedItem, // 使用更新后的 item
                                 currentLapseCount,
-                                config
+                                config,
+                                _leechThreshold
                             )
                             handleScheduleResult(result)
                         }
@@ -1641,13 +1654,26 @@ class LearningViewModel @Inject constructor(
     }
 
     private fun saveSessionState(ids: List<Int>, index: Int, level: String) {
-        val waitingUntil = _uiState.value.waitingUntil
+        val uiState = _uiState.value
+        val waitingUntil = uiState.waitingUntil
+        val isAnswerShown = uiState.isAnswerShown
         viewModelScope.launch {
-            when (_uiState.value.learningMode) {
-                LearningMode.Word -> settingsRepository.saveWordSession(ids, index, level, _learningSteps, waitingUntil)
-                LearningMode.Grammar -> settingsRepository.saveGrammarSession(ids, index, level, _learningSteps, waitingUntil)
+            when (uiState.learningMode) {
+                LearningMode.Word -> settingsRepository.saveWordSession(ids, index, level, _learningSteps, waitingUntil, isAnswerShown)
+                LearningMode.Grammar -> settingsRepository.saveGrammarSession(ids, index, level, _learningSteps, waitingUntil, isAnswerShown)
             }
         }
+    }
+
+    /**
+     * 快捷保存当前会话状态
+     */
+    private fun saveCurrentSessionState() {
+        val state = _uiState.value
+        val isWord = state.learningMode == LearningMode.Word
+        val ids = if (isWord) state.wordList.map { it.id } else state.grammarList.map { it.id }
+        val index = if (isWord) state.currentIndex else state.currentGrammarIndex
+        saveSessionState(ids, index, state.selectedLevel)
     }
 
     private fun clearSession() {

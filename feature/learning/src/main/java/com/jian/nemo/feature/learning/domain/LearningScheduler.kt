@@ -45,13 +45,6 @@ sealed class ScheduleResult {
  */
 class LearningScheduler @Inject constructor() {
 
-    companion object {
-        private const val LEECH_THRESHOLD = 5
-    }
-
-    /**
-     * 处理失败 (评分 < 3)
-     */
     /**
      * 处理失败 (评分 < 3)
      */
@@ -59,7 +52,7 @@ class LearningScheduler @Inject constructor() {
         item: LearningItem,
         currentLapseCount: Int,
         stepConfig: List<Int>,
-        leechThreshold: Int = LEECH_THRESHOLD
+        leechThreshold: Int
     ): ScheduleResult {
         val newLapseCount = currentLapseCount + 1
 

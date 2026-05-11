@@ -100,6 +100,19 @@ class ReviewViewModel @Inject constructor(
 
     init {
         loadData()
+        
+        // 监听 Leech 设置变化
+        viewModelScope.launch {
+            settingsRepository.leechThresholdFlow.collect { threshold ->
+                _leechThreshold = threshold.coerceAtLeast(1)
+            }
+        }
+        
+        viewModelScope.launch {
+            settingsRepository.leechActionFlow.collect { action ->
+                _leechAction = action
+            }
+        }
     }
 
     // ========== 数据加载 ==========

@@ -373,7 +373,7 @@ interface SettingsRepository {
      * @param steps 学习步长状态 (WordId -> Step)
      * @param waitingUntil 等待结束时间 (Epoch Millis)
      */
-    suspend fun saveWordSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long = 0L)
+    suspend fun saveWordSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long = 0L, isAnswerShown: Boolean = false)
 
     /**
      * 获取单词学习会话
@@ -404,7 +404,7 @@ interface SettingsRepository {
      * @param steps 学习步长状态 (GrammarId -> Step)
      * @param waitingUntil 等待结束时间 (Epoch Millis)
      */
-    suspend fun saveGrammarSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long = 0L)
+    suspend fun saveGrammarSession(ids: List<Int>, currentIndex: Int, level: String, steps: Map<Int, Int>, waitingUntil: Long = 0L, isAnswerShown: Boolean = false)
 
     /**
      * 获取语法学习会话
@@ -632,5 +632,6 @@ data class SessionData(
     val currentIndex: Int,
     val level: String,
     val steps: Map<Int, Int>, // ID -> Step Index
-    val waitingUntil: Long = 0L // 新增
+    val waitingUntil: Long = 0L,
+    val isAnswerShown: Boolean = false
 )

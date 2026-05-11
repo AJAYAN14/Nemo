@@ -16,7 +16,8 @@ sealed class SessionLoadResult<T> {
         val steps: Map<Int, Int>,
         val dailyGoal: Int,
         val completedToday: Int,
-        val waitingUntil: Long = 0L // 新增
+        val waitingUntil: Long = 0L,
+        val isAnswerShown: Boolean = false // 新增
     ) : SessionLoadResult<T>()
 
     /**
@@ -47,7 +48,8 @@ data class SavedSession(
     val index: Int,
     val level: String,
     val steps: Map<Int, Int>,
-    val waitingUntil: Long = 0L // 新增：保存等待状态
+    val waitingUntil: Long = 0L,
+    val isAnswerShown: Boolean = false // 新增
 )
 
 /**
@@ -168,7 +170,8 @@ class SessionLoader @Inject constructor(
                     steps = steps,
                     dailyGoal = dailyGoal,
                     completedToday = completedToday,
-                    waitingUntil = savedSession.waitingUntil
+                    waitingUntil = savedSession.waitingUntil,
+                    isAnswerShown = savedSession.isAnswerShown
                 )
             } else if (prunedItems.isNotEmpty() && index >= prunedItems.size) {
                 // 边界情况：如果当前索引因为裁剪而变为了最后一个之后，说明任务已完成
