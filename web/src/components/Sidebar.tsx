@@ -10,7 +10,8 @@ import {
   RefreshCw, 
   Settings,
   LayoutDashboard,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 
@@ -19,6 +20,7 @@ const menuItems = [
   { icon: BookOpen, label: "词库管理", href: "/words" },
   { icon: Library, label: "语法管理", href: "/grammars" },
   { icon: MessageSquare, label: "反馈管理", href: "/reports" },
+  { icon: Bell, label: "通知管理", href: "/notifications" },
   { icon: HelpCircle, label: "题目管理", href: "/questions" },
   { icon: RefreshCw, label: "同步控制", href: "/sync" },
   { icon: Settings, label: "系统设置", href: "/settings" },
