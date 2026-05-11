@@ -71,6 +71,17 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     if (!config) return;
+    
+    // 基础校验
+    if (!config.version_name.match(/^\d+\.\d+\.\d+$/)) {
+      setMessage({ type: 'error', text: "版本名称格式不正确 (应为 X.Y.Z)" });
+      return;
+    }
+    if (config.version_code <= 0) {
+      setMessage({ type: 'error', text: "版本代码必须是大于 0 的整数" });
+      return;
+    }
+
     setIsSaving(true);
     setMessage(null);
     try {

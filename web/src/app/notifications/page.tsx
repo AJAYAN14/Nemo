@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { 
   Bell, 
   Plus, 
-  Trash2, 
   Edit3, 
   CheckCircle2, 
   XCircle, 
@@ -118,19 +117,6 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("确定要删除这条通知吗？此操作不可撤销。")) return;
-    try {
-      const { error } = await supabase
-        .from("notifications")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-      setNotifications(notifications.filter(n => n.id !== id));
-    } catch (err) {
-      alert("删除失败");
-    }
-  };
 
   return (
     <DashboardShell>
@@ -182,12 +168,6 @@ export default function NotificationsPage() {
                     onClick={() => handleOpenModal(notif)}
                   >
                     <Edit3 size={16} />
-                  </button>
-                  <button 
-                    style={{ background: 'none', border: 'none', color: '#FF3B30', cursor: 'pointer' }}
-                    onClick={() => handleDelete(notif.id)}
-                  >
-                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

@@ -215,7 +215,7 @@ export default function GrammarsPage() {
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                       <button 
-                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px' }}
                         onClick={() => handleEdit(grammar)}
                         title="编辑"
                       >
