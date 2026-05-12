@@ -38,6 +38,7 @@ fun CommonHeader(
     avatarUrl: String? = null,
     username: String? = null,
     onAvatarClick: (() -> Unit)? = null,
+    centerContent: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null
 ) {
     // MD3 TopAppBar 使用 Surface 提供容器
@@ -50,12 +51,21 @@ fun CommonHeader(
             // MD3: TopAppBar 标准内容高度 64dp (包含 padding)
             TopAppBar(
                 title = {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge, // MD3: 标准 titleLarge (22sp)
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    if (centerContent != null) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            centerContent()
+                        }
+                    } else {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge, // MD3: 标准 titleLarge (22sp)
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 },
                 navigationIcon = {
                     // MD3: 标准 48dp × 48dp 触摸目标

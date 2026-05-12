@@ -15,6 +15,14 @@ interface AudioRepository {
     fun playTts(text: String, language: String = "ja-JP", id: String? = null)
 
     /**
+     * 播放例句 TTS (日语 + 中文连读)
+     * @param japanese 日语文本
+     * @param chinese 中文文本
+     * @param id 唯一标识符
+     */
+    fun playExampleTts(japanese: String, chinese: String, id: String? = null)
+
+    /**
      * 播放音效
      */
     fun playSoundEffect(type: AudioEffectType)

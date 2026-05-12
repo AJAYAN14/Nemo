@@ -255,6 +255,12 @@ private fun GrammarDetailContent(
                 title = "",
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
+                centerContent = {
+                    com.jian.nemo.core.ui.component.srs.SrsStatusChip(
+                        nextReviewDay = grammar.nextReviewDate,
+                        repetitionCount = grammar.repetitionCount
+                    )
+                },
                 actions = {
                     IconButton(onClick = onReportClick) {
                         Icon(

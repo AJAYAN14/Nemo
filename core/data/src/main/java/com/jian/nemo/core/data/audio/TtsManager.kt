@@ -212,7 +212,7 @@ class TtsManager @Inject constructor(
         })
     }
 
-    fun speak(text: String, language: Locale = Locale.JAPAN, id: String? = null) {
+    fun speak(text: String, language: Locale = Locale.JAPAN, queueMode: Int = TextToSpeech.QUEUE_FLUSH, id: String? = null) {
         if (isInitialized) {
             // Logic: if we have a specific voice set, we should try to use it.
             // setLanguage() might reset the voice to default for that language.
@@ -260,8 +260,7 @@ class TtsManager @Inject constructor(
                     text
                 }
 
-                // FLUSH 模式: 打断当前播放
-                val queueMode = TextToSpeech.QUEUE_FLUSH
+                // 使用指定的队列模式
                 val utteranceId = id ?: System.currentTimeMillis().toString()
 
                 // Ensure settings are applied (sometimes engine resets on language change)
@@ -279,6 +278,17 @@ class TtsManager @Inject constructor(
         } else {
             Log.w("TtsManager", "TTS not initialized yet")
         }
+    }
+
+    /**
+     * 朗读例句（日语 + 中文翻译）
+     */
+    fun speakExample(japanese: String, chinese: String, id: String? = null) {
+        val utteranceId = id ?: "example_${System.currentTimeMillis()}"
+        // 1. 朗读日语 (使用 FLUSH 模式中断之前的朗读)
+        speak(japanese, Locale.JAPAN, TextToSpeech.QUEUE_FLUSH, "$utteranceId-jp")
+        // 2. 朗读中文 (使用 QUEUE_ADD 模式追加到队列)
+        speak(chinese, Locale.CHINA, TextToSpeech.QUEUE_ADD, "$utteranceId-cn")
     }
 
     /**

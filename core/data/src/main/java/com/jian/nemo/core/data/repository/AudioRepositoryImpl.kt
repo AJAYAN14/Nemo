@@ -29,7 +29,14 @@ class AudioRepositoryImpl @Inject constructor(
                 "zh-CN" -> java.util.Locale.CHINA
                 else -> java.util.Locale.JAPAN
             }
-            ttsManager.speak(text, locale, id)
+            ttsManager.speak(text, locale, id = id)
+        }
+    }
+
+    override fun playExampleTts(japanese: String, chinese: String, id: String?) {
+        kotlinx.coroutines.MainScope().launch {
+            ttsManager.initialize()
+            ttsManager.speakExample(japanese, chinese, id)
         }
     }
 
@@ -58,6 +65,6 @@ class AudioRepositoryImpl @Inject constructor(
         ttsManager.initialize()
         // Temporarily set voice and speak (does not persist to settings)
         ttsManager.setVoice(voiceName)
-        ttsManager.speak(text, java.util.Locale.JAPAN, "preview-${System.currentTimeMillis()}")
+        ttsManager.speak(text, java.util.Locale.JAPAN, id = "preview-${System.currentTimeMillis()}")
     }
 }

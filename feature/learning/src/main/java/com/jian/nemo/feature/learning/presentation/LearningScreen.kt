@@ -415,7 +415,7 @@ fun WordLearningContent(
                                           onPracticeClick = {
                                               showTypingDialog = true
                                           },
-                                          onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana)) },
+                                          onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
                                           onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                                           playingAudioId = uiState.playingAudioId
                                       )

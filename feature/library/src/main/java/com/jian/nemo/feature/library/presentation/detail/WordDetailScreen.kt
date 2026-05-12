@@ -242,6 +242,12 @@ private fun WordDetailContent(
                 title = "", // Empty title for hero section look
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
+                centerContent = {
+                    com.jian.nemo.core.ui.component.srs.SrsStatusChip(
+                        nextReviewDay = word.nextReviewDate,
+                        repetitionCount = word.repetitionCount
+                    )
+                },
                 actions = {
                     IconButton(onClick = onReportClick) {
                         Icon(

@@ -94,6 +94,7 @@ fun LearningCalendarScreen(
                 WeekViewCard(
                     selectedDate = selectedDate,
                     todayEpochDay = uiState.todayEpochDay,
+                    weekForecast = uiState.weekForecast,
                     onDateSelected = viewModel::onDateSelected
                 )
             }
@@ -261,6 +262,7 @@ fun StatItem(
 fun WeekViewCard(
     selectedDate: Date,
     todayEpochDay: Long,
+    weekForecast: Map<Long, ReviewForecast>,
     onDateSelected: (Date) -> Unit
 ) {
     // 将 todayEpochDay 转换回 Date 对象作为本周显示基准的起点 (也就是逻辑上的今天)
@@ -305,6 +307,15 @@ fun WeekViewCard(
                 dateToCheck.set(Calendar.MILLISECOND, 0)
 
                 val isSelected = dateToCheck.timeInMillis == selectedCal.timeInMillis
+                val dateEpochDay = todayEpochDay + i
+                val forecast = weekForecast[dateEpochDay]
+                val count = (forecast?.wordCount ?: 0) + (forecast?.grammarCount ?: 0)
+                
+                val warningColor = when {
+                    count >= 50 -> MaterialTheme.colorScheme.error
+                    count > 0 -> NemoPrimary
+                    else -> null
+                }
 
                 val dayOfWeek = dateCal.get(Calendar.DAY_OF_WEEK)
                 val dayIndex = if (dayOfWeek == Calendar.SUNDAY) 6 else dayOfWeek - Calendar.MONDAY
@@ -315,6 +326,7 @@ fun WeekViewCard(
                     dayNumber = dateCal.get(Calendar.DAY_OF_MONTH).toString(),
                     isToday = isToday,
                     isSelected = isSelected,
+                    warningColor = warningColor,
                     onClick = { onDateSelected(date) }
                 )
 
@@ -350,6 +362,7 @@ fun WeekDayItem(
     dayNumber: String,
     isToday: Boolean,
     isSelected: Boolean,
+    warningColor: Color? = null,
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
@@ -389,6 +402,20 @@ fun WeekDayItem(
             fontWeight = fontWeight,
             color = contentColor
         )
+        
+        // 复习预警红点
+        if (warningColor != null) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Box(
+                modifier = Modifier
+                    .size(4.dp)
+                    .clip(CircleShape)
+                    .background(if (isSelected) Color.White else warningColor)
+            )
+        } else {
+            // 占位，防止抖动
+            Spacer(modifier = Modifier.height(6.dp))
+        }
     }
 }
 

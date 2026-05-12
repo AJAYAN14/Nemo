@@ -84,7 +84,7 @@ sealed interface LearningEvent {
     /**
      * 播放发音
      */
-    data class SpeakWord(val text: String) : LearningEvent
+    data class SpeakWord(val text: String, val chinese: String = "") : LearningEvent
 
     /**
      * 朗读例句（日语 + 中文翻译）

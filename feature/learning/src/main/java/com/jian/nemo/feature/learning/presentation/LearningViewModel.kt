@@ -396,7 +396,7 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.MasterGrammar -> rate(5) // 掌握 = 评分5
 
             // TTS 朗读
-            is LearningEvent.SpeakWord -> speakWord(event.text)
+            is LearningEvent.SpeakWord -> speakWord(event.text, event.chinese)
             is LearningEvent.SpeakExample -> speakExample(event.japanese, event.chinese, event.id)
             is LearningEvent.ToggleAutoPlayAudio -> toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> toggleShowAnswerDelay(event.enabled)
@@ -1830,21 +1830,23 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 朗读单词（日语）
+     * 朗读单词（日语 + 中文）
      */
-    private fun speakWord(text: String) {
+    private fun speakWord(text: String, chinese: String = "") {
         audioRepository.stop()
-        audioRepository.playTts(text, "ja-JP", "word")
+        if (chinese.isNotBlank()) {
+            audioRepository.playExampleTts(text, chinese, "word")
+        } else {
+            audioRepository.playTts(text, "ja-JP", "word")
+        }
     }
 
     /**
      * 朗读例句（日语 + 中文）
      */
     private fun speakExample(japanese: String, chinese: String, id: String) {
-        // 先播放日语。
-        // TODO: 后续音桥版本将支持日语+中文队列播放。
         audioRepository.stop()
-        audioRepository.playTts(japanese, "ja-JP", id)
+        audioRepository.playExampleTts(japanese, chinese, id)
     }
 
     override fun onCleared() {
