@@ -30,6 +30,8 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,10 +110,8 @@ fun AIWorkshopScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(
-                            color = NemoPrimary,
-                            strokeWidth = 4.dp,
-                            modifier = Modifier.size(48.dp)
+                        NemoChasingDotsLoader(
+                            size = 48.dp
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -97,11 +98,7 @@ fun LoginForm(
             )
         ) {
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
-                    color = Color.White
-                )
+                NemoChasingDotsLoader(size = 24.dp)
             } else {
                 Text(
                     text = "立即登录",
@@ -243,11 +240,7 @@ fun RegisterForm(
             )
         ) {
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
-                    color = Color.White
-                )
+                NemoChasingDotsLoader(size = 24.dp)
             } else {
                 Text(
                     text = "创建账户",

@@ -46,6 +46,8 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.navigation.NavDestination
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 单词列表界面 (UI/UX Pro Max)
@@ -89,7 +91,7 @@ fun WordListScreen(
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    NemoChasingDotsLoader()
                 }
             } else {
                 PullToRefreshBox(

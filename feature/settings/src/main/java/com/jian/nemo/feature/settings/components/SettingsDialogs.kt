@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -272,11 +273,7 @@ fun ConfirmResetDialog(
 
                 if (isResetting) {
                     Spacer(modifier = Modifier.height(24.dp))
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = primaryColor,
-                        strokeWidth = 3.dp
-                    )
+                    NemoChasingDotsLoader(size = 24.dp)
                 }
 
                 if (errorMessage != null) {

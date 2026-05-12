@@ -19,7 +19,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.PartOfSpeech
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.util.displayName
+
 
 /**
  * 词性分类主界面
@@ -60,7 +62,7 @@ fun PartOfSpeechScreen(
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(
+                NemoChasingDotsLoader(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {

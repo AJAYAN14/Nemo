@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Grammar
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 收藏语法列表界面
@@ -63,7 +65,7 @@ fun FavoriteGrammarsScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = premiumBlue)
+                    NemoChasingDotsLoader()
                 }
             }
             uiState.favoriteGrammars.isEmpty() -> {

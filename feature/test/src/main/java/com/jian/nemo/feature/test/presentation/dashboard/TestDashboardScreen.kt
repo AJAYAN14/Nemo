@@ -38,6 +38,7 @@ import com.jian.nemo.core.designsystem.theme.NemoOrange
 import com.jian.nemo.core.designsystem.theme.NemoPurple
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoTeal
+import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -343,19 +344,12 @@ private fun StatsPager(
                                 modifier = Modifier.size(84.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(
-                                    progress = { 1f },
-                                    modifier = Modifier.fillMaxSize(),
-                                    color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else Color(0xFFEFF3F8),
-                                    strokeWidth = 10.dp,
-                                    trackColor = Color.Transparent
-                                )
-                                CircularProgressIndicator(
-                                    progress = { (pageData.ringValue / 100f).coerceIn(0f, 1f) },
+                                NemoCircularProgress(
+                                    progress = pageData.ringValue / 100f,
                                     modifier = Modifier.fillMaxSize(),
                                     color = ringColor,
-                                    strokeWidth = 10.dp,
-                                    trackColor = Color.Transparent
+                                    trackColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else Color(0xFFEFF3F8),
+                                    strokeWidth = 10.dp
                                 )
                                 Row(
                                     verticalAlignment = Alignment.Bottom,

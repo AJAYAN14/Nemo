@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 
 // 临时本地定义 (对应 Color.kt 中的值)，解决模块间引用编译问题
 private val NemoSecondary = Color(0xFF4CAF50)
@@ -180,20 +181,18 @@ fun StatsOverviewCard(
                 )
             }
 
-            // 右侧装饰图表 (简单圆环示意)
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(80.dp)
-            ) {
-                 CircularProgressIndicator(
-                    progress = { gapRate / 100f },
-                    modifier = Modifier.fillMaxSize(),
-                    color = stateColor,
-                    strokeWidth = 8.dp,
-                    trackColor = stateColor.copy(alpha = 0.1f),
-                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-                 )
-            }
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    NemoCircularProgress(
+                        progress = gapRate / 100f,
+                        modifier = Modifier.fillMaxSize(),
+                        color = stateColor,
+                        strokeWidth = 8.dp,
+                        trackColor = stateColor.copy(alpha = 0.1f)
+                    )
+                }
         }
     }
 }

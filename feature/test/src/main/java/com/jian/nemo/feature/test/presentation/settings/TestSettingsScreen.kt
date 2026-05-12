@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.test.presentation.settings.components.CustomQuestionCountDialog
 import com.jian.nemo.feature.test.presentation.settings.components.CustomTimeLimitDialog
@@ -273,7 +274,7 @@ fun TestSettingsScreen(
                      colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                  ) {
                      if (isGenerating) {
-                         CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                         NemoChasingDotsLoader(size = 24.dp)
                          Spacer(Modifier.width(8.dp))
                          Text("准备中...", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                      } else {

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.domain.model.TestMode
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.feature.test.presentation.TypingQuestionPage
@@ -167,7 +168,7 @@ fun TestScreenContent(
         uiState.isLoading -> {
             // 加载中
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                NemoChasingDotsLoader()
             }
         }
 

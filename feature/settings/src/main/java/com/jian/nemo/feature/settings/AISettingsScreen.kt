@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
@@ -272,7 +273,7 @@ fun TestConnectionSection(
             )
         ) {
             if (isTesting) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                NemoChasingDotsLoader(size = 20.dp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Text("正在验证连接...")
             } else {

@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -56,6 +55,8 @@ import com.jian.nemo.feature.learning.presentation.components.cards.SRSLearningC
 import com.jian.nemo.feature.learning.presentation.components.cards.SRSGrammarCard
 import com.jian.nemo.feature.learning.presentation.components.guide.RatingGuideScreen
 import com.jian.nemo.feature.learning.presentation.components.srs.SRSActionArea
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 @Composable
 
@@ -175,7 +176,7 @@ fun LearningScreen(
                     when (uiState.status) {
                         LearningStatus.Loading -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
+                                NemoChasingDotsLoader()
                             }
                         }
                         LearningStatus.Waiting -> {

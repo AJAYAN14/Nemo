@@ -33,6 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 复学清单 (Leech Management) - Hybrid Design
@@ -108,7 +110,7 @@ fun LeechManagementScreen(
             // 2. Content Area
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    NemoChasingDotsLoader()
                 }
             } else {
                 AnimatedContent(
@@ -329,11 +331,7 @@ private fun LeechItemCardBase(
                     )
             ) {
                 if (isRecovering) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = tagColor
-                    )
+                    NemoChasingDotsLoader(size = 20.dp)
                 } else {
                     Icon(
                         imageVector = Icons.Rounded.Restore,

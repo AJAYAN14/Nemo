@@ -38,6 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 分类单词列表界面 (Refactored to match WordListScreen UI)
@@ -118,7 +120,7 @@ fun CategoryWordsScreen(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    NemoChasingDotsLoader()
                 }
             }
             uiState.error != null -> {

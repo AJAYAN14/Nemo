@@ -14,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
@@ -317,11 +318,7 @@ fun AccountResetPasswordDialog(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.White
-                    )
+                    NemoChasingDotsLoader(size = 18.dp)
                 } else {
                     Text(
                         text = if (stage == 2) "重置密码" else "下一步",
@@ -518,11 +515,7 @@ fun AccountUpdateUsernameDialog(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.White
-                    )
+                    NemoChasingDotsLoader(size = 18.dp)
                 } else {
                     Text(
                         text = "确认修改",
@@ -782,7 +775,7 @@ fun AccountUpdateEmailDialog(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
+                    NemoChasingDotsLoader(size = 18.dp)
                 } else {
                     Text(
                         text = if (stage == 0) "下一步" else "确认修改",
@@ -1080,11 +1073,7 @@ fun DeleteAccountDialog(
                 contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                        color = Color.White
-                    )
+                    NemoChasingDotsLoader(size = 18.dp)
                 } else {
                     Text(
                         text = if (showFinalConfirm) "确认删除" else "下一步",
@@ -1201,11 +1190,7 @@ fun LogoutWarningDialog(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = if (useDarkTheme) Color.Black else Color.White,
-                            strokeWidth = 2.dp
-                        )
+                        NemoChasingDotsLoader(size = 20.dp)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text("正在同步...", fontWeight = FontWeight.Medium)
                     } else {

@@ -19,6 +19,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 错误单词列表界面
@@ -62,7 +64,7 @@ fun WrongWordsScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = premiumBlue)
+                    NemoChasingDotsLoader()
                 }
             }
             uiState.words.isEmpty() -> {

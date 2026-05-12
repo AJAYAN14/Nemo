@@ -15,7 +15,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.animation.animateListItem
+import com.jian.nemo.core.ui.animation.animateListItem
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.util.displayName
+
 
 /**
  * 词性单词列表界面
@@ -63,7 +66,7 @@ fun PosWordsScreen(
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(
+                NemoChasingDotsLoader(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else if (uiState.words.isEmpty()) {

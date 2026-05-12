@@ -30,6 +30,8 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 单词详情界面 (UI/UX Pro Max)
@@ -90,7 +92,7 @@ fun WordDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    NemoChasingDotsLoader()
                 }
             }
         } else {
@@ -120,7 +122,7 @@ fun WordDetailScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        NemoChasingDotsLoader()
                     }
                 }
             }

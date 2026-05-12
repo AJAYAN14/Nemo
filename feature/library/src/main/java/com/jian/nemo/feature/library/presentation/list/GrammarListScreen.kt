@@ -45,6 +45,8 @@ import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.navigation.NavDestination
 import com.jian.nemo.core.common.util.GrammarSearchUtils
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 语法列表界面 (UI/UX Pro Max)
@@ -88,7 +90,7 @@ fun GrammarListScreen(
     ) { innerPadding ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                NemoChasingDotsLoader()
             }
         } else {
             PullToRefreshBox(

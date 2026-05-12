@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.GrammarWrongAnswer
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 错误语法列表界面 (题目快照版)
@@ -51,7 +53,7 @@ fun WrongGrammarsScreen(
         when {
             uiState.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = premiumBlue)
+                    NemoChasingDotsLoader()
                 }
             }
             uiState.wrongAnswers.isEmpty() -> {

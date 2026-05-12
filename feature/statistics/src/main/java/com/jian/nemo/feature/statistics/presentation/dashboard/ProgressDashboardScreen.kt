@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 /**
  * 进度复习界面 - 还原旧项目视觉样式
@@ -115,7 +117,7 @@ fun ProgressDashboardScreen(
                 }
             }
         } else if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            NemoChasingDotsLoader(modifier = Modifier.align(Alignment.Center))
         }
     }
 }

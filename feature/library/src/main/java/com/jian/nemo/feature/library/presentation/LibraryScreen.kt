@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 @Composable
 fun LibraryScreen(
@@ -64,7 +65,7 @@ fun LibraryScreen(
                 .fillMaxSize()
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(
+                NemoChasingDotsLoader(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {

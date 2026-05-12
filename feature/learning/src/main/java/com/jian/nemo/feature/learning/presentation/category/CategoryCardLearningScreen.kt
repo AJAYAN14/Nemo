@@ -41,6 +41,8 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
 import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPracticeDialog
 import com.jian.nemo.feature.learning.presentation.components.cards.WordCard
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +120,7 @@ fun CategoryCardLearningScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    NemoChasingDotsLoader()
                 }
             }
             uiState.error != null -> {

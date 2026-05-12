@@ -496,3 +496,17 @@ object BentoColors {
     val IconBgPurple = Color(0xFFF5F3FF)
 }
 
+
+// ============================================================================
+// Flat UI 经典配色 (用于动效还原)
+// ============================================================================
+object FlatUiColors {
+    val Blue = Color(0xFF3498DB)
+    val Green = Color(0xFF2ECC71)
+    val Red = Color(0xFFE74C3C)
+    val Purple = Color(0xFF9B59B6)
+    val Yellow = Color(0xFFF1C40F)
+    val Orange = Color(0xFFE67E22)
+    val Dark = Color(0xFF34495E)
+    val Background = Color(0xFFECF0F1)
+}

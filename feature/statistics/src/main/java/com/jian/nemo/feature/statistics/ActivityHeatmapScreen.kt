@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.statistics.presentation.components.LearningHeatmapCard
@@ -69,7 +71,7 @@ fun ActivityHeatmapScreen(
                     HeatmapSectionTitle("年度回顾")
                     if (uiState.isLoading) {
                         Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator()
+                            NemoChasingDotsLoader()
                         }
                     } else {
                         LearningHeatmapCard(

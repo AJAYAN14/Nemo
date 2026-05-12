@@ -13,6 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 import com.jian.nemo.feature.learning.presentation.components.srs.SRSActionArea
 import com.jian.nemo.feature.learning.presentation.components.cards.SRSGrammarCard
 import com.jian.nemo.feature.learning.presentation.components.cards.SRSLearningCard
@@ -31,7 +33,7 @@ fun ReviewSessionScreen(
         }
         ReviewStatus.Loading -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                NemoChasingDotsLoader()
             }
             return
         }

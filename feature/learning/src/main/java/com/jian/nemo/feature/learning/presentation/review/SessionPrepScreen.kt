@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+
 
 // --- 颜色定义 ---
 private val NemoGreen = Color(0xFF50E3C2)
@@ -93,7 +95,7 @@ fun SessionPrepScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    NemoChasingDotsLoader()
                 }
             } else {
                 LazyColumn(

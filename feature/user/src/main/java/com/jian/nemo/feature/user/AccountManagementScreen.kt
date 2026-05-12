@@ -29,6 +29,7 @@ import com.jian.nemo.feature.user.component.*
 import androidx.compose.animation.*
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,12 +163,7 @@ fun AccountManagementScreen(
                                 label = "SyncStatusAnimation"
                             ) { state ->
                                 when (state) {
-                                    1 -> CircularProgressIndicator(
-                                        progress = { uiState.syncProgress },
-                                        modifier = Modifier.size(16.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
+                                    1 -> NemoChasingDotsLoader(size = 16.dp)
                                     2 -> Icon(
                                         imageVector = Icons.Rounded.CheckCircle,
                                         contentDescription = null,

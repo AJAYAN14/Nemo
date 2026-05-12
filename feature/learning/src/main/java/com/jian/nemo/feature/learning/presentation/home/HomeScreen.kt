@@ -48,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.feature.learning.presentation.components.sheets.LevelSelectionBottomSheet
 import com.jian.nemo.feature.learning.presentation.home.components.*
@@ -804,88 +805,6 @@ private fun BentoModeSwitchButton(
     }
 }
 
-/**
- * 自定义高保真环形进度条组件 (直接填充版)
- * 具备“呼吸缺口”与“数值生长动效”
- */
-@Composable
-private fun NemoCircularProgress(
-    progress: Float,
-    isLoading: Boolean, // 用于触发归零重填转场
-    color: Color,
-    trackColor: Color,
-    modifier: Modifier = Modifier
-) {
-    val strokeWidth = 12.dp
-    
-    // 进度值从 0 平滑生长至目标值 (Cubic 曲线)
-    val animatedProgress by animateFloatAsState(
-        targetValue = if (isLoading) 0f else progress,
-        animationSpec = tween(
-            durationMillis = 800,
-            easing = CubicBezierEasing(0.215f, 0.61f, 0.355f, 1.0f)
-        ),
-        label = "progress"
-    )
-
-    Canvas(modifier = modifier) {
-        val center = Offset(size.width / 2, size.height / 2)
-        val strokeWidthPx = strokeWidth.toPx()
-        val radius = (size.minDimension - strokeWidthPx) / 2
-        
-        // 显式构造 Rect
-        val rect = Rect(
-            left = center.x - radius,
-            top = center.y - radius,
-            right = center.x + radius,
-            bottom = center.y + radius
-        )
-
-        val gapAngleDegrees = if (radius > 0) (1.5f * strokeWidthPx / radius) * (180f / PI.toFloat()) else 0f
-        val progressSweep = animatedProgress * 360f
-
-        // 1. 绘制进度条 (Progress)
-        if (progressSweep > 0.1f) {
-            drawArc(
-                color = color,
-                startAngle = -90f,
-                sweepAngle = progressSweep,
-                useCenter = false,
-                topLeft = Offset(rect.left, rect.top),
-                size = Size(rect.width, rect.height),
-                style = Stroke(width = strokeWidthPx, cap = StrokeCap.Round)
-            )
-        }
-
-        // 2. 绘制底轨 (Track) - 包含动态避让缺口逻辑
-        val trackSweepAngle = if (progressSweep > 0.1f) {
-            (360f - progressSweep - 2 * gapAngleDegrees).coerceAtLeast(0f)
-        } else {
-            360f
-        }
-
-        if (trackSweepAngle > 1f) {
-            val trackStartAngle = if (progressSweep > 0.1f) {
-                -90f + progressSweep + gapAngleDegrees
-            } else {
-                -90f
-            }
-
-            drawArc(
-                color = trackColor,
-                startAngle = trackStartAngle,
-                sweepAngle = trackSweepAngle,
-                useCenter = false,
-                topLeft = Offset(rect.left, rect.top),
-                size = Size(rect.width, rect.height),
-                style = Stroke(
-                    width = strokeWidthPx, 
-                    cap = if (progressSweep > 0.1f) StrokeCap.Round else StrokeCap.Butt
-                )
-            )
-        }
-    }
-}
 
 
 
