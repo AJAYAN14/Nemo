@@ -622,6 +622,14 @@ interface SettingsRepository {
     /** AI 工坊当前生成的题目 (JSON 格式) Flow */
     val aiCurrentExerciseFlow: Flow<String>
     suspend fun setAiCurrentExercise(json: String)
+
+    /** AI 工坊当前用户输入的答案 Flow */
+    val aiCurrentAnswerFlow: Flow<String>
+    suspend fun setAiCurrentAnswer(answer: String)
+
+    /** AI 工坊当前选择的模式 Flow */
+    val aiWorkshopModeFlow: Flow<String>
+    suspend fun setAiWorkshopMode(mode: String)
 }
 
 /**

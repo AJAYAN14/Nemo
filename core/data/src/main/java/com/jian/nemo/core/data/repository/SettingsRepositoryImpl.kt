@@ -1527,7 +1527,9 @@ class SettingsRepositoryImpl @Inject constructor(
             aiBaseUrl = prefs[PreferencesKeys.AI_BASE_URL] ?: "",
             aiModel = prefs[PreferencesKeys.AI_MODEL] ?: "",
             aiWorkshopDifficulty = prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] ?: "N5",
-            aiCurrentExercise = prefs[PreferencesKeys.AI_CURRENT_EXERCISE] ?: ""
+            aiCurrentExercise = prefs[PreferencesKeys.AI_CURRENT_EXERCISE] ?: "",
+            aiCurrentAnswer = prefs[PreferencesKeys.AI_CURRENT_ANSWER] ?: "",
+            aiWorkshopMode = prefs[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE"
         )
     }
 
@@ -1592,6 +1594,8 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.AI_MODEL] = settings.aiModel
             prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] = settings.aiWorkshopDifficulty
             prefs[PreferencesKeys.AI_CURRENT_EXERCISE] = settings.aiCurrentExercise
+            prefs[PreferencesKeys.AI_CURRENT_ANSWER] = settings.aiCurrentAnswer
+            prefs[PreferencesKeys.AI_WORKSHOP_MODE] = settings.aiWorkshopMode
 
             // Update timestamp
             prefs[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
@@ -1708,6 +1712,28 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAiCurrentExercise(json: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.AI_CURRENT_EXERCISE] = json
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiCurrentAnswerFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_CURRENT_ANSWER] ?: ""
+    }
+
+    override suspend fun setAiCurrentAnswer(answer: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_CURRENT_ANSWER] = answer
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiWorkshopModeFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE"
+    }
+
+    override suspend fun setAiWorkshopMode(mode: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_WORKSHOP_MODE] = mode
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

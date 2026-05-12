@@ -38,7 +38,9 @@ data class AIWorkshopUiState(
     // 语法专项模式相关
     val currentGrammarPoint: String? = null,     // 当前抽取的语法点名称
     val currentGrammarSubtype: String? = null,   // 当前用法子类型
-    val hasGrammarData: Boolean = true            // 当前等级是否有语法数据
+    val hasGrammarData: Boolean = true,           // 当前等级是否有语法数据
+    val aiPlatform: String = "openai",
+    val aiModel: String = ""
 )
 
 sealed interface AIWorkshopEvent {
@@ -48,6 +50,7 @@ sealed interface AIWorkshopEvent {
     object ClearError : AIWorkshopEvent
     data class UpdateDifficulty(val difficulty: String) : AIWorkshopEvent
     data class UpdateWorkshopMode(val mode: WorkshopMode) : AIWorkshopEvent
+    object QuickSwitchPlatform : AIWorkshopEvent
 }
 
 @HiltViewModel
@@ -65,6 +68,10 @@ class AIWorkshopViewModel @Inject constructor(
     private var aiApiKey = ""
     private var aiBaseUrl = ""
     private var aiModel = ""
+    
+    // 缓存所有平台的 API Key 状态，用于智能切换
+    private var platformKeys = mutableMapOf<String, String>()
+    private val platformsToCycle = listOf("gemini", "deepseek", "openai", "custom")
 
     // 当前语法专项模式的 AI 上下文（用于出题和评分）
     private var currentGrammarInfo: AIClient.GrammarInfo? = null
@@ -90,7 +97,13 @@ class AIWorkshopViewModel @Inject constructor(
                 settingsRepository.aiBaseUrlFlow,
                 settingsRepository.aiModelFlow,
                 settingsRepository.aiWorkshopDifficultyFlow,
-                settingsRepository.aiCurrentExerciseFlow
+                settingsRepository.aiCurrentExerciseFlow,
+                settingsRepository.aiCurrentAnswerFlow,
+                settingsRepository.aiWorkshopModeFlow,
+                settingsRepository.getAiApiKeyFlow("openai"),
+                settingsRepository.getAiApiKeyFlow("gemini"),
+                settingsRepository.getAiApiKeyFlow("deepseek"),
+                settingsRepository.getAiApiKeyFlow("custom")
             ) { values: Array<String> ->
                 val platform = values[0]
                 val apiKey = values[1]
@@ -98,6 +111,20 @@ class AIWorkshopViewModel @Inject constructor(
                 val model = values[3]
                 val difficulty = values[4]
                 val currentExerciseJson = values[5]
+                val currentAnswer = values[6]
+                val workshopModeStr = values[7]
+                
+                // 更新 Key 缓存
+                platformKeys["openai"] = values[8]
+                platformKeys["gemini"] = values[9]
+                platformKeys["deepseek"] = values[10]
+                platformKeys["custom"] = values[11]
+
+                val restoredMode = try {
+                    WorkshopMode.valueOf(workshopModeStr)
+                } catch (e: Exception) {
+                    WorkshopMode.FREE
+                }
 
                 aiPlatform = platform
                 aiApiKey = apiKey
@@ -116,7 +143,11 @@ class AIWorkshopViewModel @Inject constructor(
                     state.copy(
                         isConfigured = apiKey.isNotBlank(),
                         difficulty = difficulty,
-                        currentExercise = restoredExercise
+                        workshopMode = restoredMode,
+                        currentExercise = restoredExercise,
+                        userAnswer = if (state.userAnswer.isBlank()) currentAnswer else state.userAnswer,
+                        aiPlatform = platform,
+                        aiModel = model
                     )
                 }
             }.collect()
@@ -128,6 +159,9 @@ class AIWorkshopViewModel @Inject constructor(
             is AIWorkshopEvent.GenerateNewExercise -> generateExercise()
             is AIWorkshopEvent.UpdateUserAnswer -> {
                 _uiState.update { it.copy(userAnswer = event.answer) }
+                viewModelScope.launch {
+                    settingsRepository.setAiCurrentAnswer(event.answer)
+                }
             }
             is AIWorkshopEvent.SubmitAnswer -> submitAnswer()
             is AIWorkshopEvent.ClearError -> {
@@ -143,9 +177,32 @@ class AIWorkshopViewModel @Inject constructor(
             is AIWorkshopEvent.UpdateWorkshopMode -> {
                 viewModelScope.launch {
                     _uiState.update { it.copy(workshopMode = event.mode) }
+                    settingsRepository.setAiWorkshopMode(event.mode.name)
                     // 切换模式时检查语法数据可用性
                     if (event.mode == WorkshopMode.GRAMMAR) {
                         checkGrammarDataAvailability(_uiState.value.difficulty)
+                    }
+                }
+            }
+            is AIWorkshopEvent.QuickSwitchPlatform -> {
+                viewModelScope.launch {
+                    val currentPlatform = _uiState.value.aiPlatform
+                    val currentIndex = platformsToCycle.indexOf(currentPlatform).takeIf { it != -1 } ?: 0
+                    
+                    // 寻找下一个有 Key 的平台
+                    var found = false
+                    for (i in 1 until platformsToCycle.size) {
+                        val nextIndex = (currentIndex + i) % platformsToCycle.size
+                        val nextPlatform = platformsToCycle[nextIndex]
+                        if (platformKeys[nextPlatform]?.isNotBlank() == true) {
+                            settingsRepository.setAiPlatform(nextPlatform)
+                            found = true
+                            break
+                        }
+                    }
+                    
+                    if (!found) {
+                        _uiState.update { it.copy(error = "没有其他已配置的 AI 平台") }
                     }
                 }
             }
@@ -177,6 +234,8 @@ class AIWorkshopViewModel @Inject constructor(
                     currentGrammarSubtype = null
                 )
             }
+            // 清除答案持久化缓存
+            settingsRepository.setAiCurrentAnswer("")
 
             val mode = _uiState.value.workshopMode
             val difficulty = _uiState.value.difficulty
@@ -271,9 +330,10 @@ class AIWorkshopViewModel @Inject constructor(
                     grammarPoint = _uiState.value.currentGrammarPoint,
                     usageId = currentUsageId
                 )
-                // 清除当前题目缓存
+                // 清除当前题目与答案缓存
                 viewModelScope.launch {
                     settingsRepository.setAiCurrentExercise("")
+                    settingsRepository.setAiCurrentAnswer("")
                 }
             }.onFailure { e ->
                 _uiState.update { it.copy(error = "评分失败: ${e.message}", isLoading = false) }

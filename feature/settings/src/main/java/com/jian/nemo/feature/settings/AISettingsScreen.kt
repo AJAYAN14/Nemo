@@ -24,6 +24,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.core.domain.model.AIExercise
@@ -39,18 +43,29 @@ fun AISettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val navigationBarHeight = with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
+    val haptic = LocalHapticFeedback.current
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-                CommonHeader(
-                    title = "AI 配置中心",
-                    onBack = onNavigateBack
-                )
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    // 监听测试结果，触发震动
+    LaunchedEffect(uiState.testResult) {
+        if (uiState.testResult != null) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
+    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
+                    CommonHeader(
+                        title = "AI 配置中心",
+                        onBack = onNavigateBack
+                    )
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -142,6 +157,20 @@ fun AISettingsScreen(
             }
         }
     }
+
+    uiState.testResult?.let { result ->
+        NemoSnackbar(
+            visible = true,
+            message = if (result.success) "API 连接正常，配置已生效" else "验证失败，请检查配置或重试",
+            type = if (result.success) NemoSnackbarType.SUCCESS else NemoSnackbarType.ERROR,
+            icon = if (result.success) Icons.Rounded.TaskAlt else Icons.Rounded.ErrorOutline,
+            onDismiss = { viewModel.onEvent(AISettingsEvent.ClearTestResult) },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarHeight + 8.dp)
+        )
+    }
+}
 }
 
 @Composable
@@ -280,34 +309,6 @@ fun TestConnectionSection(
                 Icon(Icons.Rounded.Bolt, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(12.dp))
                 Text("测试连接并保存", fontWeight = FontWeight.Bold)
-            }
-        }
-
-        testResult?.let { result ->
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = (if (result.success) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error).copy(alpha = 0.08f),
-                border = BorderStroke(1.dp, (if (result.success) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error).copy(alpha = 0.2f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = if (result.success) Icons.Rounded.TaskAlt else Icons.Rounded.ErrorOutline,
-                        contentDescription = null,
-                        tint = if (result.success) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = if (result.success) "API 连接正常，配置已生效" else "配置验证失败：${result.message}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (result.success) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.error
-                    )
-                }
             }
         }
     }

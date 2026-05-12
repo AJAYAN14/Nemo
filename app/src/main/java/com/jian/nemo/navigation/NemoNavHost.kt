@@ -275,11 +275,11 @@ fun NemoNavHost(
             )
         }
 
-        // AI 工坊
         composable(NavDestination.AI_WORKSHOP) {
             AIWorkshopScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) }
+                onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) },
+                onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) }
             )
         }
 

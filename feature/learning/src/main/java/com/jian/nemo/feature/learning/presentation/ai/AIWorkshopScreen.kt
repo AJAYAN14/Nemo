@@ -29,8 +29,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
-import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import com.jian.nemo.core.designsystem.R as DesignR
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +45,7 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 fun AIWorkshopScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHistory: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     viewModel: AIWorkshopViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -49,31 +57,47 @@ fun AIWorkshopScreen(
     
     // 语义化颜色映射
     val backgroundColor = colorScheme.background
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
-    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
     val textPrimary = colorScheme.onSurface
-    val textSecondary = colorScheme.onSurfaceVariant
-    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
     val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100
+    val haptic = LocalHapticFeedback.current
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "AI 例文工坊",
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
+    // 监听错误，触发震动
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
+    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CommonHeader(
+                    title = "AI 例文工坊",
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        IconButton(onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) }) {
+                            val platform = uiState.aiPlatform
+                            when (platform) {
+                                "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
+                            }
+                        }
+                        IconButton(onClick = onNavigateToHistory) {
+                            Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
+                        }
+                        IconButton(onClick = { showHelp = true }) {
+                            Icon(Icons.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
+                        }
                     }
-                    IconButton(onClick = { showHelp = true }) {
-                        Icon(Icons.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
-                    }
-                }
-            )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
+                )
+            },
+            containerColor = backgroundColor
+        ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -88,7 +112,7 @@ fun AIWorkshopScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (!uiState.isConfigured) {
-                    ConfigRequiredView()
+                    ConfigRequiredView(onNavigateToSettings = onNavigateToSettings)
                 } else {
                     // 核心操作区
                     WorkshopContent(
@@ -123,24 +147,20 @@ fun AIWorkshopScreen(
                     }
                 }
             }
+        }
+    }
 
-            // 错误提示
-            uiState.error?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp),
-                    containerColor = NemoDanger,
-                    contentColor = Color.White,
-                    action = {
-                        TextButton(onClick = { viewModel.onEvent(AIWorkshopEvent.ClearError) }) {
-                            Text("确定", color = Color.White, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                ) {
-                    Text(error)
-                }
-            }
+    uiState.error?.let {
+            NemoSnackbar(
+                visible = true,
+                message = "操作失败，请重试",
+                type = NemoSnackbarType.ERROR,
+                icon = Icons.Rounded.ErrorOutline,
+                onDismiss = { viewModel.onEvent(AIWorkshopEvent.ClearError) },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = statusBarHeight + 8.dp)
+            )
         }
 
         // 帮助弹窗
@@ -472,6 +492,14 @@ private fun ExerciseMainView(
     uiState: AIWorkshopUiState,
     onEvent: (AIWorkshopEvent) -> Unit
 ) {
+    ExerciseContent(uiState, onEvent)
+}
+
+@Composable
+private fun ExerciseContent(
+    uiState: AIWorkshopUiState,
+    onEvent: (AIWorkshopEvent) -> Unit
+) {
     val exercise = uiState.currentExercise ?: return
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -796,7 +824,7 @@ private fun FeedbackSection(
 }
 
 @Composable
-private fun ConfigRequiredView() {
+private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     
     Column(
@@ -834,6 +862,23 @@ private fun ConfigRequiredView() {
             textAlign = TextAlign.Center,
             lineHeight = 22.sp
         )
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Button(
+            onClick = onNavigateToSettings,
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = Color.White
+            ),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+        ) {
+            Icon(Icons.Rounded.Settings, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("立即去配置", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
     }
 }
 

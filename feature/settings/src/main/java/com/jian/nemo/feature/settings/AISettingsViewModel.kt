@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.repository.SettingsRepository
@@ -32,6 +33,7 @@ sealed interface AISettingsEvent {
     data class SetModel(val model: String) : AISettingsEvent
     data class SetDifficulty(val difficulty: String) : AISettingsEvent
     object TestConnection : AISettingsEvent
+    object ClearTestResult : AISettingsEvent
 }
 
 @HiltViewModel
@@ -95,9 +97,13 @@ class AISettingsViewModel @Inject constructor(
                             AITestResult(true, "连接成功")
                         } else {
                             val msg = result.exceptionOrNull()?.message ?: "未知错误"
+                            Log.e("AISettings", "AI Configuration verification failed: $msg")
                             AITestResult(false, msg)
                         }
                     ) }
+                }
+                is AISettingsEvent.ClearTestResult -> {
+                    _uiState.update { it.copy(testResult = null) }
                 }
             }
         }
