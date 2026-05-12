@@ -3,6 +3,7 @@ package com.jian.nemo.feature.learning.presentation.ai
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -10,7 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
-import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -58,7 +57,6 @@ fun AIWorkshopScreen(
     // 语义化颜色映射
     val backgroundColor = colorScheme.background
     val textPrimary = colorScheme.onSurface
-    val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100
     val haptic = LocalHapticFeedback.current
 
     // 监听错误，触发震动
@@ -91,7 +89,7 @@ fun AIWorkshopScreen(
                             Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
                         }
                         IconButton(onClick = { showHelp = true }) {
-                            Icon(Icons.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
+                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
                         }
                     }
                 )
@@ -238,33 +236,36 @@ private fun ModeSection(
     val modeLabels = listOf("自由模式", "语法专项")
     val selectedIndex = modes.indexOf(currentMode)
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
             .background(secondarySurface, RoundedCornerShape(12.dp))
             .padding(3.dp)
     ) {
-        val segmentWidth = maxWidth / modes.size
-
-        // Sliding Capsule
-        val offset by animateDpAsState(
-            targetValue = segmentWidth * selectedIndex,
+        // Sliding Capsule - 使用 weight 布局实现，无需 BoxWithConstraints
+        val animatedIndex by animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness = Spring.StiffnessMedium
             ),
-            label = "modeCapsuleOffset"
+            label = "modeCapsuleIndex"
         )
 
-        Box(
-            modifier = Modifier
-                .offset(x = offset)
-                .width(segmentWidth)
-                .fillMaxHeight()
-                .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
-                .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-        )
+        Row(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.01f)))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
+                    .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+            )
+            Spacer(modifier = Modifier.weight((modes.size - 1 - animatedIndex).coerceAtLeast(0.01f)))
+        }
+
+        // Interactive Labels
 
         // Interactive Labels
         Row(modifier = Modifier.fillMaxSize()) {
@@ -353,33 +354,34 @@ private fun DifficultySection(
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
     val selectedIndex = levels.indexOf(currentLevel)
 
-    BoxWithConstraints(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
             .background(secondarySurface, RoundedCornerShape(12.dp))
             .padding(3.dp)
     ) {
-        val segmentWidth = maxWidth / levels.size
-        
-        // Sliding Capsule
-        val offset by animateDpAsState(
-            targetValue = segmentWidth * selectedIndex,
+        // Sliding Capsule - 使用 weight 布局实现
+        val animatedIndex by animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioLowBouncy,
                 stiffness = Spring.StiffnessMedium
             ),
-            label = "capsuleOffset"
+            label = "difficultyCapsuleIndex"
         )
-        
-        Box(
-            modifier = Modifier
-                .offset(x = offset)
-                .width(segmentWidth)
-                .fillMaxHeight()
-                .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
-                .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-        )
+
+        Row(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.01f)))
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
+                    .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+            )
+            Spacer(modifier = Modifier.weight((levels.size - 1 - animatedIndex).coerceAtLeast(0.01f)))
+        }
         
         // Interactive Labels
         Row(modifier = Modifier.fillMaxSize()) {
@@ -438,7 +440,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        if (isGrammarMode) Icons.Rounded.MenuBook else Icons.Rounded.AutoAwesome,
+                        if (isGrammarMode) Icons.AutoMirrored.Rounded.MenuBook else Icons.Rounded.AutoAwesome,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = NemoPrimary
@@ -818,7 +820,7 @@ private fun FeedbackSection(
         ) {
             Text("下一题", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.Rounded.ArrowForward, contentDescription = null)
+            Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
         }
     }
 }
