@@ -210,11 +210,16 @@ class LearningViewModel @Inject constructor(
             audioRepository.ttsEvents.collect { event ->
                 when (event) {
                     is TtsEvent.OnStart -> {
-                        _uiState.update { it.copy(playingAudioId = event.id) }
+                        val normalizedId = event.id?.substringBefore("-jp")?.substringBefore("-cn")
+                        _uiState.update { it.copy(playingAudioId = normalizedId) }
                     }
                     is TtsEvent.OnDone -> {
+                        // 如果是日语部分结束，暂时不清除状态，等待中文部分开始，防止动画闪烁
+                        if (event.id?.endsWith("-jp") == true) return@collect
+
+                        val normalizedId = event.id?.substringBefore("-cn")
                         _uiState.update {
-                            if (it.playingAudioId == event.id) {
+                            if (it.playingAudioId == normalizedId) {
                                 it.copy(playingAudioId = null)
                             } else {
                                 it
@@ -230,6 +235,7 @@ class LearningViewModel @Inject constructor(
                 }
             }
         }
+
 
         // 监听设置变化
         viewModelScope.launch {
@@ -733,8 +739,9 @@ class LearningViewModel @Inject constructor(
              // 仅在单词模式下自动朗读
              if (state.learningMode == LearningMode.Word) {
                  state.currentWord?.let { word ->
-                     speakWord(word.hiragana) // 优先朗读假名/发音
+                     speakWord(word.hiragana, word.chinese) // 朗读假名/发音 + 中文含义
                  }
+
              }
         }
 
