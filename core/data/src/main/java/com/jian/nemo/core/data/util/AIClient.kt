@@ -23,14 +23,50 @@ class AIClient @Inject constructor(
     private val json = Json { ignoreUnknownKeys = true }
     private val mediaType = "application/json; charset=utf-8".toMediaType()
 
+    /**
+     * 语法专项模式下传递给 AI 的语法信息
+     */
+    data class GrammarInfo(
+        val name: String,          // 语法名称，如 "～あがる"
+        val connection: String,    // 接续方式，如 "动词「ます形」＋あがる"
+        val explanation: String,   // 含义说明
+        val subtype: String?,      // 用法子类型，如 "完成"
+        val notes: String?         // 注意事项
+    )
+
     suspend fun generateExercise(
         platform: String,
         apiKey: String,
         baseUrl: String?,
         model: String,
-        difficulty: String
+        difficulty: String,
+        grammarInfo: GrammarInfo? = null
     ): Result<AIExercise> {
-        val systemPrompt = """
+        val systemPrompt = if (grammarInfo != null) {
+            buildGrammarExercisePrompt(difficulty, grammarInfo)
+        } else {
+            buildFreeExercisePrompt(difficulty)
+        }
+        
+        val url = getApiUrl(platform, baseUrl, apiKey, model)
+        val requestBody = buildChatRequest(platform, model, systemPrompt, "生成一道练习题")
+        
+        return try {
+            val response = executeRequest(platform, url, apiKey, requestBody)
+            val content = extractContentFromChatResponse(platform, response)
+            val exercise = json.decodeFromString<AIExercise>(content)
+            Result.success(exercise)
+        } catch (e: Exception) {
+            Log.e("AIClient", "生成题目失败", e)
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * 自由模式出题 Prompt（保持原有逻辑）
+     */
+    private fun buildFreeExercisePrompt(difficulty: String): String {
+        return """
             你是一位资深的日语教育专家。请根据指定的日语等级 ($difficulty) 生成一道具有挑战性且实用的翻译练习题。
             
             难度要求：
@@ -41,7 +77,7 @@ class AIClient @Inject constructor(
             - N1: 涵盖专业领域、文学性表达、微妙的语气差别及高度抽象的话题，极具挑战性。
             
             严禁行为：
-            1. 严禁生成过于简单的问候语或基础自我介绍（如“我是学生”）。
+            1. 严禁生成过于简单的问候语或基础自我介绍（如"我是学生"）。
             2. 严禁生成不符合 $difficulty 等级词汇量要求的题目。
             
             请从以下两种模式中随机选择一种（确保两种方向的出现概率各占 50%）：
@@ -58,19 +94,58 @@ class AIClient @Inject constructor(
             }
             直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字。
         """.trimIndent()
-        
-        val url = getApiUrl(platform, baseUrl, apiKey, model)
-        val requestBody = buildChatRequest(platform, model, systemPrompt, "生成一道练习题")
-        
-        return try {
-            val response = executeRequest(platform, url, apiKey, requestBody)
-            val content = extractContentFromChatResponse(platform, response)
-            val exercise = json.decodeFromString<AIExercise>(content)
-            Result.success(exercise)
-        } catch (e: Exception) {
-            Log.e("AIClient", "生成题目失败", e)
-            Result.failure(e)
-        }
+    }
+
+    /**
+     * 语法专项模式出题 Prompt
+     *
+     * 核心策略：
+     * 1. 将数据库中的语法详细信息（名称、接续、含义、注意事项）注入 Prompt
+     * 2. 强制要求标准答案必须使用指定语法点
+     * 3. 不发送数据库中的例句，要求 AI 完全原创
+     */
+    private fun buildGrammarExercisePrompt(difficulty: String, info: GrammarInfo): String {
+        val subtypeInfo = if (!info.subtype.isNullOrBlank()) "用法分类：${info.subtype}" else ""
+        val notesInfo = if (!info.notes.isNullOrBlank()) "注意事项：${info.notes}" else ""
+
+        return """
+            你是一位资深的日语教育专家。现在进入【语法专项训练模式】。
+            
+            你需要基于以下语法规则，为 $difficulty 等级的学习者生成一道翻译练习题。
+            
+            ═══════════ 语法详细信息 ═══════════
+            语法名称：${info.name}
+            接续方式：${info.connection}
+            含义说明：${info.explanation}
+            $subtypeInfo
+            $notesInfo
+            ═══════════════════════════════════
+            
+            【出题要求】
+            1. 生成的题目句子必须自然、实用，符合 $difficulty 等级的词汇和表达水平。
+            2. 标准答案中【必须】正确使用上述语法点「${info.name}」。
+            3. 如果该语法有特定的接续规则，标准答案必须严格遵守。
+            4. 严禁使用同义语法或其他表达方式替代「${info.name}」。
+            5. 严禁直接照搬教科书中的常见例句，必须原创。
+            
+            【方向选择】
+            请从以下两种模式中随机选择一种（确保两种方向的出现概率各占 50%）：
+            1. CN_TO_JP: 出一句中文，让用户翻译成日语（答案中必须用到「${info.name}」）。
+            2. JP_TO_CN: 出一句使用了「${info.name}」的日语句子，让用户翻译成中文。
+            
+            【提示内容】
+            hints 中请给出与该语法点相关的关键接续提示和语义提示，帮助用户回忆该语法的用法。
+            
+            请返回如下 JSON 格式：
+            {
+              "question": "题目内容",
+              "type": "CN_TO_JP" 或 "JP_TO_CN",
+              "difficulty": "$difficulty",
+              "answer": "地道的标准答案（必须包含「${info.name}」）",
+              "hints": ["接续提示", "语义提示"]
+            }
+            直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字。
+        """.trimIndent()
     }
 
     suspend fun gradeAnswer(
@@ -79,8 +154,25 @@ class AIClient @Inject constructor(
         baseUrl: String?,
         model: String,
         exercise: AIExercise,
-        userAnswer: String
+        userAnswer: String,
+        grammarInfo: GrammarInfo? = null
     ): Result<AIGradeResult> {
+        val grammarSection = if (grammarInfo != null) {
+            """
+            
+            【语法专项评分附加要求】
+            本题为语法专项训练，指定语法点为「${grammarInfo.name}」。
+            含义：${grammarInfo.explanation}
+            接续：${grammarInfo.connection}
+            
+            评分时必须额外检查：
+            - 用户是否正确使用了「${grammarInfo.name}」
+            - 接续方式是否正确
+            - 如果用户完全没有使用该语法点，即使翻译意思正确，也应大幅扣分（最高不超过 40 分）
+            - 在 feedback 中必须专门点评用户对「${grammarInfo.name}」的使用情况
+            """.trimIndent()
+        } else ""
+
         val systemPrompt = """
             你是一位资深的日语教育专家。请对用户的翻译练习进行专业评分。
             题目：${exercise.question}
@@ -91,6 +183,7 @@ class AIClient @Inject constructor(
             1. 语法准确性 (Grammar)
             2. 用词地道程度 (Lexical Choice)
             3. 语境适配度 (Contextual Accuracy)
+            $grammarSection
             
             请返回如下 JSON 格式：
             {

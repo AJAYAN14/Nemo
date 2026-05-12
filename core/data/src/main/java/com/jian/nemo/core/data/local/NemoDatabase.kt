@@ -27,7 +27,7 @@ import com.jian.nemo.core.data.local.entity.*
         FavoriteQuestionEntity::class,
         AIExerciseEntity::class
     ],
-    version = 20,  // v20: 增加 AI 练习历史记录表
+    version = 21,  // v21: AI 练习表增加语法专项模式字段 (grammar_point, usage_id)
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

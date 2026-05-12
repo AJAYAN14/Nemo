@@ -27,7 +27,9 @@ class AIWorkshopRepositoryImpl @Inject constructor(
         standardAnswer: String,
         userAnswer: String,
         score: Int,
-        feedback: String
+        feedback: String,
+        grammarPoint: String?,
+        usageId: Int?
     ) {
         val entity = AIExerciseEntity(
             question = question,
@@ -36,7 +38,9 @@ class AIWorkshopRepositoryImpl @Inject constructor(
             standardAnswer = standardAnswer,
             userAnswer = userAnswer,
             score = score,
-            feedback = feedback
+            feedback = feedback,
+            grammarPoint = grammarPoint,
+            usageId = usageId
         )
         aiExerciseDao.insert(entity)
     }
@@ -59,6 +63,7 @@ class AIWorkshopRepositoryImpl @Inject constructor(
         userAnswer = userAnswer,
         score = score,
         feedback = feedback,
-        createdAt = createdAt
+        createdAt = createdAt,
+        grammarPoint = grammarPoint
     )
 }

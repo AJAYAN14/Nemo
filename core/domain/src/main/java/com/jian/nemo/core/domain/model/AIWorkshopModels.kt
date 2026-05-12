@@ -30,5 +30,6 @@ data class AIExerciseHistory(
     val userAnswer: String,
     val score: Int,
     val feedback: String,
-    val createdAt: Long
+    val createdAt: Long,
+    val grammarPoint: String? = null
 )

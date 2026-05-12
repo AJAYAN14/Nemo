@@ -13,7 +13,9 @@ interface AIWorkshopRepository {
         standardAnswer: String,
         userAnswer: String,
         score: Int,
-        feedback: String
+        feedback: String,
+        grammarPoint: String? = null,
+        usageId: Int? = null
     )
     
     suspend fun deleteOldHistory(days: Int = 30)

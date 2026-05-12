@@ -548,6 +548,37 @@ interface GrammarDao {
 
     @Query("UPDATE grammars SET is_delisted = 1 WHERE id NOT IN (:ids)")
     suspend fun markAllMissingAsDelisted(ids: List<Int>): Int
+
+    // ========== AI 工坊专用 ==========
+
+    /**
+     * 随机获取指定等级的一个语法（含用法和例句）
+     * 用于 AI 工坊语法专项模式的随机抽题
+     */
+    @Transaction
+    @Query("""
+        SELECT g.* FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE UPPER(g.grammar_level) = UPPER(:level)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        ORDER BY RANDOM()
+        LIMIT 1
+    """)
+    suspend fun getRandomGrammarWithUsagesByLevel(level: String): GrammarWithUsages?
+
+    /**
+     * 获取指定等级的语法总数
+     * 用于 AI 工坊语法专项模式的空数据兜底判断
+     */
+    @Query("""
+        SELECT COUNT(*) FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE UPPER(g.grammar_level) = UPPER(:level)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+    """)
+    suspend fun getGrammarCountByLevel(level: String): Int
 }
 
 data class GrammarReviewForecastTuple(

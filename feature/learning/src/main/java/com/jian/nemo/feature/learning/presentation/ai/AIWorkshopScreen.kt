@@ -156,16 +156,25 @@ private fun WorkshopContent(
     onEvent: (AIWorkshopEvent) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        // 1. 难度切换面板
+        // 1. 模式切换面板（Apple Style 胶囊）
+        ModeSection(
+            currentMode = uiState.workshopMode,
+            onModeChange = { onEvent(AIWorkshopEvent.UpdateWorkshopMode(it)) },
+            enabled = !uiState.isLoading
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // 2. 难度切换
         DifficultySection(
             currentLevel = uiState.difficulty,
             onLevelChange = { onEvent(AIWorkshopEvent.UpdateDifficulty(it)) },
             enabled = !uiState.isLoading
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. 主视图切换
+        // 3. 主视图切换
         AnimatedContent(
             targetState = uiState.currentExercise == null,
             transitionSpec = {
@@ -174,7 +183,15 @@ private fun WorkshopContent(
             label = "ViewSwitch"
         ) { isStartView ->
             if (isStartView) {
-                HeroStartView(onStart = { onEvent(AIWorkshopEvent.GenerateNewExercise) })
+                // 语法专项模式下，如果无数据则显示兜底视图
+                if (uiState.workshopMode == WorkshopMode.GRAMMAR && !uiState.hasGrammarData) {
+                    GrammarDataEmptyView()
+                } else {
+                    HeroStartView(
+                        onStart = { onEvent(AIWorkshopEvent.GenerateNewExercise) },
+                        isGrammarMode = uiState.workshopMode == WorkshopMode.GRAMMAR
+                    )
+                }
             } else {
                 ExerciseMainView(
                     uiState = uiState,
@@ -182,6 +199,125 @@ private fun WorkshopContent(
                 )
             }
         }
+    }
+}
+
+/**
+ * 模式切换：紧凑型 Apple Style 胶囊控件（无卡片外壳）
+ */
+@Composable
+private fun ModeSection(
+    currentMode: WorkshopMode,
+    onModeChange: (WorkshopMode) -> Unit,
+    enabled: Boolean
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    val modes = listOf(WorkshopMode.FREE, WorkshopMode.GRAMMAR)
+    val modeLabels = listOf("自由模式", "语法专项")
+    val selectedIndex = modes.indexOf(currentMode)
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(secondarySurface, RoundedCornerShape(12.dp))
+            .padding(3.dp)
+    ) {
+        val segmentWidth = maxWidth / modes.size
+
+        // Sliding Capsule
+        val offset by animateDpAsState(
+            targetValue = segmentWidth * selectedIndex,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMedium
+            ),
+            label = "modeCapsuleOffset"
+        )
+
+        Box(
+            modifier = Modifier
+                .offset(x = offset)
+                .width(segmentWidth)
+                .fillMaxHeight()
+                .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
+                .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+        )
+
+        // Interactive Labels
+        Row(modifier = Modifier.fillMaxSize()) {
+            modes.forEachIndexed { index, mode ->
+                val isSelected = mode == currentMode
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(
+                            enabled = enabled,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onModeChange(mode)
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = modeLabels[index],
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                        color = if (isSelected) NemoPrimary else NemoNeutrals.Gray500
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 语法数据为空时的兜底视图
+ */
+@Composable
+private fun GrammarDataEmptyView() {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 60.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier.size(100.dp),
+            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
+            shape = CircleShape
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    Icons.Rounded.SearchOff,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "本地暂无该等级语法数据",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "请先返回主页同步数据\n或切换到「自由模式」进行练习",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
+        )
     }
 }
 
@@ -193,102 +329,62 @@ private fun DifficultySection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val textPrimary = colorScheme.onSurface
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
     val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
     val selectedIndex = levels.indexOf(currentLevel)
-    
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = surfaceColor,
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, borderColor),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(secondarySurface, RoundedCornerShape(12.dp))
+            .padding(3.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        val segmentWidth = maxWidth / levels.size
+        
+        // Sliding Capsule
+        val offset by animateDpAsState(
+            targetValue = segmentWidth * selectedIndex,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMedium
+            ),
+            label = "capsuleOffset"
+        )
+        
+        Box(
+            modifier = Modifier
+                .offset(x = offset)
+                .width(segmentWidth)
+                .fillMaxHeight()
+                .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
+                .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+        )
+        
+        // Interactive Labels
+        Row(modifier = Modifier.fillMaxSize()) {
+            levels.forEach { level ->
+                val isSelected = level == currentLevel
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .background(NemoPrimary.copy(alpha = 0.1f), CircleShape),
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(
+                            enabled = enabled,
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            onLevelChange(level)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        Icons.Rounded.SignalCellularAlt,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = NemoPrimary
+                    Text(
+                        text = level,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                        color = if (isSelected) NemoPrimary else NemoNeutrals.Gray500
                     )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    "日语能力等级",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = textPrimary
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            // Apple Style Segmented Control
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(44.dp)
-                    .background(secondarySurface, RoundedCornerShape(14.dp))
-                    .padding(3.dp)
-            ) {
-                val segmentWidth = maxWidth / levels.size
-                
-                // Sliding Capsule
-                val offset by animateDpAsState(
-                    targetValue = segmentWidth * selectedIndex,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessMedium
-                    ),
-                    label = "capsuleOffset"
-                )
-                
-                Box(
-                    modifier = Modifier
-                        .offset(x = offset)
-                        .width(segmentWidth)
-                        .fillMaxHeight()
-                        .background(if (isDark) colorScheme.surfaceContainerHigh else Color.White, RoundedCornerShape(12.dp))
-                        .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                )
-                
-                // Interactive Labels
-                Row(modifier = Modifier.fillMaxSize()) {
-                    levels.forEach { level ->
-                        val isSelected = level == currentLevel
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable(
-                                    enabled = enabled,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    onLevelChange(level)
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = level,
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                color = if (isSelected) NemoPrimary else NemoNeutrals.Gray500
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -296,7 +392,7 @@ private fun DifficultySection(
 }
 
 @Composable
-private fun HeroStartView(onStart: () -> Unit) {
+private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val textPrimary = colorScheme.onSurface
@@ -322,7 +418,7 @@ private fun HeroStartView(onStart: () -> Unit) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        Icons.Rounded.AutoAwesome,
+                        if (isGrammarMode) Icons.Rounded.MenuBook else Icons.Rounded.AutoAwesome,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = NemoPrimary
@@ -333,16 +429,19 @@ private fun HeroStartView(onStart: () -> Unit) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                "开启智能练习",
+                if (isGrammarMode) "语法专项训练" else "开启智能练习",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold,
-                color = NemoNeutrals.Gray900
+                color = textPrimary
             )
             
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                "AI 将根据您的日语等级\n为您实时生成专属的翻译例文",
+                if (isGrammarMode)
+                    "AI 将从本地语法库中随机抽取\n一个语法点为您生成针对性练习"
+                else
+                    "AI 将根据您的日语等级\n为您实时生成专属的翻译例文",
                 style = MaterialTheme.typography.bodyMedium,
                 color = NemoNeutrals.Gray500,
                 textAlign = TextAlign.Center,
@@ -402,6 +501,30 @@ private fun ExerciseMainView(
                             color = NemoSecondary,
                             fontWeight = FontWeight.Bold
                         )
+                    }
+                    // 语法专项模式标签
+                    uiState.currentGrammarPoint?.let { grammarPoint ->
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            color = NemoPrimary.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            val label = buildString {
+                                append(grammarPoint)
+                                uiState.currentGrammarSubtype?.let { subtype ->
+                                    if (subtype.isNotBlank()) append(" · $subtype")
+                                }
+                            }
+                            Text(
+                                text = label,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = NemoPrimary,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
