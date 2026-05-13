@@ -47,7 +47,7 @@ fun GrammarDto.toGrammarEntity(): GrammarEntity {
  */
 fun GrammarDto.toUsageEntities(): List<GrammarUsageEntity> {
     val grammarId = id
-    return content.mapIndexed { index, usage ->
+    return content.usages.mapIndexed { index, usage ->
         GrammarUsageEntity(
             grammarId = grammarId,
             subtype = usage.subtype,
@@ -65,7 +65,7 @@ fun GrammarDto.toUsageEntities(): List<GrammarUsageEntity> {
  */
 fun GrammarDto.toExampleEntities(usageIds: List<Long>): List<GrammarExampleEntity> {
     val result = mutableListOf<GrammarExampleEntity>()
-    content.forEachIndexed { usageIndex, usage ->
+    content.usages.forEachIndexed { usageIndex, usage ->
         val usageId = usageIds[usageIndex].toInt()
         usage.examples.forEachIndexed { exampleIndex, example ->
             result.add(

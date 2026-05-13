@@ -13,6 +13,7 @@ import com.jian.nemo.core.domain.model.DictionarySyncResult
 import com.jian.nemo.core.domain.model.GrammarDto
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import com.jian.nemo.core.data.util.DataSeedService
@@ -77,17 +78,34 @@ class SupabaseSyncManager @Inject constructor(
         try {
             val remoteVersion = contentRepository.getRemoteContentVersion()
             val lastVersion = settingsRepository.getLastContentVersion()
-            val lastSyncTimestamp = if (force) 0L else settingsRepository.getLastDictionarySyncTimestamp()
+            
+            // 获取旧的统一时间戳（用于平滑迁移）
+            val oldGlobalSyncTimestamp = settingsRepository.getLastDictionarySyncTimestamp()
+            
+            // 获取独立的单词和语法时间戳
+            var lastWordSyncTimestamp = if (force) 0L else settingsRepository.getLastWordSyncTimestamp()
+            var lastGrammarSyncTimestamp = if (force) 0L else settingsRepository.getLastGrammarSyncTimestamp()
+            
+            // 平滑迁移：如果独立时间戳为 0 但全局时间戳 > 0，说明是升级后的首次同步，借用全局时间戳
+            if (!force && lastWordSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
+                lastWordSyncTimestamp = oldGlobalSyncTimestamp
+                Log.i(TAG, "单词同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
+            }
+            if (!force && lastGrammarSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
+                lastGrammarSyncTimestamp = oldGlobalSyncTimestamp
+                Log.i(TAG, "语法同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
+            }
 
             // 如果版本不一致，或者本地数据库为空，则触发同步
             val wordCount = wordDao.getWordCount()
             val grammarCount = grammarDao.getGrammarCount()
             val isDatabaseEmpty = wordCount == 0 || grammarCount == 0
+            val isAnySyncRequired = lastWordSyncTimestamp == 0L || lastGrammarSyncTimestamp == 0L
 
-            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, LastSyncTime=$lastSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force, forceIncremental=$forceIncremental")
+            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, WordTS=$lastWordSyncTimestamp, GrammarTS=$lastGrammarSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force, forceIncremental=$forceIncremental")
 
-            if (force || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || lastSyncTimestamp == 0L))) {
-                val isFullSync = force || isDatabaseEmpty || lastSyncTimestamp == 0L
+            if (force || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || isAnySyncRequired))) {
+                val isFullSync = force || isDatabaseEmpty || (lastWordSyncTimestamp == 0L && lastGrammarSyncTimestamp == 0L)
                 Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
 
                 if (force) {
@@ -101,10 +119,14 @@ class SupabaseSyncManager @Inject constructor(
                         val g = async { contentRepository.fetchAllRemoteGrammars() }
                         w.await() to g.await()
                     } else {
-                        // 增量模式：使用时间戳拉取
-                        val timestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastSyncTimestamp))
-                        val w = async { contentRepository.fetchWordsModifiedSince(timestampStr) }
-                        val g = async { contentRepository.fetchGrammarsModifiedSince(timestampStr) }
+                        // 增量模式：使用各自的时间戳拉取
+                        val wordTimestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastWordSyncTimestamp))
+                        val grammarTimestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastGrammarSyncTimestamp))
+                        
+                        Log.d(TAG, "增量拉取时间戳: Word=$wordTimestampStr, Grammar=$grammarTimestampStr")
+                        
+                        val w = async { contentRepository.fetchWordsModifiedSince(wordTimestampStr) }
+                        val g = async { contentRepository.fetchGrammarsModifiedSince(grammarTimestampStr) }
                         w.await() to g.await()
                     }
                 }
@@ -119,21 +141,31 @@ class SupabaseSyncManager @Inject constructor(
                     contentUpdateApplier.applyAllGrammars(allGrammars, isFullSync)
                 }
 
-                // 计算并更新新的同步锚点时间戳 (取结果中最大的 updated_at)
+                // 计算并更新新的同步锚点时间戳 (分别取结果中最大的 updated_at)
                 val maxWordTimestamp = allWords.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
                 val maxGrammarTimestamp = allGrammars.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
                 
-                // 如果是全量同步且数据中没有时间戳（如从 Storage 下载的初始 JSON），
-                // 则使用当前时间作为锚点，确保下次能够正常进行增量同步。
-                var newSyncTimestamp = maxOf(lastSyncTimestamp, maxOf(maxWordTimestamp, maxGrammarTimestamp))
-                if (isFullSync && newSyncTimestamp == 0L) {
-                    newSyncTimestamp = System.currentTimeMillis()
+                // 单词锚点处理
+                var newWordSyncTimestamp = maxOf(lastWordSyncTimestamp, maxWordTimestamp)
+                if (isFullSync && newWordSyncTimestamp == 0L) newWordSyncTimestamp = System.currentTimeMillis()
+                
+                if (newWordSyncTimestamp > lastWordSyncTimestamp) {
+                    settingsRepository.setLastWordSyncTimestamp(newWordSyncTimestamp)
+                    Log.d(TAG, "更新单词同步时间戳锚点: $newWordSyncTimestamp")
                 }
 
-                if (newSyncTimestamp > lastSyncTimestamp) {
-                    settingsRepository.setLastDictionarySyncTimestamp(newSyncTimestamp)
-                    Log.d(TAG, "更新词库同步时间戳锚点: $newSyncTimestamp")
+                // 语法锚点处理
+                var newGrammarSyncTimestamp = maxOf(lastGrammarSyncTimestamp, maxGrammarTimestamp)
+                if (isFullSync && newGrammarSyncTimestamp == 0L) newGrammarSyncTimestamp = System.currentTimeMillis()
+                
+                if (newGrammarSyncTimestamp > lastGrammarSyncTimestamp) {
+                    settingsRepository.setLastGrammarSyncTimestamp(newGrammarSyncTimestamp)
+                    Log.d(TAG, "更新语法同步时间戳锚点: $newGrammarSyncTimestamp")
                 }
+
+                // 同时更新旧的全局时间戳以保证完全兼容
+                val finalGlobalTS = maxOf(newWordSyncTimestamp, newGrammarSyncTimestamp)
+                settingsRepository.setLastDictionarySyncTimestamp(finalGlobalTS)
 
                 // 更新本地版本号
                 remoteVersion?.let {
@@ -196,8 +228,17 @@ class SupabaseSyncManager @Inject constructor(
 
         try {
             Log.d(TAG, "开始执行同步: User $userId, mode=$mode, force=$force")
+
+            // 0. 身份预检：确保当前会话属于该用户且有效
+            try {
+                ensureAuthenticated(userId)
+            } catch (e: Exception) {
+                Log.e(TAG, "同步身份校验失败: ${e.message}")
+                emit(SyncProgress.Failed(e.message ?: "身份验证失败"))
+                return@flow
+            }
             
-            // 0. 核心依赖检查：确保本地词库已初始化（优先尝试网络同步，失败则使用本地兜底）
+            // 0.1 核心依赖检查：确保本地词库已初始化信号量
             emit(SyncProgress.Running("正在检查词库更新...", 0, 0))
             performDictionarySync(forceIncremental = true)
             
@@ -329,10 +370,20 @@ class SupabaseSyncManager @Inject constructor(
             emit(SyncProgress.Completed(report))
 
         } catch (e: Exception) {
-            Log.e(TAG, "同步过程发生严重错误", e)
+            val isRlsError = e.message?.contains("row-level security policy", ignoreCase = true) == true
+            val authStatus = supabaseClient.auth.currentUserOrNull()?.let { "Authenticated as ${it.id}" } ?: "Not Authenticated"
+            
+            Log.e(TAG, "同步错误 [Type=${e::class.simpleName}, RLS=$isRlsError, Auth=$authStatus]: ${e.message}", e)
+            
+            val errorMsg = if (isRlsError) {
+                "同步权限校验失败 (RLS)，请检查登录状态"
+            } else {
+                e.message ?: "未知错误"
+            }
+            
             settingsRepository.setLastSyncSuccess(false)
-            settingsRepository.setLastSyncError(e.message ?: "Unknown error")
-            emit(SyncProgress.Failed("Sync failed: ${e.message}"))
+            settingsRepository.setLastSyncError(errorMsg)
+            emit(SyncProgress.Failed("Sync failed: $errorMsg"))
         } finally {
             syncMutex.unlock()
         }
@@ -341,6 +392,25 @@ class SupabaseSyncManager @Inject constructor(
 
 
 
+
+
+    private suspend fun ensureAuthenticated(userId: String) {
+        // 等待 Auth 初始化（如果还未初始化）
+        try {
+            supabaseClient.auth.awaitInitialization()
+        } catch (e: Exception) {
+            Log.w(TAG, "Auth 等待初始化超时/失败: ${e.message}")
+        }
+
+        val currentUser = supabaseClient.auth.currentUserOrNull()
+        if (currentUser == null) {
+            throw Exception("登录会话已失效，请重新登录后再同步")
+        }
+        if (currentUser.id != userId) {
+            Log.e(TAG, "UID 冲突: Client=${currentUser.id}, Repo=$userId")
+            throw Exception("登录账号变更，同步终止")
+        }
+    }
 
 
     /** 泛型全量分页拉取辅助方法 */

@@ -456,6 +456,16 @@ interface SettingsRepository {
     suspend fun getLastDictionarySyncTimestamp(): Long
     suspend fun setLastDictionarySyncTimestamp(timestamp: Long)
 
+    /** 词库云更新：单词上次同步时间戳 */
+    val lastWordSyncTimestampFlow: Flow<Long>
+    suspend fun getLastWordSyncTimestamp(): Long
+    suspend fun setLastWordSyncTimestamp(timestamp: Long)
+
+    /** 词库云更新：语法上次同步时间戳 */
+    val lastGrammarSyncTimestampFlow: Flow<Long>
+    suspend fun getLastGrammarSyncTimestamp(): Long
+    suspend fun setLastGrammarSyncTimestamp(timestamp: Long)
+
     /** 上次同步冲突数量Flow */
     val lastSyncConflictCountFlow: Flow<Int>
     suspend fun setLastSyncConflictCount(count: Int)

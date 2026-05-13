@@ -167,6 +167,12 @@ object PreferencesKeys {
     /** 词库云更新：上次同步成功时的最大时间戳（用于增量同步） */
     val LAST_DICTIONARY_SYNC_TIMESTAMP = longPreferencesKey("last_dictionary_sync_timestamp")
 
+    /** 词库云更新：单词上次同步时间戳 */
+    val LAST_WORD_SYNC_TIMESTAMP = longPreferencesKey("last_word_sync_timestamp")
+
+    /** 词库云更新：语法上次同步时间戳 */
+    val LAST_GRAMMAR_SYNC_TIMESTAMP = longPreferencesKey("last_grammar_sync_timestamp")
+
     /** 已关闭的通知 ID 集合 */
     val DISMISSED_NOTIFICATION_IDS = stringSetPreferencesKey("dismissed_notification_ids")
 

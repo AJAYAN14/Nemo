@@ -32,41 +32,47 @@ object DateTimeUtils {
         return System.currentTimeMillis() + serverTimeOffset
     }
 
-    private const val ISO_8601_PATTERN = "yyyy-MM-dd'T'HH:mm:ss"
+    private const val ISO_8601_PATTERN_WITH_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     // UI 显示格式
     private const val DISPLAY_PATTERN_FULL = "yyyy/MM/dd HH:mm"
 
     /**
      * 解析 ISO 8601 格式的时间字符串
-     * 支持格式: 2026-01-29T00:00:00.000Z 或 2026-01-29T00:00:00
+     * 健壮处理各种精度 (毫秒、微秒、无毫秒) 的 ISO 8601 时间
      * @param timeString ISO 8601 时间字符串
      * @return Date 对象，解析失败返回 null
      */
     fun parseIso8601(timeString: String?): Date? {
         if (timeString.isNullOrEmpty()) return null
         return try {
-            // 简单处理: 去掉毫秒和时区后缀，统一按 UTC 处理
-            // 这种方式兼容性好，且对于同步时间戳已经足够
-            val cleanTime = timeString.substringBefore('.').substringBefore('Z')
-            val sdf = SimpleDateFormat(ISO_8601_PATTERN, Locale.US)
-            sdf.timeZone = TimeZone.getTimeZone("UTC")
-            sdf.parse(cleanTime)
+            // 既然是 Java 17，使用 Instant 解析最为健壮且支持纳秒级精度
+            val instant = java.time.Instant.parse(timeString)
+            Date.from(instant)
         } catch (e: Exception) {
-            e.printStackTrace()
-            null
+            // 降级处理逻辑，确保旧数据格式不崩溃
+            try {
+                val cleanTime = timeString.substringBefore('Z')
+                val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+                sdf.timeZone = TimeZone.getTimeZone("UTC")
+                sdf.parse(cleanTime)
+            } catch (e2: Exception) {
+                e2.printStackTrace()
+                null
+            }
         }
     }
 
     /**
      * 将 Date 格式化为 ISO 8601 字符串 (用于发送给服务端)
+     * 必须包含毫秒部分以保证增量同步的精确性
      * @param date Date 对象
      * @return ISO 8601 字符串
      */
     fun formatIso8601(date: Date): String {
-        val sdf = SimpleDateFormat(ISO_8601_PATTERN, Locale.US)
+        val sdf = SimpleDateFormat(ISO_8601_PATTERN_WITH_MILLIS, Locale.US)
         sdf.timeZone = TimeZone.getTimeZone("UTC")
-        return sdf.format(date) + "Z"
+        return sdf.format(date)
     }
 
     /**

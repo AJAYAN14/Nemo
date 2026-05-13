@@ -1147,6 +1147,34 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val lastWordSyncTimestampFlow: Flow<Long> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_WORD_SYNC_TIMESTAMP] ?: 0L
+    }
+
+    override suspend fun getLastWordSyncTimestamp(): Long {
+        return dataStore.data.map { it[PreferencesKeys.LAST_WORD_SYNC_TIMESTAMP] ?: 0L }.first()
+    }
+
+    override suspend fun setLastWordSyncTimestamp(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_WORD_SYNC_TIMESTAMP] = timestamp
+        }
+    }
+
+    override val lastGrammarSyncTimestampFlow: Flow<Long> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_GRAMMAR_SYNC_TIMESTAMP] ?: 0L
+    }
+
+    override suspend fun getLastGrammarSyncTimestamp(): Long {
+        return dataStore.data.map { it[PreferencesKeys.LAST_GRAMMAR_SYNC_TIMESTAMP] ?: 0L }.first()
+    }
+
+    override suspend fun setLastGrammarSyncTimestamp(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_GRAMMAR_SYNC_TIMESTAMP] = timestamp
+        }
+    }
+
     override val lastSyncConflictCountFlow: Flow<Int> = dataStore.data
         .map { preferences ->
             preferences[PreferencesKeys.LAST_SYNC_CONFLICT_COUNT] ?: 0

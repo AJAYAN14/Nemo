@@ -28,9 +28,14 @@ data class GrammarDto(
     @SerialName("raw_id") val rawId: String? = null,
     @SerialName("level") val level: String,
     @SerialName("title") val title: String,
-    @SerialName("content") val content: List<GrammarUsageDto>,
+    @SerialName("content") val content: GrammarContentDto,
     @SerialName("is_delisted") val isDelisted: Boolean = false,
     @SerialName("updated_at") val updatedAt: String? = null
+)
+
+@Serializable
+data class GrammarContentDto(
+    @SerialName("usages") val usages: List<GrammarUsageDto>
 )
 
 @Serializable

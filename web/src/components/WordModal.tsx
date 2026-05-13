@@ -86,11 +86,22 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const { error } = wordToEdit
-        ? await supabase.from("dictionary_words").update(formData).eq("id", wordToEdit.id)
-        : await supabase.from("dictionary_words").insert([formData]);
+      if (wordToEdit) {
+        // 编辑模式：剔除只读字段
+        const { id, raw_id, updated_at, ...updatePayload } = formData as any;
+        const { error } = await supabase
+          .from("dictionary_words")
+          .update(updatePayload)
+          .eq("id", wordToEdit.id);
+        if (error) throw error;
+      } else {
+        // 新增模式
+        const { error } = await supabase
+          .from("dictionary_words")
+          .insert([formData]);
+        if (error) throw error;
+      }
 
-      if (error) throw error;
       onSaved();
       onClose();
     } catch (err) {
