@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -136,18 +137,10 @@ fun HomeScreen(
         phrases.random()
     }
 
-    // 动态生成问候语 (日文版本)
+    // 动态生成问候语 (统一使用英文)
     val greeting = remember(uiState.user) {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        val timeGreeting = when (hour) {
-            in 0..4 -> "こんばんは"    // 凌晨/深夜
-            in 5..10 -> "おはよう"    // 早上
-            in 11..17 -> "こんにちは"  // 中午/下午
-            in 18..23 -> "こんばんは"  // 傍晚/晚上
-            else -> "こんにちは"
-        }
         val name = uiState.user?.username ?: "Nemo"
-        "$timeGreeting、$name さん"
+        "Hi, $name さん"
     }
 
     if (uiState.showLevelSheet) {
@@ -200,7 +193,6 @@ fun HomeScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // 1. 顶部 Header (动态日期与问候)
             item {
                 Row(
                     modifier = Modifier
@@ -217,7 +209,10 @@ fun HomeScreen(
                     ) {
                         Text(
                             text = greeting,
-                            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.ExtraBold,
+                                fontFamily = NotoSerifJP
+                            ),
                             color = textMain,
                             letterSpacing = (-0.5).sp,
                             modifier = Modifier.basicMarquee(),

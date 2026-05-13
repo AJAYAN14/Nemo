@@ -210,7 +210,8 @@ private fun WordDetailContent(
                     text = word.japanese,
                     style = MaterialTheme.typography.displayMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        letterSpacing = 1.sp,
+                        fontFamily = NotoSerifJP
                     ),
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -221,7 +222,8 @@ private fun WordDetailContent(
                 Text(
                     text = word.hiragana,
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = NotoSerifJP
                     ),
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
@@ -445,11 +447,13 @@ private fun ExampleCard(
                     baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Normal, // Changed from Medium to Normal
-                        lineHeight = 24.sp
+                        lineHeight = 24.sp,
+                        fontFamily = NotoSerifJP
                     ),
                     baseTextColor = MaterialTheme.colorScheme.onSurface,
                     furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                    furiganaTextSize = 10.sp
+                    furiganaTextSize = 10.sp,
+                    furiganaFontFamily = NotoSerifJP
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))

@@ -51,6 +51,7 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
 import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.presentation.CardBadge
 import kotlin.math.abs
@@ -129,7 +130,7 @@ fun SRSLearningCard(
     val shadowColor = if (isDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.03f)
 
     // Text: 使用 NemoNeutrals 定义的精准色值
-    val primaryTextColor = if (isDarkTheme) NemoNeutrals.DarkTextPrimary else NemoNeutrals.Gray900
+    val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
     val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray400
 
     // Labels
@@ -183,6 +184,7 @@ fun SRSLearningCard(
                     color = primaryTextColor,
                     fontSize = 48.sp,
                     fontWeight = FontWeight.ExtraBold, // Refined from Black to ExtraBold
+                    fontFamily = NotoSerifJP,
                     letterSpacing = (-1).sp,
                     modifier = Modifier.padding(bottom = 8.dp),
                     textAlign = TextAlign.Center,
@@ -200,6 +202,7 @@ fun SRSLearningCard(
                     color = if (isAnswerShown) NemoNeutrals.Blue600 else hiraganaColorHidden,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
+                    fontFamily = NotoSerifJP,
                     modifier = Modifier.then(
                         if (!isAnswerShown) Modifier.blur(8.dp) else Modifier
                     )
@@ -369,11 +372,13 @@ fun SRSLearningCard(
                                             baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                                                 fontSize = 15.sp,
                                                 fontWeight = FontWeight.Normal,
-                                                lineHeight = 24.sp
+                                                lineHeight = 24.sp,
+                                                fontFamily = NotoSerifJP
                                             ),
                                             baseTextColor = primaryTextColor,
                                             furiganaTextSize = 9.sp,
                                             furiganaTextColor = secondaryTextColor,
+                                            furiganaFontFamily = NotoSerifJP,
                                             modifier = Modifier.padding(bottom = 4.dp)
                                         )
                                         if (!gloss.isNullOrBlank()) {

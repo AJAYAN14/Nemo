@@ -210,11 +210,13 @@ private fun GrammarDetailContent(
                     text = grammar.grammar ?: "",
                     baseTextStyle = MaterialTheme.typography.displaySmall.copy(
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
+                        letterSpacing = 1.sp,
+                        fontFamily = NotoSerifJP
                     ),
                     baseTextColor = MaterialTheme.colorScheme.onBackground,
                     furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                    furiganaTextSize = 12.sp
+                    furiganaTextSize = 12.sp,
+                    furiganaFontFamily = NotoSerifJP
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -360,7 +362,8 @@ private fun GrammarDetailContent(
                                 baseTextStyle = MaterialTheme.typography.bodyMedium,
                                 baseTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
                                 furiganaTextColor = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                                furiganaTextSize = 9.sp
+                                furiganaTextSize = 9.sp,
+                                furiganaFontFamily = NotoSerifJP
                             )
                         }
 
@@ -456,11 +459,13 @@ private fun GrammarExampleItem(
             text = sentence,
             baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Normal // Changed from Medium to Normal
+                fontWeight = FontWeight.Normal, // Changed from Medium to Normal
+                fontFamily = NotoSerifJP
             ),
             baseTextColor = MaterialTheme.colorScheme.onBackground,
             furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-            furiganaTextSize = 9.sp
+            furiganaTextSize = 9.sp,
+            furiganaFontFamily = NotoSerifJP
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(

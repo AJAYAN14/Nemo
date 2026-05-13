@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
@@ -89,7 +90,7 @@ fun SRSGrammarCard(
     // 颜色系统
     val cardBackground = if (isDarkTheme) NemoSurfaceCardDark else NemoSurfaceCard
     val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color(0xFFE5E7EB)
-    val primaryTextColor = if (isDarkTheme) Color(0xFFE6E1E5) else Color(0xFF111827)
+    val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
     val secondaryTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
 
     // Indigo 标签色
@@ -154,6 +155,7 @@ fun SRSGrammarCard(
                     fontSize = 28.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = primaryTextColor,
+                    fontFamily = NotoSerifJP,
                     textAlign = TextAlign.Center,
                     lineHeight = 44.sp,
                     modifier = Modifier.padding(vertical = 16.dp)
@@ -458,11 +460,13 @@ fun SRSGrammarCard(
                                                             baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                                                                 fontSize = 16.sp,
                                                                 lineHeight = 26.sp,
-                                                                fontWeight = FontWeight.Medium
+                                                                fontWeight = FontWeight.Medium,
+                                                                fontFamily = NotoSerifJP
                                                             ),
                                                             baseTextColor = primaryTextColor,
                                                             furiganaTextSize = 10.sp,
-                                                            furiganaTextColor = secondaryTextColor
+                                                            furiganaTextColor = secondaryTextColor,
+                                                            furiganaFontFamily = NotoSerifJP
                                                         )
 
                                                         // 中文翻译

@@ -4,11 +4,43 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
+import com.jian.nemo.core.designsystem.R
 import androidx.compose.ui.unit.sp
 
 /**
  * Material3 typography scale for Nemo 2.0
  */
+private val googleFontsProvider = GoogleFont.Provider(
+    providerAuthority = "com.google.android.gms.fonts",
+    providerPackage = "com.google.android.gms",
+    certificates = R.array.com_google_android_gms_fonts_certs
+)
+
+val NotoSerifJP = FontFamily(
+    Font(
+        googleFont = GoogleFont("Noto Serif JP"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif JP"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif JP"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif JP"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
+    )
+)
+
 val NemoTypography = Typography(
     // Display styles
     displayLarge = TextStyle(

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -37,7 +38,8 @@ fun FuriganaText(
     baseTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     baseTextColor: Color = Color.Unspecified,
     furiganaTextSize: TextUnit = 10.sp,
-    furiganaTextColor: Color = Color.Gray
+    furiganaTextColor: Color = Color.Gray,
+    furiganaFontFamily: FontFamily? = null
 ) {
     // 1. 解析
     val segments = remember(text) { parseFuriganaText(text) }
@@ -88,7 +90,8 @@ fun FuriganaText(
                         baseTextStyle = baseTextStyle,
                         baseTextColor = baseTextColor,
                         furiganaTextSize = furiganaTextSize,
-                        furiganaTextColor = furiganaTextColor
+                        furiganaTextColor = furiganaTextColor,
+                        furiganaFontFamily = furiganaFontFamily
                     )
                 }
             }
@@ -134,7 +137,8 @@ private fun RubyUnit(
     baseTextStyle: TextStyle,
     baseTextColor: Color,
     furiganaTextSize: TextUnit,
-    furiganaTextColor: Color
+    furiganaTextColor: Color,
+    furiganaFontFamily: FontFamily?
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,6 +153,7 @@ private fun RubyUnit(
             Text(
                 text = furigana,
                 fontSize = furiganaTextSize,
+                fontFamily = furiganaFontFamily,
                 color = furiganaTextColor,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
