@@ -150,7 +150,6 @@ fun HistoricalStatisticsScreen(
         LevelBreakdownDialog(
             title = "单词等级分布",
             data = wordLevelData,
-            totalCount = words.size,
             themeColor = NemoPrimary,
             onDismiss = { showWordDialog = false }
         )
@@ -161,7 +160,6 @@ fun HistoricalStatisticsScreen(
         LevelBreakdownDialog(
             title = "语法等级分布",
             data = grammarLevelData,
-            totalCount = grammars.size,
             themeColor = NemoSecondary,
             onDismiss = { showGrammarDialog = false }
         )

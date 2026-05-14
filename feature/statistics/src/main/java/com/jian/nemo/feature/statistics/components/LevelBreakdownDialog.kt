@@ -3,12 +3,14 @@ package com.jian.nemo.feature.statistics.components
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.jian.nemo.core.designsystem.theme.IosColors
@@ -30,170 +33,154 @@ import com.jian.nemo.core.designsystem.theme.IosColors
 fun LevelBreakdownDialog(
     title: String,
     data: Map<String, Int>,
-    totalCount: Int,
     themeColor: Color,
     onDismiss: () -> Unit
 ) {
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { isVisible = true }
+    val totalCount = remember(data) { data.values.sum() }
 
     Dialog(
-        onDismissRequest = {
-            isVisible = false
-            onDismiss()
-        },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
+            usePlatformDefaultWidth = false
         )
     ) {
-        Box(
+        Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {
-                    isVisible = false
-                    onDismiss()
-                },
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp)
+                .widthIn(max = 320.dp),
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+            shadowElevation = 8.dp // Refined shadow for iOS style
         ) {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn() + scaleIn(initialScale = 0.9f),
-                exit = fadeOut() + scaleOut(targetScale = 0.9f)
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Surface(
-                    modifier = Modifier
-                        .padding(horizontal = 32.dp)
-                        .widthIn(max = 320.dp)
-                        .fillMaxWidth()
-                        .clickable(enabled = false) {}, // 阻止点击内容区关闭
-                    shape = RoundedCornerShape(28.dp),
-                    color = Color.White,
-                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp // Flat UI: 去掉厚重阴影
-                ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                // Header (Title + Close)
+                Box(modifier = Modifier.fillMaxWidth().height(32.dp)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                            .align(Alignment.CenterEnd)
                     ) {
-                        // Header
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                            
-                            IconButton(
-                                onClick = {
-                                    isVisible = false
-                                    onDismiss()
-                                },
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .align(Alignment.CenterEnd)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                        // Data Rows
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                // Data Rows
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val levelColors = mapOf(
+                        "N1" to IosColors.Red,
+                        "N2" to IosColors.Orange,
+                        "N3" to IosColors.Yellow,
+                        "N4" to IosColors.Green,
+                        "N5" to IosColors.Blue
+                    )
+
+                    data.forEach { (level, count) ->
+                        val color = levelColors[level.uppercase()] ?: themeColor
+
+                        Surface(
+                            onClick = { /* Future: Navigate to filtered list */ },
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color.Transparent,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            // 预定义的级别色彩方案
-                            val levelColors = mapOf(
-                                "N1" to IosColors.Red,
-                                "N2" to IosColors.Orange,
-                                "N3" to IosColors.Yellow,
-                                "N4" to IosColors.Green,
-                                "N5" to IosColors.Blue
-                            )
-
-                            data.forEach { (level, count) ->
-                                val percentage = if (totalCount > 0) count.toFloat() / totalCount else 0f
-                                val color = levelColors[level.uppercase()] ?: themeColor
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Level Badge (New Style: White bg + colored border)
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 42.dp, height = 24.dp)
+                                        .background(Color.White, RoundedCornerShape(6.dp))
+                                        .border(0.5.dp, color.copy(alpha = 0.15f), RoundedCornerShape(6.dp)),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    // Level Badge
-                                    Box(
-                                        modifier = Modifier
-                                            .size(width = 38.dp, height = 22.dp)
-                                            .background(color.copy(alpha = 0.1f), RoundedCornerShape(6.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = level,
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.Black,
-                                            color = color
-                                        )
-                                    }
+                                    Text(
+                                        text = level,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Black,
+                                        color = color
+                                    )
+                                }
 
-                                    Spacer(modifier = Modifier.width(12.dp))
-
-                                    // Progress Bar + Count
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.Bottom
-                                        ) {
-                                            Text(
-                                                text = "${(percentage * 100).toInt()}%",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                            Text(
-                                                text = count.toString(),
-                                                style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                        
-                                        Spacer(modifier = Modifier.height(4.dp))
-                                        
-                                        // Flat Progress Bar
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(6.dp)
-                                                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f), CircleShape)
-                                        ) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .fillMaxWidth(percentage)
-                                                    .fillMaxHeight()
-                                                    .background(color.copy(alpha = 0.8f), CircleShape)
-                                            )
-                                        }
-                                    }
+                                // Count + Chevron
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = count.toString(),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                 }
                             }
                         }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
+                }
+
+                // Footer (Total Mastered)
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "掌握总计",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = totalCount.toString(),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        letterSpacing = (-0.5).sp
+                    )
                 }
             }
         }

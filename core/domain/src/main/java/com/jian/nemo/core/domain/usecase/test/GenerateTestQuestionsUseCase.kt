@@ -457,7 +457,7 @@ class GenerateTestQuestionsUseCase @Inject constructor(
             val parts = id.split("_")
             val levelNum = parts[0].substring(1).toInt() // "N1" -> 1
             val num = parts[1].toInt()                // "001" -> 1
-            levelNum * 1000 + num
+            levelNum * 10000 + num
         } catch (_: Exception) {
             0
         }

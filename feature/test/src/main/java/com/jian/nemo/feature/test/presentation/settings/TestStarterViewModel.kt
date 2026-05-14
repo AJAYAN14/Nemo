@@ -63,10 +63,11 @@ class TestStarterViewModel @Inject constructor(
 
             try {
                 // 3. 准备参数
-                val level = if (config.testContentType == TestContentType.GRAMMAR) {
-                    config.selectedGrammarLevels.joinToString(",")
-                } else {
-                    config.selectedWordLevels.joinToString(",")
+                val level = when (config.testContentType) {
+                    TestContentType.GRAMMAR -> config.selectedGrammarLevels.joinToString(",")
+                    TestContentType.MIXED -> (config.selectedWordLevels + config.selectedGrammarLevels)
+                        .distinct().joinToString(",")
+                    else -> config.selectedWordLevels.joinToString(",")
                 }
 
                 // 确定题型：优先使用强制指定的题型，否则默认为选择题

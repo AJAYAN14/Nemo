@@ -24,6 +24,9 @@ import com.jian.nemo.feature.test.domain.usecase.ValidateTestConfigUseCase
 import android.util.Log
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 data class TestSettingsUiState(
     val testConfig: TestConfig = TestConfig(),
@@ -97,6 +100,7 @@ class TestSettingsViewModel @Inject constructor(
     init {
         // loadConfig() 由 setTestModeId() 触发，不在 init 中调用
         observeTodayStats()
+        observeAvailableDataCount()
     }
 
     /**
@@ -143,6 +147,32 @@ class TestSettingsViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 响应式监听影响数据量的配置字段变化，自动刷新可用数据量
+     * 监听字段：questionSource, testContentType, selectedWordLevels, selectedGrammarLevels
+     * 使用 debounce 防抖 + collectLatest 确保快速连续变更只触发一次查询
+     */
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
+    private fun observeAvailableDataCount() {
+        viewModelScope.launch {
+            _uiState
+                .map { state ->
+                    val config = state.testConfig
+                    listOf(
+                        config.questionSource,
+                        config.testContentType,
+                        config.selectedWordLevels.sorted(),
+                        config.selectedGrammarLevels.sorted()
+                    )
+                }
+                .distinctUntilChanged()
+                .debounce(300L)
+                .collectLatest {
+                    queryAvailableDataCount()
+                }
         }
     }
 

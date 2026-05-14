@@ -271,7 +271,7 @@ class TestQuestionFactory @Inject constructor() {
             val parts = id.split("_")
             val levelNum = parts[0].substring(1).toInt()
             val num = parts[1].toInt()
-            levelNum * 1000 + num
+            levelNum * 10000 + num
         } catch (_: Exception) {
             0
         }
