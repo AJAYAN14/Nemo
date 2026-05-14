@@ -35,73 +35,70 @@ fun CardMatchingScreen(
     }
 
     // 使用AnimatedContent为卡片题切换添加动画效果
-   AnimatedContent(
-        targetState = uiState.currentIndex,
-        transitionSpec = {
-            // 根据题目索引的变化方向来决定动画方向
-            if (targetState > initialState) {
-                // 下一题：从右侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
-            } else {
-                // 上一题：从左侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> width }
-            }
-        },
-        label = "card_matching_transition"
-    ) { _ ->
-        Box(
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(16.dp)
         ) {
-            // 卡片题使用专门的布局
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.statusBars)
-                    .padding(16.dp)
-            ) {
-                // 头部
-                CardMatchingTestHeader(
-                    onBack = { viewModel.confirmExitTest() },
-                    timeLimitSeconds = uiState.timeLimitSeconds,
-                    timeRemainingSeconds = uiState.timeRemainingSeconds,
-                    onPause = { viewModel.pauseTest() }
-                )
+            // 头部 (固定)
+            CardMatchingTestHeader(
+                onBack = { viewModel.confirmExitTest() },
+                timeLimitSeconds = uiState.timeLimitSeconds,
+                timeRemainingSeconds = uiState.timeRemainingSeconds,
+                onPause = { viewModel.pauseTest() }
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // 进度条
-                com.jian.nemo.feature.test.components.SimpleProgressIndicator(
-                    current = uiState.questions.count { it.isAnswered },
-                    total = uiState.questions.size
-                )
+            // 进度条 (固定)
+            com.jian.nemo.feature.test.components.SimpleProgressIndicator(
+                current = uiState.questions.count { it.isAnswered },
+                total = uiState.questions.size
+            )
 
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 卡片区域 - 分列显示
+            // 卡片区域 - 分列显示 (带动画)
+            AnimatedContent(
+                targetState = uiState.currentIndex,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
+                    } else {
+                        slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> width }
+                    }
+                },
+                label = "card_matching_transition",
+                modifier = Modifier.weight(1f)
+            ) { targetIndex ->
+                // 注意：卡片初始化由外部 LaunchedEffect 处理，这里只需展示
                 CardMatchingContentArea(
                     termCards = uiState.termCards,
                     definitionCards = uiState.definitionCards,
                     onCardClick = { card -> viewModel.selectCard(card) }
                 )
             }
-
-            // 底部反馈面板
-            MatchingFeedbackPanel(
-                feedbackState = uiState.feedbackPanelState,
-                onFinish = { viewModel.finishTest() },
-                onNextGroup = { viewModel.nextQuestion() },
-                isLastQuestion = uiState.isLastQuestion,
-                autoAdvance = uiState.isAutoAdvancing,
-                wrongCount = uiState.cardMatchingWrongCount,
-                wrongLimit = 3,
-                isAutoAdvancing = uiState.isAutoAdvancing,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
         }
+
+        // 底部反馈面板 (固定)
+        MatchingFeedbackPanel(
+            feedbackState = uiState.feedbackPanelState,
+            onFinish = { viewModel.finishTest() },
+            onNextGroup = { viewModel.nextQuestion() },
+            isLastQuestion = uiState.isLastQuestion,
+            autoAdvance = uiState.isAutoAdvancing,
+            wrongCount = uiState.cardMatchingWrongCount,
+            wrongLimit = 3,
+            isAutoAdvancing = uiState.isAutoAdvancing,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }

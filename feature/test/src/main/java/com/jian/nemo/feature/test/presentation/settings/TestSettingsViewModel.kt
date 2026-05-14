@@ -172,6 +172,7 @@ class TestSettingsViewModel @Inject constructor(
                 .debounce(300L)
                 .collectLatest {
                     queryAvailableDataCount()
+                    loadAvailableLevels()
                 }
         }
     }

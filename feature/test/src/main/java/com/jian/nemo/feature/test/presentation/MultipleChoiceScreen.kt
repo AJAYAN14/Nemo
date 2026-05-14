@@ -31,66 +31,67 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
     val currentQuestion = uiState.currentQuestion as? TestQuestion.MultipleChoice ?: return
 
     // 使用 AnimatedContent 为选择题切换添加动画效果（复刻旧项目 L41-55）
-    AnimatedContent(
-        targetState = uiState.currentIndex,
-        transitionSpec = {
-            // 根据题目索引的变化方向来决定动画方向
-            if (targetState > initialState) {
-                // 下一题：从右侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
-            } else {
-                // 上一题：从左侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> width }
-            }
+    UnifiedTestScreen(
+        headerContent = {
+            TestHeader(
+                onBack = { viewModel.confirmExitTest() },
+                timeLimitSeconds = uiState.timeLimitSeconds,
+                timeRemainingSeconds = uiState.timeRemainingSeconds,
+                word = currentQuestion.word,
+                grammar = currentQuestion.grammar,
+                onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) },
+                onPause = { viewModel.pauseTest() }
+            )
         },
-        label = "multiple_choice_transition"
-    ) { _ ->
-        UnifiedTestScreen(
-            headerContent = {
-                TestHeader(
-                    onBack = { viewModel.confirmExitTest() },
-                    timeLimitSeconds = uiState.timeLimitSeconds,
-                    timeRemainingSeconds = uiState.timeRemainingSeconds,
-                    word = currentQuestion.word,
-                    grammar = currentQuestion.grammar,
-                    onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) },
-                    onPause = { viewModel.pauseTest() }
-                )
-            },
-            progressContent = {
-                SimpleProgressIndicator(
-                    current = uiState.questions.count { it.isAnswered },
-                    total = uiState.questions.size
-                )
-            },
-            testContent = {
+        progressContent = {
+            SimpleProgressIndicator(
+                current = uiState.questions.count { it.isAnswered },
+                total = uiState.questions.size
+            )
+        },
+        testContent = {
+            AnimatedContent(
+                targetState = uiState.currentIndex,
+                transitionSpec = {
+                    // 根据题目索引的变化方向来决定动画方向
+                    if (targetState > initialState) {
+                        // 下一题：从右侧滑入
+                        slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
+                    } else {
+                        // 上一题：从左侧滑入
+                        slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> width }
+                    }
+                },
+                label = "multiple_choice_transition"
+            ) { targetIndex ->
+                val questionAtTarget = uiState.questions.getOrNull(targetIndex) as? TestQuestion.MultipleChoice ?: return@AnimatedContent
                 MultipleChoiceTestContent(
-                    question = currentQuestion,
-                    selectedOptionIndex = uiState.selectedOptionIndex,
+                    question = questionAtTarget,
+                    selectedOptionIndex = if (targetIndex == uiState.currentIndex) uiState.selectedOptionIndex else questionAtTarget.userAnswerIndex ?: -1,
                     onOptionSelect = { index -> viewModel.selectOption(index) }
                 )
-            },
-            footerContent = {
-                TestFooter(
-                    onPrev = { viewModel.previousQuestion() },
-                    onNext = { viewModel.nextQuestion() },
-                    onSubmit = { viewModel.submitAnswer() },
-                    onFinish = { viewModel.finishTest() },
-                    canGoPrev = uiState.currentIndex > 0,
-                    // 未回答时必须选择选项才能提交，已回答后可以提交（用于下一题按钮）（复刻旧项目 L93-96）
-                    canSubmit = if (!currentQuestion.isAnswered) {
-                        uiState.selectedOptionIndex >= 0 && uiState.selectedOptionIndex < currentQuestion.options.size
-                    } else {
-                        true
-                    },
-                    isAnswered = currentQuestion.isAnswered,
-                    isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
-                    submitText = "提交",
-                    isAutoAdvancing = uiState.isAutoAdvancing
-                )
             }
-        )
-    }
+        },
+        footerContent = {
+            TestFooter(
+                onPrev = { viewModel.previousQuestion() },
+                onNext = { viewModel.nextQuestion() },
+                onSubmit = { viewModel.submitAnswer() },
+                onFinish = { viewModel.finishTest() },
+                canGoPrev = uiState.currentIndex > 0,
+                // 未回答时必须选择选项才能提交，已回答后可以提交（用于下一题按钮）（复刻旧项目 L93-96）
+                canSubmit = if (!currentQuestion.isAnswered) {
+                    uiState.selectedOptionIndex >= 0 && uiState.selectedOptionIndex < currentQuestion.options.size
+                } else {
+                    true
+                },
+                isAnswered = currentQuestion.isAnswered,
+                isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
+                submitText = "提交",
+                isAutoAdvancing = uiState.isAutoAdvancing
+            )
+        }
+    )
 }

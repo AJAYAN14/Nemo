@@ -209,45 +209,27 @@ fun TestScreenContent(
             val currentQuestion = uiState.currentQuestion
 
             if (currentQuestion != null) {
-                // 使用AnimatedContent实现题目切换动画
-                AnimatedContent(
-                    targetState = uiState.currentIndex,
-                    transitionSpec = {
-                        if (targetState > initialState) {
-                            slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
-                                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
-                        } else {
-                            slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
-                                    slideOutHorizontally(animationSpec = tween(300)) { width -> width }
-                        }
-                    },
-                    label = "question_transition"
-                ) { targetIndex ->
-                    val question = uiState.questions.getOrNull(targetIndex)
-                    if (question != null) {
-                        when (question) {
-                            is TestQuestion.MultipleChoice -> {
-                                // 使用选择题界面
-                                MultipleChoiceQuestionPage(viewModel = viewModel)
-                            }
-                            is TestQuestion.Typing -> {
-                                // 使用手打题界面
-                                TypingQuestionPage(viewModel = viewModel)
-                            }
-                            is TestQuestion.CardMatching -> {
-                                // 使用卡片题界面
-                                com.jian.nemo.feature.test.presentation.cardmatching.CardMatchingScreen(
-                                    viewModel = viewModel,
-                                    onNavigateBack = onNavigateBack
-                                )
-                            }
-                            is TestQuestion.Sorting -> {
-                                // 使用排序题界面
-                                com.jian.nemo.feature.test.presentation.SortingScreen(
-                                    viewModel = viewModel
-                                )
-                            }
-                        }
+                when (currentQuestion) {
+                    is TestQuestion.MultipleChoice -> {
+                        // 使用选择题界面
+                        MultipleChoiceQuestionPage(viewModel = viewModel)
+                    }
+                    is TestQuestion.Typing -> {
+                        // 使用手打题界面
+                        TypingQuestionPage(viewModel = viewModel)
+                    }
+                    is TestQuestion.CardMatching -> {
+                        // 使用卡片题界面
+                        com.jian.nemo.feature.test.presentation.cardmatching.CardMatchingScreen(
+                            viewModel = viewModel,
+                            onNavigateBack = onNavigateBack
+                        )
+                    }
+                    is TestQuestion.Sorting -> {
+                        // 使用排序题界面
+                        com.jian.nemo.feature.test.presentation.SortingScreen(
+                            viewModel = viewModel
+                        )
                     }
                 }
             }

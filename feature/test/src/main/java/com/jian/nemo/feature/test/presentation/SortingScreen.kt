@@ -69,6 +69,8 @@ fun SortingScreen(
 
     // Removed the outer Scaffold that caused double-padding/EdgeToEdge loss.
     // Instead, using a Box with the gradient background as the outermost container.
+    val currentQuestion = questions.getOrNull(uiState.currentIndex) as? TestQuestion.Sorting ?: return
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -83,55 +85,55 @@ fun SortingScreen(
                 )
             )
     ) {
-        AnimatedContent(
-            targetState = uiState.currentIndex,
-            transitionSpec = {
-                if (targetState > initialState) {
-                    slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
-                            slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
-                } else {
-                    slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
-                            slideOutHorizontally(animationSpec = tween(300)) { width -> width }
-                }
+        com.jian.nemo.feature.test.components.UnifiedTestScreen(
+            headerContent = {
+                com.jian.nemo.feature.test.components.TestHeader(
+                    onBack = { viewModel.confirmExitTest() },
+                    timeLimitSeconds = uiState.timeLimitSeconds,
+                    timeRemainingSeconds = uiState.timeRemainingSeconds,
+                    word = currentQuestion.word,
+                    onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
+                    onPause = { viewModel.pauseTest() }
+                )
             },
-            label = "sorting_question_transition"
-        ) { targetIndex ->
-            val currentQuestion = questions.getOrNull(targetIndex) as? TestQuestion.Sorting ?: return@AnimatedContent
-            val shakeOffset = remember { androidx.compose.animation.core.Animatable(0f) }
+            progressContent = {
+                com.jian.nemo.feature.test.components.SimpleProgressIndicator(
+                    current = uiState.questions.count { it.isAnswered },
+                    total = uiState.questions.size
+                )
+            },
+            testContent = {
+                AnimatedContent(
+                    targetState = uiState.currentIndex,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
+                                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
+                        } else {
+                            slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
+                                    slideOutHorizontally(animationSpec = tween(300)) { width -> width }
+                        }
+                    },
+                    label = "sorting_question_transition"
+                ) { targetIndex ->
+                    val questionAtTarget = questions.getOrNull(targetIndex) as? TestQuestion.Sorting ?: return@AnimatedContent
+                    val shakeOffset = remember { androidx.compose.animation.core.Animatable(0f) }
 
-            com.jian.nemo.feature.test.components.UnifiedTestScreen(
-                headerContent = {
-                    com.jian.nemo.feature.test.components.TestHeader(
-                        onBack = { viewModel.confirmExitTest() },
-                        timeLimitSeconds = uiState.timeLimitSeconds,
-                        timeRemainingSeconds = uiState.timeRemainingSeconds,
-                        word = currentQuestion.word,
-                        onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                        onPause = { viewModel.pauseTest() }
-                    )
-                },
-                progressContent = {
-                    com.jian.nemo.feature.test.components.SimpleProgressIndicator(
-                        current = uiState.questions.count { it.isAnswered },
-                        total = uiState.questions.size
-                    )
-                },
-                testContent = {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val isGrammarQuestion = currentQuestion.word.level.startsWith("Grammar:")
+                        val isGrammarQuestion = questionAtTarget.word.level.startsWith("Grammar:")
 
                         Text(
-                            text = currentQuestion.word.chinese,
+                            text = questionAtTarget.word.chinese,
                             style = MaterialTheme.typography.displayMedium.copy(
-                                 fontSize = 44.sp,
-                                 fontWeight = FontWeight.Black,
-                                 letterSpacing = (-1).sp
+                                fontSize = 44.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = (-1).sp
                             ),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                             modifier = Modifier.padding(top = 16.dp)
+                            modifier = Modifier.padding(top = 16.dp)
                         )
                         Text(
                             text = if (isGrammarQuestion) "选择字符，按正确顺序排列" else "选择假名，按正确顺序排列",
@@ -143,8 +145,8 @@ fun SortingScreen(
                         )
 
                         AnswerContainer(
-                            question = currentQuestion,
-                            userAnswer = uiState.userAnswerChars,
+                            question = questionAtTarget,
+                            userAnswer = if (targetIndex == uiState.currentIndex) uiState.userAnswerChars else questionAtTarget.userAnswer,
                             shakeOffset = shakeOffset.value,
                             onDeselect = { char -> viewModel.deselectSortableChar(char) }
                         )
@@ -152,24 +154,24 @@ fun SortingScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         SortingFeedback(
-                            question = currentQuestion,
+                            question = questionAtTarget,
                             shakeOffset = shakeOffset
                         )
 
-                        if (currentQuestion.isAnswered && !isGrammarQuestion) {
+                        if (questionAtTarget.isAnswered && !isGrammarQuestion) {
                             Spacer(modifier = Modifier.height(16.dp))
                             QuestionExplanationCard(
                                 payload = ExplanationPayload.WordSummary(
-                                    japanese = currentQuestion.word.japanese,
-                                    hiragana = currentQuestion.word.hiragana,
-                                    meaning = currentQuestion.word.chinese
+                                    japanese = questionAtTarget.word.japanese,
+                                    hiragana = questionAtTarget.word.hiragana,
+                                    meaning = questionAtTarget.word.chinese
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
 
                         AnimatedVisibility(
-                            visible = !currentQuestion.isAnswered,
+                            visible = !questionAtTarget.isAnswered,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut(),
                             label = "options_visibility"
@@ -177,31 +179,29 @@ fun SortingScreen(
                             Column {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 OptionsContainer(
-                                    options = currentQuestion.options,
+                                    options = questionAtTarget.options,
                                     onSelect = { char -> viewModel.selectSortableChar(char) }
                                 )
                             }
                         }
                     }
-                },
-                footerContent = {
-                    // Removed the Surface container that acted as a background. 
-                    // Made the footer area completely transparent as requested.
-                    com.jian.nemo.feature.test.components.TestFooter(
-                        onPrev = { viewModel.previousQuestion() },
-                        onNext = { viewModel.nextQuestion() },
-                        onSubmit = { viewModel.submitAnswer() },
-                        onFinish = { viewModel.finishTest() },
-                        canGoPrev = uiState.currentIndex > 0,
-                        canSubmit = uiState.userAnswerChars.isNotEmpty(),
-                        isAnswered = currentQuestion.isAnswered,
-                        isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
-                        submitText = "检查",
-                        isAutoAdvancing = uiState.isAutoAdvancing
-                    )
                 }
-            )
-        }
+            },
+            footerContent = {
+                com.jian.nemo.feature.test.components.TestFooter(
+                    onPrev = { viewModel.previousQuestion() },
+                    onNext = { viewModel.nextQuestion() },
+                    onSubmit = { viewModel.submitAnswer() },
+                    onFinish = { viewModel.finishTest() },
+                    canGoPrev = uiState.currentIndex > 0,
+                    canSubmit = uiState.userAnswerChars.isNotEmpty(),
+                    isAnswered = currentQuestion.isAnswered,
+                    isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
+                    submitText = "检查",
+                    isAutoAdvancing = uiState.isAutoAdvancing
+                )
+            }
+        )
     }
 }
 

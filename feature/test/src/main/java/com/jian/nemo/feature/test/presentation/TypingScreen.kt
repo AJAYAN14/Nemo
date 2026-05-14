@@ -31,60 +31,61 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
     val question = uiState.currentQuestion as? TestQuestion.Typing ?: return
 
     // 使用 AnimatedContent 为手打题切换添加动画效果（复刻旧项目 L29-44）
-    AnimatedContent(
-        targetState = uiState.currentIndex,
-        transitionSpec = {
-            // 根据题目索引的变化方向来决定动画方向
-            if (targetState > initialState) {
-                // 下一题：从右侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
-            } else {
-                // 上一题：从左侧滑入
-                slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> width }
-            }
+    UnifiedTestScreen(
+        headerContent = {
+            TestHeader(
+                onBack = { viewModel.confirmExitTest() },
+                timeLimitSeconds = uiState.timeLimitSeconds,
+                timeRemainingSeconds = uiState.timeRemainingSeconds,
+                word = question.word,
+                onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
+                onPause = { viewModel.pauseTest() }
+            )
         },
-        label = "typing_question_transition"
-    ) { _ ->
-        UnifiedTestScreen(
-            headerContent = {
-                TestHeader(
-                    onBack = { viewModel.confirmExitTest() },
-                    timeLimitSeconds = uiState.timeLimitSeconds,
-                    timeRemainingSeconds = uiState.timeRemainingSeconds,
-                    word = question.word,
-                    onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                    onPause = { viewModel.pauseTest() }
-                )
-            },
-            progressContent = {
-                SimpleProgressIndicator(
-                    current = uiState.questions.count { it.isAnswered },
-                    total = uiState.questions.size
-                )
-            },
-            testContent = {
+        progressContent = {
+            SimpleProgressIndicator(
+                current = uiState.questions.count { it.isAnswered },
+                total = uiState.questions.size
+            )
+        },
+        testContent = {
+            AnimatedContent(
+                targetState = uiState.currentIndex,
+                transitionSpec = {
+                    // 根据题目索引的变化方向来决定动画方向
+                    if (targetState > initialState) {
+                        // 下一题：从右侧滑入
+                        slideInHorizontally(animationSpec = tween(300)) { width -> width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> -width }
+                    } else {
+                        // 上一题：从左侧滑入
+                        slideInHorizontally(animationSpec = tween(300)) { width -> -width } togetherWith
+                                slideOutHorizontally(animationSpec = tween(300)) { width -> width }
+                    }
+                },
+                label = "typing_question_transition"
+            ) { targetIndex ->
+                val questionAtTarget = uiState.questions.getOrNull(targetIndex) as? TestQuestion.Typing ?: return@AnimatedContent
                 TypingTestContent(
-                    question = question,
-                    userInput = uiState.userTypingInput,
+                    question = questionAtTarget,
+                    userInput = if (targetIndex == uiState.currentIndex) uiState.userTypingInput else questionAtTarget.userAnswer ?: "",
                     onInputChange = { viewModel.onTypingInputChange(it) }
                 )
-            },
-            footerContent = {
-                TestFooter(
-                    onPrev = { viewModel.previousQuestion() },
-                    onNext = { viewModel.nextQuestion() },
-                    onSubmit = { viewModel.submitAnswer() },
-                    onFinish = { viewModel.finishTest() },
-                    canGoPrev = uiState.currentIndex > 0,
-                    canSubmit = uiState.userTypingInput.trim().isNotBlank() || question.isAnswered,
-                    isAnswered = question.isAnswered,
-                    isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
-                    submitText = "提交",
-                    isAutoAdvancing = uiState.isAutoAdvancing
-                )
             }
-        )
-    }
+        },
+        footerContent = {
+            TestFooter(
+                onPrev = { viewModel.previousQuestion() },
+                onNext = { viewModel.nextQuestion() },
+                onSubmit = { viewModel.submitAnswer() },
+                onFinish = { viewModel.finishTest() },
+                canGoPrev = uiState.currentIndex > 0,
+                canSubmit = uiState.userTypingInput.trim().isNotBlank() || question.isAnswered,
+                isAnswered = question.isAnswered,
+                isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
+                submitText = "提交",
+                isAutoAdvancing = uiState.isAutoAdvancing
+            )
+        }
+    )
 }
