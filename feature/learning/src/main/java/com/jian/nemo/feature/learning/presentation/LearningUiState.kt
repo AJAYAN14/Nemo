@@ -89,6 +89,12 @@ data class LearningUiState(
     val showReportErrorDialog: Boolean = false,
     val successMessage: String? = null,
 
+    // 队列状态计数（用于进度条旁的四色数字显示）
+    val queueNewCount: Int = 0,
+    val queueLearningCount: Int = 0,
+    val queueReviewCount: Int = 0,
+    val queueRelearnCount: Int = 0,
+
     /** 当前显示模式 (null=系统, true=深色, false=浅色) */
     val isDarkMode: Boolean? = null
 ) {

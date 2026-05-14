@@ -672,7 +672,9 @@ private fun InputSection(
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = NemoPrimary,
-                disabledContainerColor = NemoNeutrals.Gray300
+                contentColor = Color.White,
+                disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray200,
+                disabledContentColor = if (isDark) Color.White.copy(alpha = 0.3f) else NemoNeutrals.Gray400
             ),
             enabled = answer.isNotBlank() && enabled,
             elevation = null

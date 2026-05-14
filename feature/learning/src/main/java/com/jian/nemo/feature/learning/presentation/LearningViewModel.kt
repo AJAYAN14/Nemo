@@ -646,6 +646,7 @@ class LearningViewModel @Inject constructor(
                     )
                 }
                 armShowAnswerDelay()
+                updateQueueBadgeCounts()
 
             println("恢复学习会话: ${items.size} 个项目, 索引 ${result.index}")
             }
@@ -680,6 +681,7 @@ class LearningViewModel @Inject constructor(
                     )
                 }
                 armShowAnswerDelay()
+                updateQueueBadgeCounts()
 
                 // 保存初始会话
                 saveSessionState(items.map { it.id }, 0, level)
@@ -888,6 +890,7 @@ class LearningViewModel @Inject constructor(
                         slideDirection = SlideDirection.BACKWARD
                     )
                 }
+                updateQueueBadgeCounts()
                 syncUndoAvailability()
 
                 // 保存会话状态
@@ -1490,6 +1493,7 @@ class LearningViewModel @Inject constructor(
                 }
             }
         }
+        updateQueueBadgeCounts()
     }
 
     /**
@@ -1657,6 +1661,40 @@ class LearningViewModel @Inject constructor(
             2 -> CardBadge.REVIEW
             3 -> CardBadge.RELEARN
             else -> CardBadge.REVIEW
+        }
+    }
+
+    /**
+     * 统计当前队列中各状态的数量并更新 UI State
+     */
+    private fun updateQueueBadgeCounts() {
+        val state = _uiState.value
+        val items: List<LearningItem> = when (state.learningMode) {
+            LearningMode.Word -> state.wordList.map { LearningItem.WordItem(it) }
+            LearningMode.Grammar -> state.grammarList.map { LearningItem.GrammarItem(it) }
+        }
+
+        var newCount = 0
+        var learningCount = 0
+        var reviewCount = 0
+        var relearnCount = 0
+
+        for (item in items) {
+            when (getCardBadge(item)) {
+                CardBadge.NEW -> newCount++
+                CardBadge.LEARNING -> learningCount++
+                CardBadge.REVIEW -> reviewCount++
+                CardBadge.RELEARN -> relearnCount++
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                queueNewCount = newCount,
+                queueLearningCount = learningCount,
+                queueReviewCount = reviewCount,
+                queueRelearnCount = relearnCount
+            )
         }
     }
 

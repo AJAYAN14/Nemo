@@ -149,7 +149,11 @@ fun LearnHeader(
     onUndo: (() -> Unit)? = null,
     menu: @Composable (() -> Unit)? = null,
     isDarkMode: Boolean? = null,
-    onCycleDarkMode: () -> Unit = {}
+    onCycleDarkMode: () -> Unit = {},
+    queueNewCount: Int = 0,
+    queueLearningCount: Int = 0,
+    queueReviewCount: Int = 0,
+    queueRelearnCount: Int = 0
 ) {
     val progress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
 
@@ -490,23 +494,69 @@ fun LearnHeader(
                 }
             }
 
-            // Progress Bar - MD3: 使用 LinearProgressIndicator 风格
-            Box(
+            // Progress Bar + Queue Badge Counts
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .height(4.dp) // MD3: 推荐的进度条高度 4dp
-                    .background(progressBackground, RoundedCornerShape(2.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // Progress Bar - MD3: 使用 LinearProgressIndicator 风格
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(progress.coerceIn(0f, 1f))
-                        .fillMaxSize()
-                        .background(
-                            color = MaterialTheme.colorScheme.primary, // MD3: 使用 primary 色
-                            shape = RoundedCornerShape(2.dp)
-                        )
-                )
+                        .weight(1f)
+                        .height(4.dp) // MD3: 推荐的进度条高度 4dp
+                        .background(progressBackground, RoundedCornerShape(2.dp))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(progress.coerceIn(0f, 1f))
+                            .fillMaxSize()
+                            .background(
+                                color = MaterialTheme.colorScheme.primary, // MD3: 使用 primary 色
+                                shape = RoundedCornerShape(2.dp)
+                            )
+                    )
+                }
+
+                // 四色状态计数
+                Row(
+                    modifier = Modifier.padding(start = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // 新学 (NEW) - 蓝色
+                    val newColor = if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
+                    Text(
+                        text = "$queueNewCount",
+                        color = newColor.copy(alpha = if (queueNewCount > 0) 1f else 0.3f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    // 在学 (LEARNING) - 青色
+                    val learningColor = if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
+                    Text(
+                        text = "$queueLearningCount",
+                        color = learningColor.copy(alpha = if (queueLearningCount > 0) 1f else 0.3f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    // 复习 (REVIEW) - 绿色
+                    val reviewColor = if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
+                    Text(
+                        text = "$queueReviewCount",
+                        color = reviewColor.copy(alpha = if (queueReviewCount > 0) 1f else 0.3f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    // 重学 (RELEARN) - 橙色
+                    val relearnColor = if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+                    Text(
+                        text = "$queueRelearnCount",
+                        color = relearnColor.copy(alpha = if (queueRelearnCount > 0) 1f else 0.3f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

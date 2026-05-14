@@ -168,7 +168,11 @@ fun LearningScreen(
                     onUndo = { viewModel.onEvent(LearningEvent.Undo) },
                     onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
                     isDarkMode = uiState.isDarkMode,
-                    onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
+                    onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) },
+                    queueNewCount = uiState.queueNewCount,
+                    queueLearningCount = uiState.queueLearningCount,
+                    queueReviewCount = uiState.queueReviewCount,
+                    queueRelearnCount = uiState.queueRelearnCount
                 )
 
                 // Content
