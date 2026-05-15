@@ -158,6 +158,7 @@ fun BasicSettingsSection(
 @Composable
 fun QuizSettingsSection(
     config: TestConfig,
+    testModeId: String?,
     onUpdateConfig: (TestConfig) -> Unit
 ) {
     SectionTitle("答题设置")
@@ -174,12 +175,14 @@ fun QuizSettingsSection(
             onCheckedChange = { onUpdateConfig(config.copy(shuffleOptions = it)) }
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-        PremiumSwitchRow(
-            label = "自动跳转",
-            checked = config.autoAdvance,
-            onCheckedChange = { onUpdateConfig(config.copy(autoAdvance = it)) }
-        )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        if (testModeId != "card_matching") {
+            PremiumSwitchRow(
+                label = "自动跳转",
+                checked = config.autoAdvance,
+                onCheckedChange = { onUpdateConfig(config.copy(autoAdvance = it)) }
+            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        }
         PremiumSwitchRow(
             label = "错题优先",
             checked = config.prioritizeWrong,

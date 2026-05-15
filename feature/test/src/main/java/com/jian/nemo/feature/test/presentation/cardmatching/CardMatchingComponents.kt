@@ -44,6 +44,8 @@ import com.jian.nemo.core.domain.model.MatchableCard
 import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.IosColors
 import java.util.Locale
 
 /**
@@ -275,13 +277,15 @@ fun MatchingFeedbackPanel(
         modifier = modifier
     ) {
         val backgroundColor = when (feedbackState) {
-            FeedbackPanelState.COMPLETE -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f) // Success -> Primary Container
-            else -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.95f)
+            FeedbackPanelState.COMPLETE -> IosColors.Green.copy(alpha = 0.95f)
+            FeedbackPanelState.INCORRECT -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.95f)
+            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
         }
 
         val textColor = when (feedbackState) {
-            FeedbackPanelState.COMPLETE -> MaterialTheme.colorScheme.onPrimaryContainer
-            else -> MaterialTheme.colorScheme.onErrorContainer
+            FeedbackPanelState.COMPLETE -> Color.White
+            FeedbackPanelState.INCORRECT -> MaterialTheme.colorScheme.onErrorContainer
+            else -> MaterialTheme.colorScheme.onSurfaceVariant
         }
 
         Surface(
@@ -315,39 +319,10 @@ fun MatchingFeedbackPanel(
                     color = textColor
                 )
 
-                // 按钮区域（仅COMPLETE状态且未自动跳转时显示）
-                if (feedbackState == FeedbackPanelState.COMPLETE && !autoAdvance) {
-                    Spacer(modifier = Modifier.height(24.dp))
 
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        if (!isLastQuestion) {
-                            Button(
-                                onClick = onNextGroup,
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = textColor,
-                                    contentColor = backgroundColor
-                                )
-                            ) {
-                                Text("下一组")
-                            }
-                        }
-
-                        OutlinedButton(
-                            onClick = onFinish,
-                            modifier = Modifier.weight(1f),
-                            border = BorderStroke(1.dp, textColor),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor)
-                        ) {
-                            Text("完成测试")
-                        }
-                    }
-                }
 
                 // 自动跳转提示
-                if (autoAdvance && isAutoAdvancing) {
+                if (feedbackState == FeedbackPanelState.COMPLETE) {
                     LaunchedEffect(Unit) {
                         kotlinx.coroutines.delay(1500)
                         onNextGroup()

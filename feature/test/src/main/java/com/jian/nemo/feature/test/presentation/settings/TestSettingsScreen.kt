@@ -228,6 +228,7 @@ fun TestSettingsScreen(
 
                 QuizSettingsSection(
                     config = config,
+                    testModeId = testModeId,
                     onUpdateConfig = { viewModel.updateConfig(it) }
                 )
 
