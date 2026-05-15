@@ -82,6 +82,18 @@ class TestViewModel @Inject constructor(
     private val _effect = MutableSharedFlow<TestEffect>()
     val effect: SharedFlow<TestEffect> = _effect.asSharedFlow()
 
+    // 暂存最后一次测试的参数，用于“再来一次”重新生成题目
+    private var lastTestParams: TestParams? = null
+
+    private data class TestParams(
+        val level: String,
+        val mode: TestMode,
+        val count: Int,
+        val questionType: QuestionType,
+        val contentType: String,
+        val source: String
+    )
+
 
     init {
         // 加载统计数据
@@ -157,6 +169,9 @@ class TestViewModel @Inject constructor(
         contentType: String = "words",
         source: String = "today"
     ) {
+        // 保存本次测试参数，以便“再来一次”时重新生成
+        lastTestParams = TestParams(level, mode, count, questionType, contentType, source)
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, questionType = questionType) }
 
@@ -706,7 +721,8 @@ class TestViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 showResult = true,
-                testResult = result
+                testResult = result,
+                isTestActive = false
             )
         }
     }
@@ -715,47 +731,26 @@ class TestViewModel @Inject constructor(
      * 重新测试
      */
     fun retakeTest() {
-        val state = _uiState.value
-        if (state.questions.isEmpty()) return
+        val params = lastTestParams ?: return
 
-        // 重置当前题目状态 - 需要根据类型分别处理 copy
-        val resetQuestions = state.questions.map { question ->
-            when (question) {
-                is TestQuestion.MultipleChoice -> question.copy(
-                    isAnswered = false,
-                    isCorrect = false,
-                    userAnswerIndex = null
-                )
-                is TestQuestion.Typing -> question.copy(
-                    isAnswered = false,
-                    isCorrect = false,
-                    userAnswer = ""
-                )
-                is TestQuestion.CardMatching -> question.copy(
-                    isAnswered = false,
-                    isCorrect = false
-                )
-                is TestQuestion.Sorting -> question.copy(
-                    isAnswered = false,
-                    isCorrect = false,
-                    userAnswer = emptyList()
-                )
-            }
-        }.shuffled()  // 打乱题目顺序
-
+        // 立即清除结果状态，显示加载中
         _uiState.update {
             it.copy(
-                questions = resetQuestions,
-                currentIndex = 0,
-                selectedOptionIndex = -1,
-                userTypingInput = "",
                 showResult = false,
                 testResult = null,
-                testStartTimeMs = System.currentTimeMillis(),
-                isTestActive = true, // 测试开始时激活（复刻旧项目）
-                userAnswerChars = emptyList() // 重置排序题答案
+                isLoading = true
             )
         }
+
+        // 使用相同的参数重新开始测试（触发重新生成题目逻辑）
+        startTest(
+            level = params.level,
+            mode = params.mode,
+            count = params.count,
+            questionType = params.questionType,
+            contentType = params.contentType,
+            source = params.source
+        )
     }
 
     /**

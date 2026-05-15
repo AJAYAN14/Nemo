@@ -199,6 +199,8 @@ fun TestScreenContent(
             // 测试结果
             TestResultScreen(
                 result = uiState.testResult!!,
+                todayTestCount = uiState.todayTestCount,
+                todayAccuracy = uiState.todayAccuracy,
                 onRetakeTest = onRetakeTest,
                 onExit = onNavigateBack
             )

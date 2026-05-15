@@ -6,9 +6,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,6 +67,8 @@ fun TestResultComponent(
     endTimeMillis: Long,
     actualWordCount: Int = 0,
     actualGrammarCount: Int = 0,
+    todayTestCount: Int = 0,
+    todayAccuracy: Float = 0f,
     onRetakeTest: () -> Unit,
     onExitTest: () -> Unit
 ) {
@@ -286,104 +290,24 @@ fun TestResultComponent(
                     }
                 }
 
-                // 显示混合测试的实际单词/语法比例
-                if (actualWordCount > 0 || actualGrammarCount > 0) {
+                // 显示混合测试的实际单词/语法比例 - 重新设计为精简的比例条
+                if (actualWordCount > 0 && actualGrammarCount > 0) {
                     item {
-                        val totalUsed = actualWordCount + actualGrammarCount
-                        val wordPercent = if (totalUsed > 0) (actualWordCount * 100) / totalUsed else 0
-                        val grammarPercent = if (totalUsed > 0) (actualGrammarCount * 100) / totalUsed else 0
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(24.dp),
-                            color = if (isDark) TestResultPalette.DistributionCardBgDark else TestResultPalette.DistributionCardBgLight,
-                            shadowElevation = 0.dp
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "测试内容分布",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isDark) TestResultPalette.DistributionTitleDark else TestResultPalette.DistributionTitleLight
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceEvenly,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    // 单词比例
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(
-                                            text = "$wordPercent%",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isDark) TestResultPalette.WordAccentDark else TestResultPalette.WordAccentLight
-                                        )
-                                        Text(
-                                            text = "单词 ($actualWordCount)",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = textSub
-                                        )
-                                    }
-
-                                    // 分隔线
-                                    VerticalDivider(
-                                        modifier = Modifier.height(40.dp),
-                                        color = if (isDark) TestResultPalette.DividerDark else TestResultPalette.DividerLight
-                                    )
-
-                                    // 语法比例
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(
-                                            text = "$grammarPercent%",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isDark) TestResultPalette.GrammarAccentDark else TestResultPalette.GrammarAccentLight
-                                        )
-                                        Text(
-                                            text = "语法 ($actualGrammarCount)",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = textSub
-                                        )
-                                    }
-                                }
-                                if (wordPercent != 60 || grammarPercent != 40) {
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        val tintColor = if (isDark) TestResultPalette.WordAccentDark else TestResultPalette.WordAccentLight
-                                        Icon(
-                                            imageVector = Icons.Default.Info,
-                                            contentDescription = "提示",
-                                            tint = tintColor,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "已根据可用资源智能调整比例",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = tintColor,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        ContentAnalysisSection(
+                            wordCount = actualWordCount,
+                            grammarCount = actualGrammarCount,
+                            isDark = isDark
+                        )
                     }
+                }
+
+                // 今日战报 - 新增模块
+                item {
+                    TodaySummarySection(
+                        todayTestCount = todayTestCount,
+                        todayAccuracy = todayAccuracy,
+                        isDark = isDark
+                    )
                 }
             }
         }
@@ -533,6 +457,158 @@ fun StatCard(
                 style = MaterialTheme.typography.bodySmall,
                 color = contentColor
             )
+        }
+    }
+}
+
+/**
+ * 内容分布分析组件 - 重新设计为分段比例条
+ */
+@Composable
+fun ContentAnalysisSection(
+    wordCount: Int,
+    grammarCount: Int,
+    isDark: Boolean
+) {
+    val total = wordCount + grammarCount
+    val wordWeight = wordCount.toFloat() / total
+    val wordPercent = (wordWeight * 100).toInt()
+    val grammarPercent = 100 - wordPercent
+
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+    val outlineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = containerColor,
+        border = androidx.compose.foundation.BorderStroke(1.dp, outlineColor)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "测试内容分布",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // 分段比例条
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                // 单词部分
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(wordWeight)
+                        .background(if (isDark) TestResultPalette.WordAccentDark else TestResultPalette.WordAccentLight)
+                )
+                // 语法部分
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(1f - wordWeight)
+                        .background(if (isDark) TestResultPalette.GrammarAccentDark else TestResultPalette.GrammarAccentLight)
+                )
+            }
+
+            // 比例标签
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(if (isDark) TestResultPalette.WordAccentDark else TestResultPalette.WordAccentLight))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "单词 $wordPercent%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "语法 $grammarPercent%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(modifier = Modifier.size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(if (isDark) TestResultPalette.GrammarAccentDark else TestResultPalette.GrammarAccentLight))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 今日战报组件
+ */
+@Composable
+fun TodaySummarySection(
+    todayTestCount: Int,
+    todayAccuracy: Float,
+    isDark: Boolean
+) {
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        color = containerColor
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Whatshot,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "今日累计战报",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "已完成 $todayTestCount 次测试",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${(todayAccuracy * 100).toInt()}%",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = "平均正确率",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

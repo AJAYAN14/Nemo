@@ -11,6 +11,8 @@ import com.jian.nemo.core.domain.model.TestResult
 @Composable
 fun TestResultScreen(
     result: TestResult,
+    todayTestCount: Int = 0,
+    todayAccuracy: Float = 0f,
     onRetakeTest: () -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier
@@ -23,6 +25,8 @@ fun TestResultScreen(
         endTimeMillis = result.endTimeMs,
         actualWordCount = result.questions.count { it is com.jian.nemo.core.domain.model.TestQuestion.MultipleChoice && it.word != null || it is com.jian.nemo.core.domain.model.TestQuestion.Typing || it is com.jian.nemo.core.domain.model.TestQuestion.CardMatching || it is com.jian.nemo.core.domain.model.TestQuestion.Sorting },
         actualGrammarCount = result.questions.count { it is com.jian.nemo.core.domain.model.TestQuestion.MultipleChoice && it.grammar != null },
+        todayTestCount = todayTestCount,
+        todayAccuracy = todayAccuracy,
         onRetakeTest = onRetakeTest,
         onExitTest = onExit
     )
