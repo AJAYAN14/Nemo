@@ -109,7 +109,7 @@ fun GrammarListScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         val sortedLevels = filteredGrammarsByLevel.keys.sorted()
@@ -138,7 +138,7 @@ fun GrammarListScreen(
 
                             if (isExpanded) {
                                 items(grammars, key = { it.id }) { grammar ->
-                                    Box(modifier = Modifier.animateListItem()) {
+                                    Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
                                         GrammarListItemPremium(
                                             grammar = grammar,
                                             onClick = { navController.navigate(NavDestination.grammarDetail(grammar.id)) }
@@ -236,11 +236,23 @@ private fun LevelHeader(
     onToggle: () -> Unit
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(vertical = 8.dp)
+        color = MaterialTheme.colorScheme.background,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggle)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 16.dp)) {
-            Box(modifier = Modifier.size(width = 4.dp, height = 24.dp).clip(RoundedCornerShape(2.dp)).background(color))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 4.dp, height = 24.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(color)
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(level, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
             Spacer(modifier = Modifier.width(8.dp))
