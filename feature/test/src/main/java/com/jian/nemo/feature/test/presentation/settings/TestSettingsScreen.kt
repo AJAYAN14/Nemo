@@ -240,7 +240,6 @@ fun TestSettingsScreen(
                      .align(Alignment.BottomCenter)
                      .fillMaxWidth()
                      .padding(20.dp)
-                     .safeDrawingPadding()
              ) {
                  LaunchedEffect(Unit) {
                     starterViewModel.navigationEvent.collect { event -> onNavigate(event) }

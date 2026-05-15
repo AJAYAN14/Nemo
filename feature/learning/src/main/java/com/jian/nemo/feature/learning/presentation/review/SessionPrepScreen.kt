@@ -171,7 +171,6 @@ fun SessionPrepScreen(
                          .align(Alignment.BottomCenter)
                          .fillMaxWidth()
                          .padding(20.dp)
-                         .safeDrawingPadding()
                  ) {
                      Button(
                          onClick = {

@@ -114,8 +114,7 @@ fun SRSActionArea(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .windowInsetsPadding(WindowInsets.navigationBars) // 添加底部系统导航栏安全区域
-            .padding(bottom = 16.dp) // 额外的内容间距
+            .padding(bottom = 16.dp) // 仅保留基础内容间距，安全区域由父容器 Scaffold 统一处理
     ) {
         AnimatedContent(
             targetState = isAnswerShown,
