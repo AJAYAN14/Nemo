@@ -23,11 +23,5 @@ data class TestConfig(
     val prioritizeNew: Boolean = false,       // 未学优先 (在选题时优先选择从未测试过的)
     val wrongAnswerRemovalThreshold: Int = 0, // 错题移除阈值 (答对几次从错题集移除)
 
-    // 综合测试题型分布（仅在综合测试模式下使用）
-    val comprehensiveQuestionCounts: Map<String, Int> = mapOf(
-        "multiple_choice" to 4,  // 选择题
-        "typing" to 3,           // 手打题
-        "card_matching" to 2,    // 卡片题
-        "sorting" to 1           // 排序题
-    )
+
 )

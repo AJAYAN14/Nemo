@@ -223,19 +223,7 @@ object PreferencesKeys {
     /** 选中的语法等级列表 (JSON or comma-separated) - 这里使用 StringSet存储 */
     val TEST_SELECTED_GRAMMAR_LEVELS = stringSetPreferencesKey("test_selected_grammar_levels")
 
-    // ========== 综合测试配置 (各个题型的数量) ==========
 
-    /** 综合测试：选择题数量 */
-    val COMPREHENSIVE_TEST_MC_COUNT = intPreferencesKey("comprehensive_test_mc_count")
-    
-    /** 综合测试：拼写题数量 */
-    val COMPREHENSIVE_TEST_TYPING_COUNT = intPreferencesKey("comprehensive_test_typing_count")
-    
-    /** 综合测试：配对题数量 */
-    val COMPREHENSIVE_TEST_MATCHING_COUNT = intPreferencesKey("comprehensive_test_matching_count")
-    
-    /** 综合测试：排序题数量 */
-    val COMPREHENSIVE_TEST_SORTING_COUNT = intPreferencesKey("comprehensive_test_sorting_count")
 
     // ========== 学习状态持久化 ==========
 

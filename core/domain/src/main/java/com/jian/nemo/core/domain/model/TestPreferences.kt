@@ -16,11 +16,5 @@ data class TestPreferences(
     val wrongAnswerRemovalThreshold: Int,
     val testContentType: String,
     val selectedWordLevels: List<String>,
-    val selectedGrammarLevels: List<String>,
-    
-    // 综合测试各个题型数量
-    val comprehensiveMultipleChoiceCount: Int,
-    val comprehensiveTypingCount: Int,
-    val comprehensiveCardMatchingCount: Int,
-    val comprehensiveSortingCount: Int
+    val selectedGrammarLevels: List<String>
 )

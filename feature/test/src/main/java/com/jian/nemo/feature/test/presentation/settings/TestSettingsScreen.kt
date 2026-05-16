@@ -57,7 +57,6 @@ fun TestSettingsScreen(
             "typing" -> "手打题设置"
             "card_matching" -> "卡片题设置"
             "sorting" -> "排序题设置"
-            "comprehensive" -> "综合测试设置"
             else -> "测试设置"
         }
     }
@@ -135,8 +134,6 @@ fun TestSettingsScreen(
     val contentTypeOptions = remember(isRestrictedMode, testModeId) {
         if (isRestrictedMode) {
             listOf("仅测试单词" to TestContentType.WORDS.key)
-        } else if (testModeId == "comprehensive") {
-            listOf("仅测试单词" to TestContentType.WORDS.key, "单词和语法混合" to TestContentType.MIXED.key)
         } else {
             listOf("仅测试单词" to TestContentType.WORDS.key, "仅测试语法" to TestContentType.GRAMMAR.key, "单词和语法混合" to TestContentType.MIXED.key)
         }
@@ -168,8 +165,6 @@ fun TestSettingsScreen(
                 contentTypeOptions = contentTypeOptions,
                 allLevels = allLevels,
                 onUpdateConfig = { viewModel.updateConfig(it) },
-                onUpdateQuestionDistribution = { viewModel.updateQuestionDistribution(it) },
-                onQuestionTypeCountChange = { key, count -> viewModel.updateComprehensiveQuestionCount(key, count) },
                 isQuestionTypeSupported = { viewModel.isQuestionTypeSupported(it) },
                 onToggleLevel = { level, isGrammar -> viewModel.toggleLevel(level, isGrammar) },
                 onExclusiveSelectLevel = { level, isGrammar -> viewModel.exclusiveSelectLevel(level, isGrammar) },
@@ -187,7 +182,6 @@ fun TestSettingsScreen(
 
     CustomQuestionCountDialog(showCustomQuestionCountDialog, config.questionCount, { showCustomQuestionCountDialog = false }) { count ->
         updateConfig { it.copy(questionCount = count) }
-        if (testModeId == "comprehensive") viewModel.updateQuestionDistribution(count)
     }
     CustomTimeLimitDialog(showCustomTimeLimitDialog, config.timeLimitMinutes, { showCustomTimeLimitDialog = false }) { updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) } }
 

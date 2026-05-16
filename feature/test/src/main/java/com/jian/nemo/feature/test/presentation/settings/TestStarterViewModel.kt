@@ -25,7 +25,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TestStarterViewModel @Inject constructor(
     private val generateTestQuestionsUseCase: GenerateTestQuestionsUseCase,
-    private val generateAdaptiveTestUseCase: com.jian.nemo.feature.test.domain.usecase.GenerateAdaptiveTestUseCase,
     private val testSessionManager: TestSessionManager,
     private val validateTestConfigUseCase: ValidateTestConfigUseCase
 ) : ViewModel() {
@@ -80,39 +79,19 @@ class TestStarterViewModel @Inject constructor(
                     config.testContentType.key
                 }
 
-                // 准备综合测试题型计数
-                val typeCounts = if (config.comprehensiveQuestionCounts.values.sum() > 0 && forcedQuestionType == null) {
-                    config.comprehensiveQuestionCounts
-                } else {
-                    null
-                }
-
                 // 4. 生成题目
-                // 如果没有强制指定题型，使用自适应测试（综合模式）
-                val useAdaptive = forcedQuestionType == null
-
-                val questions = if (useAdaptive) {
-                    generateAdaptiveTestUseCase(
-                        count = config.questionCount,
-                        levels = level.split(",").map{it.trim()}.toSet(),
-                        mode = mode,
-                        contentType = effectiveContentType
-                    )
-                } else {
-                    generateTestQuestionsUseCase(
-                        level = level,
-                        mode = mode,
-                        count = config.questionCount,
-                        questionType = questionType,
-                        contentType = effectiveContentType,
-                        source = config.questionSource.key,
-                        typeCounts = typeCounts,
-                        shuffleQuestions = config.shuffleQuestions,
-                        shuffleOptions = config.shuffleOptions,
-                        prioritizeWrong = config.prioritizeWrong,
-                        prioritizeNew = config.prioritizeNew
-                    )
-                }
+                val questions = generateTestQuestionsUseCase(
+                    level = level,
+                    mode = mode,
+                    count = config.questionCount,
+                    questionType = questionType,
+                    contentType = effectiveContentType,
+                    source = config.questionSource.key,
+                    shuffleQuestions = config.shuffleQuestions,
+                    shuffleOptions = config.shuffleOptions,
+                    prioritizeWrong = config.prioritizeWrong,
+                    prioritizeNew = config.prioritizeNew
+                )
 
                 if (questions.isEmpty()) {
                     _isGenerating.update { false }

@@ -107,17 +107,6 @@ fun BasicSettingsSection(
             )
         }
 
-        // 7. 题型分布 (如果适用)
-        if (testModeId == "comprehensive") {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-            val counts = config.comprehensiveQuestionCounts
-            val summary = "选${counts["multiple_choice"]?:0} 打${counts["typing"]?:0} 卡${counts["card_matching"]?:0} 排${counts["sorting"]?:0}"
-            PremiumSettingRow(
-                label = "题型分布",
-                value = summary,
-                onClick = { onSettingClick("questionTypeCount") }
-            )
-        }
 
         // 8. 等级选择
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))

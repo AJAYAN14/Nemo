@@ -56,7 +56,8 @@ fun TestDashboardScreen(
     onNavigateToTestSettings: (String?) -> Unit = {},
     onNavigateToMistakes: () -> Unit = {},
     onNavigateToFavorites: () -> Unit = {},
-    onNavigateToGrammarTest: () -> Unit = {}
+    onNavigateToGrammarTest: () -> Unit = {},
+    onNavigateToAbilityWorkshop: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -166,13 +167,13 @@ fun TestDashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SectionTitle("挑战自我")
+            SectionTitle("其他测试")
             DashboardBanner(
-                title = "综合测试",
-                subtitle = "随机组合所有题型进行全面检测",
+                title = "能力工坊",
+                subtitle = "提升语感，全方位进阶（即将上线）",
                 icon = Icons.Rounded.AllInclusive,
                 gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
-                onClick = { onNavigateToTestSettings("comprehensive") }
+                onClick = onNavigateToAbilityWorkshop
             )
 
             Spacer(modifier = Modifier.height(24.dp))

@@ -49,10 +49,6 @@ data class AppSettings(
     val testSelectedWordLevels: Set<String> = setOf("N5", "N4", "N3", "N2", "N1"),
     val testSelectedGrammarLevels: Set<String> = setOf("N5", "N4", "N3", "N2", "N1"),
 
-    val comprehensiveTestMultipleChoiceCount: Int = 4,
-    val comprehensiveTestTypingCount: Int = 3,
-    val comprehensiveTestCardMatchingCount: Int = 2,
-    val comprehensiveTestSortingCount: Int = 5,
 
     val ttsSpeechRate: Float = 1.0f,
     val ttsPitch: Float = 1.0f,

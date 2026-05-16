@@ -47,7 +47,6 @@ class GenerateTestQuestionsUseCase @Inject constructor(
         questionType: QuestionType = QuestionType.MULTIPLE_CHOICE,
         contentType: String = "words",
         source: String = "today",
-        typeCounts: Map<String, Int>? = null,
         // New params for settings
         shuffleQuestions: Boolean = true,
         shuffleOptions: Boolean = true,
@@ -224,125 +223,7 @@ class GenerateTestQuestionsUseCase @Inject constructor(
 
 
 
-        // 2. 根据题型分布生成题目
-        if (typeCounts != null) {
-            println("NemoTestDebug: Generating with distribution: $typeCounts")
-            val mcCount = typeCounts["multiple_choice"] ?: 0
-            val typingCount = typeCounts["typing"] ?: 0
 
-            // 2.1 生成打字题 (仅单词)
-            if (typingCount > 0 && words.isNotEmpty()) {
-                val typingWords = words.shuffled().take(typingCount)
-                questions.addAll(typingWords.map { testQuestionFactory.createTyping(it) })
-            }
-
-            // 2.2 生成选择题 (单词 + 语法)
-            if (mcCount > 0) {
-
-                if (contentType == "mixed") {
-                    // 混合模式
-                    val wordMcCount = mcCount / 2
-                    val grammarMcCount = mcCount - wordMcCount
-
-                    if (words.isNotEmpty()) {
-                        val sortedPool = when {
-                            prioritizeNew -> words.sortedBy { it.repetitionCount }
-                            prioritizeWrong -> words.sortedByDescending { it.difficulty }
-                            else -> words.shuffled()
-                        }
-                        questions.addAll(sortedPool.take(wordMcCount).map {
-                            testQuestionFactory.createMultipleChoice(it, mode, allWordsForDistractors, shuffleOptions)
-                        })
-                    }
-
-                    if (jsonGrammarQuestions.isNotEmpty()) {
-                         // ... JSON logic ...
-                         val sortedJson = if (prioritizeNew || prioritizeWrong) {
-                             jsonGrammarQuestions.sortedBy { q ->
-                                 val id = try { extractNumericId(q.targetGrammarId) } catch(_:Exception){0}
-                                 val g = grammarEntityMap[id]
-                                 if (g != null) {
-                                     if (prioritizeNew) g.repetitionCount.toDouble()
-                                     else g.difficulty.toDouble()
-                                 } else 0.0
-                             }
-                          } else jsonGrammarQuestions.shuffled()
-
-                         questions.addAll(sortedJson.take(grammarMcCount).mapNotNull {
-                             val q = testQuestionFactory.mapJsonToMultipleChoice(it, mode, grammarEntityMap, shuffleOptions)
-                             if (q.grammar != null) q else null
-                         })
-                    } else if (grammars.isNotEmpty()) {
-                        questions.addAll(grammars.shuffled().take(grammarMcCount).map {
-                            testQuestionFactory.createGrammarMultipleChoice(it, mode, allGrammarsForDistractors, shuffleOptions)
-                        })
-                    }
-                } else if (contentType == "words" && words.isNotEmpty()) {
-                    val sortedPool = when {
-                        prioritizeNew -> words.sortedBy { it.repetitionCount }
-                        prioritizeWrong -> words.sortedByDescending { it.difficulty }
-                        else -> words.shuffled()
-                    }
-                    questions.addAll(sortedPool.take(mcCount).map {
-                        testQuestionFactory.createMultipleChoice(it, mode, allWordsForDistractors, shuffleOptions)
-                    })
-                } else if (contentType == "grammar") {
-                    if (jsonGrammarQuestions.isNotEmpty()) {
-                        questions.addAll(jsonGrammarQuestions.shuffled().take(mcCount).mapNotNull {
-                             val q = testQuestionFactory.mapJsonToMultipleChoice(it, mode, grammarEntityMap, shuffleOptions)
-                             if (q.grammar != null) q else null
-                        })
-                    } else if (grammars.isNotEmpty()) {
-                        val sortedPool = when {
-                            prioritizeNew -> grammars.sortedBy { it.repetitionCount }
-                            prioritizeWrong -> grammars.sortedByDescending { it.difficulty }
-                            else -> grammars.shuffled()
-                        }
-                        questions.addAll(sortedPool.take(mcCount).map {
-                            testQuestionFactory.createGrammarMultipleChoice(it, mode, allGrammarsForDistractors, shuffleOptions)
-                        })
-                    }
-                }
-            }
-
-            // 2.3 生成卡片题 (仅单词，每组5个单词)
-            val cardMatchingCount = typeCounts["card_matching"] ?: 0
-            if (cardMatchingCount > 0 && words.isNotEmpty()) {
-                val cardMatchingWords = words.shuffled().take(cardMatchingCount * 5)
-                val cardMatchingQuestions = generateCardMatchingQuestionsUseCase(
-                    words = cardMatchingWords,
-                    shuffle = false  // 已经shuffled过了
-                )
-                questions.addAll(cardMatchingQuestions)
-            }
-
-            // 2.4 生成排序题（复刻旧项目TestManager.kt行1089-1098）
-            val sortingCount = typeCounts["sorting"] ?: 0
-            if (sortingCount > 0) {
-                if (contentType == "words" && words.isNotEmpty()) {
-                    // 单词排序题
-                    val sortingWords = words.shuffled().take(sortingCount)
-                    questions.addAll(sortingWords.mapNotNull { word ->
-                        if (word.hiragana.isBlank()) null
-                        else testQuestionFactory.createSorting(word, shuffleOptions)
-                    })
-                } else if (contentType == "grammar" && grammars.isNotEmpty()) {
-                    // 语法排序题（移除）
-                } else if (contentType == "mixed") {
-                    // 混合模式：只有单词有排序题
-                    if (words.isNotEmpty()) {
-                        val sortingWords = words.shuffled().take(sortingCount)
-                        questions.addAll(sortingWords.mapNotNull { word ->
-                            if (word.hiragana.isBlank()) null
-                            else testQuestionFactory.createSorting(word, shuffleOptions)
-                        })
-                    }
-                }
-            }
-
-            // Apply shuffleQuestions
-            return if (shuffleQuestions) questions.shuffled() else questions
-        }
 
         // 3. 传统逻辑 (无题型分布，使用单一 questionType)
 

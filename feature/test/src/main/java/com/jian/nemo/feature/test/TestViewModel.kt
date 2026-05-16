@@ -217,24 +217,6 @@ class TestViewModel @Inject constructor(
 
                 // 2. Fallback: Generate if not found (e.g. process death restore or deep link)
                 // Pass contentType and source to UseCase
-                var typeCounts: Map<String, Int>? = null
-                if (effectiveContentType == "mixed") {
-                     // 读取综合测试题型分布 (From SettingsRepository)
-                     // Note: We need to combine individual flows or rely on a helper if available.
-                     // Since we don't have a direct "getMap" in repo, let's read individual flows.
-                     val mcCount = settingsRepository.comprehensiveTestMultipleChoiceCountFlow.first()
-                     val typingCount = settingsRepository.comprehensiveTestTypingCountFlow.first()
-                     val cardCount = settingsRepository.comprehensiveTestCardMatchingCountFlow.first()
-                     val sortingCount = settingsRepository.comprehensiveTestSortingCountFlow.first()
-
-                     typeCounts = mapOf(
-                         "multiple_choice" to mcCount,
-                         "typing" to typingCount,
-                         "card_matching" to cardCount,
-                         "sorting" to sortingCount
-                     )
-                }
-
                 val questions = generateTestQuestionsUseCase(
                     level = level,
                     mode = mode,
@@ -242,7 +224,6 @@ class TestViewModel @Inject constructor(
                     questionType = questionType,
                     contentType = effectiveContentType,
                     source = source,
-                    typeCounts = typeCounts,
                     shuffleQuestions = settingsRepository.testShuffleQuestionsFlow.first(),
                     shuffleOptions = settingsRepository.testShuffleOptionsFlow.first(),
                     prioritizeWrong = settingsRepository.testPrioritizeWrongFlow.first(),

@@ -488,11 +488,7 @@ class SettingsRepositoryImpl @Inject constructor(
                 wrongAnswerRemovalThreshold = preferences[PreferencesKeys.getTestWrongAnswerRemovalThresholdKey(mode)] ?: 0,
                 testContentType = preferences[PreferencesKeys.getTestContentTypeKey(mode)] ?: "mixed",
                 selectedWordLevels = (preferences[PreferencesKeys.getTestSelectedWordLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted(),
-                selectedGrammarLevels = (preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted(),
-                comprehensiveMultipleChoiceCount = preferences[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] ?: 4,
-                comprehensiveTypingCount = preferences[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] ?: 3,
-                comprehensiveCardMatchingCount = preferences[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] ?: 2,
-                comprehensiveSortingCount = preferences[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] ?: 5
+                selectedGrammarLevels = (preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted()
             )
         }
     }
@@ -689,11 +685,7 @@ class SettingsRepositoryImpl @Inject constructor(
         wrongAnswerRemovalThreshold: Int,
         testContentType: String,
         selectedWordLevels: Set<String>,
-        selectedGrammarLevels: Set<String>,
-        comprehensiveMultipleChoiceCount: Int,
-        comprehensiveTypingCount: Int,
-        comprehensiveCardMatchingCount: Int,
-        comprehensiveSortingCount: Int
+        selectedGrammarLevels: Set<String>
     ) {
         val mode = currentTestModeFlow.value
         dataStore.edit { preferences ->
@@ -709,59 +701,11 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.getTestContentTypeKey(mode)] = testContentType
             preferences[PreferencesKeys.getTestSelectedWordLevelsKey(mode)] = selectedWordLevels
             preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] = selectedGrammarLevels
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] = comprehensiveMultipleChoiceCount
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] = comprehensiveTypingCount
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] = comprehensiveCardMatchingCount
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] = comprehensiveSortingCount
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 
-    // ========== 综合测试各个题型数量 ==========
 
-    override val comprehensiveTestMultipleChoiceCountFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] ?: 4
-    }
-
-    override suspend fun saveComprehensiveTestMultipleChoiceCount(count: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] = count
-            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
-        }
-    }
-
-    override val comprehensiveTestTypingCountFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] ?: 3
-    }
-
-    override suspend fun saveComprehensiveTestTypingCount(count: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] = count
-            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
-        }
-    }
-
-    override val comprehensiveTestCardMatchingCountFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] ?: 2
-    }
-
-    override suspend fun saveComprehensiveTestCardMatchingCount(count: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] = count
-            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
-        }
-    }
-
-    override val comprehensiveTestSortingCountFlow: Flow<Int> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] ?: 5
-    }
-
-    override suspend fun saveComprehensiveTestSortingCount(count: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] = count
-            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
-        }
-    }
 
     // ========== 学习状态持久化 ==========
 
@@ -1444,11 +1388,6 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.TEST_SELECTED_WORD_LEVELS)
             preferences.remove(PreferencesKeys.TEST_SELECTED_GRAMMAR_LEVELS)
 
-            // 综合测试配置
-            preferences.remove(PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT)
-            preferences.remove(PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT)
-            preferences.remove(PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT)
-            preferences.remove(PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT)
 
             // 同步状态 (保留 AUTO_SYNC_ENABLED)
             preferences.remove(PreferencesKeys.LAST_SYNC_TIME)
@@ -1531,10 +1470,6 @@ class SettingsRepositoryImpl @Inject constructor(
             testSelectedWordLevels = prefs[PreferencesKeys.TEST_SELECTED_WORD_LEVELS] ?: setOf("N5", "N4", "N3", "N2", "N1"),
             testSelectedGrammarLevels = prefs[PreferencesKeys.TEST_SELECTED_GRAMMAR_LEVELS] ?: setOf("N5", "N4", "N3", "N2", "N1"),
 
-            comprehensiveTestMultipleChoiceCount = prefs[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] ?: 4,
-            comprehensiveTestTypingCount = prefs[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] ?: 3,
-            comprehensiveTestCardMatchingCount = prefs[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] ?: 2,
-            comprehensiveTestSortingCount = prefs[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] ?: 5,
 
             ttsSpeechRate = prefs[PreferencesKeys.TTS_SPEECH_RATE] ?: 1.0f,
             ttsPitch = prefs[PreferencesKeys.TTS_PITCH] ?: 1.0f,
@@ -1591,10 +1526,6 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.TEST_SELECTED_WORD_LEVELS] = settings.testSelectedWordLevels
             prefs[PreferencesKeys.TEST_SELECTED_GRAMMAR_LEVELS] = settings.testSelectedGrammarLevels
 
-            prefs[PreferencesKeys.COMPREHENSIVE_TEST_MC_COUNT] = settings.comprehensiveTestMultipleChoiceCount
-            prefs[PreferencesKeys.COMPREHENSIVE_TEST_TYPING_COUNT] = settings.comprehensiveTestTypingCount
-            prefs[PreferencesKeys.COMPREHENSIVE_TEST_MATCHING_COUNT] = settings.comprehensiveTestCardMatchingCount
-            prefs[PreferencesKeys.COMPREHENSIVE_TEST_SORTING_COUNT] = settings.comprehensiveTestSortingCount
 
             prefs[PreferencesKeys.TTS_SPEECH_RATE] = settings.ttsSpeechRate
             prefs[PreferencesKeys.TTS_PITCH] = settings.ttsPitch

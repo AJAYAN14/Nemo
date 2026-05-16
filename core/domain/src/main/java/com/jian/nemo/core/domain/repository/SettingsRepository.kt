@@ -294,11 +294,7 @@ interface SettingsRepository {
         wrongAnswerRemovalThreshold: Int,
         testContentType: String,
         selectedWordLevels: Set<String>,
-        selectedGrammarLevels: Set<String>,
-        comprehensiveMultipleChoiceCount: Int,
-        comprehensiveTypingCount: Int,
-        comprehensiveCardMatchingCount: Int,
-        comprehensiveSortingCount: Int
+        selectedGrammarLevels: Set<String>
     )
 
     // ========== 新内容策略 ==========
@@ -314,19 +310,7 @@ interface SettingsRepository {
      */
     suspend fun setRandomNewContentEnabled(enabled: Boolean)
 
-    // ========== 综合测试各个题型数量 ==========
 
-    val comprehensiveTestMultipleChoiceCountFlow: Flow<Int>
-    suspend fun saveComprehensiveTestMultipleChoiceCount(count: Int)
-
-    val comprehensiveTestTypingCountFlow: Flow<Int>
-    suspend fun saveComprehensiveTestTypingCount(count: Int)
-
-    val comprehensiveTestCardMatchingCountFlow: Flow<Int>
-    suspend fun saveComprehensiveTestCardMatchingCount(count: Int)
-
-    val comprehensiveTestSortingCountFlow: Flow<Int>
-    suspend fun saveComprehensiveTestSortingCount(count: Int)
 
     // ========== 学习状态持久化 ==========
 

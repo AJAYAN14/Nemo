@@ -25,8 +25,6 @@ fun TestSettingsBottomSheetContent(
     contentTypeOptions: List<Pair<String, String>>,
     allLevels: List<String>,
     onUpdateConfig: (TestConfig) -> Unit,
-    onUpdateQuestionDistribution: (Int) -> Unit,
-    onQuestionTypeCountChange: (String, Int) -> Unit,
     isQuestionTypeSupported: (String) -> Boolean,
     onToggleLevel: (String, Boolean) -> Unit,
     onExclusiveSelectLevel: (String, Boolean) -> Unit,
@@ -43,21 +41,12 @@ fun TestSettingsBottomSheetContent(
                 currentValue = config.questionCount,
                 onSelect = { count ->
                     onUpdateConfig(config.copy(questionCount = count))
-                    if (testModeId == "comprehensive") onUpdateQuestionDistribution(count)
                     onDismiss()
                 },
                 onCustom = { onDismiss(); onShowCustomQuestionCount() },
                 onCancel = { onDismiss() }
             )
-            "questionTypeCount" -> {
-                QuestionTypeCountEditor(
-                    comprehensiveCounts = config.comprehensiveQuestionCounts,
-                    questionCountLimit = config.questionCount,
-                    isQuestionTypeSupported = isQuestionTypeSupported,
-                    onCountChange = onQuestionTypeCountChange,
-                    onCancel = { onDismiss() }
-                )
-            }
+
             "timeLimit" -> TimeLimitSelector(
                 options = timeLimitOptions,
                 currentValue = config.timeLimitMinutes,

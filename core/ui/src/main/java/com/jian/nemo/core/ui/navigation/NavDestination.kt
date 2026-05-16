@@ -18,6 +18,7 @@ object NavDestination {
     const val AI_WORKSHOP = "ai_workshop"       // AI 工坊
     const val AI_SETTINGS = "ai_settings"       // AI 设置页
     const val AI_HISTORY = "ai_history"         // AI 练习历史
+    const val ABILITY_WORKSHOP = "ability_workshop" // 能力工坊
 
 
     // 保留HOME作为LEARNING的别名，确保兼容性
