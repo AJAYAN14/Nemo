@@ -199,13 +199,16 @@ private fun SearchBar(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
-    var textFieldValue by remember {
-        mutableStateOf(TextFieldValue(text = query, selection = TextRange(query.length)))
-    }
+    
+    // 使用本地 String 状态驱动 UI，确保输入绝对流畅
+    var text by remember { mutableStateOf(query) }
 
+    // 仅在外部清空（如点击清除按钮）或初始加载时同步外部 query
     LaunchedEffect(query) {
-        if (query != textFieldValue.text) {
-            textFieldValue = textFieldValue.copy(text = query, selection = TextRange(query.length))
+        if (query != text) {
+            if (query.isEmpty() || text.isEmpty()) {
+                text = query
+            }
         }
     }
 
@@ -223,14 +226,14 @@ private fun SearchBar(
             Icon(Icons.Rounded.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.width(8.dp))
             Box(modifier = Modifier.weight(1f)) {
-                if (textFieldValue.text.isEmpty()) {
+                if (text.isEmpty()) {
                     Text("搜索：汉字 / 假名 / 释义", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                 }
                 BasicTextField(
-                    value = textFieldValue,
+                    value = text,
                     onValueChange = {
-                        textFieldValue = it
-                        if (it.text != query) onQueryChange(it.text)
+                        text = it
+                        onQueryChange(it)
                     },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                     singleLine = true,
@@ -238,8 +241,11 @@ private fun SearchBar(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
+            if (text.isNotEmpty()) {
+                IconButton(onClick = { 
+                    text = ""
+                    onQueryChange("") 
+                }) {
                     Icon(Icons.Rounded.Close, "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }

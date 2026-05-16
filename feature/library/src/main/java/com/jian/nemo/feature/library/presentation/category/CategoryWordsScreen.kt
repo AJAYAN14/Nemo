@@ -207,6 +207,18 @@ private fun SearchBar(
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
     val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
 
+    // 使用本地 String 状态，确保打字不跳动
+    var text by remember { mutableStateOf(query) }
+
+    // 仅在外部清空或初始加载时同步外部 query
+    LaunchedEffect(query) {
+        if (query != text) {
+            if (query.isEmpty() || text.isEmpty()) {
+                text = query
+            }
+        }
+    }
+
     Surface(
         modifier = modifier.fillMaxWidth().height(50.dp),
         shape = RoundedCornerShape(25.dp),
@@ -225,7 +237,7 @@ private fun SearchBar(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Box(modifier = Modifier.weight(1f)) {
-                if (query.isEmpty()) {
+                if (text.isEmpty()) {
                     Text(
                         text = "搜索：汉字 / 假名 / 释义",
                         style = MaterialTheme.typography.bodyLarge,
@@ -233,8 +245,11 @@ private fun SearchBar(
                     )
                 }
                 BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
+                    value = text,
+                    onValueChange = {
+                        text = it
+                        onQueryChange(it)
+                    },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     ),
@@ -243,8 +258,11 @@ private fun SearchBar(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
+            if (text.isNotEmpty()) {
+                IconButton(onClick = { 
+                    text = ""
+                    onQueryChange("") 
+                }) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "Clear",
