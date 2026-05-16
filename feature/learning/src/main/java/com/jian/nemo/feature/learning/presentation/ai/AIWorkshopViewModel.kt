@@ -77,6 +77,9 @@ class AIWorkshopViewModel @Inject constructor(
     private var currentGrammarInfo: AIClient.GrammarInfo? = null
     private var currentUsageId: Int? = null
 
+    // 标志位：确保从本地存储恢复答案的操作仅在初始化时执行一次
+    private var isAnswerRestored = false
+
     init {
         observeSettings()
         cleanupOldHistory()
@@ -145,7 +148,10 @@ class AIWorkshopViewModel @Inject constructor(
                         difficulty = difficulty,
                         workshopMode = restoredMode,
                         currentExercise = restoredExercise,
-                        userAnswer = if (state.userAnswer.isBlank()) currentAnswer else state.userAnswer,
+                        userAnswer = if (!isAnswerRestored && state.userAnswer.isBlank()) {
+                            if (currentAnswer.isNotBlank()) isAnswerRestored = true
+                            currentAnswer
+                        } else state.userAnswer,
                         aiPlatform = platform,
                         aiModel = model
                     )
@@ -158,6 +164,7 @@ class AIWorkshopViewModel @Inject constructor(
         when (event) {
             is AIWorkshopEvent.GenerateNewExercise -> generateExercise()
             is AIWorkshopEvent.UpdateUserAnswer -> {
+                isAnswerRestored = true
                 _uiState.update { it.copy(userAnswer = event.answer) }
                 viewModelScope.launch {
                     settingsRepository.setAiCurrentAnswer(event.answer)
@@ -234,6 +241,7 @@ class AIWorkshopViewModel @Inject constructor(
                     currentGrammarSubtype = null
                 )
             }
+            isAnswerRestored = true
             // 清除答案持久化缓存
             settingsRepository.setAiCurrentAnswer("")
 
