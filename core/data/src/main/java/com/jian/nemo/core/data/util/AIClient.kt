@@ -11,6 +11,10 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
 import javax.inject.Inject
@@ -332,6 +336,127 @@ class AIClient @Inject constructor(
         .trim()
     }
     
+    @Serializable
+    data class AIVerbConjugationQuestion(
+        val word: String,
+        val furigana: String,
+        val meaning: String,
+        val qText: String,
+        val translation: String,
+        val options: List<String>,
+        val correctIndex: Int,
+        val explanation: String
+    )
+
+    data class VerbWordInfo(val spelling: String, val hiragana: String, val chinese: String)
+
+    suspend fun generateVerbConjugationQuestions(
+        platform: String,
+        apiKey: String,
+        baseUrl: String?,
+        model: String,
+        difficulty: String,
+        words: List<VerbWordInfo>,
+        targetCount: Int = 5,
+        oversampleCount: Int = 8 // 已废弃，因为我们改用并发生成
+    ): Result<List<AIVerbConjugationQuestion>> = coroutineScope {
+        val forms = listOf("辞书形", "ます形", "ない形", "た形", "て形", "意志形", "命令形", "禁止形", "ば形", "可能形", "被动形", "使役形", "使役被动形").shuffled()
+        
+        val deferreds = words.take(targetCount).mapIndexed { index, word ->
+            val targetForm = forms[index % forms.size]
+            async(Dispatchers.IO) {
+                generateSingleVerbQuestionWithRetry(platform, apiKey, baseUrl, model, difficulty, word, targetForm)
+            }
+        }
+        
+        try {
+            val questions = deferreds.awaitAll().filterNotNull()
+            if (questions.isNotEmpty()) {
+                Result.success(questions)
+            } else {
+                Result.failure(Exception("AI 生成的题目全部失败"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun generateSingleVerbQuestionWithRetry(
+        platform: String,
+        apiKey: String,
+        baseUrl: String?,
+        model: String,
+        difficulty: String,
+        word: VerbWordInfo,
+        targetForm: String
+    ): AIVerbConjugationQuestion? {
+        var retryCount = 0
+        val maxRetries = 2
+        
+        while (retryCount <= maxRetries) {
+            try {
+                val systemPrompt = buildSingleVerbConjugationPrompt(difficulty, word, targetForm)
+                val url = getApiUrl(platform, baseUrl, apiKey, model)
+                val requestBody = buildChatRequest(platform, model, systemPrompt, "请开始出题。")
+                
+                val response = executeRequest(platform, url, apiKey, requestBody)
+                val content = extractContentFromChatResponse(platform, response)
+                
+                val cleanJson = content.replace(Regex("```json\\s*"), "").replace(Regex("```\\s*$"), "").trim()
+                val q = json.decodeFromString<AIVerbConjugationQuestion>(cleanJson)
+                
+                // 本地质量验证器 (QuestionQualityValidator)
+                if (q.options.size != 4) throw Exception("选项数量不为4")
+                if (q.correctIndex !in 0..3) throw Exception("正确答案索引越界")
+                if (q.options.distinct().size != 4) throw Exception("选项存在重复")
+                if (q.word != word.spelling) throw Exception("没有使用指定动词")
+                if (!q.qText.contains("____")) throw Exception("题干未包含挖空")
+                if (q.qText.length < 8) throw Exception("题干过短缺乏语境")
+                
+                val hasKanji = Regex("[一-龯]").containsMatchIn(q.qText)
+                if (hasKanji && !q.qText.contains("[")) throw Exception("题干包含汉字但未加注音")
+                
+                return q
+            } catch (e: Exception) {
+                Log.w("AIClient", "单题生成失败，准备重试 (${word.spelling}): ${e.message}")
+                retryCount++
+                if (retryCount <= maxRetries) delay(1000L) // 避免触发并发限制过快
+            }
+        }
+        return null
+    }
+
+    private fun buildSingleVerbConjugationPrompt(difficulty: String, word: VerbWordInfo, targetForm: String): String {
+        return """
+            你是一位资深的日语教育专家。请为日语等级为 $difficulty 的学习者生成 1 道“动词活用”的四选一单选题。
+            【词汇硬约束】必须使用动词【${word.spelling}】（假名：${word.hiragana}，意思：${word.chinese}）出题。
+            【语法等级约束】题干语法必须绝对符合 $difficulty 等级，严禁超纲。
+            【变形考察约束】必须且只能考察该动词的【$targetForm】！请构建需要填入【$targetForm】的语境。
+            【语境与唯一性约束】（极其重要！）
+            1. 题干(qText)必须提供足够明确的上下文（如时间状语“今”、“毎日”，或人物对话“先生：「...」”），确保在日语语法和该语境下，正确答案具有【绝对唯一性】。
+            2. 严禁仅靠“礼貌体（ます）”和“普通体（辞书形）”的差异来设置干扰项（例如，如果不提供明确的敬语语境，不要同时给出「掛かる」和「掛かります」让用户二选一，这会导致题目不可判定）。
+            3. 中文翻译(translation)必须精确对应正确选项的时态与语态（如过去式就要翻译出“了”，进行时要翻译出“正在”），不能与日语语感冲突。
+            【干扰项约束】正确答案唯一。另外3个错误选项必须且仅能是该动词的其他不同日文活用变形（禁止出现其他动词）。
+            【挖空与格式要求】
+            1. 设问处必须用 `____` 表示。
+            2. 挖空必须“连根拔起”！`____` 必须替代该动词的完整活用形态（包含后缀 ます、ません、ない、た 等）。例如原句为「毎日日記を書きます。」，必须挖空为「毎日日記を____。」，选项提供「書きます」，**绝对禁止**保留后缀写成「毎日日記を____ます。」。
+            3. 题目句子(qText)中包含汉字的词，必须使用 `汉字[假名]` 的注音格式渲染（如：毎日[まいにち]日記[にっき]を____。）。如果题干没加注音，将被系统判定为不合格。
+            4. 返回纯 JSON 对象，绝对不要包含 ```json 标签和数组框：
+            {
+              "word": "覚える",
+              "furigana": "おぼえる",
+              "meaning": "记住，学会",
+              "qText": "先生：「この電話[でんわ]番号[ばんごう]を____ください。」",
+              "translation": "老师：“请记住这个电话号码。”",
+              "options": ["覚えた", "覚えない", "覚える", "覚えて"],
+              "correctIndex": 3,
+              "explanation": "「ください」前接て形...「覚える」的て形是「覚えて」。"
+            }
+            
+            （注：上述例子考察的是“て形”，仅供 JSON 格式和注音格式参考。本题你必须严格按照要求，出考察【$targetForm】的题目！）
+        """.trimIndent()
+    }
+
     // Helper extensions for JsonElement to keep it simple without full serialization of the response wrapper
     private fun kotlinx.serialization.json.JsonElement.asJsonObject() = this as? kotlinx.serialization.json.JsonObject ?: throw Exception("Not an object")
     private fun kotlinx.serialization.json.JsonElement.asJsonArray() = this as? kotlinx.serialization.json.JsonArray ?: throw Exception("Not an array")
