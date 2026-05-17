@@ -11,8 +11,6 @@ import androidx.compose.ui.unit.dp
 /**
  * 开关设置行组件
  *
- * 参考旧项目: TestComponents.kt 第 574-596 行
- *
  * @param label 设置项标签
  * @param checked 开关状态
  * @param onCheckedChange 状态变化回调

@@ -37,6 +37,7 @@ import java.util.Locale
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.airbnb.lottie.compose.*
 import com.jian.nemo.feature.test.R
+import androidx.compose.ui.text.withStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -417,8 +418,19 @@ private fun ReadyView(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = currentQuestion.furigana, style = MaterialTheme.typography.bodySmall, color = textSub)
-                    Text(text = currentQuestion.word, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = textMain)
+                    val wordAnnotatedString = remember(currentQuestion.word, currentQuestion.furigana) {
+                        androidx.compose.ui.text.buildAnnotatedString {
+                            append(currentQuestion.word)
+                            withStyle(style = androidx.compose.ui.text.SpanStyle(
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = textSub
+                            )) {
+                                append("（${currentQuestion.furigana}）")
+                            }
+                        }
+                    }
+                    Text(text = wordAnnotatedString, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold, color = textMain)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(text = currentQuestion.meaning, style = MaterialTheme.typography.bodyMedium, color = textSub)
                 }

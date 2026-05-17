@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.dp
 /**
  * 可点击的设置行组件
  *
- * 参考旧项目: TestComponents.kt 第 544-571 行
- *
  * @param label 设置项标签
  * @param value 当前值
  * @param onClick 点击回调

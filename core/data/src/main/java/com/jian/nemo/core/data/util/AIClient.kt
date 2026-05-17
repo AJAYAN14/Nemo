@@ -338,9 +338,9 @@ class AIClient @Inject constructor(
     
     @Serializable
     data class AIVerbConjugationQuestion(
-        val word: String,
-        val furigana: String,
-        val meaning: String,
+        val word: String = "",
+        val furigana: String = "",
+        val meaning: String = "",
         val qText: String,
         val translation: String,
         val options: List<String>,
@@ -403,7 +403,17 @@ class AIClient @Inject constructor(
                 val content = extractContentFromChatResponse(platform, response)
                 
                 val cleanJson = content.replace(Regex("```json\\s*"), "").replace(Regex("```\\s*$"), "").trim()
-                val q = json.decodeFromString<AIVerbConjugationQuestion>(cleanJson)
+                var q = json.decodeFromString<AIVerbConjugationQuestion>(cleanJson)
+                
+                // 物理覆写！彻底抛弃 AI 吐出来的字词/注音/释义，直接强制装填本地数据库的黄金原装数据！
+                // 同时利用正则自动净化器把题干例句中任何被大模型错误生成的中括号注音物理剔除，确保界面绝对清爽
+                val cleanQText = q.qText.replace(Regex("\\[[^\\]]+\\]"), "")
+                q = q.copy(
+                    word = word.spelling,
+                    furigana = word.hiragana,
+                    meaning = word.chinese,
+                    qText = cleanQText
+                )
                 
                 // 本地质量验证器 (QuestionQualityValidator)
                 if (q.options.size != 4) throw Exception("选项数量不为4")
@@ -412,9 +422,6 @@ class AIClient @Inject constructor(
                 if (q.word != word.spelling) throw Exception("没有使用指定动词")
                 if (!q.qText.contains("____")) throw Exception("题干未包含挖空")
                 if (q.qText.length < 8) throw Exception("题干过短缺乏语境")
-                
-                val hasKanji = Regex("[一-龯]").containsMatchIn(q.qText)
-                if (hasKanji && !q.qText.contains("[")) throw Exception("题干包含汉字但未加注音")
                 
                 return q
             } catch (e: Exception) {
@@ -440,13 +447,10 @@ class AIClient @Inject constructor(
             【挖空与格式要求】
             1. 设问处必须用 `____` 表示。
             2. 挖空必须“连根拔起”！`____` 必须替代该动词的完整活用形态（包含后缀 ます、ません、ない、た 等）。例如原句为「毎日日記を書きます。」，必须挖空为「毎日日記を____。」，选项提供「書きます」，**绝对禁止**保留后缀写成「毎日日記を____ます。」。
-            3. 题目句子(qText)中包含汉字的词，必须使用 `汉字[假名]` 的注音格式渲染（如：毎日[まいにち]日記[にっき]を____。）。如果题干没加注音，将被系统判定为不合格。
-            4. 返回纯 JSON 对象，绝对不要包含 ```json 标签和数组框：
+            3. 🚨【绝对禁止对句子中的汉字加注音】🚨为了保持题干句子的极致清爽与高级感，题目句子(qText)中包含汉字时，必须使用最纯正、最原始的日语汉字和假名，【绝对严禁】在汉字后加中括号标注发音（例如，只能写「毎日日記を____。」，绝对严禁写成「毎日[まいにち]日記[にっき]を____。」）！
+            4. 🚨【数据结构极简化要求】🚨为了节省通信开销，你返回的 JSON 中【绝对禁止包含】"word"、"furigana"、"meaning" 这三个属性！你只需要返回包含 qText, translation, options, correctIndex, explanation 的纯 JSON 对象即可。绝对不要包含 ```json 标签 and 数组框：
             {
-              "word": "覚える",
-              "furigana": "おぼえる",
-              "meaning": "记住，学会",
-              "qText": "先生：「この電話[でんわ]番号[ばんごう]を____ください。」",
+              "qText": "先生：「この電話番号を____ください。」",
               "translation": "老师：“请记住这个电话号码。”",
               "options": ["覚えた", "覚えない", "覚える", "覚えて"],
               "correctIndex": 3,
