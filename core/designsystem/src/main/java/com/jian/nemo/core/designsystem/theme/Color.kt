@@ -79,6 +79,8 @@ val NemoTextLight = Color(0xFF888888)        // 浅文本颜色
 val NemoDanger = Color(0xFFE53935)           // 危险/错误色
 val NemoWarning = Color(0xFFFBC02D)          // 警告色
 val NemoGold = Color(0xFFFFD700)             // 金色/高亮色
+val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
+
 
 // 测试结算页原始配色（集中管理）
 object TestResultPalette {

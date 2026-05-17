@@ -409,9 +409,22 @@ fun NemoNavHost(
 
         composable(NavDestination.ABILITY_WORKSHOP) {
             AbilityWorkshopScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onNavigateToGame = { gameType ->
+                    when (gameType) {
+                        "verb_conjugation" -> navController.navigate(NavDestination.VERB_CONJUGATION)
+                        // 其他游戏后续接入
+                    }
+                }
             )
         }
+
+        composable(NavDestination.VERB_CONJUGATION) {
+            com.jian.nemo.feature.test.presentation.ability.VerbConjugationScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
 
         // 词库/搜索 - 主界面
         composable(

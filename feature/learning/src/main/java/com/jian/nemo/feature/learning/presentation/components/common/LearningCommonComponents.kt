@@ -349,6 +349,7 @@ fun LearnHeader(
                                     }
 
                                     if (onShowRatingGuide != null) {
+
                                         NemoMenuItem(
                                             text = "评分说明（新学/复习）",
                                             onClick = {
@@ -363,31 +364,34 @@ fun LearnHeader(
                                         )
                                     }
 
-                                    NemoMenuItem(
-                                        text = "暂停此卡片 (Suspend)",
-                                        onClick = {
-                                            expanded = false
-                                            onSuspend()
-                                        },
-                                        leadingIcon = Icons.Rounded.Pause
-                                    )
-                                    NemoMenuItem(
-                                        text = "今日暂缓此项 (Bury)",
-                                        onClick = {
-                                            expanded = false
-                                            onBury()
-                                        },
-                                        leadingIcon = Icons.Rounded.AccessTime
-                                    )
+                                    if (remainingCount > 0) {
+                                        NemoMenuItem(
+                                            text = "暂停此卡片 (Suspend)",
+                                            onClick = {
+                                                expanded = false
+                                                onSuspend()
+                                            },
+                                            leadingIcon = Icons.Rounded.Pause
+                                        )
+                                        NemoMenuItem(
+                                            text = "今日暂缓此项 (Bury)",
+                                            onClick = {
+                                                expanded = false
+                                                onBury()
+                                            },
+                                            leadingIcon = Icons.Rounded.AccessTime
+                                        )
 
-                                    NemoMenuItem(
-                                        text = "报告条目错误",
-                                        onClick = {
-                                            expanded = false
-                                            onReportError()
-                                        },
-                                        leadingIcon = Icons.Rounded.Report
-                                    )
+                                        NemoMenuItem(
+                                            text = "报告条目错误",
+                                            onClick = {
+                                                expanded = false
+                                                onReportError()
+                                            },
+                                            leadingIcon = Icons.Rounded.Report
+                                        )
+                                    }
+
 
                                     // 分隔线
                                     androidx.compose.material3.HorizontalDivider(

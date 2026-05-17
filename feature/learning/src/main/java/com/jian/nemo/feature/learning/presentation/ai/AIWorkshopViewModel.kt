@@ -17,6 +17,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.jian.nemo.core.domain.repository.AudioRepository
+import com.jian.nemo.core.domain.repository.TtsEvent
+
 
 /**
  * 工坊模式枚举
@@ -40,8 +43,10 @@ data class AIWorkshopUiState(
     val currentGrammarSubtype: String? = null,   // 当前用法子类型
     val hasGrammarData: Boolean = true,           // 当前等级是否有语法数据
     val aiPlatform: String = "openai",
-    val aiModel: String = ""
+    val aiModel: String = "",
+    val playingAudioId: String? = null            // 当前正在播放的音频 ID
 )
+
 
 sealed interface AIWorkshopEvent {
     object GenerateNewExercise : AIWorkshopEvent
@@ -51,15 +56,19 @@ sealed interface AIWorkshopEvent {
     data class UpdateDifficulty(val difficulty: String) : AIWorkshopEvent
     data class UpdateWorkshopMode(val mode: WorkshopMode) : AIWorkshopEvent
     object QuickSwitchPlatform : AIWorkshopEvent
+    data class SpeakText(val text: String, val id: String) : AIWorkshopEvent
 }
+
 
 @HiltViewModel
 class AIWorkshopViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val aiWorkshopRepository: AIWorkshopRepository,
     private val aiClient: AIClient,
-    private val grammarDao: GrammarDao
+    private val grammarDao: GrammarDao,
+    private val audioRepository: AudioRepository
 ) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(AIWorkshopUiState())
     val uiState: StateFlow<AIWorkshopUiState> = _uiState.asStateFlow()
@@ -83,7 +92,30 @@ class AIWorkshopViewModel @Inject constructor(
     init {
         observeSettings()
         cleanupOldHistory()
+        observeTtsEvents()
     }
+
+    private fun observeTtsEvents() {
+        viewModelScope.launch {
+            audioRepository.ttsEvents.collect { event ->
+                when (event) {
+                    is TtsEvent.OnStart -> {
+                        _uiState.update { it.copy(playingAudioId = event.id) }
+                    }
+                    is TtsEvent.OnDone, is TtsEvent.OnError -> {
+                        _uiState.update { 
+                            if (it.playingAudioId == (event as? TtsEvent.OnDone)?.id || 
+                                it.playingAudioId == (event as? TtsEvent.OnError)?.id) {
+                                it.copy(playingAudioId = null)
+                            } else it
+                        }
+                    }
+                    else -> {}
+                }
+            }
+        }
+    }
+
 
 
     private fun cleanupOldHistory() {
@@ -213,8 +245,12 @@ class AIWorkshopViewModel @Inject constructor(
                     }
                 }
             }
+            is AIWorkshopEvent.SpeakText -> {
+                audioRepository.playTts(event.text, id = event.id)
+            }
         }
     }
+
 
     /**
      * 检查当前等级是否有可用的语法数据

@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExerciseHistory
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.speaker.SpeakerButton
+
 
 /**
  * AI 练习详情全屏组件
@@ -35,8 +37,11 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 @Composable
 fun AIExerciseDetailDialog(
     history: AIExerciseHistory,
+    playingAudioId: String?,
+    onSpeak: (String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
+
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val backgroundColor = if (isDark) NemoSurfaceBackgroundDark else NemoSurfaceBackground
@@ -76,8 +81,12 @@ fun AIExerciseDetailDialog(
                     title = if (history.type == "CN_TO_JP") "中文题目" else "日文题目",
                     content = history.question,
                     icon = Icons.Rounded.Info,
-                    iconColor = NemoIndigo
+                    iconColor = NemoIndigo,
+                    isSpeaking = playingAudioId == "question",
+                    showSpeaker = history.type == "JP_TO_CN",
+                    onSpeak = { onSpeak(history.question, "question") }
                 )
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -94,8 +103,12 @@ fun AIExerciseDetailDialog(
                     title = "参考答案",
                     content = history.standardAnswer,
                     icon = Icons.Rounded.CheckCircle,
-                    iconColor = NemoIndigo
+                    iconColor = NemoIndigo,
+                    isSpeaking = playingAudioId == "standard",
+                    showSpeaker = history.type == "CN_TO_JP",
+                    onSpeak = { onSpeak(history.standardAnswer, "standard") }
                 )
+
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -116,7 +129,12 @@ fun AIExerciseDetailDialog(
 @Composable
 private fun ScoreCard(score: Int, difficulty: String) {
     val colorScheme = MaterialTheme.colorScheme
-    val scoreColor = if (score >= 60) colorScheme.secondary else NemoDanger
+    val scoreColor = when {
+        score >= 80 -> NemoSecondary
+        score >= 60 -> NemoYellow
+        else -> NemoDanger
+    }
+
     
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -170,8 +188,12 @@ private fun DetailSectionCard(
     title: String,
     content: String,
     icon: ImageVector,
-    iconColor: Color
+    iconColor: Color,
+    showSpeaker: Boolean = false,
+    isSpeaking: Boolean = false,
+    onSpeak: () -> Unit = {}
 ) {
+
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     
@@ -201,9 +223,21 @@ private fun DetailSectionCard(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = colorScheme.onSurface
+                    color = colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
+                
+                if (showSpeaker) {
+                    SpeakerButton(
+                        isPlaying = isSpeaking,
+                        onClick = onSpeak,
+                        size = 32.dp,
+                        backgroundColor = iconColor.copy(alpha = 0.05f),
+                        tint = iconColor
+                    )
+                }
             }
+
             
             Spacer(modifier = Modifier.height(12.dp))
             

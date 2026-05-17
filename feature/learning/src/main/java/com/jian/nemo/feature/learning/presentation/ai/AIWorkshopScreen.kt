@@ -36,7 +36,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.core.designsystem.R as DesignR
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -567,13 +569,27 @@ private fun ExerciseContent(
                 
                 Spacer(modifier = Modifier.height(20.dp))
                 
-                Text(
-                    text = exercise.question,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 34.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = exercise.question,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 34.sp
+                    )
+
+                    if (exercise.type == "JP_TO_CN") {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        SpeakerButton(
+                            isPlaying = uiState.playingAudioId == "question",
+                            onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
+                            backgroundColor = NemoPrimary.copy(alpha = 0.05f),
+                            size = 40.dp
+                        )
+                    }
+                }
+
                 
                 if (exercise.hints.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(20.dp))
@@ -618,8 +634,12 @@ private fun ExerciseContent(
             FeedbackSection(
                 result = uiState.gradeResult,
                 userAnswer = uiState.userAnswer,
+                exerciseType = exercise.type,
+                playingAudioId = uiState.playingAudioId,
+                onSpeak = { text, id -> onEvent(AIWorkshopEvent.SpeakText(text, id)) },
                 onNext = { onEvent(AIWorkshopEvent.GenerateNewExercise) }
             )
+
         }
     }
 }
@@ -688,16 +708,21 @@ private fun InputSection(
 private fun FeedbackSection(
     result: AIGradeResult,
     userAnswer: String,
+    exerciseType: String,
+    playingAudioId: String?,
+    onSpeak: (String, String) -> Unit,
     onNext: () -> Unit
 ) {
+
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     val scoreColor = when {
         result.score >= 80 -> NemoSecondary
-        result.score >= 60 -> Color(0xFFFBBF24)
+        result.score >= 60 -> NemoYellow
         else -> NemoDanger
     }
+
 
     Column {
         Surface(
@@ -779,14 +804,31 @@ private fun FeedbackSection(
                         shape = RoundedCornerShape(12.dp),
                         border = BorderStroke(1.dp, NemoSecondary.copy(alpha = if (isDark) 0.3f else 0.1f))
                     ) {
-                        Text(
-                            text = answer,
-                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(16.dp).fillMaxWidth()
+                        ) {
+                            Text(
+                                text = answer,
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+
+                            if (exerciseType == "CN_TO_JP") {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                SpeakerButton(
+                                    isPlaying = playingAudioId == "standard",
+                                    onClick = { onSpeak(answer, "standard") },
+                                    tint = NemoSecondary,
+                                    backgroundColor = NemoSecondary.copy(alpha = 0.05f),
+                                    size = 36.dp
+                                )
+                            }
+                        }
                     }
+
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))

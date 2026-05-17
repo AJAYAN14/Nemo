@@ -33,8 +33,10 @@ fun AIHistoryScreen(
     viewModel: AIHistoryViewModel = hiltViewModel()
 ) {
     val historyList by viewModel.historyState.collectAsState()
+    val playingAudioId by viewModel.playingAudioId.collectAsState()
     var showClearConfirm by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<AIExerciseHistory?>(null) }
+
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -109,8 +111,11 @@ fun AIHistoryScreen(
             if (targetItem != null) {
                 AIExerciseDetailDialog(
                     history = targetItem,
+                    playingAudioId = playingAudioId,
+                    onSpeak = { text, id -> viewModel.speakText(text, id) },
                     onDismiss = { selectedItem = null }
                 )
+
             }
         }
 
@@ -212,7 +217,12 @@ private fun HistoryItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 分数展示
-                val scoreColor = if (history.score >= 60) colorScheme.secondary else NemoDanger
+                val scoreColor = when {
+                    history.score >= 80 -> NemoSecondary
+                    history.score >= 60 -> NemoYellow
+                    else -> NemoDanger
+                }
+
                 Box(
                     modifier = Modifier
                         .size(32.dp)
