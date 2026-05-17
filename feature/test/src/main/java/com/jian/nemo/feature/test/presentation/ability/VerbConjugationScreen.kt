@@ -30,6 +30,7 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -94,7 +95,11 @@ fun VerbConjugationScreen(
                         LevelSelectionView(onSelectLevel = { viewModel.onLevelSelected(it) })
                     }
                     is VerbUiState.Generating -> {
-                        GeneratingView(isDark = isDark)
+                        GeneratingView(
+                            isDark = isDark,
+                            onCancel = { viewModel.cancelGeneration() },
+                            onRetry = { viewModel.regenerateCurrentLevel() }
+                        )
                     }
                     is VerbUiState.Ready -> {
                         ReadyView(
@@ -245,7 +250,7 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
 }
 
 @Composable
-private fun GeneratingView(isDark: Boolean) {
+private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () -> Unit) {
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     
     val loadingTexts = remember {
@@ -293,6 +298,38 @@ private fun GeneratingView(isDark: Boolean) {
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 放弃生成：辅助操作，使用 OutlinedButton 退回等级选择
+            OutlinedButton(
+                onClick = onCancel,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray600
+                ),
+                border = BorderStroke(1.dp, if (isDark) NemoNeutrals.Gray700 else NemoNeutrals.Gray300),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("放弃生成", maxLines = 1)
+            }
+
+            // 重新生成：核心操作，使用主色调 Button 终止并重试当前等级
+            Button(
+                onClick = onRetry,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = IosColors.Blue,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("重新生成", maxLines = 1)
+            }
+        }
     }
 }
 
