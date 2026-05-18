@@ -63,13 +63,12 @@ fun AIWorkshopScreen(
 
     val loadingTexts = remember {
         listOf(
-            "AI 正在呼唤日语音符，为您纺织专属的例文故事...",
-            "AI 正在细心琢磨，想为您呈上一句最动心的日语翻译...",
-            "字里行间皆是心意，例文正在精心雕琢中...",
-            "正在为您检索最地道的表达，让日语练习更有温度...",
-            "思维的火花正在闪烁，只为与您的下一次日语邂逅作准备...",
-            "请稍候哦，AI 正在为您手写带有樱花香气的练习题...",
-            "正在铺展纸笔，为您绘制一行闪闪发光的日语例文..."
+            "AI 正在呼唤音符，为您织就例文...",
+            "字里行间皆是心意，例文雕琢中...",
+            "正在检索地道表达，马上就好...",
+            "思维火花闪烁，正在准备偶遇...",
+            "手写樱花笺，AI 正在加紧出题...",
+            "正在铺展纸笔，绘制闪光的例文..."
         )
     }
     var loadingTextIndex by remember { mutableIntStateOf((0..loadingTexts.lastIndex).random()) }
@@ -159,7 +158,7 @@ fun AIWorkshopScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(if (isDark) Color.Black.copy(alpha = 0.6f) else Color.White.copy(alpha = 0.7f))
+                        .background(colorScheme.background)
                         .clickable(enabled = false) {},
                     contentAlignment = Alignment.Center
                 ) {
