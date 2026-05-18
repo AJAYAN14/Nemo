@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,7 +43,7 @@ fun SpeakerButton(
     isPlaying: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    tint: Color = Color(0xFF3B82F6), // iOS Blue
+    tint: Color = MaterialTheme.colorScheme.primary,
     size: Dp = 44.dp,
     backgroundColor: Color = Color.Transparent
 ) {
