@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -47,8 +48,6 @@ fun ForgettingCurveScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.background
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("遗忘曲线", "学习情况", "记忆持久度")
 
     Scaffold(
         topBar = {
@@ -77,14 +76,6 @@ fun ForgettingCurveScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ========== Tab 栏 ==========
-                ForgettingCurveTabRow(
-                    tabs = tabTitles,
-                    selectedIndex = selectedTabIndex,
-                    onTabSelected = { selectedTabIndex = it }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 // ========== 时间范围选择器 ==========
                 TimeRangeSelector(
@@ -121,58 +112,6 @@ fun ForgettingCurveScreen(
     }
 }
 
-/**
- * Tab 栏组件
- *
- * 仅第一个 Tab（遗忘曲线）可用，其余为占位
- */
-@Composable
-private fun ForgettingCurveTabRow(
-    tabs: List<String>,
-    selectedIndex: Int,
-    onTabSelected: (Int) -> Unit
-) {
-    val isDark = isSystemInDarkTheme()
-    val activeColor = ChartColors.FreshGreen
-    val inactiveColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
-
-    TabRow(
-        selectedTabIndex = selectedIndex,
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = activeColor,
-        indicator = {},
-        divider = {}
-    ) {
-        tabs.forEachIndexed { index, title ->
-            val isSelected = selectedIndex == index
-            Tab(
-                selected = isSelected,
-                onClick = { onTabSelected(index) },
-                text = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) activeColor else inactiveColor
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        // 自绘底部指示线
-                        Box(
-                            modifier = Modifier
-                                .width(40.dp)
-                                .height(2.dp)
-                                .background(
-                                    if (isSelected) activeColor else Color.Transparent,
-                                    RoundedCornerShape(1.dp)
-                                )
-                        )
-                    }
-                }
-            )
-        }
-    }
-}
 
 /**
  * 图例组件
@@ -247,7 +186,7 @@ private fun CurveTipCard(modifier: Modifier = Modifier) {
         color = tipBgColor
     ) {
         Text(
-            text = "坚持使用墨墨学习的时间越久，你的遗忘曲线统计将越精准。参阅：墨墨的记忆研究。",
+            text = "学习的时间越久，你的遗忘曲线统计将越精准。",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(16.dp),
@@ -311,37 +250,45 @@ private fun TimeRangeSelector(
     modifier: Modifier = Modifier
 ) {
     val isDark = isSystemInDarkTheme()
+    val bgColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100
+    val activeBgColor = if (isDark) NemoNeutrals.Gray700 else Color.White
+    val activeTextColor = ChartColors.FreshGreen
+    val inactiveTextColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    // 外层凹槽
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(40.dp)
+            .background(color = bgColor, shape = RoundedCornerShape(20.dp))
+            .padding(4.dp)
     ) {
-        CurveTimeRange.entries.forEach { range ->
-            val isSelected = range == selectedRange
-            FilterChip(
-                selected = isSelected,
-                onClick = { onRangeSelected(range) },
-                label = {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CurveTimeRange.entries.forEach { range ->
+                val isSelected = range == selectedRange
+                
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (isSelected) activeBgColor else Color.Transparent)
+                        .clickable { onRangeSelected(range) },
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
                         text = "${range.days}天",
                         style = MaterialTheme.typography.labelMedium,
-                        fontSize = 12.sp
+                        color = if (isSelected) activeTextColor else inactiveTextColor,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 13.sp
                     )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = ChartColors.FreshGreen.copy(alpha = 0.15f),
-                    selectedLabelColor = ChartColors.FreshGreen,
-                    containerColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100,
-                    labelColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = Color.Transparent,
-                    selectedBorderColor = ChartColors.FreshGreen.copy(alpha = 0.3f),
-                    enabled = true,
-                    selected = isSelected
-                ),
-                modifier = Modifier.weight(1f)
-            )
+                }
+            }
         }
     }
 }

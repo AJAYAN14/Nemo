@@ -1,28 +1,43 @@
 package com.jian.nemo.feature.statistics.presentation.curve.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.ChartColors
@@ -30,18 +45,15 @@ import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.feature.statistics.presentation.curve.CurvePoint
 import com.jian.nemo.feature.statistics.presentation.curve.ForgettingCurveData
+import kotlin.math.abs
 
 /**
- * 遗忘曲线对比折线图组件
+ * 遗忘曲线对比折线图组件 (Pro Max 高级增强版)
  *
- * 使用 Compose Canvas 手绘实现，支持：
- * - Y 轴百分比标签 (0%~100%)
- * - X 轴自定义中文日期标签（今天/明天/后天/N天后）
- * - 浅灰色背景网格线
- * - 两条差异化样式折线（标准曲线 vs 用户曲线）
- *
- * @param data 遗忘曲线数据模型，包含标准曲线和用户曲线两组数据
- * @param modifier 外部修饰符
+ * 核心优化：
+ * - 引入 Animatable 实现平滑形变和线型生长效果
+ * - 在用户曲线上方添加平滑的半透明渐变阴影填充
+ * - 增加手势侦听，手指滑过时绘制 Crosshair（十字瞄准线）和 Tooltip（高亮信息面板）
  */
 @Composable
 fun ForgettingCurveChart(
@@ -52,49 +64,72 @@ fun ForgettingCurveChart(
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
-    // 颜色方案：使用项目已有的 ChartColors 和 NemoNeutrals
+    // 颜色方案
     val gridColor = if (isDark) NemoNeutrals.Gray700.copy(alpha = 0.4f) else NemoNeutrals.Gray200
     val axisLabelColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
     val standardLineColor = ChartColors.FreshGreen
     val userLineColor = ChartColors.FreshOrange
 
-    // 线条宽度 (dp 转 px)
+    // 线条宽度
     val standardLineWidth = with(density) { 2.dp.toPx() }
     val userLineWidth = with(density) { 3.dp.toPx() }
     val userDotRadius = with(density) { 4.dp.toPx() }
     val gridLineWidth = with(density) { 0.5.dp.toPx() }
 
-    // 文字样式
     val axisTextStyle = TextStyle(
         color = axisLabelColor,
         fontSize = 10.sp,
         textAlign = TextAlign.Center
     )
 
-    // 预计算 X 轴标签，确定最大数据点数
     val maxDayIndex = maxOf(
         data.standardCurve.maxOfOrNull { it.dayIndex } ?: 0,
         data.userCurve.maxOfOrNull { it.dayIndex } ?: 0
     )
 
-    // 预先测量 Y 轴标签宽度，用于确定绘图区域左边距
     val yLabelWidth = remember(textMeasurer) {
         textMeasurer.measure("100%", axisTextStyle).size.width.toFloat()
     }
 
+    // ========== 动画与手势状态 ==========
+    val animationProgress = remember { Animatable(0f) }
+    LaunchedEffect(data) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+        )
+    }
+
+    var touchX by remember { mutableStateOf<Float?>(null) }
+
     Canvas(
         modifier = modifier
             .fillMaxWidth()
-            .height(320.dp)
+            .height(600.dp)
+            .pointerInput(data) {
+                detectDragGestures(
+                    onDragStart = { offset -> touchX = offset.x },
+                    onDrag = { change, _ -> touchX = change.position.x },
+                    onDragEnd = { touchX = null },
+                    onDragCancel = { touchX = null }
+                )
+            }
+            .pointerInput(data, "tap") {
+                detectTapGestures(
+                    onPress = { offset ->
+                        touchX = offset.x
+                        tryAwaitRelease()
+                        touchX = null
+                    }
+                )
+            }
     ) {
-        // ========== 布局参数计算 ==========
-        // 绘图区域边距（为坐标轴标签预留空间）
         val leftPadding = yLabelWidth + with(density) { 8.dp.toPx() }
         val rightPadding = with(density) { 16.dp.toPx() }
-        val topPadding = with(density) { 8.dp.toPx() }
-        val bottomPadding = with(density) { 40.dp.toPx() } // X 轴标签空间
+        val topPadding = with(density) { 24.dp.toPx() } // 给 Tooltip 留出空间
+        val bottomPadding = with(density) { 40.dp.toPx() }
 
-        // 实际绘图区域
         val chartLeft = leftPadding
         val chartRight = size.width - rightPadding
         val chartTop = topPadding
@@ -103,21 +138,16 @@ fun ForgettingCurveChart(
         val chartHeight = chartBottom - chartTop
 
         // ========== 绘制背景网格线 ==========
-        val ySteps = 10 // 0%, 10%, 20% ... 100%
-
+        val ySteps = 10
         for (i in 0..ySteps) {
             val yRatio = i.toFloat() / ySteps
             val y = chartBottom - yRatio * chartHeight
-
-            // 横向网格线
             drawLine(
                 color = gridColor,
                 start = Offset(chartLeft, y),
                 end = Offset(chartRight, y),
                 strokeWidth = gridLineWidth
             )
-
-            // Y 轴百分比标签（格式化为带百分号的字符串，例如 "20%", "100%"）
             val labelText = "${(i * 10)}%"
             val labelResult = textMeasurer.measure(labelText, axisTextStyle)
             drawText(
@@ -129,9 +159,6 @@ fun ForgettingCurveChart(
             )
         }
 
-        // 纵向网格线 + X 轴标签
-        // 根据数据范围动态计算标签间隔：
-        // ≤7天: 每天  ≤30天: 每5天  ≤90天: 每15天  >90天: 每60天
         val xLabelStep = when {
             maxDayIndex <= 7 -> 1
             maxDayIndex <= 30 -> 5
@@ -143,16 +170,12 @@ fun ForgettingCurveChart(
         for (dayValue in 0..maxDayIndex step xLabelStep) {
             val xRatio = dayValue.toFloat() / maxX
             val x = chartLeft + xRatio * chartWidth
-
-            // 纵向网格线
             drawLine(
                 color = gridColor,
                 start = Offset(x, chartTop),
                 end = Offset(x, chartBottom),
                 strokeWidth = gridLineWidth
             )
-
-            // X 轴标签
             val dayLabel = formatDayLabel(dayValue, maxDayIndex)
             val xLabelResult = textMeasurer.measure(dayLabel, axisTextStyle)
             drawText(
@@ -164,8 +187,7 @@ fun ForgettingCurveChart(
             )
         }
 
-        // ========== 绘制标准遗忘曲线（绿色线）==========
-        // 纯实线，线条较细，节点处不绘制圆点标记
+        // ========== 绘制标准遗忘曲线 ==========
         drawCurveLine(
             points = data.standardCurve,
             color = standardLineColor,
@@ -176,11 +198,13 @@ fun ForgettingCurveChart(
             chartBottom = chartBottom,
             maxDayIndex = maxDayIndex,
             drawDots = false,
-            dotRadius = 0f
+            dotRadius = 0f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f),
+            fillGradient = false,
+            progress = animationProgress.value
         )
 
-        // ========== 绘制用户实际曲线（橙色线）==========
-        // 线条较粗，天数 ≤7 时绘制圆点标记，>7 时不绘制以避免拥挤
+        // ========== 绘制用户实际曲线 ==========
         val showUserDots = maxDayIndex <= 7
         drawCurveLine(
             points = data.userCurve,
@@ -192,25 +216,67 @@ fun ForgettingCurveChart(
             chartBottom = chartBottom,
             maxDayIndex = maxDayIndex,
             drawDots = showUserDots,
-            dotRadius = userDotRadius
+            dotRadius = userDotRadius,
+            fillGradient = true,
+            progress = animationProgress.value
         )
+
+        // ========== 手势反馈 (Crosshair & Tooltip) ==========
+        if (touchX != null && data.userCurve.isNotEmpty() && data.standardCurve.isNotEmpty()) {
+            var minDiff = Float.MAX_VALUE
+            var bestDayIndex = 0
+            for (day in 0..maxDayIndex) {
+                val cx = chartLeft + (day.toFloat() / maxX) * chartWidth
+                val diff = abs(cx - touchX!!)
+                if (diff < minDiff) {
+                    minDiff = diff
+                    bestDayIndex = day
+                }
+            }
+
+            // 查找最近的数据点
+            val userPt = data.userCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) }
+            val stdPt = data.standardCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) }
+
+            if (userPt != null && stdPt != null) {
+                val targetX = chartLeft + (bestDayIndex.toFloat() / maxX) * chartWidth
+                val userY = chartBottom - userPt.retentionRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
+                val stdY = chartBottom - stdPt.retentionRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
+
+                // 虚线十字
+                drawLine(
+                    color = axisLabelColor.copy(alpha = 0.5f),
+                    start = Offset(targetX, chartTop),
+                    end = Offset(targetX, chartBottom),
+                    strokeWidth = with(density) { 1.dp.toPx() },
+                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                )
+
+                // 焦点圆圈
+                drawCircle(color = userLineColor, radius = userDotRadius * 1.5f, center = Offset(targetX, userY))
+                drawCircle(color = Color.White, radius = userDotRadius * 0.8f, center = Offset(targetX, userY))
+
+                drawCircle(color = standardLineColor, radius = userDotRadius * 1.5f, center = Offset(targetX, stdY))
+                drawCircle(color = Color.White, radius = userDotRadius * 0.8f, center = Offset(targetX, stdY))
+
+                // Tooltip 卡片
+                drawTooltip(
+                    day = bestDayIndex,
+                    userRate = userPt.retentionRate,
+                    stdRate = stdPt.retentionRate,
+                    anchorX = targetX,
+                    chartTop = chartTop,
+                    chartLeft = chartLeft,
+                    chartRight = chartRight,
+                    textMeasurer = textMeasurer,
+                    density = density,
+                    isDark = isDark
+                )
+            }
+        }
     }
 }
 
-/**
- * 在 Canvas 中绘制一条折线
- *
- * @param points 数据点列表
- * @param color 线条颜色
- * @param strokeWidth 线条宽度
- * @param chartLeft 绘图区域左边界
- * @param chartRight 绘图区域右边界
- * @param chartTop 绘图区域上边界
- * @param chartBottom 绘图区域下边界
- * @param maxDayIndex X 轴最大天数索引
- * @param drawDots 是否在每个数据节点处绘制实心圆点
- * @param dotRadius 圆点半径
- */
 private fun DrawScope.drawCurveLine(
     points: List<CurvePoint>,
     color: Color,
@@ -221,7 +287,10 @@ private fun DrawScope.drawCurveLine(
     chartBottom: Float,
     maxDayIndex: Int,
     drawDots: Boolean,
-    dotRadius: Float
+    dotRadius: Float,
+    pathEffect: PathEffect? = null,
+    fillGradient: Boolean = false,
+    progress: Float = 1f
 ) {
     if (points.size < 2) return
 
@@ -229,22 +298,37 @@ private fun DrawScope.drawCurveLine(
     val chartHeight = chartBottom - chartTop
     val maxX = maxDayIndex.coerceAtLeast(1)
 
-    // 将数据点转换为 Canvas 坐标
     val canvasPoints = points.map { point ->
         val xRatio = point.dayIndex.toFloat() / maxX
-        val yRatio = point.retentionRate.coerceIn(0f, 1f)
+        val yRatio = point.retentionRate.coerceIn(0f, 1f) * progress
         Offset(
             x = chartLeft + xRatio * chartWidth,
             y = chartBottom - yRatio * chartHeight
         )
     }
 
-    // 绘制折线路径
     val path = Path().apply {
         canvasPoints.forEachIndexed { index, offset ->
             if (index == 0) moveTo(offset.x, offset.y)
             else lineTo(offset.x, offset.y)
         }
+    }
+
+    if (fillGradient) {
+        val fillPath = Path().apply {
+            addPath(path)
+            lineTo(canvasPoints.last().x, chartBottom)
+            lineTo(canvasPoints.first().x, chartBottom)
+            close()
+        }
+        drawPath(
+            path = fillPath,
+            brush = Brush.verticalGradient(
+                colors = listOf(color.copy(alpha = 0.25f), Color.Transparent),
+                startY = chartTop,
+                endY = chartBottom
+            )
+        )
     }
 
     drawPath(
@@ -253,11 +337,11 @@ private fun DrawScope.drawCurveLine(
         style = Stroke(
             width = strokeWidth,
             cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+            join = StrokeJoin.Round,
+            pathEffect = pathEffect
         )
     )
 
-    // 绘制数据节点圆点（仅用户曲线需要）
     if (drawDots) {
         canvasPoints.forEach { offset ->
             drawCircle(
@@ -269,13 +353,75 @@ private fun DrawScope.drawCurveLine(
     }
 }
 
-/**
- * X 轴标签自定义转换规则
- *
- * 根据总天数范围动态调整标签格式：
- * - 短期 (≤7天): 使用中文描述（今天/明天/后天/N天后）
- * - 中长期 (>7天): 使用简洁的数字格式（0, 5, 10...）+ "天" 后缀
- */
+private fun DrawScope.drawTooltip(
+    day: Int,
+    userRate: Float,
+    stdRate: Float,
+    anchorX: Float,
+    chartTop: Float,
+    chartLeft: Float,
+    chartRight: Float,
+    textMeasurer: TextMeasurer,
+    density: Density,
+    isDark: Boolean
+) {
+    val bgColor = if (isDark) Color(0xFF1E293B) else Color(0xFFFFFFFF)
+    val titleColor = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+    val descColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF475569)
+    val shadowColor = Color.Black.copy(alpha = 0.15f)
+
+    val titleStyle = TextStyle(color = titleColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+    val descStyle = TextStyle(color = descColor, fontSize = 10.sp)
+
+    val titleResult = textMeasurer.measure("第 ${day} 天", titleStyle)
+    val userResult = textMeasurer.measure("你的留存: ${(userRate * 100).toInt()}%", descStyle)
+    val stdResult = textMeasurer.measure("标准参考: ${(stdRate * 100).toInt()}%", descStyle)
+
+    val padding = with(density) { 8.dp.toPx() }
+    val textWidth = maxOf(titleResult.size.width, userResult.size.width, stdResult.size.width).toFloat()
+    val boxWidth = textWidth + padding * 2
+    val boxHeight = titleResult.size.height + userResult.size.height + stdResult.size.height + padding * 2.5f
+
+    // 防止 Tooltip 越界
+    var boxLeft = anchorX - boxWidth / 2f
+    if (boxLeft < chartLeft) boxLeft = chartLeft
+    if (boxLeft + boxWidth > chartRight) boxLeft = chartRight - boxWidth
+
+    // 默认放在上方，如果超出顶边界，就放下面一点
+    var boxTop = chartTop - boxHeight - with(density) { 4.dp.toPx() }
+    if (boxTop < 0f) {
+        boxTop = chartTop + with(density) { 10.dp.toPx() }
+    }
+
+    // 阴影
+    drawRoundRect(
+        color = shadowColor,
+        topLeft = Offset(boxLeft + 4f, boxTop + 4f),
+        size = Size(boxWidth, boxHeight),
+        cornerRadius = CornerRadius(12f, 12f)
+    )
+
+    // 背景
+    drawRoundRect(
+        color = bgColor,
+        topLeft = Offset(boxLeft, boxTop),
+        size = Size(boxWidth, boxHeight),
+        cornerRadius = CornerRadius(12f, 12f)
+    )
+
+    // 文字
+    var currentY = boxTop + padding
+    drawText(textLayoutResult = titleResult, topLeft = Offset(boxLeft + padding, currentY))
+    currentY += titleResult.size.height + padding * 0.5f
+
+    drawCircle(ChartColors.FreshOrange, radius = 6f, center = Offset(boxLeft + padding + 6f, currentY + userResult.size.height / 2f))
+    drawText(textLayoutResult = userResult, topLeft = Offset(boxLeft + padding + 18f, currentY))
+    currentY += userResult.size.height
+
+    drawCircle(ChartColors.FreshGreen, radius = 6f, center = Offset(boxLeft + padding + 6f, currentY + stdResult.size.height / 2f))
+    drawText(textLayoutResult = stdResult, topLeft = Offset(boxLeft + padding + 18f, currentY))
+}
+
 fun formatDayLabel(dayIndex: Int, maxDays: Int): String {
     return if (maxDays <= 7) {
         when (dayIndex) {
@@ -290,44 +436,23 @@ fun formatDayLabel(dayIndex: Int, maxDays: Int): String {
 }
 
 // ========== Preview ==========
-
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun ForgettingCurveChartPreview() {
-    // Mock 数据：模拟截图中的下降曲线趋势
     val mockData = ForgettingCurveData(
-        // 标准 FSRS 遗忘曲线（绿色线）— 下降较缓
         standardCurve = listOf(
-            CurvePoint(0, 1.00f),
-            CurvePoint(1, 0.34f),
-            CurvePoint(2, 0.29f),
-            CurvePoint(3, 0.28f),
-            CurvePoint(4, 0.27f),
-            CurvePoint(5, 0.27f),
-            CurvePoint(6, 0.26f),
-            CurvePoint(7, 0.25f),
-            CurvePoint(8, 0.25f),
-            CurvePoint(9, 0.25f),
-            CurvePoint(10, 0.25f),
-            CurvePoint(11, 0.24f)
+            CurvePoint(0, 1.00f), CurvePoint(1, 0.34f), CurvePoint(2, 0.29f),
+            CurvePoint(3, 0.28f), CurvePoint(4, 0.27f), CurvePoint(5, 0.27f),
+            CurvePoint(6, 0.26f), CurvePoint(7, 0.25f), CurvePoint(8, 0.25f),
+            CurvePoint(9, 0.25f), CurvePoint(10, 0.25f), CurvePoint(11, 0.24f)
         ),
-        // 用户实际记忆曲线（橙色线）— 下降更陡峭
         userCurve = listOf(
-            CurvePoint(0, 1.00f),
-            CurvePoint(1, 0.50f),
-            CurvePoint(2, 0.30f),
-            CurvePoint(3, 0.25f),
-            CurvePoint(4, 0.15f),
-            CurvePoint(5, 0.08f),
-            CurvePoint(6, 0.03f),
-            CurvePoint(7, 0.01f),
-            CurvePoint(8, 0.01f),
-            CurvePoint(9, 0.005f),
-            CurvePoint(10, 0.003f),
-            CurvePoint(11, 0.002f)
+            CurvePoint(0, 1.00f), CurvePoint(1, 0.50f), CurvePoint(2, 0.30f),
+            CurvePoint(3, 0.25f), CurvePoint(4, 0.15f), CurvePoint(5, 0.08f),
+            CurvePoint(6, 0.03f), CurvePoint(7, 0.01f), CurvePoint(8, 0.01f),
+            CurvePoint(9, 0.005f), CurvePoint(10, 0.003f), CurvePoint(11, 0.002f)
         )
     )
-
     NemoTheme {
         ForgettingCurveChart(
             data = mockData,
