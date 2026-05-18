@@ -41,6 +41,10 @@ val NotoSerifJP = FontFamily(
     )
 )
 
+val MochiyPopOne = FontFamily(
+    androidx.compose.ui.text.font.Font(R.font.mochiy_pop_one, FontWeight.Normal)
+)
+
 val NemoTypography = Typography(
     // Display styles
     displayLarge = TextStyle(

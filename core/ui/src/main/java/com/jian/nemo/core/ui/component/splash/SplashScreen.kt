@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.designsystem.theme.MochiyPopOne
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -369,6 +370,7 @@ fun SplashScreen(
                 Text(
                     text = "ネ",
                     fontSize = 90.sp,
+                    fontFamily = MochiyPopOne,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
                     modifier = Modifier
@@ -384,6 +386,7 @@ fun SplashScreen(
                 Text(
                     text = "モ",
                     fontSize = 90.sp,
+                    fontFamily = MochiyPopOne,
                     fontWeight = FontWeight.Black,
                     color = Color.White,
                     modifier = Modifier
@@ -415,6 +418,7 @@ fun SplashScreen(
                 Text(
                     text = "Nemo",
                     fontSize = 42.sp,
+                    fontFamily = MochiyPopOne,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     modifier = Modifier
