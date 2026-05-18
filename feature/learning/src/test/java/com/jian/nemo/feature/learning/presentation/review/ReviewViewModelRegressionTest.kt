@@ -262,6 +262,10 @@ class ReviewViewModelRegressionTest {
                 type = item.type
             )
         }
+
+        override fun forgettingCurve(elapsedDays: Float, stability: Float): Float {
+            return 0.9f // 测试用固定值
+        }
     }
 
     private fun settingsRepositoryProxy(

@@ -27,4 +27,15 @@ interface SrsCalculator {
         quality: Int,
         today: Long = DateTimeUtils.getCurrentEpochDay()
     ): SrsUpdateResult
+
+    /**
+     * 遗忘曲线计算
+     *
+     * 使用当前生效的 FSRS 参数（含个性化微调）计算记忆留存率
+     *
+     * @param elapsedDays 自上次复习以来的天数
+     * @param stability 当前记忆稳定性
+     * @return 回忆概率 (0-1)
+     */
+    fun forgettingCurve(elapsedDays: Float, stability: Float): Float
 }

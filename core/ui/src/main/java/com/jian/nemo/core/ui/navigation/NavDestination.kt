@@ -58,6 +58,7 @@ object NavDestination {
     const val WORD_LIST = "word_list"
     const val GRAMMAR_LIST = "grammar_list"
     const val LEECH_MANAGEMENT = "leech_management"
+    const val FORGETTING_CURVE = "forgetting_curve"  // 遗忘曲线
 
     // 详情页路由
     const val WORD_DETAIL = "wordDetail/{wordId}"

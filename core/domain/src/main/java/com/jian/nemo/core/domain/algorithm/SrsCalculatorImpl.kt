@@ -153,4 +153,8 @@ class SrsCalculatorImpl @Inject constructor(
         }
         return (itemId.toLong() shl 32) xor (today shl 8) xor (quality.toLong() shl 4) xor repetitions.toLong()
     }
+
+    override fun forgettingCurve(elapsedDays: Float, stability: Float): Float {
+        return fsrs.forgettingCurve(elapsedDays, stability)
+    }
 }

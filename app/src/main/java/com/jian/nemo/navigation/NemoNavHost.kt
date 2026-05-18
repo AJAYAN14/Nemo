@@ -65,6 +65,7 @@ import com.jian.nemo.feature.collection.navigation.FAVORITE_QUESTIONS_ROUTE
 import com.jian.nemo.feature.statistics.navigation.statisticsScreen
 import com.jian.nemo.feature.statistics.navigation.historicalStatisticsScreen
 import com.jian.nemo.feature.statistics.navigation.leechManagementScreen
+import com.jian.nemo.feature.statistics.navigation.forgettingCurveScreen
 import com.jian.nemo.feature.test.navigation.testScreen
 import com.jian.nemo.feature.test.navigation.navigateToTestSettings
 import com.jian.nemo.feature.user.navigation.userGraph
@@ -355,6 +356,9 @@ fun NemoNavHost(
                 },
                 onNavigateToLeechManagement = {
                     navController.navigate(NavDestination.LEECH_MANAGEMENT)
+                },
+                onNavigateToForgettingCurve = {
+                    navController.navigate(NavDestination.FORGETTING_CURVE)
                 }
             )
         }
@@ -559,6 +563,9 @@ fun NemoNavHost(
 
         // 待攻坚项 (原封禁管理)
         leechManagementScreen(navController)
+
+        // 遗忘曲线
+        forgettingCurveScreen(navController)
 
         // 测试 - Note: testScreen is an extension function.
         testScreen(navController)

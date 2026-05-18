@@ -34,6 +34,7 @@ import com.jian.nemo.core.ui.component.SlidingDotIndicator
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.ChartColors
 import kotlinx.coroutines.delay
 
 // 定义常量
@@ -514,7 +515,8 @@ fun DataAndResourcesSection(
     onWordListClick: () -> Unit,
     onGrammarListClick: () -> Unit,
     onCategoryClassificationClick: () -> Unit,
-    onLeechManagementClick: () -> Unit
+    onLeechManagementClick: () -> Unit,
+    onForgettingCurveClick: () -> Unit = {}
 ) {
      Column(modifier = Modifier.fillMaxWidth()) {
         SectionTitle("数据与资料")
@@ -541,6 +543,13 @@ fun DataAndResourcesSection(
                     title = "历史统计",
                     subtitle = "查看所有详细的学习统计",
                     onClick = onHistoricalStatisticsClick
+                )
+                SquircleListItem(
+                    icon = Icons.Rounded.ShowChart,
+                    color = ChartColors.FreshGreen,
+                    title = "遗忘曲线",
+                    subtitle = "记忆衰减可视化分析",
+                    onClick = onForgettingCurveClick
                 )
                  SquircleListItem(
                     icon = Icons.Rounded.SortByAlpha,

@@ -77,3 +77,21 @@ fun NavHostController.navigateToHistoricalStatistics() {
 fun NavHostController.navigateToLeechManagement() {
     navigate(NavDestination.LEECH_MANAGEMENT)
 }
+
+/**
+ * 注册遗忘曲线界面到导航图
+ */
+fun NavGraphBuilder.forgettingCurveScreen(navController: NavHostController) {
+    composable(route = NavDestination.FORGETTING_CURVE) {
+        com.jian.nemo.feature.statistics.presentation.curve.ForgettingCurveScreen(
+            onBack = { navController.popBackStack() }
+        )
+    }
+}
+
+/**
+ * 导航到遗忘曲线界面
+ */
+fun NavHostController.navigateToForgettingCurve() {
+    navigate(NavDestination.FORGETTING_CURVE)
+}

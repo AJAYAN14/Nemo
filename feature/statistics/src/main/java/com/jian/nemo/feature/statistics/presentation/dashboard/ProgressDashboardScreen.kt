@@ -17,7 +17,7 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
 /**
- * 进度复习界面 - 还原旧项目视觉样式
+ * 进度复习界面
  *
  * 结构：
  * - 学习摘要卡片（3页轮播：日间概览/学习轨迹/成长总览）
@@ -36,6 +36,7 @@ fun ProgressDashboardScreen(
     onNavigateToGrammarList: () -> Unit = {},
     onNavigateToCategoryVocabulary: () -> Unit = {},
     onNavigateToLeechManagement: () -> Unit = {},
+    onNavigateToForgettingCurve: () -> Unit = {},
     viewModel: ProgressDashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -112,7 +113,8 @@ fun ProgressDashboardScreen(
                         onWordListClick = onNavigateToWordList,
                         onGrammarListClick = onNavigateToGrammarList,
                         onCategoryClassificationClick = onNavigateToCategoryVocabulary,
-                        onLeechManagementClick = onNavigateToLeechManagement
+                        onLeechManagementClick = onNavigateToLeechManagement,
+                        onForgettingCurveClick = onNavigateToForgettingCurve
                     )
                 }
             }
