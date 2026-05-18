@@ -167,11 +167,20 @@ fun AIWorkshopScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(horizontal = 24.dp)
                     ) {
-                        LottieAnimation(
-                            composition = composition,
-                            progress = { lottieProgress },
-                            modifier = Modifier.size(240.dp)
-                        )
+                        if (composition != null) {
+                            LottieAnimation(
+                                composition = composition,
+                                progress = { lottieProgress },
+                                modifier = Modifier.size(240.dp)
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.size(240.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                NemoChasingDotsLoader(size = 48.dp)
+                            }
+                        }
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = loadingTexts[loadingTextIndex],
