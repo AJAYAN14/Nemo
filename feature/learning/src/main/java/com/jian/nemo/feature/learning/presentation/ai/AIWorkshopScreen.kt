@@ -141,7 +141,7 @@ fun AIWorkshopScreen(
                         Text(
                             "AI 正在思考中...",
                             style = MaterialTheme.typography.labelLarge,
-                            color = NemoPrimary,
+                            color = colorScheme.primary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -291,7 +291,7 @@ private fun ModeSection(
                         text = modeLabels[index],
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                        color = if (isSelected) NemoPrimary else NemoNeutrals.Gray500
+                        color = if (isSelected) colorScheme.primary else NemoNeutrals.Gray500
                     )
                 }
             }
@@ -407,7 +407,7 @@ private fun DifficultySection(
                         text = level,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                        color = if (isSelected) NemoPrimary else NemoNeutrals.Gray500
+                        color = if (isSelected) colorScheme.primary else NemoNeutrals.Gray500
                     )
                 }
             }
@@ -437,7 +437,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
         ) {
             Surface(
                 modifier = Modifier.size(100.dp),
-                color = NemoPrimary.copy(alpha = 0.05f),
+                color = colorScheme.primary.copy(alpha = 0.05f),
                 shape = CircleShape
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -445,7 +445,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
                         if (isGrammarMode) Icons.AutoMirrored.Rounded.MenuBook else Icons.Rounded.AutoAwesome,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
-                        tint = NemoPrimary
+                        tint = colorScheme.primary
                     )
                 }
             }
@@ -480,7 +480,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
+                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
                 elevation = null
             ) {
                 Text("开始练习", fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -538,7 +538,7 @@ private fun ExerciseContent(
                     uiState.currentGrammarPoint?.let { grammarPoint ->
                         Spacer(modifier = Modifier.width(8.dp))
                         Surface(
-                            color = NemoPrimary.copy(alpha = 0.1f),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             shape = RoundedCornerShape(6.dp)
                         ) {
                             val label = buildString {
@@ -551,7 +551,7 @@ private fun ExerciseContent(
                                 text = label,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = NemoPrimary,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -584,7 +584,7 @@ private fun ExerciseContent(
                         SpeakerButton(
                             isPlaying = uiState.playingAudioId == "question",
                             onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
-                            backgroundColor = NemoPrimary.copy(alpha = 0.05f),
+                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             size = 40.dp
                         )
                     }
@@ -670,14 +670,14 @@ private fun InputSection(
             },
             shape = RoundedCornerShape(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = NemoPrimary,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.4f),
                 focusedContainerColor = surfaceColor,
                 unfocusedContainerColor = surfaceColor,
                 disabledContainerColor = surfaceColor,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                cursorColor = NemoPrimary
+                cursorColor = MaterialTheme.colorScheme.primary
             ),
             enabled = enabled
         )
@@ -691,7 +691,7 @@ private fun InputSection(
                 .height(60.dp),
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = NemoPrimary,
+                containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White,
                 disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray200,
                 disabledContentColor = if (isDark) Color.White.copy(alpha = 0.3f) else NemoNeutrals.Gray400

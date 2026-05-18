@@ -44,12 +44,13 @@ class AIClient @Inject constructor(
         baseUrl: String?,
         model: String,
         difficulty: String,
-        grammarInfo: GrammarInfo? = null
+        grammarInfo: GrammarInfo? = null,
+        exerciseType: String = if (kotlin.random.Random.nextBoolean()) "CN_TO_JP" else "JP_TO_CN"
     ): Result<AIExercise> {
         val systemPrompt = if (grammarInfo != null) {
-            buildGrammarExercisePrompt(difficulty, grammarInfo)
+            buildGrammarExercisePrompt(difficulty, grammarInfo, exerciseType)
         } else {
-            buildFreeExercisePrompt(difficulty)
+            buildFreeExercisePrompt(difficulty, exerciseType)
         }
         
         val url = getApiUrl(platform, baseUrl, apiKey, model)
@@ -69,7 +70,13 @@ class AIClient @Inject constructor(
     /**
      * 自由模式出题 Prompt（保持原有逻辑）
      */
-    private fun buildFreeExercisePrompt(difficulty: String): String {
+    private fun buildFreeExercisePrompt(difficulty: String, exerciseType: String): String {
+        val typeDesc = if (exerciseType == "CN_TO_JP") {
+            "CN_TO_JP（中译日）。你【必须】出一句纯中文题目，让用户翻译成日语。生成的标准参考答案中应包含地道的日文表述。"
+        } else {
+            "JP_TO_CN（日译中）。你【必须】出一句纯日语题目（不得带中括号发音注音），让用户翻译成中文。生成的标准参考答案为对应的地道中文。"
+        }
+
         return """
             你是一位资深的日语教育专家。请根据指定的日语等级 ($difficulty) 生成一道具有挑战性且实用的翻译练习题。
             
@@ -84,14 +91,13 @@ class AIClient @Inject constructor(
             1. 严禁生成过于简单的问候语或基础自我介绍（如"我是学生"）。
             2. 严禁生成不符合 $difficulty 等级词汇量要求的题目。
             
-            请从以下两种模式中随机选择一种（确保两种方向的出现概率各占 50%）：
-            1. CN_TO_JP: 中译日。
-            2. JP_TO_CN: 日译中。
+            【模式考察硬性命令】
+            本题你【必须且只能】生成该类型：$typeDesc
             
             请返回如下 JSON 格式：
             {
               "question": "题目内容",
-              "type": "CN_TO_JP" 或 "JP_TO_CN",
+              "type": "$exerciseType",
               "difficulty": "$difficulty",
               "answer": "地道的标准答案",
               "hints": ["关键语法点提示", "难点词汇提示"]
@@ -108,9 +114,14 @@ class AIClient @Inject constructor(
      * 2. 强制要求标准答案必须使用指定语法点
      * 3. 不发送数据库中的例句，要求 AI 完全原创
      */
-    private fun buildGrammarExercisePrompt(difficulty: String, info: GrammarInfo): String {
+    private fun buildGrammarExercisePrompt(difficulty: String, info: GrammarInfo, exerciseType: String): String {
         val subtypeInfo = if (!info.subtype.isNullOrBlank()) "用法分类：${info.subtype}" else ""
         val notesInfo = if (!info.notes.isNullOrBlank()) "注意事项：${info.notes}" else ""
+        val typeDesc = if (exerciseType == "CN_TO_JP") {
+            "CN_TO_JP（中译日）。你【必须】出一句纯中文题目，让用户翻译成日语。标准参考答案中【必须】正确使用且包含语法点「${info.name}」。"
+        } else {
+            "JP_TO_CN（日译中）。你【必须】出一句纯日语题目（该日语句子中必须包含「${info.name}」语法点），让用户翻译成中文。"
+        }
 
         return """
             你是一位资深的日语教育专家。现在进入【语法专项训练模式】。
@@ -128,14 +139,12 @@ class AIClient @Inject constructor(
             【出题要求】
             1. 生成的题目句子必须自然、实用，符合 $difficulty 等级的词汇和表达水平。
             2. 标准答案中【必须】正确使用上述语法点「${info.name}」。
-            3. 如果该语法有特定的接续规则，标准答案必须严格遵守。
+            3. 如果该语法有特定的接续规则，标准答案必须严格遵守.
             4. 严禁使用同义语法或其他表达方式替代「${info.name}」。
             5. 严禁直接照搬教科书中的常见例句，必须原创。
             
-            【方向选择】
-            请从以下两种模式中随机选择一种（确保两种方向的出现概率各占 50%）：
-            1. CN_TO_JP: 出一句中文，让用户翻译成日语（答案中必须用到「${info.name}」）。
-            2. JP_TO_CN: 出一句使用了「${info.name}」的日语句子，让用户翻译成中文。
+            【模式考察硬性命令】
+            本题你【必须且只能】生成该类型：$typeDesc
             
             【提示内容】
             hints 中请给出与该语法点相关的关键接续提示和语义提示，帮助用户回忆该语法的用法。
@@ -143,7 +152,7 @@ class AIClient @Inject constructor(
             请返回如下 JSON 格式：
             {
               "question": "题目内容",
-              "type": "CN_TO_JP" 或 "JP_TO_CN",
+              "type": "$exerciseType",
               "difficulty": "$difficulty",
               "answer": "地道的标准答案（必须包含「${info.name}」）",
               "hints": ["接续提示", "语义提示"]
@@ -162,19 +171,34 @@ class AIClient @Inject constructor(
         grammarInfo: GrammarInfo? = null
     ): Result<AIGradeResult> {
         val grammarSection = if (grammarInfo != null) {
-            """
-            
-            【语法专项评分附加要求】
-            本题为语法专项训练，指定语法点为「${grammarInfo.name}」。
-            含义：${grammarInfo.explanation}
-            接续：${grammarInfo.connection}
-            
-            评分时必须额外检查：
-            - 用户是否正确使用了「${grammarInfo.name}」
-            - 接续方式是否正确
-            - 如果用户完全没有使用该语法点，即使翻译意思正确，也应大幅扣分（最高不超过 40 分）
-            - 在 feedback 中必须专门点评用户对「${grammarInfo.name}」的使用情况
-            """.trimIndent()
+            if (exercise.type == "CN_TO_JP") {
+                """
+                
+                【语法专项评分附加要求】
+                本题为「中翻日」专项训练，指定日语语法点为「${grammarInfo.name}」。
+                含义：${grammarInfo.explanation}
+                接续：${grammarInfo.connection}
+                
+                评分时必须额外检查：
+                - 用户是否在日语回答中正确使用了「${grammarInfo.name}」
+                - 日语的接续方式是否正确
+                - 如果用户在日语作答中完全没有使用该语法点，即使意思正确，也应大幅扣分（最高不超过 40 分）
+                - 在 feedback 中必须专门点评用户对「${grammarInfo.name}」的使用情况
+                """.trimIndent()
+            } else {
+                """
+                
+                【语法专项评分附加要求】
+                本题为「日翻中」专项训练，题目本身已包含了日语语法点「${grammarInfo.name}」（含义：${grammarInfo.explanation}）。
+                用户的任务是把这句带有该语法点的日语准确、地道地翻译成【中文】。
+                
+                评分时请特别注意：
+                - 用户的作答是中文，绝对【不需要】也不应该在中文回答中包含该日语语法点「${grammarInfo.name}」！
+                - 评分的核心标准是：用户是否准确地翻译出了「${grammarInfo.name}」在原句中所表达的语气、语气强度和语义。
+                - 如果用户翻译的意思完全正确，千万不要以“未使用该日语语法点”为由扣分。
+                - 在 feedback 中请点评用户对该语法点在中文翻译中的语义还原准确度。
+                """.trimIndent()
+            }
         } else ""
 
         val systemPrompt = """

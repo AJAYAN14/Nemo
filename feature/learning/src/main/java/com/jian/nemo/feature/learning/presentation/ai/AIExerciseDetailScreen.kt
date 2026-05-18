@@ -81,7 +81,7 @@ fun AIExerciseDetailDialog(
                     title = if (history.type == "CN_TO_JP") "中文题目" else "日文题目",
                     content = history.question,
                     icon = Icons.Rounded.Info,
-                    iconColor = NemoIndigo,
+                    iconColor = MaterialTheme.colorScheme.primary,
                     isSpeaking = playingAudioId == "question",
                     showSpeaker = history.type == "JP_TO_CN",
                     onSpeak = { onSpeak(history.question, "question") }
@@ -103,7 +103,7 @@ fun AIExerciseDetailDialog(
                     title = "参考答案",
                     content = history.standardAnswer,
                     icon = Icons.Rounded.CheckCircle,
-                    iconColor = NemoIndigo,
+                    iconColor = MaterialTheme.colorScheme.primary,
                     isSpeaking = playingAudioId == "standard",
                     showSpeaker = history.type == "CN_TO_JP",
                     onSpeak = { onSpeak(history.standardAnswer, "standard") }
