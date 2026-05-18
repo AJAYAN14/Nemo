@@ -61,6 +61,8 @@ fun TestDashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val isAbilityWorkshopEnabled = false
+
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
@@ -165,16 +167,18 @@ fun TestDashboardScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            if (isAbilityWorkshopEnabled) {
+                Spacer(modifier = Modifier.height(24.dp))
 
-            SectionTitle("其他测试")
-            DashboardBanner(
-                title = "能力工坊",
-                subtitle = "提升语感，全方位进阶（即将上线）",
-                icon = Icons.Rounded.AllInclusive,
-                gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
-                onClick = onNavigateToAbilityWorkshop
-            )
+                SectionTitle("其他测试")
+                DashboardBanner(
+                    title = "能力工坊",
+                    subtitle = "提升语感，全方位进阶（即将上线）",
+                    icon = Icons.Rounded.AllInclusive,
+                    gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
+                    onClick = onNavigateToAbilityWorkshop
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
         }

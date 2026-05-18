@@ -201,6 +201,9 @@ class VerbConjugationViewModel @Inject constructor(
 
     // 后台智能串行自动补水函数
     fun preloadCachePoolQuietly() {
+        // 安全锁：由于用户暂时关闭了此功能，直接返回，绝不发起后台 AI 出题请求
+        if (true) return
+
         if (!_isPregenEnabled.value) return
 
         externalScope.launch {

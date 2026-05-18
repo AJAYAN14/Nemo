@@ -53,6 +53,8 @@ import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.ui.component.text.FuriganaText
 
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
+
 /**
  * 单词卡片组件 (3D Flip)
  *
@@ -160,11 +162,13 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 baseTextStyle = MaterialTheme.typography.headlineLarge.copy(
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 54.sp,
-                    letterSpacing = 2.sp
+                    letterSpacing = 2.sp,
+                    fontFamily = NotoSerifJP
                 ),
                 baseTextColor = themeColor,
                 furiganaTextSize = 16.sp,
-                furiganaTextColor = NemoTextLight.copy(alpha = 0.7f)
+                furiganaTextColor = NemoTextLight.copy(alpha = 0.7f),
+                furiganaFontFamily = NotoSerifJP
             )
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -173,7 +177,8 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 text = word.hiragana,
                 style = MaterialTheme.typography.headlineSmall.copy(
                     letterSpacing = 1.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = NotoSerifJP
                 ),
                 color = NemoTextLight.copy(alpha = 0.8f)
             )
@@ -268,7 +273,8 @@ private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, on
             text = word.japanese,
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = 32.sp
+                fontSize = 32.sp,
+                fontFamily = NotoSerifJP
             ),
             color = themeColor
         )
@@ -277,7 +283,9 @@ private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, on
 
         Text(
             text = word.hiragana,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontFamily = NotoSerifJP
+            ),
             color = NemoTextLight
         )
 
@@ -344,10 +352,12 @@ private fun ExampleSentence(sentence: String, translation: String?, onSpeakText:
                 text = sentence,
                 baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                     fontWeight = FontWeight.Medium,
-                    lineHeight = 26.sp
+                    lineHeight = 26.sp,
+                    fontFamily = NotoSerifJP
                 ),
                 furiganaTextSize = 10.sp,
-                furiganaTextColor = NemoTextLight.copy(alpha = 0.6f)
+                furiganaTextColor = NemoTextLight.copy(alpha = 0.6f),
+                furiganaFontFamily = NotoSerifJP
             )
             if (!translation.isNullOrBlank()) {
                 Spacer(modifier = Modifier.height(6.dp))
