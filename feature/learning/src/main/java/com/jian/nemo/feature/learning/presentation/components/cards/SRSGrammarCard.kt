@@ -1,10 +1,15 @@
 package com.jian.nemo.feature.learning.presentation.components.cards
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,8 +29,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -82,8 +93,12 @@ fun SRSGrammarCard(
     cardBadge: CardBadge? = null,
     modifier: Modifier = Modifier,
     onSpeakExample: ((String, String, String) -> Unit)? = null,
-    playingAudioId: String? = null
+    playingAudioId: String? = null,
+    isWhiteboardEnabled: Boolean = false
 ) {
+    // 背面临时显示手写白板的状态
+    var showBackWhiteboard by remember(grammar.id) { mutableStateOf(false) }
+
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -147,6 +162,28 @@ fun SRSGrammarCard(
                             letterSpacing = 1.2.sp
                         )
                     }
+
+                    // 顶部手写白板按钮 (仅在背面且 isAnswerShown 为 true 时显示，避免错位和重叠)
+                    if (isAnswerShown) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        val buttonBgColor = if (showBackWhiteboard) MaterialTheme.colorScheme.primary else (if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f))
+                        val buttonTextColor = if (showBackWhiteboard) Color.White else (if (isDarkTheme) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.6f))
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(buttonBgColor)
+                                .clickable { showBackWhiteboard = !showBackWhiteboard },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = "临时手写板",
+                                tint = buttonTextColor,
+                                modifier = Modifier.size(15.dp)
+                            )
+                        }
+                    }
                 }
 
                 // 语法条目（大标题）
@@ -196,11 +233,13 @@ fun SRSGrammarCard(
                     )
                 }
             }
+
+
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // --- Sticker Area (答案显示前) ---
+        // --- Sticker Area or Whiteboard (答案显示前) ---
         if (!isAnswerShown) {
             val context = LocalContext.current
             val stickerName = remember(grammar.id) { getStickerForGrammar(grammar.id) }
@@ -208,17 +247,56 @@ fun SRSGrammarCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 24.dp),
+                    .animateContentSize(animationSpec = tween(300))
+                    .padding(vertical = if (isWhiteboardEnabled) 8.dp else 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data("file:///android_asset/stickers/${stickerName}.svg")
-                        .decoderFactory(SvgDecoder.Factory())
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier.size(240.dp) // Slightly smaller than WordCard (320dp) as Grammar card is taller
-                )
+                AnimatedContent(
+                    targetState = isWhiteboardEnabled,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(300)))
+                            .togetherWith(fadeOut(animationSpec = tween(150)) + scaleOut(targetScale = 0.95f, animationSpec = tween(150)))
+                    },
+                    label = "WhiteboardToggle"
+                ) { enabled ->
+                    if (enabled) {
+                        com.jian.nemo.feature.learning.presentation.components.common.NemoWhiteboard(
+                            wordId = grammar.id,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(400.dp)
+                        )
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data("file:///android_asset/stickers/${stickerName}.svg")
+                                .decoderFactory(SvgDecoder.Factory())
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier.size(240.dp) // Slightly smaller than WordCard (320dp) as Grammar card is taller
+                        )
+                    }
+                }
+            }
+        } else {
+            // 当显示答案时，若用户临时调出了白板，在这里渲染它
+            AnimatedVisibility(
+                visible = showBackWhiteboard
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    com.jian.nemo.feature.learning.presentation.components.common.NemoWhiteboard(
+                        wordId = grammar.id,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp),
+                        onClose = { showBackWhiteboard = false }
+                    )
+                }
             }
         }
 

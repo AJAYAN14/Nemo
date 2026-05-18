@@ -164,6 +164,8 @@ fun LearningScreen(
                     onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
                     showAnswerDelayDurationLabel = delayDurationLabel,
                     onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                    isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                    onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
                     canUndo = uiState.canUndo,
                     onUndo = { viewModel.onEvent(LearningEvent.Undo) },
                     onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
@@ -422,7 +424,8 @@ fun WordLearningContent(
                                           },
                                           onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
                                           onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                          playingAudioId = uiState.playingAudioId
+                                          playingAudioId = uiState.playingAudioId,
+                                          isWhiteboardEnabled = uiState.isWhiteboardEnabled
                                       )
                                  }
                              }
@@ -558,7 +561,8 @@ fun GrammarLearningContent(
                                       cardBadge = getCardBadge(LearningItem.GrammarItem(targetGrammar)),
                                       modifier = Modifier.fillMaxSize(),
                                       onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                      playingAudioId = uiState.playingAudioId
+                                      playingAudioId = uiState.playingAudioId,
+                                      isWhiteboardEnabled = uiState.isWhiteboardEnabled
                                   )
                              }
                          }

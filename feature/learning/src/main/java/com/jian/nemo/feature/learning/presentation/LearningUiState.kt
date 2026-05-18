@@ -96,7 +96,10 @@ data class LearningUiState(
     val queueRelearnCount: Int = 0,
 
     /** 当前显示模式 (null=系统, true=深色, false=浅色) */
-    val isDarkMode: Boolean? = null
+    val isDarkMode: Boolean? = null,
+    
+    /** 是否启用原生画板 */
+    val isWhiteboardEnabled: Boolean = false
 ) {
     val hasPendingItems: Boolean
         get() = when (learningMode) {

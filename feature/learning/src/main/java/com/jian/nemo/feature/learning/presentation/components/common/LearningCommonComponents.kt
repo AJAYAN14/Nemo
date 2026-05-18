@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.SettingsBrightness
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -145,6 +146,8 @@ fun LearnHeader(
     onToggleShowAnswerDelay: ((Boolean) -> Unit)? = null,
     showAnswerDelayDurationLabel: String = "1.0s",
     onCycleShowAnswerDelayDuration: (() -> Unit)? = null,
+    isWhiteboardEnabled: Boolean = false,
+    onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     canUndo: Boolean = false,
     onUndo: (() -> Unit)? = null,
     menu: @Composable (() -> Unit)? = null,
@@ -466,6 +469,17 @@ fun LearnHeader(
                                                 leadingIcon = Icons.Rounded.Timer
                                             )
                                         }
+                                    }
+
+                                    if (onToggleWhiteboard != null) {
+                                        val whiteboardLabel = if (isWhiteboardEnabled) "已开启" else "已关闭"
+                                        NemoMenuItem(
+                                            text = "手写白板: $whiteboardLabel",
+                                            onClick = {
+                                                onToggleWhiteboard(!isWhiteboardEnabled)
+                                            },
+                                            leadingIcon = Icons.Rounded.Edit
+                                        )
                                     }
 
                                     // 主题切换项 (循环模式)

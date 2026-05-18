@@ -190,4 +190,9 @@ sealed interface LearningEvent {
      * 循环切换显示模式
      */
     data object CycleDarkMode : LearningEvent
+
+    /**
+     * 切换白板开关
+     */
+    data class ToggleWhiteboard(val enabled: Boolean) : LearningEvent
 }

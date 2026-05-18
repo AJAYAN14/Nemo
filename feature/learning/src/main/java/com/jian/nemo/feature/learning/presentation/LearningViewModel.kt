@@ -427,6 +427,9 @@ class LearningViewModel @Inject constructor(
                     settingsRepository.setDarkMode(nextMode)
                 }
             }
+            is LearningEvent.ToggleWhiteboard -> {
+                _uiState.update { it.copy(isWhiteboardEnabled = event.enabled) }
+            }
         }
     }
 

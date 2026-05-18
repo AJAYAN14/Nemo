@@ -1,9 +1,15 @@
 package com.jian.nemo.feature.learning.presentation.components.cards
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,6 +33,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -112,8 +122,12 @@ fun SRSLearningCard(
     onPracticeClick: (() -> Unit)? = null,
     onSpeakWord: (() -> Unit)? = null,
     onSpeakExample: ((String, String, String) -> Unit)? = null,
-    playingAudioId: String? = null
+    playingAudioId: String? = null,
+    isWhiteboardEnabled: Boolean = false
 ) {
+    // 背面临时显示手写白板的状态
+    var showBackWhiteboard by remember(word.id) { mutableStateOf(false) }
+
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -252,7 +266,7 @@ fun SRSLearningCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Sticker Area (答案显示前) ---
+        // --- Sticker Area or Whiteboard (答案显示前) ---
         if (!isAnswerShown) {
             val context = LocalContext.current
             val stickerName = remember(word.id) { getStickerForWord(word.id) }
@@ -260,20 +274,59 @@ fun SRSLearningCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 24.dp),
+                    .animateContentSize(animationSpec = tween(300))
+                    .padding(vertical = if (isWhiteboardEnabled) 8.dp else 24.dp),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data("file:///android_asset/stickers/${stickerName}.svg")
-                        .decoderFactory(SvgDecoder.Factory())
-                        .crossfade(300)
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier.size(320.dp),
-                    placeholder = ColorPainter(Color.Gray.copy(alpha = 0.1f)),
-                    error = ColorPainter(Color.Red.copy(alpha = 0.05f))
-                )
+                AnimatedContent(
+                    targetState = isWhiteboardEnabled,
+                    transitionSpec = {
+                        (fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.95f, animationSpec = tween(300)))
+                            .togetherWith(fadeOut(animationSpec = tween(150)) + scaleOut(targetScale = 0.95f, animationSpec = tween(150)))
+                    },
+                    label = "WhiteboardToggle"
+                ) { enabled ->
+                    if (enabled) {
+                        com.jian.nemo.feature.learning.presentation.components.common.NemoWhiteboard(
+                            wordId = word.id,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(420.dp)
+                        )
+                    } else {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data("file:///android_asset/stickers/${stickerName}.svg")
+                                .decoderFactory(SvgDecoder.Factory())
+                                .crossfade(300)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier.size(320.dp),
+                            placeholder = ColorPainter(Color.Gray.copy(alpha = 0.1f)),
+                            error = ColorPainter(Color.Red.copy(alpha = 0.05f))
+                        )
+                    }
+                }
+            }
+        } else {
+            // 当显示答案时，若用户临时调出了白板，在这里渲染它
+            AnimatedVisibility(
+                visible = showBackWhiteboard
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    com.jian.nemo.feature.learning.presentation.components.common.NemoWhiteboard(
+                        wordId = word.id,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(420.dp),
+                        onClose = { showBackWhiteboard = false }
+                    )
+                }
             }
         }
 
@@ -447,6 +500,23 @@ fun SRSLearningCard(
                                 modifier = Modifier.size(26.dp)
                             )
                         }
+                    }
+
+                    // 手写白板按钮 (背面固定显示，不用去 menu 再次打开了)
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor)
+                            .clickable { showBackWhiteboard = !showBackWhiteboard },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = "临时手写板",
+                            tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
