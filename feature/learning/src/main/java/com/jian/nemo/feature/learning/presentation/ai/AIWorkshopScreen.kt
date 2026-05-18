@@ -38,6 +38,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.core.designsystem.R as DesignR
+import com.airbnb.lottie.compose.*
+import com.jian.nemo.feature.learning.R
 
 
 
@@ -52,6 +54,34 @@ fun AIWorkshopScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     var showHelp by remember { mutableStateOf(false) }
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.anim_ai_thinking))
+    val lottieProgress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    val loadingTexts = remember {
+        listOf(
+            "AI 正在呼唤日语音符，为您纺织专属的例文故事...",
+            "AI 正在细心琢磨，想为您呈上一句最动心的日语翻译...",
+            "字里行间皆是心意，例文正在精心雕琢中...",
+            "正在为您检索最地道的表达，让日语练习更有温度...",
+            "思维的火花正在闪烁，只为与您的下一次日语邂逅作准备...",
+            "请稍候哦，AI 正在为您手写带有樱花香气的练习题...",
+            "正在铺展纸笔，为您绘制一行闪闪发光的日语例文..."
+        )
+    }
+    var loadingTextIndex by remember { mutableIntStateOf((0..loadingTexts.lastIndex).random()) }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (uiState.isLoading) {
+            while (true) {
+                kotlinx.coroutines.delay(2500)
+                loadingTextIndex = (loadingTextIndex + 1) % loadingTexts.size
+            }
+        }
+    }
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -124,7 +154,7 @@ fun AIWorkshopScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // 加载层 - 采用全屏磨砂质感（Flat）
+            // 加载层 - 采用全屏磨砂质感（Flat）并使用唯美的 Lottie 加载动效
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier
@@ -133,16 +163,22 @@ fun AIWorkshopScreen(
                         .clickable(enabled = false) {},
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        NemoChasingDotsLoader(
-                            size = 48.dp
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    ) {
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { lottieProgress },
+                            modifier = Modifier.size(240.dp)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            "AI 正在思考中...",
-                            style = MaterialTheme.typography.labelLarge,
+                            text = loadingTexts[loadingTextIndex],
+                            style = MaterialTheme.typography.bodyLarge,
                             color = colorScheme.primary,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
