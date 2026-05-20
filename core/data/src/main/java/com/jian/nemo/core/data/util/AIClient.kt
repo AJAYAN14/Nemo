@@ -239,7 +239,7 @@ class AIClient @Inject constructor(
 
     private fun getApiUrl(platform: String, baseUrl: String?, apiKey: String, model: String): String {
         val cleanModel = model.ifBlank {
-            if (platform == "gemini") "gemini-3-flash-preview" else "gpt-3.5-turbo"
+            if (platform == "gemini") "gemini-3-flash-preview" else "gpt-5.5-instant"
         }.removePrefix("models/")
 
         if (platform == "gemini") {
@@ -258,6 +258,8 @@ class AIClient @Inject constructor(
         return when (platform) {
             "openai" -> "https://api.openai.com/v1/chat/completions"
             "deepseek" -> "https://api.deepseek.com/chat/completions"
+            "doubao" -> "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+            "mimo" -> "https://api.xiaomimimo.com/v1/chat/completions"
             else -> "https://api.openai.com/v1/chat/completions"
         }
     }
@@ -270,9 +272,9 @@ class AIClient @Inject constructor(
     ): String {
         val effectiveModel = model.ifBlank {
             when (platform) {
-                "deepseek" -> "deepseek-chat"
+                "deepseek" -> "deepseek-v4-flash"
                 "gemini" -> "gemini-3-flash-preview"
-                else -> "gpt-3.5-turbo"
+                else -> "gpt-5.5-instant"
             }
         }
 

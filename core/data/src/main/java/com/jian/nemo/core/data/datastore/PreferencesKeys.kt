@@ -283,6 +283,10 @@ object PreferencesKeys {
     val AI_BASE_URL = stringPreferencesKey("ai_base_url")
     /** AI 模型名称 */
     val AI_MODEL = stringPreferencesKey("ai_model")
+    /** AI 配置列表 JSON (List<AIConfig>) */
+    val AI_CONFIG_LIST = stringPreferencesKey("ai_config_list")
+    /** 当前激活的 AI 配置 ID */
+    val AI_ACTIVE_CONFIG_ID = stringPreferencesKey("ai_active_config_id")
     /** AI 工坊练习难度 (N5, N4, N3, N2, N1) */
     val AI_WORKSHOP_DIFFICULTY = stringPreferencesKey("ai_workshop_difficulty")
     /** AI 工坊当前生成的题目 (JSON 格式) */

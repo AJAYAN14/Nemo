@@ -2,6 +2,7 @@ package com.jian.nemo.core.domain.repository
 
 import com.jian.nemo.core.domain.model.TestPreferences
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 /**
  * 设置Repository接口
@@ -624,6 +625,14 @@ interface SettingsRepository {
     /** AI 工坊当前选择的模式 Flow */
     val aiWorkshopModeFlow: Flow<String>
     suspend fun setAiWorkshopMode(mode: String)
+
+    /** AI 配置列表 Flow */
+    val aiConfigListFlow: Flow<String>
+    suspend fun setAiConfigList(json: String)
+
+    /** 当前激活的 AI 配置 ID Flow */
+    val aiActiveConfigIdFlow: Flow<String>
+    suspend fun setAiActiveConfigId(id: String)
 }
 
 /**
@@ -636,4 +645,17 @@ data class SessionData(
     val steps: Map<Int, Int>, // ID -> Step Index
     val waitingUntil: Long = 0L,
     val isAnswerShown: Boolean = false
+)
+
+/**
+ * AI 配置实体定义
+ */
+@Serializable
+data class AIConfig(
+    val id: String,
+    val name: String,
+    val platform: String,
+    val model: String,
+    val apiKey: String,
+    val baseUrl: String
 )

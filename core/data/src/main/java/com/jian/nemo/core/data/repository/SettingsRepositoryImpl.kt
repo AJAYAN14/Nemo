@@ -21,6 +21,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+import com.jian.nemo.core.domain.repository.AIConfig
+import kotlinx.coroutines.flow.combine
 
 /**
  * 设置 Repository 实现
@@ -1587,8 +1592,75 @@ class SettingsRepositoryImpl @Inject constructor(
 
     // ========== AI 工坊配置 ==========
 
+    private fun getActiveConfigFromPrefs(preferences: Preferences): AIConfig? {
+        val listJson = preferences[PreferencesKeys.AI_CONFIG_LIST]
+        val activeId = preferences[PreferencesKeys.AI_ACTIVE_CONFIG_ID]
+        
+        if (!listJson.isNullOrEmpty()) {
+            val configs = parseAiConfigs(listJson)
+            val active = configs.find { it.id == activeId }
+            if (active != null) return active
+            if (configs.isNotEmpty()) return configs[0]
+        }
+        
+        // 兼容性迁移：如果列表为空，尝试使用旧的单一配置信息并打包生成默认配置卡片
+        val oldPlatform = preferences[PreferencesKeys.AI_PLATFORM]
+        val oldKey = oldPlatform?.let { preferences[PreferencesKeys.getAiApiKeyKey(it)] } ?: preferences[PreferencesKeys.AI_API_KEY] ?: ""
+        val oldUrl = oldPlatform?.let { preferences[PreferencesKeys.getAiBaseUrlKey(it)] } ?: preferences[PreferencesKeys.AI_BASE_URL] ?: ""
+        val oldModel = oldPlatform?.let { preferences[PreferencesKeys.getAiModelKey(it)] } ?: preferences[PreferencesKeys.AI_MODEL] ?: ""
+        
+        if (!oldPlatform.isNullOrEmpty() || oldKey.isNotEmpty()) {
+            val platform = oldPlatform ?: "openai"
+            return AIConfig(
+                id = "default_active_id",
+                name = when(platform) {
+                    "openai" -> "OpenAI 默认配置"
+                    "gemini" -> "Gemini 默认配置"
+                    "deepseek" -> "DeepSeek 默认配置"
+                    else -> "自定义 默认配置"
+                },
+                platform = platform,
+                model = oldModel,
+                apiKey = oldKey,
+                baseUrl = oldUrl
+            )
+        }
+        return null
+    }
+
+    private fun parseAiConfigs(json: String?): List<AIConfig> {
+        if (json.isNullOrEmpty()) return emptyList()
+        return try {
+            Json.decodeFromString<List<AIConfig>>(json)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    override val aiConfigListFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_CONFIG_LIST] ?: ""
+    }
+
+    override suspend fun setAiConfigList(json: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_CONFIG_LIST] = json
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiActiveConfigIdFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_ACTIVE_CONFIG_ID] ?: ""
+    }
+
+    override suspend fun setAiActiveConfigId(id: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_ACTIVE_CONFIG_ID] = id
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     override val aiPlatformFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.AI_PLATFORM] ?: "openai"
+        getActiveConfigFromPrefs(preferences)?.platform ?: "openai"
     }
 
     override suspend fun setAiPlatform(platform: String) {
@@ -1599,32 +1671,39 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     // --- API Key ---
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val aiApiKeyFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
-        getAiApiKeyFlow(platform)
+    override val aiApiKeyFlow: Flow<String> = dataStore.data.map { preferences ->
+        getActiveConfigFromPrefs(preferences)?.apiKey ?: ""
     }
 
     override fun getAiApiKeyFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.getAiApiKeyKey(platform)] ?: ""
+        val active = getActiveConfigFromPrefs(preferences)
+        if (active != null && active.platform == platform) {
+            active.apiKey
+        } else {
+            preferences[PreferencesKeys.getAiApiKeyKey(platform)] ?: ""
+        }
     }
 
     override suspend fun setAiApiKey(platform: String, key: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.getAiApiKeyKey(platform)] = key
-            // 同时更新旧的全局 Key 以保证向后兼容性
             preferences[PreferencesKeys.AI_API_KEY] = key
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 
     // --- Base URL ---
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val aiBaseUrlFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
-        getAiBaseUrlFlow(platform)
+    override val aiBaseUrlFlow: Flow<String> = dataStore.data.map { preferences ->
+        getActiveConfigFromPrefs(preferences)?.baseUrl ?: ""
     }
 
     override fun getAiBaseUrlFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.getAiBaseUrlKey(platform)] ?: ""
+        val active = getActiveConfigFromPrefs(preferences)
+        if (active != null && active.platform == platform) {
+            active.baseUrl
+        } else {
+            preferences[PreferencesKeys.getAiBaseUrlKey(platform)] ?: ""
+        }
     }
 
     override suspend fun setAiBaseUrl(platform: String, url: String) {
@@ -1636,13 +1715,17 @@ class SettingsRepositoryImpl @Inject constructor(
     }
 
     // --- Model ---
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val aiModelFlow: Flow<String> = aiPlatformFlow.flatMapLatest { platform ->
-        getAiModelFlow(platform)
+    override val aiModelFlow: Flow<String> = dataStore.data.map { preferences ->
+        getActiveConfigFromPrefs(preferences)?.model ?: ""
     }
 
     override fun getAiModelFlow(platform: String): Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.getAiModelKey(platform)] ?: ""
+        val active = getActiveConfigFromPrefs(preferences)
+        if (active != null && active.platform == platform) {
+            active.model
+        } else {
+            preferences[PreferencesKeys.getAiModelKey(platform)] ?: ""
+        }
     }
 
     override suspend fun setAiModel(platform: String, model: String) {
