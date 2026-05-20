@@ -30,6 +30,9 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<ContentReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [filterType, setFilterType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   
   // Modals state
   const [isWordModalOpen, setIsWordModalOpen] = useState(false);
@@ -107,6 +110,46 @@ export default function ReportsPage() {
     }
   };
 
+  const handleRefreshDatabase = async () => {
+    if (!confirm("确定要增加数据库版本号来触发所有客户端刷新吗？")) return;
+    setIsRefreshing(true);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("sync_meta")
+        .select("content_version")
+        .eq("id", 1)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      const nextVersion = (data?.content_version || 0) + 1;
+      
+      const { error: updateError } = await supabase
+        .from("sync_meta")
+        .update({ content_version: nextVersion })
+        .eq("id", 1);
+        
+      if (updateError) throw updateError;
+      
+      alert(`数据库刷新成功！同步版本号已更新为: ${nextVersion}`);
+    } catch (err: any) {
+      console.error("Error refreshing database:", err);
+      alert(`刷新失败: ${err.message || err}`);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Client-side filtering
+  const filteredReports = reports.filter(report => {
+    const matchesType = filterType === "all" || report.item_type === filterType;
+    const contentToSearch = report.item_content || "";
+    const matchesSearch = 
+      contentToSearch.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      report.item_id.toString().includes(searchQuery);
+    return matchesType && matchesSearch;
+  });
+
   return (
     <DashboardShell>
       <div className="header" style={{ marginBottom: '32px' }}>
@@ -118,12 +161,13 @@ export default function ReportsPage() {
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* 状态筛选 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Filter size={18} color="var(--text-tertiary)" />
             <select 
               className="input" 
-              style={{ width: '200px' }}
+              style={{ width: '140px' }}
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
@@ -132,7 +176,43 @@ export default function ReportsPage() {
               <option value="resolved">已解决</option>
             </select>
           </div>
+
+          {/* 类型筛选 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>条目类型:</span>
+            <select 
+              className="input" 
+              style={{ width: '140px' }}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="all">全部类型</option>
+              <option value="word">单词</option>
+              <option value="grammar">语法</option>
+            </select>
+          </div>
+
+          {/* 搜索框 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: '220px' }}>
+            <Search size={18} color="var(--text-tertiary)" />
+            <input 
+              className="input" 
+              style={{ flex: 1 }}
+              placeholder="搜索被举报条目内容或 ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
           <button className="button-secondary" onClick={fetchReports}>刷新数据</button>
+          <button 
+            className="button-primary" 
+            onClick={handleRefreshDatabase}
+            disabled={isRefreshing}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            {isRefreshing ? "正在刷新..." : "同步刷新数据库"}
+          </button>
         </div>
       </div>
 
@@ -142,6 +222,17 @@ export default function ReportsPage() {
         </div>
       ) : (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          {/* 数量统计展示 */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(0, 0, 0, 0.02)' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)' }}>
+              统计: 共计 {filteredReports.length} 项 {filterType !== 'all' ? (filterType === 'word' ? '单词' : '语法') : ''}反馈
+              {reports.length !== filteredReports.length && ` (筛选自 ${reports.length} 项)`}
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>
+              待处理: {filteredReports.filter(r => r.status === 'pending').length} 项 | 已解决: {filteredReports.filter(r => r.status === 'resolved').length} 项
+            </span>
+          </div>
+
           <table className="table">
             <thead>
               <tr>
@@ -153,13 +244,13 @@ export default function ReportsPage() {
               </tr>
             </thead>
             <tbody>
-              {reports.length === 0 ? (
+              {filteredReports.length === 0 ? (
                 <tr>
                   <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
-                    暂无反馈记录
+                    暂无符合条件的反馈记录
                   </td>
                 </tr>
-              ) : reports.map((report) => (
+              ) : filteredReports.map((report) => (
                 <tr key={report.id}>
                   <td>
                     <span style={{ 

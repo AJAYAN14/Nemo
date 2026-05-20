@@ -109,11 +109,21 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
     }
     setIsSaving(true);
     try {
+      const processedUsages = formData.content.usages.map(usage => ({
+        ...usage,
+        connection: (usage.connection || "").replace(/\\n/g, "\n"),
+        explanation: (usage.explanation || "").replace(/\\n/g, "\n"),
+        notes: (usage.notes || "").replace(/\\n/g, "\n")
+      }));
+
       const dataToSave = {
         title: formData.title,
         level: formData.level,
         is_delisted: formData.is_delisted,
-        content: formData.content
+        content: {
+          ...formData.content,
+          usages: processedUsages
+        }
       };
 
       const { error } = grammarToEdit
@@ -202,9 +212,10 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '4px', display: 'block' }}>接续</label>
-                  <input 
+                  <textarea 
                     className="input" 
-                    style={{ width: '100%', backgroundColor: 'var(--bg-primary)' }}
+                    style={{ width: '100%', backgroundColor: 'var(--bg-primary)', resize: 'vertical' }}
+                    rows={Math.max(1, (usage.connection || "").split('\n').length)}
                     value={usage.connection || ""}
                     onChange={(e) => handleUsageChange(uIdx, "connection", e.target.value)}
                     placeholder="例如: 名词 + あっての"
