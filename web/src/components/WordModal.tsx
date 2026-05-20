@@ -33,7 +33,20 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
 
   useEffect(() => {
     if (wordToEdit) {
-      setFormData(wordToEdit);
+      setFormData({
+        japanese: wordToEdit.japanese || "",
+        hiragana: wordToEdit.hiragana || "",
+        chinese: wordToEdit.chinese || "",
+        level: wordToEdit.level || "N3",
+        pos: wordToEdit.pos || "",
+        is_delisted: wordToEdit.is_delisted || false,
+        example_1: wordToEdit.example_1 || "",
+        gloss_1: wordToEdit.gloss_1 || "",
+        example_2: wordToEdit.example_2 || "",
+        gloss_2: wordToEdit.gloss_2 || "",
+        example_3: wordToEdit.example_3 || "",
+        gloss_3: wordToEdit.gloss_3 || "",
+      });
     } else {
       setFormData({
         japanese: "",
@@ -120,7 +133,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
             <input 
               className="input" 
               style={{ width: '100%' }}
-              value={formData.japanese}
+              value={formData.japanese || ""}
               onChange={(e) => setFormData({ ...formData, japanese: e.target.value })}
               placeholder="例如: 素晴らしい"
             />
@@ -142,7 +155,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
             <input 
               className="input" 
               style={{ width: '100%' }}
-              value={formData.hiragana}
+              value={formData.hiragana || ""}
               onChange={(e) => setFormData({ ...formData, hiragana: e.target.value })}
             />
           </div>
@@ -151,7 +164,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
             <select 
               className="input" 
               style={{ width: '100%' }}
-              value={formData.level}
+              value={formData.level || "N3"}
               onChange={(e) => setFormData({ ...formData, level: e.target.value })}
             >
               <option value="N1">N1</option>
@@ -168,7 +181,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
           <input 
             className="input" 
             style={{ width: '100%' }}
-            value={formData.chinese}
+            value={formData.chinese || ""}
             onChange={(e) => setFormData({ ...formData, chinese: e.target.value })}
           />
         </div>
@@ -179,7 +192,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
             <input 
               className="input" 
               style={{ width: '100%' }}
-              value={formData.pos}
+              value={formData.pos || ""}
               onChange={(e) => setFormData({ ...formData, pos: e.target.value })}
               placeholder="例如: 形容词"
             />
@@ -206,14 +219,14 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
                 className="input" 
                 style={{ width: '100%', marginBottom: '4px', fontSize: '0.9rem' }}
                 placeholder={`例句 ${num}`}
-                value={(formData as any)[`example_${num}`]}
+                value={(formData as any)[`example_${num}`] || ""}
                 onChange={(e) => setFormData({ ...formData, [`example_${num}`]: e.target.value })}
               />
               <input 
                 className="input" 
                 style={{ width: '100%', fontSize: '0.85rem', color: 'var(--text-secondary)' }}
                 placeholder={`翻译 ${num}`}
-                value={(formData as any)[`gloss_${num}`]}
+                value={(formData as any)[`gloss_${num}`] || ""}
                 onChange={(e) => setFormData({ ...formData, [`gloss_${num}`]: e.target.value })}
               />
             </div>

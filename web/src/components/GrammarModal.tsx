@@ -205,7 +205,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
                   <input 
                     className="input" 
                     style={{ width: '100%', backgroundColor: 'var(--bg-primary)' }}
-                    value={usage.connection}
+                    value={usage.connection || ""}
                     onChange={(e) => handleUsageChange(uIdx, "connection", e.target.value)}
                     placeholder="例如: 名词 + あっての"
                   />
@@ -215,7 +215,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
                   <textarea 
                     className="input" 
                     style={{ width: '100%', backgroundColor: 'var(--bg-primary)', minHeight: '60px', resize: 'vertical' }}
-                    value={usage.explanation}
+                    value={usage.explanation || ""}
                     onChange={(e) => handleUsageChange(uIdx, "explanation", e.target.value)}
                     placeholder="解释该用法的具体含义..."
                   />
@@ -225,7 +225,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
                   <textarea 
                     className="input" 
                     style={{ width: '100%', backgroundColor: 'var(--bg-primary)', minHeight: '60px', resize: 'vertical' }}
-                    value={usage.notes}
+                    value={usage.notes || ""}
                     onChange={(e) => handleUsageChange(uIdx, "notes", e.target.value)}
                     placeholder="补充说明、注意事项等..."
                   />
@@ -251,21 +251,21 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
                         className="input" 
                         style={{ width: '100%', fontSize: '0.85rem', backgroundColor: 'var(--bg-primary)' }}
                         placeholder="日语原句"
-                        value={ex.sentence}
+                        value={ex.sentence || ""}
                         onChange={(e) => handleExampleChange(uIdx, eIdx, "sentence", e.target.value)}
                       />
                       <input 
                         className="input" 
                         style={{ width: '100%', fontSize: '0.85rem', backgroundColor: 'var(--bg-primary)', color: 'var(--text-secondary)' }}
                         placeholder="中文翻译"
-                        value={ex.translation}
+                        value={ex.translation || ""}
                         onChange={(e) => handleExampleChange(uIdx, eIdx, "translation", e.target.value)}
                       />
                       <input 
                         className="input" 
                         style={{ width: '100%', fontSize: '0.75rem', backgroundColor: 'var(--bg-primary)', color: 'var(--text-tertiary)' }}
                         placeholder="来源 (可选)"
-                        value={ex.source}
+                        value={ex.source || ""}
                         onChange={(e) => handleExampleChange(uIdx, eIdx, "source", e.target.value)}
                       />
                     </div>
