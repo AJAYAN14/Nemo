@@ -72,4 +72,27 @@ class WrongGrammarsViewModel @Inject constructor(
     fun refresh() {
         loadWrongGrammars()
     }
+
+    /**
+     * 批量删除语法错题
+     */
+    fun deleteWrongGrammars(grammarIds: Collection<Int>) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                grammarIds.forEach { grammarId ->
+                    grammarWrongAnswerRepository.deleteByGrammarId(grammarId)
+                }
+            } catch (e: Exception) {
+                println("❌ 批量删除语法错题失败: ${e.message}")
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "删除失败: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
 }
+

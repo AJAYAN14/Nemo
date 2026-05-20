@@ -53,4 +53,19 @@ class FavoriteQuestionsViewModel @Inject constructor(
             favoriteQuestionRepository.deleteFavoriteQuestion(questionId)
         }
     }
+
+    /**
+     * 批量取消题目收藏
+     */
+    fun deleteQuestionFavorites(questionIds: Collection<Int>) {
+        viewModelScope.launch {
+            try {
+                questionIds.forEach { questionId ->
+                    favoriteQuestionRepository.deleteFavoriteQuestion(questionId)
+                }
+            } catch (e: Exception) {
+                println("❌ 批量取消题目收藏失败: ${e.message}")
+            }
+        }
+    }
 }

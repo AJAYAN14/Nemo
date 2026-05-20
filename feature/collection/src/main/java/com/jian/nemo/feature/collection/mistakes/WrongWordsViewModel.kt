@@ -83,4 +83,28 @@ class WrongWordsViewModel @Inject constructor(
     fun refresh() {
         loadWrongWords()
     }
+
+    /**
+     * 批量删除错题单词
+     */
+    fun deleteWrongWords(wordIds: Collection<Int>) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                wordIds.forEach { wordId ->
+                    wrongAnswerRepository.deleteByWordId(wordId)
+                }
+                loadWrongWords()
+            } catch (e: Exception) {
+                println("❌ 批量删除错词失败: ${e.message}")
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "删除失败: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
 }
+

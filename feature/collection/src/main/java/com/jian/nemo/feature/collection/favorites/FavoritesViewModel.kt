@@ -98,6 +98,24 @@ class FavoritesViewModel @Inject constructor(
     }
 
     /**
+     * 批量取消单词收藏
+     */
+    fun deleteWordFavorites(wordIds: Collection<Int>) {
+        viewModelScope.launch {
+            try {
+                wordIds.forEach { wordId ->
+                    wordRepository.updateFavoriteStatus(wordId, false)
+                }
+            } catch (e: Exception) {
+                println("❌ 批量取消单词收藏失败: ${e.message}")
+                _uiState.update {
+                    it.copy(error = "批量取消收藏失败: ${e.message}")
+                }
+            }
+        }
+    }
+
+    /**
      * 清空所有收藏（单词和题目）
      */
     fun clearAll() {

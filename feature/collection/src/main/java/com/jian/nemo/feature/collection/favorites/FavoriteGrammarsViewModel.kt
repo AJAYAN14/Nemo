@@ -67,6 +67,24 @@ class FavoriteGrammarsViewModel @Inject constructor(
             grammarRepository.updateFavoriteStatus(grammarId, false)
         }
     }
+
+    /**
+     * 批量取消语法收藏
+     */
+    fun deleteGrammarFavorites(grammarIds: Collection<Int>) {
+        viewModelScope.launch {
+            try {
+                grammarIds.forEach { grammarId ->
+                    grammarRepository.updateFavoriteStatus(grammarId, false)
+                }
+            } catch (e: Exception) {
+                println("❌ 批量取消语法收藏失败: ${e.message}")
+                _uiState.update {
+                    it.copy(error = "批量取消收藏失败: ${e.message}")
+                }
+            }
+        }
+    }
 }
 
 /**
