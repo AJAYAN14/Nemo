@@ -12,7 +12,9 @@
 
 .header {
   height: 64px;
-  background-color: var(--bg-primary);
+  background-color: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -23,9 +25,14 @@
   z-index: 10;
 }
 
+[data-theme="dark"] .header {
+  background-color: rgba(10, 10, 12, 0.6);
+}
+
 .pageTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
   color: var(--text-primary);
 }
 
@@ -36,45 +43,63 @@
 }
 
 .themeToggle {
-  background: none;
-  border: none;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xs);
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  transition: background-color 0.2s;
+  transition: var(--spring-transition);
 }
 
 .themeToggle:hover {
-  background-color: var(--bg-secondary);
+  background-color: var(--glass-bg-hover);
   color: var(--text-primary);
+  transform: scale(1.08) rotate(15deg);
+  border-color: var(--border-strong);
+}
+
+.themeToggle:active {
+  transform: scale(0.95);
 }
 
 .userProfile {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+  cursor: pointer;
 }
 
 .avatar {
   width: 32px;
   height: 32px;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent) 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.2);
+  transition: var(--spring-transition);
+}
+
+.userProfile:hover .avatar {
+  transform: scale(1.08);
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.3);
 }
 
 .content {
   padding: var(--spacing-lg);
   flex: 1;
 }
+

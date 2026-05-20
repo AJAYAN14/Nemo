@@ -1,26 +1,32 @@
 :root {
-  /* Colors - Light Mode (HIG + Flat) */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f2f2f7;
-  --bg-tertiary: #f9f9f9;
+  /* Colors - Light Mode (Apple HIG + Glassmorphic Glow) */
+  --bg-primary: #f5f5f7;
+  --bg-secondary: rgba(245, 245, 247, 0.6);
+  --bg-tertiary: rgba(255, 255, 255, 0.4);
   
   --text-primary: #1d1d1f;
-  --text-secondary: #86868b;
-  --text-tertiary: #a1a1a6;
+  --text-secondary: #515154;
+  --text-tertiary: #86868b;
   
   --accent: #0071e3;
   --accent-secondary: #0077ed;
   
-  --border: #e5e5e5;
-  --border-strong: #d2d2d7;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.45);
+  --border: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  
+  --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  --modal-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
   
   --success: #34c759;
   --warning: #ff9500;
   --danger: #ff3b30;
   
-  --card-radius: 12px;
-  --input-radius: 8px;
-  --button-radius: 8px;
+  --card-radius: 16px;
+  --input-radius: 10px;
+  --button-radius: 10px;
   
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -28,26 +34,33 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
   
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --spring-transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   
   color-scheme: light;
 }
 
 [data-theme="dark"] {
-  /* Colors - Dark Mode (HIG + Flat) */
-  --bg-primary: #000000;
-  --bg-secondary: #1c1c1e;
-  --bg-tertiary: #2c2c2e;
+  /* Colors - Dark Mode (Apple HIG + Deep Cyber) */
+  --bg-primary: #0a0a0c;
+  --bg-secondary: rgba(28, 28, 30, 0.5);
+  --bg-tertiary: rgba(44, 44, 46, 0.3);
   
   --text-primary: #f5f5f7;
   --text-secondary: #a1a1a6;
-  --text-tertiary: #86868b;
+  --text-tertiary: #76767c;
   
   --accent: #0a84ff;
   --accent-secondary: #409cff;
   
-  --border: #2c2c2e;
-  --border-strong: #3a3a3c;
+  --glass-bg: rgba(28, 28, 30, 0.45);
+  --glass-bg-hover: rgba(44, 44, 46, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  
+  --card-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(255, 255, 255, 0.01);
+  --modal-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
   
   color-scheme: dark;
 }
@@ -62,12 +75,26 @@ html, body {
   height: 100%;
   width: 100%;
   background-color: var(--bg-primary);
+  /* 苹果特有的微妙渐变背景以映射毛玻璃底色 */
+  background-image: radial-gradient(at 0% 0%, rgba(219, 233, 254, 0.12) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(245, 243, 255, 0.15) 0px, transparent 50%);
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* View Transitions - Circular Ripple Effect from click point */
+[data-theme="dark"] body {
+  background-image: radial-gradient(at 0% 0%, rgba(10, 20, 40, 0.3) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(20, 10, 40, 0.3) 0px, transparent 50%);
+}
+
+/* CSS Transition for smooth theme switching */
+html, body, .card, .input, button, aside, header, nav, a, td, th {
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+}
+
+/* View Transitions - Circular Ripple Effect */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -81,7 +108,7 @@ html, body {
 
 ::view-transition-new(root) {
   z-index: 999;
-  animation: reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
 }
 
@@ -90,63 +117,234 @@ html, body {
     clip-path: circle(0% at var(--x, 50%) var(--y, 50%));
   }
   to {
-    /* 150% ensures it covers the largest possible screen distance */
     clip-path: circle(150% at var(--x, 50%) var(--y, 50%));
   }
 }
 
-/* Scrollbar Styles */
+/* Scrollbar Styles - macOS native-like */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
-  border-radius: 4px;
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
-/* Basic Flat Components */
+/* Basic HIG + Glass Components */
 .card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
   border-radius: var(--card-radius);
-  padding: var(--spacing-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--card-shadow);
+  transition: var(--spring-transition);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .card:hover {
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(255, 255, 255, 0.02);
 }
 
 .button-primary {
-  background: var(--accent);
+  background: linear-gradient(180deg, var(--accent-secondary) 0%, var(--accent) 100%);
   color: white;
-  border: none;
+  border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: var(--button-radius);
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-weight: 600;
+  padding: 10px 18px;
+  font-weight: 500;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 113, 227, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: var(--spring-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .button-primary:hover {
-  opacity: 0.85;
+  transform: scale(1.02) translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  opacity: 0.95;
+}
+
+.button-primary:active {
+  transform: scale(0.98) translateY(0);
+}
+
+.button-primary:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  border-color: var(--border);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-secondary {
+  background: var(--bg-tertiary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  padding: 10px 18px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: var(--spring-transition);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.button-secondary:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--border-strong);
+  transform: scale(1.02) translateY(-1px);
+}
+
+.button-secondary:active {
+  transform: scale(0.98) translateY(0);
 }
 
 .input {
   background: var(--bg-tertiary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border);
   border-radius: var(--input-radius);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 10px 16px;
   color: var(--text-primary);
-  font-size: 1rem;
+  font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: var(--spring-transition);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
+}
+
+.input:hover {
+  border-color: var(--border-strong);
 }
 
 .input:focus {
   border-color: var(--accent);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15), inset 0 1px 2px rgba(0, 0, 0, 0.01);
 }
+
+/* Custom styles for select elements to render Apple chevron */
+select.input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 38px;
+}
+
+/* Apple elegant tables */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+th {
+  padding: 14px 20px;
+  font-weight: 600;
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+th:first-child {
+  border-top-left-radius: 12px;
+}
+
+th:last-child {
+  border-top-right-radius: 12px;
+}
+
+td {
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  transition: background-color 0.25s ease;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+tr {
+  transition: var(--spring-transition);
+}
+
+tr:hover td {
+  background-color: rgba(0, 113, 227, 0.04) !important;
+}
+
+[data-theme="dark"] tr:hover td {
+  background-color: rgba(10, 132, 255, 0.06) !important;
+}
+
+/* Page header layout */
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+/* Animation utilities */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
