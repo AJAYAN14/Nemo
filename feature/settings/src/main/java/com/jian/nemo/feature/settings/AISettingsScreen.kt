@@ -357,12 +357,12 @@ fun AISettingsScreen(
                                     onPlatformSelected = { 
                                         // 切换平台时同时清空并适配默认模型
                                         val defaultModel = when(it) {
-                                            "gemini" -> "gemini-3-flash-preview"
+                                            "gemini" -> "gemini-3.1-pro-preview"
                                             "deepseek" -> "deepseek-v4-pro"
                                             "openai" -> "gpt-5.5"
-                                            "claude" -> "claude-3-5-sonnet"
-                                            "doubao" -> "doubao-pro-128k"
-                                            "mimo" -> "mimo-v1-pro"
+                                            "claude" -> "claude-4.7-opus"
+                                            "doubao" -> "doubao-pro-256k"
+                                            "mimo" -> "mimo-v2.5-pro"
                                             else -> ""
                                         }
                                         viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(
@@ -378,7 +378,7 @@ fun AISettingsScreen(
                                     label = "模型标识码",
                                     value = editingConfig.model,
                                     onValueChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(model = it))) },
-                                    placeholder = "例如: gemini-3-flash-preview",
+                                    placeholder = "例如: gemini-3.1-pro-preview",
                                     icon = Icons.Rounded.Psychology
                                 )
                                 RecommendedModelChips(

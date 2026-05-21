@@ -242,7 +242,7 @@ class AIClient @Inject constructor(
 
     private fun getApiUrl(platform: String, baseUrl: String?, apiKey: String, model: String): String {
         val cleanModel = model.ifBlank {
-            if (platform == "gemini") "gemini-3-flash-preview" else "gpt-5.5-instant"
+            if (platform == "gemini") "gemini-3.1-pro-preview" else "gpt-5.5"
         }.removePrefix("models/")
 
         if (platform == "gemini") {
@@ -275,15 +275,15 @@ class AIClient @Inject constructor(
     ): String {
         val effectiveModel = model.ifBlank {
             when (platform) {
-                "deepseek" -> "deepseek-v4-flash"
-                "gemini" -> "gemini-3-flash-preview"
-                else -> "gpt-5.5-instant"
+                "deepseek" -> "deepseek-v4-pro"
+                "gemini" -> "gemini-3.1-pro-preview"
+                else -> "gpt-5.5"
             }
         }
 
         return if (platform == "gemini") {
             // 原生 Gemini 格式
-            val geminiModel = if (model.isBlank()) "gemini-3-flash-preview" else model
+            val geminiModel = if (model.isBlank()) "gemini-3.1-pro-preview" else model
             val useThinking = geminiModel.contains("gemini-3")
             
             """
