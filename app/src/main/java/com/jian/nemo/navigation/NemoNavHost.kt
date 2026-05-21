@@ -37,7 +37,10 @@ import com.jian.nemo.core.ui.animation.NemoNavigationAnimations
 
 import com.jian.nemo.feature.learning.presentation.home.HomeScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIWorkshopScreen
+import com.jian.nemo.feature.learning.presentation.ai.AIReadingScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIHistoryScreen
+import com.jian.nemo.feature.learning.presentation.ai.AIReadingHistoryScreen
+import com.jian.nemo.feature.learning.presentation.ai.AIReadingViewModel
 import com.jian.nemo.feature.test.presentation.ability.AbilityWorkshopScreen
 
 
@@ -271,6 +274,9 @@ fun NemoNavHost(
                 onNavigateToAIWorkshop = {
                     navController.navigate(NavDestination.AI_WORKSHOP)
                 },
+                onNavigateToAIReading = {
+                    navController.navigate(NavDestination.AI_READING)
+                },
                 onNavigateToProfile = {
                     navController.navigate(NavDestination.PROFILE)
                 }
@@ -282,6 +288,26 @@ fun NemoNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) },
                 onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) }
+            )
+        }
+
+        composable(NavDestination.AI_READING) { backStackEntry ->
+            AIReadingScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) },
+                onNavigateToHistory = { navController.navigate(NavDestination.AI_READING_HISTORY) }
+            )
+        }
+
+        composable(NavDestination.AI_READING_HISTORY) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                navController.getBackStackEntry(NavDestination.AI_READING)
+            }
+            val viewModel: AIReadingViewModel = hiltViewModel(parentEntry)
+            AIReadingHistoryScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onHistorySelected = { navController.popBackStack() }
             )
         }
 

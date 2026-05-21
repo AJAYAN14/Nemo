@@ -11,11 +11,14 @@ import kotlinx.serialization.Serializable
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.domain.model.AIExerciseHistory
+import com.jian.nemo.core.domain.model.AIReadingArticle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
+import com.jian.nemo.core.domain.repository.AIConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
@@ -44,7 +47,8 @@ data class AIWorkshopUiState(
     val hasGrammarData: Boolean = true,           // 当前等级是否有语法数据
     val aiPlatform: String = "openai",
     val aiModel: String = "",
-    val playingAudioId: String? = null            // 当前正在播放的音频 ID
+    val playingAudioId: String? = null,           // 当前正在播放的音频 ID
+    val switchedConfigName: String? = null        // 切换配置时短暂显示的别名
 )
 
 
@@ -58,6 +62,7 @@ sealed interface AIWorkshopEvent {
     object QuickSwitchPlatform : AIWorkshopEvent
     data class SpeakText(val text: String, val id: String) : AIWorkshopEvent
 }
+
 
 
 @HiltViewModel
@@ -77,10 +82,9 @@ class AIWorkshopViewModel @Inject constructor(
     private var aiApiKey = ""
     private var aiBaseUrl = ""
     private var aiModel = ""
-    
-    // 缓存所有平台的 API Key 状态，用于智能切换
-    private var platformKeys = mutableMapOf<String, String>()
-    private val platformsToCycle = listOf("gemini", "deepseek", "openai", "custom")
+
+    // 缓存配置列表，用于轮转切换
+    private var allConfigs: List<AIConfig> = emptyList()
 
     // 当前语法专项模式的 AI 上下文（用于出题和评分）
     private var currentGrammarInfo: AIClient.GrammarInfo? = null
@@ -125,35 +129,48 @@ class AIWorkshopViewModel @Inject constructor(
     }
 
     private fun observeSettings() {
+        // 协程1：监听配置中心的配置列表和当前激活配置
         viewModelScope.launch {
             combine(
-                settingsRepository.aiPlatformFlow,
-                settingsRepository.aiApiKeyFlow,
-                settingsRepository.aiBaseUrlFlow,
-                settingsRepository.aiModelFlow,
+                settingsRepository.aiConfigListFlow,
+                settingsRepository.aiActiveConfigIdFlow
+            ) { configListJson, activeId ->
+                val configs = try {
+                    Json.decodeFromString<List<AIConfig>>(configListJson)
+                } catch (e: Exception) {
+                    emptyList()
+                }
+                allConfigs = configs
+                configs.find { it.id == activeId } ?: configs.firstOrNull()
+            }.collect { activeConfig ->
+                aiPlatform = activeConfig?.platform ?: ""
+                aiApiKey = activeConfig?.apiKey ?: ""
+                aiBaseUrl = activeConfig?.baseUrl ?: ""
+                aiModel = activeConfig?.model ?: ""
+                _uiState.update { state ->
+                    state.copy(
+                        isConfigured = aiApiKey.isNotBlank(),
+                        aiPlatform = activeConfig?.platform ?: "openai",
+                        aiModel = activeConfig?.model ?: ""
+                    )
+                }
+            }
+        }
+
+        // 协程2：监听 Workshop 专属设置（难度/题目/答案/模式）
+        viewModelScope.launch {
+            combine(
                 settingsRepository.aiWorkshopDifficultyFlow,
                 settingsRepository.aiCurrentExerciseFlow,
                 settingsRepository.aiCurrentAnswerFlow,
-                settingsRepository.aiWorkshopModeFlow,
-                settingsRepository.getAiApiKeyFlow("openai"),
-                settingsRepository.getAiApiKeyFlow("gemini"),
-                settingsRepository.getAiApiKeyFlow("deepseek"),
-                settingsRepository.getAiApiKeyFlow("custom")
-            ) { values: Array<String> ->
-                val platform = values[0]
-                val apiKey = values[1]
-                val baseUrl = values[2]
-                val model = values[3]
-                val difficulty = values[4]
-                val currentExerciseJson = values[5]
-                val currentAnswer = values[6]
-                val workshopModeStr = values[7]
-                
-                // 更新 Key 缓存
-                platformKeys["openai"] = values[8]
-                platformKeys["gemini"] = values[9]
-                platformKeys["deepseek"] = values[10]
-                platformKeys["custom"] = values[11]
+                settingsRepository.aiWorkshopModeFlow
+            ) { difficulty, currentExerciseJson, currentAnswer, workshopModeStr ->
+                listOf(difficulty, currentExerciseJson, currentAnswer, workshopModeStr)
+            }.collect { values ->
+                val difficulty = values[0]
+                val currentExerciseJson = values[1]
+                val currentAnswer = values[2]
+                val workshopModeStr = values[3]
 
                 val restoredMode = try {
                     WorkshopMode.valueOf(workshopModeStr)
@@ -161,11 +178,6 @@ class AIWorkshopViewModel @Inject constructor(
                     WorkshopMode.FREE
                 }
 
-                aiPlatform = platform
-                aiApiKey = apiKey
-                aiBaseUrl = baseUrl
-                aiModel = model
-                
                 _uiState.update { state ->
                     val restoredExercise = if (state.currentExercise == null && currentExerciseJson.isNotBlank()) {
                         try {
@@ -176,19 +188,16 @@ class AIWorkshopViewModel @Inject constructor(
                     } else state.currentExercise
 
                     state.copy(
-                        isConfigured = apiKey.isNotBlank(),
                         difficulty = difficulty,
                         workshopMode = restoredMode,
                         currentExercise = restoredExercise,
                         userAnswer = if (!isAnswerRestored && state.userAnswer.isBlank()) {
                             if (currentAnswer.isNotBlank()) isAnswerRestored = true
                             currentAnswer
-                        } else state.userAnswer,
-                        aiPlatform = platform,
-                        aiModel = model
+                        } else state.userAnswer
                     )
                 }
-            }.collect()
+            }
         }
     }
 
@@ -225,24 +234,22 @@ class AIWorkshopViewModel @Inject constructor(
             }
             is AIWorkshopEvent.QuickSwitchPlatform -> {
                 viewModelScope.launch {
-                    val currentPlatform = _uiState.value.aiPlatform
-                    val currentIndex = platformsToCycle.indexOf(currentPlatform).takeIf { it != -1 } ?: 0
-                    
-                    // 寻找下一个有 Key 的平台
-                    var found = false
-                    for (i in 1 until platformsToCycle.size) {
-                        val nextIndex = (currentIndex + i) % platformsToCycle.size
-                        val nextPlatform = platformsToCycle[nextIndex]
-                        if (platformKeys[nextPlatform]?.isNotBlank() == true) {
-                            settingsRepository.setAiPlatform(nextPlatform)
-                            found = true
-                            break
+                    val configs = allConfigs
+                    if (configs.size <= 1) {
+                        _uiState.update {
+                            it.copy(error = if (configs.isEmpty()) "请先在配置中心添加 AI 模型" else "只有一个配置，无法切换")
                         }
+                        return@launch
                     }
-                    
-                    if (!found) {
-                        _uiState.update { it.copy(error = "没有其他已配置的 AI 平台") }
-                    }
+                    val activeId = settingsRepository.aiActiveConfigIdFlow.first()
+                    val currentIndex = configs.indexOfFirst { it.id == activeId }.takeIf { it != -1 } ?: 0
+                    val nextConfig = configs[(currentIndex + 1) % configs.size]
+                    // 切换到下一个配置
+                    settingsRepository.setAiActiveConfigId(nextConfig.id)
+                    // 短暂显示切换的别名气泡
+                    _uiState.update { it.copy(switchedConfigName = nextConfig.name) }
+                    delay(2500)
+                    _uiState.update { it.copy(switchedConfigName = null) }
                 }
             }
             is AIWorkshopEvent.SpeakText -> {
@@ -283,6 +290,8 @@ class AIWorkshopViewModel @Inject constructor(
 
             val mode = _uiState.value.workshopMode
             val difficulty = _uiState.value.difficulty
+
+
 
             // 语法专项模式：先从数据库随机抽取语法
             var grammarInfo: AIClient.GrammarInfo? = null

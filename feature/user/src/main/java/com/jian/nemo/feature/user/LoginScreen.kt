@@ -130,7 +130,8 @@ fun LoginScreen(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(3.5f), // Slightly more space for the form
+                .weight(3.5f)
+                .imePadding(),
             shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp), // 26dp Corner Radius
             colors = CardDefaults.cardColors(containerColor = surfaceColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp) // Added shadow for depth

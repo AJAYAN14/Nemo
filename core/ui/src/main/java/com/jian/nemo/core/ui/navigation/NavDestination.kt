@@ -16,8 +16,10 @@ object NavDestination {
     const val THEME_SETTINGS = "theme_settings" // 主题设置页
     const val ADVANCED_LEARNING = "advanced_learning" // 记忆算法配置页
     const val AI_WORKSHOP = "ai_workshop"       // AI 工坊
+    const val AI_READING = "ai_reading"         // AI 日语阅读
     const val AI_SETTINGS = "ai_settings"       // AI 设置页
     const val AI_HISTORY = "ai_history"         // AI 练习历史
+    const val AI_READING_HISTORY = "ai_reading_history" // AI 阅读历史
     const val ABILITY_WORKSHOP = "ability_workshop" // 能力工坊
     const val VERB_CONJUGATION = "verb_conjugation" // 动词活用
 

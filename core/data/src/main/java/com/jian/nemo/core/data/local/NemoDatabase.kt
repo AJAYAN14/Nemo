@@ -25,9 +25,10 @@ import com.jian.nemo.core.data.local.entity.*
         WordStudyStateEntity::class,
         GrammarStudyStateEntity::class,
         FavoriteQuestionEntity::class,
-        AIExerciseEntity::class
+        AIExerciseEntity::class,
+        AIReadingHistoryEntity::class
     ],
-    version = 21,  // v21: AI 练习表增加语法专项模式字段 (grammar_point, usage_id)
+    version = 22,  // v22: 引入 AI 智能阅读历史表 ai_reading_history
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {
@@ -49,6 +50,7 @@ abstract class NemoDatabase : RoomDatabase() {
     abstract fun grammarStudyStateDao(): GrammarStudyStateDao
     abstract fun favoriteQuestionDao(): FavoriteQuestionDao
     abstract fun aiExerciseDao(): AIExerciseDao
+    abstract fun aiReadingHistoryDao(): AIReadingHistoryDao
 
     companion object {
         const val DATABASE_NAME = "nemo_database"

@@ -40,6 +40,9 @@ import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.airbnb.lottie.compose.*
 import com.jian.nemo.feature.learning.R
+import androidx.compose.ui.viewinterop.AndroidView
+import android.widget.TextView
+import androidx.core.text.HtmlCompat
 
 
 
@@ -113,6 +116,9 @@ fun AIWorkshopScreen(
                                 "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
                                 "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
                                 "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
                                 else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
                             }
                         }
@@ -151,6 +157,47 @@ fun AIWorkshopScreen(
                 }
                 
                 Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            // 切换配置别名气泡提示（弹出后 2.5s 自动消失）
+            AnimatedVisibility(
+                visible = uiState.switchedConfigName != null,
+                enter = fadeIn(androidx.compose.animation.core.tween(200)) +
+                        slideInVertically(androidx.compose.animation.core.tween(200)) { -it },
+                exit  = fadeOut(androidx.compose.animation.core.tween(300)) +
+                        slideOutVertically(androidx.compose.animation.core.tween(300)) { -it },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 8.dp, end = 12.dp)
+            ) {
+                uiState.switchedConfigName?.let { name ->
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = colorScheme.inverseSurface,
+                        shadowElevation = 10.dp,
+                        tonalElevation = 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = colorScheme.inverseOnSurface,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = name,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = colorScheme.inverseOnSurface
+                            )
+                        }
+                    }
+                }
             }
 
             // 加载层 - 采用全屏磨砂质感（Flat）并使用唯美的 Lottie 加载动效
@@ -460,12 +507,28 @@ private fun DifficultySection(
 }
 
 @Composable
-private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
+private fun HeroStartView(
+    onStart: () -> Unit,
+    isGrammarMode: Boolean = false
+) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val textPrimary = colorScheme.onSurface
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+
+    val icon = when {
+        isGrammarMode -> Icons.AutoMirrored.Rounded.MenuBook
+        else -> Icons.Rounded.AutoAwesome
+    }
+    val title = when {
+        isGrammarMode -> "语法专项训练"
+        else -> "开启智能练习"
+    }
+    val desc = when {
+        isGrammarMode -> "AI 将从本地语法库中随机抽取\n一个语法点为您生成针对性练习"
+        else -> "AI 将根据您的日语等级\n为您实时生成专属的翻译例文"
+    }
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -486,7 +549,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        if (isGrammarMode) Icons.AutoMirrored.Rounded.MenuBook else Icons.Rounded.AutoAwesome,
+                        icon,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = colorScheme.primary
@@ -497,7 +560,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                if (isGrammarMode) "语法专项训练" else "开启智能练习",
+                title,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold,
                 color = textPrimary
@@ -506,10 +569,7 @@ private fun HeroStartView(onStart: () -> Unit, isGrammarMode: Boolean = false) {
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                if (isGrammarMode)
-                    "AI 将从本地语法库中随机抽取\n一个语法点为您生成针对性练习"
-                else
-                    "AI 将根据您的日语等级\n为您实时生成专属的翻译例文",
+                desc,
                 style = MaterialTheme.typography.bodyMedium,
                 color = NemoNeutrals.Gray500,
                 textAlign = TextAlign.Center,

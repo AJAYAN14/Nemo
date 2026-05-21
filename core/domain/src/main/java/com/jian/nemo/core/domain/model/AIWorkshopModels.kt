@@ -33,3 +33,31 @@ data class AIExerciseHistory(
     val createdAt: Long,
     val grammarPoint: String? = null
 )
+
+@Serializable
+data class AIReadingArticle(
+    val title: String,
+    val level: String,
+    val contentRaw: String,
+    val contentHtml: String,
+    val translation: String,
+    val vocabulary: List<ReadingVocabulary> = emptyList(),
+    val questions: List<ReadingQuestion> = emptyList()
+)
+
+@Serializable
+data class ReadingVocabulary(
+    val word: String,
+    val kana: String,
+    val pos: String,
+    val meaning: String
+)
+
+@Serializable
+data class ReadingQuestion(
+    val question: String,
+    val options: List<String>,
+    val answer: Int,
+    val explanation: String
+)
+

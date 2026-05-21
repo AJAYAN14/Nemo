@@ -17,6 +17,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
+import com.jian.nemo.core.domain.model.AIReadingArticle
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,7 +60,8 @@ class AIClient @Inject constructor(
         return try {
             val response = executeRequest(platform, url, apiKey, requestBody)
             val content = extractContentFromChatResponse(platform, response)
-            val exercise = json.decodeFromString<AIExercise>(content)
+            val cleanJson = extractJsonFromString(content)
+            val exercise = json.decodeFromString<AIExercise>(cleanJson)
             Result.success(exercise)
         } catch (e: Exception) {
             Log.e("AIClient", "生成题目失败", e)
@@ -229,7 +231,8 @@ class AIClient @Inject constructor(
         return try {
             val response = executeRequest(platform, url, apiKey, requestBody)
             val content = extractContentFromChatResponse(platform, response)
-            val grade = json.decodeFromString<AIGradeResult>(content)
+            val cleanJson = extractJsonFromString(content)
+            val grade = json.decodeFromString<AIGradeResult>(cleanJson)
             Result.success(grade)
         } catch (e: Exception) {
             Log.e("AIClient", "评分失败", e)
@@ -428,7 +431,7 @@ class AIClient @Inject constructor(
                 val response = executeRequest(platform, url, apiKey, requestBody)
                 val content = extractContentFromChatResponse(platform, response)
                 
-                val cleanJson = content.replace(Regex("```json\\s*"), "").replace(Regex("```\\s*$"), "").trim()
+                val cleanJson = extractJsonFromString(content)
                 var q = json.decodeFromString<AIVerbConjugationQuestion>(cleanJson)
                 
                 // 物理覆写！彻底抛弃 AI 吐出来的字词/注音/释义，直接强制装填本地数据库的黄金原装数据！
@@ -487,8 +490,96 @@ class AIClient @Inject constructor(
         """.trimIndent()
     }
 
+    suspend fun generateReadingArticle(
+        platform: String,
+        apiKey: String,
+        baseUrl: String?,
+        model: String,
+        difficulty: String,
+        theme: String
+    ): Result<AIReadingArticle> {
+        val systemPrompt = buildReadingArticlePrompt(difficulty, theme)
+        val url = getApiUrl(platform, baseUrl, apiKey, model)
+        val requestBody = buildChatRequest(platform, model, systemPrompt, "请为我生成一篇日语小短文")
+        
+        return try {
+            val response = executeRequest(platform, url, apiKey, requestBody)
+            val content = extractContentFromChatResponse(platform, response)
+            val cleanJson = extractJsonFromString(content)
+            val article = json.decodeFromString<AIReadingArticle>(cleanJson)
+            Result.success(article)
+        } catch (e: Exception) {
+            Log.e("AIClient", "生成短文失败", e)
+            Result.failure(e)
+        }
+    }
+
+    private fun buildReadingArticlePrompt(difficulty: String, theme: String): String {
+        val wordCountGuide = when (difficulty) {
+            "N5" -> "约 150～200 字（平假名为主，汉字极少）"
+            "N4" -> "约 200～280 字（简单汉字，句型多样）"
+            "N3" -> "约 300～380 字（中级词汇，段落清晰）"
+            "N2" -> "约 400～480 字（书面语为主，逻辑严密）"
+            "N1" -> "约 500～600 字（专业词汇，结构复杂）"
+            else -> "约 200～300 字"
+        }
+        return """
+            你是一位资深的日语教育专家。请为日语等级为 $difficulty 的学习者，围绕主题【$theme】生成一篇日语短文，用来提升他们的阅读理解能力。
+            
+            难度要求：
+            - N5: 涵盖基础助词、判断句、动词基本分类，贴近极简单的日常生活场景，句子简短，汉字极少。
+            - N4: 涵盖基础敬语、授受关系、可能态/意志态，涉及日常社交与简单叙事。
+            - N3: 涵盖中级语法（如被动、使役、假定），涉及社会新闻、个人观点表达或文化故事。
+            - N2: 涵盖复杂书面语、商务场景、抽象概念讨论，用词精准地道，具有一定文学性。
+            - N1: 涵盖专业领域、文学性表达、微妙的语气差别及高度抽象的话题，句子结构复杂，词汇极其丰富。
+            
+            短文篇幅要求：$wordCountGuide。请保证内容充实、段落自然流畅，不可过短。
+            
+            短文生成具体要求：
+            1. title：一个精致的短文标题。
+            2. contentRaw：符合以上字数要求、没有任何 HTML 标签或注音的纯日语原文。使用换行符（\n）分隔段落。
+            3. translation：小短文的高质量中文翻译，与原文段落结构对应。
+            4. vocabulary：精选本篇短文中的 5～8 个核心重点词汇（必须在短文中出现过）。每个词汇包含 word (单词汉字或假名), kana (读音假名), pos (词性), meaning (中文释义)。
+            5. questions：针对文章内容设计 3 道高水准的日语单选题，考察用户的阅读理解。每道题包含：
+               - question: 日语提问的问题题干（必须符合该等级）
+               - options: 4个备选答案（A, B, C, D，用日语或中文）
+               - answer: 正确选项的索引值（0, 1, 2, 3，0代表第一个，1代表第二个，以此类推）
+               - explanation: 对正确和错误选项的详细中文解析。
+               
+            请严格返回以下 JSON 格式，直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字：
+            {
+              "title": "标题",
+              "level": "$difficulty",
+              "contentRaw": "纯原文内容，用\\n分隔段落...",
+              "contentHtml": "",
+              "translation": "中文对照，用\\n分隔段落...",
+              "vocabulary": [
+                {"word": "単語", "kana": "たんご", "pos": "名词", "meaning": "单词"}
+              ],
+              "questions": [
+                {
+                  "question": "問題...",
+                  "options": ["选项1", "选项2", "选项3", "选项4"],
+                  "answer": 0,
+                  "explanation": "解析..."
+                }
+              ]
+            }
+        """.trimIndent()
+    }
+
     // Helper extensions for JsonElement to keep it simple without full serialization of the response wrapper
     private fun kotlinx.serialization.json.JsonElement.asJsonObject() = this as? kotlinx.serialization.json.JsonObject ?: throw Exception("Not an object")
     private fun kotlinx.serialization.json.JsonElement.asJsonArray() = this as? kotlinx.serialization.json.JsonArray ?: throw Exception("Not an array")
     private fun kotlinx.serialization.json.JsonElement.asJsonPrimitive() = this as? kotlinx.serialization.json.JsonPrimitive ?: throw Exception("Not a primitive")
+
+    private fun extractJsonFromString(input: String): String {
+        val start = input.indexOf('{')
+        val end = input.lastIndexOf('}')
+        return if (start != -1 && end != -1 && end > start) {
+            input.substring(start, end + 1)
+        } else {
+            input
+        }
+    }
 }

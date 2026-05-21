@@ -62,6 +62,7 @@ fun HomeScreen(
     onNavigateToGrammarList: () -> Unit,
     onNavigateToHeatmap: () -> Unit,
     onNavigateToAIWorkshop: () -> Unit,
+    onNavigateToAIReading: () -> Unit,
     onNavigateToProfile: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -734,6 +735,67 @@ fun HomeScreen(
                                             color = textSub
                                         )
                                     }
+                                }
+                            }
+                        }
+
+                        // 全宽大卡片（AI 日语阅读）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = onNavigateToAIReading
+                                ),
+                            shape = RoundedCornerShape(24.dp),
+                            color = surfaceColor,
+                            shadowElevation = 0.dp
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = BentoColors.IconBgGreen
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MenuBook,
+                                            contentDescription = null,
+                                            tint = BentoColors.AccentGreen,
+                                            modifier = Modifier.padding(12.dp).size(24.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.width(16.dp))
+                                    Column {
+                                        Text(
+                                            text = "AI 日语阅读",
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = textMain
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            text = "智能生成分级趣味短文与测验，全面攻克阅读瓶颈",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = textSub
+                                        )
+                                    }
+                                }
+                                Surface(
+                                    shape = CircleShape,
+                                    color = dividerColor
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                        contentDescription = null,
+                                        tint = textSub,
+                                        modifier = Modifier.padding(8.dp).size(20.dp)
+                                    )
                                 }
                             }
                         }

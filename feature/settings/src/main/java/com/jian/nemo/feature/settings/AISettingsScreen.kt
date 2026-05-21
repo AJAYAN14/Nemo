@@ -265,7 +265,8 @@ fun AISettingsScreen(
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.85f),
+                        .fillMaxHeight(0.85f)
+                        .imePadding(),
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                     color = MaterialTheme.colorScheme.surface,
                     border = BorderStroke(
@@ -425,7 +426,7 @@ fun AISettingsScreen(
         uiState.testResult?.let { result ->
             NemoSnackbar(
                 visible = true,
-                message = if (result.success) "API 连接正常，测试成功" else "连接失败，请检查配置信息",
+                message = if (result.success) "API 连接正常，测试成功" else result.message,
                 type = if (result.success) NemoSnackbarType.SUCCESS else NemoSnackbarType.ERROR,
                 icon = if (result.success) Icons.Rounded.TaskAlt else Icons.Rounded.ErrorOutline,
                 onDismiss = { viewModel.onEvent(AISettingsEvent.ClearTestResult) },

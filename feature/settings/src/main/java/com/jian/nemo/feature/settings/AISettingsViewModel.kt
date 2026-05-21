@@ -153,7 +153,23 @@ class AISettingsViewModel @Inject constructor(
                     val index = currentList.indexOfFirst { it.id == editing.id }
                     
                     val finalName = editing.name.trim().ifEmpty { "未命名配置" }
-                    val finalConfig = editing.copy(name = finalName)
+                    val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
+                    
+                    // 别名与密钥重复性校验
+                    val hasDuplicateName = currentList.any { 
+                        it.id != finalConfig.id && it.name.trim().equals(finalConfig.name.trim(), ignoreCase = true) 
+                    }
+                    if (hasDuplicateName) {
+                        _uiState.update { it.copy(testResult = AITestResult(false, "配置别名已存在，请换一个别名")) }
+                        return@launch
+                    }
+                    val hasDuplicateKey = currentList.any { 
+                        it.id != finalConfig.id && it.apiKey.trim() == finalConfig.apiKey.trim() 
+                    }
+                    if (hasDuplicateKey) {
+                        _uiState.update { it.copy(testResult = AITestResult(false, "API 密钥已配置过，请勿重复添加")) }
+                        return@launch
+                    }
                     
                     if (index >= 0) {
                         currentList[index] = finalConfig
@@ -184,6 +200,27 @@ class AISettingsViewModel @Inject constructor(
                         _uiState.update { it.copy(testResult = AITestResult(false, "API Key 不能为空")) }
                         return@launch
                     }
+                    
+                    val currentList = _uiState.value.configs
+                    val finalName = editing.name.trim().ifEmpty { "未命名配置" }
+                    val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
+                    
+                    // 别名与密钥重复性校验
+                    val hasDuplicateName = currentList.any { 
+                        it.id != finalConfig.id && it.name.trim().equals(finalConfig.name.trim(), ignoreCase = true) 
+                    }
+                    if (hasDuplicateName) {
+                        _uiState.update { it.copy(testResult = AITestResult(false, "配置别名已存在，请换一个别名")) }
+                        return@launch
+                    }
+                    val hasDuplicateKey = currentList.any { 
+                        it.id != finalConfig.id && it.apiKey.trim() == finalConfig.apiKey.trim() 
+                    }
+                    if (hasDuplicateKey) {
+                        _uiState.update { it.copy(testResult = AITestResult(false, "API 密钥已配置过，请勿重复添加")) }
+                        return@launch
+                    }
+
                     _uiState.update { it.copy(isTesting = true, testResult = null) }
                     
                     val result = aiClient.generateExercise(
@@ -213,7 +250,7 @@ class AISettingsViewModel @Inject constructor(
                         val index = currentList.indexOfFirst { it.id == editing.id }
                         
                         val finalName = editing.name.trim().ifEmpty { "未命名配置" }
-                        val finalConfig = editing.copy(name = finalName)
+                        val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
                         
                         if (index >= 0) {
                             currentList[index] = finalConfig

@@ -41,7 +41,9 @@ fun LoginForm(
     passwordError: Boolean = false // Added error state
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         GitHubStyleTextField(

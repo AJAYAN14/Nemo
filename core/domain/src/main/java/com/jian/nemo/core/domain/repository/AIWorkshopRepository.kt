@@ -1,6 +1,8 @@
 package com.jian.nemo.core.domain.repository
 
 import com.jian.nemo.core.domain.model.AIExerciseHistory
+import com.jian.nemo.core.domain.model.AIReadingArticle
+import com.jian.nemo.core.domain.model.AIReadingHistory
 import kotlinx.coroutines.flow.Flow
 
 interface AIWorkshopRepository {
@@ -21,4 +23,24 @@ interface AIWorkshopRepository {
     suspend fun deleteOldHistory(days: Int = 30)
     
     suspend fun clearHistory()
+
+    // ========== AI 智能阅读历史 ==========
+    
+    fun getReadingHistory(): Flow<List<AIReadingHistory>>
+
+    suspend fun saveReadingHistory(
+        article: AIReadingArticle,
+        selectedAnswers: List<Int?>,
+        isSubmitted: Boolean
+    ): Long
+
+    suspend fun updateReadingAnswers(
+        id: Int,
+        selectedAnswers: List<Int?>,
+        isSubmitted: Boolean
+    )
+
+    suspend fun deleteReadingHistoryById(id: Int)
+
+    suspend fun clearReadingHistory()
 }
