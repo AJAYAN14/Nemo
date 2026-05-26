@@ -39,6 +39,11 @@ import kotlinx.coroutines.delay
 import com.airbnb.lottie.compose.*
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.designsystem.R as DesignR
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import android.widget.Toast
 
 // AIReadingScreen 内部局部红色常量（BentoColors 不含红色，此处独立定义）
 private val ReadingAccentRed = Color(0xFFEF4444)
@@ -560,6 +565,9 @@ private fun ArticleContentScreen(
 
     var showTranslation by remember { mutableStateOf(false) }
 
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -603,24 +611,60 @@ private fun ArticleContentScreen(
                 Spacer(Modifier.height(16.dp))
 
                 // 纯文本正文渲染（将 \n 换行分段显示）
-                Text(
-                    text = article.contentRaw,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        lineHeight = 32.sp,
-                        letterSpacing = 0.3.sp
-                    ),
-                    color = if (isDark) MaterialTheme.colorScheme.onSurface
-                            else Color(0xFF2C3E50),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                SelectionContainer {
+                    Text(
+                        text = article.contentRaw,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            lineHeight = 32.sp,
+                            letterSpacing = 0.3.sp
+                        ),
+                        color = if (isDark) MaterialTheme.colorScheme.onSurface
+                                else Color(0xFF2C3E50),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 Spacer(Modifier.height(20.dp))
 
-                // 译文控制开关
+                // 操作按钮栏：左侧复制原文，右侧切换中文对照
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // 复制原文胶囊按钮
+                    Surface(
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(article.contentRaw))
+                                Toast.makeText(context, "日文原文已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                            }
+                        ),
+                        shape = CircleShape,
+                        color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.ContentCopy,
+                                contentDescription = null,
+                                tint = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                text = "复制原文",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
+                            )
+                        }
+                    }
+
+                    // 译文控制开关
                     Surface(
                         modifier = Modifier.clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -667,12 +711,34 @@ private fun ArticleContentScreen(
                             color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(
-                                text = article.translation,
-                                style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
-                                color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
-                                modifier = Modifier.padding(16.dp)
-                            )
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                SelectionContainer {
+                                    Text(
+                                        text = article.translation,
+                                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                                        color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .padding(end = 40.dp)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        clipboardManager.setText(AnnotatedString(article.translation))
+                                        Toast.makeText(context, "中文译文已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.ContentCopy,
+                                        contentDescription = "复制译文",
+                                        tint = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
