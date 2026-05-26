@@ -357,8 +357,11 @@ private fun WordListItemPremium(
             ) {
                 Text(
                     text = char,
-                    style = MaterialTheme.typography.headlineSmall,
-                     fontSize = 22.sp,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Black,
                     color = avatarColor
                 )
@@ -370,7 +373,10 @@ private fun WordListItemPremium(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = word.japanese,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = NotoSerifJP,
+                            localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                        ),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -387,7 +393,10 @@ private fun WordListItemPremium(
 
                 Text(
                     text = secondaryText,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
