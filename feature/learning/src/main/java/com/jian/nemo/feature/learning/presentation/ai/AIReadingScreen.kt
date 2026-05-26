@@ -43,7 +43,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import android.widget.Toast
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 
 // AIReadingScreen 内部局部红色常量（BentoColors 不含红色，此处独立定义）
 private val ReadingAccentRed = Color(0xFFEF4444)
@@ -60,6 +61,10 @@ fun AIReadingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    var snackbarType by remember { mutableStateOf(NemoSnackbarType.SUCCESS) }
 
     Scaffold(
         topBar = {
@@ -125,7 +130,12 @@ fun AIReadingScreen(
                     ArticleContentScreen(
                         article = uiState.currentArticle!!,
                         uiState = uiState,
-                        onEvent = viewModel::onEvent
+                        onEvent = viewModel::onEvent,
+                        onShowCopySnackbar = { message ->
+                            snackbarMessage = message
+                            snackbarType = NemoSnackbarType.SUCCESS
+                            snackbarVisible = true
+                        }
                     )
                 }
                 else -> {
@@ -192,6 +202,17 @@ fun AIReadingScreen(
                     Text(uiState.error ?: "")
                 }
             }
+
+            NemoSnackbar(
+                visible = snackbarVisible,
+                message = snackbarMessage,
+                type = snackbarType,
+                icon = Icons.Rounded.CheckCircle,
+                onDismiss = { snackbarVisible = false },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+            )
         }
     }
 }
@@ -556,7 +577,8 @@ private fun LoadingScreen() {
 private fun ArticleContentScreen(
     article: AIReadingArticle,
     uiState: AIReadingUiState,
-    onEvent: (AIReadingEvent) -> Unit
+    onEvent: (AIReadingEvent) -> Unit,
+    onShowCopySnackbar: (String) -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -639,7 +661,7 @@ private fun ArticleContentScreen(
                             indication = null,
                             onClick = {
                                 clipboardManager.setText(AnnotatedString(article.contentRaw))
-                                Toast.makeText(context, "日文原文已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                                onShowCopySnackbar("日文原文已复制到剪贴板")
                             }
                         ),
                         shape = CircleShape,
@@ -725,7 +747,7 @@ private fun ArticleContentScreen(
                                 IconButton(
                                     onClick = {
                                         clipboardManager.setText(AnnotatedString(article.translation))
-                                        Toast.makeText(context, "中文译文已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                                        onShowCopySnackbar("中文译文已复制到剪贴板")
                                     },
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)

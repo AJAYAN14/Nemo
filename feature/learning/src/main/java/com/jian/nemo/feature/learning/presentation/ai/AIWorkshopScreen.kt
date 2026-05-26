@@ -39,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.airbnb.lottie.compose.*
+import androidx.compose.foundation.text.selection.SelectionContainer
 import com.jian.nemo.feature.learning.R
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
@@ -674,14 +675,15 @@ private fun ExerciseContent(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = exercise.question,
-                        modifier = Modifier.weight(1f),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 34.sp
-                    )
+                    SelectionContainer(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = exercise.question,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            lineHeight = 34.sp
+                        )
+                    }
 
                     if (exercise.type == "JP_TO_CN") {
                         Spacer(modifier = Modifier.width(8.dp))
@@ -885,12 +887,14 @@ private fun FeedbackSection(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = userAnswer,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    SelectionContainer {
+                        Text(
+                            text = userAnswer,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
                 // 参考答案展示
@@ -912,13 +916,14 @@ private fun FeedbackSection(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.padding(16.dp).fillMaxWidth()
                         ) {
-                            Text(
-                                text = answer,
-                                modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                            SelectionContainer(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = answer,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
 
                             if (exerciseType == "CN_TO_JP") {
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -946,12 +951,14 @@ private fun FeedbackSection(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = result.feedback,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 24.sp
-                )
+                SelectionContainer {
+                    Text(
+                        text = result.feedback,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = 24.sp
+                    )
+                }
             }
         }
         

@@ -39,7 +39,7 @@ data class AIReadingArticle(
     val title: String,
     val level: String,
     val contentRaw: String,
-    val contentHtml: String,
+    val contentHtml: String = "",
     val translation: String,
     val vocabulary: List<ReadingVocabulary> = emptyList(),
     val questions: List<ReadingQuestion> = emptyList()
