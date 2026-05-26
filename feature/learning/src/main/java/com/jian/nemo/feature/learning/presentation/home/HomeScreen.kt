@@ -613,14 +613,14 @@ fun HomeScreen(
                             }
                         }
 
-                        // 均分小卡片（单词本、语法点）
+                        // 均分小卡片第一组：五十音图 + 动词活用手册 (基础资料速查)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(IntrinsicSize.Max),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // 左边半宽: 单词本
+                            // 左边半宽: 五十音图
                             Surface(
                                 modifier = Modifier
                                     .weight(1f)
@@ -680,7 +680,75 @@ fun HomeScreen(
                                 }
                             }
 
-                            // 右边半宽: AI 工坊
+                            // 右边半宽: 动词活用
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .aspectRatio(1.3f)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = onNavigateToVerbHandbook
+                                    ),
+                                shape = RoundedCornerShape(24.dp),
+                                color = surfaceColor,
+                                shadowElevation = 0.dp
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.MenuBook,
+                                                contentDescription = null,
+                                                tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                            )
+                                        }
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                            contentDescription = null,
+                                            tint = textSub.copy(alpha = 0.5f),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = "动词活用",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                            color = textMain
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            text = "13种变形速查",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = textSub
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // 均分小卡片第二组：AI 工坊 + AI 阅读 (智能专项工具)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Max),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // 左边半宽: AI 工坊
                             Surface(
                                 modifier = Modifier
                                     .weight(1f)
@@ -739,132 +807,64 @@ fun HomeScreen(
                                     }
                                 }
                             }
-                        }
 
-                        // 全宽大卡片（AI 日语阅读）
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = onNavigateToAIReading
-                                ),
-                            shape = RoundedCornerShape(24.dp),
-                            color = surfaceColor,
-                            shadowElevation = 0.dp
-                        ) {
-                            Row(
+                            // 右边半宽: AI 阅读
+                            Surface(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .aspectRatio(1.3f)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                        onClick = onNavigateToAIReading
+                                    ),
+                                shape = RoundedCornerShape(24.dp),
+                                color = surfaceColor,
+                                shadowElevation = 0.dp
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = BentoColors.IconBgGreen
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxSize(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.Top
                                     ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = BentoColors.IconBgGreen
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.MenuBook,
+                                                contentDescription = null,
+                                                tint = BentoColors.AccentGreen,
+                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                            )
+                                        }
                                         Icon(
-                                            imageVector = Icons.Rounded.MenuBook,
+                                            imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                                             contentDescription = null,
-                                            tint = BentoColors.AccentGreen,
-                                            modifier = Modifier.padding(12.dp).size(24.dp)
+                                            tint = textSub.copy(alpha = 0.5f),
+                                            modifier = Modifier.size(16.dp)
                                         )
                                     }
-                                    Spacer(Modifier.width(16.dp))
                                     Column {
                                         Text(
-                                            text = "AI 日语阅读",
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                            text = "AI 阅读",
+                                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                             color = textMain
                                         )
                                         Spacer(Modifier.height(2.dp))
                                         Text(
-                                            text = "智能生成分级趣味短文与测验，全面攻克阅读瓶颈",
-                                            style = MaterialTheme.typography.labelMedium,
+                                            text = "分级智能短文",
+                                            style = MaterialTheme.typography.labelSmall,
                                             color = textSub
                                         )
                                     }
-                                }
-                                Surface(
-                                    shape = CircleShape,
-                                    color = dividerColor
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                        contentDescription = null,
-                                        tint = textSub,
-                                        modifier = Modifier.padding(8.dp).size(20.dp)
-                                    )
-                                }
-                            }
-                        }
-
-                        // 全宽大卡片（动词活用大全）
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = onNavigateToVerbHandbook
-                                ),
-                            shape = RoundedCornerShape(24.dp),
-                            color = surfaceColor,
-                            shadowElevation = 0.dp
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(20.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.MenuBook,
-                                            contentDescription = null,
-                                            tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
-                                            modifier = Modifier.padding(12.dp).size(24.dp)
-                                        )
-                                    }
-                                    Spacer(Modifier.width(16.dp))
-                                    Column(
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Text(
-                                            text = "动词活用大全",
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                            color = textMain
-                                        )
-                                        Spacer(Modifier.height(2.dp))
-                                        Text(
-                                            text = "零基础注音解析，完整收录日语动词 13 种活用变形规则",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = textSub
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.width(8.dp))
-                                Surface(
-                                    shape = CircleShape,
-                                    color = dividerColor
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                        contentDescription = null,
-                                        tint = textSub,
-                                        modifier = Modifier.padding(8.dp).size(20.dp)
-                                    )
                                 }
                             }
                         }
