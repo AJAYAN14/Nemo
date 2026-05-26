@@ -279,6 +279,9 @@ fun NemoNavHost(
                 },
                 onNavigateToProfile = {
                     navController.navigate(NavDestination.PROFILE)
+                },
+                onNavigateToVerbHandbook = {
+                    navController.navigate(NavDestination.VERB_CONJUGATION_HANDBOOK)
                 }
             )
         }
@@ -452,6 +455,12 @@ fun NemoNavHost(
 
         composable(NavDestination.VERB_CONJUGATION) {
             com.jian.nemo.feature.test.presentation.ability.VerbConjugationScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavDestination.VERB_CONJUGATION_HANDBOOK) {
+            com.jian.nemo.feature.learning.presentation.verb.VerbConjugationHandbookScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

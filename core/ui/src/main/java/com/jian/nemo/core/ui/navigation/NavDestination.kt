@@ -22,6 +22,7 @@ object NavDestination {
     const val AI_READING_HISTORY = "ai_reading_history" // AI 阅读历史
     const val ABILITY_WORKSHOP = "ability_workshop" // 能力工坊
     const val VERB_CONJUGATION = "verb_conjugation" // 动词活用
+    const val VERB_CONJUGATION_HANDBOOK = "verb_conjugation_handbook" // 动词活用手册/大全
     const val LISTENING_COMPREHENSION = "listening_comprehension" // 听力理解
 
 

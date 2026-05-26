@@ -46,6 +46,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.AvatarImage
@@ -64,6 +65,7 @@ fun HomeScreen(
     onNavigateToAIWorkshop: () -> Unit,
     onNavigateToAIReading: () -> Unit,
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToVerbHandbook: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -786,6 +788,73 @@ fun HomeScreen(
                                         )
                                     }
                                 }
+                                Surface(
+                                    shape = CircleShape,
+                                    color = dividerColor
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                        contentDescription = null,
+                                        tint = textSub,
+                                        modifier = Modifier.padding(8.dp).size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        // 全宽大卡片（动词活用大全）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null,
+                                    onClick = onNavigateToVerbHandbook
+                                ),
+                            shape = RoundedCornerShape(24.dp),
+                            color = surfaceColor,
+                            shadowElevation = 0.dp
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.MenuBook,
+                                            contentDescription = null,
+                                            tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                                            modifier = Modifier.padding(12.dp).size(24.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.width(16.dp))
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = "动词活用大全",
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = textMain
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            text = "零基础注音解析，完整收录日语动词 13 种活用变形规则",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = textSub
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.width(8.dp))
                                 Surface(
                                     shape = CircleShape,
                                     color = dividerColor
