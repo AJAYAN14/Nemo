@@ -13,15 +13,17 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
@@ -91,7 +93,9 @@ fun FlippableCard(
             CardState.SELECTED -> primaryColor
             CardState.CORRECT -> secondaryColor
             CardState.INCORRECT -> errorColor
-            else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            else -> MaterialTheme.colorScheme.outlineVariant.copy(
+                alpha = if (isSystemInDarkTheme()) 0.8f else 0.5f
+            )
         },
         label = "borderColor",
         animationSpec = tween(300)
@@ -141,35 +145,30 @@ fun FlippableCard(
         modifier = modifier,
         visible = cardState != CardState.MATCHED,
         enter = fadeIn() + scaleIn(initialScale = 0.95f),
-        exit = shrinkVertically(
-            animationSpec = tween(300),
-            shrinkTowards = Alignment.Top
-        ) + fadeOut(animationSpec = tween(300))
+        exit = fadeOut(animationSpec = tween(300))
     ) {
         Box(
             modifier = Modifier
                 .padding(vertical = 4.dp)
                 .fillMaxWidth()
-                .height(100.dp)
+                .heightIn(min = 80.dp)
                 .scale(scale)
-                .clip(RoundedCornerShape(16.dp)) // 16dp Radius
+                .clip(RoundedCornerShape(24.dp))
                 .border(
-                    width = if (cardState == CardState.DEFAULT) 1.dp else 2.dp, // Thicker border for active states
+                    width = if (cardState == CardState.DEFAULT) 1.dp else 2.dp,
                     color = borderColor,
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(24.dp)
                 )
                 .background(
                     color = backgroundColor,
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(24.dp)
                 )
                 .clickable(
                     enabled = cardState == CardState.DEFAULT || cardState == CardState.SELECTED,
                     onClick = {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         onClick()
-                    },
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
+                    }
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -206,7 +205,7 @@ fun CardMatchingContentArea(
 ) {
     Row(
         modifier = modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // 左列 - 汉字和假名卡片
         LazyColumn(
@@ -278,23 +277,23 @@ fun MatchingFeedbackPanel(
     ) {
         val backgroundColor = when (feedbackState) {
             FeedbackPanelState.COMPLETE -> IosColors.Green.copy(alpha = 0.95f)
-            FeedbackPanelState.INCORRECT -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.95f)
+            FeedbackPanelState.INCORRECT -> IosColors.Red.copy(alpha = 0.92f)
             else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
         }
 
         val textColor = when (feedbackState) {
             FeedbackPanelState.COMPLETE -> Color.White
-            FeedbackPanelState.INCORRECT -> MaterialTheme.colorScheme.onErrorContainer
+            FeedbackPanelState.INCORRECT -> Color.White
             else -> MaterialTheme.colorScheme.onSurfaceVariant
         }
 
         Surface(
             tonalElevation = 0.dp,
-            shadowElevation = 0.dp, // No shadow
+            shadowElevation = 0.dp,
             color = backgroundColor,
             modifier = Modifier.fillMaxWidth(),
-            border = BorderStroke(1.dp, textColor.copy(alpha = 0.1f)), // Subtle border
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp) // Large top radius
+            border = BorderStroke(1.dp, textColor.copy(alpha = 0.1f)),
+            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -302,6 +301,17 @@ fun MatchingFeedbackPanel(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // COMPLETE：成功图标
+                if (feedbackState == FeedbackPanelState.COMPLETE) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(36.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
                 // 提示文本
                 Text(
                     text = when (feedbackState) {
@@ -319,9 +329,25 @@ fun MatchingFeedbackPanel(
                     color = textColor
                 )
 
+                // INCORRECT：错误次数可视化（实心 = 已犯错，半透明 = 剩余机会）
+                if (feedbackState == FeedbackPanelState.INCORRECT) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        repeat(wrongLimit) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (index < wrongCount) Color.White
+                                        else Color.White.copy(alpha = 0.3f)
+                                    )
+                            )
+                        }
+                    }
+                }
 
-
-                // 自动跳转提示
+                // 自动跳转
                 if (feedbackState == FeedbackPanelState.COMPLETE) {
                     LaunchedEffect(Unit) {
                         kotlinx.coroutines.delay(1500)
@@ -347,6 +373,19 @@ fun CardMatchingTestHeader(
     onPause: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 倒计时紧迫感脉冲动画（≤30 秒时触发），必须在 Composable 顶层调用
+    val isUrgent = timeLimitSeconds > 0 && timeRemainingSeconds in 1..30
+    val infiniteTransition = rememberInfiniteTransition(label = "timer_pulse")
+    val timerPulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isUrgent) 0.4f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "timer_alpha"
+    )
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -368,7 +407,9 @@ fun CardMatchingTestHeader(
                 text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = if (timeRemainingSeconds < 60) {
-                    MaterialTheme.colorScheme.error
+                    MaterialTheme.colorScheme.error.copy(
+                        alpha = if (isUrgent) timerPulseAlpha else 1f
+                    )
                 } else {
                     MaterialTheme.colorScheme.onSurface
                 },

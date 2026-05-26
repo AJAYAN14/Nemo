@@ -22,6 +22,5 @@ data class TestConfig(
     val prioritizeWrong: Boolean = false,     // 错题优先 (在选题时优先选择错误率高的)
     val prioritizeNew: Boolean = false,       // 未学优先 (在选题时优先选择从未测试过的)
     val wrongAnswerRemovalThreshold: Int = 0, // 错题移除阈值 (答对几次从错题集移除)
-
-
+    val autoPlayAudio: Boolean = true,        // 答对/提交后自动朗读假名
 )

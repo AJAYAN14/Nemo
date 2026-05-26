@@ -202,6 +202,9 @@ object PreferencesKeys {
     /** 答對自动跳转 */
     val TEST_AUTO_ADVANCE = booleanPreferencesKey("test_auto_advance")
 
+    /** 答对/提交后自动朗读 */
+    val TEST_AUTO_PLAY_AUDIO = booleanPreferencesKey("test_auto_play_audio")
+
     /** 错题优先 */
     val TEST_PRIORITIZE_WRONG = booleanPreferencesKey("test_prioritize_wrong")
 
@@ -324,6 +327,10 @@ object PreferencesKeys {
 
     fun getTestAutoAdvanceKey(mode: String?): androidx.datastore.preferences.core.Preferences.Key<Boolean> {
         return if (mode.isNullOrEmpty()) TEST_AUTO_ADVANCE else booleanPreferencesKey("${mode}_test_auto_advance")
+    }
+
+    fun getTestAutoPlayAudioKey(mode: String?): androidx.datastore.preferences.core.Preferences.Key<Boolean> {
+        return if (mode.isNullOrEmpty()) TEST_AUTO_PLAY_AUDIO else booleanPreferencesKey("${mode}_test_auto_play_audio")
     }
 
     fun getTestPrioritizeWrongKey(mode: String?): androidx.datastore.preferences.core.Preferences.Key<Boolean> {

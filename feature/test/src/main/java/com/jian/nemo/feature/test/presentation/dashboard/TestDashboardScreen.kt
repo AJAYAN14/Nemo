@@ -61,7 +61,7 @@ fun TestDashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    val isAbilityWorkshopEnabled = false
+    val isAbilityWorkshopEnabled = true
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -173,7 +173,7 @@ fun TestDashboardScreen(
                 SectionTitle("其他测试")
                 DashboardBanner(
                     title = "能力工坊",
-                    subtitle = "提升语感，全方位进阶（即将上线）",
+                    subtitle = "提升语感，全方位进阶",
                     icon = Icons.Rounded.AllInclusive,
                     gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
                     onClick = onNavigateToAbilityWorkshop

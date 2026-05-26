@@ -252,13 +252,8 @@ class TtsManager @Inject constructor(
             }
 
              if (moveProceed) {
-                // 清理文本 (仅对日语进行注音过滤，中文通常不需要或格式不同)
-                // 这里简单起见对所有文本过滤，或者判断 Locale
-                val textToSpeak = if (targetLanguage.language == Locale.JAPAN.language) {
-                    cleanText(text)
-                } else {
-                    text
-                }
+                // 清理文本（过滤所有语言文本中的括号内容及波浪号等符号）
+                val textToSpeak = cleanText(text)
 
                 // 使用指定的队列模式
                 val utteranceId = id ?: System.currentTimeMillis().toString()
@@ -354,6 +349,11 @@ class TtsManager @Inject constructor(
         }
     }
 
+    fun setSpeechRate(rate: Float) {
+        currentSpeechRate = rate
+        tts?.setSpeechRate(rate)
+    }
+
     private fun requestAudioFocus(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val playbackAttributes = AudioAttributes.Builder()
@@ -399,7 +399,11 @@ class TtsManager @Inject constructor(
      * - 汉字（kana）-> 汉字
      * - 汉字[kana] -> 汉字
      */
+    /**
+     * 清理文本，移除括号内容及波浪号等占位符
+     */
     private fun cleanText(text: String): String {
-        return text.replace(Regex("\\(.*?\\)|（.*?）|\\[.*?\\]"), "")
+        val withoutBrackets = text.replace(Regex("\\(.*?\\)|（.*?）|\\[.*?\\]"), "")
+        return withoutBrackets.replace("～", "").replace("~", "").trim()
     }
 }

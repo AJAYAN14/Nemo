@@ -194,7 +194,8 @@ class TestSettingsViewModel @Inject constructor(
                 wrongAnswerRemovalThreshold = prefs.wrongAnswerRemovalThreshold,
                 testContentType = TestContentType.fromKey(prefs.testContentType),
                 selectedWordLevels = prefs.selectedWordLevels,
-                selectedGrammarLevels = prefs.selectedGrammarLevels
+                selectedGrammarLevels = prefs.selectedGrammarLevels,
+                autoPlayAudio = prefs.autoPlayAudio
             )
             _uiState.update { it.copy(testConfig = config).withSyncedFlags() }
 
@@ -240,7 +241,8 @@ class TestSettingsViewModel @Inject constructor(
                 wrongAnswerRemovalThreshold = finalConfig.wrongAnswerRemovalThreshold,
                 testContentType = finalConfig.testContentType.key,
                 selectedWordLevels = finalConfig.selectedWordLevels.toSet(),
-                selectedGrammarLevels = finalConfig.selectedGrammarLevels.toSet()
+                selectedGrammarLevels = finalConfig.selectedGrammarLevels.toSet(),
+                autoPlayAudio = finalConfig.autoPlayAudio
             )
         }
     }

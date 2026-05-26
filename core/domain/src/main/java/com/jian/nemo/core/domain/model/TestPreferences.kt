@@ -16,5 +16,6 @@ data class TestPreferences(
     val wrongAnswerRemovalThreshold: Int,
     val testContentType: String,
     val selectedWordLevels: List<String>,
-    val selectedGrammarLevels: List<String>
+    val selectedGrammarLevels: List<String>,
+    val autoPlayAudio: Boolean
 )

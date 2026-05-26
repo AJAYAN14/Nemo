@@ -295,7 +295,8 @@ interface SettingsRepository {
         wrongAnswerRemovalThreshold: Int,
         testContentType: String,
         selectedWordLevels: Set<String>,
-        selectedGrammarLevels: Set<String>
+        selectedGrammarLevels: Set<String>,
+        autoPlayAudio: Boolean
     )
 
     // ========== 新内容策略 ==========
@@ -516,6 +517,10 @@ interface SettingsRepository {
     /** 翻面自动朗读开关Flow 默认: false */
     val isAutoPlayAudioEnabledFlow: Flow<Boolean>
     suspend fun setAutoPlayAudioEnabled(enabled: Boolean)
+
+    /** 测试答题自动朗读Flow 默认: true */
+    val testAutoPlayAudioFlow: Flow<Boolean>
+    suspend fun setTestAutoPlayAudio(enabled: Boolean)
 
     /** 显示答案等待开关 Flow 默认: false */
     val isShowAnswerDelayEnabledFlow: Flow<Boolean>

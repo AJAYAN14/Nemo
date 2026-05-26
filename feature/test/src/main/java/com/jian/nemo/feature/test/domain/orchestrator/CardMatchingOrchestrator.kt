@@ -36,7 +36,8 @@ interface CardMatchingNavigation {
 class CardMatchingOrchestrator @Inject constructor(
     private val cardMatchingHandler: CardMatchingHandler,
     private val settingsRepository: SettingsRepository,
-    private val wrongAnswerRepository: WrongAnswerRepository
+    private val wrongAnswerRepository: WrongAnswerRepository,
+    private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository
 ) {
 
     private var currentJob: Job? = null
@@ -177,6 +178,14 @@ class CardMatchingOrchestrator @Inject constructor(
         }
 
         effectEmitter(TestEffect.PlaySound(isCorrect = true))
+
+        // 自动朗读配对成功的单词假名
+        val pairedWord = currentQuestion?.pairs?.find { it.id == firstCard.id }
+        if (pairedWord != null) {
+            if (settingsRepository.testAutoPlayAudioFlow.first()) {
+                audioRepository.playTts(pairedWord.hiragana)
+            }
+        }
 
         delay(400)
 

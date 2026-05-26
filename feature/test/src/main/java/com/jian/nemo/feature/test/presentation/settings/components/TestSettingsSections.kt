@@ -183,6 +183,12 @@ fun QuizSettingsSection(
             checked = config.prioritizeNew,
             onCheckedChange = { onUpdateConfig(config.copy(prioritizeNew = it, prioritizeWrong = if(it) false else config.prioritizeWrong)) }
         )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        PremiumSwitchRow(
+            label = "答题自动朗读假名",
+            checked = config.autoPlayAudio,
+            onCheckedChange = { onUpdateConfig(config.copy(autoPlayAudio = it)) }
+        )
     }
 }
 

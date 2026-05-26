@@ -443,6 +443,7 @@ fun NemoNavHost(
                 onNavigateToGame = { gameType ->
                     when (gameType) {
                         "verb_conjugation" -> navController.navigate(NavDestination.VERB_CONJUGATION)
+                        "listening_comprehension" -> navController.navigate(NavDestination.LISTENING_COMPREHENSION)
                         // 其他游戏后续接入
                     }
                 }
@@ -451,6 +452,12 @@ fun NemoNavHost(
 
         composable(NavDestination.VERB_CONJUGATION) {
             com.jian.nemo.feature.test.presentation.ability.VerbConjugationScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavDestination.LISTENING_COMPREHENSION) {
+            com.jian.nemo.feature.test.presentation.ability.ListeningComprehensionScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

@@ -493,7 +493,8 @@ class SettingsRepositoryImpl @Inject constructor(
                 wrongAnswerRemovalThreshold = preferences[PreferencesKeys.getTestWrongAnswerRemovalThresholdKey(mode)] ?: 0,
                 testContentType = preferences[PreferencesKeys.getTestContentTypeKey(mode)] ?: "mixed",
                 selectedWordLevels = (preferences[PreferencesKeys.getTestSelectedWordLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted(),
-                selectedGrammarLevels = (preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted()
+                selectedGrammarLevels = (preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] ?: setOf("N5", "N4", "N3", "N2", "N1")).sorted(),
+                autoPlayAudio = preferences[PreferencesKeys.getTestAutoPlayAudioKey(mode)] ?: true
             )
         }
     }
@@ -690,7 +691,8 @@ class SettingsRepositoryImpl @Inject constructor(
         wrongAnswerRemovalThreshold: Int,
         testContentType: String,
         selectedWordLevels: Set<String>,
-        selectedGrammarLevels: Set<String>
+        selectedGrammarLevels: Set<String>,
+        autoPlayAudio: Boolean
     ) {
         val mode = currentTestModeFlow.value
         dataStore.edit { preferences ->
@@ -706,6 +708,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.getTestContentTypeKey(mode)] = testContentType
             preferences[PreferencesKeys.getTestSelectedWordLevelsKey(mode)] = selectedWordLevels
             preferences[PreferencesKeys.getTestSelectedGrammarLevelsKey(mode)] = selectedGrammarLevels
+            preferences[PreferencesKeys.getTestAutoPlayAudioKey(mode)] = autoPlayAudio
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
@@ -1299,6 +1302,21 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAutoPlayAudioEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_AUTO_PLAY_AUDIO_ENABLED] = enabled
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override val testAutoPlayAudioFlow: Flow<Boolean> = currentTestModeFlow.flatMapLatest { mode ->
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.getTestAutoPlayAudioKey(mode)] ?: true
+        }
+    }
+
+    override suspend fun setTestAutoPlayAudio(enabled: Boolean) {
+        val mode = currentTestModeFlow.value
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.getTestAutoPlayAudioKey(mode)] = enabled
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 

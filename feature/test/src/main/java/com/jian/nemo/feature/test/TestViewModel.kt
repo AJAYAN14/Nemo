@@ -58,6 +58,7 @@ class TestViewModel @Inject constructor(
     private val syncService: SyncService,
     private val cardMatchingOrchestrator: CardMatchingOrchestrator,
     private val favoriteQuestionRepository: com.jian.nemo.core.domain.repository.FavoriteQuestionRepository,
+    private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
     @ApplicationScope private val externalScope: CoroutineScope
     ) : ViewModel() {
 
@@ -524,6 +525,16 @@ class TestViewModel @Inject constructor(
             )
         }
 
+        // 自动朗读逻辑：排除语法题，仅在自动朗读开关开启且为单词题时，朗读其假名
+        val word = updatedQuestion.word
+        if (word != null) {
+            viewModelScope.launch {
+                if (settingsRepository.testAutoPlayAudioFlow.first()) {
+                    audioRepository.playTts(word.hiragana)
+                }
+            }
+        }
+
         // 8. 自动跳转逻辑（答对且不是最后一题）（复刻旧项目L392-437）
         if (updatedQuestion.isCorrect && !state.isLastQuestion) {
             viewModelScope.launch {
@@ -578,6 +589,10 @@ class TestViewModel @Inject constructor(
         // 防抖：如果正在切换题目，忽略此次请求
         if (!isChangingQuestion.compareAndSet(false, true)) return
 
+        if (!_uiState.value.isAutoAdvancing) {
+            audioRepository.stop()
+        }
+
         val state = _uiState.value
         if (state.currentIndex < state.questions.size - 1) {
             _uiState.update { currentState ->
@@ -615,6 +630,8 @@ class TestViewModel @Inject constructor(
     fun previousQuestion() {
         // 防抖：如果正在切换题目，忽略此次请求
         if (!isChangingQuestion.compareAndSet(false, true)) return
+
+        audioRepository.stop()
 
         val state = _uiState.value
         if (state.currentIndex > 0) {
@@ -850,6 +867,7 @@ class TestViewModel @Inject constructor(
     fun actualExitTest() {
         stopTimer()
         cardMatchingOrchestrator.cancelCurrentJob()
+        audioRepository.stop()
 
         // 中途退出时，保存已回答的题目中的错题和正确记录
         val state = _uiState.value
@@ -971,6 +989,7 @@ class TestViewModel @Inject constructor(
         super.onCleared()
         timerManager.reset()
         cardMatchingOrchestrator.cancelCurrentJob()
+        audioRepository.stop()
     }
 }
 
