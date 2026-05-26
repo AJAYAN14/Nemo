@@ -20,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -152,12 +153,13 @@ fun StatisticsListCard(
     showSourceBadge: Boolean = true
 ) {
     val defaultShowCount = 5
-    var isExpanded by remember { mutableStateOf(false) }
+    val pageSize = 30
+    var visibleCount by remember(items) { mutableStateOf(defaultShowCount) }
 
     // 如果数量少于等于 defaultShowCount + 1，直接全部显示，避免出现"展开查看剩余 1 项"的尴尬
     val shouldCollapse = items.size > defaultShowCount + 1
-    val showItems = if (!shouldCollapse || isExpanded) items else items.take(defaultShowCount)
-    val remainingCount = items.size - defaultShowCount
+    val showItems = if (!shouldCollapse) items else items.take(visibleCount)
+    val remainingCount = items.size - visibleCount
 
     PremiumCard {
         Column(
@@ -168,13 +170,15 @@ fun StatisticsListCard(
                 // 根据索引循环获取颜色
                 val color = AvatarColors[index % AvatarColors.size]
 
-                StatisticsItemRow(
-                    item = item,
-                    avatarColor = color,
-                    onClick = { onItemClick(item.id) },
-                    showDivider = index < showItems.size - 1,
-                    showSourceBadge = showSourceBadge
-                )
+                key(item.id) {
+                    StatisticsItemRow(
+                        item = item,
+                        avatarColor = color,
+                        onClick = { onItemClick(item.id) },
+                        showDivider = index < showItems.size - 1,
+                        showSourceBadge = showSourceBadge
+                    )
+                }
             }
 
             // 展开/收起 按钮
@@ -190,20 +194,27 @@ fun StatisticsListCard(
                         .clickable(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() }
-                        ) { isExpanded = !isExpanded }
+                        ) {
+                            if (visibleCount < items.size) {
+                                visibleCount = minOf(items.size, visibleCount + pageSize)
+                            } else {
+                                visibleCount = defaultShowCount
+                            }
+                        }
                         .padding(top = 12.dp, bottom = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
+                    val isFullyExpanded = visibleCount >= items.size
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = if (isExpanded) "收起" else "展开查看剩余 $remainingCount 项",
+                            text = if (isFullyExpanded) "收起" else "展开查看更多 (剩余 $remainingCount 项)",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
-                            imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            imageVector = if (isFullyExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
@@ -250,10 +261,15 @@ fun StatisticsItemRow(
     showDivider: Boolean,
     showSourceBadge: Boolean = true
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = androidx.compose.foundation.LocalIndication.current,
+                onClick = onClick
+            )
             .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -269,9 +285,12 @@ fun StatisticsItemRow(
         ) {
             Text(
                 text = avatarChar,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                ),
                 fontSize = 20.sp,
-                fontWeight = FontWeight.Black,
+                fontFamily = NotoSerifJP,
+                fontWeight = FontWeight.ExtraBold,
                 color = avatarColor
             )
         }
@@ -279,33 +298,38 @@ fun StatisticsItemRow(
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            val (badgeText, badgeBg, badgeTextColor) = when (item.source) {
-                StatisticSource.LEARNED -> Triple(
-                    "新学",
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                    MaterialTheme.colorScheme.primary
-                )
-                StatisticSource.REVIEWED -> Triple(
-                    "复习",
-                    NemoSecondary.copy(alpha = 0.15f),
-                    NemoSecondary
-                )
+            val primaryColor = MaterialTheme.colorScheme.primary
+            val badgeInfo = remember(item.source, primaryColor) {
+                when (item.source) {
+                    StatisticSource.LEARNED -> Triple(
+                        "新学",
+                        primaryColor.copy(alpha = 0.12f),
+                        primaryColor
+                    )
+                    StatisticSource.REVIEWED -> Triple(
+                        "复习",
+                        NemoSecondary.copy(alpha = 0.15f),
+                        NemoSecondary
+                    )
+                }
             }
+            val (badgeText, badgeBg, badgeTextColor) = badgeInfo
 
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (showSourceBadge) {
-                    Surface(
-                        color = badgeBg,
-                        shape = RoundedCornerShape(6.dp)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(badgeBg)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = badgeText,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = badgeTextColor,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            color = badgeTextColor
                         )
                     }
 
@@ -321,16 +345,17 @@ fun StatisticsItemRow(
 
                 if (item.level.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(6.dp)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = item.level,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -339,10 +364,12 @@ fun StatisticsItemRow(
             Spacer(modifier = Modifier.height(2.dp))
 
             // Construct meaningful secondary text
-            val secondaryText = buildString {
-                if (item.hiragana.isNotEmpty()) append(item.hiragana)
-                if (item.hiragana.isNotEmpty() && item.chinese.isNotEmpty()) append(" · ")
-                if (item.chinese.isNotEmpty()) append(item.chinese)
+            val secondaryText = remember(item.hiragana, item.chinese) {
+                buildString {
+                    if (item.hiragana.isNotEmpty()) append(item.hiragana)
+                    if (item.hiragana.isNotEmpty() && item.chinese.isNotEmpty()) append(" · ")
+                    if (item.chinese.isNotEmpty()) append(item.chinese)
+                }
             }
 
             if (secondaryText.isNotEmpty()) {

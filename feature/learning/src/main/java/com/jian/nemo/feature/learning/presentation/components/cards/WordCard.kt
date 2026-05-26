@@ -178,7 +178,8 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 style = MaterialTheme.typography.headlineSmall.copy(
                     letterSpacing = 1.sp,
                     fontWeight = FontWeight.Medium,
-                    fontFamily = NotoSerifJP
+                    fontFamily = NotoSerifJP,
+                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                 ),
                 color = NemoTextLight.copy(alpha = 0.8f)
             )
@@ -274,7 +275,8 @@ private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, on
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 32.sp,
-                fontFamily = NotoSerifJP
+                fontFamily = NotoSerifJP,
+                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
             ),
             color = themeColor
         )
@@ -284,7 +286,8 @@ private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, on
         Text(
             text = word.hiragana,
             style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = NotoSerifJP
+                fontFamily = NotoSerifJP,
+                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
             ),
             color = NemoTextLight
         )

@@ -43,6 +43,10 @@ fun FuriganaText(
 ) {
     // 1. 解析
     val segments = remember(text) { parseFuriganaText(text) }
+    val jaLocaleList = remember { androidx.compose.ui.text.intl.LocaleList("ja") }
+    val jaBaseTextStyle = remember(baseTextStyle, jaLocaleList) {
+        baseTextStyle.copy(localeList = jaLocaleList)
+    }
 
     // 2. 布局
     FlowRow(
@@ -66,7 +70,7 @@ fun FuriganaText(
                             val glueText = "$currentChar$nextChar"
                             PlainTextUnit(
                                 text = glueText,
-                                baseTextStyle = baseTextStyle,
+                                baseTextStyle = jaBaseTextStyle,
                                 baseTextColor = baseTextColor,
                                 furiganaTextSize = furiganaTextSize
                             )
@@ -74,7 +78,7 @@ fun FuriganaText(
                         } else {
                             PlainTextUnit(
                                 text = currentChar.toString(),
-                                baseTextStyle = baseTextStyle,
+                                baseTextStyle = jaBaseTextStyle,
                                 baseTextColor = baseTextColor,
                                 furiganaTextSize = furiganaTextSize
                             )
@@ -87,7 +91,7 @@ fun FuriganaText(
                     RubyUnit(
                         furigana = segment.furigana,
                         kanji = segment.kanji,
-                        baseTextStyle = baseTextStyle,
+                        baseTextStyle = jaBaseTextStyle,
                         baseTextColor = baseTextColor,
                         furiganaTextSize = furiganaTextSize,
                         furiganaTextColor = furiganaTextColor,
@@ -152,10 +156,13 @@ private fun RubyUnit(
         ) {
             Text(
                 text = furigana,
-                fontSize = furiganaTextSize,
-                fontFamily = furiganaFontFamily,
-                color = furiganaTextColor,
-                textAlign = TextAlign.Center,
+                style = TextStyle(
+                    fontSize = furiganaTextSize,
+                    fontFamily = furiganaFontFamily,
+                    color = furiganaTextColor,
+                    textAlign = TextAlign.Center,
+                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                ),
                 maxLines = 1,
                 softWrap = false
             )

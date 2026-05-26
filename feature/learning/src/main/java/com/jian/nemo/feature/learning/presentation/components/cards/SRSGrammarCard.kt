@@ -195,6 +195,9 @@ fun SRSGrammarCard(
                     fontFamily = NotoSerifJP,
                     textAlign = TextAlign.Center,
                     lineHeight = 44.sp,
+                    style = androidx.compose.ui.text.TextStyle(
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
 

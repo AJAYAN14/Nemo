@@ -206,7 +206,8 @@ fun SRSLearningCard(
                     style = TextStyle(
                         platformStyle = PlatformTextStyle(
                             includeFontPadding = false
-                        )
+                        ),
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     )
                 )
 
@@ -217,6 +218,9 @@ fun SRSLearningCard(
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     fontFamily = NotoSerifJP,
+                    style = TextStyle(
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
                     modifier = Modifier.then(
                         if (!isAnswerShown) Modifier.blur(8.dp) else Modifier
                     )
