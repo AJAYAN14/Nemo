@@ -302,17 +302,39 @@ private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
                 modifier = Modifier.size(50.dp).background(avatarColor.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(word.japanese.firstOrNull()?.toString() ?: "?", style = MaterialTheme.typography.headlineSmall, color = avatarColor)
+                Text(
+                    text = word.japanese.firstOrNull()?.toString() ?: "?",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    color = avatarColor
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(word.japanese, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    text = word.japanese,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    fontWeight = FontWeight.Bold
+                )
                 val secondary = buildString {
                     if (word.hiragana.isNotEmpty()) append(word.hiragana)
                     if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) append(" · ")
                     if (word.chinese.isNotEmpty()) append(word.chinese)
                 }
-                Text(secondary, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                Text(
+                    text = secondary,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
             }
         }
     }

@@ -282,12 +282,31 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
                 modifier = Modifier.size(50.dp).background(avatarColor.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("文", style = MaterialTheme.typography.headlineSmall, color = avatarColor)
+                Text(
+                    text = "文",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    color = avatarColor
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(GrammarSearchUtils.cleanRubi(grammar.grammar), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(GrammarSearchUtils.cleanRubi(grammar.getFirstExplanation()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                Text(
+                    text = GrammarSearchUtils.cleanRubi(grammar.grammar),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = GrammarSearchUtils.cleanRubi(grammar.getFirstExplanation()),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
             }
         }
     }
