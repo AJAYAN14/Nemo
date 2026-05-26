@@ -1401,6 +1401,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.LAST_SYNC_CONFLICT_COUNT)
             preferences.remove(PreferencesKeys.SYNC_ON_LEARNING_COMPLETE)
             preferences.remove(PreferencesKeys.SYNC_ON_TEST_COMPLETE)
+            preferences.remove(PreferencesKeys.AI_READING_THEME)
 
             Log.w(TAG, "已清除所有用户相关数据 (保留设备配置)")
         }
@@ -1497,7 +1498,8 @@ class SettingsRepositoryImpl @Inject constructor(
             aiWorkshopDifficulty = prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] ?: "N5",
             aiCurrentExercise = prefs[PreferencesKeys.AI_CURRENT_EXERCISE] ?: "",
             aiCurrentAnswer = prefs[PreferencesKeys.AI_CURRENT_ANSWER] ?: "",
-            aiWorkshopMode = prefs[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE"
+            aiWorkshopMode = prefs[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE",
+            aiReadingTheme = prefs[PreferencesKeys.AI_READING_THEME] ?: "日常生活"
         )
     }
 
@@ -1560,6 +1562,7 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.AI_CURRENT_EXERCISE] = settings.aiCurrentExercise
             prefs[PreferencesKeys.AI_CURRENT_ANSWER] = settings.aiCurrentAnswer
             prefs[PreferencesKeys.AI_WORKSHOP_MODE] = settings.aiWorkshopMode
+            prefs[PreferencesKeys.AI_READING_THEME] = settings.aiReadingTheme
 
             // Update timestamp
             prefs[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
@@ -1743,6 +1746,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAiWorkshopDifficulty(difficulty: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] = difficulty
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiReadingThemeFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_READING_THEME] ?: "日常生活"
+    }
+
+    override suspend fun setAiReadingTheme(theme: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_READING_THEME] = theme
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

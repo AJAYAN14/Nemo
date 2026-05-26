@@ -633,6 +633,10 @@ interface SettingsRepository {
     /** 当前激活的 AI 配置 ID Flow */
     val aiActiveConfigIdFlow: Flow<String>
     suspend fun setAiActiveConfigId(id: String)
+
+    /** AI 日语阅读主题 Flow */
+    val aiReadingThemeFlow: Flow<String>
+    suspend fun setAiReadingTheme(theme: String)
 }
 
 /**

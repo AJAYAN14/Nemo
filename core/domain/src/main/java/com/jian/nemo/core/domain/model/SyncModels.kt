@@ -74,7 +74,8 @@ data class AppSettings(
     val aiWorkshopDifficulty: String = "N5",
     val aiCurrentExercise: String = "",
     val aiCurrentAnswer: String = "",
-    val aiWorkshopMode: String = "FREE"
+    val aiWorkshopMode: String = "FREE",
+    val aiReadingTheme: String = "日常生活"
 )
 
 /**

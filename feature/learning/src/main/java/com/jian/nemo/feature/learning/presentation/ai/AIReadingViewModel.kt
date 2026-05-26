@@ -139,7 +139,18 @@ class AIReadingViewModel @Inject constructor(
             settingsRepository.aiWorkshopDifficultyFlow.collect { difficulty ->
                 _uiState.update { state ->
                     state.copy(
-                        difficulty = if (state.difficulty.isBlank()) difficulty else state.difficulty
+                        difficulty = difficulty
+                    )
+                }
+            }
+        }
+
+        // 协程3：监听阅读专属的主题设置
+        viewModelScope.launch {
+            settingsRepository.aiReadingThemeFlow.collect { theme ->
+                _uiState.update { state ->
+                    state.copy(
+                        readingTheme = theme
                     )
                 }
             }
@@ -186,6 +197,9 @@ class AIReadingViewModel @Inject constructor(
             }
             is AIReadingEvent.UpdateTheme -> {
                 _uiState.update { it.copy(readingTheme = event.theme) }
+                viewModelScope.launch {
+                    settingsRepository.setAiReadingTheme(event.theme)
+                }
             }
             is AIReadingEvent.SpeakText -> {
                 val currentPlaying = _uiState.value.playingAudioId

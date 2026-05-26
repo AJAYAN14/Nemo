@@ -296,6 +296,9 @@ object PreferencesKeys {
     /** AI 工坊当前选择的模式 (FREE, GRAMMAR) */
     val AI_WORKSHOP_MODE = stringPreferencesKey("ai_workshop_mode")
     
+    /** AI 日语阅读主题 */
+    val AI_READING_THEME = stringPreferencesKey("ai_reading_theme")
+    
     fun getAiApiKeyKey(platform: String) = stringPreferencesKey("ai_${platform}_api_key")
     fun getAiBaseUrlKey(platform: String) = stringPreferencesKey("ai_${platform}_base_url")
     fun getAiModelKey(platform: String) = stringPreferencesKey("ai_${platform}_model")
