@@ -139,7 +139,7 @@ fun ListeningComprehensionScreen(
     AbilityExitDialog(
         show = showExitDialog,
         title = "退出听力挑战",
-        message = "您是否要保留当前的答题进度？若保留，下次进入时将直接无缝恢复断点；若销毁，将彻底清空当前测试进度。",
+        message = "是否保留当前答题进度？保留后可下次继续作答，清空则删除当前进度。",
         themeColor = IosColors.Indigo,
         isDark = isDark,
         textMain = textMain,

@@ -159,7 +159,7 @@ fun WordDetailScreen(
             ContentReportDialog(
                 learningMode = LearningMode.Word,
                 onDismiss = { viewModel.cancelReportDialog() },
-                onConfirm = { currentWordId?.let { viewModel.reportContentError(it) } }
+                onConfirm = { errorType, desc -> currentWordId?.let { viewModel.reportContentError(it, errorType, desc) } }
             )
         }
     }

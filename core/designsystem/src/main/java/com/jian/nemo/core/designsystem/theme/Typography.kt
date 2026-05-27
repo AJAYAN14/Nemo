@@ -41,6 +41,29 @@ val NotoSerifJP = FontFamily(
     )
 )
 
+val NotoSerifSC = FontFamily(
+    Font(
+        googleFont = GoogleFont("Noto Serif SC"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif SC"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif SC"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Noto Serif SC"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
+    )
+)
+
 val MochiyPopOne = FontFamily(
     androidx.compose.ui.text.font.Font(R.font.mochiy_pop_one, FontWeight.Normal)
 )

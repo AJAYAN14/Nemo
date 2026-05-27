@@ -45,6 +45,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.jian.nemo.core.designsystem.theme.BentoColors
@@ -209,7 +212,7 @@ fun WordClozeScreen(
     AbilityExitDialog(
         show = showExitDialog,
         title = "退出单词填空",
-        message = "您是否要保留当前的答题进度？若保留，下次进入时将直接无缝恢复断点；若销毁，将彻底清空当前测试进度。",
+        message = "是否保留当前答题进度？保留后可下次继续作答，清空则删除当前进度。",
         themeColor = IosColors.Orange,
         isDark = isDark,
         textMain = textMain,
@@ -1551,7 +1554,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "拨音 (ん)",
@@ -1560,7 +1564,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "片假名长音 (ー)",
@@ -1569,7 +1574,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "平假名长音",
@@ -1578,7 +1584,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "常用拗音 (如 しゅ/ちょ)",
@@ -1587,7 +1594,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                             } else {
                                 // 进阶篇
@@ -1598,7 +1606,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "特殊浊音 (ぢ/づ)",
@@ -1607,7 +1616,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "外来语组合 (ティ/ファ)",
@@ -1616,7 +1626,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "特殊假名 (ヴ)",
@@ -1625,7 +1636,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "小假名 (如 ぃ/ょ)",
@@ -1634,7 +1646,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                                 GuideItemCard(
                                     title = "输入法兼容",
@@ -1643,7 +1656,8 @@ private fun JapaneseInputGuideDialog(
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
-                                    textSub = textSub
+                                    textSub = textSub,
+                                    isDark = isDark
                                 )
                             }
                         }
@@ -1730,11 +1744,16 @@ private fun GuideItemCard(
     keyBg: Color,
     cardBg: Color,
     textMain: Color,
-    textSub: Color
+    textSub: Color,
+    isDark: Boolean
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = cardBg,
+        border = BorderStroke(
+            width = 1.dp,
+            color = if (isDark) Color(0xFF334155) else Color(0xFFEDF2F7)
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -1748,34 +1767,54 @@ private fun GuideItemCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
             ) {
+                // 仅高亮假名部分，减少大片橙色的突兀感
+                val annotatedTitle = buildAnnotatedString {
+                    val bracketStart = title.indexOf("(")
+                    if (bracketStart != -1) {
+                        append(title.substring(0, bracketStart))
+                        withStyle(
+                            style = SpanStyle(
+                                color = IosColors.Orange,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(title.substring(bracketStart))
+                        }
+                    } else {
+                        append(title)
+                    }
+                }
+                
                 Text(
-                    text = title,
+                    text = annotatedTitle,
                     style = TextStyle(
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = IosColors.Orange
+                        color = textMain
                     )
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = example,
                     style = TextStyle(
                         fontSize = 12.sp,
-                        color = textSub
+                        color = textSub,
+                        lineHeight = 16.sp
                     )
                 )
             }
             
             Surface(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(6.dp),
                 color = keyBg,
+                shadowElevation = 1.dp,
                 modifier = Modifier.padding(start = 8.dp)
             ) {
                 Text(
                     text = method,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = TextStyle(
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = textMain,
                         fontFamily = FontFamily.Monospace

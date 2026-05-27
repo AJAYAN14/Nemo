@@ -132,10 +132,10 @@ class WordDetailViewModel @Inject constructor(
         _showReportDialog.value = false
     }
 
-    fun reportContentError(wordId: Int) {
+    fun reportContentError(wordId: Int, errorType: String, description: String?) {
         _showReportDialog.value = false
         viewModelScope.launch {
-            val result = contentReportRepository.reportContentError(wordId, "word")
+            val result = contentReportRepository.reportContentError(wordId, "word", errorType, description)
             if (result is Result.Success) {
                 _successMessage.value = "反馈成功，感谢您的反馈！"
             } else if (result is Result.Error) {

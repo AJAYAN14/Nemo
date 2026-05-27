@@ -24,6 +24,8 @@ interface ContentReport {
   status: "pending" | "resolved";
   created_at: string;
   item_content?: string; // Virtual field for display
+  error_type?: string;
+  description?: string;
 }
 
 export default function ReportsPage() {
@@ -38,6 +40,51 @@ export default function ReportsPage() {
   const [isWordModalOpen, setIsWordModalOpen] = useState(false);
   const [isGrammarModalOpen, setIsGrammarModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
+
+  const renderErrorType = (errorType?: string) => {
+    if (!errorType) {
+      return (
+        <span style={{
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '0.75rem',
+          backgroundColor: 'rgba(142, 142, 147, 0.1)',
+          color: '#8E8E93',
+          fontWeight: '500'
+        }}>
+          未知原因
+        </span>
+      );
+    }
+
+    const typeMap: Record<string, { label: string, color: string, bg: string }> = {
+      meaning_error: { label: "释义错误", color: "#007AFF", bg: "rgba(0, 122, 255, 0.1)" },
+      furigana_error: { label: "注音错误", color: "#5856D6", bg: "rgba(88, 86, 214, 0.1)" },
+      accent_error: { label: "音调错误", color: "#AF52DE", bg: "rgba(175, 82, 222, 0.1)" },
+      audio_error: { label: "音频发音", color: "#FF9500", bg: "rgba(255, 149, 0, 0.1)" },
+      example_error: { label: "例句翻译", color: "#FFCC00", bg: "rgba(255, 204, 0, 0.15)" },
+      spelling_error: { label: "拼写错误", color: "#FF3B30", bg: "rgba(255, 59, 48, 0.1)" },
+      pos_error: { label: "词性错误", color: "#30B0C7", bg: "rgba(48, 176, 199, 0.1)" },
+      connection_error: { label: "接续错误", color: "#FF9500", bg: "rgba(255, 149, 0, 0.1)" },
+      level_error: { label: "级别划分", color: "#FF2D55", bg: "rgba(255, 45, 85, 0.1)" },
+      other: { label: "其他问题", color: "#8E8E93", bg: "rgba(142, 142, 147, 0.1)" }
+    };
+
+    const config = typeMap[errorType] || { label: errorType, color: "#8E8E93", bg: "rgba(142, 142, 147, 0.1)" };
+
+    return (
+      <span style={{
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontSize: '0.75rem',
+        backgroundColor: config.bg,
+        color: config.color,
+        fontWeight: '500'
+      }}>
+        {config.label}
+      </span>
+    );
+  };
 
   const fetchReports = async () => {
     setIsLoading(true);
@@ -238,6 +285,7 @@ export default function ReportsPage() {
               <tr>
                 <th>类型</th>
                 <th>被举报条目</th>
+                <th>错误原因</th>
                 <th>状态</th>
                 <th>提交时间</th>
                 <th style={{ textAlign: 'right' }}>操作</th>
@@ -246,7 +294,7 @@ export default function ReportsPage() {
             <tbody>
               {filteredReports.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
                     暂无符合条件的反馈记录
                   </td>
                 </tr>
@@ -266,6 +314,21 @@ export default function ReportsPage() {
                   <td>
                     <div style={{ fontWeight: '600' }}>{report.item_content}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>ID: {report.item_id}</div>
+                  </td>
+                  <td>
+                    {renderErrorType(report.error_type)}
+                    {report.description && (
+                      <div style={{ 
+                        fontSize: '0.8rem', 
+                        color: 'var(--text-secondary)', 
+                        marginTop: '6px', 
+                        maxWidth: '220px', 
+                        wordBreak: 'break-all',
+                        lineHeight: '1.2' 
+                      }}>
+                        细节描述: {report.description}
+                      </div>
+                    )}
                   </td>
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

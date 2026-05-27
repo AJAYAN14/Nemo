@@ -159,7 +159,7 @@ sealed interface LearningEvent {
     /**
      * 报告当前条目内容错误
      */
-    data object ReportContentError : LearningEvent
+    data class ReportContentError(val errorType: String, val description: String? = null) : LearningEvent
 
     /**
      * 弹出报告错误的确认对话框

@@ -35,6 +35,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.input.TextFieldValue
@@ -308,6 +311,7 @@ private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
+                    fontWeight = FontWeight.W900,
                     color = avatarColor
                 )
             }
@@ -319,19 +323,36 @@ private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.W800
                 )
-                val secondary = buildString {
-                    if (word.hiragana.isNotEmpty()) append(word.hiragana)
-                    if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) append(" · ")
-                    if (word.chinese.isNotEmpty()) append(word.chinese)
+                val secondaryAnnotatedText = buildAnnotatedString {
+                    if (word.hiragana.isNotEmpty()) {
+                        withStyle(
+                            SpanStyle(
+                                fontFamily = NotoSerifJP,
+                                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                            )
+                        ) {
+                            append(word.hiragana)
+                        }
+                    }
+                    if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) {
+                        append(" · ")
+                    }
+                    if (word.chinese.isNotEmpty()) {
+                        withStyle(
+                            SpanStyle(
+                                fontFamily = NotoSerifSC,
+                                localeList = androidx.compose.ui.text.intl.LocaleList("zh")
+                            )
+                        ) {
+                            append(word.chinese)
+                        }
+                    }
                 }
                 Text(
-                    text = secondary,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
+                    text = secondaryAnnotatedText,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )

@@ -123,10 +123,10 @@ class GrammarDetailViewModel @Inject constructor(
         _showReportDialog.value = false
     }
 
-    fun reportContentError(grammarId: Int) {
+    fun reportContentError(grammarId: Int, errorType: String, description: String?) {
         _showReportDialog.value = false
         viewModelScope.launch {
-            val result = contentReportRepository.reportContentError(grammarId, "grammar")
+            val result = contentReportRepository.reportContentError(grammarId, "grammar", errorType, description)
             if (result is Result.Success) {
                 _successMessage.value = "反馈成功，感谢您的反馈！"
             } else if (result is Result.Error) {

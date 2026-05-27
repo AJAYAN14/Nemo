@@ -288,6 +288,7 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
+                    fontWeight = FontWeight.W900,
                     color = avatarColor
                 )
             }
@@ -299,7 +300,7 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.W800
                 )
                 Text(
                     text = GrammarSearchUtils.cleanRubi(grammar.getFirstExplanation()),

@@ -21,14 +21,16 @@ class ContentReportRepositoryImpl @Inject constructor(
     private val authRepository: AuthRepository
 ) : ContentReportRepository {
 
-    override suspend fun reportContentError(itemId: Int, itemType: String): Result<Unit> = withContext(Dispatchers.IO) {
+    override suspend fun reportContentError(itemId: Int, itemType: String, errorType: String, description: String?): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val userId = authRepository.getCurrentUser()?.id
             
             val reportDto = ContentReportDto(
                 itemId = itemId,
                 itemType = itemType,
-                userId = userId
+                userId = userId,
+                errorType = errorType,
+                description = description
             )
 
             // 提交或更新到 Supabase 'content_reports' 表 (幂等处理)

@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -290,7 +293,7 @@ fun StatisticsItemRow(
                 ),
                 fontSize = 20.sp,
                 fontFamily = NotoSerifJP,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.W900,
                 color = avatarColor
             )
         }
@@ -342,7 +345,7 @@ fun StatisticsItemRow(
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.W800,
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
@@ -367,21 +370,38 @@ fun StatisticsItemRow(
             Spacer(modifier = Modifier.height(2.dp))
 
             // Construct meaningful secondary text
-            val secondaryText = remember(item.hiragana, item.chinese) {
-                buildString {
-                    if (item.hiragana.isNotEmpty()) append(item.hiragana)
-                    if (item.hiragana.isNotEmpty() && item.chinese.isNotEmpty()) append(" · ")
-                    if (item.chinese.isNotEmpty()) append(item.chinese)
+            val secondaryAnnotatedText = remember(item.hiragana, item.chinese) {
+                buildAnnotatedString {
+                    if (item.hiragana.isNotEmpty()) {
+                        withStyle(
+                            SpanStyle(
+                                fontFamily = NotoSerifJP,
+                                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                            )
+                        ) {
+                            append(item.hiragana)
+                        }
+                    }
+                    if (item.hiragana.isNotEmpty() && item.chinese.isNotEmpty()) {
+                        append(" · ")
+                    }
+                    if (item.chinese.isNotEmpty()) {
+                        withStyle(
+                            SpanStyle(
+                                fontFamily = NotoSerifSC,
+                                localeList = androidx.compose.ui.text.intl.LocaleList("zh")
+                            )
+                        ) {
+                            append(item.chinese)
+                        }
+                    }
                 }
             }
 
-            if (secondaryText.isNotEmpty()) {
+            if (item.hiragana.isNotEmpty() || item.chinese.isNotEmpty()) {
                 Text(
-                    text = secondaryText,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
+                    text = secondaryAnnotatedText,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     maxLines = 1
                 )

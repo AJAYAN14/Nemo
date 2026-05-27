@@ -281,7 +281,7 @@ fun LearningScreen(
                 ContentReportDialog(
                     learningMode = uiState.learningMode,
                     onDismiss = { viewModel.onEvent(LearningEvent.CancelReportErrorDialog) },
-                    onConfirm = { viewModel.onEvent(LearningEvent.ReportContentError) }
+                    onConfirm = { errorType, desc -> viewModel.onEvent(LearningEvent.ReportContentError(errorType, desc)) }
                 )
             }
         }

@@ -1,6 +1,9 @@
 package com.jian.nemo.feature.learning.presentation.components.dialogs
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -8,12 +11,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Report
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -22,13 +27,13 @@ import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
  * 内容报告确认对话框 (Premium Style)
- * 采用 Nemo 统一的对话框设计语言：Squircle 圆角 + 头部图标 + 沉浸式排版
+ * 采用 Nemo 统一的对话框设计语言：Squircle 圆角 + 头部图标 + 沉浸式排版 + 错误类型多维选择
  */
 @Composable
 fun ContentReportDialog(
     learningMode: LearningMode,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
+    onConfirm: (errorType: String, description: String?) -> Unit,
     useDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
     // 颜色配置
@@ -37,25 +42,51 @@ fun ContentReportDialog(
     val titleColor = MaterialTheme.colorScheme.onSurface
     val bodyColor = MaterialTheme.colorScheme.onSurfaceVariant
 
+    // 错误选项配置
+    val errorOptions = remember(learningMode) {
+        if (learningMode == LearningMode.Word) {
+            listOf(
+                "meaning_error" to "释义错误",
+                "furigana_error" to "注音错误",
+                "example_error" to "例句错误",
+                "spelling_error" to "拼写错误",
+                "pos_error" to "词性错误",
+                "other" to "其他问题"
+            )
+        } else {
+            listOf(
+                "meaning_error" to "解释错误",
+                "connection_error" to "接续错误",
+                "furigana_error" to "注音错误",
+                "example_error" to "例句错误",
+                "level_error" to "级别错误",
+                "other" to "其他问题"
+            )
+        }
+    }
+
+    var selectedType by remember { mutableStateOf(errorOptions.first().first) }
+    var otherDescription by remember { mutableStateOf("") }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedCornerShape(28.dp),
             color = containerColor,
             tonalElevation = 6.dp,
-            shadowElevation = 12.dp,
+            shadowElevation = 16.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 8.dp)
         ) {
             Column(
-                modifier = Modifier.padding(32.dp),
+                modifier = Modifier.padding(vertical = 28.dp, horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // 1. Header Icon With Feedback Background
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(56.dp)
                         .background(
                             color = primaryColor.copy(alpha = 0.12f),
                             shape = CircleShape
@@ -64,12 +95,12 @@ fun ContentReportDialog(
                     Icon(
                         imageVector = Icons.Rounded.Report,
                         contentDescription = null,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(28.dp),
                         tint = primaryColor
                     )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // 2. Title
                 Text(
@@ -82,24 +113,110 @@ fun ContentReportDialog(
                     color = titleColor
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // 3. Dynamic Description
+                // 3. Description
                 val itemName = if (learningMode == LearningMode.Word) "单词" else "语法"
                 Text(
-                    text = "确定要向开发者报告当前这个 ${itemName} 的内容有误吗？您的反馈对我们非常重要。",
+                    text = "确定要向开发者报告当前这个 ${itemName} 的内容有误吗？请选择错误类型：",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        lineHeight = 22.sp
+                        lineHeight = 20.sp
                     ),
                     textAlign = TextAlign.Center,
                     color = bodyColor
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // 4. Action Buttons (Standard Pro Max Style)
+                // 4. Choice Grid (2 Columns, Selectable Card)
+                val rows = errorOptions.chunked(2)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    rows.forEach { rowItems ->
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            rowItems.forEach { (code, label) ->
+                                val isSelected = selectedType == code
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(44.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            if (isSelected) primaryColor.copy(alpha = 0.08f)
+                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+                                        )
+                                        .border(
+                                            BorderStroke(
+                                                width = if (isSelected) 1.5.dp else 1.dp,
+                                                color = if (isSelected) primaryColor
+                                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        .clickable { selectedType = code }
+                                        .padding(horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            fontSize = 13.5.sp
+                                        ),
+                                        color = if (isSelected) primaryColor else titleColor,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                            // If row has only one item, fill space
+                            if (rowItems.size < 2) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+
+                // 4b. Dynamic Other Description Input Field
+                if (selectedType == "other") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = otherDescription,
+                        onValueChange = { if (it.length <= 100) otherDescription = it },
+                        placeholder = {
+                            Text(
+                                text = "请描述具体的内容错误（100字以内）",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            )
+                        },
+                        textStyle = MaterialTheme.typography.bodyMedium,
+                        maxLines = 3,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(86.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = primaryColor,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // 5. Action Buttons (Standard Pro Max Style)
                 Button(
-                    onClick = onConfirm,
+                    onClick = { 
+                        val desc = if (selectedType == "other") otherDescription.trim().takeIf { it.isNotEmpty() } else null
+                        onConfirm(selectedType, desc) 
+                    },
                     shape = CircleShape,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -113,7 +230,7 @@ fun ContentReportDialog(
                     Text("确认反馈", fontWeight = FontWeight.Bold)
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(
                     onClick = onDismiss,
