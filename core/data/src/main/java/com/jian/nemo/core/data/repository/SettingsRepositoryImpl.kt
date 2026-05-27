@@ -1801,6 +1801,28 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val aiCurrentGradeResultFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_CURRENT_GRADE_RESULT] ?: ""
+    }
+
+    override suspend fun setAiCurrentGradeResult(json: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_CURRENT_GRADE_RESULT] = json
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiCurrentGrammarStateFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_CURRENT_GRAMMAR_STATE] ?: ""
+    }
+
+    override suspend fun setAiCurrentGrammarState(json: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_CURRENT_GRAMMAR_STATE] = json
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     override val aiWorkshopModeFlow: Flow<String> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE"
     }

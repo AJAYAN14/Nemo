@@ -298,6 +298,10 @@ object PreferencesKeys {
     val AI_CURRENT_ANSWER = stringPreferencesKey("ai_current_answer")
     /** AI 工坊当前选择的模式 (FREE, GRAMMAR) */
     val AI_WORKSHOP_MODE = stringPreferencesKey("ai_workshop_mode")
+    /** AI 工坊当前评分结果 (JSON 格式) */
+    val AI_CURRENT_GRADE_RESULT = stringPreferencesKey("ai_current_grade_result")
+    /** AI 工坊当前题目绑定的语法状态 (JSON 格式) */
+    val AI_CURRENT_GRAMMAR_STATE = stringPreferencesKey("ai_current_grammar_state")
     
     /** AI 日语阅读主题 */
     val AI_READING_THEME = stringPreferencesKey("ai_reading_theme")

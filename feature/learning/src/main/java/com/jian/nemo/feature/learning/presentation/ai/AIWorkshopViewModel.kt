@@ -24,6 +24,17 @@ import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
 
 
+@Serializable
+data class AIPersistedGrammarState(
+    val name: String,
+    val connection: String,
+    val explanation: String,
+    val subtype: String?,
+    val notes: String?,
+    val usageId: Int
+)
+
+
 /**
  * 工坊模式枚举
  */
@@ -157,25 +168,52 @@ class AIWorkshopViewModel @Inject constructor(
             }
         }
 
-        // 协程2：监听 Workshop 专属设置（难度/题目/答案/模式）
+        // 协程2：监听 Workshop 专属设置（难度/题目/答案/模式/评分结果/语法状态）
         viewModelScope.launch {
             combine(
                 settingsRepository.aiWorkshopDifficultyFlow,
                 settingsRepository.aiCurrentExerciseFlow,
                 settingsRepository.aiCurrentAnswerFlow,
-                settingsRepository.aiWorkshopModeFlow
-            ) { difficulty, currentExerciseJson, currentAnswer, workshopModeStr ->
-                listOf(difficulty, currentExerciseJson, currentAnswer, workshopModeStr)
+                settingsRepository.aiWorkshopModeFlow,
+                settingsRepository.aiCurrentGradeResultFlow,
+                settingsRepository.aiCurrentGrammarStateFlow
+            ) { flowsArray ->
+                flowsArray
             }.collect { values ->
                 val difficulty = values[0]
                 val currentExerciseJson = values[1]
                 val currentAnswer = values[2]
                 val workshopModeStr = values[3]
+                val currentGradeResultJson = values[4]
+                val currentGrammarStateJson = values[5]
 
                 val restoredMode = try {
                     WorkshopMode.valueOf(workshopModeStr)
                 } catch (e: Exception) {
                     WorkshopMode.FREE
+                }
+
+                val restoredGrammarState = if (currentGrammarStateJson.isNotBlank()) {
+                    try {
+                        Json.decodeFromString<AIPersistedGrammarState>(currentGrammarStateJson)
+                    } catch (_: Exception) {
+                        null
+                    }
+                } else null
+
+                // 还原内存中的语法点详情和用法ID
+                if (restoredGrammarState != null) {
+                    currentGrammarInfo = AIClient.GrammarInfo(
+                        name = restoredGrammarState.name,
+                        connection = restoredGrammarState.connection,
+                        explanation = restoredGrammarState.explanation,
+                        subtype = restoredGrammarState.subtype,
+                        notes = restoredGrammarState.notes
+                    )
+                    currentUsageId = restoredGrammarState.usageId
+                } else {
+                    currentGrammarInfo = null
+                    currentUsageId = null
                 }
 
                 _uiState.update { state ->
@@ -187,10 +225,21 @@ class AIWorkshopViewModel @Inject constructor(
                         }
                     } else state.currentExercise
 
+                    val restoredGradeResult = if (state.gradeResult == null && currentGradeResultJson.isNotBlank()) {
+                        try {
+                            Json.decodeFromString<AIGradeResult>(currentGradeResultJson)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    } else state.gradeResult
+
                     state.copy(
                         difficulty = difficulty,
                         workshopMode = restoredMode,
                         currentExercise = restoredExercise,
+                        gradeResult = restoredGradeResult,
+                        currentGrammarPoint = restoredGrammarState?.name,
+                        currentGrammarSubtype = restoredGrammarState?.subtype,
                         userAnswer = if (!isAnswerRestored && state.userAnswer.isBlank()) {
                             if (currentAnswer.isNotBlank()) isAnswerRestored = true
                             currentAnswer
@@ -285,8 +334,11 @@ class AIWorkshopViewModel @Inject constructor(
                 )
             }
             isAnswerRestored = true
-            // 清除答案持久化缓存
+            // 清除答案、题目、评分及语法状态的持久化缓存
             settingsRepository.setAiCurrentAnswer("")
+            settingsRepository.setAiCurrentExercise("")
+            settingsRepository.setAiCurrentGradeResult("")
+            settingsRepository.setAiCurrentGrammarState("")
 
             val mode = _uiState.value.workshopMode
             val difficulty = _uiState.value.difficulty
@@ -326,9 +378,24 @@ class AIWorkshopViewModel @Inject constructor(
                         currentGrammarSubtype = randomUsage.usage.subtype
                     )
                 }
+                // 保存语法状态到 DataStore
+                val grammarState = AIPersistedGrammarState(
+                    name = grammarWithUsages.grammar.grammar,
+                    connection = randomUsage.usage.connection,
+                    explanation = randomUsage.usage.explanation,
+                    subtype = randomUsage.usage.subtype,
+                    notes = randomUsage.usage.notes,
+                    usageId = randomUsage.usage.id
+                )
+                viewModelScope.launch {
+                    settingsRepository.setAiCurrentGrammarState(Json.encodeToString(grammarState))
+                }
             } else {
                 currentGrammarInfo = null
                 currentUsageId = null
+                viewModelScope.launch {
+                    settingsRepository.setAiCurrentGrammarState("")
+                }
             }
 
             val result = aiClient.generateExercise(
@@ -383,10 +450,9 @@ class AIWorkshopViewModel @Inject constructor(
                     grammarPoint = _uiState.value.currentGrammarPoint,
                     usageId = currentUsageId
                 )
-                // 清除当前题目与答案缓存
+                // 持久化当前评分反馈结果（AI例文）
                 viewModelScope.launch {
-                    settingsRepository.setAiCurrentExercise("")
-                    settingsRepository.setAiCurrentAnswer("")
+                    settingsRepository.setAiCurrentGradeResult(Json.encodeToString(grade))
                 }
             }.onFailure { e ->
                 _uiState.update { it.copy(error = "评分失败: ${e.message}", isLoading = false) }

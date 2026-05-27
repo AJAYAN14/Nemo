@@ -627,6 +627,14 @@ interface SettingsRepository {
     val aiCurrentAnswerFlow: Flow<String>
     suspend fun setAiCurrentAnswer(answer: String)
 
+    /** AI 工坊当前评分结果 (JSON 格式) Flow */
+    val aiCurrentGradeResultFlow: Flow<String>
+    suspend fun setAiCurrentGradeResult(json: String)
+
+    /** AI 工坊当前题目绑定的语法状态 (JSON 格式) Flow */
+    val aiCurrentGrammarStateFlow: Flow<String>
+    suspend fun setAiCurrentGrammarState(json: String)
+
     /** AI 工坊当前选择的模式 Flow */
     val aiWorkshopModeFlow: Flow<String>
     suspend fun setAiWorkshopMode(mode: String)
