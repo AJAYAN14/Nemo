@@ -32,9 +32,6 @@ import com.jian.nemo.core.domain.model.ReadingVocabulary
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
-import androidx.compose.ui.viewinterop.AndroidView
-import android.widget.TextView
-import androidx.core.text.HtmlCompat
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
 import com.airbnb.lottie.compose.*
@@ -232,10 +229,10 @@ private fun ConfigScreen(
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
-    
+
     // 精选的 6 个日式主题，带渐变底色和精美图标
     val themes = listOf(
-        ThemeCardInfo("日常生活", "贴近日本社会与暖心细节的琐碎日常", Icons.Rounded.Home, BentoColors.IconBgBlue, BentoColors.AccentBlue),
+        ThemeCardInfo("日常生活", "贴近日本社会与暖心细节的琐碎日常", Icons.Rounded.Park, BentoColors.IconBgBlue, BentoColors.AccentBlue),
         ThemeCardInfo("传统文化", "茶道、和风建筑、传统祭典的深度魅力", Icons.Rounded.Landscape, BentoColors.IconBgOrange, BentoColors.AccentOrange),
         ThemeCardInfo("民间故事", "桃太郎、竹取物语等日本世代相传的物语", Icons.Rounded.AutoAwesome, BentoColors.IconBgPurple, BentoColors.AccentPurple),
         ThemeCardInfo("美食料理", "寿司、拉面与日式便当背后的温暖物语", Icons.Rounded.Restaurant, BentoColors.IconBgGreen, BentoColors.AccentGreen),
@@ -326,7 +323,7 @@ private fun ConfigScreen(
             Column(modifier = Modifier.padding(20.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Rounded.MenuBook,
+                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                         contentDescription = null,
                         tint = colorScheme.primary,
                         modifier = Modifier.size(22.dp)
@@ -339,7 +336,7 @@ private fun ConfigScreen(
                     )
                 }
                 Spacer(Modifier.height(16.dp))
-                
+
                 // 2列网格卡片
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     for (i in themes.indices step 2) {
@@ -422,7 +419,7 @@ private fun ThemeGridItem(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    
+
     // 扁平配色体系 (和风 Semi-Flat 2.0 规范)
     val baseSurfaceColor = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.Surface
     val cardBgColor = if (isSelected) {
@@ -430,7 +427,7 @@ private fun ThemeGridItem(
     } else {
         baseSurfaceColor
     }
-    
+
     val borderCol = if (isSelected) {
         BentoColors.Primary
     } else {
@@ -454,7 +451,7 @@ private fun ThemeGridItem(
         ),
         label = "scale"
     )
-    
+
     // 克制的环境空气感软阴影 (选中的时候轻微悬浮，整体依然为 Flat 风格)
     val shadowElevation by animateDpAsState(
         targetValue = if (isSelected) 3.dp else 0.dp,
@@ -680,7 +677,7 @@ private fun ArticleContentScreen(
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(Modifier.width(10.dp))
-                    
+
                     val isPlaying = uiState.playingAudioId == "article_full"
                     SpeakerButton(
                         isPlaying = isPlaying,
@@ -689,7 +686,7 @@ private fun ArticleContentScreen(
                         }
                     )
                 }
-                
+
                 Spacer(Modifier.height(16.dp))
                 HorizontalDivider(color = borderColor)
                 Spacer(Modifier.height(16.dp))
@@ -838,7 +835,7 @@ private fun ArticleContentScreen(
                     color = if (isDark) colorScheme.onSurface else BentoColors.TextMain,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
-                
+
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -962,7 +959,7 @@ private fun ArticleContentScreen(
                         ) {
                             Text("返回配置", fontWeight = FontWeight.Bold)
                         }
-                        
+
                         Button(
                             onClick = { onEvent(AIReadingEvent.GenerateArticle) },
                             modifier = Modifier
@@ -977,7 +974,7 @@ private fun ArticleContentScreen(
                 }
             }
         }
-        
+
         Spacer(Modifier.height(24.dp))
     }
 }
@@ -996,7 +993,7 @@ private fun VocabularyItem(
     val isDark = colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
-    
+
     val isPlaying = uiState.playingAudioId == "voc_$index"
 
     Surface(
@@ -1032,9 +1029,9 @@ private fun VocabularyItem(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
-                
+
                 Icon(
-                    imageVector = if (isPlaying) Icons.Rounded.VolumeUp else Icons.Rounded.VolumeDown,
+                    imageVector = if (isPlaying) Icons.AutoMirrored.Rounded.VolumeUp else Icons.AutoMirrored.Rounded.VolumeDown,
                     contentDescription = null,
                     tint = if (isPlaying) BentoColors.Primary else BentoColors.TextSub.copy(alpha = 0.5f),
                     modifier = Modifier.size(16.dp)
@@ -1053,7 +1050,7 @@ private fun VocabularyItem(
                 style = MaterialTheme.typography.labelSmall,
                 color = BentoColors.TextSub
             )
-            
+
             Spacer(Modifier.height(8.dp))
             HorizontalDivider(color = borderColor.copy(alpha = 0.5f))
             Spacer(Modifier.height(8.dp))
@@ -1105,9 +1102,9 @@ private fun QuestionCard(
                     color = if (isDark) colorScheme.onSurface else BentoColors.TextMain,
                     modifier = Modifier.weight(1f)
                 )
-                
+
                 Spacer(Modifier.width(10.dp))
-                
+
                 val isPlaying = uiState.playingAudioId == "question_$qIndex"
                 SpeakerButton(
                     isPlaying = isPlaying,
@@ -1124,7 +1121,7 @@ private fun QuestionCard(
                 question.options.forEachIndexed { oIndex, option ->
                     val isSelected = selectedAns == oIndex
                     val isCorrect = question.answer == oIndex
-                    
+
                     // 计算提交后的各选项底色与边框色
                     val cardBg = when {
                         isSubmitted -> {
@@ -1194,7 +1191,7 @@ private fun QuestionCard(
                                 color = textCol,
                                 modifier = Modifier.weight(1f)
                             )
-                            
+
                             Spacer(Modifier.width(10.dp))
 
                             if (isSubmitted) {

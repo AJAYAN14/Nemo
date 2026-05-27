@@ -650,6 +650,10 @@ interface SettingsRepository {
     /** AI 日语阅读主题 Flow */
     val aiReadingThemeFlow: Flow<String>
     suspend fun setAiReadingTheme(theme: String)
+
+    /** AI 日语阅读难度 Flow */
+    val aiReadingDifficultyFlow: Flow<String>
+    suspend fun setAiReadingDifficulty(difficulty: String)
 }
 
 /**

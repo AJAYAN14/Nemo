@@ -736,7 +736,7 @@ fun HomeScreen(
                                             color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.MenuBook,
+                                                imageVector = Icons.Rounded.Transform,
                                                 contentDescription = null,
                                                 tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
                                                 modifier = Modifier.padding(10.dp).size(20.dp)
@@ -864,7 +864,7 @@ fun HomeScreen(
                                             color = BentoColors.IconBgGreen
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.MenuBook,
+                                                imageVector = Icons.Rounded.ChromeReaderMode,
                                                 contentDescription = null,
                                                 tint = BentoColors.AccentGreen,
                                                 modifier = Modifier.padding(10.dp).size(20.dp)

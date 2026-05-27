@@ -305,6 +305,9 @@ object PreferencesKeys {
     
     /** AI 日语阅读主题 */
     val AI_READING_THEME = stringPreferencesKey("ai_reading_theme")
+
+    /** AI 日语阅读难度 (N5, N4, N3, N2, N1) */
+    val AI_READING_DIFFICULTY = stringPreferencesKey("ai_reading_difficulty")
     
     fun getAiApiKeyKey(platform: String) = stringPreferencesKey("ai_${platform}_api_key")
     fun getAiBaseUrlKey(platform: String) = stringPreferencesKey("ai_${platform}_base_url")

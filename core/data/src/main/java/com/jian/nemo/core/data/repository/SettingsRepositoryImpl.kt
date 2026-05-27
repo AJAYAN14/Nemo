@@ -1514,6 +1514,7 @@ class SettingsRepositoryImpl @Inject constructor(
             aiBaseUrl = prefs[PreferencesKeys.AI_BASE_URL] ?: "",
             aiModel = prefs[PreferencesKeys.AI_MODEL] ?: "",
             aiWorkshopDifficulty = prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] ?: "N5",
+            aiReadingDifficulty = prefs[PreferencesKeys.AI_READING_DIFFICULTY] ?: "N5",
             aiCurrentExercise = prefs[PreferencesKeys.AI_CURRENT_EXERCISE] ?: "",
             aiCurrentAnswer = prefs[PreferencesKeys.AI_CURRENT_ANSWER] ?: "",
             aiWorkshopMode = prefs[PreferencesKeys.AI_WORKSHOP_MODE] ?: "FREE",
@@ -1577,6 +1578,7 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.AI_BASE_URL] = settings.aiBaseUrl
             prefs[PreferencesKeys.AI_MODEL] = settings.aiModel
             prefs[PreferencesKeys.AI_WORKSHOP_DIFFICULTY] = settings.aiWorkshopDifficulty
+            prefs[PreferencesKeys.AI_READING_DIFFICULTY] = settings.aiReadingDifficulty
             prefs[PreferencesKeys.AI_CURRENT_EXERCISE] = settings.aiCurrentExercise
             prefs[PreferencesKeys.AI_CURRENT_ANSWER] = settings.aiCurrentAnswer
             prefs[PreferencesKeys.AI_WORKSHOP_MODE] = settings.aiWorkshopMode
@@ -1775,6 +1777,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAiReadingTheme(theme: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.AI_READING_THEME] = theme
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiReadingDifficultyFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_READING_DIFFICULTY] ?: "N5"
+    }
+
+    override suspend fun setAiReadingDifficulty(difficulty: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_READING_DIFFICULTY] = difficulty
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

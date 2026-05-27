@@ -136,7 +136,7 @@ class AIReadingViewModel @Inject constructor(
 
         // 协程2：监听阅读专属的默认难度设置
         viewModelScope.launch {
-            settingsRepository.aiWorkshopDifficultyFlow.collect { difficulty ->
+            settingsRepository.aiReadingDifficultyFlow.collect { difficulty ->
                 _uiState.update { state ->
                     state.copy(
                         difficulty = difficulty
@@ -190,9 +190,9 @@ class AIReadingViewModel @Inject constructor(
             }
             is AIReadingEvent.UpdateDifficulty -> {
                 _uiState.update { it.copy(difficulty = event.difficulty) }
-                // 同步保存至本地默认难度
+                // 同步保存至 AI 阅读专属难度
                 viewModelScope.launch {
-                    settingsRepository.setAiWorkshopDifficulty(event.difficulty)
+                    settingsRepository.setAiReadingDifficulty(event.difficulty)
                 }
             }
             is AIReadingEvent.UpdateTheme -> {

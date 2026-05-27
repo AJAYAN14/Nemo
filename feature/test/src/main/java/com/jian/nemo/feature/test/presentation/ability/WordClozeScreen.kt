@@ -1158,20 +1158,6 @@ private fun ResultView(
                     )
                 }
 
-                Divider(color = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = "无错通关奖励", style = MaterialTheme.typography.bodyMedium, color = textSub)
-                    Text(
-                        text = if (correctCount == totalCount) "完美 +100 金币" else "无",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (correctCount == totalCount) IosColors.Orange else textSub
-                    )
-                }
             }
         }
 

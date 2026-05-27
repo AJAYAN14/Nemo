@@ -72,6 +72,7 @@ data class AppSettings(
     val aiBaseUrl: String = "",
     val aiModel: String = "",
     val aiWorkshopDifficulty: String = "N5",
+    val aiReadingDifficulty: String = "N5",
     val aiCurrentExercise: String = "",
     val aiCurrentAnswer: String = "",
     val aiWorkshopMode: String = "FREE",
