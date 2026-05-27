@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -242,13 +243,13 @@ private fun ConfigScreen(
         ThemeCardInfo("商务工作", "日本职场礼仪与严谨的敬语交流氛围", Icons.Rounded.BusinessCenter, BentoColors.IconBgBlue, BentoColors.AccentBlue)
     )
 
-    // 呼吸动画
+    // 呼吸动画 - 精致微呼吸 (Semi-Flat 2.0 规范)
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.98f,
-        targetValue = 1.02f,
+        initialValue = 0.99f,
+        targetValue = 1.01f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = EaseInOutQuad),
+            animation = tween(1400, easing = EaseInOutQuad),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulseScale"
@@ -421,75 +422,136 @@ private fun ThemeGridItem(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val surfaceColor = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.Surface
-    val borderCol = if (isSelected) BentoColors.Primary else (if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100)
     
-    // 微缩放点击回弹
-    val scale by animateFloatAsState(if (isSelected) 1.03f else 1f, label = "scale")
+    // 扁平配色体系 (和风 Semi-Flat 2.0 规范)
+    val baseSurfaceColor = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.Surface
+    val cardBgColor = if (isSelected) {
+        if (isDark) colorScheme.primaryContainer.copy(alpha = 0.12f) else BentoColors.PrimaryLight.copy(alpha = 0.7f)
+    } else {
+        baseSurfaceColor
+    }
+    
+    val borderCol = if (isSelected) {
+        BentoColors.Primary
+    } else {
+        if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+    }
+
+    // 选中时的垂直物理弹性微平移与微缩放 (Spring Animation)
+    val animOffset by animateDpAsState(
+        targetValue = if (isSelected) (-3).dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "offsetY"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.01f else 1.0f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "scale"
+    )
+    
+    // 克制的环境空气感软阴影 (选中的时候轻微悬浮，整体依然为 Flat 风格)
+    val shadowElevation by animateDpAsState(
+        targetValue = if (isSelected) 3.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200, easing = EaseInOutQuad),
+        label = "shadowElevation"
+    )
+
+    // 图标水印不透明度平滑过渡
+    val iconAlpha by animateFloatAsState(
+        targetValue = if (isSelected) 0.14f else 0.06f,
+        animationSpec = tween(durationMillis = 300, easing = EaseInOutQuad),
+        label = "iconAlpha"
+    )
 
     Surface(
         modifier = modifier
             .aspectRatio(1.25f)
+            .offset(y = animOffset)
             .graphicsLayer {
                 this.scaleX = scale
                 this.scaleY = scale
             }
+            .shadow(
+                elevation = shadowElevation,
+                shape = RoundedCornerShape(18.dp),
+                clip = false,
+                ambientColor = if (isDark) Color.Transparent else BentoColors.Primary.copy(alpha = 0.15f),
+                spotColor = if (isDark) Color.Transparent else BentoColors.Primary.copy(alpha = 0.1f)
+            )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             ),
         shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(2.dp, borderCol),
-        color = if (isSelected) BentoColors.PrimaryLight.copy(alpha = if (isDark) 0.15f else 0.8f) else surfaceColor
+        border = BorderStroke(if (isSelected) 1.5.dp else 1.dp, borderCol),
+        color = cardBgColor
     ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+        // 使用绝对定位重构的 Box 容器，开启裁剪以完美支持水印溢出美感
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(18.dp))
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = info.bg
-                ) {
-                    Icon(
-                        imageVector = info.icon,
-                        contentDescription = null,
-                        tint = info.accent,
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(18.dp)
-                    )
-                }
-                
-                if (isSelected) {
-                    Icon(
-                        imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = null,
-                        tint = BentoColors.Primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+            // 1. 右上角超大水印图标 (绝对定位)
+            Icon(
+                imageVector = info.icon,
+                contentDescription = null,
+                tint = if (isSelected) BentoColors.Primary else info.accent,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(76.dp)
+                    .offset(x = 12.dp, y = (-12).dp) // 微微向右上溢出，体现截断艺术感
+                    .graphicsLayer {
+                        alpha = iconAlpha
+                    }
+            )
+
+            // 2. 右上角极小高精致勾选状态 (位于水印之上，但十分协调)
+            if (isSelected) {
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircle,
+                    contentDescription = null,
+                    tint = BentoColors.Primary,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(12.dp)
+                        .size(18.dp)
+                )
             }
 
-            Column {
+            // 3. 左下角排版：大标题 + 优雅扁平小正文
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(14.dp)
+                    .fillMaxWidth(0.85f), // 留出一点右侧呼吸空间，防止大字贴边
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = info.name,
-                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                    color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold, // 升级为 ExtraBold，强化大字对比
+                        fontSize = 18.sp,
+                        letterSpacing = (-0.3).sp
+                    ),
+                    color = if (isSelected && !isDark) BentoColors.Primary else (if (isDark) colorScheme.onSurface else BentoColors.TextMain)
                 )
-                Spacer(Modifier.height(2.dp))
                 Text(
                     text = info.desc,
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontSize = 10.5.sp,
+                        lineHeight = 14.sp
+                    ),
                     color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = 13.sp
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

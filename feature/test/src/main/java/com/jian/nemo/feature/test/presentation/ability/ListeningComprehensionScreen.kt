@@ -136,88 +136,25 @@ fun ListeningComprehensionScreen(
         }
     }
 
-    if (showExitDialog) {
-        androidx.compose.ui.window.Dialog(onDismissRequest = { showExitDialog = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(containerColor = if (isDark) MaterialTheme.colorScheme.surface else Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(IosColors.Indigo.copy(alpha = 0.1f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.ExitToApp,
-                            contentDescription = null,
-                            tint = IosColors.Indigo,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "退出听力挑战",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = textMain,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "您是否要保留当前的答题进度？若保留，下次进入时将直接无缝恢复断点；若销毁，将彻底清空当前测试进度。",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = textSub,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    // 按钮组
-                    Button(
-                        onClick = {
-                            showExitDialog = false
-                            onNavigateBack()
-                        },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = IosColors.Indigo)
-                    ) {
-                        Text("保留退出", fontWeight = FontWeight.Bold, color = Color.White)
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                    OutlinedButton(
-                        onClick = {
-                            showExitDialog = false
-                            viewModel.clearSession()
-                            onNavigateBack()
-                        },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, IosColors.Red.copy(alpha = 0.4f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IosColors.Red)
-                    ) {
-                        Text("销毁退出", fontWeight = FontWeight.Medium)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(
-                        onClick = { showExitDialog = false },
-                        modifier = Modifier.fillMaxWidth().height(40.dp)
-                    ) {
-                        Text("取消", color = textSub, fontWeight = FontWeight.Medium)
-                    }
-                }
-            }
+    AbilityExitDialog(
+        show = showExitDialog,
+        title = "退出听力挑战",
+        message = "您是否要保留当前的答题进度？若保留，下次进入时将直接无缝恢复断点；若销毁，将彻底清空当前测试进度。",
+        themeColor = IosColors.Indigo,
+        isDark = isDark,
+        textMain = textMain,
+        textSub = textSub,
+        onDismiss = { showExitDialog = false },
+        onKeepAndExit = {
+            showExitDialog = false
+            onNavigateBack()
+        },
+        onDestroyAndExit = {
+            showExitDialog = false
+            viewModel.clearSession()
+            onNavigateBack()
         }
-    }
+    )
 }
 
 @Composable
@@ -293,49 +230,15 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
         Text("声波频段已锁定，系统将基于本地词库出题", style = MaterialTheme.typography.bodyMedium, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
         levels.forEach { (level, desc, color) ->
-            Surface(
-                onClick = { onSelectLevel(level) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(76.dp)
-                    .padding(vertical = 6.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = color.copy(alpha = 0.08f),
-                border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(color, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = level,
-                            color = Color.White,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = desc,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textMain,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = textSub.copy(alpha = 0.5f)
-                    )
-                }
-            }
+            AbilityLevelCard(
+                level = level,
+                description = desc,
+                color = color,
+                isDark = isDark,
+                textMain = textMain,
+                textSub = textSub,
+                onClick = { onSelectLevel(level) }
+            )
         }
     }
 }

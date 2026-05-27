@@ -55,6 +55,13 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("listening_comprehension") }
             )
             AbilityItemCard(
+                title = "单词填空",
+                description = "根据释义和句子提示，拼写填入被挖空的假名。",
+                icon = Icons.Rounded.EditCalendar,
+                iconColor = IosColors.Orange,
+                onClick = { onNavigateToGame("word_cloze") }
+            )
+            AbilityItemCard(
                 title = "动词活用",
                 description = "为真实句子选择自然的动词形式。",
                 icon = Icons.Rounded.AutoFixHigh,

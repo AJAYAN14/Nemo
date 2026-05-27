@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemo 单词挖空测试</title>
+    <!-- 引入 Tailwind CSS 进行快速 UI 构建 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Noto Sans JP"', 'sans-serif'] },
+                    animation: {
+                        'shake': 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both',
+                        'pulse-green': 'pulseGreen 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.2s ease-out forwards'
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(3px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-5px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(5px, 0, 0)' }
+                        },
+                        pulseGreen: {
+                            '0%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.4)' },
+                            '50%': { transform: 'scale(1.02)', boxShadow: '0 0 0 15px rgba(34, 197, 94, 0)' },
+                            '100%': { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(34, 197, 94, 0)' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95) translateY(-10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f4f6f9;
+        }
+
+        /* 外部黑色机身 */
+        .phone-body {
+            width: 395px;         
+            height: 832px;        
+            background-color: #000; 
+            border-radius: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        /* 内部白色屏幕区域 */
+        .phone-screen {
+            width: 375px;
+            height: 812px;
+            background-color: #f8fafc; /* slate-50 */
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 隐藏输入框原生光标，打造干净体验 */
+        .cloze-input { caret-color: transparent; }
+        .cloze-input:focus { outline: none; }
+        
+        /* 隐藏滚动条 */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div class="phone-body">
+        <div class="phone-screen text-slate-800">
+            
+            <!-- 顶部导航栏 -->
+            <header class="h-16 flex items-center justify-between px-6 pt-6 z-10 relative">
+                <!-- 返回按钮 -->
+                <button class="p-2 -ml-2 rounded-full hover:bg-slate-200 transition-colors text-slate-400">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                
+                <!-- 进度条 -->
+                <div class="flex-1 px-4">
+                    <div class="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div id="progress-bar" class="h-full bg-blue-500 rounded-full transition-all duration-300" style="width: 20%"></div>
+                    </div>
+                </div>
+
+                <!-- 扁平化设置按钮 -->
+                <button onclick="toggleSettings()" class="p-2 -mr-2 rounded-full hover:bg-slate-200 transition-colors text-slate-400 relative">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                </button>
+
+                <!-- 扁平化设置弹窗 (非抽屉) -->
+                <div id="settings-popup" class="hidden absolute top-14 right-6 bg-white rounded-2xl shadow-xl border border-slate-100 w-48 p-3 z-50 animate-fade-in">
+                    <p class="text-xs font-bold text-slate-400 mb-2 px-2">挖空比例 (难度)</p>
+                    <button onclick="setDifficulty(0.3)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors">新手 (30%)</button>
+                    <button onclick="setDifficulty(0.6)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors">进阶 (60%)</button>
+                    <button onclick="setDifficulty(1.0)" class="w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium transition-colors text-blue-600">地狱 (100%)</button>
+                </div>
+            </header>
+
+            <!-- 核心交互区 -->
+            <main class="flex-1 flex flex-col items-center justify-center p-6 relative z-0">
+                
+                <!-- 题目主卡片 -->
+                <div id="test-card" class="bg-white rounded-[32px] shadow-sm w-full pt-10 pb-12 px-6 flex flex-col items-center relative transition-transform">
+                    
+                    <!-- 中文提示 -->
+                    <h2 id="meaning" class="text-2xl font-bold text-slate-800 mb-10 text-center tracking-wider"></h2>
+                    
+                    <!-- 动态生成的填空块容器 -->
+                    <div id="blocks-container" class="flex gap-2 justify-center flex-wrap" onclick="focusFirstEmpty()">
+                        <!-- JS 动态注入 -->
+                    </div>
+
+                </div>
+
+            </main>
+
+            <!-- 底部辅助区 -->
+            <div class="h-24 px-6 flex items-center justify-between pb-8">
+                <button onclick="prevQuestion()" class="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-blue-500 transition-colors rounded-xl hover:bg-blue-50" title="上一题">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                
+                <button onclick="showHint()" class="flex items-center gap-2 text-slate-400 hover:text-blue-500 transition-colors font-medium text-sm px-4 py-2 rounded-xl hover:bg-blue-50">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span>提示</span>
+                </button>
+
+                <button onclick="nextQuestion()" class="flex items-center justify-center w-10 h-10 text-slate-400 hover:text-blue-500 transition-colors rounded-xl hover:bg-blue-50" title="下一题">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+            </div>
+
+            <!-- 毛玻璃解析浮层 (默认隐藏) -->
+            <div id="hint-overlay" class="hidden absolute bottom-0 left-0 right-0 p-4 z-20">
+                <div class="backdrop-blur-xl bg-white/75 border border-white/60 rounded-[28px] p-6 shadow-2xl relative">
+                    <!-- 关闭按钮 -->
+                    <button onclick="hideHint()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    
+                    <div class="text-sm font-bold text-blue-500 mb-1">答案解析</div>
+                    <div class="flex items-baseline gap-3 mb-2">
+                        <h3 id="hint-kanji" class="text-2xl font-black text-slate-800"></h3>
+                        <span id="hint-kana" class="text-lg text-slate-500 font-medium"></span>
+                    </div>
+                    <p id="hint-meaning" class="text-sm text-slate-600"></p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // === 1. 数据源 (模拟后台数据) ===
+        const vocabulary = [
+            { word: "はぐるま", kanji: "歯車", meaning: "齿轮", sentence: "この【　　】はかみ合わない。" },
+            { word: "だきょう", kanji: "妥協", meaning: "妥协", sentence: "ここで【　　】してはいけない。" },
+            { word: "かいそう", kanji: "階層", meaning: "阶层", sentence: "ソフトウェアの【　　】構造。" },
+            { word: "こころ", kanji: "心", meaning: "内心，心", sentence: "【　　】を込めて作る。" },
+            // 新增第 5 道题
+            { word: "きぼう", kanji: "希望", meaning: "希望", sentence: "未来に【　　】を抱く。" } 
+        ];
+
+        // === 2. 微型罗马音转假名引擎 (为了原型测试的魔力体验) ===
+        // 在实际生产中，可依靠用户的原生输入法，这里是为了让你不用切输入法也能顺畅测试。
+        const romajiToKanaMap = {
+            'ha':'は', 'gu':'ぐ', 'ru':'る', 'ma':'ま',
+            'da':'だ', 'ki':'き', 'kyo':'きょ', 'yo':'よ', 'u':'う',
+            'ka':'か', 'i':'い', 'so':'そ', 
+            'ko':'こ', 'ro':'ろ',
+            'bo':'ぼ' // 补充了第5题所需假名映射
+        };
+
+        // === 3. 状态管理 ===
+        let currentIndex = 0;
+        let difficultyRatio = 0.5; // 默认挖空比例 50%
+        let currentMaskPattern = []; 
+        let errorCount = 0;
+        let romajiBuffer = ''; // 存储连续的按键
+
+        // === 4. 核心逻辑：加载题目 ===
+        function loadQuestion() {
+            errorCount = 0;
+            romajiBuffer = '';
+            hideHint();
+            
+            // 更新进度条
+            document.getElementById('progress-bar').style.width = `${((currentIndex) / vocabulary.length) * 100}%`;
+
+            const item = vocabulary[currentIndex];
+            document.getElementById('meaning').innerText = item.meaning;
+
+            const chars = item.word.split('');
+            
+            // 根据难度动态生成掩码：true 表示被挖空，false 表示显示原假名
+            currentMaskPattern = chars.map(() => Math.random() < difficultyRatio);
+            
+            // 边缘情况处理：至少挖空一个，如果是 100% 以下难度，至少显示一个
+            if (!currentMaskPattern.includes(true)) {
+                currentMaskPattern[Math.floor(Math.random() * chars.length)] = true;
+            }
+            if (difficultyRatio < 1.0 && !currentMaskPattern.includes(false) && chars.length > 1) {
+                currentMaskPattern[0] = false; 
+            }
+
+            renderBlocks(chars);
+        }
+
+        // === 5. 渲染大圆角输入块 ===
+        function renderBlocks(chars) {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = ''; // 清空
+
+            chars.forEach((char, i) => {
+                if (currentMaskPattern[i]) {
+                    // 挖空块 (Input)
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.maxLength = 1; // 仅作为 fallback
+                    input.dataset.char = char;
+                    input.dataset.index = i;
+                    
+                    // 核心 Tailwind CSS 样式：平时灰色，聚焦时白底蓝边，去除内置光标 (caret-transparent)
+                    input.className = 'cloze-input w-14 h-16 text-center text-3xl font-black text-slate-800 bg-slate-100 border-2 border-transparent rounded-[20px] focus:bg-white focus:border-blue-500 focus:shadow-[0_0_0_4px_rgba(59,130,246,0.15)] transition-all shadow-sm';
+                    
+                    // 绑定事件
+                    input.addEventListener('input', handleNativeInput);
+                    input.addEventListener('keydown', handleKeyDown);
+                    
+                    container.appendChild(input);
+                } else {
+                    // 静态块 (Div)
+                    const div = document.createElement('div');
+                    div.className = 'w-14 h-16 flex items-center justify-center text-3xl font-black text-black bg-transparent border-2 border-transparent rounded-[20px]';
+                    div.innerText = char;
+                    container.appendChild(div);
+                }
+            });
+
+            // 给一点点延迟让浏览器渲染完成再聚焦
+            setTimeout(focusFirstEmpty, 50);
+        }
+
+        // === 6. 输入处理逻辑 ===
+        // 处理键盘特殊按键 (BackSpace 退格联动)
+        function handleKeyDown(e) {
+            const input = e.target;
+            if (e.key === 'Backspace' && input.value === '') {
+                // 如果当前为空，删除了想往前退
+                const inputs = Array.from(document.querySelectorAll('input:not([disabled])'));
+                const myIdx = inputs.indexOf(input);
+                if (myIdx > 0) {
+                    inputs[myIdx - 1].focus();
+                    inputs[myIdx - 1].value = ''; // 同时清空前一个
+                    romajiBuffer = ''; // 清空拼写缓冲
+                }
+            }
+        }
+
+        // 处理文字输入 (包含原生 IME 和 罗马音 Fallback)
+        function handleNativeInput(e) {
+            const input = e.target;
+            const expectedKana = input.dataset.char;
+            const val = input.value;
+
+            // 1. 如果使用了日文输入法直接输入了假名
+            if (val.includes(expectedKana)) {
+                markSuccess(input, expectedKana);
+                return;
+            }
+
+            // 2. 如果输入了其他日文字符（输入错误）
+            if (isKana(val) && val !== expectedKana) {
+                triggerError(input);
+                return;
+            }
+
+            // 3. 原型魔力功能：监听罗马音输入自动转假名
+            // 提取最后一个英文字符
+            const lastChar = val.slice(-1).toLowerCase();
+            if (/[a-z]/.test(lastChar)) {
+                romajiBuffer += lastChar;
+                
+                // 检查映射表
+                let matchedKana = null;
+                for (let romaji in romajiToKanaMap) {
+                    if (romajiBuffer.endsWith(romaji)) {
+                        matchedKana = romajiToKanaMap[romaji];
+                        break;
+                    }
+                }
+
+                if (matchedKana === expectedKana) {
+                    // 匹配成功！
+                    markSuccess(input, expectedKana);
+                } else if (matchedKana !== null) {
+                    // 匹配到了一个错误的假名
+                    triggerError(input);
+                } else {
+                    // 还没匹配上，清空显示，静静等待下一个字母
+                    input.value = ''; 
+                }
+            } else {
+                // 非字母非假名的其他杂乱输入
+                input.value = '';
+            }
+        }
+
+        // 标记单个块成功
+        function markSuccess(input, kana) {
+            input.value = kana;
+            input.disabled = true; // 锁定
+            // 变绿
+            input.className = 'w-14 h-16 text-center text-3xl font-black text-green-600 bg-green-50 border-2 border-green-500 rounded-[20px] transition-all shadow-sm';
+            romajiBuffer = ''; // 清空缓冲
+            
+            checkAllCompleted();
+        }
+
+        // 触发错误动效
+        function triggerError(input) {
+            input.value = '';
+            romajiBuffer = '';
+            
+            // 变红并抖动
+            input.classList.remove('focus:border-blue-500', 'focus:shadow-[0_0_0_4px_rgba(59,130,246,0.15)]');
+            input.classList.add('animate-shake', 'border-red-500', 'bg-red-50', 'text-red-500');
+            
+            setTimeout(() => {
+                input.classList.remove('animate-shake', 'border-red-500', 'bg-red-50', 'text-red-500');
+                input.classList.add('focus:border-blue-500', 'focus:shadow-[0_0_0_4px_rgba(59,130,246,0.15)]');
+                input.focus(); // 确保保持聚焦
+            }, 400);
+
+            // 错误三次自动弹提示
+            errorCount++;
+            if (errorCount >= 3) {
+                showHint();
+            }
+        }
+
+        // 聚焦当前第一个空的输入块
+        function focusFirstEmpty() {
+            const emptyInput = document.querySelector('input:not([disabled])');
+            if (emptyInput) {
+                emptyInput.focus();
+            }
+        }
+
+        // 检查是否整题完成
+        function checkAllCompleted() {
+            const allInputs = Array.from(document.querySelectorAll('input'));
+            const isDone = allInputs.every(input => input.disabled);
+
+            if (isDone) {
+                // 整题成功动画
+                const card = document.getElementById('test-card');
+                card.classList.add('animate-pulse-green');
+                
+                setTimeout(() => {
+                    card.classList.remove('animate-pulse-green');
+                    // 进入下一题
+                    nextQuestion();
+                }, 800); // 等待动画完成
+            } else {
+                // 没完成，跳到下一个空块
+                focusFirstEmpty();
+            }
+        }
+
+        // === 题目切换逻辑 ===
+        function prevQuestion() {
+            currentIndex = (currentIndex - 1 + vocabulary.length) % vocabulary.length;
+            loadQuestion();
+        }
+
+        function nextQuestion() {
+            currentIndex = (currentIndex + 1) % vocabulary.length;
+            loadQuestion();
+        }
+
+        // === 7. 辅助功能 ===
+        function isKana(char) {
+            return /[\u3040-\u309F\u30A0-\u30FF]/.test(char);
+        }
+
+        function showHint() {
+            const item = vocabulary[currentIndex];
+            document.getElementById('hint-kanji').innerText = item.kanji;
+            document.getElementById('hint-kana').innerText = item.word;
+            document.getElementById('hint-meaning').innerText = item.meaning;
+            
+            const overlay = document.getElementById('hint-overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('animate-slide-up');
+        }
+
+        function hideHint() {
+            const overlay = document.getElementById('hint-overlay');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('animate-slide-up');
+        }
+
+        function toggleSettings() {
+            const popup = document.getElementById('settings-popup');
+            popup.classList.toggle('hidden');
+        }
+
+        function setDifficulty(ratio) {
+            difficultyRatio = ratio;
+            toggleSettings();
+            // 重新加载当前题
+            loadQuestion();
+        }
+
+        // 点击页面空白处关闭设置
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('settings-popup');
+            if (!popup.classList.contains('hidden') && !e.target.closest('header')) {
+                popup.classList.add('hidden');
+            }
+        });
+
+        // 初始化
+        window.onload = loadQuestion;
+
+    </script>
+</body>
+</html>
