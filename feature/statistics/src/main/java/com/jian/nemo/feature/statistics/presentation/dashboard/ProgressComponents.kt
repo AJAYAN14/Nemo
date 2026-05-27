@@ -35,6 +35,7 @@ import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.ChartColors
+import com.jian.nemo.core.designsystem.theme.Rubik
 import kotlinx.coroutines.delay
 
 // 定义常量
@@ -275,7 +276,8 @@ private fun BentoMainTile(
                     value = metric.value,
                     unit = metric.unit,
                     valueStyle = MaterialTheme.typography.displayMedium.copy(
-                        fontWeight = FontWeight.Black,
+                        fontFamily = Rubik,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 44.sp,
                         color = Color.White
                     ),
@@ -320,7 +322,8 @@ private fun BentoSubTile(
                 value = metric.value,
                 unit = metric.unit,
                 valueStyle = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Black,
+                    fontFamily = Rubik,
+                    fontWeight = FontWeight.Bold,
                     fontSize = 30.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 ),

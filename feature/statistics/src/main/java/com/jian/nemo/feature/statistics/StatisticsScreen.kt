@@ -179,7 +179,8 @@ fun StatisticsListCard(
                         avatarColor = color,
                         onClick = { onItemClick(item.id) },
                         showDivider = index < showItems.size - 1,
-                        showSourceBadge = showSourceBadge
+                        showSourceBadge = showSourceBadge,
+                        isWord = isWord
                     )
                 }
             }
@@ -262,7 +263,8 @@ fun StatisticsItemRow(
     avatarColor: Color,
     onClick: () -> Unit,
     showDivider: Boolean,
-    showSourceBadge: Boolean = true
+    showSourceBadge: Boolean = true,
+    isWord: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Row(
@@ -339,15 +341,28 @@ fun StatisticsItemRow(
                     Spacer(modifier = Modifier.width(8.dp))
                 }
 
-                Text(
-                    text = item.japanese,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontWeight = FontWeight.W800,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                if (isWord) {
+                    Text(
+                        text = item.japanese,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = NotoSerifJP,
+                            localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                        ),
+                        fontWeight = FontWeight.W800,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                } else {
+                    Text(
+                        text = formatMixedCnHnString(item.japanese),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.W800,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
 
                 if (item.level.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
@@ -403,7 +418,8 @@ fun StatisticsItemRow(
                     text = secondaryAnnotatedText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
         }
@@ -466,4 +482,38 @@ private fun PremiumCard(
         interactionSource = interactionSource,
         content = { Column(modifier = Modifier.padding(20.dp), content = content) }
     )
+}
+
+private fun formatMixedCnHnString(text: String): androidx.compose.ui.text.AnnotatedString {
+    return androidx.compose.ui.text.buildAnnotatedString {
+        var i = 0
+        while (i < text.length) {
+            val codePoint = text.codePointAt(i)
+            val charCount = Character.charCount(codePoint)
+            val nextStr = text.substring(i, i + charCount)
+            val isKana = nextStr.any { c ->
+                (c in '\u3040'..'\u309F') || (c in '\u30A0'..'\u30FF')
+            }
+            if (isKana) {
+                withStyle(
+                    SpanStyle(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    )
+                ) {
+                    append(nextStr)
+                }
+            } else {
+                withStyle(
+                    SpanStyle(
+                        fontFamily = NotoSerifSC,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("zh")
+                    )
+                ) {
+                    append(nextStr)
+                }
+            }
+            i += charCount
+        }
+    }
 }

@@ -237,8 +237,10 @@ fun StatItem(
     ) {
         Text(
             text = value,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = Rubik,
+                fontWeight = FontWeight.Bold
+            ),
             color = color
         )
         Text(

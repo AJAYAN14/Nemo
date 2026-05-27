@@ -34,7 +34,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.designsystem.theme.NemoOrange
-
+import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.designsystem.theme.NemoPurple
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoTeal
@@ -363,7 +363,8 @@ private fun StatsPager(
                                     Text(
                                         text = pageData.ringValue.toString(),
                                         style = MaterialTheme.typography.titleLarge.copy(
-                                            fontWeight = FontWeight.Black,
+                                            fontFamily = Rubik,
+                                            fontWeight = FontWeight.Bold,
                                             fontSize = 20.sp,
                                             fontFeatureSettings = "tnum"
                                         ),
@@ -443,7 +444,8 @@ private fun CompactStatItem(
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
+                        fontFamily = Rubik,
+                        fontWeight = FontWeight.Bold,
                         fontFeatureSettings = "tnum"
                     ),
                     color = valueColor

@@ -64,6 +64,70 @@ val NotoSerifSC = FontFamily(
     )
 )
 
+val Baloo2 = FontFamily(
+    Font(
+        googleFont = GoogleFont("Baloo 2"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Baloo 2"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Baloo 2"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Baloo 2"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
+    )
+)
+
+val Nunito = FontFamily(
+    Font(
+        googleFont = GoogleFont("Nunito"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Nunito"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Nunito"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Nunito"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
+    )
+)
+
+val Rubik = FontFamily(
+    Font(
+        googleFont = GoogleFont("Rubik"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Rubik"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Rubik"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    )
+)
+
 val MochiyPopOne = FontFamily(
     androidx.compose.ui.text.font.Font(R.font.mochiy_pop_one, FontWeight.Normal)
 )

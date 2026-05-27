@@ -242,8 +242,10 @@ private fun RichStatItem(
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
                         text = value,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Black,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontFamily = Rubik,
+                            fontWeight = FontWeight.Bold
+                        ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -410,8 +412,10 @@ private fun MemoryPanoramaCard(
                     ) {
                         Text(
                             text = bucket.count.toString(),
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Black,
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = Rubik,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(4.dp))
@@ -425,8 +429,10 @@ private fun MemoryPanoramaCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "${(bucket.ratio * 100).toInt()}%",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontFamily = Rubik,
+                                fontWeight = FontWeight.Bold
+                            ),
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     }

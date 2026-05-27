@@ -20,6 +20,8 @@ import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -243,8 +245,10 @@ fun StatItem(
     ) {
         Text(
             text = value,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Black,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontFamily = Rubik,
+                fontWeight = FontWeight.Bold
+            ),
             color = color
         )
         Text(
@@ -500,8 +504,8 @@ fun DayDetailPanel(
                     }
                     if (reviewGrammarValue > 0) {
                         DetailSquircleItem(
-                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.PlayArrow,
-                            color = if (isFuture) NemoIndigo.copy(alpha = 0.8f) else NemoOrange.copy(alpha = 0.8f),
+                            icon = if (isFuture) Icons.Rounded.Schedule else Icons.Rounded.PlayCircle,
+                            color = if (isFuture) NemoPurple else NemoTeal,
                             label = "${reviewLabelSuffix}语法",
                             value = "$reviewGrammarValue 条",
                             showDivider = (newWordsValue > 0 || newGrammarValue > 0)

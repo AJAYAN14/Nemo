@@ -49,6 +49,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
+import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -363,7 +364,10 @@ fun HomeScreen(
                                     ) {
                                         Text(
                                             text = "${uiState.currentProgress}",
-                                            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Black),
+                                            style = MaterialTheme.typography.headlineLarge.copy(
+                                                fontFamily = Rubik,
+                                                fontWeight = FontWeight.Bold
+                                            ),
                                             color = textMain
                                         )
                                     }
@@ -414,21 +418,26 @@ fun HomeScreen(
                                     if (reviewOutstanding > 0) {
                                         Text(
                                             text = buildAnnotatedString {
-                                                append(reviewDone.toString())
                                                 withStyle(
                                                     SpanStyle(
-                                                        fontSize = 24.sp,
-                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontFamily = Rubik,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 30.sp
+                                                    )
+                                                ) {
+                                                    append(reviewDone.toString())
+                                                }
+                                                withStyle(
+                                                    SpanStyle(
+                                                        fontFamily = Rubik,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 20.sp,
                                                         color = textSub
                                                     )
                                                 ) {
                                                     append("/$reviewTotal")
                                                 }
                                             },
-                                            style = MaterialTheme.typography.headlineMedium.copy(
-                                                fontSize = 30.sp,
-                                                fontWeight = FontWeight.Black
-                                            ),
                                             color = textMain
                                         )
                                     } else {
@@ -476,11 +485,27 @@ fun HomeScreen(
                                     }
                                     Spacer(Modifier.height(12.dp))
                                     Text(
-                                        text = "${uiState.dailyCompletionRate}%",
-                                        style = MaterialTheme.typography.headlineMedium.copy(
-                                            fontSize = 30.sp,
-                                            fontWeight = FontWeight.Black
-                                        ),
+                                        text = buildAnnotatedString {
+                                            withStyle(
+                                                SpanStyle(
+                                                    fontFamily = Rubik,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 30.sp
+                                                )
+                                            ) {
+                                                append(uiState.dailyCompletionRate.toString())
+                                            }
+                                            withStyle(
+                                                SpanStyle(
+                                                    fontFamily = Rubik,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 18.sp,
+                                                    color = textSub
+                                                )
+                                            ) {
+                                                append("%")
+                                            }
+                                        },
                                         color = textMain
                                     )
                                     Text(

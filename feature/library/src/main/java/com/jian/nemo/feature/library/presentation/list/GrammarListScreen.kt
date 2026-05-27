@@ -33,6 +33,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.input.TextFieldValue
@@ -295,18 +298,18 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
             Column {
                 Text(
-                    text = GrammarSearchUtils.cleanRubi(grammar.grammar),
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontWeight = FontWeight.W800
+                    text = formatMixedCnHnString(GrammarSearchUtils.cleanRubi(grammar.grammar)),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.W800,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
                     text = GrammarSearchUtils.cleanRubi(grammar.getFirstExplanation()),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
         }
@@ -336,5 +339,39 @@ private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable Colu
         interactionSource = interactionSource
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)
+    }
+}
+
+private fun formatMixedCnHnString(text: String): androidx.compose.ui.text.AnnotatedString {
+    return androidx.compose.ui.text.buildAnnotatedString {
+        var i = 0
+        while (i < text.length) {
+            val codePoint = text.codePointAt(i)
+            val charCount = Character.charCount(codePoint)
+            val nextStr = text.substring(i, i + charCount)
+            val isKana = nextStr.any { c ->
+                (c in '\u3040'..'\u309F') || (c in '\u30A0'..'\u30FF')
+            }
+            if (isKana) {
+                withStyle(
+                    SpanStyle(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    )
+                ) {
+                    append(nextStr)
+                }
+            } else {
+                withStyle(
+                    SpanStyle(
+                        fontFamily = NotoSerifSC,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("zh")
+                    )
+                ) {
+                    append(nextStr)
+                }
+            }
+            i += charCount
+        }
     }
 }
