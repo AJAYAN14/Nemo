@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -127,49 +128,65 @@ fun WordClozeScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            Crossfade(targetState = uiState, label = "cloze_state_transition") { state ->
-                when (state) {
-                    is ClozeUiState.Loading -> {
+            val pageType = when (uiState) {
+                is ClozeUiState.Loading -> 0
+                is ClozeUiState.LevelSelecting -> 1
+                is ClozeUiState.Ready -> 2
+                is ClozeUiState.Finished -> 3
+                is ClozeUiState.Error -> 4
+            }
+            Crossfade(targetState = pageType, label = "cloze_state_transition") { type ->
+                when (type) {
+                    0 -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(color = IosColors.Orange)
                         }
                     }
-                    is ClozeUiState.LevelSelecting -> {
+                    1 -> {
                         LevelSelectionView(
                             isDark = isDark,
                             onSelectLevel = { viewModel.onLevelSelected(it) }
                         )
                     }
-                    is ClozeUiState.Ready -> {
-                        key(state.currentIndex) {
-                            ReadyView(
-                                state = state,
-                                viewModel = viewModel,
-                                isDark = isDark,
-                                textMain = textMain,
-                                textSub = textSub,
-                                containerColor = containerColor,
-                                wordCardBg = wordCardBg,
-                                qCardBg = qCardBg,
-                                qCardBorderColor = qCardBorderColor,
-                                onRegenerate = { viewModel.forceRegenerate() }
+                    2 -> {
+                        val readyState = uiState as? ClozeUiState.Ready
+                        if (readyState != null) {
+                            key(readyState.currentIndex) {
+                                ReadyView(
+                                    state = readyState,
+                                    viewModel = viewModel,
+                                    isDark = isDark,
+                                    textMain = textMain,
+                                    textSub = textSub,
+                                    containerColor = containerColor,
+                                    wordCardBg = wordCardBg,
+                                    qCardBg = qCardBg,
+                                    qCardBorderColor = qCardBorderColor,
+                                    onRegenerate = { viewModel.forceRegenerate() }
+                                )
+                            }
+                        }
+                    }
+                    3 -> {
+                        val finishedState = uiState as? ClozeUiState.Finished
+                        if (finishedState != null) {
+                            ResultView(
+                                correctCount = finishedState.correctCount,
+                                totalCount = finishedState.totalCount,
+                                onRestart = { viewModel.restart() },
+                                onRegenerate = { viewModel.forceRegenerate() },
+                                onBack = onNavigateBack
                             )
                         }
                     }
-                    is ClozeUiState.Finished -> {
-                        ResultView(
-                            correctCount = state.correctCount,
-                            totalCount = state.totalCount,
-                            onRestart = { viewModel.restart() },
-                            onRegenerate = { viewModel.forceRegenerate() },
-                            onBack = onNavigateBack
-                        )
-                    }
-                    is ClozeUiState.Error -> {
-                        ClozeErrorView(
-                            message = state.message,
-                            onRetry = { viewModel.restart() }
-                        )
+                    4 -> {
+                        val errorState = uiState as? ClozeUiState.Error
+                        if (errorState != null) {
+                            ClozeErrorView(
+                                message = errorState.message,
+                                onRetry = { viewModel.restart() }
+                            )
+                        }
                     }
                 }
             }
@@ -284,6 +301,10 @@ private fun ReadyView(
     val globalInput = remember(state.currentIndex) {
         mutableStateOf(TextFieldValue(""))
     }
+    // 当前正在编辑的活跃挖空格子索引（在 q.maskIndices 中的索引）
+    val activeMaskIndex = remember(state.currentIndex) {
+        mutableStateOf(0)
+    }
     
     // 输入框的焦点状态
     var isGlobalFocused by remember { mutableStateOf(false) }
@@ -295,6 +316,37 @@ private fun ReadyView(
 
     // 错误左右抖动位移值
     val shakeOffset = remember { Animatable(0f) }
+
+    val submitAction = {
+        // 先同步一次当前活跃格子的最新文本到 ViewModel
+        val currentText = globalInput.value.text.replace("\n", "")
+        viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, currentText)
+
+        var allCorrect = true
+        var hasEmpty = false
+        val currentInputs = state.userInputs[state.currentIndex]
+
+        q.maskIndices.forEachIndexed { maskIndexInQuestion, origCharIndex ->
+            val char = q.hiragana[origCharIndex]
+            val userInput = currentInputs.getOrNull(maskIndexInQuestion) ?: ""
+            if (userInput.isEmpty()) {
+                hasEmpty = true
+            }
+            val isCorrect = viewModel.checkInputIsCorrect(char, userInput)
+            if (isCorrect) {
+                itemErrors[maskIndexInQuestion] = false
+            } else {
+                itemErrors[maskIndexInQuestion] = true
+                allCorrect = false
+            }
+        }
+        
+        if (allCorrect && !hasEmpty) {
+            viewModel.submitAnswerSuccess(state.currentIndex)
+        } else {
+            viewModel.submitAnswerError(state.currentIndex)
+        }
+    }
     
     LaunchedEffect(state.isShakeTriggered) {
         if (state.isShakeTriggered) {
@@ -310,10 +362,18 @@ private fun ReadyView(
 
     // 从 ViewModel 的 userInputs 恢复已保存的输入，并锁死聚焦唯一的隐藏单输入框
     LaunchedEffect(state.currentIndex) {
-        val savedText = state.userInputs[state.currentIndex].filter { it.isNotEmpty() }.joinToString("")
+        val L = q.maskIndices.size
+        val savedList = state.userInputs[state.currentIndex]
+        
+        // 自动定位到第一个未填写的格子，若全部已填则定位到最后一格
+        val firstEmpty = savedList.indexOfFirst { it.isEmpty() }
+        val initialActiveIndex = if (firstEmpty != -1) firstEmpty else L - 1
+        activeMaskIndex.value = initialActiveIndex
+
+        val currentVal = savedList.getOrNull(initialActiveIndex) ?: ""
         globalInput.value = TextFieldValue(
-            text = savedText,
-            selection = TextRange(savedText.length),
+            text = currentVal,
+            selection = TextRange(0, currentVal.length),
             composition = null
         )
         
@@ -330,10 +390,10 @@ private fun ReadyView(
 
     val isCurrentQCorrect = state.questionCorrectStates[state.currentIndex]
 
-    // 全部拼对判定成功后的 800 毫秒后自动跳下一题
+    // 全部拼对判定成功后的 2500 毫秒后自动跳下一题
     LaunchedEffect(isCurrentQCorrect) {
         if (isCurrentQCorrect) {
-            kotlinx.coroutines.delay(800L)
+            kotlinx.coroutines.delay(2500L)
             viewModel.nextQuestion()
         }
     }
@@ -390,50 +450,85 @@ private fun ReadyView(
         BasicTextField(
             value = globalInput.value,
             onValueChange = { newVal ->
+                val L = q.maskIndices.size
+                val oldVal = globalInput.value
+                val oldText = oldVal.text
+                val oldSel = oldVal.selection
+
+                val hasEnter = newVal.text.contains('\n')
+
                 if (newVal.composition == null) {
-                    // 已确认上屏（没有带下划线的草稿）时，再过滤空白并进行严格限长（最大长度锁死为挖空假名数）
-                    var filteredText = newVal.text.filter { !it.isWhitespace() }
-                    if (filteredText.length > q.maskIndices.size) {
-                        filteredText = filteredText.take(q.maskIndices.size)
-                    }
+                    // 已确认上屏（没有打字组合草稿）
+                    val updatedText = newVal.text.replace("\n", "")
                     
-                    val updatedValue = if (filteredText != newVal.text) {
-                        TextFieldValue(
-                            text = filteredText,
-                            selection = TextRange(filteredText.length),
-                            composition = null
-                        )
-                    } else {
-                        newVal
-                    }
-                    
-                    globalInput.value = updatedValue
-                    
-                    // 将拼写确认上屏的假名逐字映射更新同步回 ViewModel 的 userInputs
-                    q.maskIndices.forEachIndexed { i, _ ->
-                        val charStr = if (i < updatedValue.text.length) {
-                            updatedValue.text[i].toString()
+                    if (hasEnter) {
+                        // 1. 用户按了回车（或软键盘 Next / Done），需要保存并跳转/提交
+                        viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, updatedText)
+                        
+                        val nextIndex = activeMaskIndex.value + 1
+                        if (nextIndex < L) {
+                            activeMaskIndex.value = nextIndex
+                            val nextVal = state.userInputs[state.currentIndex].getOrNull(nextIndex) ?: ""
+                            globalInput.value = TextFieldValue(
+                                text = nextVal,
+                                selection = TextRange(0, nextVal.length),
+                                composition = null
+                            )
                         } else {
-                            ""
+                            // 最后一格按回车，触发提交
+                            submitAction()
                         }
-                        viewModel.updateUserInput(state.currentIndex, i, charStr)
+                    } else {
+                        // 2. 普通输入或退格（没有回车）
+                        if (updatedText.length < oldText.length) {
+                            // 发生退格删除
+                            viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, "")
+                            globalInput.value = TextFieldValue(
+                                text = "",
+                                selection = TextRange(0),
+                                composition = null
+                            )
+                        } else if (oldText.isEmpty() && newVal.text.isEmpty()) {
+                            // 空退格：当前格子已经为空，用户依然按了退格
+                            // 跳回上一个格子，顺带清空前一格的内容以支持连续退格
+                            val prevIndex = activeMaskIndex.value - 1
+                            if (prevIndex >= 0) {
+                                activeMaskIndex.value = prevIndex
+                                viewModel.updateUserInput(state.currentIndex, prevIndex, "")
+                                globalInput.value = TextFieldValue(
+                                    text = "",
+                                    selection = TextRange(0),
+                                    composition = null
+                                )
+                            }
+                        } else {
+                            // 普通字符替换或输入
+                            if (updatedText.length > 1) {
+                                // 长度超过 1，说明是覆盖输入（比如本来有字，输入法上屏了新字，导致 newVal.text 包含了旧字和新字）
+                                val charStr = updatedText.last().toString()
+                                viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, charStr)
+                                globalInput.value = TextFieldValue(
+                                    text = charStr,
+                                    selection = TextRange(0, 1), // 全选以支持原地覆盖替换
+                                    composition = null
+                                )
+                            } else {
+                                // 长度是 0 或 1，完美符合单格子限制，直接使用 copy 减少对输入法连接的干扰
+                                viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, updatedText)
+                                globalInput.value = newVal.copy(
+                                    selection = TextRange(0, updatedText.length)
+                                )
+                            }
+                        }
                     }
                 } else {
                     // 正在打字联想/组合中，百分之百原封不动保留，任由输入法在此转换拼写！
                     globalInput.value = newVal
                     
-                    // 将已经确认并提交的部分同步回 ViewModel
-                    val confirmedText = newVal.text.substring(0, newVal.composition?.start ?: newVal.text.length)
-                    q.maskIndices.forEachIndexed { i, _ ->
-                        val charStr = if (i < confirmedText.length) {
-                            confirmedText[i].toString()
-                        } else {
-                            ""
-                        }
-                        viewModel.updateUserInput(state.currentIndex, i, charStr)
-                    }
+                    // 将联想中的临时输入实时同步回 ViewModel 的对应格（主要是为了在卡片中渲染英文草稿）
+                    viewModel.updateUserInput(state.currentIndex, activeMaskIndex.value, newVal.text)
                 }
-                
+
                 // 只要输入发生变化，该题所有的格子报错红亮瞬间解除！
                 q.maskIndices.forEachIndexed { i, _ ->
                     itemErrors[i] = false
@@ -441,38 +536,30 @@ private fun ReadyView(
             },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.None
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    val L = q.maskIndices.size
+                    val nextIndex = activeMaskIndex.value + 1
+                    if (nextIndex < L) {
+                        activeMaskIndex.value = nextIndex
+                        val nextVal = state.userInputs[state.currentIndex].getOrNull(nextIndex) ?: ""
+                        globalInput.value = TextFieldValue(
+                            text = nextVal,
+                            selection = TextRange(0, nextVal.length),
+                            composition = null
+                        )
+                    } else {
+                        submitAction()
+                    }
+                }
             ),
             modifier = Modifier
                 .size(1.dp)
                 .absoluteOffset(y = 2000.dp) 
                 .focusRequester(focusRequester)
                 .onFocusChanged { isGlobalFocused = it.isFocused }
-                .onPreviewKeyEvent { keyEvent ->
-                    // 仅当没有输入法拼写草稿状态时才物理拦截退格键，防止破坏输入法的组合拼写
-                    if (globalInput.value.composition == null && keyEvent.key == Key.Backspace && keyEvent.type == KeyEventType.KeyDown) {
-                        val currentText = globalInput.value.text
-                        if (currentText.isNotEmpty()) {
-                            val newText = currentText.dropLast(1)
-                            val newSel = TextRange(newText.length)
-                            globalInput.value = TextFieldValue(text = newText, selection = newSel, composition = null)
-                            
-                            // 同步回 ViewModel
-                            q.maskIndices.forEachIndexed { i, _ ->
-                                val charStr = if (i < newText.length) newText[i].toString() else ""
-                                viewModel.updateUserInput(state.currentIndex, i, charStr)
-                            }
-                            q.maskIndices.forEachIndexed { i, _ ->
-                                itemErrors[i] = false
-                            }
-                            true // 消费该退格删除事件
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                }
         )
 
         Column(
@@ -568,14 +655,24 @@ private fun ReadyView(
                             q.hiragana.forEachIndexed { index, char ->
                                 val maskIndexInQuestion = q.maskIndices.indexOf(index)
                                 if (maskIndexInQuestion != -1) {
-                                    // 智能计算该格显示的假名（从全局输入串拆分提取）
-                                    val textInCell = if (maskIndexInQuestion < globalInput.value.text.length) {
-                                        globalInput.value.text[maskIndexInQuestion].toString()
-                                    } else ""
-
-                                    // 判定当前格子是否为处于“准备接收/正在打字”的激活编辑格子
-                                    val isActive = !isCurrentQCorrect && maskIndexInQuestion == globalInput.value.text.length.coerceAtMost(q.maskIndices.size - 1)
+                                    val isActive = (maskIndexInQuestion == activeMaskIndex.value)
                                     val hasError = itemErrors[maskIndexInQuestion]
+
+                                    val textInCell = if (isCurrentQCorrect) {
+                                        char.toString()
+                                    } else {
+                                        if (isActive) {
+                                            if (globalInput.value.composition == null) {
+                                                globalInput.value.text
+                                            } else ""
+                                        } else {
+                                            state.userInputs[state.currentIndex].getOrNull(maskIndexInQuestion) ?: ""
+                                        }
+                                    }
+
+                                    val currentComposition = globalInput.value.composition
+                                    val isCompositionInCell = isActive && currentComposition != null
+                                    val isCursorInCell = isActive && !isCurrentQCorrect && globalInput.value.selection.collapsed && currentComposition == null
 
                                     val boxBg = if (isCurrentQCorrect) {
                                         if (isDark) Color(0xFF14532D) else Color(0xFFF0FDF4)
@@ -624,36 +721,25 @@ private fun ReadyView(
                                                 BorderStroke(
                                                     width = if (isCurrentQCorrect) 2.dp else if (hasError || (isActive && isGlobalFocused)) 2.dp else 0.dp,
                                                     color = boxBorderColor
-                                                ),
+                                                 ),
                                                 RoundedCornerShape(20.dp)
                                             )
                                             .clickable {
                                                 if (!isCurrentQCorrect) {
-                                                    // 如果点击的是已经被填了字符的挖空格子，智能截断退回/删除到该格子，提供最佳的手感
-                                                    val currentText = globalInput.value.text
-                                                    if (maskIndexInQuestion < currentText.length) {
-                                                        val newText = currentText.take(maskIndexInQuestion)
-                                                        globalInput.value = TextFieldValue(
-                                                            text = newText,
-                                                            selection = TextRange(newText.length),
-                                                            composition = null
-                                                        )
-                                                        q.maskIndices.forEachIndexed { i, _ ->
-                                                            val charStr = if (i < newText.length) newText[i].toString() else ""
-                                                            viewModel.updateUserInput(state.currentIndex, i, charStr)
-                                                        }
-                                                        q.maskIndices.forEachIndexed { i, _ ->
-                                                            itemErrors[i] = false
-                                                        }
-                                                    }
+                                                    val clickedText = state.userInputs[state.currentIndex].getOrNull(maskIndexInQuestion) ?: ""
+                                                    activeMaskIndex.value = maskIndexInQuestion
+                                                    globalInput.value = TextFieldValue(
+                                                        text = clickedText,
+                                                        selection = TextRange(0, clickedText.length),
+                                                        composition = null
+                                                    )
                                                 }
                                                 focusRequester.requestFocus()
                                                 keyboardController?.show()
-                                            }, // 点击圆格子，智能退焦重置并强聚焦全局输入框
+                                            },
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (isCurrentQCorrect) {
-                                            // 已经判定全对，只读锁定显示大字绿色平假名
                                             Text(
                                                 text = char.toString(),
                                                 style = TextStyle(
@@ -663,7 +749,7 @@ private fun ReadyView(
                                                 )
                                             )
                                         } else {
-                                            if (isActive && compositionText.isNotEmpty()) {
+                                            if (isCompositionInCell && compositionText.isNotEmpty()) {
                                                 // 极其惊艳！在激活格子中实时渲染日语输入法正在打字的未确认英文草稿（如 he）
                                                 Text(
                                                     text = compositionText,
@@ -689,7 +775,7 @@ private fun ReadyView(
                                                             )
                                                         )
                                                     }
-                                                    if (isActive && isGlobalFocused) {
+                                                    if (isCursorInCell && isGlobalFocused) {
                                                         // 极其逼真高质感的橙色呼吸光标
                                                         Box(
                                                             modifier = Modifier
@@ -796,36 +882,15 @@ private fun ReadyView(
                 // 中间提交主按钮
                 Button(
                     onClick = {
-                        val userSequence = globalInput.value.text
-                        var allCorrect = true
-                        
-                        // 遍历各个挖空格子逐一进行假名比对
-                        q.maskIndices.forEachIndexed { maskIndexInQuestion, origCharIndex ->
-                            val char = q.hiragana[origCharIndex]
-                            val userInput = if (maskIndexInQuestion < userSequence.length) {
-                                userSequence[maskIndexInQuestion].toString()
-                            } else ""
-                            
-                            val isCorrect = viewModel.checkInputIsCorrect(char, userInput)
-                            if (isCorrect) {
-                                itemErrors[maskIndexInQuestion] = false
-                            } else {
-                                itemErrors[maskIndexInQuestion] = true
-                                allCorrect = false
-                            }
-                        }
-                        
-                        // 若全对且打满，通关
-                        if (allCorrect && userSequence.length == q.maskIndices.size) {
-                            viewModel.submitAnswerSuccess(state.currentIndex)
+                        if (isCurrentQCorrect) {
+                            viewModel.nextQuestion()
                         } else {
-                            viewModel.submitAnswerError(state.currentIndex)
+                            submitAction()
                         }
                     },
-                    enabled = !isCurrentQCorrect,
+                    enabled = true,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = IosColors.Orange,
-                        disabledContainerColor = IosColors.Green.copy(alpha = 0.8f)
+                        containerColor = if (isCurrentQCorrect) IosColors.Green else IosColors.Orange
                     ),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
@@ -834,7 +899,7 @@ private fun ReadyView(
                         .padding(horizontal = 16.dp)
                 ) {
                     Text(
-                        text = if (isCurrentQCorrect) "正确" else "提交",
+                        text = if (isCurrentQCorrect) "下一题" else "提交",
                         style = TextStyle(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,

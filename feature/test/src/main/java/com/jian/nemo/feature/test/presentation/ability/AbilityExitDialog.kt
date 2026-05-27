@@ -234,20 +234,23 @@ fun AbilityExitDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 销毁退出 (高危警告动作，放左侧)
-                    OutlinedButton(
+                    Button(
                         onClick = onDestroyAndExit,
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp),
                         shape = RoundedCornerShape(14.dp),
-                        border = BorderStroke(1.dp, IosColors.Red.copy(alpha = 0.25f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = IosColors.Red)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = IosColors.Red,
+                            contentColor = Color.White
+                        )
                     ) {
                         Text(
                             text = "销毁进度",
                             style = TextStyle(
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
                             )
                         )
                     }

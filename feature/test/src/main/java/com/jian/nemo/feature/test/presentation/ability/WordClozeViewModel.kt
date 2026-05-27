@@ -293,9 +293,32 @@ class WordClozeViewModel @Inject constructor(
         // 连续错 3 次自动弹出悬浮毛玻璃解析卡片
         val triggerExplanation = updatedErrors[questionIndex] >= 3
 
+        val updatedCorrectStates = if (triggerExplanation) {
+            currentState.questionCorrectStates.toMutableList().apply {
+                set(questionIndex, true)
+            }
+        } else {
+            currentState.questionCorrectStates
+        }
+
+        val updatedInputs = if (triggerExplanation) {
+            val q = currentState.questions[questionIndex]
+            currentState.userInputs.mapIndexed { qIdx, inputs ->
+                if (qIdx == questionIndex) {
+                    q.maskIndices.map { q.hiragana[it].toString() }
+                } else {
+                    inputs
+                }
+            }
+        } else {
+            currentState.userInputs
+        }
+
         val newState = currentState.copy(
             errorCounts = updatedErrors,
-            showExplanation = if (triggerExplanation) true else currentState.showExplanation
+            showExplanation = if (triggerExplanation) true else currentState.showExplanation,
+            questionCorrectStates = updatedCorrectStates,
+            userInputs = updatedInputs
         )
         _uiState.value = newState
         saveSession(newState)
