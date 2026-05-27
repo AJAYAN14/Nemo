@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
@@ -114,13 +115,16 @@ fun TypingPracticeDialog(
                             Text(
                                 text = word.japanese,
                                 fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = NotoSerifJP,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 textAlign = TextAlign.Center // Explicitly center text
                             )
                             Text(
                                 text = word.hiragana,
                                 fontSize = 18.sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = NotoSerifJP,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(top = 8.dp)
                             )

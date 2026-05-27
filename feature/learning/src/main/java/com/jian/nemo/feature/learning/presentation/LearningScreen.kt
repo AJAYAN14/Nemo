@@ -337,7 +337,7 @@ fun WordLearningContent(
     Column(modifier = Modifier.fillMaxSize()) {
         // SubHeader and Progress Bar are now moved to LearnHeader common component for pixel-perfect match with HTML top bar.
 
-        Spacer(modifier = Modifier.height(16.dp)) // Add some spacing from header
+        Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
 
         if (uiState.currentWord != null) {
             Box(modifier = Modifier.weight(1f)) {
@@ -482,7 +482,7 @@ fun GrammarLearningContent(
     onShowAnswerBlocked: (Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.height(16.dp)) // Add some spacing from header
+        Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
 
         if (uiState.currentGrammar != null) {
             Box(modifier = Modifier.weight(1f)) {

@@ -98,6 +98,17 @@ fun CategoryWordsScreen(
         }
     }
 
+    // 当搜索词改变且不为空时，自动展开所有有结果的分类
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotEmpty()) {
+            filteredWordsByLevel.keys.forEach { level ->
+                if (!expandedLevels.contains(level)) {
+                    expandedLevels.add(level)
+                }
+            }
+        }
+    }
+
     Scaffold(
         containerColor = backgroundColor,
         topBar = {
@@ -160,7 +171,7 @@ fun CategoryWordsScreen(
                     sortedLevels.forEach { level ->
                         val words = filteredWordsByLevel[level] ?: emptyList()
                         // Search active -> Always Expanded. Otherwise use manual state.
-                        val isExpanded = searchQuery.isNotEmpty() || expandedLevels.contains(level)
+                        val isExpanded = expandedLevels.contains(level)
                         val levelColor = getLevelColor(level)
 
                         stickyHeader {
@@ -170,12 +181,10 @@ fun CategoryWordsScreen(
                                 isExpanded = isExpanded,
                                 color = levelColor,
                                 onToggle = {
-                                    if (searchQuery.isEmpty()) {
-                                        if (expandedLevels.contains(level)) {
-                                            expandedLevels.remove(level)
-                                        } else {
-                                            expandedLevels.add(level)
-                                        }
+                                    if (expandedLevels.contains(level)) {
+                                        expandedLevels.remove(level)
+                                    } else {
+                                        expandedLevels.add(level)
                                     }
                                 }
                             )

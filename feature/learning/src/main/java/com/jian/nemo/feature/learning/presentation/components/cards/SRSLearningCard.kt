@@ -428,7 +428,7 @@ fun SRSLearningCard(
                                             text = example!!,
                                             baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                                                 fontSize = 15.sp,
-                                                fontWeight = FontWeight.Normal,
+                                                fontWeight = FontWeight.Bold,
                                                 lineHeight = 24.sp,
                                                 fontFamily = NotoSerifJP
                                             ),
@@ -443,6 +443,7 @@ fun SRSLearningCard(
                                                 text = gloss,
                                                 color = secondaryTextColor,
                                                 fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium,
                                                 modifier = Modifier.padding(bottom = if (index < examples.lastIndex) 12.dp else 0.dp)
                                             )
                                         }

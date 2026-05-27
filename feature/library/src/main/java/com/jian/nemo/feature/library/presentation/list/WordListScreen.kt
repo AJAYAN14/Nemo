@@ -74,6 +74,17 @@ fun WordListScreen(
     val filteredWordsByLevel = uiState.wordsByLevel
     val searchQuery = uiState.searchQuery
 
+    // 当搜索词改变且不为空时，自动展开所有有结果的分类
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotEmpty()) {
+            filteredWordsByLevel.keys.forEach { level ->
+                if (!expandedLevels.contains(level)) {
+                    expandedLevels.add(level)
+                }
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             Column(modifier = Modifier.background(backgroundColor)) {
@@ -119,7 +130,7 @@ fun WordListScreen(
                             val sortedLevels = filteredWordsByLevel.keys.sorted()
                             sortedLevels.forEach { level ->
                                 val words = filteredWordsByLevel[level] ?: emptyList()
-                                val isExpanded = searchQuery.isNotEmpty() || expandedLevels.contains(level)
+                                val isExpanded = expandedLevels.contains(level)
                                 val levelColor = getLevelColor(level)
 
                                 stickyHeader {
@@ -129,12 +140,10 @@ fun WordListScreen(
                                         isExpanded = isExpanded,
                                         color = levelColor,
                                         onToggle = {
-                                            if (searchQuery.isEmpty()) {
-                                                if (expandedLevels.contains(level)) {
-                                                    expandedLevels.remove(level)
-                                                } else {
-                                                    expandedLevels.add(level)
-                                                }
+                                            if (expandedLevels.contains(level)) {
+                                                expandedLevels.remove(level)
+                                            } else {
+                                                expandedLevels.add(level)
                                             }
                                         }
                                     )
