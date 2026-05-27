@@ -42,6 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.text.font.FontFamily
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.jian.nemo.core.designsystem.theme.BentoColors
@@ -76,6 +79,7 @@ fun WordClozeScreen(
     val historyRecords by viewModel.historyRecords.collectAsState(initial = emptyList())
 
     var showExitDialog by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
 
     androidx.activity.compose.BackHandler(enabled = uiState is ClozeUiState.Ready) {
         showExitDialog = true
@@ -111,10 +115,10 @@ fun WordClozeScreen(
                             )
                         }
                     }
-                    IconButton(onClick = { showHistoryView = true }) {
+                    IconButton(onClick = { showHelpDialog = true }) {
                         Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = "历史记录",
+                            imageVector = Icons.Rounded.Help,
+                            contentDescription = "输入指南",
                             tint = textMain
                         )
                     }
@@ -191,6 +195,15 @@ fun WordClozeScreen(
                 }
             }
         }
+    }
+
+    if (showHelpDialog) {
+        JapaneseInputGuideDialog(
+            isDark = isDark,
+            textMain = textMain,
+            textSub = textSub,
+            onDismiss = { showHelpDialog = false }
+        )
     }
 
     AbilityExitDialog(
@@ -1396,5 +1409,379 @@ private fun ClozeGeneratingView(
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(color = IosColors.Orange)
+    }
+}
+
+/**
+ * 日语罗马音输入指南弹窗
+ */
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun JapaneseInputGuideDialog(
+    isDark: Boolean,
+    textMain: Color,
+    textSub: Color,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        val bg = if (isDark) Color(0xFF1E293B) else Color.White
+        val cardBg = if (isDark) Color(0xFF334155) else Color(0xFFF8FAFC)
+        val keyBg = if (isDark) Color(0xFF475569) else Color(0xFFE2E8F0)
+        
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .fillMaxHeight(0.82f)
+                .padding(16.dp)
+                .shadow(24.dp, shape = RoundedCornerShape(28.dp)),
+            shape = RoundedCornerShape(28.dp),
+            color = bg,
+            border = BorderStroke(
+                width = 1.dp,
+                color = if (isDark) Color(0xFF334155) else Color(0xFFE2E8F0)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 顶部标题与图标区
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                color = IosColors.Orange.copy(alpha = 0.15f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Info,
+                            contentDescription = "提示",
+                            tint = IosColors.Orange,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "日语输入指南",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textMain
+                        )
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 胶囊 Tab 控制器
+                var selectedTab by remember { mutableStateOf(0) }
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (isDark) Color(0xFF334155) else Color(0xFFF1F5F9),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        TabButton(
+                            text = "基础拼写",
+                            isSelected = selectedTab == 0,
+                            modifier = Modifier.weight(1f),
+                            isDark = isDark,
+                            onClick = { selectedTab = 0 }
+                        )
+                        TabButton(
+                            text = "进阶技巧",
+                            isSelected = selectedTab == 1,
+                            modifier = Modifier.weight(1f),
+                            isDark = isDark,
+                            onClick = { selectedTab = 1 }
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 可滚动的切换内容区
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    AnimatedContent(
+                        targetState = selectedTab,
+                        transitionSpec = {
+                            if (targetState > initialState) {
+                                slideInHorizontally { width -> width } + fadeIn() with
+                                        slideOutHorizontally { width -> -width } + fadeOut()
+                            } else {
+                                slideInHorizontally { width -> -width } + fadeIn() with
+                                        slideOutHorizontally { width -> width } + fadeOut()
+                            }
+                        },
+                        label = "tab_content_transition"
+                    ) { tabIndex ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            if (tabIndex == 0) {
+                                // 基础篇
+                                GuideItemCard(
+                                    title = "促音连打 (っ)",
+                                    method = "双写后辅音",
+                                    example = "示例: きって -> ki tte",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "拨音 (ん)",
+                                    method = "双写 'nn'",
+                                    example = "注意: n+元音会变 (如n+a->な,需输入nn)",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "片假名长音 (ー)",
+                                    method = "英文减号键 '-'",
+                                    example = "示例: ケーキ -> ke - ki",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "平假名长音",
+                                    method = "直接双写元音",
+                                    example = "示例: おばあさん -> obaasan",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "常用拗音 (如 しゅ/ちょ)",
+                                    method = "直接使用组合拼写",
+                                    example = "示例: しゅ -> shu, ちょ -> cho",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                            } else {
+                                // 进阶篇
+                                GuideItemCard(
+                                    title = "促音单打 (っ)",
+                                    method = "输入 'ltu' 或 'xtu'",
+                                    example = "单独出现时输入 ltu / xtu",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "特殊浊音 (ぢ/づ)",
+                                    method = "ぢ->di, づ->du",
+                                    example = "注意: じ为ji/zi, ず为zu",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "外来语组合 (ティ/ファ)",
+                                    method = "组合拼写 thi/fa",
+                                    example = "示例: ティ -> thi / ti, ファ -> fa",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "特殊假名 (ヴ)",
+                                    method = "输入 'vu'",
+                                    example = "示例: ヴァ -> va, ヴ -> vu",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "小假名 (如 ぃ/ょ)",
+                                    method = "前加 'l' 或 'x'",
+                                    example = "示例: ぃ -> li / xi, ょ -> lyo / xyo",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                                GuideItemCard(
+                                    title = "输入法兼容",
+                                    method = "支持多种拼写",
+                                    example = "し(si/shi), つ(tu/tsu), ふ(hu/fu)",
+                                    keyBg = keyBg,
+                                    cardBg = cardBg,
+                                    textMain = textMain,
+                                    textSub = textSub
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // 确认关闭按钮
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .shadow(4.dp, shape = RoundedCornerShape(24.dp)),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = IosColors.Orange,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(24.dp)
+                ) {
+                    Text(
+                        text = "我知道了",
+                        style = TextStyle(
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 胶囊 Tab 切换按钮
+ */
+@Composable
+private fun TabButton(
+    text: String,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+    isDark: Boolean,
+    onClick: () -> Unit
+) {
+    val bg = if (isSelected) {
+        if (isDark) Color(0xFF475569) else Color.White
+    } else {
+        Color.Transparent
+    }
+    val elevation = if (isSelected) 2.dp else 0.dp
+    val textStyle = TextStyle(
+        fontSize = 13.sp,
+        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+        color = if (isSelected) {
+            if (isDark) Color.White else NemoNeutrals.Gray800
+        } else {
+            if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
+        }
+    )
+    
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(9.dp),
+        color = bg,
+        shadowElevation = elevation,
+        modifier = modifier.height(36.dp)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = text, style = textStyle)
+        }
+    }
+}
+
+/**
+ * 指南卡片条目
+ */
+@Composable
+private fun GuideItemCard(
+    title: String,
+    method: String,
+    example: String,
+    keyBg: Color,
+    cardBg: Color,
+    textMain: Color,
+    textSub: Color
+) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = cardBg,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = title,
+                    style = TextStyle(
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = IosColors.Orange
+                    )
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = example,
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        color = textSub
+                    )
+                )
+            }
+            
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = keyBg,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Text(
+                    text = method,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    style = TextStyle(
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = textMain,
+                        fontFamily = FontFamily.Monospace
+                    )
+                )
+            }
+        }
     }
 }
