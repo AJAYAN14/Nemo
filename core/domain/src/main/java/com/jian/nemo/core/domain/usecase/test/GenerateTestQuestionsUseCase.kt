@@ -83,8 +83,7 @@ class GenerateTestQuestionsUseCase @Inject constructor(
                 "favorite" -> wordRepository.getFavoriteWords().first()
                 "learned" -> wordRepository.getAllLearnedWords().first()
                 "today_reviewed" -> {
-                     val ids = settingsRepository.getTodayTestedWordIds()
-                     if (ids.isNotEmpty()) wordRepository.getWordsByIds(ids.toList()) else emptyList()
+                     wordRepository.getTodayReviewedWords(today).first()
                 }
                 else -> {
                     // "all" or explicit levels
@@ -138,8 +137,7 @@ class GenerateTestQuestionsUseCase @Inject constructor(
                 "favorite" -> grammarRepository.getFavoriteGrammars().first()
                 "learned" -> grammarRepository.getAllLearnedGrammars().first()
                 "today_reviewed" -> {
-                     val ids = settingsRepository.getTodayTestedGrammarIds()
-                     if (ids.isNotEmpty()) grammarRepository.getGrammarsByIds(ids.toList()) else emptyList()
+                     grammarRepository.getTodayReviewedGrammars(today).first()
                 }
                 else -> {
                     val levels = level.split(",").map { it.trim() }.filter { it.isNotEmpty() }

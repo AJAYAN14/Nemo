@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -79,6 +81,11 @@ fun StatisticsScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+
+            // 0. 顶部统计面板
+            item {
+                OverallStatisticsDashboard(words = words, grammars = grammars)
+            }
 
             // 1. 单词列表
             item {
@@ -514,6 +521,99 @@ private fun formatMixedCnHnString(text: String): androidx.compose.ui.text.Annota
                 }
             }
             i += charCount
+        }
+    }
+}
+
+@Composable
+private fun OverallStatisticsDashboard(
+    words: List<StatisticDisplayItem>,
+    grammars: List<StatisticDisplayItem>
+) {
+    val newWords = words.count { it.source == StatisticSource.LEARNED }
+    val reviewWords = words.count { it.source == StatisticSource.REVIEWED }
+    val newGrammars = grammars.count { it.source == StatisticSource.LEARNED }
+    val reviewGrammars = grammars.count { it.source == StatisticSource.REVIEWED }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatCard(
+                title = "今日新学 (词)",
+                count = newWords,
+                color = NemoPrimary,
+                icon = Icons.Rounded.DoneAll,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                title = "今日复习 (词)",
+                count = reviewWords,
+                color = NemoSecondary,
+                icon = Icons.Rounded.Layers,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatCard(
+                title = "今日新学 (语法)",
+                count = newGrammars,
+                color = NemoOrange,
+                icon = Icons.Rounded.DoneAll,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                title = "今日复习 (语法)",
+                count = reviewGrammars,
+                color = NemoIndigo,
+                icon = Icons.Rounded.Layers,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatCard(
+    title: String,
+    count: Int,
+    color: Color,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(color.copy(alpha = 0.15f), androidx.compose.foundation.shape.CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = count.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }

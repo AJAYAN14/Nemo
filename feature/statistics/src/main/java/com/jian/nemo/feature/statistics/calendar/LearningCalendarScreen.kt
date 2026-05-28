@@ -443,6 +443,8 @@ fun DayDetailPanel(
     var reviewGrammarValue = 0
     var newWordsValue = 0
     var newGrammarValue = 0
+    var todayActualReviewWordsValue = 0
+    var todayActualReviewGrammarValue = 0
 
     when {
         isToday -> {
@@ -452,6 +454,8 @@ fun DayDetailPanel(
                 reviewGrammarValue = stats.dueGrammars
                 newWordsValue = stats.todayLearnedWords
                 newGrammarValue = stats.todayLearnedGrammars
+                todayActualReviewWordsValue = stats.todayReviewedWords
+                todayActualReviewGrammarValue = stats.todayReviewedGrammars
             }
         }
         isFuture -> {
@@ -476,7 +480,7 @@ fun DayDetailPanel(
     val newLabelSuffix = if (isToday || isFuture) "新学" else "已学"
 
     // Check if empty
-    val hasData = reviewWordsValue > 0 || reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0
+    val hasData = reviewWordsValue > 0 || reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0 || todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0
 
     PremiumCard {
         AnimatedContent(
@@ -499,7 +503,7 @@ fun DayDetailPanel(
                             color = if (isFuture) NemoIndigo else NemoOrange,
                             label = "${reviewLabelSuffix}单词",
                             value = "$reviewWordsValue 个",
-                            showDivider = (reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
+                            showDivider = (reviewGrammarValue > 0 || todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
                         )
                     }
                     if (reviewGrammarValue > 0) {
@@ -508,6 +512,24 @@ fun DayDetailPanel(
                             color = if (isFuture) NemoPurple else NemoTeal,
                             label = "${reviewLabelSuffix}语法",
                             value = "$reviewGrammarValue 条",
+                            showDivider = (todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
+                        )
+                    }
+                    if (todayActualReviewWordsValue > 0) {
+                        DetailSquircleItem(
+                            icon = Icons.Rounded.PlayArrow,
+                            color = NemoSecondary,
+                            label = "今日已复习单词",
+                            value = "$todayActualReviewWordsValue 个",
+                            showDivider = (todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
+                        )
+                    }
+                    if (todayActualReviewGrammarValue > 0) {
+                        DetailSquircleItem(
+                            icon = Icons.Rounded.PlayCircle,
+                            color = NemoIndigo,
+                            label = "今日已复习语法",
+                            value = "$todayActualReviewGrammarValue 条",
                             showDivider = (newWordsValue > 0 || newGrammarValue > 0)
                         )
                     }

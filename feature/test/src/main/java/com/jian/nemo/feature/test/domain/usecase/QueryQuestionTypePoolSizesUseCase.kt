@@ -142,14 +142,11 @@ class QueryQuestionTypePoolSizesUseCase @Inject constructor(
                     .size
             }
             "today_reviewed" -> {
-                val todayTestedWordIds = settingsRepository.getTodayTestedWordIds()
-                if (todayTestedWordIds.isEmpty()) 0
-                else {
-                    wordRepository.getWordsByIds(todayTestedWordIds.toList())
-                        .filter { it.level in selectedLevels }
-                        .take(limit)
-                        .size
-                }
+                wordRepository.getTodayReviewedWords(today)
+                    .first()
+                    .filter { it.level in selectedLevels }
+                    .take(limit)
+                    .size
             }
             "all" -> {
                 var total = 0
@@ -206,14 +203,11 @@ class QueryQuestionTypePoolSizesUseCase @Inject constructor(
                     .size
             }
             "today_reviewed" -> {
-                val todayTestedGrammarIds = settingsRepository.getTodayTestedGrammarIds()
-                if (todayTestedGrammarIds.isEmpty()) 0
-                else {
-                    grammarRepository.getGrammarsByIds(todayTestedGrammarIds.toList())
-                        .filter { it.grammarLevel in selectedLevels }
-                        .take(limit)
-                        .size
-                }
+                grammarRepository.getTodayReviewedGrammars(today)
+                    .first()
+                    .filter { it.grammarLevel in selectedLevels }
+                    .take(limit)
+                    .size
             }
             "all" -> {
                 val grammars = grammarRepository.getGrammarsByLevels(selectedLevels)

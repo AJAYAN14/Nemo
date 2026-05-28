@@ -76,12 +76,11 @@ class QueryAvailableLevelsUseCase @Inject constructor(
                     }
                 }
                 QuestionSource.TODAY_REVIEWED -> {
-                    val ids = settingsRepository.getTodayTestedWordIds()
-                    if (ids.isNotEmpty()) {
-                        val words = wordRepository.getWordsByIds(ids.toList())
-                        words.groupBy { it.level.uppercase() }.forEach { (level, list) ->
-                            if (level in allLevels) wordLevels.add(level to list.size)
-                        }
+                    val resetHour = settingsRepository.learningDayResetHourFlow.first()
+                    val today = DateTimeUtils.getLearningDay(resetHour)
+                    val words = wordRepository.getTodayReviewedWords(today).first()
+                    words.groupBy { it.level.uppercase() }.forEach { (level, list) ->
+                        if (level in allLevels) wordLevels.add(level to list.size)
                     }
                 }
                 QuestionSource.ALL -> {
@@ -127,12 +126,11 @@ class QueryAvailableLevelsUseCase @Inject constructor(
                     }
                 }
                 QuestionSource.TODAY_REVIEWED -> {
-                    val ids = settingsRepository.getTodayTestedGrammarIds()
-                    if (ids.isNotEmpty()) {
-                        val grammars = grammarRepository.getGrammarsByIds(ids.toList())
-                        grammars.groupBy { it.grammarLevel.uppercase() }.forEach { (level, list) ->
-                            if (level in allLevels) grammarLevels.add(level to list.size)
-                        }
+                    val resetHour = settingsRepository.learningDayResetHourFlow.first()
+                    val today = DateTimeUtils.getLearningDay(resetHour)
+                    val grammars = grammarRepository.getTodayReviewedGrammars(today).first()
+                    grammars.groupBy { it.grammarLevel.uppercase() }.forEach { (level, list) ->
+                        if (level in allLevels) grammarLevels.add(level to list.size)
                     }
                 }
                 QuestionSource.ALL -> {

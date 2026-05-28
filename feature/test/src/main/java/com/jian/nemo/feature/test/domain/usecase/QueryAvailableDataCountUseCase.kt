@@ -73,14 +73,11 @@ class QueryAvailableDataCountUseCase @Inject constructor(
                 }
                 QuestionSource.TODAY_REVIEWED -> {
                     // 今日复习内容
-                    val ids = settingsRepository.getTodayTestedWordIds()
-                    if (ids.isEmpty()) 0
-                    else {
-                        wordRepository.getWordsByIds(ids.toList())
-                            .filter { it.level in config.selectedWordLevels }
-                            .take(limit)
-                            .size
-                    }
+                    wordRepository.getTodayReviewedWords(today)
+                        .first()
+                        .filter { it.level in config.selectedWordLevels }
+                        .take(limit)
+                        .size
                 }
                 QuestionSource.ALL -> {
                     // 查询选中等级的单词总数
@@ -133,14 +130,11 @@ class QueryAvailableDataCountUseCase @Inject constructor(
                         .size
                 }
                 QuestionSource.TODAY_REVIEWED -> {
-                    val ids = settingsRepository.getTodayTestedGrammarIds()
-                    if (ids.isEmpty()) 0
-                    else {
-                        grammarRepository.getGrammarsByIds(ids.toList())
-                            .filter { it.grammarLevel in config.selectedGrammarLevels }
-                            .take(limit)
-                            .size
-                    }
+                    grammarRepository.getTodayReviewedGrammars(today)
+                        .first()
+                        .filter { it.grammarLevel in config.selectedGrammarLevels }
+                        .take(limit)
+                        .size
                 }
                 QuestionSource.ALL -> {
                     // 查询选中等级的语法总数
