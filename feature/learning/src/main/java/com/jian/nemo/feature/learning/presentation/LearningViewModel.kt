@@ -454,7 +454,7 @@ class LearningViewModel @Inject constructor(
             } else if (result is Result.Error) {
                 val message = result.exception.message ?: ""
                 if (message.contains("unique_user_item_report")) {
-                    _uiState.update { it.copy(error = "您已经提交过对此内容的反馈了，请勿重复提交。") }
+                    _uiState.update { it.copy(error = "您已经提交过对此类型问题的反馈了，请勿重复提交。") }
                 } else {
                     _uiState.update { it.copy(error = "反馈失败: $message") }
                 }

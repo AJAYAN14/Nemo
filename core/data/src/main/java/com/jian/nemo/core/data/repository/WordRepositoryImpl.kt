@@ -144,8 +144,7 @@ class WordRepositoryImpl @Inject constructor(
         val upperLevel = level.uppercase()
 
         return wordDao.getAllWordsByLevel(upperLevel).map { entities ->
-
-            entities.map { it.toDomainModel() }
+            mapWithStudyState(entities)
         }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }
 
@@ -289,7 +288,8 @@ class WordRepositoryImpl @Inject constructor(
 
     override suspend fun getLoanWords(): List<Word> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
-            val allWords = wordDao.getAllWords().toDomainModels()
+            val entities = wordDao.getAllWords()
+            val allWords = mapWithStudyState(entities)
             allWords.filter { word ->
                 val japanese = word.japanese
                 val hiragana = word.hiragana
@@ -339,7 +339,7 @@ class WordRepositoryImpl @Inject constructor(
                 PartOfSpeech.FIXED_EXPRESSION -> wordDao.getFixedExpressions()
                 else -> emptyList()
             }
-            entities.toDomainModels()
+            mapWithStudyState(entities)
         } catch (e: Exception) {
             emptyList()
         }

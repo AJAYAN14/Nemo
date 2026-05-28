@@ -627,15 +627,17 @@ private fun ExerciseContent(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val isCnToJp = exercise.type == "CN_TO_JP"
+                    val labelColor = if (isCnToJp) NemoPrimary else NemoRed
                     Surface(
-                        color = NemoSecondary.copy(alpha = 0.1f),
+                        color = labelColor.copy(alpha = 0.1f),
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = if (exercise.type == "CN_TO_JP") "中翻日" else "日翻中",
+                            text = if (isCnToJp) "中翻日" else "日翻中",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
-                            color = NemoSecondary,
+                            color = labelColor,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -664,11 +666,29 @@ private fun ExerciseContent(
                         }
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    IconButton(
-                        onClick = { onEvent(AIWorkshopEvent.GenerateNewExercise) },
-                        modifier = Modifier.size(32.dp)
+                    if (exercise.type == "JP_TO_CN") {
+                        SpeakerButton(
+                            isPlaying = uiState.playingAudioId == "question",
+                            onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
+                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                            size = 40.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .requiredSize(40.dp)
+                            .clip(CircleShape)
+                            .background(if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100)
+                            .clickable { onEvent(AIWorkshopEvent.GenerateNewExercise) },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Rounded.Refresh, contentDescription = "换一题", tint = NemoNeutrals.Gray400)
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "换一题",
+                            tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 }
                 
@@ -682,16 +702,6 @@ private fun ExerciseContent(
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
                             lineHeight = 34.sp
-                        )
-                    }
-
-                    if (exercise.type == "JP_TO_CN") {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        SpeakerButton(
-                            isPlaying = uiState.playingAudioId == "question",
-                            onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
-                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                            size = 40.dp
                         )
                     }
                 }

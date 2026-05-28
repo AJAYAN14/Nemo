@@ -19,6 +19,13 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Apps
+import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.HourglassEmpty
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.jian.nemo.core.ui.animation.animateListItem
@@ -44,6 +51,13 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
+private enum class StudyFilter {
+    ALL,      // 全部
+    LEARNED,  // 已学
+    UNLEARNED // 未学
+}
+
+
 /**
  * 分类单词列表界面 (Refactored to match WordListScreen UI)
  *
@@ -67,6 +81,7 @@ fun CategoryWordsScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val isDark = isSystemInDarkTheme()
     val backgroundColor = MaterialTheme.colorScheme.background
 
     // Expanded State (Track which levels are OPEN)
@@ -82,20 +97,31 @@ fun CategoryWordsScreen(
     // Since CategoryWordsViewModel typically just loads, we'll add a local search query state for UI filtering
     // effectively mirroring WordListScreen's behavior.
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
+    var showFilterMenu by remember { mutableStateOf(false) }
 
     // Filter logic
-    val filteredWordsByLevel = remember(uiState.wordsByLevel, searchQuery) {
-        if (searchQuery.isBlank()) {
-            uiState.wordsByLevel
-        } else {
-            uiState.wordsByLevel.mapValues { (_, words) ->
-                words.filter { word ->
+    val filteredWordsByLevel = remember(uiState.wordsByLevel, searchQuery, filterState) {
+        uiState.wordsByLevel.mapValues { (_, words) ->
+            words.filter { word ->
+                // 1. 过滤已学/未学/全部
+                val matchesFilter = when (filterState) {
+                    StudyFilter.ALL -> true
+                    StudyFilter.LEARNED -> word.isLearned
+                    StudyFilter.UNLEARNED -> !word.isLearned
+                }
+                if (!matchesFilter) return@filter false
+
+                // 2. 过滤搜索词
+                if (searchQuery.isBlank()) {
+                    true
+                } else {
                     word.japanese.contains(searchQuery, ignoreCase = true) ||
                     word.hiragana.contains(searchQuery, ignoreCase = true) ||
                     word.chinese.contains(searchQuery, ignoreCase = true)
                 }
-            }.filterValues { it.isNotEmpty() }
-        }
+            }
+        }.filterValues { it.isNotEmpty() }
     }
 
     // 当搜索词改变且不为空时，自动展开所有有结果的分类
@@ -115,7 +141,137 @@ fun CategoryWordsScreen(
             Column(modifier = Modifier.background(backgroundColor)) {
                 CommonHeader(
                     title = if(uiState.isLoading) categoryTitle else "$categoryTitle (${uiState.words.size})",
-                    onBack = onNavigateBack
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        Box {
+                            IconButton(onClick = { showFilterMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Layers,
+                                    contentDescription = "筛选",
+                                    tint = if (filterState != StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showFilterMenu,
+                                onDismissRequest = { showFilterMenu = false },
+                                shape = RoundedCornerShape(16.dp),
+                                containerColor = if (isDark) Color.Black else Color.White
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "全部",
+                                            fontWeight = if (filterState == StudyFilter.ALL) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (filterState == StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        filterState = StudyFilter.ALL
+                                        showFilterMenu = false
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .background(NemoIndigo.copy(alpha = 0.15f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Apps,
+                                                contentDescription = null,
+                                                tint = NemoIndigo,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    },
+                                    trailingIcon = {
+                                        if (filterState == StudyFilter.ALL) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "已学",
+                                            fontWeight = if (filterState == StudyFilter.LEARNED) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (filterState == StudyFilter.LEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        filterState = StudyFilter.LEARNED
+                                        showFilterMenu = false
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .background(NemoSecondary.copy(alpha = 0.15f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.DoneAll,
+                                                contentDescription = null,
+                                                tint = NemoSecondary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    },
+                                    trailingIcon = {
+                                        if (filterState == StudyFilter.LEARNED) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "未学",
+                                            fontWeight = if (filterState == StudyFilter.UNLEARNED) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (filterState == StudyFilter.UNLEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    },
+                                    onClick = {
+                                        filterState = StudyFilter.UNLEARNED
+                                        showFilterMenu = false
+                                    },
+                                    leadingIcon = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .background(NemoOrange.copy(alpha = 0.15f), CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.HourglassEmpty,
+                                                contentDescription = null,
+                                                tint = NemoOrange,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    },
+                                    trailingIcon = {
+                                        if (filterState == StudyFilter.UNLEARNED) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
                 )
 
                 // Search Bar

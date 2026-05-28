@@ -16,7 +16,7 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 /**
- * 首页ViewModel（简化版，显示统计数据）
+ * 首页ViewModel
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(

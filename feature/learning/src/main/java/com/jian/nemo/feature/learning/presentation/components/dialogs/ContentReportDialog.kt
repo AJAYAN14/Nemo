@@ -26,8 +26,7 @@ import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
- * 内容报告确认对话框 (Premium Style)
- * 采用 Nemo 统一的对话框设计语言：Squircle 圆角 + 头部图标 + 沉浸式排版 + 错误类型多维选择
+ * 内容报告确认对话框
  */
 @Composable
 fun ContentReportDialog(
@@ -182,48 +181,68 @@ fun ContentReportDialog(
                     }
                 }
 
-                // 4b. Dynamic Other Description Input Field
-                if (selectedType == "other") {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = otherDescription,
-                        onValueChange = { if (it.length <= 100) otherDescription = it },
-                        placeholder = {
-                            Text(
-                                text = "请描述具体的内容错误（100字以内）",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                )
-                            )
-                        },
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        maxLines = 3,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(86.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = primaryColor,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
-                    )
-                }
+                // 4b. Description Input Field (Always visible, mandatory for 'other')
+                val isDescriptionRequired = selectedType == "other"
+                val isSubmitEnabled = !isDescriptionRequired || otherDescription.trim().isNotEmpty()
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = otherDescription,
+                    onValueChange = { if (it.length <= 100) otherDescription = it },
+                    placeholder = {
+                        Text(
+                            text = if (isDescriptionRequired) "请详细描述错误内容（必填，100字以内）" else "请补充具体错误细节（选填，100字以内）",
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        )
+                    },
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    maxLines = 3,
+                    supportingText = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.CenterEnd
+                        ) {
+                            Text(
+                                text = "${otherDescription.length}/100",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isDescriptionRequired && otherDescription.trim().isEmpty()) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                }
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 86.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = primaryColor,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // 5. Action Buttons (Standard Pro Max Style)
                 Button(
                     onClick = { 
-                        val desc = if (selectedType == "other") otherDescription.trim().takeIf { it.isNotEmpty() } else null
+                        val desc = otherDescription.trim().takeIf { it.isNotEmpty() }
                         onConfirm(selectedType, desc) 
                     },
+                    enabled = isSubmitEnabled,
                     shape = CircleShape,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = primaryColor,
-                        contentColor = Color.White
+                        contentColor = Color.White,
+                        disabledContainerColor = primaryColor.copy(alpha = 0.38f),
+                        disabledContentColor = Color.White.copy(alpha = 0.5f)
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {

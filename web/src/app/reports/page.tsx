@@ -35,6 +35,7 @@ export default function ReportsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [filterType, setFilterType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
   // Modals state
   const [isWordModalOpen, setIsWordModalOpen] = useState(false);
@@ -92,7 +93,7 @@ export default function ReportsPage() {
       let query = supabase
         .from("content_reports")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: sortOrder === "asc" });
 
       if (filterStatus !== "all") {
         query = query.eq("status", filterStatus);
@@ -124,7 +125,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchReports();
-  }, [filterStatus]);
+  }, [filterStatus, sortOrder]);
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
@@ -236,6 +237,20 @@ export default function ReportsPage() {
               <option value="all">全部类型</option>
               <option value="word">单词</option>
               <option value="grammar">语法</option>
+            </select>
+          </div>
+
+          {/* 时间排序 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>时间排序:</span>
+            <select 
+              className="input" 
+              style={{ width: '150px' }}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+            >
+              <option value="desc">最新优先</option>
+              <option value="asc">最早优先</option>
             </select>
           </div>
 

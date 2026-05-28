@@ -25,6 +25,7 @@ data class GrammarListUiState(
     val isLoading: Boolean = true,
     val error: String? = null,
     val searchQuery: String = "",
+    val filterState: StudyFilter = StudyFilter.ALL,
     val isRefreshing: Boolean = false
 )
 
@@ -40,29 +41,42 @@ class GrammarListViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)
+    private val _filterState = MutableStateFlow(StudyFilter.ALL)
 
     val uiState: StateFlow<GrammarListUiState> = combine(
         grammarRepository.getGrammarsByLevels(listOf("N1", "N2", "N3", "N4", "N5")),
         _searchQuery,
+        _filterState,
         _isRefreshing
-    ) { allGrammars, query, isRefreshing ->
+    ) { allGrammars, query, filter, isRefreshing ->
         // 过滤
-        val filteredList = if (query.isBlank()) {
-            allGrammars
-        } else {
-            allGrammars.filter { g ->
+        val filteredList = allGrammars.filter { g ->
+            // 1. 过滤已学/未学/全部
+            val matchesFilter = when (filter) {
+                StudyFilter.ALL -> true
+                StudyFilter.LEARNED -> g.isLearned
+                StudyFilter.UNLEARNED -> !g.isLearned
+            }
+            if (!matchesFilter) return@filter false
+
+            // 2. 过滤搜索词
+            if (query.isBlank()) {
+                true
+            } else {
                 // 1. 匹配语法标题
-                if (GrammarSearchUtils.isMatch(g.grammar, query)) return@filter true
-                
-                // 2. 匹配用法详情 (解释、接续、笔记)
-                g.usages.any { usage ->
-                    GrammarSearchUtils.isMatch(usage.explanation, query) ||
-                    GrammarSearchUtils.isMatch(usage.connection, query) ||
-                    (usage.notes?.let { GrammarSearchUtils.isMatch(it, query) } ?: false) ||
-                    // 3. 匹配例句 (文本、翻译)
-                    usage.examples.any { ex ->
-                        GrammarSearchUtils.isMatch(ex.sentence, query) ||
-                        ex.translation.contains(query, ignoreCase = true)
+                if (GrammarSearchUtils.isMatch(g.grammar, query)) {
+                    true
+                } else {
+                    // 2. 匹配用法详情 (解释、接续、笔记)
+                    g.usages.any { usage ->
+                        GrammarSearchUtils.isMatch(usage.explanation, query) ||
+                        GrammarSearchUtils.isMatch(usage.connection, query) ||
+                        (usage.notes?.let { GrammarSearchUtils.isMatch(it, query) } ?: false) ||
+                        // 3. 匹配例句 (文本、翻译)
+                        usage.examples.any { ex ->
+                            GrammarSearchUtils.isMatch(ex.sentence, query) ||
+                            ex.translation.contains(query, ignoreCase = true)
+                        }
                     }
                 }
             }
@@ -78,6 +92,7 @@ class GrammarListViewModel @Inject constructor(
             grammarsByLevel = grouped,
             isLoading = false,
             searchQuery = query,
+            filterState = filter,
             isRefreshing = isRefreshing
         )
     }
@@ -90,6 +105,10 @@ class GrammarListViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onFilterStateChanged(filter: StudyFilter) {
+        _filterState.value = filter
     }
 
     fun onRefresh() {

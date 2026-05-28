@@ -16,11 +16,18 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+enum class StudyFilter {
+    ALL,      // 全部
+    LEARNED,  // 已学
+    UNLEARNED // 未学
+}
+
 data class WordListUiState(
     val isLoading: Boolean = true,
     val wordsByLevel: Map<String, List<Word>> = emptyMap(),
     val error: String? = null,
     val searchQuery: String = "",
+    val filterState: StudyFilter = StudyFilter.ALL,
     val isRefreshing: Boolean = false,
     val syncMessage: String? = null
 )
@@ -34,6 +41,7 @@ class WordListViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)
     private val _syncMessage = MutableStateFlow<String?>(null)
+    private val _filterState = MutableStateFlow(StudyFilter.ALL)
 
     // 所有单词聚合 Flow
     private val allWordsFlow = combine(
@@ -49,14 +57,24 @@ class WordListViewModel @Inject constructor(
     val uiState: StateFlow<WordListUiState> = combine(
         allWordsFlow,
         _searchQuery,
+        _filterState,
         _isRefreshing,
         _syncMessage
-    ) { allWords, query, isRefreshing, syncMessage ->
+    ) { allWords, query, filter, isRefreshing, syncMessage ->
         // Perform filtering on IO thread via flowOn below
-        val filteredList = if (query.isBlank()) {
-            allWords
-        } else {
-            allWords.filter { w ->
+        val filteredList = allWords.filter { w ->
+            // 1. 过滤已学/未学/全部
+            val matchesFilter = when (filter) {
+                StudyFilter.ALL -> true
+                StudyFilter.LEARNED -> w.isLearned
+                StudyFilter.UNLEARNED -> !w.isLearned
+            }
+            if (!matchesFilter) return@filter false
+
+            // 2. 过滤搜索词
+            if (query.isBlank()) {
+                true
+            } else {
                 w.japanese.contains(query, ignoreCase = true) ||
                 w.hiragana.contains(query, ignoreCase = true) ||
                 w.chinese.contains(query, ignoreCase = true)
@@ -73,6 +91,7 @@ class WordListViewModel @Inject constructor(
             isLoading = false,
             wordsByLevel = grouped,
             searchQuery = query,
+            filterState = filter,
             isRefreshing = isRefreshing,
             syncMessage = syncMessage,
             error = null
@@ -87,6 +106,10 @@ class WordListViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun onFilterStateChanged(filter: StudyFilter) {
+        _filterState.value = filter
     }
 
     fun onRefresh() {

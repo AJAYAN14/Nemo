@@ -25,11 +25,12 @@ export default function GrammarsPage() {
   const [levelCounts, setLevelCounts] = useState<Record<string, number>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGrammar, setEditingGrammar] = useState<Grammar | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<"default" | "asc" | "desc">("default");
 
   useEffect(() => {
     fetchGrammars();
     fetchLevelCounts();
-  }, [searchTerm, levelFilter, statusFilter]);
+  }, [searchTerm, levelFilter, statusFilter, sortOrder]);
 
   async function fetchLevelCounts() {
     const levels = ["N1", "N2", "N3", "N4", "N5"];
@@ -50,9 +51,15 @@ export default function GrammarsPage() {
     setLoading(true);
     let query = supabase
       .from("dictionary_grammars")
-      .select("*")
-      .order("id", { ascending: true })
-      .limit(100);
+      .select("*");
+
+    if (sortOrder === "default") {
+      query = query.order("id", { ascending: true });
+    } else {
+      query = query.order("updated_at", { ascending: sortOrder === "asc" });
+    }
+
+    query = query.limit(100);
 
     if (searchTerm) {
       query = query.ilike("title", `%${searchTerm}%`);
@@ -138,6 +145,18 @@ export default function GrammarsPage() {
               <option value="All">全部状态</option>
               <option value="Active">仅上架</option>
               <option value="Delisted">仅下架</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <select 
+              className="input" 
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as "default" | "asc" | "desc")}
+              style={{ paddingRight: '32px', width: '120px' }}
+            >
+              <option value="default">默认排序</option>
+              <option value="desc">最新更新</option>
+              <option value="asc">最早更新</option>
             </select>
           </div>
           <button 
