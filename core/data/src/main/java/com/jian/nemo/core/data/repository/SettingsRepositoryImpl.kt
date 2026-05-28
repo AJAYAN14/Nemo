@@ -1069,6 +1069,42 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val syncErrorLogsFlow: Flow<List<com.jian.nemo.core.domain.model.SyncErrorLog>> = dataStore.data
+        .map { preferences ->
+            val json = preferences[PreferencesKeys.SYNC_ERROR_LOGS] ?: "[]"
+            try {
+                Json.decodeFromString<List<com.jian.nemo.core.domain.model.SyncErrorLog>>(json)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+
+    override suspend fun addSyncErrorLog(error: String) {
+        dataStore.edit { preferences ->
+            val json = preferences[PreferencesKeys.SYNC_ERROR_LOGS] ?: "[]"
+            val currentList = try {
+                Json.decodeFromString<List<com.jian.nemo.core.domain.model.SyncErrorLog>>(json)
+            } catch (e: Exception) {
+                emptyList()
+            }
+            val newLog = com.jian.nemo.core.domain.model.SyncErrorLog(
+                timestamp = System.currentTimeMillis(),
+                message = error
+            )
+            val newList = (listOf(newLog) + currentList).take(50)
+            preferences[PreferencesKeys.SYNC_ERROR_LOGS] = Json.encodeToString(newList)
+            preferences[PreferencesKeys.LAST_SYNC_ERROR] = error
+        }
+    }
+
+    override suspend fun clearSyncErrorLogs() {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SYNC_ERROR_LOGS] = "[]"
+            preferences[PreferencesKeys.LAST_SYNC_ERROR] = ""
+        }
+    }
+
+
 
     override val lastContentVersionFlow: Flow<Int> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.LAST_CONTENT_VERSION] ?: 0

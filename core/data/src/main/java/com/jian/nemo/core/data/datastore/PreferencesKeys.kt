@@ -18,6 +18,7 @@ object PreferencesKeys {
     val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
     val LAST_SYNC_SUCCESS = booleanPreferencesKey("last_sync_success")
     val LAST_SYNC_ERROR = stringPreferencesKey("last_sync_error")
+    val SYNC_ERROR_LOGS = stringPreferencesKey("sync_error_logs")
     /** 上次同步冲突数量 */
     val LAST_SYNC_CONFLICT_COUNT = intPreferencesKey("last_sync_conflict_count")
 

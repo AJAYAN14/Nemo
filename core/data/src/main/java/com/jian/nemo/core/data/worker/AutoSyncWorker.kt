@@ -102,7 +102,7 @@ class AutoSyncWorker @AssistedInject constructor(
                  Log.w(TAG, "自动同步失败: ${syncResult.message}, 类型: ${syncResult.errorType}")
 
                  settingsRepository.setLastSyncSuccess(false)
-                 settingsRepository.setLastSyncError(syncResult.message)
+                 settingsRepository.addSyncErrorLog(syncResult.message)
 
                  // 发送全局失败通知 (包含具体原因)
                  syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步失败: ${syncResult.message}"))
@@ -117,7 +117,7 @@ class AutoSyncWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "自动同步异常", e)
             settingsRepository.setLastSyncSuccess(false)
-            settingsRepository.setLastSyncError(e.message ?: "未知错误")
+            settingsRepository.addSyncErrorLog(e.message ?: "未知错误")
 
             // 发送全局异常通知
             syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步异常: ${e.message ?: "未知错误"}"))

@@ -6,6 +6,8 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,9 +44,7 @@ fun SyncDiagnosticsScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    val scrollState = rememberScrollState()
-
-    val hasError = uiState.lastSyncError.isNotEmpty()
+    val hasError = uiState.syncErrorLogs.isNotEmpty()
 
     Scaffold(
         topBar = {
@@ -122,43 +122,69 @@ fun SyncDiagnosticsScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(scrollState)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            contentPadding = PaddingValues(vertical = 20.dp)
         ) {
             // 1. 诊断汇总状态大卡片
-            DiagnosticOverviewCard(
-                hasError = hasError,
-                lastSyncTime = uiState.lastSyncTime
-            )
-
-            // 2. 详细错误日志展示（有报错时显示）
-            AnimatedVisibility(
-                visible = hasError,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                ErrorLogCard(
-                    errorText = uiState.lastSyncError,
-                    onCopy = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Sync Error Log", uiState.lastSyncError)
-                        clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "日志已复制到剪切板", Toast.LENGTH_SHORT).show()
-                    },
-                    onClear = {
-                        viewModel.onEvent(SettingsEvent.ClearSyncError)
-                        Toast.makeText(context, "报错日志已清除", Toast.LENGTH_SHORT).show()
-                    }
+            item {
+                DiagnosticOverviewCard(
+                    hasError = hasError,
+                    lastSyncTime = uiState.lastSyncTime
                 )
             }
 
+            // 2. 详细错误日志展示
+            if (hasError) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "历史报错日志",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        
+                        TextButton(
+                            onClick = {
+                                viewModel.onEvent(SettingsEvent.ClearSyncError)
+                                Toast.makeText(context, "报错日志已清除", Toast.LENGTH_SHORT).show()
+                            }
+                        ) {
+                            Text("清空所有", color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+
+                items(
+                    items = uiState.syncErrorLogs,
+                    key = { it.timestamp.toString() + it.message.hashCode() }
+                ) { log ->
+                    ErrorLogItemCard(
+                        log = log,
+                        onCopy = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                            val clip = ClipData.newPlainText("Sync Error Log", "[${format.format(Date(log.timestamp))}] ${log.message}")
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "日志已复制到剪切板", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier
+                    )
+                }
+            }
+
             // 3. 常见排查方案指引
-            TroubleshootingGuideSection()
+            item {
+                TroubleshootingGuideSection()
+            }
         }
     }
 }
@@ -275,98 +301,66 @@ private fun DiagnosticOverviewCard(
 }
 
 /**
- * 详细报错日志展示卡片
+ * 详细报错日志展示卡片 (Glassmorphism 风格)
  */
 @Composable
-private fun ErrorLogCard(
-    errorText: String,
+private fun ErrorLogItemCard(
+    log: com.jian.nemo.core.domain.model.SyncErrorLog,
     onCopy: () -> Unit,
-    onClear: () -> Unit
+    modifier: Modifier = Modifier
 ) {
-    Column {
-        Text(
-            text = "最近报错日志",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
-        )
-
-        Card(
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            border = BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.15f)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
+        ),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = format.format(Date(log.timestamp)),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+                
                 Surface(
-                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    shape = CircleShape,
+                    color = Color.Transparent,
+                    onClick = onCopy,
+                    modifier = Modifier.size(28.dp)
                 ) {
-                    Text(
-                        text = errorText,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onErrorContainer,
-                        modifier = Modifier.padding(14.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onCopy,
-                        modifier = Modifier.weight(1f),
-                        shape = CircleShape,
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Rounded.ContentCopy,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            contentDescription = "复制日志",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("复制日志", fontSize = 14.sp)
-                    }
-
-                    OutlinedButton(
-                        onClick = onClear,
-                        modifier = Modifier.weight(1f),
-                        shape = CircleShape,
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.3f)
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.DeleteSweep,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("清除日志", fontSize = 14.sp)
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = log.message,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
 }

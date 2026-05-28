@@ -130,7 +130,8 @@ class SettingsViewModel @Inject constructor(
                 settingsRepository.lastSyncConflictCountFlow,
                 settingsRepository.lastDictionarySyncTimestampFlow,
                 settingsRepository.lastContentVersionFlow,
-                settingsRepository.lastSyncErrorFlow
+                settingsRepository.lastSyncErrorFlow,
+                settingsRepository.syncErrorLogsFlow
             ) { args ->
                 SyncSettings(
                     lastSyncTime = args[0] as Long,
@@ -138,7 +139,8 @@ class SettingsViewModel @Inject constructor(
                     lastSyncConflictCount = args[2] as Int,
                     lastDictionarySyncTimestamp = args[3] as Long,
                     lastContentVersion = args[4] as Int,
-                    lastSyncError = args[5] as String
+                    lastSyncError = args[5] as String,
+                    syncErrorLogs = args[6] as List<com.jian.nemo.core.domain.model.SyncErrorLog>
                 )
             }
 
@@ -200,6 +202,7 @@ class SettingsViewModel @Inject constructor(
                         lastDictionarySyncTimestamp = sync.lastDictionarySyncTimestamp,
                         lastContentVersion = sync.lastContentVersion,
                         lastSyncError = sync.lastSyncError,
+                        syncErrorLogs = sync.syncErrorLogs.toList(),
                         learningSteps = advanced.learningSteps,
                         relearningSteps = advanced.relearningSteps,
                         learnAheadLimit = advanced.learnAheadLimit,
@@ -631,7 +634,7 @@ class SettingsViewModel @Inject constructor(
 
     private fun clearSyncError() {
         viewModelScope.launch {
-            settingsRepository.setLastSyncError("")
+            settingsRepository.clearSyncErrorLogs()
         }
     }
 }
@@ -669,5 +672,6 @@ private data class SyncSettings(
     val lastSyncConflictCount: Int,
     val lastDictionarySyncTimestamp: Long,
     val lastContentVersion: Int,
-    val lastSyncError: String
+    val lastSyncError: String,
+    val syncErrorLogs: List<com.jian.nemo.core.domain.model.SyncErrorLog>
 )

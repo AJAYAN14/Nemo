@@ -431,6 +431,11 @@ interface SettingsRepository {
     val lastSyncErrorFlow: Flow<String>
     suspend fun setLastSyncError(error: String)
 
+    /** 同步报错日志列表Flow */
+    val syncErrorLogsFlow: Flow<List<com.jian.nemo.core.domain.model.SyncErrorLog>>
+    suspend fun addSyncErrorLog(error: String)
+    suspend fun clearSyncErrorLogs()
+
 
     /** 词库云更新：上次已应用的内容版本号（0 = 未更新过） */
     val lastContentVersionFlow: Flow<Int>

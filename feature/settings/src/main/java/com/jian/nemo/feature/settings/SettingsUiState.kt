@@ -45,6 +45,7 @@ data class SettingsUiState(
  // 恢复被中断的标识
     val syncMessage: String? = null,
     val lastSyncError: String = "",
+    val syncErrorLogs: List<com.jian.nemo.core.domain.model.SyncErrorLog> = emptyList(),
 
     // TTS 设置
     val ttsSpeechRate: Float = 1.0f,
