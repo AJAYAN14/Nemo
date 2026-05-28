@@ -129,14 +129,16 @@ class SettingsViewModel @Inject constructor(
                 settingsRepository.isAutoSyncEnabledFlow,
                 settingsRepository.lastSyncConflictCountFlow,
                 settingsRepository.lastDictionarySyncTimestampFlow,
-                settingsRepository.lastContentVersionFlow
+                settingsRepository.lastContentVersionFlow,
+                settingsRepository.lastSyncErrorFlow
             ) { args ->
                 SyncSettings(
                     lastSyncTime = args[0] as Long,
                     isAutoSyncEnabled = args[1] as Boolean,
                     lastSyncConflictCount = args[2] as Int,
                     lastDictionarySyncTimestamp = args[3] as Long,
-                    lastContentVersion = args[4] as Int
+                    lastContentVersion = args[4] as Int,
+                    lastSyncError = args[5] as String
                 )
             }
 
@@ -197,6 +199,7 @@ class SettingsViewModel @Inject constructor(
                         lastSyncConflictCount = sync.lastSyncConflictCount,
                         lastDictionarySyncTimestamp = sync.lastDictionarySyncTimestamp,
                         lastContentVersion = sync.lastContentVersion,
+                        lastSyncError = sync.lastSyncError,
                         learningSteps = advanced.learningSteps,
                         relearningSteps = advanced.relearningSteps,
                         learnAheadLimit = advanced.learnAheadLimit,
@@ -257,6 +260,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.ImportData -> importData(event.uri)
             is SettingsEvent.ResetProgress -> resetProgress(event.includeCloud)
             is SettingsEvent.RepairLocalData -> repairData()
+            is SettingsEvent.ClearSyncError -> clearSyncError()
         }
     }
 
@@ -624,6 +628,12 @@ class SettingsViewModel @Inject constructor(
             }
         }
     }
+
+    private fun clearSyncError() {
+        viewModelScope.launch {
+            settingsRepository.setLastSyncError("")
+        }
+    }
 }
 
 private data class ThemeSettings(
@@ -658,5 +668,6 @@ private data class SyncSettings(
     val isAutoSyncEnabled: Boolean,
     val lastSyncConflictCount: Int,
     val lastDictionarySyncTimestamp: Long,
-    val lastContentVersion: Int
+    val lastContentVersion: Int,
+    val lastSyncError: String
 )

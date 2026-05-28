@@ -568,6 +568,22 @@ interface GrammarDao {
     suspend fun getRandomGrammarWithUsagesByLevel(level: String): GrammarWithUsages?
 
     /**
+     * 随机获取指定等级的一个语法（含用法和例句），并排除已给定的 ID 列表
+     */
+    @Transaction
+    @Query("""
+        SELECT g.* FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE UPPER(g.grammar_level) = UPPER(:level)
+        AND g.id NOT IN (:excludeIds)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        ORDER BY RANDOM()
+        LIMIT 1
+    """)
+    suspend fun getRandomGrammarWithUsagesByLevelExcept(level: String, excludeIds: List<Int>): GrammarWithUsages?
+
+    /**
      * 获取指定等级的语法总数
      * 用于 AI 工坊语法专项模式的空数据兜底判断
      */

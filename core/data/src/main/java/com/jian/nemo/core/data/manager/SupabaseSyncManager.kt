@@ -383,7 +383,7 @@ class SupabaseSyncManager @Inject constructor(
             
             settingsRepository.setLastSyncSuccess(false)
             settingsRepository.setLastSyncError(errorMsg)
-            emit(SyncProgress.Failed("Sync failed: $errorMsg"))
+            emit(SyncProgress.Failed("同步失败: $errorMsg"))
         } finally {
             syncMutex.unlock()
         }

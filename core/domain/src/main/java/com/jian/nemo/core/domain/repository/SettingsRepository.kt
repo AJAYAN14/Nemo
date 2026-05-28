@@ -654,6 +654,10 @@ interface SettingsRepository {
     /** AI 日语阅读难度 Flow */
     val aiReadingDifficultyFlow: Flow<String>
     suspend fun setAiReadingDifficulty(difficulty: String)
+
+    /** AI 工坊最近已抽取语法点 ID 列表 Flow */
+    val aiRecentGrammarIdsFlow: Flow<String>
+    suspend fun setAiRecentGrammarIds(json: String)
 }
 
 /**

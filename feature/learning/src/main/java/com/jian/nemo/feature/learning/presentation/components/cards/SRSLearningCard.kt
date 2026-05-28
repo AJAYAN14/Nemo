@@ -385,7 +385,8 @@ fun SRSLearningCard(
                             text = word.chinese,
                             color = primaryTextColor,
                             fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            lineHeight = 34.sp
                         )
                     }
 

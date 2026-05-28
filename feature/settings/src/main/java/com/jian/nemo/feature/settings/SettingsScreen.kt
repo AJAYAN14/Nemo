@@ -44,6 +44,7 @@ fun SettingsScreen(
     onNavigateToAdvancedLearning: () -> Unit,
     onNavigateToThemeSettings: () -> Unit,
     onNavigateToAiSettings: () -> Unit,
+    onNavigateToSyncDiagnostics: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -166,7 +167,7 @@ fun SettingsScreen(
                                     viewModel.onEvent(SettingsEvent.SyncData)
                                 }
                             },
-                            showDivider = false,
+                            showDivider = true,
                             trailing = {
                                 NemoGooeyToggle(
                                     checked = uiState.isAutoSyncEnabled,
@@ -175,6 +176,15 @@ fun SettingsScreen(
                                     inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                 )
                             }
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Report,
+                            iconColor = if (uiState.lastSyncError.isNotEmpty()) NemoDanger else NemoPrimary,
+                            title = "同步故障诊断",
+                            subtitle = if (uiState.lastSyncError.isNotEmpty()) "检测到最新同步存在报错" else "未发现同步异常",
+                            onClick = onNavigateToSyncDiagnostics,
+                            showDivider = false
                         )
                     } else {
                         // 未登录

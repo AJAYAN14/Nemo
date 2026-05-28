@@ -104,6 +104,9 @@ class AIWorkshopViewModel @Inject constructor(
     // 标志位：确保从本地存储恢复答案的操作仅在初始化时执行一次
     private var isAnswerRestored = false
 
+    // 标志位：确保从本地存储恢复状态的操作仅在初始化时执行一次
+    private var isStateRestored = false
+
     init {
         observeSettings()
         cleanupOldHistory()
@@ -193,7 +196,7 @@ class AIWorkshopViewModel @Inject constructor(
                     WorkshopMode.FREE
                 }
 
-                val restoredGrammarState = if (currentGrammarStateJson.isNotBlank()) {
+                val restoredGrammarState = if (!isStateRestored && currentGrammarStateJson.isNotBlank()) {
                     try {
                         Json.decodeFromString<AIPersistedGrammarState>(currentGrammarStateJson)
                     } catch (_: Exception) {
@@ -202,22 +205,24 @@ class AIWorkshopViewModel @Inject constructor(
                 } else null
 
                 // 还原内存中的语法点详情和用法ID
-                if (restoredGrammarState != null) {
-                    currentGrammarInfo = AIClient.GrammarInfo(
-                        name = restoredGrammarState.name,
-                        connection = restoredGrammarState.connection,
-                        explanation = restoredGrammarState.explanation,
-                        subtype = restoredGrammarState.subtype,
-                        notes = restoredGrammarState.notes
-                    )
-                    currentUsageId = restoredGrammarState.usageId
-                } else {
-                    currentGrammarInfo = null
-                    currentUsageId = null
+                if (!isStateRestored) {
+                    if (restoredGrammarState != null) {
+                        currentGrammarInfo = AIClient.GrammarInfo(
+                            name = restoredGrammarState.name,
+                            connection = restoredGrammarState.connection,
+                            explanation = restoredGrammarState.explanation,
+                            subtype = restoredGrammarState.subtype,
+                            notes = restoredGrammarState.notes
+                        )
+                        currentUsageId = restoredGrammarState.usageId
+                    } else {
+                        currentGrammarInfo = null
+                        currentUsageId = null
+                    }
                 }
 
                 _uiState.update { state ->
-                    val restoredExercise = if (state.currentExercise == null && currentExerciseJson.isNotBlank()) {
+                    val restoredExercise = if (!isStateRestored && currentExerciseJson.isNotBlank()) {
                         try {
                             Json.decodeFromString<AIExercise>(currentExerciseJson)
                         } catch (_: Exception) {
@@ -225,7 +230,7 @@ class AIWorkshopViewModel @Inject constructor(
                         }
                     } else state.currentExercise
 
-                    val restoredGradeResult = if (state.gradeResult == null && currentGradeResultJson.isNotBlank()) {
+                    val restoredGradeResult = if (!isStateRestored && currentGradeResultJson.isNotBlank()) {
                         try {
                             Json.decodeFromString<AIGradeResult>(currentGradeResultJson)
                         } catch (_: Exception) {
@@ -233,19 +238,29 @@ class AIWorkshopViewModel @Inject constructor(
                         }
                     } else state.gradeResult
 
+                    val restoredGrammarPoint = if (!isStateRestored) {
+                        restoredGrammarState?.name
+                    } else state.currentGrammarPoint
+
+                    val restoredGrammarSubtype = if (!isStateRestored) {
+                        restoredGrammarState?.subtype
+                    } else state.currentGrammarSubtype
+
                     state.copy(
                         difficulty = difficulty,
                         workshopMode = restoredMode,
                         currentExercise = restoredExercise,
                         gradeResult = restoredGradeResult,
-                        currentGrammarPoint = restoredGrammarState?.name,
-                        currentGrammarSubtype = restoredGrammarState?.subtype,
+                        currentGrammarPoint = restoredGrammarPoint,
+                        currentGrammarSubtype = restoredGrammarSubtype,
                         userAnswer = if (!isAnswerRestored && state.userAnswer.isBlank()) {
                             if (currentAnswer.isNotBlank()) isAnswerRestored = true
                             currentAnswer
                         } else state.userAnswer
                     )
                 }
+
+                isStateRestored = true
             }
         }
     }
@@ -348,7 +363,24 @@ class AIWorkshopViewModel @Inject constructor(
             // 语法专项模式：先从数据库随机抽取语法
             var grammarInfo: AIClient.GrammarInfo? = null
             if (mode == WorkshopMode.GRAMMAR) {
-                val grammarWithUsages = grammarDao.getRandomGrammarWithUsagesByLevel(difficulty)
+                // 1. 从 DataStore 获取最近已抽取的 ID 列表
+                val recentIdsJson = settingsRepository.aiRecentGrammarIdsFlow.first()
+                val recentIds = try {
+                    Json.decodeFromString<List<Int>>(recentIdsJson)
+                } catch (e: Exception) {
+                    emptyList()
+                }
+
+                // 2. 优先进行去重抽取
+                var grammarWithUsages = if (recentIds.isNotEmpty()) {
+                    grammarDao.getRandomGrammarWithUsagesByLevelExcept(difficulty, recentIds)
+                } else null
+
+                // 3. 降级兜底：若去重抽取返回空，退回普通抽取
+                if (grammarWithUsages == null) {
+                    grammarWithUsages = grammarDao.getRandomGrammarWithUsagesByLevel(difficulty)
+                }
+
                 if (grammarWithUsages == null || grammarWithUsages.usages.isEmpty()) {
                     _uiState.update {
                         it.copy(
@@ -358,6 +390,13 @@ class AIWorkshopViewModel @Inject constructor(
                         )
                     }
                     return@launch
+                }
+
+                // 4. 更新已使用 ID 队列（限定最多保留最近 10 个 ID）
+                val currentId = grammarWithUsages.grammar.id
+                val updatedRecentIds = (listOf(currentId) + recentIds.filter { it != currentId }).take(10)
+                viewModelScope.launch {
+                    settingsRepository.setAiRecentGrammarIds(Json.encodeToString(updatedRecentIds))
                 }
 
                 // 从用法列表中随机抽取一个分支

@@ -1420,6 +1420,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.SYNC_ON_LEARNING_COMPLETE)
             preferences.remove(PreferencesKeys.SYNC_ON_TEST_COMPLETE)
             preferences.remove(PreferencesKeys.AI_READING_THEME)
+            preferences.remove(PreferencesKeys.AI_RECENT_GRAMMAR_IDS)
 
             Log.w(TAG, "已清除所有用户相关数据 (保留设备配置)")
         }
@@ -1843,6 +1844,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setAiWorkshopMode(mode: String) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.AI_WORKSHOP_MODE] = mode
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val aiRecentGrammarIdsFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.AI_RECENT_GRAMMAR_IDS] ?: ""
+    }
+
+    override suspend fun setAiRecentGrammarIds(json: String) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_RECENT_GRAMMAR_IDS] = json
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

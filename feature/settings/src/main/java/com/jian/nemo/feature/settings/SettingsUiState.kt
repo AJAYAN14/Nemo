@@ -44,6 +44,7 @@ data class SettingsUiState(
     val showRestoreConfirmDialog: Boolean = false,
  // 恢复被中断的标识
     val syncMessage: String? = null,
+    val lastSyncError: String = "",
 
     // TTS 设置
     val ttsSpeechRate: Float = 1.0f,
@@ -155,4 +156,7 @@ sealed interface SettingsEvent {
 
     // 修复数据 (清理重复)
     data object RepairLocalData : SettingsEvent
+
+    // 清除同步报错日志
+    data object ClearSyncError : SettingsEvent
 }

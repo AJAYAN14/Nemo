@@ -666,7 +666,16 @@ fun NemoNavHost(
                 onNavigateToThemeSettings = {
                     navController.navigate(NavDestination.THEME_SETTINGS)
                 },
+                onNavigateToSyncDiagnostics = {
+                    navController.navigate(NavDestination.SYNC_DIAGNOSTICS)
+                },
                 onCheckUpdate = onCheckUpdate
+            )
+        }
+
+        composable(NavDestination.SYNC_DIAGNOSTICS) {
+            com.jian.nemo.feature.settings.SyncDiagnosticsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
