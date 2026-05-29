@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -48,6 +49,31 @@ class AuthRepositoryImpl @Inject constructor(
     override val isSessionResolved: StateFlow<Boolean> = _isSessionResolved.asStateFlow()
 
     init {
+        // 弱网防护：硬超时保护，防止 Session 刷新卡死启动屏
+        externalScope.launch {
+            delay(SESSION_RESOLVE_TIMEOUT_MS)
+            if (!_isSessionResolved.value) {
+                android.util.Log.w("AuthRepository", "Session 解析超时 (${SESSION_RESOLVE_TIMEOUT_MS}ms)，从本地缓存降级恢复")
+                // 尝试从 Room 本地缓存恢复用户状态
+                try {
+                    val cachedUser = userDao.getCurrentUserSnapshot()
+                    if (cachedUser != null) {
+                        _userFlow.value = User(
+                            id = cachedUser.id,
+                            username = cachedUser.username,
+                            email = cachedUser.email,
+                            avatarUrl = cachedUser.avatar,
+                            sessionToken = cachedUser.sessionToken
+                        )
+                        android.util.Log.d("AuthRepository", "本地缓存用户恢复成功: ${cachedUser.username}")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("AuthRepository", "本地缓存读取失败", e)
+                }
+                _isSessionResolved.value = true
+            }
+        }
+
         externalScope.launch {
             supabase.auth.sessionStatus.collect { status ->
                 when (status) {
@@ -376,6 +402,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     companion object {
         private const val AVATARS_BUCKET = "avatars"
+        /** 启动时 Session 解析的最大等待时间（毫秒）。超过此时间将从本地缓存降级恢复。 */
+        private const val SESSION_RESOLVE_TIMEOUT_MS = 5000L
     }
 }
 
