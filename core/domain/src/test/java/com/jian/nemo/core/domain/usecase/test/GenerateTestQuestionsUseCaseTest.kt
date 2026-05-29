@@ -319,6 +319,67 @@ class GenerateTestQuestionsUseCaseTest {
         assertEquals("表示动作正在进行", (payload as ExplanationPayload.GrammarText).text)
     }
 
+    @Test
+    fun `should compensate with words when grammar pool is insufficient in mixed mode`() = runTest {
+        // Given: 今天学习了10个单词，但是只学习了2条语法
+        val learnedWords = createTestWords(10)
+        val learnedGrammars = listOf(
+            createTestGrammar(1, "grammar1", "exp1"),
+            createTestGrammar(2, "grammar2", "exp2")
+        )
+        every { wordRepository.getTodayLearnedWords(100L) } returns flowOf(learnedWords)
+        every { grammarRepository.getTodayLearnedGrammars(100L) } returns flowOf(learnedGrammars)
+        every { grammarRepository.getGrammarsByLevels(any()) } returns flowOf(learnedGrammars)
+
+        // When: 生成10道混合模式题 (目标: 5个单词, 5个语法)
+        val questions = useCase(
+            level = "n5,N5",
+            mode = TestMode.JP_TO_CN,
+            count = 10,
+            questionType = QuestionType.MULTIPLE_CHOICE,
+            contentType = "mixed",
+            source = "today"
+        )
+
+        // Then: 语法只有2题，所以单词补足了8题，总共10题
+        assertEquals(10, questions.size)
+        val wordQuestionsCount = questions.count { it.word != null }
+        val grammarQuestionsCount = questions.count { it.grammar != null }
+        
+        assertEquals(8, wordQuestionsCount)
+        assertEquals(2, grammarQuestionsCount)
+    }
+
+    @Test
+    fun `should compensate with grammars when word pool is insufficient in mixed mode`() = runTest {
+        // Given: 今天只学习了2个单词，但是学习了10条语法
+        val learnedWords = createTestWords(2)
+        val learnedGrammars = (1..10).map { id ->
+            createTestGrammar(id, "grammar$id", "exp$id")
+        }
+        every { wordRepository.getTodayLearnedWords(100L) } returns flowOf(learnedWords)
+        every { grammarRepository.getTodayLearnedGrammars(100L) } returns flowOf(learnedGrammars)
+        every { grammarRepository.getGrammarsByLevels(any()) } returns flowOf(learnedGrammars)
+
+        // When: 生成10道混合模式题 (目标: 5个单词, 5个语法)
+        val questions = useCase(
+            level = "n5,N5",
+            mode = TestMode.JP_TO_CN,
+            count = 10,
+            questionType = QuestionType.MULTIPLE_CHOICE,
+            contentType = "mixed",
+            source = "today"
+        )
+
+        // Then: 单词只有2题，所以语法补足了8题，总共10题
+        assertEquals(10, questions.size)
+        val wordQuestionsCount = questions.count { it.word != null }
+        val grammarQuestionsCount = questions.count { it.grammar != null }
+        
+        assertEquals(2, wordQuestionsCount)
+        assertEquals(8, grammarQuestionsCount)
+    }
+
     private fun createTestGrammar(
         id: Int,
         grammarText: String,

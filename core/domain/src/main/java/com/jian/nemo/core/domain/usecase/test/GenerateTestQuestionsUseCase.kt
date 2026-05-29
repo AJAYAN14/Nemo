@@ -219,17 +219,44 @@ class GenerateTestQuestionsUseCase @Inject constructor(
 
         println("NemoTestDebug: Fetched data: TargetWords=${words.size}, DistractorWords=${allWordsForDistractors.size}, TargetGrammars=${grammars.size}, DistractorGrammars=${allGrammarsForDistractors.size}, JSON=${jsonGrammarQuestions.size}")
 
+        // 计算最终分配给单词和语法的题目数量
+        val isGrammarSupported = questionType == QuestionType.MULTIPLE_CHOICE || questionType == QuestionType.SORTING
+        val finalWordCount: Int
+        val finalGrammarCount: Int
 
+        if (contentType == "mixed" && isGrammarSupported) {
+            val maxWords = words.size
+            val maxGrammars = if (jsonGrammarQuestions.isNotEmpty()) jsonGrammarQuestions.size else grammars.size
 
+            val targetWords = count / 2
+            val targetGrammars = count - targetWords
 
+            if (maxWords < targetWords) {
+                // 单词不足，语法来补
+                finalWordCount = maxWords
+                finalGrammarCount = (count - finalWordCount).coerceAtMost(maxGrammars)
+            } else if (maxGrammars < targetGrammars) {
+                // 语法不足，单词来补
+                finalGrammarCount = maxGrammars
+                finalWordCount = (count - finalGrammarCount).coerceAtMost(maxWords)
+            } else {
+                // 双方都充足
+                finalWordCount = targetWords
+                finalGrammarCount = targetGrammars
+            }
+        } else {
+            // 非混合模式，或者是不支持语法的题型（例如打字题、卡片匹配题等仅支持单词）
+            val hasGrammar = contentType != "words" && isGrammarSupported
+            finalWordCount = if (contentType != "grammar") count else 0
+            finalGrammarCount = if (hasGrammar) count else 0
+        }
 
         // 3. 传统逻辑 (无题型分布，使用单一 questionType)
 
         // 单词
         if (contentType != "grammar" && words.isNotEmpty()) {
             // 如果是混合模式，通常单词占一半。但如果题型不支持语法（如打字题），则全部分配给单词
-            val isGrammarSupported = questionType == QuestionType.MULTIPLE_CHOICE || questionType == QuestionType.SORTING
-            val wordCount = if (contentType == "mixed" && isGrammarSupported) count / 2 else count
+            val wordCount = finalWordCount
 
             // 🎯 Apply Prioritization Logic
             // If both true, verify precedence. Usually "Prioritize Wrong" might take precedence or mix?
@@ -279,7 +306,7 @@ class GenerateTestQuestionsUseCase @Inject constructor(
 
         // 语法
         if (contentType != "words") {
-            val grammarCount = if (contentType == "mixed") count - questions.size else count
+            val grammarCount = finalGrammarCount
 
             // Prioritize Grammars
             val sortedGrammars = when {
