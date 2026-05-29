@@ -46,6 +46,8 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 @Composable
 fun LeechManagementScreen(
     onBack: () -> Unit,
+    onNavigateToWordDetail: (Int) -> Unit = {},
+    onNavigateToGrammarDetail: (Int) -> Unit = {},
     viewModel: LeechManagementViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -128,7 +130,11 @@ fun LeechManagementScreen(
                                 emptyMessage = "太棒了！\n没有需要复学的单词",
                                 onItemKey = { it.id },
                                 itemContent = { word, onRecover ->
-                                    LeechWordCard(word = word, onRecover = onRecover)
+                                    LeechWordCard(
+                                        word = word, 
+                                        onRecover = onRecover,
+                                        onClick = { onNavigateToWordDetail(word.id) }
+                                    )
                                 },
                                 onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverWord(id)) }
                             )
@@ -139,7 +145,11 @@ fun LeechManagementScreen(
                                 emptyMessage = "太棒了！\n没有需要复学的语法",
                                 onItemKey = { it.id },
                                 itemContent = { grammar, onRecover ->
-                                    LeechGrammarCard(grammar = grammar, onRecover = onRecover)
+                                    LeechGrammarCard(
+                                        grammar = grammar, 
+                                        onRecover = onRecover,
+                                        onClick = { onNavigateToGrammarDetail(grammar.id) }
+                                    )
                                 },
                                 onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverGrammar(id)) }
                             )
@@ -229,12 +239,13 @@ private fun <T> LeechList(
  * 单词卡片
  */
 @Composable
-private fun LeechWordCard(word: Word, onRecover: () -> Unit) {
+private fun LeechWordCard(word: Word, onRecover: () -> Unit, onClick: () -> Unit = {}) {
     LeechItemCardBase(
         title = word.japanese,
         subtitle = "${word.hiragana ?: ""} ${word.chinese}",
         tagColor = MaterialTheme.colorScheme.primary,
-        onRecover = onRecover
+        onRecover = onRecover,
+        onClick = onClick
     )
 }
 
@@ -242,12 +253,13 @@ private fun LeechWordCard(word: Word, onRecover: () -> Unit) {
  * 语法卡片
  */
 @Composable
-private fun LeechGrammarCard(grammar: Grammar, onRecover: () -> Unit) {
+private fun LeechGrammarCard(grammar: Grammar, onRecover: () -> Unit, onClick: () -> Unit = {}) {
     LeechItemCardBase(
         title = grammar.grammar,
         subtitle = grammar.getFirstExplanation(),
         tagColor = MaterialTheme.colorScheme.primary,
-        onRecover = onRecover
+        onRecover = onRecover,
+        onClick = onClick
     )
 }
 
@@ -259,7 +271,8 @@ private fun LeechItemCardBase(
     title: String,
     subtitle: String,
     tagColor: Color,
-    onRecover: () -> Unit
+    onRecover: () -> Unit,
+    onClick: () -> Unit = {}
 ) {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     // Premium Style Colors match ProgressComponents / WordList
@@ -273,6 +286,7 @@ private fun LeechItemCardBase(
     var isRecovering by remember { mutableStateOf(false) }
 
     Surface(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .shadow(

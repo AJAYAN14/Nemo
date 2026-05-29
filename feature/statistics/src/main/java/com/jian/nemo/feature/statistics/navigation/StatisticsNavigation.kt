@@ -52,7 +52,13 @@ fun NavGraphBuilder.historicalStatisticsScreen(navController: NavHostController)
 fun NavGraphBuilder.leechManagementScreen(navController: NavHostController) {
     composable(route = NavDestination.LEECH_MANAGEMENT) {
         LeechManagementScreen(
-            onBack = { navController.popBackStack() }
+            onBack = { navController.popBackStack() },
+            onNavigateToWordDetail = { wordId ->
+                navController.navigate(NavDestination.wordDetail(wordId))
+            },
+            onNavigateToGrammarDetail = { grammarId ->
+                navController.navigate(NavDestination.grammarDetail(grammarId))
+            }
         )
     }
 }
