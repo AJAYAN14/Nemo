@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.unit.sp
 
 /**
@@ -124,7 +125,7 @@ private fun PlainTextUnit(
         )
         // 文字
         Text(
-            text = text,
+            text = text.toFullWidth(),
             style = baseTextStyle,
             color = baseTextColor
         )
@@ -146,8 +147,7 @@ private fun RubyUnit(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom,
-        modifier = Modifier.width(IntrinsicSize.Max) // 让振假名和汉字宽度取最大值
+        verticalArrangement = Arrangement.Bottom
     ) {
         // 振假名 - 居中对齐
         Box(
@@ -164,12 +164,13 @@ private fun RubyUnit(
                     localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                 ),
                 maxLines = 1,
-                softWrap = false
+                softWrap = false,
+                modifier = Modifier.wrapContentWidth(unbounded = true)
             )
         }
         // 汉字 - 居中对齐
         Text(
-            text = kanji,
+            text = kanji.toFullWidth(),
             style = baseTextStyle,
             color = baseTextColor,
             textAlign = TextAlign.Center
@@ -196,9 +197,8 @@ private fun isKinsokuChar(char: Char): Boolean {
 
 fun parseFuriganaText(text: String): List<FuriganaSegment> {
     val result = mutableListOf<FuriganaSegment>()
-    // 修正：只匹配汉字（CJK统一汉字 + 々）后跟 [假名]
-    // 汉字范围: \u4E00-\u9FFF (基本汉字), \u3400-\u4DBF (扩展A), \u3005 (々)
-    val pattern = Regex("""([\u4E00-\u9FFF\u3400-\u4DBF々]+)\[([^\]]+)]""")
+    // 修正：支持匹配数字、CJK汉字、々、〇、〻、ヶ、平假名つ等注音块
+    val pattern = Regex("""([0-9\u4E00-\u9FFF\u3400-\u4DBF\u3005\u3007\u303B\u30F6ヶつ]+)\[([^\]]+)]""")
 
     var lastIndex = 0
     pattern.findAll(text).forEach { matchResult ->
@@ -221,4 +221,21 @@ fun parseFuriganaText(text: String): List<FuriganaSegment> {
     }
 
     return result
+}
+
+/**
+ * 将字符串中的半角英数字转换为全角字符。
+ * 全角数字在 Android 默认字体中具有与日文汉字完全一致的字高、行高与基线高度，
+ * 消除高度落差。
+ */
+fun String.toFullWidth(): String {
+    val builder = StringBuilder()
+    for (char in this) {
+        if (char in '0'..'9') {
+            builder.append((char.code + 0xFEE0).toChar())
+        } else {
+            builder.append(char)
+        }
+    }
+    return builder.toString()
 }

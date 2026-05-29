@@ -140,8 +140,17 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
     }
   };
 
+  const footerContent = (
+    <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+      <button className="button-primary" style={{ flex: 1, height: '42px' }} onClick={handleSave} disabled={isSaving}>
+        {isSaving ? <Loader2 size={18} className="animate-spin" /> : "保存语法条目"}
+      </button>
+      <button className="input" style={{ flex: 0.3, height: '42px' }} onClick={onClose}>取消</button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={grammarToEdit ? "编辑语法" : "新增语法"} width="800px">
+    <Modal isOpen={isOpen} onClose={onClose} title={grammarToEdit ? "编辑语法" : "新增语法"} width="800px" footer={footerContent}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
         
         {/* Basic Info */}
@@ -291,14 +300,6 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
-          <button className="button-primary" style={{ flex: 1, height: '42px' }} onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <Loader2 size={18} className="animate-spin" /> : "保存语法条目"}
-          </button>
-          <button className="input" style={{ flex: 0.3, height: '42px' }} onClick={onClose}>取消</button>
         </div>
       </div>
     </Modal>

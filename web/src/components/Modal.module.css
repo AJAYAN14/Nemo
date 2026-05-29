@@ -14,19 +14,22 @@
 }
 
 .modal {
-  background-color: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background-color: #ffffff;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   border-radius: 20px;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-shadow: var(--modal-shadow);
   animation: modalAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .modal {
+  background-color: #1c1c1e;
+  border-color: var(--border-strong);
 }
 
 @keyframes modalAppear {
@@ -88,5 +91,19 @@
 .content {
   padding: var(--spacing-lg);
   overflow-y: auto;
+}
+
+.footer {
+  padding: 16px var(--spacing-lg);
+  border-top: 1px solid var(--border);
+  background: #ffffff;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+[data-theme="dark"] .footer {
+  background: #1c1c1e;
+  border-top-color: var(--border);
 }
 

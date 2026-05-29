@@ -124,8 +124,17 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
     }
   };
 
+  const footerContent = (
+    <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+      <button className="button-primary" style={{ flex: 1 }} onClick={handleSave} disabled={isSaving}>
+        {isSaving ? "保存中..." : "保存词条"}
+      </button>
+      <button className="input" style={{ flex: 0.4 }} onClick={onClose}>取消</button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={wordToEdit ? "编辑词条" : "新增词条"}>
+    <Modal isOpen={isOpen} onClose={onClose} title={wordToEdit ? "编辑词条" : "新增词条"} footer={footerContent}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
           <div style={{ flex: 1 }}>
@@ -231,13 +240,6 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
               />
             </div>
           ))}
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
-          <button className="button-primary" style={{ flex: 1 }} onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "保存中..." : "保存词条"}
-          </button>
-          <button className="input" style={{ flex: 0.4 }} onClick={onClose}>取消</button>
         </div>
       </div>
     </Modal>
