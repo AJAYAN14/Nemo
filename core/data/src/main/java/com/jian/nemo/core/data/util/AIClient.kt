@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import com.jian.nemo.core.domain.model.AIExercise
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.domain.model.AIReadingArticle
+import com.jian.nemo.core.domain.model.AIWordTranslation
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -565,6 +566,61 @@ class AIClient @Inject constructor(
                 }
               ]
             }
+        """.trimIndent()
+    }
+
+    suspend fun translateWordOrPhrase(
+        platform: String,
+        apiKey: String,
+        baseUrl: String?,
+        model: String,
+        text: String,
+        contextSentence: String
+    ): Result<AIWordTranslation> {
+        val systemPrompt = buildWordTranslationPrompt(text, contextSentence)
+        val url = getApiUrl(platform, baseUrl, apiKey, model)
+        val requestBody = buildChatRequest(platform, model, systemPrompt, "请翻译这个词")
+
+        return try {
+            val response = executeRequest(platform, url, apiKey, requestBody)
+            val content = extractContentFromChatResponse(platform, response)
+            val cleanJson = extractJsonFromString(content)
+            var translation = json.decodeFromString<AIWordTranslation>(cleanJson)
+            // Fallback：如果 AI 返回的字段不完整，用用户选中的原文兜底
+            if (translation.word.isBlank()) {
+                translation = translation.copy(word = text)
+            }
+            if (translation.meaning.isBlank()) {
+                translation = translation.copy(meaning = "AI 未能解析释义，请重试")
+            }
+            Result.success(translation)
+        } catch (e: Exception) {
+            Log.e("AIClient", "划词翻译失败", e)
+            Result.failure(e)
+        }
+    }
+
+    private fun buildWordTranslationPrompt(text: String, contextSentence: String): String {
+        return """
+            你是一位专业的日语词典与翻译工具。用户在阅读日语短文时，选中了一段文字，请你为其提供精准的翻译释义。
+
+            用户选中的文字：「$text」
+            该文字所在的上下文句子：「$contextSentence」
+
+            请根据上下文语境，分析该词/短语的含义，并返回以下 JSON 格式：
+            {
+              "word": "该词的标准书写形式（汉字优先）",
+              "kana": "完整假名读音",
+              "pos": "词性（如：名词、动词、形容词、副词、助词、接续词、短语 等）",
+              "meaning": "结合上下文的精准中文释义",
+              "note": "简要的语法说明或用法提示（如有必要，否则留空字符串）"
+            }
+
+            要求：
+            1. 如果用户选中的是一个完整单词，请给出该单词的标准辞书形式。
+            2. 如果用户选中的是活用形态（如て形、た形等），word 字段仍给出辞书形，但 meaning 需结合上下文解释当前活用含义。
+            3. 如果用户选中的是一个短语或句子片段，pos 填"短语"，meaning 给出整体翻译。
+            4. 直接返回 JSON 字符串，不要包含 Markdown 格式块或其他文字。
         """.trimIndent()
     }
 

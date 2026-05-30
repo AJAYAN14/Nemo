@@ -61,3 +61,11 @@ data class ReadingQuestion(
     val explanation: String
 )
 
+@Serializable
+data class AIWordTranslation(
+    val word: String = "",
+    val kana: String = "",
+    val pos: String = "",
+    val meaning: String = "",
+    val note: String = ""
+)

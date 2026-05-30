@@ -37,12 +37,23 @@ import kotlinx.coroutines.delay
 import com.airbnb.lottie.compose.*
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.designsystem.R as DesignR
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.feature.learning.presentation.ai.components.AIWordTranslationSheet
+import com.jian.nemo.feature.learning.presentation.ai.components.CustomTextToolbar
+import java.text.BreakIterator
+import java.util.Locale
 
 // AIReadingScreen 内部局部红色常量（BentoColors 不含红色，此处独立定义）
 private val ReadingAccentRed = Color(0xFFEF4444)
@@ -200,6 +211,19 @@ fun AIReadingScreen(
                     Text(uiState.error ?: "")
                 }
             }
+
+            // 划词/点词翻译底部面板
+            AIWordTranslationSheet(
+                showSheet = uiState.showTranslationSheet,
+                translatingText = uiState.translatingText,
+                isTranslating = uiState.isTranslating,
+                translationResult = uiState.translationResult,
+                translationError = uiState.translationError,
+                onDismiss = { viewModel.onEvent(AIReadingEvent.CloseTranslationSheet) },
+                onSpeakWord = { word ->
+                    viewModel.onEvent(AIReadingEvent.SpeakText(word, "translate_word"))
+                }
+            )
 
             NemoSnackbar(
                 visible = snackbarVisible,
@@ -649,6 +673,35 @@ private fun ArticleContentScreen(
     val clipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
 
+    // BasicTextField 选区状态（用于划词翻译 + 点击查词）
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(text = article.contentRaw))
+    }
+    // 记录当前选中的文本，供 CustomTextToolbar 读取
+    val selectedTextState = remember { mutableStateOf("") }
+    // 追踪之前是否有选区，用于区分"取消选区"和"纯点击"
+    var hadSelection by remember { mutableStateOf(false) }
+
+    // 当文章内容变化时同步 TextFieldValue
+    LaunchedEffect(article.contentRaw) {
+        textFieldValue = TextFieldValue(text = article.contentRaw)
+        selectedTextState.value = ""
+        hadSelection = false
+    }
+
+    // 自定义 TextToolbar（方案一：划词翻译）
+    val view = LocalView.current
+    val customTextToolbar = remember(view) {
+        CustomTextToolbar(
+            view = view,
+            getSelectedText = { selectedTextState.value },
+            onTranslateRequested = { selectedText ->
+                val contextSentence = findContextSentence(article.contentRaw, selectedText)
+                onEvent(AIReadingEvent.TranslateText(selectedText, contextSentence))
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -691,16 +744,50 @@ private fun ArticleContentScreen(
                 HorizontalDivider(color = borderColor)
                 Spacer(Modifier.height(16.dp))
 
-                // 纯文本正文渲染（将 \n 换行分段显示）
-                SelectionContainer {
-                    Text(
-                        text = article.contentRaw,
-                        style = MaterialTheme.typography.bodyLarge.copy(
+                // 正文渲染：BasicTextField(readOnly) 方案
+                // 方案一：长按拖选 → 弹出带"翻译"按钮的浮动菜单
+                // 方案二：单击某个词 → 自动识别词边界并翻译
+                // 点击其他位置 → 自动清除选区
+                val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF2C3E50)
+
+                CompositionLocalProvider(LocalTextToolbar provides customTextToolbar) {
+                    BasicTextField(
+                        value = textFieldValue,
+                        onValueChange = { newValue ->
+                            val newSel = newValue.selection
+                            if (newSel.collapsed) {
+                                // 光标模式（非选区）
+                                if (!hadSelection) {
+                                    // 纯点击（不是从选区状态取消的）→ 触发点击查词（方案二）
+                                    val offset = newSel.start
+                                    if (offset in article.contentRaw.indices) {
+                                        val word = extractWordAtOffset(article.contentRaw, offset)
+                                        if (word.isNotBlank()) {
+                                            val ctx = findContextSentence(article.contentRaw, word)
+                                            onEvent(AIReadingEvent.TranslateText(word, ctx))
+                                        }
+                                    }
+                                }
+                                // 清除选区状态
+                                hadSelection = false
+                                selectedTextState.value = ""
+                            } else {
+                                // 有选区 → 更新选中文本
+                                hadSelection = true
+                                val min = newSel.min.coerceIn(0, article.contentRaw.length)
+                                val max = newSel.max.coerceIn(0, article.contentRaw.length)
+                                selectedTextState.value = article.contentRaw.substring(min, max)
+                            }
+                            // 只响应选区变化，文本内容始终锁定为原文
+                            textFieldValue = newValue.copy(text = article.contentRaw)
+                        },
+                        readOnly = true,
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
                             lineHeight = 32.sp,
-                            letterSpacing = 0.3.sp
+                            letterSpacing = 0.3.sp,
+                            color = textColor
                         ),
-                        color = if (isDark) MaterialTheme.colorScheme.onSurface
-                                else Color(0xFF2C3E50),
+                        cursorBrush = SolidColor(Color.Transparent),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -792,33 +879,15 @@ private fun ArticleContentScreen(
                             color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                SelectionContainer {
-                                    Text(
-                                        text = article.translation,
-                                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
-                                        color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .padding(end = 40.dp)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = {
-                                        clipboardManager.setText(AnnotatedString(article.translation))
-                                        onShowCopySnackbar("中文译文已复制到剪贴板")
-                                    },
+                            SelectionContainer {
+                                Text(
+                                    text = article.translation,
+                                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                                    color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
                                     modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.ContentCopy,
-                                        contentDescription = "复制译文",
-                                        tint = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                )
                             }
                         }
                     }
@@ -1381,3 +1450,40 @@ private fun ErrorScreen(
     }
 }
 
+/**
+ * 利用 Java BreakIterator 按日语词边界提取点击位置所在的单词
+ */
+private fun extractWordAtOffset(text: String, offset: Int): String {
+    if (text.isEmpty() || offset < 0 || offset >= text.length) return ""
+
+    val iterator = BreakIterator.getWordInstance(Locale.JAPAN)
+    iterator.setText(text)
+
+    var start = iterator.preceding(offset + 1)
+    if (start == BreakIterator.DONE) start = 0
+
+    var end = iterator.following(offset)
+    if (end == BreakIterator.DONE) end = text.length
+
+    val word = text.substring(start, end).trim()
+
+    // 过滤纯标点、空白和换行
+    return if (word.isNotBlank() && !word.all { it.isWhitespace() || it in "。、！？「」『』（）…・〜ー—\n\r" }) {
+        word
+    } else ""
+}
+
+/**
+ * 从全文中查找包含指定文本的整句（以句号、换行等为分隔）
+ */
+private fun findContextSentence(fullText: String, target: String): String {
+    // 以日语常见句末标点和换行符作为分隔
+    val sentences = fullText.split(Regex("[。！？\\n]+"))
+    for (sentence in sentences) {
+        if (sentence.contains(target)) {
+            return sentence.trim()
+        }
+    }
+    // 如果没有精确匹配到句子，返回全文前 200 字
+    return fullText.take(200)
+}

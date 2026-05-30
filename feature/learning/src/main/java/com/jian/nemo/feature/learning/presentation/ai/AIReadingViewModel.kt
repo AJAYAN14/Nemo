@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.util.AIClient
 import com.jian.nemo.core.domain.model.AIReadingArticle
+import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.domain.model.AIReadingHistory
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
@@ -31,7 +32,13 @@ data class AIReadingUiState(
     val aiPlatform: String = "openai",
     val aiModel: String = "",
     val switchedConfigName: String? = null,
-    val readingHistory: List<AIReadingHistory> = emptyList()
+    val readingHistory: List<AIReadingHistory> = emptyList(),
+    // 划词/点词翻译面板状态
+    val showTranslationSheet: Boolean = false,
+    val translatingText: String = "",
+    val translationResult: AIWordTranslation? = null,
+    val isTranslating: Boolean = false,
+    val translationError: String? = null
 )
 
 sealed interface AIReadingEvent {
@@ -49,6 +56,10 @@ sealed interface AIReadingEvent {
     data class LoadHistoryArticle(val history: AIReadingHistory) : AIReadingEvent
     data class DeleteHistory(val id: Int) : AIReadingEvent
     object ClearAllHistory : AIReadingEvent
+
+    // 划词/点词翻译事件
+    data class TranslateText(val text: String, val contextSentence: String) : AIReadingEvent
+    object CloseTranslationSheet : AIReadingEvent
 }
 
 @HiltViewModel
@@ -278,6 +289,20 @@ class AIReadingViewModel @Inject constructor(
                     aiWorkshopRepository.clearReadingHistory()
                 }
             }
+            is AIReadingEvent.TranslateText -> {
+                translateWord(event.text, event.contextSentence)
+            }
+            is AIReadingEvent.CloseTranslationSheet -> {
+                _uiState.update {
+                    it.copy(
+                        showTranslationSheet = false,
+                        translationResult = null,
+                        translatingText = "",
+                        isTranslating = false,
+                        translationError = null
+                    )
+                }
+            }
         }
     }
 
@@ -325,6 +350,54 @@ class AIReadingViewModel @Inject constructor(
                         state.copy(
                             isLoading = false,
                             error = "生成短文失败，请重试: ${error.localizedMessage ?: error.message}"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun translateWord(text: String, contextSentence: String) {
+        if (text.isBlank()) return
+        if (aiApiKey.isBlank()) {
+            _uiState.update { it.copy(translationError = "API 密钥未配置") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    showTranslationSheet = true,
+                    translatingText = text,
+                    isTranslating = true,
+                    translationResult = null,
+                    translationError = null
+                )
+            }
+
+            val result = aiClient.translateWordOrPhrase(
+                platform = aiPlatform,
+                apiKey = aiApiKey,
+                baseUrl = aiBaseUrl.takeIf { it.isNotBlank() },
+                model = aiModel,
+                text = text,
+                contextSentence = contextSentence
+            )
+
+            result.fold(
+                onSuccess = { translation ->
+                    _uiState.update {
+                        it.copy(
+                            translationResult = translation,
+                            isTranslating = false
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(
+                            isTranslating = false,
+                            translationError = "翻译失败: ${error.localizedMessage ?: error.message}"
                         )
                     }
                 }
