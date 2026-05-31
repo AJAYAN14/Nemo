@@ -12,5 +12,6 @@ data class SyncResult(
     val baseSnapshot: String? = null,
     val syncReport: SyncReport? = null,
     val syncVersion: Int? = null,
-    val errorType: SyncErrorType? = null
+    val errorType: SyncErrorType? = null,
+    val isSilent: Boolean = false
 )

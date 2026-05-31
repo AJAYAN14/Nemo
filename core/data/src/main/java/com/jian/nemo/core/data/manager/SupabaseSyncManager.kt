@@ -386,10 +386,20 @@ class SupabaseSyncManager @Inject constructor(
 
         } catch (e: Exception) {
             val isRlsError = e.message?.contains("row-level security policy", ignoreCase = true) == true
+            val isSessionError = e.message?.contains("User ID mismatch or session expired", ignoreCase = true) == true || 
+                                 e.message?.contains("Unauthorized", ignoreCase = true) == true
             val authStatus = supabaseClient.auth.currentUserOrNull()?.let { "Authenticated as ${it.id}" } ?: "Not Authenticated"
             
-            Log.e(TAG, "同步错误 [Type=${e::class.simpleName}, RLS=$isRlsError, Auth=$authStatus]: ${e.message}", e)
+            Log.e(TAG, "同步错误 [Type=${e::class.simpleName}, RLS=$isRlsError, Session=$isSessionError, Auth=$authStatus]: ${e.message}", e)
             
+            if (isSessionError) {
+                // 静默处理后台网络受限导致 Token 丢失的异常
+                Log.w(TAG, "检测到由网络受限引发的会话异常，抛出特殊的静默错误标志，通知上层重试且不弹窗")
+                settingsRepository.setLastSyncSuccess(false)
+                emit(SyncProgress.Failed("SILENT_NETWORK_ERROR"))
+                return@flow
+            }
+
             val errorMsg = if (isRlsError) {
                 "同步权限校验失败 (RLS)，请检查登录状态"
             } else {

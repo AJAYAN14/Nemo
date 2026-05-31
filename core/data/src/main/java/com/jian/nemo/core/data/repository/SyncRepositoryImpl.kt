@@ -70,8 +70,9 @@ class SyncRepositoryImpl @Inject constructor(
                 )
                 is SyncProgress.Failed -> SyncResult(
                     success = false,
-                    message = progress.error,
-                    errorType = SyncErrorType.UNKNOWN
+                    message = if (progress.error == "SILENT_NETWORK_ERROR") "后台网络受限导致同步中断" else progress.error,
+                    errorType = if (progress.error == "SILENT_NETWORK_ERROR") SyncErrorType.NETWORK_ERROR else SyncErrorType.UNKNOWN,
+                    isSilent = progress.error == "SILENT_NETWORK_ERROR"
                 )
                 else -> SyncResult(
                     success = false,

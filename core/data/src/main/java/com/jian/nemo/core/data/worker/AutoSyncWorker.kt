@@ -105,7 +105,11 @@ class AutoSyncWorker @AssistedInject constructor(
                  settingsRepository.addSyncErrorLog(syncResult.message)
 
                  // 发送全局失败通知 (包含具体原因)
-                 syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步失败: ${syncResult.message}"))
+                 if (!syncResult.isSilent) {
+                     syncMessageBus.tryEmit(com.jian.nemo.core.common.util.SyncEvent.Error("同步失败: ${syncResult.message}"))
+                 } else {
+                     Log.d(TAG, "静默网络异常，不发送全局错误广播")
+                 }
 
                  if (syncResult.errorType == SyncErrorType.NETWORK_ERROR) {
                      Log.e(TAG, "检测到网络异常，稍后重试")
