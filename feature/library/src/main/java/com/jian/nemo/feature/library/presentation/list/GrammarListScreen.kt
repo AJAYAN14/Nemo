@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -241,16 +243,17 @@ fun GrammarListScreen(
         },
         containerColor = backgroundColor
     ) { innerPadding ->
-        if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
-                NemoChasingDotsLoader()
-            }
-        } else {
-            PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.onRefresh() },
-                modifier = Modifier.padding(innerPadding)
-            ) {
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    NemoChasingDotsLoader()
+                }
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.onRefresh() },
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 if (filteredGrammarsByLevel.isEmpty() && searchQuery.isNotEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         EmptyState("未找到相关语法")
@@ -301,6 +304,25 @@ fun GrammarListScreen(
                     }
                 }
             }
+        }
+            
+        // 同步通知组件
+            com.jian.nemo.core.ui.component.common.NemoSnackbar(
+                visible = uiState.syncMessage != null,
+                message = uiState.syncMessage ?: "",
+                type = if (uiState.syncMessage?.contains("失败") == true)
+                    com.jian.nemo.core.ui.component.common.NemoSnackbarType.ERROR
+                else
+                    com.jian.nemo.core.ui.component.common.NemoSnackbarType.SUCCESS,
+                icon = if (uiState.syncMessage?.contains("失败") == true)
+                    Icons.Rounded.Warning
+                else
+                    Icons.Rounded.CheckCircle,
+                onDismiss = { viewModel.clearSyncMessage() },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+            )
         }
     }
 }

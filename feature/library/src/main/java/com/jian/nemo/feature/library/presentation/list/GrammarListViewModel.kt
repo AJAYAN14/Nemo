@@ -26,7 +26,8 @@ data class GrammarListUiState(
     val error: String? = null,
     val searchQuery: String = "",
     val filterState: StudyFilter = StudyFilter.ALL,
-    val isRefreshing: Boolean = false
+    val isRefreshing: Boolean = false,
+    val syncMessage: String? = null
 )
 
 /**
@@ -42,13 +43,15 @@ class GrammarListViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)
     private val _filterState = MutableStateFlow(StudyFilter.ALL)
+    private val _syncMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<GrammarListUiState> = combine(
         grammarRepository.getGrammarsByLevels(listOf("N1", "N2", "N3", "N4", "N5")),
         _searchQuery,
         _filterState,
-        _isRefreshing
-    ) { allGrammars, query, filter, isRefreshing ->
+        _isRefreshing,
+        _syncMessage
+    ) { allGrammars, query, filter, isRefreshing, syncMessage ->
         // 过滤
         val filteredList = allGrammars.filter { g ->
             // 1. 过滤已学/未学/全部
@@ -93,7 +96,8 @@ class GrammarListViewModel @Inject constructor(
             isLoading = false,
             searchQuery = query,
             filterState = filter,
-            isRefreshing = isRefreshing
+            isRefreshing = isRefreshing,
+            syncMessage = syncMessage
         )
     }
     .flowOn(Dispatchers.Default) // 后台计算
@@ -114,14 +118,31 @@ class GrammarListViewModel @Inject constructor(
     fun onRefresh() {
         viewModelScope.launch {
             _isRefreshing.value = true
+            _syncMessage.value = null
             try {
                 // 触发强制增量同步，绕过版本号检查，且不会清空本地库
-                syncRepository.performDictionarySync(forceIncremental = true)
+                val result = syncRepository.performDictionarySync(forceIncremental = true)
+                val wordCount = result.updatedWords
+                val grammarCount = result.updatedGrammars
+                if (wordCount == 0 && grammarCount == 0) {
+                    _syncMessage.value = "词库已经是最新版本"
+                } else {
+                    val msg = buildString {
+                        append("词库已更新：")
+                        if (wordCount > 0) append("${wordCount}条单词 ")
+                        if (grammarCount > 0) append("${grammarCount}条语法")
+                    }
+                    _syncMessage.value = msg.trim()
+                }
             } catch (e: Exception) {
-                // 处理错误
+                _syncMessage.value = "网络错误，更新失败"
             } finally {
                 _isRefreshing.value = false
             }
         }
+    }
+
+    fun clearSyncMessage() {
+        _syncMessage.value = null
     }
 }
