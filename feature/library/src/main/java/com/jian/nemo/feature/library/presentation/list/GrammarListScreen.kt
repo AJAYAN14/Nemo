@@ -249,9 +249,20 @@ fun GrammarListScreen(
                     NemoChasingDotsLoader()
                 }
             } else {
+                val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
                 PullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = { viewModel.onRefresh() },
+                    state = pullToRefreshState,
+                    indicator = {
+                        androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
+                            modifier = Modifier.align(Alignment.TopCenter),
+                            isRefreshing = uiState.isRefreshing,
+                            state = pullToRefreshState,
+                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
                     modifier = Modifier.fillMaxSize()
                 ) {
                 if (filteredGrammarsByLevel.isEmpty() && searchQuery.isNotEmpty()) {
