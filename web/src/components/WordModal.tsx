@@ -117,7 +117,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
     if (!wordToEdit && isOpen && formData.level) {
       fetchNextRawId(formData.level);
     }
-  }, [formData.level, isOpen, wordToEdit]);
+  }, [isOpen, wordToEdit]);
 
   const handleAIByInput = async () => {
     if (!formData.japanese) return;
@@ -130,19 +130,30 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      setFormData({
-        ...formData,
-        hiragana: data.hiragana || "",
-        chinese: data.chinese || "",
-        level: data.level || formData.level,
-        pos: data.pos || "",
-        example_1: data.examples?.[0]?.example || "",
-        gloss_1: data.examples?.[0]?.gloss || "",
-        example_2: data.examples?.[1]?.example || "",
-        gloss_2: data.examples?.[1]?.gloss || "",
-        example_3: data.examples?.[2]?.example || "",
-        gloss_3: data.examples?.[2]?.gloss || "",
+      const targetLevel = data.level || formData.level;
+      setFormData(prev => {
+        const updated = {
+          ...prev,
+          hiragana: data.hiragana || "",
+          chinese: data.chinese || "",
+          level: targetLevel,
+          pos: data.pos || "",
+          example_1: data.examples?.[0]?.example || "",
+          gloss_1: data.examples?.[0]?.gloss || "",
+          example_2: data.examples?.[1]?.example || "",
+          gloss_2: data.examples?.[1]?.gloss || "",
+          example_3: data.examples?.[2]?.example || "",
+          gloss_3: data.examples?.[2]?.gloss || "",
+        };
+        if (wordToEdit && targetLevel === wordToEdit.level) {
+          updated.raw_id = wordToEdit.raw_id || "";
+        }
+        return updated;
       });
+
+      if (!wordToEdit || targetLevel !== wordToEdit.level) {
+        fetchNextRawId(targetLevel);
+      }
     } catch (err) {
       alert("AI 生成失败: " + err);
     } finally {
@@ -176,8 +187,8 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
       }
 
       if (wordToEdit) {
-        // 编辑模式：剔除只读字段
-        const { id, raw_id, updated_at, ...updatePayload } = formData as any;
+        // 编辑模式：剔除只读字段（保留 raw_id 以支持等级变动时更新 ID）
+        const { id, updated_at, ...updatePayload } = formData as any;
         const { error } = await supabase
           .from("dictionary_words")
           .update(updatePayload)
@@ -271,7 +282,20 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
               className="input" 
               style={{ width: '100%' }}
               value={formData.level || "N3"}
-              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+              onChange={(e) => {
+                const newLevel = e.target.value;
+                setFormData(prev => {
+                  const updated = { ...prev, level: newLevel };
+                  if (wordToEdit && newLevel === wordToEdit.level) {
+                    updated.raw_id = wordToEdit.raw_id || "";
+                  }
+                  return updated;
+                });
+                
+                if (!wordToEdit || newLevel !== wordToEdit.level) {
+                  fetchNextRawId(newLevel);
+                }
+              }}
             >
               <option value="N1">N1</option>
               <option value="N2">N2</option>

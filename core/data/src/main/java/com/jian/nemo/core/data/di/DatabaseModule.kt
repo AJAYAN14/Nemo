@@ -12,6 +12,7 @@ import com.jian.nemo.core.data.local.migration.MIGRATION_14_15
 import com.jian.nemo.core.data.local.migration.MIGRATION_17_18
 import com.jian.nemo.core.data.local.migration.MIGRATION_20_21
 import com.jian.nemo.core.data.local.migration.MIGRATION_21_22
+import com.jian.nemo.core.data.local.migration.MIGRATION_22_23
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -62,7 +63,7 @@ object DatabaseModule {
             NemoDatabase.DATABASE_NAME
         )
             .addCallback(databaseCallback)  // 添加回调
-            .addMigrations(MIGRATION_2_3, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_14_15, MIGRATION_17_18, MIGRATION_20_21, MIGRATION_21_22)
+            .addMigrations(MIGRATION_2_3, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_14_15, MIGRATION_17_18, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23)
             .fallbackToDestructiveMigration() // 当找不到迁移路径时允许清空并重建数据库
             .build()
     }

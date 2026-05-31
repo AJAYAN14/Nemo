@@ -40,9 +40,9 @@ class ContentUpdateApplierImpl @Inject constructor(
             try {
                 val dtos = json.decodeFromString<List<LocalWordDto>>(jsonString)
                 var updated = 0
-                val jsonIds = dtos.map { it.japanese } // WordDto 用 japanese 作为内容唯一标识
+                val jsonRawIds = dtos.map { it.rawId } // 使用 rawId 作为唯一标识
                 dtos.forEach { dto ->
-                    val existing = wordDao.getWordByLevelAndJapanese(level, dto.japanese)
+                    val existing = wordDao.getWordByRawId(dto.rawId)
                     if (existing != null) {
                         val merged = existing.copy(
                             chinese = dto.chinese,
@@ -65,7 +65,7 @@ class ContentUpdateApplierImpl @Inject constructor(
                 }
 
                 // 【核心修复】标记在本等级下，但不在本次 JSON 中的词条为已下架 (Ghost Delisting)
-                val delistedCount = wordDao.markMissingAsDelisted(level, jsonIds)
+                val delistedCount = wordDao.markMissingAsDelistedByRawId(level, jsonRawIds)
                 Log.d(TAG, "applyWordsFromJson($level): $updated updated/inserted, $delistedCount ghost-delisted")
                 updated
             } catch (e: Exception) {

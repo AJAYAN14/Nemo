@@ -1121,6 +1121,16 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getHasAppliedV23Fix(): Boolean {
+        return dataStore.data.first()[PreferencesKeys.HAS_APPLIED_V23_FIX] ?: false
+    }
+
+    override suspend fun setHasAppliedV23Fix(applied: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HAS_APPLIED_V23_FIX] = applied
+        }
+    }
+
     override val lastDictionarySyncTimestampFlow: Flow<Long> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.LAST_DICTIONARY_SYNC_TIMESTAMP] ?: 0L
     }

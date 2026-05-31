@@ -165,6 +165,9 @@ object PreferencesKeys {
     /** 词库 JSON 云更新：上次已应用的内容版本号 */
     val LAST_CONTENT_VERSION = intPreferencesKey("last_content_version")
 
+    /** 标记是否已应用 v23 同形异义词修复（强制执行一次本地 Smart Sync） */
+    val HAS_APPLIED_V23_FIX = booleanPreferencesKey("has_applied_v23_fix")
+
     /** 词库云更新：上次同步成功时的最大时间戳（用于增量同步） */
     val LAST_DICTIONARY_SYNC_TIMESTAMP = longPreferencesKey("last_dictionary_sync_timestamp")
 

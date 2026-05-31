@@ -437,10 +437,14 @@ interface SettingsRepository {
     suspend fun clearSyncErrorLogs()
 
 
-    /** 词库云更新：上次已应用的内容版本号（0 = 未更新过） */
+    /** 词库 JSON 云更新：上次已应用的内容版本号（0 = 未更新过） */
     val lastContentVersionFlow: Flow<Int>
     suspend fun getLastContentVersion(): Int
     suspend fun setLastContentVersion(version: Int)
+
+    /** v23 数据库同形异义词 Bug 修复标记 */
+    suspend fun getHasAppliedV23Fix(): Boolean
+    suspend fun setHasAppliedV23Fix(applied: Boolean)
 
     /** 词库云更新：上次同步成功时的最大时间戳（用于增量同步，0 = 未同步过） */
     val lastDictionarySyncTimestampFlow: Flow<Long>

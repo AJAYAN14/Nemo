@@ -61,6 +61,12 @@ interface WordDao {
     suspend fun getWordByLevelAndJapanese(level: String, japanese: String): WordEntity?
 
     /**
+     * 按 raw_id 匹配单词
+     */
+    @Query("SELECT * FROM words WHERE raw_id = :rawId LIMIT 1")
+    suspend fun getWordByRawId(rawId: String): WordEntity?
+
+    /**
      * 批量插入或更新 (用于同步 - 全量覆盖场景慎用)
      * 注意：对于增量同步，建议使用 updateProgress + insert 组合
      */
@@ -602,7 +608,7 @@ interface WordDao {
      * 获取去重后的保留ID列表 (每个单词只保留ID最小的一个)
      * 用于清理本地重复数据
      */
-    @Query("SELECT MIN(id) FROM words GROUP BY japanese, hiragana, chinese, level")
+    @Query("SELECT MIN(id) FROM words GROUP BY raw_id")
     suspend fun getDuplicateKeepIds(): List<Int>
 
     /**
@@ -611,6 +617,12 @@ interface WordDao {
      */
     @Query("UPDATE words SET is_delisted = 1 WHERE level = :level AND japanese NOT IN (:jsonJapaneseList)")
     suspend fun markMissingAsDelisted(level: String, jsonJapaneseList: List<String>): Int
+
+    /**
+     * 将指定等级下，不在给定 rawId 列表中的单词标记为已下架
+     */
+    @Query("UPDATE words SET is_delisted = 1 WHERE level = :level AND raw_id NOT IN (:jsonRawIds)")
+    suspend fun markMissingAsDelistedByRawId(level: String, jsonRawIds: List<String>): Int
 
     @Query("UPDATE words SET is_delisted = 1 WHERE id NOT IN (:ids)")
     suspend fun markAllMissingAsDelisted(ids: List<Int>): Int

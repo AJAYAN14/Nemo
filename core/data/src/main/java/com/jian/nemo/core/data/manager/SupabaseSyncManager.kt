@@ -79,19 +79,27 @@ class SupabaseSyncManager @Inject constructor(
             val remoteVersion = contentRepository.getRemoteContentVersion()
             val lastVersion = settingsRepository.getLastContentVersion()
             
+            // [FIX] 针对 v23 的同形异义词 Bug 修复，强制现有用户进行一次全量云端拉取
+            val hasAppliedV23Fix = settingsRepository.getHasAppliedV23Fix()
+            var forceFullSync = force
+            if (!hasAppliedV23Fix) {
+                Log.w(TAG, "⚠️ 检测到尚未应用 v23 同形词云端修复，强制执行一次云端全量拉取！")
+                forceFullSync = true
+            }
+
             // 获取旧的统一时间戳（用于平滑迁移）
             val oldGlobalSyncTimestamp = settingsRepository.getLastDictionarySyncTimestamp()
             
             // 获取独立的单词和语法时间戳
-            var lastWordSyncTimestamp = if (force) 0L else settingsRepository.getLastWordSyncTimestamp()
-            var lastGrammarSyncTimestamp = if (force) 0L else settingsRepository.getLastGrammarSyncTimestamp()
+            var lastWordSyncTimestamp = if (forceFullSync) 0L else settingsRepository.getLastWordSyncTimestamp()
+            var lastGrammarSyncTimestamp = if (forceFullSync) 0L else settingsRepository.getLastGrammarSyncTimestamp()
             
             // 平滑迁移：如果独立时间戳为 0 但全局时间戳 > 0，说明是升级后的首次同步，借用全局时间戳
-            if (!force && lastWordSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
+            if (!forceFullSync && lastWordSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
                 lastWordSyncTimestamp = oldGlobalSyncTimestamp
                 Log.i(TAG, "单词同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
             }
-            if (!force && lastGrammarSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
+            if (!forceFullSync && lastGrammarSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
                 lastGrammarSyncTimestamp = oldGlobalSyncTimestamp
                 Log.i(TAG, "语法同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
             }
@@ -102,13 +110,13 @@ class SupabaseSyncManager @Inject constructor(
             val isDatabaseEmpty = wordCount == 0 || grammarCount == 0
             val isAnySyncRequired = lastWordSyncTimestamp == 0L || lastGrammarSyncTimestamp == 0L
 
-            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, WordTS=$lastWordSyncTimestamp, GrammarTS=$lastGrammarSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$force, forceIncremental=$forceIncremental")
+            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, WordTS=$lastWordSyncTimestamp, GrammarTS=$lastGrammarSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$forceFullSync, forceIncremental=$forceIncremental")
 
-            if (force || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || isAnySyncRequired))) {
-                val isFullSync = force || isDatabaseEmpty || (lastWordSyncTimestamp == 0L && lastGrammarSyncTimestamp == 0L)
-                Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$force, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
+            if (forceFullSync || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || isAnySyncRequired))) {
+                val isFullSync = forceFullSync || isDatabaseEmpty || (lastWordSyncTimestamp == 0L && lastGrammarSyncTimestamp == 0L)
+                Log.i(TAG, ">>> 开始同步词库 (${if (isFullSync) "全量模式" else "增量模式"}): force=$forceFullSync, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
 
-                if (force) {
+                if (forceFullSync) {
                     Log.w(TAG, "强制重置模式：将执行全量覆盖并逻辑下架过时数据")
                 }
 
@@ -171,6 +179,12 @@ class SupabaseSyncManager @Inject constructor(
                 remoteVersion?.let {
                     settingsRepository.setLastContentVersion(it)
                 }
+
+                if (!hasAppliedV23Fix) {
+                    settingsRepository.setHasAppliedV23Fix(true)
+                    Log.i(TAG, "✅ v23 同形词云端修复已成功应用并标记完毕。")
+                }
+
                 Log.i(TAG, "词库同步任务结束: 已成功更新至 V$remoteVersion")
                 
                 return@withContext DictionarySyncResult(

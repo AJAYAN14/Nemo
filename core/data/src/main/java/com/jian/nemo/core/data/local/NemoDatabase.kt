@@ -28,7 +28,7 @@ import com.jian.nemo.core.data.local.entity.*
         AIExerciseEntity::class,
         AIReadingHistoryEntity::class
     ],
-    version = 22,  // v22: 引入 AI 智能阅读历史表 ai_reading_history
+    version = 23,  // v23: 修复 words 表 (japanese, level) 唯一约束
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

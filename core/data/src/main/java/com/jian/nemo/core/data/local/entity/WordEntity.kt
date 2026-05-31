@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey
         Index(value = ["level"]),
         Index(value = ["pos"]),
         Index(value = ["raw_id"], unique = true),
-        Index(value = ["japanese", "level"], unique = true)
+        Index(value = ["japanese", "level"])
     ]
 )
 data class WordEntity(

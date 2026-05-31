@@ -68,9 +68,9 @@ class DataImporter(
             Log.i(TAG, "📋 JSON 数据读取完毕: ${jsonWords.size} 条")
 
             // [FIX] 预处理 JSON 数据: 去重
-            // 防止 JSON 本身含有违反唯一索引 (japanese, level) 的重复项
+            // 防止 JSON 本身含有重复项
             // 策略: 后读取的覆盖先读取的 (或者保留第一个)，这里使用 map 以 key 覆盖为准
-            val uniqueJsonMap = jsonWords.associateBy { "${it.level}_${it.japanese}" }
+            val uniqueJsonMap = jsonWords.associateBy { it.rawId }
             val deduplicatedJsonWords = uniqueJsonMap.values
             if (jsonWords.size != deduplicatedJsonWords.size) {
                 Log.w(TAG, "⚠️ JSON 数据存在重复，已去重: ${jsonWords.size} -> ${deduplicatedJsonWords.size}")
@@ -78,10 +78,8 @@ class DataImporter(
 
             // 2. 读取所有数据库数据 (用于比对)
             val dbWords = wordDao.getAllWordsSync()
-            // Key: level_japanese (唯一业务键)
-            // 注意: 如果 DB 中已经有重复 (v13及以前)，associateBy 会丢弃部分数据。
-            // 但我们在 v14 升级时，Unique Index 的创建应该已经强制处理了重复 (或导致重建)。
-            val dbMap = dbWords.associateBy { "${it.level}_${it.japanese}" }
+            // Key: rawId (绝对唯一标识)
+            val dbMap = dbWords.associateBy { it.rawId }
             Log.i(TAG, "🗄️ 数据库现有数据: ${dbWords.size} 条")
 
             val toInsert = mutableListOf<WordEntity>()
@@ -90,8 +88,7 @@ class DataImporter(
 
             // 3. 遍历 JSON (去重后) 进行对比 (Insert / Update)
             deduplicatedJsonWords.forEach { dto ->
-                // 确保 DTO 里的 level 也是 "N1" 格式 (大写)
-                val key = "${dto.level}_${dto.japanese}"
+                val key = dto.rawId
                 
                 val existingEntity = dbMap[key]
                 val newEntityData = dto.toEntity() // ID=0
@@ -130,7 +127,7 @@ class DataImporter(
             // 4. 找出不在 JSON 中的数据 (Dictionary Delist / Mark as Delisted)
             // 策略: DB 有，JSON 无 -> 标记 isDelisted = 1
             val toDelistIds = dbWords.filter { entity ->
-                val key = "${entity.level}_${entity.japanese}"
+                val key = entity.rawId
                 !jsonKeys.contains(key) && !entity.isDelisted
             }.map { it.id }
 
