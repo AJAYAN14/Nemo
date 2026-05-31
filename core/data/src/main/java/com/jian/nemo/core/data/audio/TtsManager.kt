@@ -208,63 +208,102 @@ class TtsManager @Inject constructor(
             override fun onError(utteranceId: String?, errorCode: Int) {
                 utteranceId?.let { _events.tryEmit(TtsEvent.OnError(it, "Error code: $errorCode")) }
                 abandonAudioFocus()
+                
+                // If the error code is ERROR_SERVICE (-4) or similar, we could reinitialize,
+                // but checking the return value of speak() is usually faster.
+                if (errorCode == TextToSpeech.ERROR_SERVICE || errorCode == TextToSpeech.ERROR) {
+                    handleTtsError()
+                }
             }
         })
     }
 
+    /**
+     * Handles TTS engine disconnection or fatal errors by re-initializing the engine.
+     */
+    private fun handleTtsError(
+        retryText: String? = null, 
+        retryLanguage: Locale? = null, 
+        retryQueueMode: Int? = null, 
+        retryId: String? = null
+    ) {
+        Log.e("TtsManager", "TTS error detected. Forcing reinitialization...")
+        
+        scope.launch {
+            val needsInit = initMutex.withLock {
+                if (!isInitializing) {
+                    isInitialized = false
+                    try {
+                        tts?.shutdown()
+                    } catch (e: Exception) {
+                        Log.e("TtsManager", "Error shutting down old TTS", e)
+                    }
+                    tts = null
+                    true
+                } else {
+                    false
+                }
+            }
+            
+            try {
+                if (needsInit) {
+                    initialize()
+                } else {
+                    // Wait for the ongoing initialization to finish
+                    initDeferred.await()
+                }
+                
+                // Retry if initialized successfully and we have something to say
+                if (isInitialized && retryText != null && retryLanguage != null && retryQueueMode != null) {
+                    speak(retryText, retryLanguage, retryQueueMode, retryId)
+                }
+            } catch (e: Exception) {
+                Log.e("TtsManager", "Failed to reinitialize TTS", e)
+            }
+        }
+    }
+
     fun speak(text: String, language: Locale = Locale.JAPAN, queueMode: Int = TextToSpeech.QUEUE_FLUSH, id: String? = null) {
         if (isInitialized) {
-            // Logic: if we have a specific voice set, we should try to use it.
-            // setLanguage() might reset the voice to default for that language.
-
-            // Checks if we need to call setLanguage
-            // If the current voice's locale matches the requested language, we might skip setLanguage
-            // OR we ensure we re-set the voice after setLanguage if needed (though setLanguage generally resets it)
-
-            // Safer strategy:
-            // 1. Try to find if the current active voice matches the request.
-            // 2. If not, call setLanguage.
-
             var moveProceed = false
 
             val currentVoice = tts?.voice
             val targetLanguage = if (language == Locale.JAPANESE) Locale.JAPAN else language
 
+            if (tts == null) {
+                handleTtsError(text, language, queueMode, id)
+                return
+            }
+
             if (currentVoice != null && currentVoice.locale.language == targetLanguage.language) {
-                 // Current voice matches the requested language usage
-                 // Skip setLanguage to avoid resetting custom voice
                  moveProceed = true
             } else {
                  val result = tts?.setLanguage(targetLanguage)
                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     Log.e("TtsManager", "Language $targetLanguage is not supported or missing data")
                     moveProceed = false
+                 } else if (result == TextToSpeech.ERROR) {
+                    Log.e("TtsManager", "setLanguage returned ERROR. TTS engine might be dead.")
+                    handleTtsError(text, language, queueMode, id)
+                    return
                  } else {
                     moveProceed = true
-                    // Potentially we just reset the voice to default.
-                    // If we have a stored preference, we might want to re-apply it here,
-                    // but usually speak is called frequently, so maybe just rely on setLanguage being correct for now unless specific voice was forced.
-
-                    // Re-apply voice if we have one in memory that matches this language?
-                    // Ideally we should track `selectedVoiceName` in memory.
-                    // For now, let's just proceed.
                  }
             }
 
              if (moveProceed) {
-                // 清理文本（过滤所有语言文本中的括号内容及波浪号等符号）
                 val textToSpeak = cleanText(text)
-
-                // 使用指定的队列模式
                 val utteranceId = id ?: System.currentTimeMillis().toString()
 
-                // Ensure settings are applied (sometimes engine resets on language change)
                 tts?.setSpeechRate(currentSpeechRate)
                 tts?.setPitch(currentPitch)
 
-                // 请求音频焦点
                 if (requestAudioFocus()) {
-                    tts?.speak(textToSpeak, queueMode, null, utteranceId)
+                    val result = tts?.speak(textToSpeak, queueMode, null, utteranceId)
+                    if (result == TextToSpeech.ERROR) {
+                        Log.e("TtsManager", "speak returned ERROR. TTS engine might be dead.")
+                        handleTtsError(text, language, queueMode, utteranceId)
+                    }
                 } else {
                     Log.w("TtsManager", "Failed to get audio focus, skipping speak")
                     _events.tryEmit(TtsEvent.OnError(utteranceId, "Focus denied"))
@@ -344,7 +383,11 @@ class TtsManager @Inject constructor(
 
     fun stop() {
         if (isInitialized) {
-            tts?.stop()
+            val result = tts?.stop()
+            if (result == TextToSpeech.ERROR) {
+                Log.w("TtsManager", "stop returned ERROR, engine might be dead")
+                handleTtsError()
+            }
             abandonAudioFocus()
         }
     }

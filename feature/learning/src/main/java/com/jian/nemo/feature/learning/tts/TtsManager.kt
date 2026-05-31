@@ -20,6 +20,7 @@ class TtsManager(context: Context) {
 
     private var tts: TextToSpeech? = null
     private var isInitialized = false
+    private val context = context.applicationContext
 
     // 播放状态回调 (返回 utteranceId)
     var onSpeakStart: ((String) -> Unit)? = null
@@ -54,6 +55,70 @@ class TtsManager(context: Context) {
                 Log.e(TAG, "朗读出错: $utteranceId")
                 utteranceId?.let { onSpeakDone?.invoke(it) }
             }
+
+            override fun onError(utteranceId: String?, errorCode: Int) {
+                Log.e(TAG, "朗读出错: $utteranceId, errorCode: $errorCode")
+                utteranceId?.let { onSpeakDone?.invoke(it) }
+                if (errorCode == TextToSpeech.ERROR_SERVICE || errorCode == TextToSpeech.ERROR) {
+                    handleTtsError()
+                }
+            }
+        })
+    }
+
+    /**
+     * 重新初始化 TTS 引擎，用于引擎断开或崩溃后的恢复
+     */
+    private fun handleTtsError(retryRunnable: (() -> Unit)? = null) {
+        Log.e(TAG, "检测到 TTS 错误，正在尝试重新初始化...")
+        isInitialized = false
+        try {
+            tts?.shutdown()
+        } catch (e: Exception) {
+            Log.e(TAG, "释放旧 TTS 引擎失败", e)
+        }
+        
+        // 重新初始化
+        tts = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                isInitialized = true
+                Log.d(TAG, "TTS 重新初始化成功")
+                // 重置监听器
+                setupListener()
+                // 重试刚才失败的操作
+                retryRunnable?.invoke()
+            } else {
+                isInitialized = false
+                Log.e(TAG, "TTS 重新初始化失败，错误码: $status")
+            }
+        }
+    }
+
+    private fun setupListener() {
+        tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {
+                Log.d(TAG, "开始朗读: $utteranceId")
+                utteranceId?.let { onSpeakStart?.invoke(it) }
+            }
+
+            override fun onDone(utteranceId: String?) {
+                Log.d(TAG, "朗读完成: $utteranceId")
+                utteranceId?.let { onSpeakDone?.invoke(it) }
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onError(utteranceId: String?) {
+                Log.e(TAG, "朗读出错: $utteranceId")
+                utteranceId?.let { onSpeakDone?.invoke(it) }
+            }
+
+            override fun onError(utteranceId: String?, errorCode: Int) {
+                Log.e(TAG, "朗读出错: $utteranceId, errorCode: $errorCode")
+                utteranceId?.let { onSpeakDone?.invoke(it) }
+                if (errorCode == TextToSpeech.ERROR_SERVICE || errorCode == TextToSpeech.ERROR) {
+                    handleTtsError()
+                }
+            }
         })
     }
 
@@ -84,6 +149,10 @@ class TtsManager(context: Context) {
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             Log.e(TAG, "日语不支持")
             return false
+        } else if (result == TextToSpeech.ERROR) {
+            Log.e(TAG, "设置语言返回 ERROR，引擎可能已失效")
+            handleTtsError { speakJapanese(text, id) }
+            return false
         }
 
         // 播放（QUEUE_FLUSH = 立即播放，打断之前的）
@@ -97,6 +166,11 @@ class TtsManager(context: Context) {
             null,
             id
         )
+
+        if (speakResult == TextToSpeech.ERROR) {
+            Log.e(TAG, "speak 返回 ERROR，引擎可能已失效")
+            handleTtsError { speakJapanese(text, id) }
+        }
 
         return speakResult == TextToSpeech.SUCCESS
     }
@@ -124,6 +198,10 @@ class TtsManager(context: Context) {
         if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
             Log.e(TAG, "中文不支持")
             return false
+        } else if (result == TextToSpeech.ERROR) {
+            Log.e(TAG, "设置语言返回 ERROR，引擎可能已失效")
+            handleTtsError { speakChinese(text, queueMode, id) }
+            return false
         }
 
         // 播放（QUEUE_ADD = 追加到队列）
@@ -133,6 +211,11 @@ class TtsManager(context: Context) {
             null,
             id
         )
+
+        if (speakResult == TextToSpeech.ERROR) {
+            Log.e(TAG, "speak 返回 ERROR，引擎可能已失效")
+            handleTtsError { speakChinese(text, queueMode, id) }
+        }
 
         return speakResult == TextToSpeech.SUCCESS
     }
@@ -165,7 +248,11 @@ class TtsManager(context: Context) {
         return success
     }
     fun stop() {
-        tts?.stop()
+        val result = tts?.stop()
+        if (result == TextToSpeech.ERROR) {
+            Log.w(TAG, "stop 返回 ERROR，引擎可能已失效")
+            handleTtsError()
+        }
     }
 
     /**
