@@ -441,7 +441,7 @@ private fun LevelHeader(
                     .background(color)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(level, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
+            Text(level, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
             Spacer(modifier = Modifier.width(8.dp))
             Text("$count 词", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.weight(1f))
