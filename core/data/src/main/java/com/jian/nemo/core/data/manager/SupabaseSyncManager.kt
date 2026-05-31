@@ -150,8 +150,9 @@ class SupabaseSyncManager @Inject constructor(
                 }
 
                 // 计算并更新新的同步锚点时间戳 (分别取结果中最大的 updated_at)
-                val maxWordTimestamp = allWords.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
-                val maxGrammarTimestamp = allGrammars.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull() ?: 0L
+                // [FIX] Supabase 的 updated_at 是微秒级，转为毫秒时会丢失精度，导致后续 gt 查询无限匹配到同一条记录。加 1 毫秒跳出循环。
+                val maxWordTimestamp = allWords.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull()?.plus(1L) ?: 0L
+                val maxGrammarTimestamp = allGrammars.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull()?.plus(1L) ?: 0L
                 
                 // 单词锚点处理
                 var newWordSyncTimestamp = maxOf(lastWordSyncTimestamp, maxWordTimestamp)

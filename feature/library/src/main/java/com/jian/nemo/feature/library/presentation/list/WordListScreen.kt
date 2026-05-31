@@ -319,7 +319,6 @@ fun WordListScreen(
                 onDismiss = { viewModel.clearSyncMessage() },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .statusBarsPadding()
                     .padding(top = 8.dp)
             )
         }
