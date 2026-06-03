@@ -2,16 +2,29 @@ package com.jian.nemo.feature.learning.presentation.components.cards
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.FastOutLinearInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.clickable
@@ -88,6 +101,7 @@ private fun getStickerForGrammar(grammarId: Int): String {
  * @param onSpeakExample 朗读例句回调 (日文, 中文, ID)
  * @param playingAudioId 当前正在朗读的 ID
  */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun SRSGrammarCard(
     grammar: Grammar,
@@ -103,6 +117,8 @@ fun SRSGrammarCard(
 
     // 获取触觉反馈控制器
     val haptic = LocalHapticFeedback.current
+
+    val scope = rememberCoroutineScope()
 
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
@@ -323,6 +339,10 @@ fun SRSGrammarCard(
                 }
             }
 
+            val bringIntoViewRequesters = remember(grammar.id) {
+                List(grammar.usages.size) { BringIntoViewRequester() }
+            }
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -331,24 +351,51 @@ fun SRSGrammarCard(
                 grammar.usages.forEachIndexed { usageIndex, usage ->
                     val isExpanded = expandedStates[usageIndex] ?: (usageIndex == 0)
 
-                    // 用法标题（如果是多用法卡片，显示可点击的头部）
-                    if (grammar.usages.size > 1) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = if (usageIndex > 0) 8.dp else 0.dp)
-                                .background(
-                                    if (isExpanded) Color.Transparent else cardBackground,
-                                    RoundedCornerShape(12.dp)
-                                )
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable {
-                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    expandedStates[usageIndex] = !isExpanded
-                                }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                    val headerBgColor by animateColorAsState(
+                        targetValue = if (isExpanded) Color.Transparent else cardBackground,
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                        label = "headerBgColor"
+                    )
+
+                    val rotation by animateFloatAsState(
+                        targetValue = if (isExpanded) 180f else 0f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        ),
+                        label = "arrowRotation"
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(bringIntoViewRequesters[usageIndex]),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // 用法标题（如果是多用法卡片，显示可点击的头部）
+                        if (grammar.usages.size > 1) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        color = headerBgColor,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        val nextState = !isExpanded
+                                        expandedStates[usageIndex] = nextState
+                                        if (nextState) {
+                                            scope.launch {
+                                                kotlinx.coroutines.delay(200)
+                                                bringIntoViewRequesters[usageIndex].bringIntoView()
+                                            }
+                                        }
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                             Box(
                                 modifier = Modifier
                                     .background(
@@ -382,12 +429,12 @@ fun SRSGrammarCard(
 
                             // 展开状态图标
                             Icon(
-                                imageVector = if (isExpanded)
-                                    Icons.Rounded.KeyboardArrowUp
-                                    else Icons.Rounded.KeyboardArrowDown,
+                                imageVector = Icons.Rounded.KeyboardArrowDown, // 始终使用向下箭头
                                 contentDescription = if (isExpanded) "收起" else "展开",
                                 tint = secondaryTextColor.copy(alpha = 0.5f),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .rotate(rotation) // 绑定旋转角度
                             )
                         }
 
@@ -399,8 +446,24 @@ fun SRSGrammarCard(
                     // 用法详细内容（受折叠状态控制）
                     androidx.compose.animation.AnimatedVisibility(
                         visible = isExpanded || grammar.usages.size == 1,
-                        enter = fadeIn() + slideInVertically { -10 },
-                        exit = fadeOut()
+                        enter = fadeIn(
+                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow)
+                        ) + expandVertically(
+                            animationSpec = spring(
+                                dampingRatio = 0.9f, 
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            expandFrom = Alignment.Top
+                        ),
+                        exit = fadeOut(
+                            animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                        ) + shrinkVertically(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy, 
+                                stiffness = Spring.StiffnessMedium
+                            ),
+                            shrinkTowards = Alignment.Top
+                        )
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             // 接续卡片
@@ -613,6 +676,7 @@ fun SRSGrammarCard(
                     }
                 }
             }
+        }
         }
     }
 }
