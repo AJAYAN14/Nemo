@@ -22,7 +22,7 @@ enum class SlideDirection {
     BACKWARD  // 向后（上一个）
 }
 
-data class CategoryCardLearningUiState(
+data class CategoryCardBrowseUiState(
     val isLoading: Boolean = true,
     val words: List<Word> = emptyList(),
     val currentWordIndex: Int = 0,
@@ -47,20 +47,20 @@ data class CategoryCardLearningUiState(
 
 
 
-@HiltViewModel(assistedFactory = CategoryCardLearningViewModel.Factory::class)
-class CategoryCardLearningViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = CategoryCardBrowseViewModel.Factory::class)
+class CategoryCardBrowseViewModel @AssistedInject constructor(
     private val repository: WordRepository,
     private val preferences: CategoryLearningPreferences,
     private val ttsManager: TtsManager,
     @Assisted private val categoryId: String
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(CategoryCardLearningUiState())
-    val uiState: StateFlow<CategoryCardLearningUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(CategoryCardBrowseUiState())
+    val uiState: StateFlow<CategoryCardBrowseUiState> = _uiState.asStateFlow()
 
     @AssistedFactory
     interface Factory {
-        fun create(categoryId: String): CategoryCardLearningViewModel
+        fun create(categoryId: String): CategoryCardBrowseViewModel
     }
 
     init {
@@ -77,7 +77,7 @@ class CategoryCardLearningViewModel @AssistedInject constructor(
     private fun loadCategoryWords() {
         viewModelScope.launch {
             try {
-                _uiState.value = CategoryCardLearningUiState(isLoading = true)
+                _uiState.value = CategoryCardBrowseUiState(isLoading = true)
                 val words = when (categoryId) {
                     // 1. 名词类（noun）：名、代、連語（名词型）
                     "noun" -> repository.getWordsByPartOfSpeech(PartOfSpeech.NOUN)
@@ -113,14 +113,14 @@ class CategoryCardLearningViewModel @AssistedInject constructor(
                 val lastIndex = preferences.getLastIndex(categoryId)
                 val safeIndex = if (lastIndex in sortedWords.indices) lastIndex else 0
 
-                _uiState.value = CategoryCardLearningUiState(
+                _uiState.value = CategoryCardBrowseUiState(
                     isLoading = false,
                     words = sortedWords,
                     currentWordIndex = safeIndex,
                     navigationHistory = listOf(safeIndex) // 初始化时，当前位置加入历史
                 )
             } catch (e: Exception) {
-                _uiState.value = CategoryCardLearningUiState(
+                _uiState.value = CategoryCardBrowseUiState(
                     isLoading = false,
                     error = e.message
                 )

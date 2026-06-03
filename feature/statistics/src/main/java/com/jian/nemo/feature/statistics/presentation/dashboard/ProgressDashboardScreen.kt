@@ -34,6 +34,7 @@ fun ProgressDashboardScreen(
     onNavigateToHistoricalStatistics: () -> Unit = {},
     onNavigateToWordList: () -> Unit = {},
     onNavigateToGrammarList: () -> Unit = {},
+    onNavigateToLibrary: () -> Unit = {},
     onNavigateToCategoryVocabulary: () -> Unit = {},
     onNavigateToLeechManagement: () -> Unit = {},
     onNavigateToForgettingCurve: () -> Unit = {},
@@ -112,6 +113,7 @@ fun ProgressDashboardScreen(
                         onHistoricalStatisticsClick = onNavigateToHistoricalStatistics,
                         onWordListClick = onNavigateToWordList,
                         onGrammarListClick = onNavigateToGrammarList,
+                        onLibraryClick = onNavigateToLibrary,
                         onCategoryClassificationClick = onNavigateToCategoryVocabulary,
                         onLeechManagementClick = onNavigateToLeechManagement,
                         onForgettingCurveClick = onNavigateToForgettingCurve

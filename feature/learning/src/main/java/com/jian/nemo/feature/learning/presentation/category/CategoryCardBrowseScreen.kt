@@ -46,11 +46,11 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryCardLearningScreen(
+fun CategoryCardBrowseScreen(
     category: String,
     categoryTitle: String,
     onNavigateBack: () -> Unit,
-    viewModel: CategoryCardLearningViewModel = hiltViewModel(creationCallback = { factory: CategoryCardLearningViewModel.Factory ->
+    viewModel: CategoryCardBrowseViewModel = hiltViewModel(creationCallback = { factory: CategoryCardBrowseViewModel.Factory ->
         factory.create(category)
     })
 ) {
@@ -260,7 +260,7 @@ fun CategoryCardLearningScreen(
 
                     // 底部操作按钮区域 (同步主题色)
 
-                    CategoryCardActionButtons(
+                    CategoryCardBrowseActionButtons(
                         hasPrevious = uiState.hasPrevious,
                         hasNext = uiState.hasNext,
                         onPrevious = { viewModel.previousWord() },
@@ -305,10 +305,10 @@ fun CategoryCardLearningScreen(
 
 
 /**
- * 分类卡片学习界面的操作按钮组件
+ * 分类卡片浏览界面的操作按钮组件
  */
 @Composable
-fun CategoryCardActionButtons(
+fun CategoryCardBrowseActionButtons(
     hasPrevious: Boolean,
     hasNext: Boolean,
     onPrevious: () -> Unit,

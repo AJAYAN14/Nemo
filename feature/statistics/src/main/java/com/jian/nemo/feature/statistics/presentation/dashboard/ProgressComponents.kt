@@ -517,6 +517,7 @@ fun DataAndResourcesSection(
     onHistoricalStatisticsClick: () -> Unit,
     onWordListClick: () -> Unit,
     onGrammarListClick: () -> Unit,
+    onLibraryClick: () -> Unit,
     onCategoryClassificationClick: () -> Unit,
     onLeechManagementClick: () -> Unit,
     onForgettingCurveClick: () -> Unit = {}
@@ -574,6 +575,13 @@ fun DataAndResourcesSection(
                     title = "语法列表",
                     subtitle = "语法知识库",
                     onClick = onGrammarListClick
+                )
+                SquircleListItem(
+                    icon = Icons.Rounded.AutoAwesome,
+                    color = NemoSecondary,
+                    title = "地道表达",
+                    subtitle = "日语惯用句与常用搭配库",
+                    onClick = onLibraryClick
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoFixHigh,

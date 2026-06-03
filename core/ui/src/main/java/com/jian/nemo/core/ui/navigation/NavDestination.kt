@@ -53,7 +53,7 @@ object NavDestination {
     @Deprecated("Move to feature:learning module")
     const val DUE_REVIEW = "due_review"
     const val CATEGORY_CLASSIFICATION = "category_classification/{source}"
-    const val CATEGORY_CARD_LEARNING = "category_card_learning/{category}/{categoryTitle}"
+    const val CATEGORY_CARD_BROWSE = "category_card_browse/{category}/{categoryTitle}"
     const val CATEGORY_WORDS = "category_words/{category}/{categoryTitle}"
 
     // 数据与资料路由
@@ -85,7 +85,7 @@ object NavDestination {
     fun grammarLearning(level: String) = "grammar_learning/$level"
     fun posWords(pos: String) = "pos_words/$pos"
     fun categoryClassification(source: String = "practice") = "category_classification/$source"
-    fun categoryCardLearning(category: String, categoryTitle: String) = "category_card_learning/$category/$categoryTitle"
+    fun categoryCardBrowse(category: String, categoryTitle: String) = "category_card_browse/$category/$categoryTitle"
     fun categoryWords(category: String, categoryTitle: String) = "category_words/$category/$categoryTitle"
     fun wordDetail(wordId: Int) = "wordDetail/$wordId"
     fun grammarDetail(grammarId: Int) = "grammarDetail/$grammarId"

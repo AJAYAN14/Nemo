@@ -125,7 +125,7 @@ class WordRepositoryImpl @Inject constructor(
     override suspend fun getWordsSortedByDueScore(levels: List<String>, limit: Int): List<Word> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
             if (levels.isEmpty()) return@withContext emptyList()
-            val entities = wordDao.getWordsSortedByNextReviewDate(levels, limit)
+            val entities = wordDao.getWordsSortedByNextReviewDate(levels.map { it.uppercase() }, limit)
             mapWithStudyState(entities)
         } catch (e: Exception) {
             emptyList()

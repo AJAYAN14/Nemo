@@ -177,8 +177,7 @@ fun NemoNavHost(
             NavDestination.LEARNING,
             NavDestination.PROGRESS,
             NavDestination.TEST,
-            NavDestination.SETTINGS,
-            NavDestination.LIBRARY
+            NavDestination.SETTINGS
         )
     }
 
@@ -380,6 +379,9 @@ fun NemoNavHost(
                 onNavigateToGrammarList = {
                     navController.navigate(NavDestination.GRAMMAR_LIST)
                 },
+                onNavigateToLibrary = {
+                    navController.navigate(NavDestination.LIBRARY)
+                },
                 onNavigateToCategoryVocabulary = {
                     navController.navigate(NavDestination.categoryClassification("vocabulary"))
                 },
@@ -480,26 +482,10 @@ fun NemoNavHost(
 
 
         // 词库/搜索 - 主界面
-        composable(
-            route = NavDestination.LIBRARY,
-            enterTransition = {
-                val sourceRoute = initialState.destination.route
-                if (sourceRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            exitTransition = {
-                val targetRoute = targetState.destination.route
-                if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-                else BottomNavTransition.exitTransition()
-            },
-            popEnterTransition = {
-                val sourceRoute = initialState.destination.route
-                if (sourceRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            popExitTransition = { BottomNavTransition.exitTransition() }
-        ) {
-            com.jian.nemo.feature.library.presentation.LibraryScreen()
+        composable(route = NavDestination.LIBRARY) {
+            com.jian.nemo.feature.library.presentation.expression.ExpressionScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
 
         // 单词学习 - 使用新的 feature:learning 模块
@@ -738,7 +724,7 @@ fun NemoNavHost(
                     // 根据来源判断导航：专项训练进入卡片学习，专项词汇进入列表
                     if (source == "practice") {
                         navController.navigate(
-                            NavDestination.categoryCardLearning(categoryId, categoryTitle)
+                            NavDestination.categoryCardBrowse(categoryId, categoryTitle)
                         )
                     } else {
                         navController.navigate(
@@ -749,9 +735,9 @@ fun NemoNavHost(
             )
         }
 
-        // 专项训练 - 卡片学习
+        // 专项训练 - 卡片浏览
         composable(
-            route = NavDestination.CATEGORY_CARD_LEARNING,
+            route = NavDestination.CATEGORY_CARD_BROWSE,
             arguments = listOf(
                 navArgument("category") { type = NavType.StringType },
                 navArgument("categoryTitle") { type = NavType.StringType }
@@ -760,7 +746,7 @@ fun NemoNavHost(
             val category = backStackEntry.arguments?.getString("category") ?: ""
             val categoryTitle = backStackEntry.arguments?.getString("categoryTitle") ?: ""
 
-            com.jian.nemo.feature.learning.presentation.category.CategoryCardLearningScreen(
+            com.jian.nemo.feature.learning.presentation.category.CategoryCardBrowseScreen(
                 category = category,
                 categoryTitle = categoryTitle,
                 onNavigateBack = { navController.popBackStack() }

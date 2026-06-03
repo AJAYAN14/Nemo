@@ -57,7 +57,7 @@ interface WordDao {
     /**
      * 按等级+日语匹配单词（用于云更新合并）
      */
-    @Query("SELECT * FROM words WHERE level = :level AND japanese = :japanese LIMIT 1")
+    @Query("SELECT * FROM words WHERE UPPER(level) = UPPER(:level) AND japanese = :japanese LIMIT 1")
     suspend fun getWordByLevelAndJapanese(level: String, japanese: String): WordEntity?
 
     /**
@@ -145,7 +145,7 @@ interface WordDao {
     @Query("""
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
-        WHERE w.level = :level
+        WHERE UPPER(w.level) = UPPER(:level)
         AND (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
@@ -160,7 +160,7 @@ interface WordDao {
     @Query("""
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
-        WHERE w.level = :level
+        WHERE UPPER(w.level) = UPPER(:level)
         AND (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
@@ -266,7 +266,7 @@ interface WordDao {
         SELECT w.* FROM words w
         JOIN word_study_states s ON w.id = s.word_id
         WHERE s.repetition_count > 0
-        AND w.level = :level
+        AND UPPER(w.level) = UPPER(:level)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND s.is_deleted = 0
         AND w.is_delisted = 0
@@ -321,7 +321,7 @@ interface WordDao {
     @Query("""
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
-        WHERE w.level = :level
+        WHERE UPPER(w.level) = UPPER(:level)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND w.is_delisted = 0
         ORDER BY w.id ASC
@@ -336,7 +336,7 @@ interface WordDao {
         SELECT w.* FROM words w
         JOIN word_study_states s ON w.id = s.word_id
         WHERE s.repetition_count > 0
-        AND w.level IN (:levels)
+        AND UPPER(w.level) IN (:levels)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND s.is_deleted = 0
         AND w.is_delisted = 0
@@ -615,13 +615,13 @@ interface WordDao {
      * 将指定等级下，不在给定日语原文列表中的单词标记为已下架
      * 用于云更新时的「静默下架」逻辑（处理 JSON 中直接删除行的情况）
      */
-    @Query("UPDATE words SET is_delisted = 1 WHERE level = :level AND japanese NOT IN (:jsonJapaneseList)")
+    @Query("UPDATE words SET is_delisted = 1 WHERE UPPER(level) = UPPER(:level) AND japanese NOT IN (:jsonJapaneseList)")
     suspend fun markMissingAsDelisted(level: String, jsonJapaneseList: List<String>): Int
 
     /**
      * 将指定等级下，不在给定 rawId 列表中的单词标记为已下架
      */
-    @Query("UPDATE words SET is_delisted = 1 WHERE level = :level AND raw_id NOT IN (:jsonRawIds)")
+    @Query("UPDATE words SET is_delisted = 1 WHERE UPPER(level) = UPPER(:level) AND raw_id NOT IN (:jsonRawIds)")
     suspend fun markMissingAsDelistedByRawId(level: String, jsonRawIds: List<String>): Int
 
     @Query("UPDATE words SET is_delisted = 1 WHERE id NOT IN (:ids)")
