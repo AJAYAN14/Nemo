@@ -11,7 +11,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -182,7 +181,6 @@ fun SRSLearningCard(
                     ambientColor = shadowColor
                 )
                 .background(cardBackground, RoundedCornerShape(26.dp))
-                .border(0.5.dp, borderColor, RoundedCornerShape(26.dp))
                 .padding(vertical = 24.dp, horizontal = 16.dp)
         ) {
             Column(
@@ -352,7 +350,6 @@ fun SRSLearningCard(
                             ambientColor = shadowColor
                         )
                         .background(cardBackground.copy(alpha = 0.95f), RoundedCornerShape(26.dp)) // Slightly increased opacity
-                        .border(0.5.dp, borderColor, RoundedCornerShape(26.dp))
                         .padding(24.dp)
                 ) {
                     // Meaning

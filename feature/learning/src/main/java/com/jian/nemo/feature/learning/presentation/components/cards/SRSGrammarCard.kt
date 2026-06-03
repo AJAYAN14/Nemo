@@ -11,7 +11,9 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -99,6 +101,9 @@ fun SRSGrammarCard(
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(grammar.id) { mutableStateOf(false) }
 
+    // 获取触觉反馈控制器
+    val haptic = LocalHapticFeedback.current
+
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -132,7 +137,6 @@ fun SRSGrammarCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(cardBackground, RoundedCornerShape(24.dp))
-                .border(1.dp, borderColor, RoundedCornerShape(24.dp))
                 .padding(32.dp)
         ) {
             Column(
@@ -151,7 +155,6 @@ fun SRSGrammarCard(
                     Box(
                         modifier = Modifier
                             .background(indigoBg, CircleShape)
-                            .border(1.dp, indigoBorder, CircleShape)
                             .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
                         Text(
@@ -338,12 +341,9 @@ fun SRSGrammarCard(
                                     if (isExpanded) Color.Transparent else cardBackground,
                                     RoundedCornerShape(12.dp)
                                 )
-                                .border(
-                                    if (isExpanded) 0.dp else 1.dp,
-                                    borderColor,
-                                    RoundedCornerShape(12.dp)
-                                )
+                                .clip(RoundedCornerShape(12.dp))
                                 .clickable {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     expandedStates[usageIndex] = !isExpanded
                                 }
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -409,7 +409,6 @@ fun SRSGrammarCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(cardBackground, RoundedCornerShape(24.dp))
-                                        .border(1.dp, borderColor, RoundedCornerShape(24.dp))
                                         .padding(24.dp)
                                 ) {
                                     // 标题
@@ -449,7 +448,6 @@ fun SRSGrammarCard(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(cardBackground, RoundedCornerShape(24.dp))
-                                    .border(1.dp, borderColor, RoundedCornerShape(24.dp))
                                     .padding(24.dp)
                             ) {
                                 // 标题
@@ -489,7 +487,6 @@ fun SRSGrammarCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(cardBackground, RoundedCornerShape(24.dp))
-                                        .border(1.dp, borderColor, RoundedCornerShape(24.dp))
                                         .padding(24.dp)
                                 ) {
                                     // 标题
@@ -593,7 +590,6 @@ fun SRSGrammarCard(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(yellowBg, RoundedCornerShape(16.dp))
-                                        .border(1.5.dp, yellowBorder, RoundedCornerShape(16.dp))
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.Top
                                 ) {
