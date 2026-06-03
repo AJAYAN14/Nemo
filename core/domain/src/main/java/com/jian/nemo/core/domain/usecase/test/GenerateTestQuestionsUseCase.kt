@@ -16,6 +16,7 @@ import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.domain.repository.WrongAnswerRepository
 import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import kotlin.math.pow
 
 /**
  * 生成测试题目 Use Case
@@ -258,37 +259,32 @@ class GenerateTestQuestionsUseCase @Inject constructor(
             // 如果是混合模式，通常单词占一半。但如果题型不支持语法（如打字题），则全部分配给单词
             val wordCount = finalWordCount
 
-            // 🎯 Apply Prioritization Logic
-            // If both true, verify precedence. Usually "Prioritize Wrong" might take precedence or mix?
-            // Simple logic: sort based on flag.
-            // Note: Data is already fetched.
-            val sortedWords = when {
-                prioritizeNew -> words.sortedBy { it.repetitionCount } // 0 is new
-                prioritizeWrong -> words.sortedByDescending { it.difficulty } // High difficulty = hard/wrong
-                else -> words.shuffled() // Default random if no priority (or if shuffle is on? Wait. If shuffleQuestions is off, we should keep order? But words came from Repo maybe ordered by ID).
-                // Actually, if priority is OFF, we usually shuffle properties unless shuffleQuestions is off?
-                // The words list from Repo might be ID ordered.
-                // If prioritize is off, we select random words from the pool.
+            // 🎯 FSRS 加权随机抽样
+            val wordWeightMode = when {
+                prioritizeNew -> WeightedSampler.WeightMode.BOOST_NEW
+                prioritizeWrong -> WeightedSampler.WeightMode.BOOST_DIFFICULT
+                else -> WeightedSampler.WeightMode.ADAPTIVE
             }
-
-            // If we are selecting a subset (take(wordCount)), we should shuffle the pool *before* taking if no priority is set,
-            // otherwise we always take the first N words by ID.
-            val selectedWords = if (prioritizeNew || prioritizeWrong) {
-                sortedWords.take(wordCount)
-            } else {
-                words.shuffled().take(wordCount)
-            }
+            val selectedWords = WeightedSampler.weightedSample(
+                items = words,
+                count = wordCount,
+                today = today,
+                mode = wordWeightMode
+            )
 
             // 根据题型生成题目
             when (questionType) {
                 QuestionType.CARD_MATCHING -> {
                     // 卡片题：需要count*5个单词，然后按5个一组生成题目
-                    // If prioritizing, we take top N*5.
-                    val pool = if (prioritizeNew || prioritizeWrong) sortedWords else words.shuffled()
-                    val cardMatchingWords = pool.take(count * 5)
+                    val cardMatchingWords = WeightedSampler.weightedSample(
+                        items = words,
+                        count = count * 5,
+                        today = today,
+                        mode = wordWeightMode
+                    )
                     questions.addAll(generateCardMatchingQuestionsUseCase(
                         words = cardMatchingWords,
-                        shuffle = false  // 已经shuffled过了 or sorted
+                        shuffle = false  // 已经通过加权抽样选出
                     ))
                 }
                 else -> {
@@ -308,37 +304,43 @@ class GenerateTestQuestionsUseCase @Inject constructor(
         if (contentType != "words") {
             val grammarCount = finalGrammarCount
 
-            // Prioritize Grammars
-            val sortedGrammars = when {
-                prioritizeNew -> grammars.sortedBy { it.repetitionCount }
-                prioritizeWrong -> grammars.sortedByDescending { it.difficulty }
-                else -> grammars.shuffled()
+            // 🎯 FSRS 加权随机抽样 (语法)
+            val grammarWeightMode = when {
+                prioritizeNew -> WeightedSampler.WeightMode.BOOST_NEW
+                prioritizeWrong -> WeightedSampler.WeightMode.BOOST_DIFFICULT
+                else -> WeightedSampler.WeightMode.ADAPTIVE
             }
-             val selectedGrammars = if (prioritizeNew || prioritizeWrong) {
-                sortedGrammars.take(grammarCount)
-            } else {
-                grammars.shuffled().take(grammarCount)
-            }
+            val selectedGrammars = WeightedSampler.weightedSample(
+                items = grammars,
+                count = grammarCount,
+                today = today,
+                mode = grammarWeightMode
+            )
 
             if (questionType == QuestionType.SORTING && grammars.isNotEmpty()) {
                 // 排序题 (单词保留，语法移除)
                  // Grammar Sorting removed.
             } else if (questionType == QuestionType.MULTIPLE_CHOICE) {
                 // 选择题
-                // 🎯 Use JSON questions if available
+                // 🎯 Use JSON questions if available (FSRS 加权排序)
                 if (jsonGrammarQuestions.isNotEmpty()) {
-                     // For JSON questions, we don't have easy metrics for priority unless we link to entities.
-                     // We did create grammarEntityMap.
-                     val sortedJson = if (prioritizeNew || prioritizeWrong) {
-                          jsonGrammarQuestions.sortedBy { q ->
-                              val id = try { extractNumericId(q.targetGrammarId) } catch(_:Exception){0}
-                              val g = grammarEntityMap[id]
-                              if (g != null) {
-                                  if (prioritizeNew) g.repetitionCount.toDouble()
-                                  else g.difficulty.toDouble()
-                              } else 0.0
-                          }
-                      } else jsonGrammarQuestions.shuffled()
+                     // 通过 grammarEntityMap 查找对应实体的 FSRS 参数，计算加权 key 进行抽样
+                     val sortedJson = run {
+                         val random = java.util.Random()
+                         jsonGrammarQuestions.map { q ->
+                             val grammarId = try { extractNumericId(q.targetGrammarId) } catch (_: Exception) { 0 }
+                             val grammar = grammarEntityMap[grammarId]
+                             val weight = if (grammar != null) {
+                                 WeightedSampler.calculateWeight(grammar, today, grammarWeightMode)
+                             } else {
+                                 WeightedSampler.DEFAULT_NEW_ITEM_WEIGHT
+                             }
+                             val key = random.nextDouble().pow(1.0 / weight)
+                             q to key
+                         }
+                         .sortedByDescending { it.second }
+                         .map { it.first }
+                     }
 
                      questions.addAll(sortedJson.take(grammarCount).map {
                          testQuestionFactory.mapJsonToMultipleChoice(it, mode, grammarEntityMap, shuffleOptions)
