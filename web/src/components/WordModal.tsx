@@ -120,21 +120,26 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
   }, [isOpen, wordToEdit]);
 
   const handleAIByInput = async () => {
-    if (!formData.japanese) return;
+    const inputWord = formData.japanese.trim() || formData.hiragana.trim();
+    if (!inputWord) return;
     setIsGenerating(true);
     try {
       const res = await fetch("/api/ai/generate-word", {
         method: "POST",
-        body: JSON.stringify({ word: formData.japanese, level: formData.level }),
+        body: JSON.stringify({ word: inputWord, level: formData.level }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
       const targetLevel = data.level || formData.level;
+      const hasInputJapanese = !!formData.japanese.trim();
+      const hasInputHiragana = !!formData.hiragana.trim();
+
       setFormData(prev => {
         const updated = {
           ...prev,
-          hiragana: data.hiragana || "",
+          japanese: hasInputJapanese ? prev.japanese : (data.japanese || ""),
+          hiragana: hasInputHiragana ? prev.hiragana : (data.hiragana || ""),
           chinese: data.chinese || "",
           level: targetLevel,
           pos: data.pos || "",
@@ -239,7 +244,7 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
 
         <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
           <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>日语单词</label>
+            <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>日语汉字</label>
             <input 
               className="input" 
               style={{ width: '100%' }}
@@ -256,10 +261,10 @@ export function WordModal({ isOpen, onClose, onSaved, wordToEdit }: WordModalPro
               alignItems: 'center', 
               gap: '6px', 
               color: 'var(--accent)',
-              opacity: (isGenerating || !formData.japanese) ? 0.5 : 1
+              opacity: (isGenerating || (!formData.japanese.trim() && !formData.hiragana.trim())) ? 0.5 : 1
             }}
             onClick={handleAIByInput}
-            disabled={isGenerating || !formData.japanese}
+            disabled={isGenerating || (!formData.japanese.trim() && !formData.hiragana.trim())}
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
             AI 生成
