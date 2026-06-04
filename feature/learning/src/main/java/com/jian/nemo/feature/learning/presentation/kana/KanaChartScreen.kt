@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,10 +24,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -43,6 +56,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -55,6 +72,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.collectAsState
+import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
@@ -64,7 +82,9 @@ import kotlin.math.abs
 private data class KanaCell(
     val hiragana: String,
     val katakana: String?,
-    val romaji: String
+    val romaji: String,
+    val isPlaceholder: Boolean = false,
+    val isEmpty: Boolean = false
 )
 
 private enum class KanaType {
@@ -72,12 +92,26 @@ private enum class KanaType {
     Katakana
 }
 
+private val MacaronColors = listOf(
+    Color(0xFFFFE5EC), // 0
+    Color(0xFFFFF3E0), // 1
+    Color(0xFFFFF9C4), // 2
+    Color(0xFFE8F5E9), // 3
+    Color(0xFFE3F2FD), // 4
+    Color(0xFFF3E5F5), // 5
+    Color(0xFFFFEBEE), // 6
+    Color(0xFFE0F7FA), // 7
+    Color(0xFFFCE4EC), // 8
+    Color(0xFFF0F4C3), // 9
+    Color(0xFFEDE7F6)  // 10
+)
+
+private val EP = KanaCell("", "", "", isEmpty = true)
+
 private object KanaSectionIndex {
     const val Seion = 0
     const val Dakuon = 2
     const val Yoon = 5
-    const val Sokuon = 8
-    const val Chouon = 11
 }
 
 private val LightPrimaryChip = Color(0xFFDFF4FF)
@@ -105,40 +139,51 @@ fun KanaChartScreen(
     val quickNavSelectedColor = if (isDark) colorScheme.primary.copy(alpha = 0.28f) else LightQuickNavSelected
 
     var currentType by remember { mutableIntStateOf(0) }
-    var isQuickNavScrolling by remember { androidx.compose.runtime.mutableStateOf(false) }
-    var flashingSection by remember { mutableStateOf<String?>(null) }
+    var currentSection by remember { mutableStateOf("seion") }
     val isKatakana = currentType == 1
-    val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val playingAudioId by viewModel.playingAudioId.collectAsState()
 
-    val sectionToIndex = remember {
-        mapOf(
-            "seion" to KanaSectionIndex.Seion,
-            "dakuon" to KanaSectionIndex.Dakuon,
-            "yoon" to KanaSectionIndex.Yoon,
-            "sokuon" to KanaSectionIndex.Sokuon,
-            "chouon" to KanaSectionIndex.Chouon
-        )
-    }
-    val currentSection by remember {
-        derivedStateOf {
-            when (listState.firstVisibleItemIndex) {
-                in 0..1 -> "seion"
-                in 2..4 -> "dakuon"
-                in 5..7 -> "yoon"
-                in 8..10 -> "sokuon"
-                else -> "chouon"
-            }
-        }
-    }
+    val sectionOrder = remember { mapOf("seion" to 0, "dakuon" to 1, "yoon" to 2) }
 
     Scaffold(
         topBar = {
             CommonHeader(
                 title = stringResource(R.string.kana_chart_title),
                 onBack = onNavigateBack,
-                backgroundColor = backgroundColor
+                backgroundColor = backgroundColor,
+                actions = {
+                    val toggleBg = if (currentType == 0) Color(0xFFEEF2FF) else Color(0xFFFDF2F8)
+                    val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+                    Surface(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .noRippleClickable {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                currentType = if (currentType == 0) 1 else 0
+                            },
+                        shape = RoundedCornerShape(16.dp),
+                        color = toggleBg
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = "Toggle Kana Type",
+                                modifier = Modifier.size(16.dp),
+                                tint = toggleFg
+                            )
+                            Text(
+                                text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = toggleFg
+                            )
+                        }
+                    }
+                }
             )
         },
         containerColor = backgroundColor
@@ -153,82 +198,15 @@ fun KanaChartScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(backgroundColor)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .padding(start = 20.dp, top = 10.dp, end = 20.dp)
             ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    color = tabContainerColor,
-                    shadowElevation = if (isDark) 0.dp else 1.dp,
-                    border = BorderStroke(
-                        1.dp,
-                        if (isDark) colorScheme.outline.copy(alpha = 0.26f) else Color.White.copy(alpha = 0.85f)
-                    )
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(4.dp)
-                    ) {
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            if (currentType == KanaType.Hiragana.ordinal) {
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(40.dp),
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = tabSelectedColor,
-                                    shadowElevation = if (isDark) 0.dp else 1.dp
-                                ) {}
-                                Spacer(modifier = Modifier.weight(1f))
-                            } else {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Surface(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(40.dp),
-                                    shape = RoundedCornerShape(20.dp),
-                                    color = tabSelectedColor,
-                                    shadowElevation = if (isDark) 0.dp else 1.dp
-                                ) {}
-                            }
-                        }
-
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            KanaTypeButton(
-                                modifier = Modifier.weight(1f),
-                                text = stringResource(R.string.kana_tab_hiragana),
-                                selected = currentType == 0,
-                                textMain = textMain,
-                                textSub = textSub,
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    currentType = 0
-                                }
-                            )
-                            KanaTypeButton(
-                                modifier = Modifier.weight(1f),
-                                text = stringResource(R.string.kana_tab_katakana),
-                                selected = currentType == 1,
-                                textMain = textMain,
-                                textSub = textSub,
-                                onClick = {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    currentType = 1
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
 
                 val quickNavScroll = rememberScrollState()
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(quickNavScroll),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     QuickNavButton(
                         label = stringResource(R.string.kana_quick_nav_seion),
@@ -240,18 +218,7 @@ fun KanaChartScreen(
                         isDark = isDark
                     ) {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (isQuickNavScrolling) return@QuickNavButton
-                        scope.launch {
-                            isQuickNavScrolling = true
-                            try {
-                                smartScrollToSection(listState, sectionToIndex.getValue("seion"))
-                                flashingSection = "seion"
-                                delay(280)
-                                if (flashingSection == "seion") flashingSection = null
-                            } finally {
-                                isQuickNavScrolling = false
-                            }
-                        }
+                        currentSection = "seion"
                     }
                     QuickNavButton(
                         label = stringResource(R.string.kana_quick_nav_dakuon),
@@ -263,18 +230,7 @@ fun KanaChartScreen(
                         isDark = isDark
                     ) {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (isQuickNavScrolling) return@QuickNavButton
-                        scope.launch {
-                            isQuickNavScrolling = true
-                            try {
-                                smartScrollToSection(listState, sectionToIndex.getValue("dakuon"))
-                                flashingSection = "dakuon"
-                                delay(280)
-                                if (flashingSection == "dakuon") flashingSection = null
-                            } finally {
-                                isQuickNavScrolling = false
-                            }
-                        }
+                        currentSection = "dakuon"
                     }
                     QuickNavButton(
                         label = stringResource(R.string.kana_quick_nav_yoon),
@@ -286,255 +242,105 @@ fun KanaChartScreen(
                         isDark = isDark
                     ) {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (isQuickNavScrolling) return@QuickNavButton
-                        scope.launch {
-                            isQuickNavScrolling = true
-                            try {
-                                smartScrollToSection(listState, sectionToIndex.getValue("yoon"))
-                                flashingSection = "yoon"
-                                delay(280)
-                                if (flashingSection == "yoon") flashingSection = null
-                            } finally {
-                                isQuickNavScrolling = false
-                            }
-                        }
-                    }
-                    QuickNavButton(
-                        label = stringResource(R.string.kana_quick_nav_sokuon),
-                        surfaceColor = quickNavBaseColor,
-                        selectedSurfaceColor = quickNavSelectedColor,
-                        textMain = textMain,
-                        selected = currentSection == "sokuon",
-                        accentColor = accentColor,
-                        isDark = isDark
-                    ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (isQuickNavScrolling) return@QuickNavButton
-                        scope.launch {
-                            isQuickNavScrolling = true
-                            try {
-                                smartScrollToSection(listState, sectionToIndex.getValue("sokuon"))
-                                flashingSection = "sokuon"
-                                delay(280)
-                                if (flashingSection == "sokuon") flashingSection = null
-                            } finally {
-                                isQuickNavScrolling = false
-                            }
-                        }
-                    }
-                    QuickNavButton(
-                        label = stringResource(R.string.kana_quick_nav_chouon),
-                        surfaceColor = quickNavBaseColor,
-                        selectedSurfaceColor = quickNavSelectedColor,
-                        textMain = textMain,
-                        selected = currentSection == "chouon",
-                        accentColor = accentColor,
-                        isDark = isDark
-                    ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        if (isQuickNavScrolling) return@QuickNavButton
-                        scope.launch {
-                            isQuickNavScrolling = true
-                            try {
-                                smartScrollToSection(listState, sectionToIndex.getValue("chouon"))
-                                flashingSection = "chouon"
-                                delay(280)
-                                if (flashingSection == "chouon") flashingSection = null
-                            } finally {
-                                isQuickNavScrolling = false
-                            }
-                        }
+                        currentSection = "yoon"
                     }
                 }
             }
 
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 28.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                item {
-                    SectionTitle(
-                        text = stringResource(R.string.kana_section_seion),
-                        accentColor = accentColor,
-                        textMain = textMain,
-                        flashing = flashingSection == "seion"
-                    )
-                }
-                item {
-                    KanaGrid(
-                        cells = seionData,
-                        columns = 5,
-                        isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        playingBorderColor = colorScheme.primary,
-                        onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                        onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                    )
-                }
-
-                item {
-                    SectionTitle(
-                        text = stringResource(R.string.kana_section_dakuon),
-                        accentColor = accentColor,
-                        textMain = textMain,
-                        flashing = flashingSection == "dakuon"
-                    )
-                }
-                item {
-                    SectionSubtitle(text = stringResource(R.string.kana_desc_dakuon), textSub = textSub)
-                }
-                item {
-                    KanaGrid(
-                        cells = dakuonData,
-                        columns = 5,
-                        isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        playingBorderColor = colorScheme.primary,
-                        onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                        onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                    )
-                }
-
-                item {
-                    SectionTitle(
-                        text = stringResource(R.string.kana_section_yoon),
-                        accentColor = accentColor,
-                        textMain = textMain,
-                        flashing = flashingSection == "yoon"
-                    )
-                }
-                item {
-                    SectionSubtitle(text = stringResource(R.string.kana_desc_yoon), textSub = textSub)
-                }
-                item {
-                    KanaGrid(
-                        cells = yoonData,
-                        columns = 3,
-                        isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        playingBorderColor = colorScheme.primary,
-                        onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                        onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                    )
-                }
-
-                item {
-                    SectionTitle(
-                        accentColor = accentColor,
-                        textMain = textMain,
-                        flashing = flashingSection == "sokuon",
-                        text = if (isKatakana) {
-                            stringResource(R.string.kana_section_sokuon_katakana)
-                        } else {
-                            stringResource(R.string.kana_section_sokuon_hiragana)
+            AnimatedContent(
+                targetState = currentSection,
+                transitionSpec = {
+                    val oldIndex = sectionOrder[initialState] ?: 0
+                    val newIndex = sectionOrder[targetState] ?: 0
+                    if (newIndex > oldIndex) {
+                        (slideInHorizontally { width -> width } + fadeIn()).togetherWith(slideOutHorizontally { width -> -width } + fadeOut())
+                    } else {
+                        (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(slideOutHorizontally { width -> width } + fadeOut())
+                    }
+                },
+                label = "kanaPagination"
+            ) { section ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    when (section) {
+                        "seion" -> {
+                            SectionTitle(
+                                text = stringResource(R.string.kana_section_seion),
+                                accentColor = accentColor,
+                                textMain = textMain,
+                                flashing = false
+                            )
+                            KanaGrid(
+                                cells = seionData,
+                                columns = 5,
+                                isKatakana = isKatakana,
+                                surfaceColor = surfaceColor,
+                                textMain = textMain,
+                                textSub = textSub,
+                                isDark = isDark,
+                                playingAudioId = playingAudioId,
+                                playingBorderColor = colorScheme.primary,
+                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
+                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+                            )
                         }
-                    )
-                }
-                item {
-                    SectionSubtitle(text = stringResource(R.string.kana_desc_sokuon), textSub = textSub)
-                }
-                item {
-                    KanaGrid(
-                        cells = sokuonData,
-                        columns = 4,
-                        isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        playingBorderColor = colorScheme.primary,
-                        onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                        onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                    )
-                }
-
-                item {
-                    SectionTitle(
-                        text = stringResource(R.string.kana_section_chouon),
-                        accentColor = accentColor,
-                        textMain = textMain,
-                        flashing = flashingSection == "chouon"
-                    )
-                }
-                item {
-                    KanaGrid(
-                        cells = chouonData,
-                        columns = 5,
-                        isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        playingBorderColor = colorScheme.primary,
-                        onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                        onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                    )
+                        "dakuon" -> {
+                            SectionTitle(
+                                text = stringResource(R.string.kana_section_dakuon),
+                                accentColor = accentColor,
+                                textMain = textMain,
+                                flashing = false
+                            )
+                            SectionSubtitle(text = stringResource(R.string.kana_desc_dakuon), textSub = textSub)
+                            KanaGrid(
+                                cells = dakuonData,
+                                columns = 5,
+                                isKatakana = isKatakana,
+                                surfaceColor = surfaceColor,
+                                textMain = textMain,
+                                textSub = textSub,
+                                isDark = isDark,
+                                playingAudioId = playingAudioId,
+                                playingBorderColor = colorScheme.primary,
+                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
+                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+                            )
+                        }
+                        "yoon" -> {
+                            SectionTitle(
+                                text = stringResource(R.string.kana_section_yoon),
+                                accentColor = accentColor,
+                                textMain = textMain,
+                                flashing = false
+                            )
+                            SectionSubtitle(text = stringResource(R.string.kana_desc_yoon), textSub = textSub)
+                            KanaGrid(
+                                cells = yoonData,
+                                columns = 5,
+                                isKatakana = isKatakana,
+                                surfaceColor = surfaceColor,
+                                textMain = textMain,
+                                textSub = textSub,
+                                isDark = isDark,
+                                playingAudioId = playingAudioId,
+                                playingBorderColor = colorScheme.primary,
+                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
+                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(28.dp))
                 }
             }
         }
     }
 }
 
-private suspend fun smartScrollToSection(
-    listState: androidx.compose.foundation.lazy.LazyListState,
-    targetIndex: Int
-) {
-    val currentIndex = listState.firstVisibleItemIndex
-    val distance = abs(targetIndex - currentIndex)
-
-    // Top section is sensitive to pre-jump; use direct smooth animation.
-    if (targetIndex == 0) {
-        listState.animateScrollToItem(0)
-        return
-    }
-
-    if (distance > 6 && targetIndex > currentIndex) {
-        val preIndex = (targetIndex - 2).coerceAtLeast(0)
-        listState.scrollToItem(preIndex)
-    }
-    listState.animateScrollToItem(targetIndex)
-}
-
-@Composable
-private fun KanaTypeButton(
-    modifier: Modifier = Modifier,
-    text: String,
-    selected: Boolean,
-    textMain: Color,
-    textSub: Color,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .height(40.dp)
-            .noRippleClickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-            color = if (selected) textMain else textSub
-        )
-    }
-}
 
 @Composable
 private fun QuickNavButton(
@@ -547,37 +353,36 @@ private fun QuickNavButton(
     isDark: Boolean,
     onClick: () -> Unit
 ) {
-    val bgColor by animateColorAsState(
-        targetValue = if (selected) selectedSurfaceColor else surfaceColor,
-        animationSpec = tween(180),
-        label = "quickNavBg"
-    )
     val fgColor by animateColorAsState(
-        targetValue = if (selected) accentColor else textMain.copy(alpha = 0.9f),
+        targetValue = if (selected) Color(0xFF4F46E5) else textMain.copy(alpha = 0.6f),
         animationSpec = tween(180),
         label = "quickNavFg"
     )
 
-    Surface(
+    Column(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .noRippleClickable(onClick = onClick),
-        color = bgColor,
-        shape = RoundedCornerShape(20.dp),
-        shadowElevation = if (isDark) 0.dp else 1.dp,
-        border = BorderStroke(
-            1.dp,
-            if (selected) accentColor.copy(alpha = if (isDark) 0.32f else 0.34f)
-            else if (isDark) Color.White.copy(alpha = 0.08f)
-            else Color(0xFFDCEEFF)
-        )
+            .noRippleClickable(onClick = onClick)
+            .padding(bottom = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+            ),
             color = fgColor
         )
+        if (selected) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .size(width = 20.dp, height = 3.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color(0xFF4F46E5))
+            )
+        } else {
+            Spacer(modifier = Modifier.height(7.dp))
+        }
     }
 }
 
@@ -638,19 +443,25 @@ private fun KanaGrid(
     onHaptic: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        cells.chunked(columns).forEach { row ->
+        cells.chunked(columns).forEachIndexed { rowIndex, row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { cell ->
+                    val cardColor = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) {
+                        MacaronColors[rowIndex % MacaronColors.size]
+                    } else {
+                        surfaceColor
+                    }
+                    
                     KanaCard(
                         modifier = Modifier
                             .weight(1f)
                             .widthIn(min = 0.dp),
                         cell = cell,
                         isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
+                        surfaceColor = cardColor,
                         textMain = textMain,
                         textSub = textSub,
                         isDark = isDark,
@@ -687,11 +498,36 @@ private fun KanaCard(
         return
     }
 
+    if (cell.isEmpty) {
+        val emptyBorderColor = if (isDark) Color(0xFF374151) else Color(0xFFE5E7EB)
+        Box(
+            modifier = modifier
+                .aspectRatio(1f)
+                .background(Color.Transparent)
+                .drawWithCache {
+                    val stroke = Stroke(
+                        width = 2.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 16f), 0f)
+                    )
+                    onDrawBehind {
+                        drawRoundRect(
+                            color = emptyBorderColor,
+                            style = stroke,
+                            cornerRadius = CornerRadius(20.dp.toPx())
+                        )
+                    }
+                }
+        )
+        return
+    }
+
     val kanaText = if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
     val cardAudioId = "kana_${kanaText.hashCode()}"
     val isPlaying = playingAudioId == cardAudioId
+    
+    val defaultBorderColor = if (cell.isPlaceholder) Color(0xFFD1D5DB) else Color.Transparent
     val borderColor by animateColorAsState(
-        targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.88f else 0.78f) else Color.Transparent,
+        targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.88f else 0.78f) else defaultBorderColor,
         animationSpec = tween(180),
         label = "cardPlayingBorder"
     )
@@ -713,45 +549,55 @@ private fun KanaCard(
         label = "qqScale"
     )
 
+    val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
+    val textOpacity = if (cell.isPlaceholder) 0.3f else 1f
+
     Surface(
         modifier = modifier
+            .aspectRatio(1f)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
             .noRippleClickable(interactionSource = interactionSource) {
-            onHaptic()
-            clickPulse = true
-            val speakText = cell.speakText(isKatakana)
-            onSpeak(speakText, cardAudioId)
-        },
-        shape = RoundedCornerShape(18.dp),
-        color = surfaceColor,
-        shadowElevation = if (isDark) 0.dp else 2.dp,
-        border = BorderStroke(1.dp, borderColor)
+                if (!cell.isPlaceholder) {
+                    onHaptic()
+                    clickPulse = true
+                    val speakText = cell.speakText(isKatakana)
+                    onSpeak(speakText, cardAudioId)
+                }
+            },
+        shape = RoundedCornerShape(20.dp),
+        color = actualSurfaceColor,
+        shadowElevation = 0.dp, // Flat UI
+        border = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(surfaceColor)
-                .padding(vertical = 12.dp, horizontal = 4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .background(actualSurfaceColor)
+                .padding(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
 
             Text(
                 text = kanaText,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
+                    fontFamily = NotoSerifJP,
+                    fontWeight = FontWeight.Black, // 900
                     fontSize = kanaSize
                 ),
-                color = textMain
+                color = textMain.copy(alpha = textOpacity)
             )
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = cell.romaji,
-                style = MaterialTheme.typography.labelSmall,
-                color = textSub
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Medium
+                ),
+                color = textSub.copy(alpha = textOpacity)
             )
         }
     }
@@ -794,9 +640,9 @@ private val seionData = listOf(
     KanaCell("な", "ナ", "na"), KanaCell("に", "ニ", "ni"), KanaCell("ぬ", "ヌ", "nu"), KanaCell("ね", "ネ", "ne"), KanaCell("の", "ノ", "no"),
     KanaCell("は", "ハ", "ha"), KanaCell("ひ", "ヒ", "hi"), KanaCell("ふ", "フ", "fu"), KanaCell("へ", "ヘ", "he"), KanaCell("ほ", "ホ", "ho"),
     KanaCell("ま", "マ", "ma"), KanaCell("み", "ミ", "mi"), KanaCell("む", "ム", "mu"), KanaCell("め", "メ", "me"), KanaCell("も", "モ", "mo"),
-    KanaCell("や", "ヤ", "ya"), null, KanaCell("ゆ", "ユ", "yu"), null, KanaCell("よ", "ヨ", "yo"),
+    KanaCell("や", "ヤ", "ya"), KanaCell("(い)", "(イ)", "(i)", isPlaceholder = true), KanaCell("ゆ", "ユ", "yu"), KanaCell("(え)", "(エ)", "(e)", isPlaceholder = true), KanaCell("よ", "ヨ", "yo"),
     KanaCell("ら", "ラ", "ra"), KanaCell("り", "リ", "ri"), KanaCell("る", "ル", "ru"), KanaCell("れ", "レ", "re"), KanaCell("ろ", "ロ", "ro"),
-    KanaCell("わ", "ワ", "wa"), null, null, null, KanaCell("を", "ヲ", "wo"),
+    KanaCell("わ", "ワ", "wa"), KanaCell("(い)", "(イ)", "(i)", isPlaceholder = true), KanaCell("(う)", "(ウ)", "(u)", isPlaceholder = true), KanaCell("(え)", "(エ)", "(e)", isPlaceholder = true), KanaCell("を", "ヲ", "wo"),
     KanaCell("ん", "ン", "n"), null, null, null, null
 )
 
@@ -809,24 +655,17 @@ private val dakuonData = listOf(
 )
 
 private val yoonData = listOf(
-    KanaCell("きゃ", "キャ", "kya"), KanaCell("きゅ", "キュ", "kyu"), KanaCell("きょ", "キョ", "kyo"),
-    KanaCell("ぎゃ", "ギャ", "gya"), KanaCell("ぎゅ", "ギュ", "gyu"), KanaCell("ぎょ", "ギョ", "gyo"),
-    KanaCell("しゃ", "シャ", "sha"), KanaCell("しゅ", "シュ", "shu"), KanaCell("しょ", "ショ", "sho"),
-    KanaCell("じゃ", "ジャ", "ja"), KanaCell("じゅ", "ジュ", "ju"), KanaCell("じょ", "ジョ", "jo"),
-    KanaCell("ちゃ", "チャ", "cha"), KanaCell("ちゅ", "チュ", "chu"), KanaCell("ちょ", "チョ", "cho"),
-    KanaCell("にゃ", "ニャ", "nya"), KanaCell("にゅ", "ニュ", "nyu"), KanaCell("にょ", "ニョ", "nyo"),
-    KanaCell("ひゃ", "ヒャ", "hya"), KanaCell("ひゅ", "ヒュ", "hyu"), KanaCell("ひょ", "ヒョ", "hyo"),
-    KanaCell("びゃ", "ビャ", "bya"), KanaCell("びゅ", "ビュ", "byu"), KanaCell("びょ", "ビョ", "byo"),
-    KanaCell("ぴゃ", "ピャ", "pya"), KanaCell("ぴゅ", "ピュ", "pyu"), KanaCell("ぴょ", "ピョ", "pyo"),
-    KanaCell("みゃ", "ミャ", "mya"), KanaCell("みゅ", "ミュ", "myu"), KanaCell("みょ", "ミョ", "myo"),
-    KanaCell("りゃ", "リャ", "rya"), KanaCell("りゅ", "リュ", "ryu"), KanaCell("りょ", "リョ", "ryo")
+    KanaCell("きゃ", "キャ", "kya"), EP, KanaCell("きゅ", "キュ", "kyu"), EP, KanaCell("きょ", "キョ", "kyo"),
+    KanaCell("しゃ", "シャ", "sha"), EP, KanaCell("しゅ", "シュ", "shu"), EP, KanaCell("しょ", "ショ", "sho"),
+    KanaCell("ちゃ", "チャ", "cha"), EP, KanaCell("ちゅ", "チュ", "chu"), EP, KanaCell("ちょ", "チョ", "cho"),
+    KanaCell("にゃ", "ニャ", "nya"), EP, KanaCell("にゅ", "ニュ", "nyu"), EP, KanaCell("にょ", "ニョ", "nyo"),
+    KanaCell("ひゃ", "ヒャ", "hya"), EP, KanaCell("ひゅ", "ヒュ", "hyu"), EP, KanaCell("ひょ", "ヒョ", "hyo"),
+    KanaCell("みゃ", "ミャ", "mya"), EP, KanaCell("みゅ", "ミュ", "myu"), EP, KanaCell("みょ", "ミョ", "myo"),
+    KanaCell("りゃ", "リャ", "rya"), EP, KanaCell("りゅ", "リュ", "ryu"), EP, KanaCell("りょ", "リョ", "ryo"),
+    KanaCell("ぎゃ", "ギャ", "gya"), EP, KanaCell("ぎゅ", "ギュ", "gyu"), EP, KanaCell("ぎょ", "ギョ", "gyo"),
+    KanaCell("じゃ", "ジャ", "ja"), EP, KanaCell("じゅ", "ジュ", "ju"), EP, KanaCell("じょ", "ジョ", "jo"),
+    KanaCell("びゃ", "ビャ", "bya"), EP, KanaCell("びゅ", "ビュ", "byu"), EP, KanaCell("びょ", "ビョ", "byo"),
+    KanaCell("ぴゃ", "ピャ", "pya"), EP, KanaCell("ぴゅ", "ピュ", "pyu"), EP, KanaCell("ぴょ", "ピョ", "pyo")
 )
 
-private val sokuonData = listOf(
-    KanaCell("っ+k", "ッ+k", "kk"), KanaCell("っ+s", "ッ+s", "ss"), KanaCell("っ+t", "ッ+t", "tt"), KanaCell("っ+p", "ッ+p", "pp")
-)
 
-private val chouonData = listOf(
-    KanaCell("ああ", "アー", "aa"), KanaCell("いい", "イー", "ii"), KanaCell("うう", "ウー", "uu"), KanaCell("ええ", "エー", "ee"), KanaCell("おお", "オー", "oo"),
-    null, null, null, KanaCell("えい", null, "ei"), KanaCell("おう", null, "ou")
-)
