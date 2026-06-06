@@ -27,11 +27,15 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeChild
-
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 
 // 定义颜色常量
 private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
@@ -41,6 +45,7 @@ private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
  *
  * 包含4个主要Tab：学习、进度、测试、个人
  * 采用悬浮胶囊布局设计，背景纯色，深浅自适应。
+ * 选中项的背景改为弹簧横向滑动的胶囊指示器，体验极其高级。
  */
 @Composable
 fun NemoBottomBar(
@@ -67,6 +72,10 @@ fun NemoBottomBar(
     else
         Color.White.copy(alpha = 0.45f)
 
+    // 用于跟踪当前选中项的位置和宽度
+    var selectedOffset by remember { mutableStateOf(0.dp) }
+    var selectedWidth by remember { mutableStateOf(0.dp) }
+
     AnimatedVisibility(
         visible = visible,
         enter = slideInVertically { it } + fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -75,11 +84,10 @@ fun NemoBottomBar(
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                // 悬浮的外边距：与底部留出一些距离形成悬浮胶囊感
                 .padding(horizontal = 20.dp, vertical = 24.dp),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.CenterStart
         ) {
-            Row(
+            Box(
                 modifier = Modifier
                     .shadow(
                         elevation = 16.dp,
@@ -106,19 +114,61 @@ fun NemoBottomBar(
                         shape = CircleShape
                     )
                     .padding(horizontal = 14.dp, vertical = 12.dp) // 内部留白宽度
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                contentAlignment = Alignment.CenterStart
             ) {
-                BottomNavItem.entries.forEach { item ->
-                    val isSelected = currentRoute == item.route
-                    CapsuleNavItem(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = { onNavigate(item.route) },
-                        isDarkTheme = isDarkTheme,
-                        user = user
+                // 1. 横向滑动背景滑块 (Sliding Background Capsule)
+                if (selectedWidth > 0.dp) {
+                    val animOffset by animateDpAsState(
+                        targetValue = selectedOffset,
+                        animationSpec = spring(
+                            dampingRatio = 0.65f, // 精美的弹簧回弹阻尼
+                            stiffness = 150f      // 高刚度，快速灵动跟随
+                        ),
+                        label = "navIndicatorOffset"
                     )
+                    val animWidth by animateDpAsState(
+                        targetValue = selectedWidth,
+                        animationSpec = spring(
+                            dampingRatio = 0.65f,
+                            stiffness = 150f
+                        ),
+                        label = "navIndicatorWidth"
+                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .offset(x = animOffset)
+                            .width(animWidth)
+                            .fillMaxHeight()
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
+                }
+
+                // 2. Tab选项Row列表
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BottomNavItem.entries.forEach { item ->
+                        val isSelected = currentRoute == item.route
+                        CapsuleNavItem(
+                            item = item,
+                            isSelected = isSelected,
+                            onClick = { onNavigate(item.route) },
+                            isDarkTheme = isDarkTheme,
+                            user = user,
+                            onPositioned = { offset, width ->
+                                if (isSelected) {
+                                    selectedOffset = offset
+                                    selectedWidth = width
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -134,23 +184,19 @@ private fun CapsuleNavItem(
     isSelected: Boolean,
     onClick: () -> Unit,
     isDarkTheme: Boolean,
-    user: User? = null
+    user: User? = null,
+    onPositioned: (Dp, Dp) -> Unit
 ) {
     // 交互无默认波纹效果，模拟 HTML 手感
     val interactionSource = remember { MutableInteractionSource() }
     val view = LocalView.current
+    val density = LocalDensity.current
     
     // 动态适配深浅模式对应选项卡的激活颜色与图标文字配色
-    val activeBgColor = MaterialTheme.colorScheme.primary // 使用动态主题色
     val activeContentColor = Color.White // 选中内容统一使用白色
     val inactiveContentColor = if (isDarkTheme) Color(0xFFA1A1AA) else Color(0xFF9CA3AF)
 
-    // 渐变动画
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) activeBgColor else Color.Transparent,
-        animationSpec = tween(300, easing = FastOutSlowInEasing), 
-        label = "bg_color"
-    )
+    // 文字/图标渐变动画
     val contentColor by animateColorAsState(
         targetValue = if (isSelected) activeContentColor else inactiveContentColor,
         animationSpec = tween(300, easing = FastOutSlowInEasing), 
@@ -159,8 +205,17 @@ private fun CapsuleNavItem(
 
     Box(
         modifier = Modifier
+            // 实时感知自己在父容器中的相对位置，并将选中状态下的坐标传递给外层
+            .onGloballyPositioned { coordinates ->
+                if (isSelected) {
+                    val x = coordinates.positionInParent().x
+                    val w = coordinates.size.width
+                    with(density) {
+                        onPositioned(x.toDp(), w.toDp())
+                    }
+                }
+            }
             .clip(CircleShape)
-            .background(backgroundColor)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
