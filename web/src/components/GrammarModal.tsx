@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "./Modal";
-import { Plus, Trash2, Loader2, Info } from "lucide-react";
+import { Plus, Trash2, Loader2, Info, Sparkles } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface GrammarModalProps {
@@ -17,6 +17,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
     title: "",
     level: "N3",
     is_delisted: false,
+    raw_id: "",
     content: {
       usages: [
         {
@@ -32,6 +33,41 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isFetchingId, setIsFetchingId] = useState(false);
+
+  const fetchNextRawId = async (selectedLevel: string) => {
+    setIsFetchingId(true);
+    try {
+      const { data, error } = await supabase
+        .from("dictionary_grammars")
+        .select("raw_id")
+        .eq("level", selectedLevel)
+        .like("raw_id", `${selectedLevel}_%`)
+        .order("raw_id", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      let nextNum = 1;
+      if (data && data.length > 0 && data[0].raw_id) {
+        const parts = data[0].raw_id.split("_");
+        if (parts.length > 1) {
+          const latestNum = parseInt(parts[1], 10);
+          if (!isNaN(latestNum)) {
+            nextNum = latestNum + 1;
+          }
+        }
+      }
+      
+      const newSuggestedId = `${selectedLevel}_${String(nextNum).padStart(3, '0')}`;
+      setFormData(prev => ({ ...prev, raw_id: newSuggestedId }));
+    } catch (err) {
+      console.error("自动获取下一个 Raw ID 失败:", err);
+    } finally {
+      setIsFetchingId(false);
+    }
+  };
 
   useEffect(() => {
     if (grammarToEdit) {
@@ -44,6 +80,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
         title: grammarToEdit.title || "",
         level: grammarToEdit.level || "N3",
         is_delisted: grammarToEdit.is_delisted || false,
+        raw_id: grammarToEdit.raw_id || "",
         content: content
       });
     } else {
@@ -51,6 +88,7 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
         title: "",
         level: "N3",
         is_delisted: false,
+        raw_id: "",
         content: {
           usages: [
             {
@@ -66,6 +104,51 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
       });
     }
   }, [grammarToEdit, isOpen]);
+
+  useEffect(() => {
+    if (!grammarToEdit && isOpen && formData.level) {
+      fetchNextRawId(formData.level);
+    }
+  }, [isOpen, grammarToEdit]);
+
+  const handleAIByInput = async () => {
+    const inputTitle = formData.title.trim();
+    if (!inputTitle) return;
+    setIsGenerating(true);
+    try {
+      const res = await fetch("/api/ai/generate-grammar", {
+        method: "POST",
+        body: JSON.stringify({ title: inputTitle, level: formData.level }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      const targetLevel = data.level || formData.level;
+
+      setFormData(prev => {
+        const updated = {
+          ...prev,
+          level: targetLevel,
+          content: {
+            ...prev.content,
+            usages: data.usages && data.usages.length > 0 ? data.usages : prev.content.usages
+          }
+        };
+        if (grammarToEdit && targetLevel === grammarToEdit.level) {
+          updated.raw_id = grammarToEdit.raw_id || "";
+        }
+        return updated;
+      });
+
+      if (!grammarToEdit || targetLevel !== grammarToEdit.level) {
+        fetchNextRawId(targetLevel);
+      }
+    } catch (err) {
+      alert("AI 生成失败: " + err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleAddUsage = () => {
     const newUsages = [...formData.content.usages, { connection: "", explanation: "", notes: "", examples: [] }];
@@ -107,8 +190,28 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
       alert("请输入语法标题");
       return;
     }
+    if (!formData.raw_id || !formData.raw_id.trim()) {
+      alert("保存失败: 请输入 Raw ID");
+      return;
+    }
     setIsSaving(true);
     try {
+      // 检查 Raw ID 是否重复
+      const { data: dupData, error: dupError } = await supabase
+        .from("dictionary_grammars")
+        .select("id")
+        .eq("raw_id", formData.raw_id.trim());
+
+      if (dupError) throw dupError;
+      if (dupData && dupData.length > 0) {
+        const isDuplicate = grammarToEdit 
+          ? dupData.some(item => item.id !== grammarToEdit.id) 
+          : true;
+        if (isDuplicate) {
+          throw new Error("Raw ID 已存在，请更换");
+        }
+      }
+
       const processedUsages = formData.content.usages.map(usage => ({
         ...usage,
         connection: (usage.connection || "").replace(/\\n/g, "\n"),
@@ -120,17 +223,21 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
         title: formData.title,
         level: formData.level,
         is_delisted: formData.is_delisted,
+        raw_id: formData.raw_id.trim(),
         content: {
           ...formData.content,
           usages: processedUsages
         }
       };
 
-      const { error } = grammarToEdit
-        ? await supabase.from("dictionary_grammars").update(dataToSave).eq("id", grammarToEdit.id)
-        : await supabase.from("dictionary_grammars").insert([dataToSave]);
+      if (grammarToEdit) {
+        const { error } = await supabase.from("dictionary_grammars").update(dataToSave).eq("id", grammarToEdit.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("dictionary_grammars").insert([dataToSave]);
+        if (error) throw error;
+      }
 
-      if (error) throw error;
       onSaved();
       onClose();
     } catch (err: any) {
@@ -153,17 +260,50 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
     <Modal isOpen={isOpen} onClose={onClose} title={grammarToEdit ? "编辑语法" : "新增语法"} width="800px" footer={footerContent}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
         
+        {/* Raw ID */}
+        <div>
+          <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>
+            Raw ID {isFetchingId && <span style={{ color: 'var(--accent)', fontSize: '0.75rem' }}> (系统自动计算中...)</span>}
+          </label>
+          <input 
+            className="input" 
+            style={{ width: '100%', opacity: 0.7, backgroundColor: 'var(--bg-secondary)', cursor: 'not-allowed' }}
+            value={formData.raw_id || ""}
+            placeholder={isFetchingId ? "系统自动计算中..." : "系统自动分配"}
+            disabled={true}
+            readOnly={true}
+          />
+        </div>
+
         {/* Basic Info */}
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '12px' }}>
           <div>
             <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>语法标题</label>
-            <input 
-              className="input" 
-              style={{ width: '100%' }}
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="例如: ～あっての"
-            />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input 
+                className="input" 
+                style={{ flex: 1 }}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="例如: ～あっての"
+              />
+              <button 
+                className="button-secondary" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px', 
+                  color: 'var(--accent)',
+                  padding: '0 12px',
+                  opacity: (isGenerating || !formData.title.trim()) ? 0.5 : 1
+                }}
+                onClick={handleAIByInput}
+                disabled={isGenerating || !formData.title.trim()}
+              >
+                {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                AI
+              </button>
+            </div>
           </div>
           <div>
             <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'block' }}>等级</label>
@@ -171,7 +311,20 @@ export function GrammarModal({ isOpen, onClose, onSaved, grammarToEdit }: Gramma
               className="input" 
               style={{ width: '100%' }}
               value={formData.level}
-              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+              onChange={(e) => {
+                const newLevel = e.target.value;
+                setFormData(prev => {
+                  const updated = { ...prev, level: newLevel };
+                  if (grammarToEdit && newLevel === grammarToEdit.level) {
+                    updated.raw_id = grammarToEdit.raw_id || "";
+                  }
+                  return updated;
+                });
+                
+                if (!grammarToEdit || newLevel !== grammarToEdit.level) {
+                  fetchNextRawId(newLevel);
+                }
+              }}
             >
               {["N1", "N2", "N3", "N4", "N5"].map(lvl => (
                 <option key={lvl} value={lvl}>{lvl}</option>

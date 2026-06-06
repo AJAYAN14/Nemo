@@ -2,26 +2,31 @@ package com.jian.nemo.feature.settings.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.zIndex
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * 主题颜色定义
@@ -32,7 +37,7 @@ private data class ThemeColor(
 )
 
 /**
- * 主题色选择弹窗 (高保真还原 + 带文字标签)
+ * 主题色选择弹窗 (环形颜色选择器 CircularColorPicker)
  */
 @Composable
 fun ThemeColorDialog(
@@ -55,176 +60,173 @@ fun ThemeColorDialog(
         ThemeColor("炽热红", Color(0xFFFF3D00))
     )
 
-    // 用于展示 UI 被选中效果的本地状态，初始化为当前已保存的颜色
-    var currentlySelectedColor by remember {
-        mutableStateOf(currentColor?.let { Color(it.toULong()) })
+    // 默认颜色与外部选中颜色初始化
+    val defaultColor = themeColors.first().color
+    val matchedColor = remember(currentColor) {
+        themeColors.find { 
+            currentColor?.let { c -> Color(c.toULong()).value == it.color.value } ?: false 
+        }?.color ?: defaultColor
     }
+
+    // 本地状态：当前选中颜色
+    var currentlySelectedColor by remember { mutableStateOf(matchedColor) }
+
+    // 智能获取当前应用所呈现的深色状态 (避免 custom app-level dark mode 不与 system dark mode 同步的问题)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        // 全屏遮罩
+        // 深色质感遮罩 (60% alpha)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0x9914191E)), // 深色质感遮罩 (60% alpha)
+                .background(Color(0x9914191E)),
             contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
-                    .padding(horizontal = 40.dp)
-                    .width(290.dp)
+                    .padding(horizontal = 24.dp)
+                    .width(320.dp)
                     .wrapContentHeight(),
                 shape = RoundedCornerShape(32.dp),
-                color = Color.White,
+                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
                 tonalElevation = 0.dp
             ) {
                 Column(
-                    modifier = Modifier.padding(top = 32.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                    modifier = Modifier.padding(top = 16.dp, start = 20.dp, end = 20.dp, bottom = 24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // 标题区
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(bottom = 24.dp)
+                    // Header Area (居中标题，右侧 × 关闭按钮)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // 左侧占位以实现标题绝对水平居中
+                        Spacer(modifier = Modifier.width(48.dp))
                         Text(
-                            text = "界面配色",
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                fontWeight = FontWeight.ExtraBold,
-                                letterSpacing = (-0.5).sp,
-                                fontSize = 22.sp
+                            text = "环形配色选择器",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp,
+                                letterSpacing = (-0.3).sp
                             ),
-                            color = Color(0xFF1A1A1A)
+                            color = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF1C1C1E),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(1f)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "定制您的专属应用风格",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                lineHeight = 1.4.sp,
-                                fontSize = 13.sp
-                            ),
-                            color = Color(0xFF888888)
-                        )
-                    }
-
-                    // 3列 x 4行 颜色网格 (带文字标签)
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(24.dp) // 增加间距以容纳文字
-                    ) {
-                        themeColors.chunked(3).forEach { rowColors ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                rowColors.forEach { themeColor ->
-                                    Column(
-                                        modifier = Modifier.weight(1f),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        HifiColorCircle(
-                                            color = themeColor.color,
-                                            isSelected = currentlySelectedColor == themeColor.color,
-                                            onClick = { 
-                                                currentlySelectedColor = themeColor.color
-                                                onColorSelect(themeColor.color)
-                                            }
-                                        )
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                        Text(
-                                            text = themeColor.name,
-                                            style = MaterialTheme.typography.bodySmall.copy(
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Medium
-                                            ),
-                                            color = Color(0xFF888888)
-                                        )
-                                    }
-                                }
-                            }
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "关闭",
+                                tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF8E8E93)
+                            )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                    // 底部操作按钮 (灰色胶囊样式)
+                    // Circular Color Ring
+                    Box(
+                        modifier = Modifier
+                            .size(240.dp)
+                            .padding(bottom = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        themeColors.forEachIndexed { index, themeColor ->
+                            val isSelected = currentlySelectedColor.value == themeColor.color.value
+
+                            // 每个点的动画插值 (0f 表示轨道，1f 表示中心点)
+                            val t by animateFloatAsState(
+                                targetValue = if (isSelected) 1f else 0f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.65f, // 精美弹簧物理特性
+                                    stiffness = 110f
+                                ),
+                                label = "colorAnim_$index"
+                            )
+
+                            // 极坐标轨道定位计算
+                            val angle = (index * 2 * Math.PI / themeColors.size) - Math.PI / 2
+                            val outerRadius = 86.dp
+                            val itemSize = 26.dp
+                            val centerSize = 74.dp
+
+                            val slotXDp = outerRadius * cos(angle).toFloat()
+                            val slotYDp = outerRadius * sin(angle).toFloat()
+
+                            // 根据插值 t 进行平滑位置与大小过渡
+                            val currentXDp = slotXDp * (1f - t)
+                            val currentYDp = slotYDp * (1f - t)
+
+                            val currentSize = itemSize + (centerSize - itemSize) * t
+
+                            val zIndexValue = if (isSelected) 2f else if (t > 0.01f) 1f else 0f
+
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = currentXDp, y = currentYDp)
+                                    .size(currentSize)
+                                    .zIndex(zIndexValue)
+                                    .clip(CircleShape)
+                                    .background(themeColor.color)
+                                    .clickable(
+                                        enabled = !isSelected,
+                                        onClick = {
+                                            currentlySelectedColor = themeColor.color
+                                        },
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    )
+                            )
+                        }
+                    }
+
+                    // 中文配色文本标签提示
+                    val activeColorName = themeColors.find { it.color.value == currentlySelectedColor.value }?.name ?: ""
+                    Text(
+                        text = "当前选择：$activeColorName",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        ),
+                        color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF8E8E93),
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    )
+
+                    // 确认保存按钮 (发光投影胶囊样式)
                     Button(
-                        onClick = onDismiss,
+                        onClick = {
+                            onColorSelect(currentlySelectedColor)
+                            onDismiss()
+                        },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFF0F2F5),
-                            contentColor = Color(0xFF555555)
+                            containerColor = currentlySelectedColor
                         ),
                         modifier = Modifier
-                            .height(44.dp)
-                            .width(112.dp),
-                        shape = RoundedCornerShape(100.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = null
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = RoundedCornerShape(25.dp),
+                                spotColor = currentlySelectedColor
+                            ),
+                        shape = RoundedCornerShape(25.dp),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
-                            text = "关闭",
+                            text = "确认保存",
                             style = MaterialTheme.typography.labelLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
+                                fontSize = 15.sp,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = Color.White
                         )
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun HifiColorCircle(
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    // Q弹动画配置
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.15f else 1f,
-        animationSpec = spring(
-            dampingRatio = 0.5f,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "ColorScale"
-    )
-
-    Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .scale(scale)
-            .clip(CircleShape)
-            .background(color)
-            .clickable(
-                onClick = onClick,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            )
-            .then(
-                if (isSelected) {
-                    Modifier.border(
-                        width = 3.dp, // 稍微减细一点边框，让整体更协调
-                        color = Color.White,
-                        shape = CircleShape
-                    )
-                } else Modifier
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        // 选中态中心小白点
-        if (isSelected) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .clip(CircleShape)
-                    .background(Color.White.copy(alpha = 0.95f))
-            )
         }
     }
 }

@@ -15,6 +15,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Inbox
@@ -27,6 +30,7 @@ import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -69,7 +73,7 @@ fun WordListScreen(
     viewModel: WordListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.background
 
     val expandedLevels = rememberSaveable(
@@ -81,7 +85,6 @@ fun WordListScreen(
 
     val filteredWordsByLevel = uiState.wordsByLevel
     val searchQuery = uiState.searchQuery
-    var showFilterMenu by remember { mutableStateOf(false) }
 
     // 当搜索词改变且不为空时，自动展开所有有结果的分类
     LaunchedEffect(searchQuery) {
@@ -100,140 +103,59 @@ fun WordListScreen(
                 CommonHeader(
                     title = "单词列表",
                     onBack = { navController.navigateUp() },
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        Box {
-                            IconButton(onClick = { showFilterMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Layers,
-                                    contentDescription = "筛选",
-                                    tint = if (uiState.filterState != StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showFilterMenu,
-                                onDismissRequest = { showFilterMenu = false },
-                                shape = RoundedCornerShape(16.dp),
-                                containerColor = if (isDark) Color.Black else Color.White
-                            ) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "全部",
-                                            fontWeight = if (uiState.filterState == StudyFilter.ALL) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (uiState.filterState == StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        viewModel.onFilterStateChanged(StudyFilter.ALL)
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoIndigo.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Apps,
-                                                contentDescription = null,
-                                                tint = NemoIndigo,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (uiState.filterState == StudyFilter.ALL) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "已学",
-                                            fontWeight = if (uiState.filterState == StudyFilter.LEARNED) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (uiState.filterState == StudyFilter.LEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        viewModel.onFilterStateChanged(StudyFilter.LEARNED)
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoSecondary.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.DoneAll,
-                                                contentDescription = null,
-                                                tint = NemoSecondary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (uiState.filterState == StudyFilter.LEARNED) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "未学",
-                                            fontWeight = if (uiState.filterState == StudyFilter.UNLEARNED) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (uiState.filterState == StudyFilter.UNLEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        viewModel.onFilterStateChanged(StudyFilter.UNLEARNED)
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoOrange.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.HourglassEmpty,
-                                                contentDescription = null,
-                                                tint = NemoOrange,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (uiState.filterState == StudyFilter.UNLEARNED) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    backgroundColor = backgroundColor
                 )
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { viewModel.onSearchQueryChanged(it) },
+                val options = remember {
+                    listOf(
+                        DiscoveryOption(
+                            label = "全部",
+                            icon = Icons.Default.Book,
+                            activeColor = NemoIndigo,
+                        ),
+                        DiscoveryOption(
+                            label = "已学",
+                            icon = Icons.Default.CheckCircle,
+                            activeColor = NemoSecondary,
+                        ),
+                        DiscoveryOption(
+                            label = "未学",
+                            icon = Icons.Default.Error,
+                            activeColor = NemoOrange,
+                        ),
+                    )
+                }
+                val selectedIndex = when (uiState.filterState) {
+                    StudyFilter.ALL -> 0
+                    StudyFilter.LEARNED -> 1
+                    StudyFilter.UNLEARNED -> 2
+                }
+
+                DiscoveryBar(
+                    options = options,
+                    selectedOptionIndex = selectedIndex,
+                    onOptionSelected = { index ->
+                        val newFilter = when (index) {
+                            0 -> StudyFilter.ALL
+                            1 -> StudyFilter.LEARNED
+                            2 -> StudyFilter.UNLEARNED
+                            else -> StudyFilter.ALL
+                        }
+                        viewModel.onFilterStateChanged(newFilter)
+                    },
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
+                    searchPlaceholder = "搜索：汉字 / 假名 / 释义",
+                    style = DiscoveryBarStyle(
+                        backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
+                        inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -352,67 +274,7 @@ private fun getLevelColor(level: String): Color {
     }
 }
 
-@Composable
-private fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
-    
-    // 使用本地 String 状态驱动 UI，确保输入绝对流畅
-    var text by remember { mutableStateOf(query) }
 
-    // 仅在外部清空（如点击清除按钮）或初始加载时同步外部 query
-    LaunchedEffect(query) {
-        if (query != text) {
-            if (query.isEmpty() || text.isEmpty()) {
-                text = query
-            }
-        }
-    }
-
-    Surface(
-        modifier = modifier.fillMaxWidth().height(50.dp),
-        shape = RoundedCornerShape(25.dp),
-        color = containerColor,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        shadowElevation = 2.dp
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Rounded.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                if (text.isEmpty()) {
-                    Text("搜索：汉字 / 假名 / 释义", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                }
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                        onQueryChange(it)
-                    },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
-                    singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            if (text.isNotEmpty()) {
-                IconButton(onClick = { 
-                    text = ""
-                    onQueryChange("") 
-                }) {
-                    Icon(Icons.Rounded.Close, "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun LevelHeader(
