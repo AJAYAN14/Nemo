@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -75,6 +77,46 @@ fun NemoBottomBar(
     // 用于跟踪当前选中项的位置和宽度
     var selectedOffset by remember { mutableStateOf(0.dp) }
     var selectedWidth by remember { mutableStateOf(0.dp) }
+
+    // 为每个 Tab 声明 InteractionSource 以感应按压状态
+    val interactionSources = remember {
+        BottomNavItem.entries.associateWith { MutableInteractionSource() }
+    }
+
+    // 感应当前选中项的按压状态
+    val currentItem = remember(currentRoute) {
+        BottomNavItem.entries.find { it.route == currentRoute }
+    }
+    val isSelectedPressed by if (currentItem != null) {
+        interactionSources[currentItem]!!.collectIsPressedAsState()
+    } else {
+        remember { mutableStateOf(false) }
+    }
+
+    val bounceScale = remember { Animatable(1f) }
+    LaunchedEffect(isSelectedPressed) {
+        if (isSelectedPressed) {
+            // 物理下压缓冲 (无回弹高刚度弹簧，体验极度丝滑)
+            bounceScale.animateTo(
+                targetValue = 0.85f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = 1500f
+                )
+            )
+        } else {
+            // 果冻高频震颤放开 (阻尼 0.28f + 刚度 900f 往复抖动)
+            if (bounceScale.value < 1f) {
+                bounceScale.animateTo(
+                    targetValue = 1f,
+                    animationSpec = spring(
+                        dampingRatio = 0.28f,
+                        stiffness = 900f
+                    )
+                )
+            }
+        }
+    }
 
     AnimatedVisibility(
         visible = visible,
@@ -142,6 +184,10 @@ fun NemoBottomBar(
                             .offset(x = animOffset)
                             .width(animWidth)
                             .fillMaxHeight()
+                            .graphicsLayer {
+                                scaleX = bounceScale.value
+                                scaleY = bounceScale.value
+                            }
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
                     )
@@ -158,7 +204,12 @@ fun NemoBottomBar(
                         CapsuleNavItem(
                             item = item,
                             isSelected = isSelected,
-                            onClick = { onNavigate(item.route) },
+                            onClick = {
+                                if (!isSelected) {
+                                    onNavigate(item.route)
+                                }
+                            },
+                            interactionSource = interactionSources[item]!!,
                             isDarkTheme = isDarkTheme,
                             user = user,
                             onPositioned = { offset, width ->
@@ -183,12 +234,12 @@ private fun CapsuleNavItem(
     item: BottomNavItem,
     isSelected: Boolean,
     onClick: () -> Unit,
+    interactionSource: MutableInteractionSource,
     isDarkTheme: Boolean,
     user: User? = null,
     onPositioned: (Dp, Dp) -> Unit
 ) {
     // 交互无默认波纹效果，模拟 HTML 手感
-    val interactionSource = remember { MutableInteractionSource() }
     val view = LocalView.current
     val density = LocalDensity.current
     
