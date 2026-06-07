@@ -146,6 +146,10 @@ fun LearnHeader(
     onToggleShowAnswerDelay: ((Boolean) -> Unit)? = null,
     showAnswerDelayDurationLabel: String = "1.0s",
     onCycleShowAnswerDelayDuration: (() -> Unit)? = null,
+    isAutoRevealAnswerEnabled: Boolean = false,
+    onToggleAutoRevealAnswer: ((Boolean) -> Unit)? = null,
+    autoRevealAnswerDurationLabel: String = "5.0s",
+    onCycleAutoRevealAnswerDuration: (() -> Unit)? = null,
     isWhiteboardEnabled: Boolean = false,
     onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     canUndo: Boolean = false,
@@ -465,6 +469,44 @@ fun LearnHeader(
                                                 text = "等待时长: $showAnswerDelayDurationLabel",
                                                 onClick = {
                                                     onCycleShowAnswerDelayDuration()
+                                                },
+                                                leadingIcon = Icons.Rounded.Timer
+                                            )
+                                        }
+                                    }
+
+                                    if (onToggleAutoRevealAnswer != null) {
+                                        androidx.compose.material3.DropdownMenuItem(
+                                            text = {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        "自动翻面",
+                                                        style = MaterialTheme.typography.bodyLarge
+                                                    )
+                                                    NemoGooeyToggle(
+                                                        checked = isAutoRevealAnswerEnabled,
+                                                        onCheckedChange = {
+                                                            onToggleAutoRevealAnswer(it)
+                                                        },
+                                                        activeColor = MaterialTheme.colorScheme.primary,
+                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                                    )
+                                                }
+                                            },
+                                            onClick = {
+                                                onToggleAutoRevealAnswer(!isAutoRevealAnswerEnabled)
+                                            }
+                                        )
+
+                                        if (onCycleAutoRevealAnswerDuration != null) {
+                                            NemoMenuItem(
+                                                text = "翻面时长: $autoRevealAnswerDurationLabel",
+                                                onClick = {
+                                                    onCycleAutoRevealAnswerDuration()
                                                 },
                                                 leadingIcon = Icons.Rounded.Timer
                                             )

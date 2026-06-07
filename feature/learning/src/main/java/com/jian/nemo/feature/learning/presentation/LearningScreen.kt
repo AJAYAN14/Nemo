@@ -166,6 +166,22 @@ fun LearningScreen(
                     onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
                     showAnswerDelayDurationLabel = delayDurationLabel,
                     onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                    isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
+                    onToggleAutoRevealAnswer = {
+                        if (uiState.learningMode == LearningMode.Word) {
+                            viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
+                        } else {
+                            viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
+                        }
+                    },
+                    autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
+                    onCycleAutoRevealAnswerDuration = {
+                        if (uiState.learningMode == LearningMode.Word) {
+                            viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
+                        } else {
+                            viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
+                        }
+                    },
                     isWhiteboardEnabled = uiState.isWhiteboardEnabled,
                     onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
                     canUndo = uiState.canUndo,
@@ -328,6 +344,30 @@ fun WordLearningContent(
     // 跟打练习对话框状态
     var showTypingDialog by remember { mutableStateOf(false) }
 
+    val autoRevealAnim = remember { androidx.compose.animation.core.Animatable(1f) }
+
+    LaunchedEffect(
+        uiState.currentIndex,
+        uiState.isAnswerShown,
+        uiState.status,
+        uiState.isAutoRevealAnswerEnabled,
+        uiState.autoRevealAnswerMs
+    ) {
+        if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown && uiState.status == LearningStatus.Learning) {
+            autoRevealAnim.snapTo(1f)
+            autoRevealAnim.animateTo(
+                targetValue = 0f,
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = uiState.autoRevealAnswerMs.toInt(),
+                    easing = androidx.compose.animation.core.LinearEasing
+                )
+            )
+            onEvent(LearningEvent.ShowAnswer)
+        } else {
+            autoRevealAnim.snapTo(1f)
+        }
+    }
+
     // 跟打练习对话框
     if (showTypingDialog && uiState.currentWord != null) {
         TypingPracticeDialog(
@@ -427,7 +467,8 @@ fun WordLearningContent(
                                           onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
                                           onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                                           playingAudioId = uiState.playingAudioId,
-                                          isWhiteboardEnabled = uiState.isWhiteboardEnabled
+                                          isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                          autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown && page == uiState.currentIndex) autoRevealAnim.value else null
                                       )
                                  }
                              }
@@ -483,6 +524,30 @@ fun GrammarLearningContent(
     backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
+    val autoRevealAnim = remember { androidx.compose.animation.core.Animatable(1f) }
+
+    LaunchedEffect(
+        uiState.currentGrammarIndex,
+        uiState.isAnswerShown,
+        uiState.status,
+        uiState.isGrammarAutoRevealAnswerEnabled,
+        uiState.grammarAutoRevealAnswerMs
+    ) {
+        if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown && uiState.status == LearningStatus.Learning) {
+            autoRevealAnim.snapTo(1f)
+            autoRevealAnim.animateTo(
+                targetValue = 0f,
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = uiState.grammarAutoRevealAnswerMs.toInt(),
+                    easing = androidx.compose.animation.core.LinearEasing
+                )
+            )
+            onEvent(LearningEvent.ShowAnswer)
+        } else {
+            autoRevealAnim.snapTo(1f)
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
 
@@ -564,7 +629,8 @@ fun GrammarLearningContent(
                                       modifier = Modifier.fillMaxSize(),
                                       onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                                       playingAudioId = uiState.playingAudioId,
-                                      isWhiteboardEnabled = uiState.isWhiteboardEnabled
+                                      isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                      autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown && page == uiState.currentGrammarIndex) autoRevealAnim.value else null
                                   )
                              }
                          }

@@ -110,7 +110,8 @@ fun SRSGrammarCard(
     modifier: Modifier = Modifier,
     onSpeakExample: ((String, String, String) -> Unit)? = null,
     playingAudioId: String? = null,
-    isWhiteboardEnabled: Boolean = false
+    isWhiteboardEnabled: Boolean = false,
+    autoRevealProgress: Float? = null
 ) {
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(grammar.id) { mutableStateOf(false) }
@@ -153,10 +154,26 @@ fun SRSGrammarCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(cardBackground, RoundedCornerShape(24.dp))
-                .padding(32.dp)
         ) {
+            // 顶部自动翻面进度条
+            if (autoRevealProgress != null) {
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { autoRevealProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .align(Alignment.TopCenter),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    trackColor = Color.Transparent,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {} // 去掉 Material 3 的默认停止指示点
+                )
+            }
+
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // 标签行
@@ -243,6 +260,7 @@ fun SRSGrammarCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        .padding(top = 32.dp, end = 32.dp)
                         .background(bgColor, CircleShape)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {

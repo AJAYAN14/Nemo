@@ -531,6 +531,22 @@ interface SettingsRepository {
     val testAutoPlayAudioFlow: Flow<Boolean>
     suspend fun setTestAutoPlayAudio(enabled: Boolean)
 
+    /** 自动翻面开关 (Word) */
+    val isAutoRevealAnswerEnabledFlow: Flow<Boolean>
+    suspend fun setAutoRevealAnswerEnabled(enabled: Boolean)
+
+    /** 自动翻面时长 (Word) */
+    val autoRevealAnswerMsFlow: Flow<Long>
+    suspend fun setAutoRevealAnswerMs(ms: Long)
+
+    /** 自动翻面开关 (Grammar) */
+    val isGrammarAutoRevealAnswerEnabledFlow: Flow<Boolean>
+    suspend fun setGrammarAutoRevealAnswerEnabled(enabled: Boolean)
+
+    /** 自动翻面时长 (Grammar) */
+    val grammarAutoRevealAnswerMsFlow: Flow<Long>
+    suspend fun setGrammarAutoRevealAnswerMs(ms: Long)
+
     /** 显示答案等待开关 Flow 默认: false */
     val isShowAnswerDelayEnabledFlow: Flow<Boolean>
     suspend fun setShowAnswerDelayEnabled(enabled: Boolean)

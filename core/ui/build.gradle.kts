@@ -57,6 +57,9 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    // Graphics Shapes
+    implementation("androidx.graphics:graphics-shapes:1.1.0")
+
     // Image Loading
     implementation(libs.coil.compose)
 

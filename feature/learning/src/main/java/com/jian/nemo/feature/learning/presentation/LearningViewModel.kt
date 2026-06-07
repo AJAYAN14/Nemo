@@ -322,6 +322,34 @@ class LearningViewModel @Inject constructor(
                     armShowAnswerDelay()
                 }
             }
+
+            // 监听自动翻面开关 (Word)
+            launch {
+                settingsRepository.isAutoRevealAnswerEnabledFlow.collect { enabled ->
+                    _uiState.update { it.copy(isAutoRevealAnswerEnabled = enabled) }
+                }
+            }
+
+            // 监听自动翻面时长 (Word)
+            launch {
+                settingsRepository.autoRevealAnswerMsFlow.collect { delayMs ->
+                    _uiState.update { it.copy(autoRevealAnswerMs = delayMs) }
+                }
+            }
+
+            // 监听自动翻面开关 (Grammar)
+            launch {
+                settingsRepository.isGrammarAutoRevealAnswerEnabledFlow.collect { enabled ->
+                    _uiState.update { it.copy(isGrammarAutoRevealAnswerEnabled = enabled) }
+                }
+            }
+
+            // 监听自动翻面时长 (Grammar)
+            launch {
+                settingsRepository.grammarAutoRevealAnswerMsFlow.collect { delayMs ->
+                    _uiState.update { it.copy(grammarAutoRevealAnswerMs = delayMs) }
+                }
+            }
         }
     }
 
@@ -407,6 +435,10 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.ToggleAutoPlayAudio -> toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> toggleShowAnswerDelay(event.enabled)
             is LearningEvent.CycleShowAnswerDelayDuration -> cycleShowAnswerDelayDuration()
+            is LearningEvent.ToggleAutoRevealAnswer -> toggleAutoRevealAnswer(event.enabled)
+            is LearningEvent.CycleAutoRevealAnswerDuration -> cycleAutoRevealAnswerDuration()
+            is LearningEvent.ToggleGrammarAutoRevealAnswer -> toggleGrammarAutoRevealAnswer(event.enabled)
+            is LearningEvent.CycleGrammarAutoRevealAnswerDuration -> cycleGrammarAutoRevealAnswerDuration()
             is LearningEvent.ReportContentError -> handleReportError(event.errorType, event.description)
             is LearningEvent.OpenReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = true) }
             is LearningEvent.CancelReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = false) }
@@ -775,6 +807,48 @@ class LearningViewModel @Inject constructor(
         }
         viewModelScope.launch {
             settingsRepository.setShowAnswerDelayMs(next)
+        }
+    }
+
+    private fun toggleAutoRevealAnswer(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setAutoRevealAnswerEnabled(enabled)
+        }
+    }
+
+    private fun cycleAutoRevealAnswerDuration() {
+        val current = _uiState.value.autoRevealAnswerMs
+        val next = when (current) {
+            5000L -> 6000L
+            6000L -> 7000L
+            7000L -> 8000L
+            8000L -> 9000L
+            9000L -> 10000L
+            else -> 5000L
+        }
+        viewModelScope.launch {
+            settingsRepository.setAutoRevealAnswerMs(next)
+        }
+    }
+
+    private fun toggleGrammarAutoRevealAnswer(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setGrammarAutoRevealAnswerEnabled(enabled)
+        }
+    }
+
+    private fun cycleGrammarAutoRevealAnswerDuration() {
+        val current = _uiState.value.grammarAutoRevealAnswerMs
+        val next = when (current) {
+            10000L -> 11000L
+            11000L -> 12000L
+            12000L -> 13000L
+            13000L -> 14000L
+            14000L -> 15000L
+            else -> 10000L
+        }
+        viewModelScope.launch {
+            settingsRepository.setGrammarAutoRevealAnswerMs(next)
         }
     }
 

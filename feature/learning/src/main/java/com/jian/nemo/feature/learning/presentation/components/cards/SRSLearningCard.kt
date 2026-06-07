@@ -122,7 +122,8 @@ fun SRSLearningCard(
     onSpeakWord: (() -> Unit)? = null,
     onSpeakExample: ((String, String, String) -> Unit)? = null,
     playingAudioId: String? = null,
-    isWhiteboardEnabled: Boolean = false
+    isWhiteboardEnabled: Boolean = false,
+    autoRevealProgress: Float? = null
 ) {
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(word.id) { mutableStateOf(false) }
@@ -181,11 +182,27 @@ fun SRSLearningCard(
                     ambientColor = shadowColor
                 )
                 .background(cardBackground, RoundedCornerShape(26.dp))
-                .padding(vertical = 24.dp, horizontal = 16.dp)
         ) {
+            if (autoRevealProgress != null && autoRevealProgress > 0f) {
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { autoRevealProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
+                        .align(Alignment.TopCenter),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = Color.Transparent,
+                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(vertical = 24.dp, horizontal = 16.dp)
                     .padding(top = 20.dp), // 预留空间避免与顶部徽章重叠
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -229,6 +246,7 @@ fun SRSLearningCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
+                    .padding(top = 24.dp, start = 16.dp)
                     .background(indigoBg, CircleShape)
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
@@ -252,6 +270,7 @@ fun SRSLearningCard(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        .padding(top = 24.dp, end = 16.dp)
                         .background(bgColor, CircleShape)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {

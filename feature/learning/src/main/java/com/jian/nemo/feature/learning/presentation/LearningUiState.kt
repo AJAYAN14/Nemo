@@ -85,6 +85,10 @@ data class LearningUiState(
     val isShowAnswerDelayEnabled: Boolean = false,
     val showAnswerDelayMs: Long = 5000L,
     val showAnswerAvailableAt: Long = 0,
+    val isAutoRevealAnswerEnabled: Boolean = false,
+    val autoRevealAnswerMs: Long = 5000L,
+    val isGrammarAutoRevealAnswerEnabled: Boolean = false,
+    val grammarAutoRevealAnswerMs: Long = 10000L,
     
     // 报告错误相关
     val showReportErrorDialog: Boolean = false,

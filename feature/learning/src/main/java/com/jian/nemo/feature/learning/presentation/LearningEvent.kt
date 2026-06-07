@@ -152,6 +152,26 @@ sealed interface LearningEvent {
     data class ToggleShowAnswerDelay(val enabled: Boolean) : LearningEvent
 
     /**
+     * 切换自动翻面状态 (Word)
+     */
+    data class ToggleAutoRevealAnswer(val enabled: Boolean) : LearningEvent
+
+    /**
+     * 循环切换自动翻面时长 (Word)
+     */
+    data object CycleAutoRevealAnswerDuration : LearningEvent
+
+    /**
+     * 切换自动翻面状态 (Grammar)
+     */
+    data class ToggleGrammarAutoRevealAnswer(val enabled: Boolean) : LearningEvent
+
+    /**
+     * 循环切换自动翻面时长 (Grammar)
+     */
+    data object CycleGrammarAutoRevealAnswerDuration : LearningEvent
+
+    /**
      * 切换显示答案等待时长（循环档位）
      */
     data object CycleShowAnswerDelayDuration : LearningEvent

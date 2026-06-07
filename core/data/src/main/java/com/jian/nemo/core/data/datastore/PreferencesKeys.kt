@@ -275,6 +275,18 @@ object PreferencesKeys {
     /** 翻面自动朗读开关 默认: true */
     val IS_AUTO_PLAY_AUDIO_ENABLED = booleanPreferencesKey("is_auto_play_audio_enabled")
 
+    /** 自动翻面开关 (Word) */
+    val IS_AUTO_REVEAL_ANSWER_ENABLED = booleanPreferencesKey("is_auto_reveal_answer_enabled")
+
+    /** 自动翻面时长 (Word) 默认: 5000L */
+    val AUTO_REVEAL_ANSWER_MS = longPreferencesKey("auto_reveal_answer_ms")
+
+    /** 自动翻面开关 (Grammar) */
+    val IS_GRAMMAR_AUTO_REVEAL_ANSWER_ENABLED = booleanPreferencesKey("is_grammar_auto_reveal_answer_enabled")
+
+    /** 自动翻面时长 (Grammar) 默认: 10000L */
+    val GRAMMAR_AUTO_REVEAL_ANSWER_MS = longPreferencesKey("grammar_auto_reveal_answer_ms")
+
     /** 显示答案等待开关 默认: false */
     val IS_SHOW_ANSWER_DELAY_ENABLED = booleanPreferencesKey("is_show_answer_delay_enabled")
 

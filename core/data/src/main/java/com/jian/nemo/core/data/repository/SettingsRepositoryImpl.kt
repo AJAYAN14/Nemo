@@ -1366,6 +1366,62 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val isAutoRevealAnswerEnabledFlow: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[PreferencesKeys.IS_AUTO_REVEAL_ANSWER_ENABLED] ?: false }
+
+    override suspend fun setAutoRevealAnswerEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_AUTO_REVEAL_ANSWER_ENABLED] = enabled
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val autoRevealAnswerMsFlow: Flow<Long> = dataStore.data
+        .map { preferences ->
+            when (val ms = preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] ?: 5000L) {
+                5000L, 6000L, 7000L, 8000L, 9000L, 10000L -> ms
+                else -> 5000L
+            }
+        }
+
+    override suspend fun setAutoRevealAnswerMs(ms: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] = when (ms) {
+                5000L, 6000L, 7000L, 8000L, 9000L, 10000L -> ms
+                else -> 5000L
+            }
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val isGrammarAutoRevealAnswerEnabledFlow: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[PreferencesKeys.IS_GRAMMAR_AUTO_REVEAL_ANSWER_ENABLED] ?: false }
+
+    override suspend fun setGrammarAutoRevealAnswerEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_GRAMMAR_AUTO_REVEAL_ANSWER_ENABLED] = enabled
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    override val grammarAutoRevealAnswerMsFlow: Flow<Long> = dataStore.data
+        .map { preferences ->
+            when (val ms = preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] ?: 10000L) {
+                10000L, 11000L, 12000L, 13000L, 14000L, 15000L -> ms
+                else -> 10000L
+            }
+        }
+
+    override suspend fun setGrammarAutoRevealAnswerMs(ms: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] = when (ms) {
+                10000L, 11000L, 12000L, 13000L, 14000L, 15000L -> ms
+                else -> 10000L
+            }
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     override val isShowAnswerDelayEnabledFlow: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[PreferencesKeys.IS_SHOW_ANSWER_DELAY_ENABLED] ?: false }
 
