@@ -16,7 +16,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -52,7 +57,7 @@ data class GrammarData(
     val rules: List<GrammarRule>
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun VerbConjugationHandbookScreen(
     onNavigateBack: () -> Unit
@@ -74,8 +79,7 @@ fun VerbConjugationHandbookScreen(
     val scrollState = rememberScrollState()
     var expandedId by remember { mutableStateOf<Int?>(1) }
     
-    // 捕捉各卡片相对 parent 的 y 轴物理坐标，以便做展开平滑滚动黄金锚定
-    val itemPositions = remember { mutableStateMapOf<Int, Int>() }
+    val scope = rememberCoroutineScope()
 
     // 13 种变形的教科书级数据源 (已将前缀与标题分离定义)
     val grammarList = remember {
@@ -284,20 +288,9 @@ fun VerbConjugationHandbookScreen(
         )
     }
 
-    // 优雅的展开平滑滚动黄金锚定线逻辑
-    LaunchedEffect(expandedId) {
-        expandedId?.let { id ->
-            // 等待手风琴展开测量就绪
-            kotlinx.coroutines.delay(120)
-            itemPositions[id]?.let { yPosition ->
-                // 精准锚定在顶部下方大约 72.dp 处，避开固定的标题栏，营造极佳的视觉阅读焦点
-                val targetScroll = (yPosition - 180).coerceAtLeast(0)
-                scrollState.animateScrollTo(
-                    value = targetScroll,
-                    animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
-                )
-            }
-        }
+    // 官方推荐的智能滚动聚焦器列表
+    val bringIntoViewRequesters = remember(grammarList.size) {
+        List(grammarList.size) { BringIntoViewRequester() }
     }
 
     Scaffold(
@@ -448,10 +441,23 @@ fun VerbConjugationHandbookScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(bottom = 32.dp)
             ) {
-                grammarList.forEach { item ->
+                grammarList.forEachIndexed { index, item ->
                     val isExpanded = expandedId == item.id
                     val themeColor = if (isDark) item.colorDark else item.colorLight
                     val themeBgColor = if (isDark) item.bgColorDark else item.bgColorLight
+
+                    // --- 聚焦/失焦平滑动画 ---
+                    val isFocused = expandedId == null || isExpanded
+                    val cardAlpha by animateFloatAsState(
+                        targetValue = if (isFocused) 1f else 0.45f,
+                        animationSpec = tween(400, easing = FastOutSlowInEasing),
+                        label = "cardAlpha"
+                    )
+                    val cardScale by animateFloatAsState(
+                        targetValue = if (isFocused) 1f else 0.96f,
+                        animationSpec = tween(400, easing = FastOutSlowInEasing),
+                        label = "cardScale"
+                    )
 
                     // 序号前缀常驻对应主题色，标题使用 NotoSerifJP 明朝体，字号升级为微增大的 17.sp 以保障最佳易读性
                     val cardTitleAnnotated = remember(item, isExpanded, themeColor, textMain) {
@@ -478,11 +484,10 @@ fun VerbConjugationHandbookScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .bringIntoViewRequester(bringIntoViewRequesters[index])
+                            .alpha(cardAlpha)
+                            .scale(cardScale)
                             .clip(RoundedCornerShape(20.dp))
-                            .onGloballyPositioned { coordinates ->
-                                // 实时捕获卡片在垂直布局中的y位置
-                                itemPositions[item.id] = coordinates.positionInParent().y.toInt()
-                            }
                             .border(
                                 width = if (isExpanded) 1.5.dp else 0.5.dp,
                                 color = if (isExpanded) themeColor.copy(alpha = 0.6f) else if (isDark) Color.White.copy(alpha = 0.08f) else NemoNeutrals.Gray200.copy(alpha = 0.5f),
@@ -498,7 +503,14 @@ fun VerbConjugationHandbookScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        expandedId = if (isExpanded) null else item.id
+                                        val nextState = !isExpanded
+                                        expandedId = if (nextState) item.id else null
+                                        if (nextState) {
+                                            scope.launch {
+                                                kotlinx.coroutines.delay(200)
+                                                bringIntoViewRequesters[index].bringIntoView()
+                                            }
+                                        }
                                     }
                                     .padding(horizontal = 16.dp, vertical = 14.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
