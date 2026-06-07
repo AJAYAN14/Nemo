@@ -1,5 +1,7 @@
 package com.jian.nemo.core.domain.algorithm
 
+import java.util.logging.Level
+import java.util.logging.Logger
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.SrsItem
 import com.jian.nemo.core.domain.model.SrsUpdateResult
@@ -10,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,31 +30,62 @@ class SrsCalculatorImpl @Inject constructor(
     private val reviewLogRepository: ReviewLogRepository
 ) : SrsCalculator {
 
+    companion object {
+        private val logger = Logger.getLogger("FSRS")
+
+        /** 触发重优化的复习次数阈值 */
+        private const val RE_OPTIMIZE_THRESHOLD = 200
+    }
+
     @Volatile
     private var fsrs = FsrsAlgorithm()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    /** 自上次优化以来的复习计数 */
+    private val reviewsSinceLastOptimization = AtomicInteger(0)
+
+    /** 是否正在执行优化（防止并发重复触发） */
+    @Volatile
+    private var optimizing = false
+
     init {
         // 兼容优先：默认参数立即可用，个性化在后台异步加载。
-        scope.launch {
-            try {
-                val logs = reviewLogRepository.getRecentLogs(limit = 1500)
-                val optimized = FsrsParameterOptimizer.optimize(logs)
-                if (optimized != null) {
-                    fsrs = FsrsAlgorithm(parameters = optimized.parameters)
-                    println(
-                        "[FSRS] personalization enabled, samples=${optimized.sampleSize}, " +
-                            "againRate=${"%.3f".format(optimized.againRate)}, " +
-                            "hardRate=${"%.3f".format(optimized.hardRate)}"
-                    )
-                } else {
-                    println("[FSRS] personalization skipped, insufficient logs (samples=${logs.size})")
-                }
-            } catch (_: Exception) {
-                // 保持默认参数，不影响线上主流程。
-                println("[FSRS] personalization skipped due to initialization error")
+        scope.launch { tryOptimize() }
+    }
+
+    /**
+     * 尝试执行参数优化（init 和周期性触发共用）
+     */
+    private suspend fun tryOptimize() {
+        if (optimizing) return
+        optimizing = true
+        try {
+            val logs = reviewLogRepository.getRecentLogs(limit = 1500)
+            val optimized = FsrsParameterOptimizer.optimize(logs)
+            if (optimized != null) {
+                fsrs = FsrsAlgorithm(parameters = optimized.parameters)
+                logger.info(
+                    "personalization enabled, samples=${optimized.sampleSize}, " +
+                        "againRate=${"%.3f".format(optimized.againRate)}, " +
+                        "hardRate=${"%.3f".format(optimized.hardRate)}"
+                )
+            } else {
+                logger.info("personalization skipped, insufficient logs (samples=${logs.size})")
             }
+        } catch (e: Exception) {
+            // 保持默认参数，不影响线上主流程。
+            logger.log(Level.WARNING, "personalization skipped due to error", e)
+        } finally {
+            optimizing = false
+        }
+    }
+
+    override fun notifyReviewCompleted() {
+        val count = reviewsSinceLastOptimization.incrementAndGet()
+        if (count >= RE_OPTIMIZE_THRESHOLD && !optimizing) {
+            reviewsSinceLastOptimization.set(0)
+            scope.launch { tryOptimize() }
         }
     }
 
@@ -158,3 +192,4 @@ class SrsCalculatorImpl @Inject constructor(
         return fsrs.forgettingCurve(elapsedDays, stability)
     }
 }
+

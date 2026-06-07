@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
  * 通用语法卡片组件
  *
  * 用于显示语法条目的卡片
- * 参考旧项目: old-nemo/ui/component/lists/ListItemComponents.kt
  */
 @Composable
 fun CommonGrammarCard(

@@ -38,4 +38,12 @@ interface SrsCalculator {
      * @return 回忆概率 (0-1)
      */
     fun forgettingCurve(elapsedDays: Float, stability: Float): Float
+
+    /**
+     * 通知一次复习完成
+     *
+     * 实现类可利用此信号进行增量参数优化。
+     * 默认空实现，保证向后兼容。
+     */
+    fun notifyReviewCompleted() {}
 }

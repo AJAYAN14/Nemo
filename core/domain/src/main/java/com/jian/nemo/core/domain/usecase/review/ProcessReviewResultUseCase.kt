@@ -1,5 +1,7 @@
 package com.jian.nemo.core.domain.usecase.review
 
+import java.util.logging.Level
+import java.util.logging.Logger
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.GrammarRepository
@@ -29,7 +31,7 @@ class ProcessReviewResultUseCase @Inject constructor(
 ) {
 
     companion object {
-        private const val TAG = "ProcessReviewResult"
+        private val logger = Logger.getLogger("ProcessReviewResult")
     }
 
     suspend fun processWord(word: Word, quality: Int) {
@@ -56,7 +58,7 @@ class ProcessReviewResultUseCase @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            println("$TAG: 记录日志失败 - ${e.message}")
+            logger.log(Level.WARNING, "记录日志失败", e)
         }
 
         // 2. SRS 计算
@@ -85,8 +87,11 @@ class ProcessReviewResultUseCase @Inject constructor(
             // 更新学习记录 (复习计数)
             studyRecordRepository.incrementReviewedWords(1)
         } catch (e: Exception) {
-            println("$TAG: 更新复习记录失败 - ${e.message}")
+            logger.log(Level.WARNING, "更新复习记录失败", e)
         }
+
+        // 通知 SRS 计算器复习完成，用于增量参数优化
+        srsCalculator.notifyReviewCompleted()
     }
 
     suspend fun processGrammar(grammar: Grammar, quality: Int) {
@@ -112,7 +117,7 @@ class ProcessReviewResultUseCase @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            println("$TAG: 记录日志失败 - ${e.message}")
+            logger.log(Level.WARNING, "记录日志失败", e)
         }
 
         // 2. SRS 计算
@@ -140,7 +145,10 @@ class ProcessReviewResultUseCase @Inject constructor(
             // 更新学习记录 (复习计数)
             studyRecordRepository.incrementReviewedGrammars(1)
         } catch (e: Exception) {
-            println("$TAG: 更新复习记录失败 - ${e.message}")
+            logger.log(Level.WARNING, "更新复习记录失败", e)
         }
+
+        // 通知 SRS 计算器复习完成，用于增量参数优化
+        srsCalculator.notifyReviewCompleted()
     }
 }

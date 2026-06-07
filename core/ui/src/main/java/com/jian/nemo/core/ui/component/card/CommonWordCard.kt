@@ -18,7 +18,6 @@ import com.jian.nemo.core.ui.component.tag.JlptTag
  * 通用单词卡片组件
  *
  * 用于显示单词信息的卡片
- * 参考旧项目: old-nemo/ui/component/lists/ListItemComponents.kt
  */
 @Composable
 fun CommonWordCard(
