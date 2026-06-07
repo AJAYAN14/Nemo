@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -146,6 +147,8 @@ fun HomeScreen(
         val name = uiState.user?.username ?: "Nemo"
         "Hi, $name さん"
     }
+
+    var lastClickTime by remember { mutableLongStateOf(0L) }
 
     if (uiState.showLevelSheet) {
         LevelSelectionBottomSheet(
@@ -300,23 +303,16 @@ fun HomeScreen(
                                 }
                             }
                             // 模式切换
-                            Surface(
-                                shape = CircleShape,
-                                color = dividerColor
-                            ) {
-                                Row(Modifier.padding(4.dp)) {
-                                    BentoModeSwitchButton(
-                                        text = "单词",
-                                        isSelected = uiState.learningMode == LearningMode.Word,
-                                        isDark = isDark
-                                    ) { viewModel.setLearningMode(LearningMode.Word) }
-                                    BentoModeSwitchButton(
-                                        text = "语法",
-                                        isSelected = uiState.learningMode == LearningMode.Grammar,
-                                        isDark = isDark
-                                    ) { viewModel.setLearningMode(LearningMode.Grammar) }
+                            val modeOptions = listOf("单词", "语法")
+                            val modeIndex = if (uiState.learningMode == LearningMode.Word) 0 else 1
+                            BentoAnimatedSegmentedControl(
+                                options = modeOptions,
+                                selectedIndex = modeIndex,
+                                isDark = isDark,
+                                onOptionSelected = { index ->
+                                    viewModel.setLearningMode(if (index == 0) LearningMode.Word else LearningMode.Grammar)
                                 }
-                            }
+                            )
                         }
                     }
 
@@ -529,7 +525,13 @@ fun HomeScreen(
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
-                                onClick = { onNavigateToLearning(uiState.selectedLevel, uiState.learningMode) }
+                                onClick = {
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastClickTime > 2000L) {
+                                        lastClickTime = now
+                                        onNavigateToLearning(uiState.selectedLevel, uiState.learningMode)
+                                    }
+                                }
                             ),
                         shape = RoundedCornerShape(24.dp),
                         color = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary,
@@ -907,51 +909,75 @@ fun HomeScreen(
 }
 
 /**
- * 局部复用的私有切换按钮组件（避免影响或修改 HomeComponents.kt 中的封装）
+ * 带有平滑弹性滑动指示器的切换组件
  */
 @Composable
-private fun BentoModeSwitchButton(
-    text: String,
-    isSelected: Boolean,
+private fun BentoAnimatedSegmentedControl(
+    options: List<String>,
+    selectedIndex: Int,
     isDark: Boolean,
-    onClick: () -> Unit
+    onOptionSelected: (Int) -> Unit
 ) {
+    val dividerColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else BentoColors.BgBase
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else BentoColors.Surface
-    val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain
-    val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else BentoColors.TextSub
-
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) surfaceColor else Color.Transparent,
-        label = "bgColor"
-    )
-    val textColor by animateColorAsState(
-        targetValue = if (isSelected) textMain else textSub,
-        label = "textColor"
-    )
 
     Surface(
-        modifier = Modifier
-            .height(30.dp)
-            .padding(horizontal = 2.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            ),
         shape = CircleShape,
-        color = backgroundColor,
-        shadowElevation = 0.dp
+        color = dividerColor
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 14.dp)
+        BoxWithConstraints(
+            modifier = Modifier.padding(4.dp).height(30.dp)
         ) {
-            Text(
-                text = text,
-                color = textColor,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold
+            val optionWidth = 60.dp
+
+            // 滑动指示器位置动画 (弹性 Spring 动画)
+            val indicatorOffset by animateDpAsState(
+                targetValue = optionWidth * selectedIndex,
+                animationSpec = spring(dampingRatio = 0.8f, stiffness = 400f),
+                label = "indicatorOffset"
             )
+
+            // 背景滑块 (Pill)
+            Box(
+                modifier = Modifier
+                    .offset(x = indicatorOffset)
+                    .width(optionWidth)
+                    .fillMaxHeight()
+                    .clip(CircleShape)
+                    .background(surfaceColor)
+            )
+
+            Row {
+                options.forEachIndexed { index, text ->
+                    val isSelected = selectedIndex == index
+                    val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain
+                    val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else BentoColors.TextSub
+                    val textColor by animateColorAsState(
+                        targetValue = if (isSelected) textMain else textSub,
+                        animationSpec = tween(300),
+                        label = "textColor_$index"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .width(optionWidth)
+                            .fillMaxHeight()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onOptionSelected(index) }
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = text,
+                            color = textColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
     }
 }
