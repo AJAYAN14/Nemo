@@ -181,6 +181,7 @@ fun SRSLearningCard(
                     spotColor = shadowColor,
                     ambientColor = shadowColor
                 )
+                .clip(RoundedCornerShape(26.dp))
                 .background(cardBackground, RoundedCornerShape(26.dp))
         ) {
             if (autoRevealProgress != null && autoRevealProgress > 0f) {

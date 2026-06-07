@@ -153,6 +153,7 @@ fun SRSGrammarCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
                 .background(cardBackground, RoundedCornerShape(24.dp))
         ) {
             // 顶部自动翻面进度条
