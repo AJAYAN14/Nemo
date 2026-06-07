@@ -94,8 +94,10 @@ fun LearningScreen(
         else -> "${uiState.showAnswerDelayMs / 1000}s"
     }
 
-    LaunchedEffect(uiState.canUndo) {
-        showUndoHint = uiState.canUndo
+    LaunchedEffect(uiState.undoEventTrigger) {
+        if (uiState.canUndo) {
+            showUndoHint = true
+        }
     }
 
     // Bottom Sheets

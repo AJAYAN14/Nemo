@@ -824,7 +824,7 @@ class LearningViewModel @Inject constructor(
      */
     private fun syncUndoAvailability() {
         val canUndo = learningUndoHelper.canUndo()
-        _uiState.update { it.copy(canUndo = canUndo) }
+        _uiState.update { it.copy(canUndo = canUndo, undoEventTrigger = it.undoEventTrigger + 1) }
     }
 
     /**

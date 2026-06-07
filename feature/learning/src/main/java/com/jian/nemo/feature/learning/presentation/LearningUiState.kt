@@ -72,6 +72,7 @@ data class LearningUiState(
 
     // 撤销功能
     val canUndo: Boolean = false,
+    val undoEventTrigger: Int = 0, // 专门用于强制触发可撤销提示弹窗的事件计数器
 
     // Learn Ahead Limit 等待状态
     val waitingUntil: Long = 0L,  // 等待目标时间戳（毫秒）
