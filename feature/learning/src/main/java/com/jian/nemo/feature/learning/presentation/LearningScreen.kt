@@ -236,7 +236,6 @@ fun LearningScreen(
                             LearningContent(
                                 uiState = uiState,
                                 onEvent = viewModel::onEvent,
-                                getCardBadge = viewModel::getCardBadge,
                                 backgroundColor = backgroundColor, // 传递背景色
                                 onShowAnswerBlocked = { remainingSec ->
                                     showAnswerDelayHintSec = remainingSec
@@ -333,7 +332,6 @@ fun LearningScreen(
 fun LearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
-    getCardBadge: (LearningItem) -> CardBadge,
     backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
@@ -341,7 +339,6 @@ fun LearningContent(
         WordLearningContent(
             uiState = uiState,
             onEvent = onEvent,
-            getCardBadge = getCardBadge,
             backgroundColor = backgroundColor, // 新增
             onShowAnswerBlocked = onShowAnswerBlocked
         )
@@ -349,7 +346,6 @@ fun LearningContent(
         GrammarLearningContent(
             uiState = uiState,
             onEvent = onEvent,
-            getCardBadge = getCardBadge,
             backgroundColor = backgroundColor, // 新增
             onShowAnswerBlocked = onShowAnswerBlocked
         )
@@ -360,7 +356,6 @@ fun LearningContent(
 fun WordLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
-    getCardBadge: (LearningItem) -> CardBadge,
     backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
@@ -482,7 +477,7 @@ fun WordLearningContent(
                                      SRSLearningCard(
                                           word = targetWord,
                                           isAnswerShown = uiState.isAnswerShown && page == uiState.currentIndex,
-                                          cardBadge = getCardBadge(LearningItem.WordItem(targetWord)),
+                                          cardBadge = LearningItem.WordItem(targetWord).cardBadge,
                                           modifier = Modifier.fillMaxSize(),
                                           onPracticeClick = {
                                               showTypingDialog = true
@@ -562,7 +557,6 @@ fun WordLearningContent(
 fun GrammarLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
-    getCardBadge: (LearningItem) -> CardBadge,
     backgroundColor: Color, // 显式指定 Color 类型
     onShowAnswerBlocked: (Int) -> Unit
 ) {
@@ -667,7 +661,7 @@ fun GrammarLearningContent(
                                   SRSGrammarCard(
                                       grammar = targetGrammar,
                                       isAnswerShown = uiState.isAnswerShown && page == uiState.currentGrammarIndex,
-                                      cardBadge = getCardBadge(LearningItem.GrammarItem(targetGrammar)),
+                                      cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
                                       modifier = Modifier.fillMaxSize(),
                                       onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                                       playingAudioId = uiState.playingAudioId,

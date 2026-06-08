@@ -49,60 +49,9 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import javax.inject.Inject
 
-/**
- * 学习项封装 (统一 Word 和 Grammar)
- */
-sealed class LearningItem {
-    abstract val id: Int
-    abstract val isNew: Boolean
-    abstract val displayName: String
-    abstract val repetitionCount: Int
 
-    // 调度系统必需字段
-    abstract val step: Int
-    abstract val dueTime: Long
-    abstract val type: Int
-
-    data class WordItem(
-        val word: Word,
-        override val step: Int = 0,
-        override val dueTime: Long = 0,
-        override val type: Int = word.type
-    ) : LearningItem() {
-        override val id: Int get() = word.id
-        override val isNew: Boolean get() = word.repetitionCount == 0
-        override val displayName: String get() = word.japanese
-        override val repetitionCount: Int get() = word.repetitionCount
-    }
-
-    data class GrammarItem(
-        val grammar: Grammar,
-        override val step: Int = 0,
-        override val dueTime: Long = 0,
-        override val type: Int = grammar.type
-    ) : LearningItem() {
-        override val id: Int get() = grammar.id
-        override val isNew: Boolean get() = grammar.repetitionCount == 0
-        override val displayName: String get() = grammar.grammar
-        override val repetitionCount: Int get() = grammar.repetitionCount
-    }
-}
 
 /**
- * 卡片状态标记
- */
-enum class CardBadge {
-    NEW,      // 新词 (Type 0)
-    LEARNING, // 学习中 (Type 1)
-    REVIEW,   // 复习 (Type 2)
-    RELEARN   // 重学 (Type 3)
-}
-
-/**
- * 新版学习 ViewModel
- *
- * 基于《学习功能逻辑设计文档.md》完整重写
- *
  * 核心设计原则：
  * 1. 统一处理 Word 和 Grammar
  * 2. 自由导航（允许前后浏览）
@@ -677,7 +626,7 @@ class LearningViewModel @Inject constructor(
                 sessionReviewCount = 0
                 sessionRelearnCount = 0
 
-                val items = wrapItems(result.items)
+                val items = result.items.toLearningItems()
                 val currentItem = items.getOrNull(result.index)
 
                 _uiState.update {
@@ -727,7 +676,7 @@ class LearningViewModel @Inject constructor(
                 sessionReviewCount = 0
                 sessionRelearnCount = 0
 
-                val items = wrapItems(result.items)
+                val items = result.items.toLearningItems()
                 val firstItem = items.firstOrNull()
 
                 _uiState.update {
@@ -803,16 +752,7 @@ class LearningViewModel @Inject constructor(
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> wrapItems(items: List<T>): List<LearningItem> {
-        return items.mapNotNull { item ->
-            when (item) {
-                is Word -> LearningItem.WordItem(item)
-                is Grammar -> LearningItem.GrammarItem(item)
-                else -> null
-            }
-        }
-    }
+
 
     /**
      * 显示答案
@@ -1073,7 +1013,7 @@ class LearningViewModel @Inject constructor(
                 }
 
                 // 统计卡片消耗明细
-                val badge = getCardBadge(currentItem)
+                val badge = currentItem.cardBadge
                 when (badge) {
                     CardBadge.NEW -> sessionNewCount++
                     CardBadge.REVIEW -> sessionReviewCount++
@@ -1892,22 +1832,7 @@ class LearningViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 获取卡片状态标记
-     */
-    fun getCardBadge(item: LearningItem): CardBadge {
-        // [容错处理] 如果复习次数大于0，但类型仍然标记为 NEW (0)，则修正为 REVIEW (2)
-        // 这种情况通常发生于导入没有 type 字段的历史数据或同步字段缺失
-        val effectiveType = if (item.repetitionCount > 0 && item.type == 0) 2 else item.type
-        
-        return when (effectiveType) {
-            0 -> CardBadge.NEW
-            1 -> CardBadge.LEARNING
-            2 -> CardBadge.REVIEW
-            3 -> CardBadge.RELEARN
-            else -> CardBadge.REVIEW
-        }
-    }
+
 
     /**
      * 统计当前队列中各状态的数量并更新 UI State
@@ -1925,7 +1850,7 @@ class LearningViewModel @Inject constructor(
         var relearnCount = 0
 
         for (item in items) {
-            when (getCardBadge(item)) {
+            when (item.cardBadge) {
                 CardBadge.NEW -> newCount++
                 CardBadge.LEARNING -> learningCount++
                 CardBadge.REVIEW -> reviewCount++
@@ -2112,14 +2037,7 @@ class LearningViewModel @Inject constructor(
         removeCurrentAndMoveNext()
     }
 
-    private fun parseSteps(stepsStr: String): List<Int> {
-        return try {
-            stepsStr.trim().split(Regex("\\s+")).map { it.toInt() }
-        } catch (e: Exception) {
-            println("解析学习步进失败: $stepsStr, 使用默认值")
-            listOf(1, 10)
-        }
-    }
+
 
     /**
      * 朗读单词（日语 + 中文）
