@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -20,12 +21,14 @@ import androidx.compose.ui.unit.dp
  *
  * @param modifier 修饰符
  * @param size 容器大小，默认 45.dp
+ * @param color 填充颜色，默认使用 primary
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NemoChasingDotsLoader(
     modifier: Modifier = Modifier,
     size: Dp = 45.dp,
+    color: Color = MaterialTheme.colorScheme.primary,
     duration: Int = 2000 // 保留参数兼容性，但 LoadingIndicator 内部自带动画节奏
 ) {
     Box(
@@ -34,7 +37,7 @@ fun NemoChasingDotsLoader(
     ) {
         LoadingIndicator(
             modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.primary
+            color = color
         )
     }
 }

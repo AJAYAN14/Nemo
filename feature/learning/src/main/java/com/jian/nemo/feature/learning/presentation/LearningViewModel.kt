@@ -170,6 +170,16 @@ class LearningViewModel @Inject constructor(
     /** 会话锁定的学习日 (用于零点跨天保护) */
     private var _sessionLockedDay: Long? = null
 
+    /** 本次学习会话的统计数据 */
+    private var sessionStartTime: Long = 0L
+    private var wordElapsedTime: Long = 0L      // 单词累计学习时间 (秒)
+    private var grammarElapsedTime: Long = 0L   // 语法累计学习时间 (秒)
+    private var currentCombo: Int = 0
+    private var maxCombo: Int = 0
+    private var sessionNewCount: Int = 0
+    private var sessionReviewCount: Int = 0
+    private var sessionRelearnCount: Int = 0
+
     /** 学习日重置时间 (小时) */
     private var _resetHour: Int = 4
     private var _leechThreshold: Int = 5
@@ -422,6 +432,8 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.SuspendCurrent -> suspendCurrentItem()
             is LearningEvent.BuryCurrent -> buryCurrentItem()
             is LearningEvent.ExitLearning -> exitLearning()
+            is LearningEvent.PauseTimer -> pauseTimer()
+            is LearningEvent.ResumeTimer -> resumeTimer()
 
             // 语法专用
             is LearningEvent.ToggleGrammarDetail -> toggleGrammarDetail()
@@ -656,6 +668,15 @@ class LearningViewModel @Inject constructor(
                 _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
 
+                // 重置本次学习统计
+                checkAndRestoreOrReset()
+                sessionStartTime = System.currentTimeMillis()
+                currentCombo = 0
+                maxCombo = 0
+                sessionNewCount = 0
+                sessionReviewCount = 0
+                sessionRelearnCount = 0
+
                 val items = wrapItems(result.items)
                 val currentItem = items.getOrNull(result.index)
 
@@ -677,19 +698,34 @@ class LearningViewModel @Inject constructor(
                         ratingIntervals = calculateRatingIntervals(currentItem),
                         sessionProcessedCount = result.index,
                         status = if (result.waitingUntil > System.currentTimeMillis()) LearningStatus.Waiting else LearningStatus.Learning,
-                        waitingUntil = result.waitingUntil
+                        waitingUntil = result.waitingUntil,
+                        // 重置UI上的战报统计
+                        sessionDurationSeconds = 0L,
+                        sessionMaxCombo = 0,
+                        sessionNewCount = 0,
+                        sessionReviewCount = 0,
+                        sessionRelearnCount = 0
                     )
                 }
                 armShowAnswerDelay()
                 updateQueueBadgeCounts()
 
-            println("恢复学习会话: ${items.size} 个项目, 索引 ${result.index}")
+                println("恢复学习会话: ${items.size} 个项目, 索引 ${result.index}")
             }
 
             is SessionLoadResult.NewSession -> {
                 _learningSteps.clear()
                 _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
+
+                // 重置本次学习统计
+                checkAndRestoreOrReset()
+                sessionStartTime = System.currentTimeMillis()
+                currentCombo = 0
+                maxCombo = 0
+                sessionNewCount = 0
+                sessionReviewCount = 0
+                sessionRelearnCount = 0
 
                 val items = wrapItems(result.items)
                 val firstItem = items.firstOrNull()
@@ -712,7 +748,13 @@ class LearningViewModel @Inject constructor(
                         sessionInitialSize = items.size,
                         ratingIntervals = calculateRatingIntervals(firstItem),
                         sessionProcessedCount = 0,
-                        waitingUntil = 0L
+                        waitingUntil = 0L,
+                        // 重置UI上的战报统计
+                        sessionDurationSeconds = 0L,
+                        sessionMaxCombo = 0,
+                        sessionNewCount = 0,
+                        sessionReviewCount = 0,
+                        sessionRelearnCount = 0
                     )
                 }
                 armShowAnswerDelay()
@@ -736,11 +778,27 @@ class LearningViewModel @Inject constructor(
                         currentWord = null,
                         currentGrammar = null,
                         showAnswerAvailableAt = 0L,
-                        waitingUntil = 0L
+                        waitingUntil = 0L,
+                        sessionDurationSeconds = 0L
                     )
                 }
 
                 println("今日学习已完成")
+            }
+        }
+
+        // 异步加载明日到期复习卡片预测
+        val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        val tomorrowEpoch = todayEpoch + 1
+        viewModelScope.launch {
+            if (mode == LearningMode.Word) {
+                wordRepository.getDueWordsCount(tomorrowEpoch).collect { count ->
+                    _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                }
+            } else {
+                grammarRepository.getDueGrammarsCount(tomorrowEpoch).collect { count ->
+                    _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                }
             }
         }
     }
@@ -1012,6 +1070,31 @@ class LearningViewModel @Inject constructor(
                 val currentItem = getCurrentItem() ?: run {
                     _uiState.update { it.copy(status = LearningStatus.Learning) }
                     return@launch
+                }
+
+                // 统计卡片消耗明细
+                val badge = getCardBadge(currentItem)
+                when (badge) {
+                    CardBadge.NEW -> sessionNewCount++
+                    CardBadge.REVIEW -> sessionReviewCount++
+                    CardBadge.LEARNING, CardBadge.RELEARN -> sessionRelearnCount++
+                }
+
+                // 统计连击数
+                if (quality >= 3) {
+                    currentCombo++
+                    maxCombo = maxOf(maxCombo, currentCombo)
+                } else {
+                    currentCombo = 0
+                }
+
+                _uiState.update {
+                    it.copy(
+                        sessionNewCount = sessionNewCount,
+                        sessionReviewCount = sessionReviewCount,
+                        sessionRelearnCount = sessionRelearnCount,
+                        sessionMaxCombo = maxCombo
+                    )
                 }
 
                 val isNew = currentItem.isNew
@@ -1577,6 +1660,26 @@ class LearningViewModel @Inject constructor(
      * 完成会话
      */
     private fun completeSession() {
+        val currentSessionDuration = if (sessionStartTime > 0) (System.currentTimeMillis() - sessionStartTime) / 1000 else 0L
+        val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
+        
+        val totalDuration = if (_uiState.value.learningMode == LearningMode.Word) {
+            wordElapsedTime += currentSessionDuration
+            sharedPrefs.edit()
+                .putLong("last_reset_day", today)
+                .putLong("word_elapsed_time", wordElapsedTime)
+                .apply()
+            wordElapsedTime
+        } else {
+            grammarElapsedTime += currentSessionDuration
+            sharedPrefs.edit()
+                .putLong("last_reset_day", today)
+                .putLong("grammar_elapsed_time", grammarElapsedTime)
+                .apply()
+            grammarElapsedTime
+        }
+        
         _uiState.update {
             it.copy(
                 status = LearningStatus.SessionCompleted,
@@ -1586,15 +1689,80 @@ class LearningViewModel @Inject constructor(
                 grammarList = emptyList(),
                 currentIndex = 0,
                 currentGrammarIndex = 0,
-                showAnswerAvailableAt = 0L
+                showAnswerAvailableAt = 0L,
+                sessionDurationSeconds = totalDuration
             )
         }
 
+        sessionStartTime = 0L
         clearSession()
         syncService.onLearningCompleted()
         syncUndoAvailability()
 
         println("会话完成！")
+    }
+
+    /**
+     * 暂停学习计时器：将本次经过的秒数累加到对应模式的耗时中，持久化写入本地并清空开始时间戳
+     */
+    private fun pauseTimer() {
+        if (sessionStartTime > 0) {
+            val elapsed = (System.currentTimeMillis() - sessionStartTime) / 1000
+            val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+            val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
+            
+            if (_uiState.value.learningMode == LearningMode.Word) {
+                wordElapsedTime += elapsed
+                sharedPrefs.edit()
+                    .putLong("last_reset_day", today)
+                    .putLong("word_elapsed_time", wordElapsedTime)
+                    .apply()
+            } else {
+                grammarElapsedTime += elapsed
+                sharedPrefs.edit()
+                    .putLong("last_reset_day", today)
+                    .putLong("grammar_elapsed_time", grammarElapsedTime)
+                    .apply()
+            }
+            sessionStartTime = 0L
+        }
+    }
+
+    /**
+     * 恢复学习计时器：重新记录开始时间戳（启动前先核对并刷新天数重置）
+     */
+    private fun resumeTimer() {
+        // 仅在被暂停了，且当前页面处于学习状态时才恢复
+        if (sessionStartTime == 0L && _uiState.value.status == LearningStatus.Learning) {
+            checkAndRestoreOrReset()
+            sessionStartTime = System.currentTimeMillis()
+        }
+    }
+
+    /**
+     * 检查当前学习日天数，用于执行今日学习时间持久化恢复或跨天重置清零
+     */
+    private fun checkAndRestoreOrReset() {
+        val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
+        val lastSavedDay = sharedPrefs.getLong("last_reset_day", 0L)
+        
+        if (lastSavedDay != today) {
+            // 跨越了重置学习日：将累计时间全部重置恢复为 0，并刷新本地保存天数
+            wordElapsedTime = 0L
+            grammarElapsedTime = 0L
+            sharedPrefs.edit()
+                .putLong("last_reset_day", today)
+                .putLong("word_elapsed_time", 0L)
+                .putLong("grammar_elapsed_time", 0L)
+                .apply()
+            println("学习日重置刷新：今日单词/语法时长清零")
+        } else {
+            // 是同一学习日：从持久化中安全恢复数据
+            wordElapsedTime = sharedPrefs.getLong("word_elapsed_time", 0L)
+            grammarElapsedTime = sharedPrefs.getLong("grammar_elapsed_time", 0L)
+            println("同学习日数据恢复：今日单词累计已学 ${wordElapsedTime}秒, 语法累计已学 ${grammarElapsedTime}秒")
+        }
     }
 
     /**
@@ -1829,6 +1997,8 @@ class LearningViewModel @Inject constructor(
         // 清空撤销快照
         learningUndoHelper.clear()
         syncUndoAvailability()
+
+        sessionStartTime = 0L // 退出时仅把本次会话开始时间置空，不抹掉今日已存的 word/grammar 累计记录
 
         _uiState.value = LearningUiState()
     }

@@ -104,7 +104,15 @@ data class LearningUiState(
     val isDarkMode: Boolean? = null,
     
     /** 是否启用原生画板 */
-    val isWhiteboardEnabled: Boolean = false
+    val isWhiteboardEnabled: Boolean = false,
+
+    // 结算统计数据
+    val sessionDurationSeconds: Long = 0L,
+    val sessionMaxCombo: Int = 0,
+    val sessionNewCount: Int = 0,
+    val sessionReviewCount: Int = 0,
+    val sessionRelearnCount: Int = 0,
+    val tomorrowReviewForecastCount: Int = 0
 ) {
     val hasPendingItems: Boolean
         get() = when (learningMode) {

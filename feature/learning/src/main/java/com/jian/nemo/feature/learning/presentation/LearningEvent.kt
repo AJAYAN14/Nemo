@@ -215,4 +215,14 @@ sealed interface LearningEvent {
      * 切换白板开关
      */
     data class ToggleWhiteboard(val enabled: Boolean) : LearningEvent
+
+    /**
+     * 暂停学习计时器
+     */
+    data object PauseTimer : LearningEvent
+
+    /**
+     * 恢复学习计时器
+     */
+    data object ResumeTimer : LearningEvent
 }

@@ -29,6 +29,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
@@ -70,6 +72,27 @@ fun LearningScreen(
 
     LaunchedEffect(key1 = level, key2 = initialMode) {
         viewModel.onEvent(LearningEvent.StartLearning(level, initialMode))
+    }
+
+    // 🆕 监听生命周期与离开事件，确保“学习用时”只在用户停留于学习界面时计算
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            when (event) {
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> {
+                    viewModel.onEvent(LearningEvent.ResumeTimer)
+                }
+                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> {
+                    viewModel.onEvent(LearningEvent.PauseTimer)
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            viewModel.onEvent(LearningEvent.PauseTimer)
+        }
     }
 
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
@@ -506,11 +529,30 @@ fun WordLearningContent(
                  )
             }
         } else if (uiState.shouldShowDailyGoalMet) {
-            DailyGoalMetContent()
+            LearningFinishedContent(
+                title = "今日任务达成！",
+                subtitle = "坚持就是胜利，明天继续加油",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+            )
         } else {
             LearningFinishedContent(
                 title = "暂无单词任务",
-                subtitle = "该级别目前没有需要学习或复习的单词"
+                subtitle = "该级别目前没有需要学习或复习的单词",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
             )
         }
     }
@@ -667,11 +709,30 @@ fun GrammarLearningContent(
                   )
             }
         } else if (uiState.shouldShowDailyGoalMet) {
-            DailyGoalMetContent()
+            LearningFinishedContent(
+                title = "今日任务达成！",
+                subtitle = "坚持就是胜利，明天继续加油",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+            )
         } else {
             LearningFinishedContent(
                 title = "暂无语法任务",
-                subtitle = "该级别目前没有需要学习或复习的语法"
+                subtitle = "该级别目前没有需要学习或复习的语法",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
             )
         }
     }
