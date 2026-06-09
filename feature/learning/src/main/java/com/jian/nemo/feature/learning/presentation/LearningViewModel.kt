@@ -23,6 +23,7 @@ import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.feature.learning.domain.LearningSessionPolicy
+import com.jian.nemo.feature.learning.domain.LearningSessionStatsManager
 import com.jian.nemo.feature.learning.domain.LearningQueueManager
 import com.jian.nemo.feature.learning.domain.LearningScheduler
 import com.jian.nemo.feature.learning.domain.LearningUndoHelper
@@ -33,8 +34,7 @@ import com.jian.nemo.feature.learning.domain.UndoSnapshot
 import com.jian.nemo.feature.learning.domain.SessionLoadResult
 import com.jian.nemo.feature.learning.domain.SessionLoader
 import com.jian.nemo.feature.learning.domain.SrsIntervalPreview
-import com.jian.nemo.core.domain.repository.AudioRepository
-import com.jian.nemo.core.domain.repository.TtsEvent
+import com.jian.nemo.feature.learning.domain.LearningTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
@@ -87,7 +87,7 @@ class LearningViewModel @Inject constructor(
     private val learningQueueManager: LearningQueueManager,
     private val learningScheduler: LearningScheduler,
     private val learningUndoHelper: LearningUndoHelper,
-    private val audioRepository: AudioRepository,
+    private val learningTtsManager: LearningTtsManager,
     private val contentReportRepository: ContentReportRepository
 ) : ViewModel() {
     companion object {
@@ -119,15 +119,8 @@ class LearningViewModel @Inject constructor(
     /** 会话锁定的学习日 (用于零点跨天保护) */
     private var _sessionLockedDay: Long? = null
 
-    /** 本次学习会话的统计数据 */
-    private var sessionStartTime: Long = 0L
-    private var wordElapsedTime: Long = 0L      // 单词累计学习时间 (秒)
-    private var grammarElapsedTime: Long = 0L   // 语法累计学习时间 (秒)
-    private var currentCombo: Int = 0
-    private var maxCombo: Int = 0
-    private var sessionNewCount: Int = 0
-    private var sessionReviewCount: Int = 0
-    private var sessionRelearnCount: Int = 0
+    /** 结算战报与持久化逻辑管理器 */
+    private val sessionStatsManager = LearningSessionStatsManager(context)
 
     /** 学习日重置时间 (小时) */
     private var _resetHour: Int = 4
@@ -165,33 +158,10 @@ class LearningViewModel @Inject constructor(
         }
 
         // 1. 监听 TTS 事件以更新播放状态 (必须在 _uiState 初始化后)
+        learningTtsManager.observeTtsEvents(viewModelScope)
         viewModelScope.launch {
-            audioRepository.ttsEvents.collect { event ->
-                when (event) {
-                    is TtsEvent.OnStart -> {
-                        val normalizedId = event.id?.substringBefore("-jp")?.substringBefore("-cn")
-                        _uiState.update { it.copy(playingAudioId = normalizedId) }
-                    }
-                    is TtsEvent.OnDone -> {
-                        // 如果是日语部分结束，暂时不清除状态，等待中文部分开始，防止动画闪烁
-                        if (event.id?.endsWith("-jp") == true) return@collect
-
-                        val normalizedId = event.id?.substringBefore("-cn")
-                        _uiState.update {
-                            if (it.playingAudioId == normalizedId) {
-                                it.copy(playingAudioId = null)
-                            } else {
-                                it
-                            }
-                        }
-                    }
-                    is TtsEvent.OnError -> {
-                        _uiState.update { it.copy(playingAudioId = null) }
-                    }
-                    TtsEvent.GoogleTtsMissing -> {
-                        _uiState.update { it.copy(playingAudioId = null) }
-                    }
-                }
+            learningTtsManager.playingAudioId.collect { id ->
+                _uiState.update { it.copy(playingAudioId = id) }
             }
         }
 
@@ -391,8 +361,8 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.MasterGrammar -> rate(5) // 掌握 = 评分5
 
             // TTS 朗读
-            is LearningEvent.SpeakWord -> speakWord(event.text, event.chinese)
-            is LearningEvent.SpeakExample -> speakExample(event.japanese, event.chinese, event.id)
+            is LearningEvent.SpeakWord -> learningTtsManager.speakWord(event.text, event.chinese)
+            is LearningEvent.SpeakExample -> learningTtsManager.speakExample(event.japanese, event.chinese, event.id)
             is LearningEvent.ToggleAutoPlayAudio -> toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> toggleShowAnswerDelay(event.enabled)
             is LearningEvent.CycleShowAnswerDelayDuration -> cycleShowAnswerDelayDuration()
@@ -617,14 +587,9 @@ class LearningViewModel @Inject constructor(
                 _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
 
-                // 重置本次学习统计
+                // 恢复本次学习统计
                 checkAndRestoreOrReset()
-                sessionStartTime = System.currentTimeMillis()
-                currentCombo = 0
-                maxCombo = 0
-                sessionNewCount = 0
-                sessionReviewCount = 0
-                sessionRelearnCount = 0
+                sessionStatsManager.resumeTimer()
 
                 val items = result.items.toLearningItems()
                 val currentItem = items.getOrNull(result.index)
@@ -648,12 +613,12 @@ class LearningViewModel @Inject constructor(
                         sessionProcessedCount = result.index,
                         status = if (result.waitingUntil > System.currentTimeMillis()) LearningStatus.Waiting else LearningStatus.Learning,
                         waitingUntil = result.waitingUntil,
-                        // 重置UI上的战报统计
+                        // 恢复本地持久化及展示UI上的战报统计
                         sessionDurationSeconds = 0L,
-                        sessionMaxCombo = 0,
-                        sessionNewCount = 0,
-                        sessionReviewCount = 0,
-                        sessionRelearnCount = 0
+                        sessionMaxCombo = sessionStatsManager.maxCombo,
+                        sessionNewCount = sessionStatsManager.sessionNewCount,
+                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
+                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount
                     )
                 }
                 armShowAnswerDelay()
@@ -667,14 +632,9 @@ class LearningViewModel @Inject constructor(
                 _learningDueTimes.clear() // 清除旧模式或旧会话的到期时间缓存
                 _requeuedItems.clear()
 
-                // 重置本次学习统计
+                // 恢复/重置学习统计并启动计时
                 checkAndRestoreOrReset()
-                sessionStartTime = System.currentTimeMillis()
-                currentCombo = 0
-                maxCombo = 0
-                sessionNewCount = 0
-                sessionReviewCount = 0
-                sessionRelearnCount = 0
+                sessionStatsManager.resumeTimer()
 
                 val items = result.items.toLearningItems()
                 val firstItem = items.firstOrNull()
@@ -698,12 +658,12 @@ class LearningViewModel @Inject constructor(
                         ratingIntervals = calculateRatingIntervals(firstItem),
                         sessionProcessedCount = 0,
                         waitingUntil = 0L,
-                        // 重置UI上的战报统计
+                        // 恢复本地持久化及展示UI上的战报统计
                         sessionDurationSeconds = 0L,
-                        sessionMaxCombo = 0,
-                        sessionNewCount = 0,
-                        sessionReviewCount = 0,
-                        sessionRelearnCount = 0
+                        sessionMaxCombo = sessionStatsManager.maxCombo,
+                        sessionNewCount = sessionStatsManager.sessionNewCount,
+                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
+                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount
                     )
                 }
                 armShowAnswerDelay()
@@ -717,6 +677,8 @@ class LearningViewModel @Inject constructor(
 
             is SessionLoadResult.Completed -> {
                 clearSession()
+                val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+                val totalDuration = sessionStatsManager.completeSession(mode, todayEpoch)
                 _uiState.update {
                     it.copy(
                         status = LearningStatus.SessionCompleted,
@@ -728,7 +690,7 @@ class LearningViewModel @Inject constructor(
                         currentGrammar = null,
                         showAnswerAvailableAt = 0L,
                         waitingUntil = 0L,
-                        sessionDurationSeconds = 0L
+                        sessionDurationSeconds = totalDuration
                     )
                 }
 
@@ -774,7 +736,7 @@ class LearningViewModel @Inject constructor(
              // 仅在单词模式下自动朗读
              if (state.learningMode == LearningMode.Word) {
                  state.currentWord?.let { word ->
-                     speakWord(word.hiragana, word.chinese) // 朗读假名/发音 + 中文含义
+                     learningTtsManager.speakWord(word.hiragana, word.chinese) // 朗读假名/发音 + 中文含义
                  }
 
              }
@@ -1012,28 +974,16 @@ class LearningViewModel @Inject constructor(
                     return@launch
                 }
 
-                // 统计卡片消耗明细
-                val badge = currentItem.cardBadge
-                when (badge) {
-                    CardBadge.NEW -> sessionNewCount++
-                    CardBadge.REVIEW -> sessionReviewCount++
-                    CardBadge.LEARNING, CardBadge.RELEARN -> sessionRelearnCount++
-                }
-
-                // 统计连击数
-                if (quality >= 3) {
-                    currentCombo++
-                    maxCombo = maxOf(maxCombo, currentCombo)
-                } else {
-                    currentCombo = 0
-                }
+                // 委托给 StatsManager 进行计数统计与实时持久化
+                val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+                sessionStatsManager.onItemRated(_uiState.value.learningMode, quality, currentItem.cardBadge, today)
 
                 _uiState.update {
                     it.copy(
-                        sessionNewCount = sessionNewCount,
-                        sessionReviewCount = sessionReviewCount,
-                        sessionRelearnCount = sessionRelearnCount,
-                        sessionMaxCombo = maxCombo
+                        sessionNewCount = sessionStatsManager.sessionNewCount,
+                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
+                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount,
+                        sessionMaxCombo = sessionStatsManager.maxCombo
                     )
                 }
 
@@ -1600,25 +1550,8 @@ class LearningViewModel @Inject constructor(
      * 完成会话
      */
     private fun completeSession() {
-        val currentSessionDuration = if (sessionStartTime > 0) (System.currentTimeMillis() - sessionStartTime) / 1000 else 0L
         val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
-        val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
-        
-        val totalDuration = if (_uiState.value.learningMode == LearningMode.Word) {
-            wordElapsedTime += currentSessionDuration
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("word_elapsed_time", wordElapsedTime)
-                .apply()
-            wordElapsedTime
-        } else {
-            grammarElapsedTime += currentSessionDuration
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("grammar_elapsed_time", grammarElapsedTime)
-                .apply()
-            grammarElapsedTime
-        }
+        val totalDuration = sessionStatsManager.completeSession(_uiState.value.learningMode, today)
         
         _uiState.update {
             it.copy(
@@ -1630,11 +1563,11 @@ class LearningViewModel @Inject constructor(
                 currentIndex = 0,
                 currentGrammarIndex = 0,
                 showAnswerAvailableAt = 0L,
+                waitingUntil = 0L,
                 sessionDurationSeconds = totalDuration
             )
         }
 
-        sessionStartTime = 0L
         clearSession()
         syncService.onLearningCompleted()
         syncUndoAvailability()
@@ -1646,26 +1579,8 @@ class LearningViewModel @Inject constructor(
      * 暂停学习计时器：将本次经过的秒数累加到对应模式的耗时中，持久化写入本地并清空开始时间戳
      */
     private fun pauseTimer() {
-        if (sessionStartTime > 0) {
-            val elapsed = (System.currentTimeMillis() - sessionStartTime) / 1000
-            val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
-            val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
-            
-            if (_uiState.value.learningMode == LearningMode.Word) {
-                wordElapsedTime += elapsed
-                sharedPrefs.edit()
-                    .putLong("last_reset_day", today)
-                    .putLong("word_elapsed_time", wordElapsedTime)
-                    .apply()
-            } else {
-                grammarElapsedTime += elapsed
-                sharedPrefs.edit()
-                    .putLong("last_reset_day", today)
-                    .putLong("grammar_elapsed_time", grammarElapsedTime)
-                    .apply()
-            }
-            sessionStartTime = 0L
-        }
+        val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        sessionStatsManager.pauseTimer(_uiState.value.learningMode, today)
     }
 
     /**
@@ -1673,9 +1588,9 @@ class LearningViewModel @Inject constructor(
      */
     private fun resumeTimer() {
         // 仅在被暂停了，且当前页面处于学习状态时才恢复
-        if (sessionStartTime == 0L && _uiState.value.status == LearningStatus.Learning) {
+        if (sessionStatsManager.sessionStartTime == 0L && _uiState.value.status == LearningStatus.Learning) {
             checkAndRestoreOrReset()
-            sessionStartTime = System.currentTimeMillis()
+            sessionStatsManager.resumeTimer()
         }
     }
 
@@ -1684,25 +1599,7 @@ class LearningViewModel @Inject constructor(
      */
     private fun checkAndRestoreOrReset() {
         val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
-        val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
-        val lastSavedDay = sharedPrefs.getLong("last_reset_day", 0L)
-        
-        if (lastSavedDay != today) {
-            // 跨越了重置学习日：将累计时间全部重置恢复为 0，并刷新本地保存天数
-            wordElapsedTime = 0L
-            grammarElapsedTime = 0L
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("word_elapsed_time", 0L)
-                .putLong("grammar_elapsed_time", 0L)
-                .apply()
-            println("学习日重置刷新：今日单词/语法时长清零")
-        } else {
-            // 是同一学习日：从持久化中安全恢复数据
-            wordElapsedTime = sharedPrefs.getLong("word_elapsed_time", 0L)
-            grammarElapsedTime = sharedPrefs.getLong("grammar_elapsed_time", 0L)
-            println("同学习日数据恢复：今日单词累计已学 ${wordElapsedTime}秒, 语法累计已学 ${grammarElapsedTime}秒")
-        }
+        sessionStatsManager.checkAndRestoreOrReset(_uiState.value.learningMode, today)
     }
 
     /**
@@ -1923,7 +1820,7 @@ class LearningViewModel @Inject constructor(
         learningUndoHelper.clear()
         syncUndoAvailability()
 
-        sessionStartTime = 0L // 退出时仅把本次会话开始时间置空，不抹掉今日已存的 word/grammar 累计记录
+        sessionStatsManager.clearSessionTimer() // 退出时仅把本次会话开始时间置空，不抹掉今日已存的 word/grammar 累计记录
 
         _uiState.value = LearningUiState()
     }
@@ -2039,28 +1936,8 @@ class LearningViewModel @Inject constructor(
 
 
 
-    /**
-     * 朗读单词（日语 + 中文）
-     */
-    private fun speakWord(text: String, chinese: String = "") {
-        audioRepository.stop()
-        if (chinese.isNotBlank()) {
-            audioRepository.playExampleTts(text, chinese, "word")
-        } else {
-            audioRepository.playTts(text, "ja-JP", "word")
-        }
-    }
-
-    /**
-     * 朗读例句（日语 + 中文）
-     */
-    private fun speakExample(japanese: String, chinese: String, id: String) {
-        audioRepository.stop()
-        audioRepository.playExampleTts(japanese, chinese, id)
-    }
-
     override fun onCleared() {
         super.onCleared()
-        audioRepository.stop()
+        learningTtsManager.stop()
     }
 }
