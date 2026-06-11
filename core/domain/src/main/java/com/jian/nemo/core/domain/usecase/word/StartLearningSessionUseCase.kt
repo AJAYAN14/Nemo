@@ -51,7 +51,7 @@ class StartLearningSessionUseCase @Inject constructor(
             }
 
             // 3. 获取新单词
-            val newWords = wordRepository.getNewWords(level).first()
+            val newWords = wordRepository.getNewWords().first()
 
             if (newWords.isEmpty()) {
                 return LearningSessionResult.NoMoreWords(

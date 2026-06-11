@@ -47,7 +47,6 @@ import com.jian.nemo.feature.learning.presentation.components.common.LearningFin
 import com.jian.nemo.feature.learning.presentation.components.common.DailyGoalMetContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
-import com.jian.nemo.feature.learning.presentation.components.sheets.LevelSelectionBottomSheet
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
@@ -63,15 +62,14 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 @Composable
 
 fun LearningScreen(
-    level: String,
     viewModel: LearningViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     initialMode: LearningMode = LearningMode.Word
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(key1 = level, key2 = initialMode) {
-        viewModel.onEvent(LearningEvent.StartLearning(level, initialMode))
+    LaunchedEffect(key1 = initialMode) {
+        viewModel.onEvent(LearningEvent.StartLearning(initialMode))
     }
 
     // 🆕 监听生命周期与离开事件，确保“学习用时”只在用户停留于学习界面时计算
@@ -99,15 +97,10 @@ fun LearningScreen(
     val backgroundColor = if (isDarkTheme) NemoSurfaceBackgroundDark else NemoSurfaceBackground
 
     // 状态
-    var showWordLevelSheet by rememberSaveable { mutableStateOf(false) }
-    var showGrammarLevelSheet by rememberSaveable { mutableStateOf(false) }
     var showRatingGuide by rememberSaveable { mutableStateOf(false) }
     var showAnswerDelayHint by rememberSaveable { mutableStateOf(false) }
     var showAnswerDelayHintSec by rememberSaveable { mutableStateOf(1) }
     var showUndoHint by rememberSaveable { mutableStateOf(false) }
-
-    // Levels
-    val levels = listOf("N5", "N4", "N3", "N2", "N1")
 
     val delayDurationLabel = when (uiState.showAnswerDelayMs) {
         2000L -> "2s"
@@ -122,31 +115,6 @@ fun LearningScreen(
             showUndoHint = true
         }
     }
-
-    // Bottom Sheets
-    LevelSelectionBottomSheet(
-        show = showWordLevelSheet,
-        title = "选择单词等级",
-        levels = levels,
-        selectedLevel = uiState.selectedLevel,
-        onDismiss = { showWordLevelSheet = false },
-        onLevelSelected = { newLevel ->
-            viewModel.onEvent(LearningEvent.ChangeLevel(newLevel))
-            showWordLevelSheet = false
-        }
-    )
-
-    LevelSelectionBottomSheet(
-        show = showGrammarLevelSheet,
-        title = "选择语法等级",
-        levels = levels,
-        selectedLevel = uiState.selectedLevel,
-        onDismiss = { showGrammarLevelSheet = false },
-        onLevelSelected = { newLevel ->
-             viewModel.onEvent(LearningEvent.ChangeLevel(newLevel))
-             showGrammarLevelSheet = false
-        }
-    )
 
     Scaffold(
         containerColor = backgroundColor
@@ -539,7 +507,7 @@ fun WordLearningContent(
         } else {
             LearningFinishedContent(
                 title = "暂无单词任务",
-                subtitle = "该级别目前没有需要学习或复习的单词",
+                subtitle = "目前没有需要学习或复习的单词",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,
@@ -718,7 +686,7 @@ fun GrammarLearningContent(
         } else {
             LearningFinishedContent(
                 title = "暂无语法任务",
-                subtitle = "该级别目前没有需要学习或复习的语法",
+                subtitle = "目前没有需要学习或复习的语法",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,

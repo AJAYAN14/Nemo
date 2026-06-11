@@ -5,6 +5,18 @@ import java.util.Calendar
 import java.util.Locale
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.IntOffset
+import kotlinx.coroutines.launch
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.random.Random
+import androidx.compose.animation.core.*
 import kotlin.math.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -54,13 +66,12 @@ import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.feature.learning.presentation.LearningMode
-import com.jian.nemo.feature.learning.presentation.components.sheets.LevelSelectionBottomSheet
 import com.jian.nemo.feature.learning.presentation.home.components.*
 import com.jian.nemo.feature.learning.R
 
 @Composable
 fun HomeScreen(
-    onNavigateToLearning: (String, LearningMode) -> Unit,
+    onNavigateToLearning: (LearningMode) -> Unit,
     onNavigateToKanaChart: () -> Unit,
     onNavigateToGrammarList: () -> Unit,
     onNavigateToHeatmap: () -> Unit,
@@ -150,23 +161,7 @@ fun HomeScreen(
 
     var lastClickTime by remember { mutableLongStateOf(0L) }
 
-    if (uiState.showLevelSheet) {
-        LevelSelectionBottomSheet(
-            show = true,
-            title = if (uiState.learningMode == LearningMode.Word)
-                stringResource(R.string.title_select_word_level)
-            else
-                stringResource(R.string.title_select_grammar_level),
-            levels = uiState.levels,
-            selectedLevel = uiState.selectedLevel,
-            primaryColor = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary,
-            onDismiss = { viewModel.toggleLevelSheet(false) },
-            onLevelSelected = {
-                viewModel.selectLevel(it)
-                viewModel.toggleLevelSheet(false)
-            }
-        )
-    }
+
 
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
@@ -261,11 +256,10 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Bento 1: 控制卡片 (全宽跨越)
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = surfaceColor,
-                        shadowElevation = 0.dp,
-                        modifier = Modifier.fillMaxWidth()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(surfaceColor, RoundedCornerShape(24.dp))
                     ) {
                         Row(
                             modifier = Modifier
@@ -274,34 +268,15 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // 级别选择胶囊
-                            Surface(
-                                modifier = Modifier.clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = { viewModel.toggleLevelSheet(true) }
-                                ),
-                                shape = CircleShape,
-                                color = if (uiState.learningMode == LearningMode.Word) BentoColors.PrimaryLight else BentoColors.GrammarPrimaryLight
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = "JLPT ${uiState.selectedLevel}",
-                                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold),
-                                        color = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                        contentDescription = null,
-                                        tint = (if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary).copy(alpha = 0.5f),
-                                        modifier = Modifier.size(10.dp)
-                                    )
-                                }
-                            }
+                            val badgeBgColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else BentoColors.BgBase
+                            val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain
+                            
+                            StreakBadgeWithEasterEgg(
+                                streakDays = uiState.stats.dailyStreak,
+                                badgeBgColor = badgeBgColor,
+                                textColor = textColor
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
                             // 模式切换
                             val modeOptions = listOf("单词", "语法")
                             val modeIndex = if (uiState.learningMode == LearningMode.Word) 0 else 1
@@ -529,7 +504,7 @@ fun HomeScreen(
                                     val now = System.currentTimeMillis()
                                     if (now - lastClickTime > 2000L) {
                                         lastClickTime = now
-                                        onNavigateToLearning(uiState.selectedLevel, uiState.learningMode)
+                                        onNavigateToLearning(uiState.learningMode)
                                     }
                                 }
                             ),
@@ -981,7 +956,3 @@ private fun BentoAnimatedSegmentedControl(
         }
     }
 }
-
-
-
-

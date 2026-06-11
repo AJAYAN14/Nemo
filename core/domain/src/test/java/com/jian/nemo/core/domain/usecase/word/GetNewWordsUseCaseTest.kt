@@ -44,10 +44,10 @@ class GetNewWordsUseCaseTest {
             createTestWord(id = 1, japanese = "単語1"),
             createTestWord(id = 2, japanese = "単語2")
         )
-        every { wordRepository.getNewWords("n5", any()) } returns flowOf(testWords)
+        every { wordRepository.getNewWords(any()) } returns flowOf(testWords)
 
         // When & Then
-        useCase("n5").test {
+        useCase().test {
             // First emission: Loading
             val loadingResult = awaitItem()
             assertTrue(loadingResult is Result.Loading)
@@ -65,12 +65,12 @@ class GetNewWordsUseCaseTest {
     fun `invoke should return Error when repository throws exception`() = runTest {
         // Given
         val exception = RuntimeException("Database error")
-        every { wordRepository.getNewWords("n5", any()) } returns kotlinx.coroutines.flow.flow {
+        every { wordRepository.getNewWords(any()) } returns kotlinx.coroutines.flow.flow {
             throw exception
         }
 
         // When & Then
-        useCase("n5").test {
+        useCase().test {
             awaitItem() // Loading
 
             val result = awaitItem()
@@ -85,10 +85,10 @@ class GetNewWordsUseCaseTest {
     @Test
     fun `invoke should return empty list when no new words available`() = runTest {
         // Given
-        every { wordRepository.getNewWords("n1", any()) } returns flowOf(emptyList())
+        every { wordRepository.getNewWords(any()) } returns flowOf(emptyList())
 
         // When & Then
-        useCase("n1").test {
+        useCase().test {
             awaitItem() // Loading
 
             val successResult = awaitItem()

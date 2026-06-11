@@ -53,3 +53,9 @@ bin/
 anki源码项目/
 
 portal_labs/
+
+# Build release outputs
+app/release/
+
+# MCP configuration
+mcp/

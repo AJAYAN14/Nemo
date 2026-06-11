@@ -26,11 +26,10 @@ interface WordRepository {
     fun getWordById(id: Int): Flow<Word?>
 
     /**
-     * 获取指定等级的新单词（未学习且未跳过）
-     * @param level JLPT等级 (N1-N5)
-     * @param isRandom 是否随机抽取 (false=按ID顺序)
+     * 获取全局新单词（未学习且未跳过），自动按照 N5 -> N1 的顺序进阶
+     * @param isRandom 是否在同级别内随机抽取 (false=按ID顺序)
      */
-    fun getNewWords(level: String, isRandom: Boolean = false): Flow<List<Word>>
+    fun getNewWords(isRandom: Boolean = false): Flow<List<Word>>
 
     /**
      * 获取到期复习的单词

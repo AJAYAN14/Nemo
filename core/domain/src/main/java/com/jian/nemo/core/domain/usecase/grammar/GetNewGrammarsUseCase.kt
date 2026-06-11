@@ -26,10 +26,10 @@ class GetNewGrammarsUseCase @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(level: String, isRandom: Boolean = false): Flow<Result<List<Grammar>>> {
+    operator fun invoke(isRandom: Boolean = false): Flow<Result<List<Grammar>>> {
         return settingsRepository.learningDayResetHourFlow.flatMapLatest { resetHour ->
             val today = DateTimeUtils.getLearningDay(resetHour)
-            grammarRepository.getNewGrammars(level, isRandom)
+            grammarRepository.getNewGrammars(isRandom)
                 .map { grammars ->
                     // 排除今日被搁置的卡片 (buriedUntilDay != today)
                     grammars.filter { it.buriedUntilDay != today }

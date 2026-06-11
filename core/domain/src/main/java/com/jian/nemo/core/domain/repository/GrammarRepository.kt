@@ -28,11 +28,10 @@ interface GrammarRepository {
     fun getAllGrammars(): Flow<List<Grammar>>
 
     /**
-     * 获取指定等级的新语法（未学习且未跳过）
-     * @param level JLPT等级 (N1-N5)
-     * @param isRandom 是否随机抽取 (false=按ID顺序)
+     * 获取全局新语法（未学习且未跳过），自动按照 N5 -> N1 的顺序进阶
+     * @param isRandom 是否在同级别内随机抽取 (false=按ID顺序)
      */
-    fun getNewGrammars(level: String, isRandom: Boolean = false): Flow<List<Grammar>>
+    fun getNewGrammars(isRandom: Boolean = false): Flow<List<Grammar>>
 
     /**
      * 获取到期复习的语法数量

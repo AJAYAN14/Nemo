@@ -46,10 +46,10 @@ class GetNewGrammarsUseCaseTest {
             createTestGrammar(id = 1, grammar = "～について"),
             createTestGrammar(id = 2, grammar = "～によると")
         )
-        every { grammarRepository.getNewGrammars("n5", any()) } returns flowOf(testGrammars)
+        every { grammarRepository.getNewGrammars(any()) } returns flowOf(testGrammars)
 
         // When & Then
-        useCase("n5").test {
+        useCase().test {
             // First emission: Loading
             val loadingResult = awaitItem()
             assertTrue(loadingResult is Result.Loading)
@@ -67,12 +67,12 @@ class GetNewGrammarsUseCaseTest {
     fun `invoke should return Error when repository throws exception`() = runTest {
         // Given
         val exception = RuntimeException("Database error")
-        every { grammarRepository.getNewGrammars("n5", any()) } returns kotlinx.coroutines.flow.flow {
+        every { grammarRepository.getNewGrammars(any()) } returns kotlinx.coroutines.flow.flow {
             throw exception
         }
 
         // When & Then
-        useCase("n5").test {
+        useCase().test {
             awaitItem() // Loading
 
             val result = awaitItem()
@@ -87,10 +87,10 @@ class GetNewGrammarsUseCaseTest {
     @Test
     fun `invoke should return empty list when no new grammars available`() = runTest {
         // Given
-        every { grammarRepository.getNewGrammars("n1", any()) } returns flowOf(emptyList())
+        every { grammarRepository.getNewGrammars(any()) } returns flowOf(emptyList())
 
         // When & Then
-        useCase("n1").test {
+        useCase().test {
             awaitItem() // Loading
 
             val successResult = awaitItem()

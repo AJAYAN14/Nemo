@@ -26,16 +26,15 @@ class GetNewWordsUseCase @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) {
     /**
-     * 获取指定等级的新单词
+     * 获取全局新单词 (按 N5->N1 进阶)
      *
-     * @param level JLPT等级 (n1, n2, n3, n4, n5)
      * @return Flow<Result<List<Word>>> 新单词列表(Loading -> Success/Error)
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    operator fun invoke(level: String, isRandom: Boolean = false): Flow<Result<List<Word>>> {
+    operator fun invoke(isRandom: Boolean = false): Flow<Result<List<Word>>> {
         return settingsRepository.learningDayResetHourFlow.flatMapLatest { resetHour ->
             val today = DateTimeUtils.getLearningDay(resetHour)
-            wordRepository.getNewWords(level, isRandom)
+            wordRepository.getNewWords(isRandom)
                 .map { words ->
                     // 排除今日被搁置的卡片 (buriedUntilDay != today)
                     words.filter { it.buriedUntilDay != today }

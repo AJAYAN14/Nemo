@@ -47,19 +47,7 @@ class HomeViewModel @Inject constructor(
             }
         }
 
-        // 恢复上次选择的等级 (单词)
-        viewModelScope.launch {
-            settingsRepository.preferredWordLevelFlow.collect { level ->
-                _uiState.update { it.copy(wordSelectedLevel = level) }
-            }
-        }
 
-        // 恢复上次选择的等级 (语法)
-        viewModelScope.launch {
-            settingsRepository.preferredGrammarLevelFlow.collect { level ->
-                _uiState.update { it.copy(grammarSelectedLevel = level) }
-            }
-        }
 
         // Monitor Active Sessions (SRS Optimization)
         viewModelScope.launch {
@@ -85,7 +73,8 @@ class HomeViewModel @Inject constructor(
                     dueWords = stats.dueWords,
                     dueGrammars = stats.dueGrammars,
                     wordDailyGoal = stats.wordDailyGoal,
-                    grammarDailyGoal = stats.grammarDailyGoal
+                    grammarDailyGoal = stats.grammarDailyGoal,
+                    dailyStreak = stats.dailyStreak
                 )
 
                 _uiState.update { currentState ->
@@ -146,27 +135,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun selectLevel(level: String) {
-        _uiState.update { 
-            if (it.learningMode == LearningMode.Word) {
-                it.copy(wordSelectedLevel = level)
-            } else {
-                it.copy(grammarSelectedLevel = level)
-            }
-        }
-        
-        viewModelScope.launch {
-            if (_uiState.value.learningMode == LearningMode.Word) {
-                settingsRepository.setPreferredWordLevel(level)
-            } else {
-                settingsRepository.setPreferredGrammarLevel(level)
-            }
-        }
-    }
 
-    fun toggleLevelSheet(show: Boolean) {
-        _uiState.update { it.copy(showLevelSheet = show) }
-    }
 
     fun dismissNotification(id: String) {
         viewModelScope.launch {
@@ -178,11 +147,7 @@ class HomeViewModel @Inject constructor(
 
 data class HomeUiState(
     val learningMode: LearningMode = LearningMode.Word,
-    val wordSelectedLevel: String = "N5",
-    val grammarSelectedLevel: String = "N5",
-    val levels: List<String> = listOf("N1", "N2", "N3", "N4", "N5"),
     val stats: TodayStats = TodayStats(),
-    val showLevelSheet: Boolean = false,
 
     // [SRS Optimization] Session Awareness
     val hasActiveWordSession: Boolean = false,
@@ -200,9 +165,6 @@ data class HomeUiState(
     // User Context
     val user: User? = null
 ) {
-    val selectedLevel: String
-        get() = if (learningMode == LearningMode.Word) wordSelectedLevel else grammarSelectedLevel
-
     val progressFraction: Float
         get() = if (dailyGoal > 0) (currentProgress.toFloat() / dailyGoal).coerceIn(0f, 1f) else 0f
 
@@ -230,7 +192,8 @@ data class TodayStats(
     val dueWords: Int = 0,
     val dueGrammars: Int = 0,
     val wordDailyGoal: Int = 50, // Default
-    val grammarDailyGoal: Int = 10 // Default
+    val grammarDailyGoal: Int = 10, // Default
+    val dailyStreak: Int = 0
 ) {
     val totalLearned: Int
         get() = learnedWords + learnedGrammars

@@ -302,7 +302,7 @@ class LearningViewModel @Inject constructor(
             )
 
             // 2. 重新触发启动逻辑（利用 SessionLoader 的恢复模式进行动态裁剪）
-            startLearning(state.selectedLevel)
+            startLearning()
         }
 
         if (completedToday >= newGoal) {
@@ -320,10 +320,10 @@ class LearningViewModel @Inject constructor(
         when (event) {
             is LearningEvent.StartLearning -> {
                 _uiState.update { it.copy(learningMode = event.mode) }
-                startLearning(event.level)
+                startLearning()
             }
             is LearningEvent.ChangeLearningMode -> changeLearningMode(event.mode)
-            is LearningEvent.ChangeLevel -> changeLevel(event.level)
+
 
             // 卡片交互
             is LearningEvent.FlipCard -> showAnswer()
@@ -341,7 +341,7 @@ class LearningViewModel @Inject constructor(
             // 其他
             is LearningEvent.ShowTypingPractice -> _uiState.update { it.copy(showTypingPractice = true) }
             is LearningEvent.HideTypingPractice -> _uiState.update { it.copy(showTypingPractice = false) }
-            is LearningEvent.Retry -> startLearning(_uiState.value.selectedLevel)
+            is LearningEvent.Retry -> startLearning()
             is LearningEvent.Undo -> undo()
             is LearningEvent.DismissUndo -> {
                 // 仅关闭提示，不清空撤销快照。
@@ -428,7 +428,7 @@ class LearningViewModel @Inject constructor(
     /**
      * 启动学习会话
      */
-    private fun startLearning(level: String) {
+    private fun startLearning() {
         // 清空撤销快照
         learningUndoHelper.clear()
         syncUndoAvailability()
@@ -438,7 +438,7 @@ class LearningViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     status = LearningStatus.Loading,
-                    selectedLevel = level,
+                    selectedLevel = "GLOBAL",
                     error = null
                 )
             }
@@ -471,7 +471,7 @@ class LearningViewModel @Inject constructor(
                 }
 
                 // 获取已保存的会话
-                val savedSession = loadSavedSession(mode, level)
+                val savedSession = loadSavedSession(mode)
 
                 // 加载失败计数
                 _lapseCounts.value = when (mode) {
@@ -481,12 +481,12 @@ class LearningViewModel @Inject constructor(
 
                 // 使用 SessionLoader 加载会话
                 val result = when (mode) {
-                    LearningMode.Word -> loadWordSession(level, dailyGoal, completedToday, savedSession)
-                    LearningMode.Grammar -> loadGrammarSession(level, dailyGoal, completedToday, savedSession)
+                    LearningMode.Word -> loadWordSession(dailyGoal, completedToday, savedSession)
+                    LearningMode.Grammar -> loadGrammarSession(dailyGoal, completedToday, savedSession)
                 }
 
                 // 处理加载结果
-                handleSessionLoadResult(result, dailyGoal, completedToday, level)
+                handleSessionLoadResult(result, dailyGoal, completedToday)
 
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
@@ -501,7 +501,7 @@ class LearningViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadSavedSession(mode: LearningMode, level: String): SavedSession? {
+    private suspend fun loadSavedSession(mode: LearningMode): SavedSession? {
         val restored = when (mode) {
             LearningMode.Word -> settingsRepository.getWordSession().first()
             LearningMode.Grammar -> settingsRepository.getGrammarSession().first()
@@ -519,13 +519,12 @@ class LearningViewModel @Inject constructor(
     }
 
     private suspend fun loadWordSession(
-        level: String,
         dailyGoal: Int,
         completedToday: Int,
         savedSession: SavedSession?
     ): SessionLoadResult<Word> {
         return sessionLoader.loadSession(
-            level = level,
+            level = "GLOBAL",
             dailyGoal = dailyGoal,
             completedToday = completedToday,
             savedSession = savedSession,
@@ -536,23 +535,22 @@ class LearningViewModel @Inject constructor(
             },
             getNewItems = {
                 val isRandom = settingsRepository.isRandomNewContentEnabledFlow.first()
-                val r = getNewWordsUseCase(level, isRandom).first { it !is Result.Loading }
+                val r = getNewWordsUseCase(isRandom).first { it !is Result.Loading }
                 if (r is Result.Success) r.data else emptyList()
             },
             getItemId = { it.id },
-            filterByLevel = { it.level == level },
+            filterByLevel = { true }, // 全局进阶不再按等级过滤
             isItemNew = { it.repetitionCount == 0 }
         )
     }
 
     private suspend fun loadGrammarSession(
-        level: String,
         dailyGoal: Int,
         completedToday: Int,
         savedSession: SavedSession?
     ): SessionLoadResult<Grammar> {
         return sessionLoader.loadSession(
-            level = level,
+            level = "GLOBAL",
             dailyGoal = dailyGoal,
             completedToday = completedToday,
             savedSession = savedSession,
@@ -563,11 +561,11 @@ class LearningViewModel @Inject constructor(
             },
             getNewItems = {
                 val isRandom = settingsRepository.isRandomNewContentEnabledFlow.first()
-                val r = getNewGrammarsUseCase(level, isRandom).first { it !is Result.Loading }
+                val r = getNewGrammarsUseCase(isRandom).first { it !is Result.Loading }
                 if (r is Result.Success) r.data else emptyList()
             },
             getItemId = { it.id },
-            filterByLevel = { it.grammarLevel == level },
+            filterByLevel = { true }, // 全局进阶不再按等级过滤
             isItemNew = { it.repetitionCount == 0 }
         )
     }
@@ -575,8 +573,7 @@ class LearningViewModel @Inject constructor(
     private fun <T> handleSessionLoadResult(
         result: SessionLoadResult<T>,
         dailyGoal: Int,
-        completedToday: Int,
-        level: String
+        completedToday: Int
     ) {
         val mode = _uiState.value.learningMode
 
@@ -670,7 +667,7 @@ class LearningViewModel @Inject constructor(
                 updateQueueBadgeCounts()
 
                 // 保存初始会话
-                saveSessionState(items.map { it.id }, 0, level)
+                saveSessionState(items.map { it.id }, 0, "GLOBAL")
 
                 println("新学习会话: ${items.size} 个项目 (复习: ${result.dueCount}, 新: ${result.newCount})")
             }
@@ -1807,15 +1804,10 @@ class LearningViewModel @Inject constructor(
     private fun changeLearningMode(mode: LearningMode) {
         _uiState.update { it.copy(learningMode = mode) }
         // 模式切换时，立即触发新模式的会话加载
-        startLearning(_uiState.value.selectedLevel)
+        startLearning()
     }
 
-    private fun changeLevel(level: String) {
-        _uiState.update { it.copy(selectedLevel = level) }
-        if (_uiState.value.status != LearningStatus.Idle) {
-            startLearning(level)
-        }
-    }
+
 
     private fun toggleGrammarDetail() {
         if (_uiState.value.status != LearningStatus.Learning) return

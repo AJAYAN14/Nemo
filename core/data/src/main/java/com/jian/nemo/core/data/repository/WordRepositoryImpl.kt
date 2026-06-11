@@ -64,11 +64,11 @@ class WordRepositoryImpl @Inject constructor(
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }
 
-    override fun getNewWords(level: String, isRandom: Boolean): Flow<List<Word>> {
+    override fun getNewWords(isRandom: Boolean): Flow<List<Word>> {
         val flow = if (isRandom) {
-            wordDao.getNewWordsByLevelRandom(level)
+            wordDao.getGlobalNewWordsRandom()
         } else {
-            wordDao.getNewWordsByLevel(level)
+            wordDao.getGlobalNewWords()
         }
 
         return flow

@@ -10,6 +10,7 @@ import com.jian.nemo.core.domain.model.sync.SyncErrorType
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SyncRepository
 import com.jian.nemo.core.domain.model.sync.SyncMode
+import com.jian.nemo.core.data.manager.LocalBackupManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
@@ -27,7 +28,8 @@ class AutoSyncWorker @AssistedInject constructor(
     private val syncRepository: SyncRepository,
     private val settingsRepository: SettingsRepository,
     private val authRepository: AuthRepository,
-    private val syncMessageBus: com.jian.nemo.core.common.util.SyncMessageBus
+    private val syncMessageBus: com.jian.nemo.core.common.util.SyncMessageBus,
+    private val localBackupManager: LocalBackupManager
 ) : CoroutineWorker(context, params) {
 
     companion object {
@@ -54,6 +56,10 @@ class AutoSyncWorker @AssistedInject constructor(
             }
 
             Log.d(TAG, "用户已登录: ${currentUser.id}，开始同步...")
+
+            // 0. 在云端同步前触发本地自动备份保底
+            Log.d(TAG, "执行同步前置操作：生成本地安全快照...")
+            localBackupManager.performBackup()
 
             // 3. 执行双向同步（performSync 包含了 Pull + Push）
             // 该方法在 TWO_WAY 模式下遵循：

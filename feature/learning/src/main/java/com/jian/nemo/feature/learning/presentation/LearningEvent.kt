@@ -6,12 +6,10 @@ package com.jian.nemo.feature.learning.presentation
  */
 sealed interface LearningEvent {
     /**
-     * 开始学习会话
-     * @param level N1-N5等级
+     * 开始学习会话 (自动进阶模式)
      * @param mode 学习模式（单词/语法），默认为单词
      */
     data class StartLearning(
-        val level: String,
         val mode: LearningMode = LearningMode.Word
     ) : LearningEvent
 
@@ -22,12 +20,7 @@ sealed interface LearningEvent {
         val mode: LearningMode
     ) : LearningEvent
 
-    /**
-     * 切换学习等级
-     */
-    data class ChangeLevel(
-        val level: String
-    ) : LearningEvent
+
 
     /**
      * 翻转卡片（显示/隐藏答案）

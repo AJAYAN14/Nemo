@@ -255,10 +255,10 @@ fun NemoNavHost(
             }
         ) {
             HomeScreen(
-                onNavigateToLearning = { level, mode ->
+                onNavigateToLearning = { mode ->
                     when (mode) {
-                        LearningMode.Word -> navController.navigate(NavDestination.wordLearning(level))
-                        LearningMode.Grammar -> navController.navigate(NavDestination.grammarLearning(level))
+                        LearningMode.Word -> navController.navigate(NavDestination.wordLearning("GLOBAL"))
+                        LearningMode.Grammar -> navController.navigate(NavDestination.grammarLearning("GLOBAL"))
                     }
                 },
                 onNavigateToKanaChart = {
@@ -488,27 +488,21 @@ fun NemoNavHost(
             )
         }
 
-        // 单词学习 - 使用新的 feature:learning 模块
         composable(
             route = NavDestination.WORD_LEARNING,
             arguments = listOf(navArgument("level") { type = NavType.StringType })
         ) { backStackEntry ->
-            val level = backStackEntry.arguments?.getString("level") ?: "N5"
             LearningScreen(
-                level = level,
                 initialMode = LearningMode.Word,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
-        // 语法学习 - 复用LearningScreen，传入Grammar模式
         composable(
             route = NavDestination.GRAMMAR_LEARNING,
             arguments = listOf(navArgument("level") { type = NavType.StringType })
         ) { backStackEntry ->
-            val level = backStackEntry.arguments?.getString("level") ?: "N5"
             LearningScreen(
-                level = level,
                 initialMode = LearningMode.Grammar,  // 初始化为语法模式
                 onNavigateBack = { navController.popBackStack() }
             )

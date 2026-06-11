@@ -52,17 +52,17 @@ class GrammarRepositoryImpl @Inject constructor(
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }
 
-    override fun getNewGrammars(level: String, isRandom: Boolean): Flow<List<Grammar>> {
+    override fun getNewGrammars(isRandom: Boolean): Flow<List<Grammar>> {
         val flow = if (isRandom) {
-            grammarDao.getNewGrammarsByLevelWithUsagesRandom(level)
+            grammarDao.getGlobalNewGrammarsWithUsagesRandom()
         } else {
-            grammarDao.getNewGrammarsByLevelWithUsages(level)
+            grammarDao.getGlobalNewGrammarsWithUsages()
         }
 
         return flow
             .map { it.toDomainModels().filter { g -> !g.isDelisted() } }
             .catch { e ->
-                println("❌ 获取新语法失败: level=$level, random=$isRandom, error=${e.message}")
+                println("❌ 获取新语法失败: random=$isRandom, error=${e.message}")
                 emit(emptyList())
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }

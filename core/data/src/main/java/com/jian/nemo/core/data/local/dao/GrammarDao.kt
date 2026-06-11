@@ -139,34 +139,55 @@ interface GrammarDao {
     """)
     fun getGrammarsByLevelsWithUsages(levels: List<String>): Flow<List<GrammarWithUsages>>
 
-    @Transaction
-    @Query("""
-        SELECT g.* FROM grammars g
-        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
-        WHERE UPPER(g.grammar_level) = UPPER(:level)
-        AND (s.repetition_count IS NULL OR s.repetition_count = 0)
-        AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
-        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
-        AND g.is_delisted = 0
-        ORDER BY g.id ASC
-    """)
-    fun getNewGrammarsByLevelWithUsages(level: String): Flow<List<GrammarWithUsages>>
-
     /**
-     * 获取新语法（随机排序，含用法）
+     * 获取全局新语法（未学习且未跳过，含用法）
+     * 自动遵循 N5 -> N1 的进阶顺序
      */
     @Transaction
     @Query("""
         SELECT g.* FROM grammars g
         LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
-        WHERE UPPER(g.grammar_level) = UPPER(:level)
-        AND (s.repetition_count IS NULL OR s.repetition_count = 0)
+        WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND g.is_delisted = 0
-        ORDER BY RANDOM()
+        ORDER BY 
+            CASE UPPER(g.grammar_level)
+                WHEN 'N5' THEN 1
+                WHEN 'N4' THEN 2
+                WHEN 'N3' THEN 3
+                WHEN 'N2' THEN 4
+                WHEN 'N1' THEN 5
+                ELSE 99 
+            END ASC,
+            g.id ASC
     """)
-    fun getNewGrammarsByLevelWithUsagesRandom(level: String): Flow<List<GrammarWithUsages>>
+    fun getGlobalNewGrammarsWithUsages(): Flow<List<GrammarWithUsages>>
+
+    /**
+     * 获取全局新语法（同等级内随机，含用法）
+     * 自动遵循 N5 -> N1 的进阶顺序
+     */
+    @Transaction
+    @Query("""
+        SELECT g.* FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
+        AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        ORDER BY 
+            CASE UPPER(g.grammar_level)
+                WHEN 'N5' THEN 1
+                WHEN 'N4' THEN 2
+                WHEN 'N3' THEN 3
+                WHEN 'N2' THEN 4
+                WHEN 'N1' THEN 5
+                ELSE 99 
+            END ASC,
+            RANDOM()
+    """)
+    fun getGlobalNewGrammarsWithUsagesRandom(): Flow<List<GrammarWithUsages>>
 
     @Transaction
     @Query("""
@@ -368,19 +389,28 @@ interface GrammarDao {
     fun getAllGrammarsByLevels(levels: List<String>): Flow<List<GrammarEntity>>
 
     /**
-     * 获取新语法（未学习且未跳过）
+     * 获取全局新语法（未学习且未跳过）
+     * 自动遵循 N5 -> N1 的进阶顺序
      */
     @Query("""
         SELECT g.* FROM grammars g
         LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
-        WHERE UPPER(g.grammar_level) = UPPER(:level)
-        AND (s.repetition_count IS NULL OR s.repetition_count = 0)
+        WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND g.is_delisted = 0
-        ORDER BY g.id ASC
+        ORDER BY 
+            CASE UPPER(g.grammar_level)
+                WHEN 'N5' THEN 1
+                WHEN 'N4' THEN 2
+                WHEN 'N3' THEN 3
+                WHEN 'N2' THEN 4
+                WHEN 'N1' THEN 5
+                ELSE 99 
+            END ASC,
+            g.id ASC
     """)
-    fun getNewGrammarsByLevel(level: String): Flow<List<GrammarEntity>>
+    fun getGlobalNewGrammars(): Flow<List<GrammarEntity>>
 
     /**
      * 获取到期复习语法

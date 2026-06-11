@@ -138,36 +138,52 @@ interface WordDao {
     // ========== 学习相关查询 ==========
 
     /**
-     * 获取新单词（未学习且未跳过）
-     * @param level JLPT等级
-     * @return 新单词列表Flow
+     * 获取全局新单词（未学习且未跳过）
+     * 自动遵循 N5 -> N1 的进阶顺序
      */
     @Query("""
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
-        WHERE UPPER(w.level) = UPPER(:level)
-        AND (s.repetition_count IS NULL OR s.repetition_count = 0)
+        WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND w.is_delisted = 0
-        ORDER BY w.id ASC
+        ORDER BY 
+            CASE UPPER(w.level)
+                WHEN 'N5' THEN 1
+                WHEN 'N4' THEN 2
+                WHEN 'N3' THEN 3
+                WHEN 'N2' THEN 4
+                WHEN 'N1' THEN 5
+                ELSE 99 
+            END ASC,
+            w.id ASC
     """)
-    fun getNewWordsByLevel(level: String): Flow<List<WordEntity>>
+    fun getGlobalNewWords(): Flow<List<WordEntity>>
 
     /**
-     * 获取新单词（随机排序）
+     * 获取全局新单词（同等级内随机）
+     * 自动遵循 N5 -> N1 的进阶顺序
      */
     @Query("""
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
-        WHERE UPPER(w.level) = UPPER(:level)
-        AND (s.repetition_count IS NULL OR s.repetition_count = 0)
+        WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND w.is_delisted = 0
-        ORDER BY RANDOM()
+        ORDER BY 
+            CASE UPPER(w.level)
+                WHEN 'N5' THEN 1
+                WHEN 'N4' THEN 2
+                WHEN 'N3' THEN 3
+                WHEN 'N2' THEN 4
+                WHEN 'N1' THEN 5
+                ELSE 99 
+            END ASC,
+            RANDOM()
     """)
-    fun getNewWordsByLevelRandom(level: String): Flow<List<WordEntity>>
+    fun getGlobalNewWordsRandom(): Flow<List<WordEntity>>
 
     /**
      * 获取到期复习单词
