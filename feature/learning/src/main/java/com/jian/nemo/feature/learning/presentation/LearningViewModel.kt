@@ -677,6 +677,8 @@ class LearningViewModel @Inject constructor(
 
             is SessionLoadResult.Completed -> {
                 clearSession()
+                // 🔧 修复：先从本地缓存恢复今日战报数据，再结算
+                checkAndRestoreOrReset()
                 val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
                 val totalDuration = sessionStatsManager.completeSession(mode, todayEpoch)
                 _uiState.update {
@@ -690,7 +692,12 @@ class LearningViewModel @Inject constructor(
                         currentGrammar = null,
                         showAnswerAvailableAt = 0L,
                         waitingUntil = 0L,
-                        sessionDurationSeconds = totalDuration
+                        sessionDurationSeconds = totalDuration,
+                        // 🔧 修复：恢复战报统计数据到 UI
+                        sessionMaxCombo = sessionStatsManager.maxCombo,
+                        sessionNewCount = sessionStatsManager.sessionNewCount,
+                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
+                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount
                     )
                 }
 
