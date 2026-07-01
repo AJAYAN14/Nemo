@@ -11,7 +11,6 @@ import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
-import com.jian.nemo.core.domain.service.SyncService
 import com.jian.nemo.core.domain.service.SrsCalculator
 import com.jian.nemo.core.domain.usecase.grammar.GetDueGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetNewGrammarsUseCase
@@ -78,7 +77,6 @@ class LearningViewModel @Inject constructor(
     private val grammarRepository: GrammarRepository,
     // Services
     private val srsCalculator: SrsCalculator,
-    private val syncService: SyncService,
     // Domain
     private val learningSessionPolicy: LearningSessionPolicy,
 
@@ -1573,7 +1571,6 @@ class LearningViewModel @Inject constructor(
         }
 
         clearSession()
-        syncService.onLearningCompleted()
         syncUndoAvailability()
 
         println("会话完成！")

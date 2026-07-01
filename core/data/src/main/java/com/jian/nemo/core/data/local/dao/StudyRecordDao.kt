@@ -90,6 +90,7 @@ interface StudyRecordDao {
      */
     @Query("SELECT * FROM study_records WHERE timestamp > :sinceTime")
     suspend fun getModifiedSince(sinceTime: Long): List<StudyRecordEntity>
+
 }
 
 data class DailyActivityCount(

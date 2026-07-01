@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,7 +37,6 @@ import com.jian.nemo.core.ui.component.NemoBottomBar
 import com.jian.nemo.core.data.util.DatabaseInitializer
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.domain.repository.SettingsRepository
-import com.jian.nemo.core.domain.service.SyncService
 import com.jian.nemo.navigation.NemoNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -51,10 +51,7 @@ import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
 import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
-import com.jian.nemo.core.common.util.SyncEvent
-import com.jian.nemo.core.common.util.SyncMessageBus
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Nemo 2.0 应用程序入口
@@ -68,30 +65,23 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
-    @Inject
-    lateinit var syncService: SyncService
 
-    @Inject
-    lateinit var syncMessageBus: SyncMessageBus
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onStart() {
         super.onStart()
-        syncService.onAppForeground()
     }
 
     override fun onStop() {
         super.onStop()
-        syncService.onAppBackground()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // 触发自动同步检查 (初次加载)
-        // syncService.onAppForeground() // 挪到 onStart 中统一管理
+
 
         // 在首次启动时强制初始化数据库
         applicationScope.launch {
@@ -103,7 +93,7 @@ class MainActivity : ComponentActivity() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             val permissionLauncher = registerForActivityResult(
                 androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
-            ) { isGranted ->
+            ) { _ ->
                 // 可选的初始化逻辑
             }
             permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -113,7 +103,7 @@ class MainActivity : ComponentActivity() {
             // 1. 响应式的时间流：每分钟更新一次当前时间，用于驱动自动主题切换
             val currentTime by produceState(initialValue = java.time.LocalTime.now()) {
                 while (true) {
-                    kotlinx.coroutines.delay(1000 * 60) // 每分钟检查一次，权衡实时性与功耗
+                    kotlinx.coroutines.delay(1.minutes) // 每分钟检查一次，权衡实时性与功耗
                     value = java.time.LocalTime.now()
                 }
             }
@@ -166,7 +156,7 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = false, // 禁用动态取色以强制使用品牌色
                 themeColor = themeColorLong?.let { Color(it.toULong()) }
             ) {
-                NemoApp(syncMessageBus = syncMessageBus)
+                NemoApp()
             }
         }
     }
@@ -174,15 +164,26 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NemoApp(
-    viewModel: MainViewModel = hiltViewModel(),
-    syncMessageBus: SyncMessageBus
+    viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    val currentVersionCode = try {
+        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            pInfo.longVersionCode.toInt()
+        } else {
+            @Suppress("DEPRECATION")
+            pInfo.versionCode
+        }
+    } catch (e: Exception) {
+        1
+    }
+
     // 检查应用更新
     LaunchedEffect(Unit) {
-        viewModel.checkUpdate(BuildConfig.VERSION_CODE)
+        viewModel.checkUpdate(currentVersionCode)
     }
 
     val navController = rememberNavController()
@@ -191,8 +192,6 @@ fun NemoApp(
 
     // 启动页标识
     val isSplashScreen = currentRoute == "splash"
-    // 学习界面标识，用于 edge-to-edge 配置
-    val isLearningScreen = currentRoute == "learning"
     // 使用 edge-to-edge 布局的路由列表（禁用标准 Scaffold padding）
     val edgeToEdgeRoutes = listOf("splash", "learning", "progress", "settings", "test")
     val useEdgeToEdge = currentRoute in edgeToEdgeRoutes
@@ -227,7 +226,7 @@ fun NemoApp(
                         launchSingleTop = true
                         // 恢复 backstack 状态
                         restoreState = true
-                        // 清除栈直到初始导航目标
+                        // 清除栈直到初始导航目标（我们的根标签是 learning）
                         popUpTo("learning") {
                             saveState = true
                         }
@@ -263,12 +262,15 @@ fun NemoApp(
             // 标准：使用 MaterialTheme 背景色
             color = if (useEdgeToEdge) Color.Transparent else MaterialTheme.colorScheme.background
         ) {
-            NemoNavHost(
-                navController = navController,
-                onCheckUpdate = {
-                    viewModel.checkUpdate(BuildConfig.VERSION_CODE, isManual = true)
-                }
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                NemoNavHost(
+                    navController = navController,
+                    onCheckUpdate = {
+                        viewModel.checkUpdate(currentVersionCode, isManual = true)
+                    }
+                )
+
+            }
         }
     }
 
@@ -286,19 +288,7 @@ fun NemoApp(
         }
     }
 
-    // 监听全局同步事件
-    LaunchedEffect(Unit) {
-        syncMessageBus.syncEvents.collect { event: SyncEvent ->
-            when (event) {
-                is SyncEvent.Success -> {
-                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
-                }
-                is SyncEvent.Error -> {
-                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
+
 
     // 集成应用更新弹窗
     val config = uiState.updateConfig

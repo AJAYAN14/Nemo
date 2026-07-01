@@ -114,10 +114,6 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideSyncMetadataDao(database: NemoDatabase): SyncMetadataDao = database.syncMetadataDao()
-
-    @Provides
-    @Singleton
     fun provideWordStudyStateDao(database: NemoDatabase): WordStudyStateDao = database.wordStudyStateDao()
 
     @Provides

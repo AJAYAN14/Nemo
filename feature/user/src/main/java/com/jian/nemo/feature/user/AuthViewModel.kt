@@ -4,10 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.domain.model.User
-import com.jian.nemo.core.domain.model.SyncReport
-import com.jian.nemo.core.domain.repository.AuthRepository
-import com.jian.nemo.core.domain.repository.SyncRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,8 +18,6 @@ import javax.inject.Inject
 
 import com.jian.nemo.core.domain.usecase.auth.*
 import com.jian.nemo.core.domain.usecase.settings.GetUserAvatarPathUseCase
-import com.jian.nemo.core.domain.model.SyncProgress
-
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
@@ -31,7 +27,7 @@ class AuthViewModel @Inject constructor(
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getUserFlowUseCase: GetUserFlowUseCase,
-    private val syncRepository: SyncRepository,    private val settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     private val getUserAvatarPathUseCase: GetUserAvatarPathUseCase,
     private val authRepository: AuthRepository
 ) : ViewModel() {
@@ -53,17 +49,6 @@ class AuthViewModel @Inject constructor(
             }
         }
 
-        // 格式化同步/恢复时间逻辑
-        viewModelScope.launch {
-            settingsRepository.lastSyncTimeFlow.collect { time ->
-                val timeText = if (time > 0) {
-                    val date = java.util.Date(time)
-                    val format = java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
-                    "上次同步：${format.format(date)}"
-                } else null
-                _uiState.update { it.copy(lastSyncTime = time, lastSyncTimeText = timeText) }
-            }
-        }
 
 
         // 持续观察登录用户状态
@@ -71,7 +56,7 @@ class AuthViewModel @Inject constructor(
             getUserFlowUseCase().collect { user ->
                 // 如果正在执行登录/注册操作，忽略流中的快照，由操作自身处理
                 if (isAuthActionInProgress) return@collect
-                // 【修复】自动恢复/更新用户状态时，检查并同步远程头像配置到本地
+                // 自动恢复/更新用户状态时，检查并配置到本地
                 val fetchedUrl = user?.avatarUrl
                 if (fetchedUrl != null && _uiState.value.avatarPath != fetchedUrl) {
                     settingsRepository.setUserAvatarPath(fetchedUrl)
@@ -97,49 +82,7 @@ class AuthViewModel @Inject constructor(
             }
         }
 
-        // 观察全局后台同步进度
-        viewModelScope.launch {
-            syncRepository.globalSyncProgress.collect { progress ->
-                when (progress) {
-                    is SyncProgress.Idle -> {
-                        // Do nothing
-                    }
-                    is SyncProgress.Running -> {
-                         val p = if (progress.total > 0) progress.current.toFloat() / progress.total else 0f
-                         _uiState.update {
-                             it.copy(
-                                 isSyncLoading = true,
-                                 syncProgress = p,
-                                 syncStatus = "${progress.section} (${progress.current}/${progress.total})"
-                             )
-                         }
-                    }
-                    is SyncProgress.Completed -> {
-                         _uiState.update {
-                            it.copy(
-                                isSyncLoading = false,
-                                showSyncSuccess = true,
-                                syncProgress = 1f,
-                                syncStatus = "同步完成"
-                            )
-                         }
-                         delay(2000)
-                         _uiState.update { it.copy(showSyncSuccess = false) }
-                    }
-                    is SyncProgress.Failed -> {
-                         _uiState.update {
-                             it.copy(
-                                 isSyncLoading = false,
-                                 error = progress.error,
-                                 syncProgress = 0f,
-                                 syncStatus = "同步失败"
-                             )
-                         }
-                    }
-                    else -> {}
-                }
-            }
-        }
+
     }
 
 
@@ -226,7 +169,7 @@ class AuthViewModel @Inject constructor(
             try {
                 when (val result = loginUseCase(email, password)) {
                     is Result.Success -> {
-                        // 【修复】登录成功后，如果云端有 avatarUrl，同步写回本地 Settings
+                        // 登录成功后，如果云端有 avatarUrl，写回本地 Settings
                         val fetchedAvatarUrl = result.data.avatarUrl
                         if (!fetchedAvatarUrl.isNullOrEmpty()) {
                             settingsRepository.setUserAvatarPath(fetchedAvatarUrl)
@@ -236,15 +179,9 @@ class AuthViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 isLoggedIn = true,
-                                user = result.data,
-                                // [Optimization] Set sync loading state immediately to let UI show indicator
-                                isSyncLoading = true,
-                                syncStatus = "正在准备同步...",
-                                syncProgress = 0f
+                                user = result.data
                             )
                         }
-                        // 登录成功后启动后台同步 (Smart Sync)
-                        syncRepository.startBackgroundSync(result.data.id)
                     }
                     is Result.Error -> {
                         handleAuthError(result.exception, "登录失败")
@@ -268,10 +205,7 @@ class AuthViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 isLoggedIn = true,
-                                user = result.data,
-                                isSyncLoading = false,
-                                syncStatus = "",
-                                syncProgress = 0f
+                                user = result.data
                             )
                         }
                     }
@@ -315,8 +249,7 @@ class AuthViewModel @Inject constructor(
                              avatarPath = file.absolutePath
                          )
                      }
-                    // 静默同步，不覆盖头像成功消息
-                    syncToCloud(silent = true)
+
                  }
                  is Result.Error -> {
                      _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: "头像上传失败") }
@@ -340,8 +273,7 @@ class AuthViewModel @Inject constructor(
                             avatarPath = url // 预设头像直接用协议串作为 path
                         )
                     }
-                    // 静默同步，不覆盖头像成功消息
-                    syncToCloud(silent = true)
+
                 }
                 is Result.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: "头像更新失败") }
@@ -497,96 +429,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun syncToCloud(silent: Boolean = false) {
-        viewModelScope.launch {
-            // Set granular loading state, NOT global loading
-            _uiState.update {
-                it.copy(
-                    isSyncLoading = true,
-                    error = if (!silent) null else it.error,
-                    successMessage = if (!silent) null else it.successMessage,
-                    showSyncSuccess = false,
-                    syncProgress = 0f,
-                    syncStatus = "准备中..."
-                )
-            }
 
-            val userId = _uiState.value.user?.id ?: return@launch
-            syncRepository.performSync(userId, false).collect { progress ->
-                when(progress) {
-                    is SyncProgress.Running -> {
-                         val p = if (progress.total > 0) progress.current.toFloat() / progress.total else 0f
-                         _uiState.update {
-                             it.copy(
-                                 syncProgress = p,
-                                 syncStatus = "${progress.section} (${progress.current}/${progress.total})"
-                             )
-                         }
-                    }
-                    is SyncProgress.Completed -> {
-                         val stats = progress.report.stats
-                         val detail = buildString {
-                             append("同步成功: ")
-                             if (stats.addedItems > 0) append("新增 ${stats.addedItems} 条, ")
-                             if (stats.updatedItems > 0) append("更新 ${stats.updatedItems} 条")
-                         }.removeSuffix(", ")
-
-                         _uiState.update {
-                            it.copy(
-                                isSyncLoading = false,
-                                showSyncSuccess = true,
-                                successMessage = detail,
-                                syncProgress = 1f,
-                                syncStatus = "完成"
-                            )
-                         }
-                         delay(2000)
-                         _uiState.update { it.copy(showSyncSuccess = false) }
-                    }
-                    is SyncProgress.Failed -> {
-                         _uiState.update {
-                             it.copy(
-                                 isSyncLoading = false,
-                                 error = progress.error,
-                                 syncProgress = 0f,
-                                 syncStatus = "失败"
-                             )
-                         }
-                    }
-                    is SyncProgress.AlreadyRunning -> {
-                         _uiState.update {
-                             it.copy(
-                                 isSyncLoading = false,
-                                 successMessage = "同步已在后台进行中",
-                                 syncStatus = "后台运行中"
-                             )
-                         }
-                         delay(2000)
-                         _uiState.update { it.copy(successMessage = null) }
-                    }
-                    else -> {}
-                }
-            }
-        }
-    }
-
-
-
-
-    fun deleteAllCloudSyncData(onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
-            val userId = _uiState.value.user?.id ?: return@launch
-            if (syncRepository.deleteAllCloudData(userId)) {
-                _uiState.update { it.copy(isLoading = false, successMessage = "已清空云端所有同步数据") }
-                onSuccess()
-            } else {
-                val msg = "清理失败"
-                _uiState.update { it.copy(isLoading = false, error = msg) }
-                onError(msg)
-            }
-        }
-    }
 
     fun clearSuccessMessage() {
         _uiState.update { it.copy(successMessage = null) }
@@ -601,7 +444,6 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             updateUserProfileUseCase.clearAvatar()
             _uiState.update { it.copy(avatarPath = "") }
-            syncToCloud(silent = true)
         }
     }
 
@@ -623,7 +465,6 @@ enum class UserDialogType {
     UPDATE_USERNAME,
     UPDATE_EMAIL,
     DELETE_ACCOUNT,
-    DELETE_CLOUD_SYNC_DATA,
     LOGOUT_CONFIRM,
     UPDATE_AVATAR
 }
@@ -634,9 +475,6 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
-    val lastSyncTime: Long = 0L,
-    val lastSyncTimeText: String? = null,
-    val syncReport: SyncReport? = null,
     val avatarPath: String = "",
     val isAuthChecked: Boolean = false,
 
@@ -651,13 +489,7 @@ data class AuthUiState(
     val isFormAttempted: Boolean = false,
 
     // Dialog State
-    val activeDialog: UserDialogType = UserDialogType.NONE,
-
-    // UX Pro Max States
-    val isSyncLoading: Boolean = false,
-    val syncProgress: Float = 0f,
-    val syncStatus: String = "",
-    val showSyncSuccess: Boolean = false
+    val activeDialog: UserDialogType = UserDialogType.NONE
 ) {
     val emailError: Boolean get() = isFormAttempted && email.isBlank()
     val passwordError: Boolean get() = isFormAttempted && (if (isLoginMode) password.isBlank() else password.length < 6)

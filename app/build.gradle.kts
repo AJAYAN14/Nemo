@@ -47,7 +47,7 @@ android {
             // 优先从环境变量读取（GitHub Actions），否则尝试从 local.properties 或 默认本地相对路径读取
             val ksPath = System.getenv("KEYSTORE_FILE") 
                 ?: localProperties.getProperty("KEYSTORE_FILE") 
-                ?: "../keystore/nemo.jks"
+                ?: "../keystore/ajian.jks"
             
             val ksFile = file(ksPath)
             if (ksFile.exists()) {
@@ -158,11 +158,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // WorkManager
-    implementation(libs.work.runtime.ktx)
-    implementation(libs.hilt.work)
-    ksp(libs.hilt.compiler)
-    ksp(libs.androidx.hilt.compiler)
+
 
     // Coil for SVG support
     implementation("io.coil-kt:coil-compose:2.5.0")

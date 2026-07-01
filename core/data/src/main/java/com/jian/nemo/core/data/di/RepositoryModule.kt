@@ -10,6 +10,8 @@ import com.jian.nemo.core.data.repository.WrongAnswerRepositoryImpl
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.DictionarySyncManager
+import com.jian.nemo.core.data.manager.DictionarySyncManagerImpl
 import com.jian.nemo.core.domain.repository.SessionRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
@@ -20,11 +22,9 @@ import com.jian.nemo.core.domain.repository.AuthRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.core.data.repository.ContentReportRepositoryImpl
-import com.jian.nemo.core.data.repository.SyncRepositoryImpl
 import com.jian.nemo.core.data.repository.ConfigRepositoryImpl
 import com.jian.nemo.core.data.repository.ContentRepositoryImpl
 import com.jian.nemo.core.data.repository.ContentUpdateApplierImpl
-import com.jian.nemo.core.domain.repository.SyncRepository
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.ContentRepository
 import com.jian.nemo.core.domain.repository.ContentUpdateApplier
@@ -32,10 +32,6 @@ import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import com.jian.nemo.core.data.repository.AIWorkshopRepositoryImpl
 import com.jian.nemo.core.data.manager.DataExportManager
 import com.jian.nemo.core.domain.repository.DataExportRepository
-import com.jian.nemo.core.domain.service.SyncService
-import com.jian.nemo.core.domain.service.SyncManager
-import com.jian.nemo.core.data.service.SyncServiceImpl
-import com.jian.nemo.core.data.manager.SyncScheduler
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -106,6 +102,15 @@ abstract class RepositoryModule {
     ): SettingsRepository
 
     /**
+     * 绑定 DictionarySyncManager
+     */
+    @Binds
+    @Singleton
+    abstract fun bindDictionarySyncManager(
+        impl: DictionarySyncManagerImpl
+    ): DictionarySyncManager
+
+    /**
      * 绑定Session Repository实现
      */
     @Binds
@@ -131,27 +136,9 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun bindSyncRepository(
-        impl: SyncRepositoryImpl
-    ): SyncRepository
-
-    @Binds
-    @Singleton
     abstract fun bindDataExportRepository(
         impl: DataExportManager
     ): DataExportRepository
-
-    @Binds
-    @Singleton
-    abstract fun bindSyncService(
-        impl: SyncServiceImpl
-    ): SyncService
-
-    @Binds
-    @Singleton
-    abstract fun bindSyncManager(
-        impl: SyncScheduler
-    ): SyncManager
 
     companion object {
     }

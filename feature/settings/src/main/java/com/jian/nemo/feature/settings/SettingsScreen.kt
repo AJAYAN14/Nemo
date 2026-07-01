@@ -44,7 +44,6 @@ fun SettingsScreen(
     onNavigateToAdvancedLearning: () -> Unit,
     onNavigateToThemeSettings: () -> Unit,
     onNavigateToAiSettings: () -> Unit,
-    onNavigateToSyncDiagnostics: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -57,7 +56,6 @@ fun SettingsScreen(
 
     // 对话框状态
     var showConfirmDialog by remember { mutableStateOf(false) }
-    var showConflictDialog by remember { mutableStateOf(false) }
 
     var isResetting by remember { mutableStateOf(false) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
@@ -124,7 +122,7 @@ fun SettingsScreen(
 
             // 账号与同步
             item {
-                SettingsSectionTitle("账号与同步")
+                SettingsSectionTitle("账号")
                 PremiumCard {
                     if (isLoggedIn && currentUser != null) {
                         // 用户信息 (Custom Squircle Implementation for Avatar)
@@ -134,65 +132,14 @@ fun SettingsScreen(
                             avatarPath = avatarPath,
                             onClick = onNavigateToLogin
                         )
-                         HorizontalDivider(
-                            modifier = Modifier.padding(start = 74.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                            thickness = 0.5.dp
-                        )
 
-                        // 自动同步
-                        val conflictCount = uiState.lastSyncConflictCount
-                        val lastSyncTime = uiState.lastSyncTime
-                        val subtitleText = if (conflictCount > 0) {
-                            val date = Date(lastSyncTime)
-                            val format = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
-                            "上次同步：${format.format(date)} (含 $conflictCount 个冲突)"
-                        } else if (lastSyncTime > 0L) {
-                            val date = Date(lastSyncTime)
-                            val format = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
-                            "上次同步：${format.format(date)}"
-                        } else {
-                            "学习后自动同步到云端"
-                        }
-
-                        SquircleSettingItem(
-                            icon = Icons.Rounded.CloudSync,
-                            iconColor = NemoCyan,
-                            title = "自动同步",
-                            subtitle = subtitleText,
-                            onClick = {
-                                if (uiState.lastSyncConflictCount > 0) {
-                                    showConflictDialog = true
-                                } else {
-                                    viewModel.onEvent(SettingsEvent.SyncData)
-                                }
-                            },
-                            showDivider = true,
-                            trailing = {
-                                NemoGooeyToggle(
-                                    checked = uiState.isAutoSyncEnabled,
-                                    onCheckedChange = { viewModel.onEvent(SettingsEvent.SetAutoSyncEnabled(it)) },
-                                    activeColor = MaterialTheme.colorScheme.primary,
-                                    inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                )
-                            }
-                        )
-
-                        SquircleSettingItem(
-                            icon = Icons.Rounded.Report,
-                            iconColor = if (uiState.lastSyncError.isNotEmpty()) NemoDanger else NemoPrimary,
-                            title = "同步故障诊断",
-                            subtitle = if (uiState.lastSyncError.isNotEmpty()) "检测到最新同步存在报错" else "未发现同步异常",
-                            onClick = onNavigateToSyncDiagnostics,
-                            showDivider = false
-                        )
                     } else {
                         // 未登录
                         SquircleSettingItem(
                             icon = Icons.Rounded.Person,
                             iconColor = NemoIndigo,
                             title = "登录/注册",
-                            subtitle = "同步您的学习进度",
+                            subtitle = "登录以体验完整功能",
                             onClick = onNavigateToLogin,
                             showDivider = false
                         )
@@ -378,10 +325,10 @@ fun SettingsScreen(
                     SquircleSettingItem(
                         icon = Icons.Rounded.FileDownload,
                         iconColor = NemoSecondary,
-                        title = "导出同步数据",
-                        subtitle = "导出本地同步文件",
+                        title = "导出数据",
+                        subtitle = "导出本地数据文件",
                         onClick = {
-                             val fileName = "nemo_sync_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.json"
+                             val fileName = "nemo_backup_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.json"
                             exportLauncher.launch(fileName)
                         },
                         showDivider = true
@@ -389,7 +336,7 @@ fun SettingsScreen(
                      SquircleSettingItem(
                         icon = Icons.Rounded.FileUpload,
                         iconColor = NemoPrimary,
-                        title = "导入同步数据",
+                        title = "导入数据",
                         subtitle = "从文件恢复进度",
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
                         showDivider = true
@@ -417,28 +364,7 @@ fun SettingsScreen(
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
                     
-                    val dictionarySubtitle = remember(uiState.lastDictionarySyncTimestamp, uiState.lastContentVersion) {
-                        val versionStr = if (uiState.lastContentVersion > 0) "词库版本：${uiState.lastContentVersion}" else "词库版本：未同步"
-                        val timeStr = if (uiState.lastDictionarySyncTimestamp > 0) {
-                            val diff = System.currentTimeMillis() - uiState.lastDictionarySyncTimestamp
-                            val diffMinutes = diff / (1000 * 60)
-                            when {
-                                diffMinutes < 1 -> "刚刚同步"
-                                diffMinutes < 60 -> "${diffMinutes}分钟前同步"
-                                diffMinutes < 1440 -> "${diffMinutes / 60}小时前同步"
-                                else -> "${diffMinutes / 1440}天前同步"
-                            }
-                        } else ""
-                        if (timeStr.isNotEmpty()) "$versionStr ($timeStr)" else versionStr
-                    }
 
-                    SquircleSettingItem(
-                        icon = Icons.Rounded.Info,
-                        iconColor = NemoPrimary,
-                        title = "词库信息",
-                        onClick = { },
-                        showDivider = true
-                    )
                     SquircleSettingItem(
                         icon = Icons.Rounded.SystemUpdate,
                         iconColor = NemoSecondary,
@@ -452,18 +378,7 @@ fun SettingsScreen(
             }
         }
 
-        // 提示消息 Snackbar
-        com.jian.nemo.core.ui.component.common.NemoSnackbar(
-            visible = uiState.syncMessage != null,
-            message = uiState.syncMessage ?: "",
-            type = com.jian.nemo.core.ui.component.common.NemoSnackbarType.INFO,
-            icon = Icons.Rounded.Info,
-            autoDismissMs = null, // ViewModel 控制消失
-            onDismiss = null,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = statusBarHeight + 8.dp) // Added status bar offset
-        )
+
     }
 
     // 对话框和 Bottom Sheet 保持不变
@@ -502,26 +417,15 @@ fun SettingsScreen(
             onDismiss = {
                 showConfirmDialog = false
             },
-            onConfirm = { includeCloud ->
+            onConfirm = {
                 isResetting = true
-                viewModel.onEvent(SettingsEvent.ResetProgress(includeCloud))
+                viewModel.onEvent(SettingsEvent.ResetProgress)
                 showConfirmDialog = false
             }
         )
     }
 
-    // 冲突解决对话框
-    if (showConflictDialog) {
-        ConflictResolutionDialog(
-            conflictCount = uiState.lastSyncConflictCount,
-            useDarkTheme = useDarkTheme,
-            onDismiss = { showConflictDialog = false },
-            onResolve = { resolution ->
-                viewModel.onEvent(SettingsEvent.ResolveConflict(resolution))
-                showConflictDialog = false
-            }
-        )
-    }
+
 
 
 }

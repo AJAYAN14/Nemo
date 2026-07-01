@@ -2,7 +2,7 @@ package com.jian.nemo.core.data.util
 
 import android.util.Log
 import com.jian.nemo.core.data.local.NemoDatabase
-import com.jian.nemo.core.data.manager.SupabaseSyncManager
+import com.jian.nemo.core.domain.repository.DictionarySyncManager
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class DatabaseInitializer @Inject constructor(
     private val database: NemoDatabase,
-    private val syncManager: SupabaseSyncManager
+    private val syncManager: DictionarySyncManager
 ) {
     suspend fun initialize() {
         try {

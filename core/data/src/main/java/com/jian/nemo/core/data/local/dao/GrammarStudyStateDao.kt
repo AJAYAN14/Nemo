@@ -60,4 +60,5 @@ interface GrammarStudyStateDao {
 
     @Query("DELETE FROM grammar_study_states")
     suspend fun deleteAll()
+
 }

@@ -70,4 +70,5 @@ interface FavoriteQuestionDao {
 
     @Query("UPDATE favorite_questions SET grammar_id = :newId WHERE grammar_id = :oldId")
     suspend fun migrateGrammarId(oldId: Int, newId: Int)
+
 }

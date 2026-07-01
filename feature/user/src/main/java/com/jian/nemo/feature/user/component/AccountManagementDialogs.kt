@@ -807,101 +807,6 @@ fun AccountUpdateEmailDialog(
 }
 
 @Composable
-fun DeleteCloudSyncDataDialog(
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
-) {
-    // UI/UX Pro Max Colors & Styles (Orange Theme)
-    val primaryColor = if (useDarkTheme) Color(0xFFFF9F0A) else Color(0xFFFF9500)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
-    val titleColor = if (useDarkTheme) Color.White else Color.Black
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.CloudOff,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
-        },
-        title = {
-            Text(
-                text = "清空云端同步数据",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = (-0.5).sp
-            )
-        },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "此操作将物理删除您在云端的所有同步数据记录，删除后将无法恢复。",
-                    fontSize = 15.sp,
-                    color = bodyColor,
-                    lineHeight = 20.sp,
-                    fontWeight = FontWeight.Normal
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "注：您的本地学习进度不会受到任何影响。",
-                    fontSize = 15.sp,
-                    color = bodyColor,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = "确定要清空云端数据吗？",
-                    fontSize = 16.sp,
-                    color = primaryColor, // Orange
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = "确认清空",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        },
-    )
-}
-
-@Composable
 fun DeleteAccountDialog(
     onDismiss: () -> Unit,
     onConfirmDelete: (String) -> Unit,
@@ -1116,7 +1021,6 @@ fun LogoutWarningDialog(
     isLoading: Boolean,
     onDismiss: () -> Unit,
     onConfirmLogout: () -> Unit,
-    onBackup: () -> Unit,
     useDarkTheme: Boolean
 ) {
     Dialog(onDismissRequest = onDismiss) {
@@ -1176,51 +1080,26 @@ fun LogoutWarningDialog(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = onBackup,
+                    onClick = onConfirmLogout,
                     enabled = !isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
                     shape = androidx.compose.foundation.shape.CircleShape,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (useDarkTheme) Color.White else Color.Black,
-                        contentColor = if (useDarkTheme) Color.Black else Color.White,
+                        containerColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30),
+                        contentColor = Color.White,
                         disabledContainerColor = Color.Gray
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     if (isLoading) {
                         NemoChasingDotsLoader(size = 20.dp)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("正在同步...", fontWeight = FontWeight.Medium)
                     } else {
-                        Icon(
-                            imageVector = Icons.Rounded.CloudUpload,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("同步数据 (推荐)", fontWeight = FontWeight.Bold)
+                        Text("直接退出", fontWeight = FontWeight.Bold)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextButton(
-                    onClick = onConfirmLogout,
-                    enabled = !isLoading,
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    modifier = Modifier.fillMaxWidth().height(44.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-                    )
-                ) {
-                    Text(
-                        "清除数据并退出",
-                        fontWeight = FontWeight.Medium,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
 
                 TextButton(
                     onClick = onDismiss,

@@ -75,4 +75,5 @@ interface GrammarWrongAnswerDao {
 
     @Query("UPDATE grammar_wrong_answers SET grammar_id = :newId WHERE grammar_id = :oldId")
     suspend fun migrateGrammarId(oldId: Int, newId: Int)
+
 }

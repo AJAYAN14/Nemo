@@ -35,17 +35,6 @@ data class SettingsUiState(
     // 应用信息
     val appVersion: String = "1.0.0",
 
-    // 同步状态
-    val isAutoSyncEnabled: Boolean = true,
-    val lastSyncTime: Long = 0,
-    val lastSyncConflictCount: Int = 0,
-    val lastDictionarySyncTimestamp: Long = 0, // 词库最后同步时间
-    val lastContentVersion: Int = 0,           // 词库内容版本号
-    val showRestoreConfirmDialog: Boolean = false,
- // 恢复被中断的标识
-    val syncMessage: String? = null,
-    val lastSyncError: String = "",
-    val syncErrorLogs: List<com.jian.nemo.core.domain.model.SyncErrorLog> = emptyList(),
 
     // TTS 设置
     val ttsSpeechRate: Float = 1.0f,
@@ -82,13 +71,6 @@ enum class DarkModeStrategy {
     SCHEDULED       // 定时切换
 }
 
-/**
- * 冲突解决选项
- */
-enum class ConflictResolutionOption {
-    FORCE_CLOUD, // 强制以云端为准
-    FORCE_LOCAL  // 强制以本地为准
-}
 
 /**
  * 设置界面事件
@@ -142,22 +124,16 @@ sealed interface SettingsEvent {
     data class ShowGrammarDailyGoalDialog(val show: Boolean) : SettingsEvent
     data class ShowLearningDayResetHourDialog(val show: Boolean) : SettingsEvent
 
-    // 同步
-    data object SyncData : SettingsEvent
-
-    data class SetAutoSyncEnabled(val enabled: Boolean) : SettingsEvent
-    data class ResolveConflict(val option: ConflictResolutionOption) : SettingsEvent
 
     // 文件导出导入
     data class ExportData(val uri: android.net.Uri) : SettingsEvent
     data class ImportData(val uri: android.net.Uri) : SettingsEvent
 
     // 重置进度
-    data class ResetProgress(val includeCloud: Boolean) : SettingsEvent
+    data object ResetProgress : SettingsEvent
 
     // 修复数据 (清理重复)
     data object RepairLocalData : SettingsEvent
 
-    // 清除同步报错日志
-    data object ClearSyncError : SettingsEvent
+
 }

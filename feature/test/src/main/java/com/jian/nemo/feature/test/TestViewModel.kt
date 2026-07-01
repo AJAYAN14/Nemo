@@ -16,7 +16,6 @@ import com.jian.nemo.feature.test.domain.handler.CardMatchingHandler
 import com.jian.nemo.feature.test.domain.timer.TestTimerManager
 import com.jian.nemo.feature.test.domain.orchestrator.CardMatchingOrchestrator
 import com.jian.nemo.feature.test.domain.orchestrator.CardMatchingNavigation
-import com.jian.nemo.core.domain.service.SyncService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import com.jian.nemo.core.common.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
@@ -54,8 +53,6 @@ class TestViewModel @Inject constructor(
     private val studyRecordRepository: com.jian.nemo.core.domain.repository.StudyRecordRepository,
         // Add TestSessionManager
     private val testSessionManager: com.jian.nemo.feature.test.domain.manager.TestSessionManager,
-        // Sync
-    private val syncService: SyncService,
     private val cardMatchingOrchestrator: CardMatchingOrchestrator,
     private val favoriteQuestionRepository: com.jian.nemo.core.domain.repository.FavoriteQuestionRepository,
     private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
@@ -706,8 +703,7 @@ class TestViewModel @Inject constructor(
                 // 更新学习记录中的测试次数 (复刻旧项目)
                 studyRecordRepository.incrementTestCount(1)
 
-                // 触发自动同步
-                syncService.onTestCompleted()
+
 
             } catch (e: Exception) {
                 // 记录错题失败不影响显示结果

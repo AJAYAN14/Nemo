@@ -3,6 +3,17 @@ package com.jian.nemo.core.domain.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * 词库同步结果
+ */
+data class DictionarySyncResult(
+    val updatedWords: Int = 0,
+    val updatedGrammars: Int = 0,
+    val isFullSync: Boolean = false,
+    val localVersion: Int = 0,
+    val remoteVersion: Int = 0
+)
+
 @Serializable
 data class WordDto(
     @SerialName("id") val id: Int,

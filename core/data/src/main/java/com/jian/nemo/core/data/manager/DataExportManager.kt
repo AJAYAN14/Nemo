@@ -43,14 +43,6 @@ data class ImportResult(
     val message: String
 )
 
-/**
- * 导入结果（带同步报告）
- */
-data class ImportResultWithReport(
-    val success: Boolean,
-    val message: String,
-    val report: SyncReport?
-)
 
 /**
  * 数据导出/导入管理器
@@ -391,8 +383,8 @@ class DataExportManager @Inject constructor(
         try {
             Log.d(TAG, "开始导入数据...")
 
-            val jsonString = if (SyncCompression.isCompressed(dataString)) {
-                SyncCompression.decompress(dataString)
+            val jsonString = if (BackupCompression.isCompressed(dataString)) {
+                BackupCompression.decompress(dataString)
             } else {
                 dataString
             }
@@ -443,9 +435,23 @@ class DataExportManager @Inject constructor(
 
                     val localState = localWordStates[targetLocalId]
                     if (localState != null) {
-                        val result = SmartSyncMerger.mergeWordProgress(localState, remoteWord)
-                        if (result is SmartSyncMerger.MergeResult.RemoteUpdated) {
-                            wordStudyStateDao.insert(result.data.copy(wordId = targetLocalId))
+                        if (remoteWord.lastModifiedTime > localState.lastModifiedTime) {
+                            wordStudyStateDao.insert(WordStudyStateEntity(
+                                wordId = targetLocalId,
+                                repetitionCount = remoteWord.srsLevel,
+                                stability = remoteWord.stability,
+                                difficulty = remoteWord.difficulty,
+                                interval = remoteWord.interval,
+                                nextReviewDate = remoteWord.nextReviewDate,
+                                isFavorite = remoteWord.isFavorite,
+                                isSkipped = remoteWord.isSkipped,
+                                lastModifiedTime = remoteWord.lastModifiedTime,
+                                lastReviewedDate = remoteWord.lastReviewedDate,
+                                firstLearnedDate = remoteWord.firstLearnedDate,
+                                type = remoteWord.type,
+                                isDeleted = remoteWord.isDeleted,
+                                deletedTime = remoteWord.deletedTime
+                            ))
                         }
                     } else {
                         wordStudyStateDao.insert(WordStudyStateEntity(
@@ -509,9 +515,23 @@ class DataExportManager @Inject constructor(
 
                     val localState = localGrammarStates[targetLocalId]
                     if (localState != null) {
-                         val result = SmartSyncMerger.mergeGrammarProgress(localState, remoteGrammar)
-                         if (result is SmartSyncMerger.MergeResult.RemoteUpdated) {
-                            grammarStudyStateDao.insert(result.data.copy(grammarId = targetLocalId))
+                         if (remoteGrammar.lastModifiedTime > localState.lastModifiedTime) {
+                            grammarStudyStateDao.insert(GrammarStudyStateEntity(
+                                grammarId = targetLocalId,
+                                repetitionCount = remoteGrammar.srsLevel,
+                                stability = remoteGrammar.stability,
+                                difficulty = remoteGrammar.difficulty,
+                                interval = remoteGrammar.interval,
+                                nextReviewDate = remoteGrammar.nextReviewDate,
+                                isFavorite = remoteGrammar.isFavorite,
+                                isSkipped = remoteGrammar.isSkipped,
+                                lastModifiedTime = remoteGrammar.lastModifiedTime,
+                                lastReviewedDate = remoteGrammar.lastReviewedDate,
+                                firstLearnedDate = remoteGrammar.firstLearnedDate,
+                                type = remoteGrammar.type,
+                                isDeleted = remoteGrammar.isDeleted,
+                                deletedTime = remoteGrammar.deletedTime
+                            ))
                          }
                     } else {
                          grammarStudyStateDao.insert(GrammarStudyStateEntity(

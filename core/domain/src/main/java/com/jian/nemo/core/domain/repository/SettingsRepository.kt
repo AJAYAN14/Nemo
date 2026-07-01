@@ -413,28 +413,6 @@ interface SettingsRepository {
     suspend fun resetGrammarLapse(grammarId: Int)
 
 
-    // ========== 自动同步配置 ==========
-
-    /** 自动同步开关Flow 默认: true */
-    val isAutoSyncEnabledFlow: Flow<Boolean>
-    suspend fun setAutoSyncEnabled(enabled: Boolean)
-
-    /** 上t次同步时间Flow 默认: 0 */
-    val lastSyncTimeFlow: Flow<Long>
-    suspend fun setLastSyncTime(time: Long)
-
-    /** 上t次同步是否成功Flow 默认: true */
-    val lastSyncSuccessFlow: Flow<Boolean>
-    suspend fun setLastSyncSuccess(success: Boolean)
-
-    /** 上t次同步错误信息Flow 默认: "" */
-    val lastSyncErrorFlow: Flow<String>
-    suspend fun setLastSyncError(error: String)
-
-    /** 同步报错日志列表Flow */
-    val syncErrorLogsFlow: Flow<List<com.jian.nemo.core.domain.model.SyncErrorLog>>
-    suspend fun addSyncErrorLog(error: String)
-    suspend fun clearSyncErrorLogs()
 
 
     /** 词库 JSON 云更新：上次已应用的内容版本号（0 = 未更新过） */
@@ -461,17 +439,7 @@ interface SettingsRepository {
     suspend fun getLastGrammarSyncTimestamp(): Long
     suspend fun setLastGrammarSyncTimestamp(timestamp: Long)
 
-    /** 上次同步冲突数量Flow */
-    val lastSyncConflictCountFlow: Flow<Int>
-    suspend fun setLastSyncConflictCount(count: Int)
 
-    /** 学习完成后是否自动同步Flow 默认: true */
-    val isSyncOnLearningCompleteFlow: Flow<Boolean>
-    suspend fun setSyncOnLearningComplete(enabled: Boolean)
-
-    /** 测试完成后同步Flow 默认: true */
-    val isSyncOnTestCompleteFlow: Flow<Boolean>
-    suspend fun setSyncOnTestComplete(enabled: Boolean)
 
     // ========== 学习高级设置 ==========
 

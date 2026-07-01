@@ -21,14 +21,13 @@ import com.jian.nemo.core.data.local.entity.*
         UserEntity::class,
         SettingsEntity::class,
         ReviewLogEntity::class,
-        SyncMetadataEntity::class,
         WordStudyStateEntity::class,
         GrammarStudyStateEntity::class,
         FavoriteQuestionEntity::class,
         AIExerciseEntity::class,
         AIReadingHistoryEntity::class
     ],
-    version = 23,  // v23: 修复 words 表 (japanese, level) 唯一约束
+    version = 24,  // v24: 数据库升级
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {
@@ -44,7 +43,6 @@ abstract class NemoDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun settingsDao(): SettingsDao
     abstract fun reviewLogDao(): ReviewLogDao
-    abstract fun syncMetadataDao(): SyncMetadataDao
 
     abstract fun wordStudyStateDao(): WordStudyStateDao
     abstract fun grammarStudyStateDao(): GrammarStudyStateDao

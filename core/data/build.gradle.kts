@@ -62,11 +62,7 @@ dependencies {
     // Kotlinx Serialization (数据导入)
     implementation(libs.kotlinx.serialization.json)
 
-    // WorkManager
-    implementation(libs.work.runtime.ktx)
-    implementation(libs.hilt.work)
-    ksp(libs.hilt.compiler)
-    ksp(libs.androidx.hilt.compiler)
+
 
     // Supabase (Auth + Storage + Postgrest + Functions)
     implementation(platform(libs.supabase.bom))

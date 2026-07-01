@@ -973,19 +973,6 @@ class SettingsRepositoryImpl @Inject constructor(
         return map.entries.joinToString("|") { "${it.key}:${it.value}" }
     }
 
-    // ========== 自动同步配置 ==========
-
-
-    override val isAutoSyncEnabledFlow: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.AUTO_SYNC_ENABLED] ?: true
-        }
-
-    override suspend fun setAutoSyncEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.AUTO_SYNC_ENABLED] = enabled
-        }
-    }
 
 
 
@@ -1035,76 +1022,6 @@ class SettingsRepositoryImpl @Inject constructor(
         Log.d(TAG, "Repair completed. Deleted $deletedCount items.")
         return deletedCount
     }
-
-    override val lastSyncTimeFlow: Flow<Long> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_TIME] ?: 0L
-        }
-
-    override suspend fun setLastSyncTime(time: Long) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_TIME] = time
-        }
-    }
-
-    override val lastSyncSuccessFlow: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_SUCCESS] ?: true
-        }
-
-    override suspend fun setLastSyncSuccess(success: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_SUCCESS] = success
-        }
-    }
-
-    override val lastSyncErrorFlow: Flow<String> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_ERROR] ?: ""
-        }
-
-    override suspend fun setLastSyncError(error: String) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_ERROR] = error
-        }
-    }
-
-    override val syncErrorLogsFlow: Flow<List<com.jian.nemo.core.domain.model.SyncErrorLog>> = dataStore.data
-        .map { preferences ->
-            val json = preferences[PreferencesKeys.SYNC_ERROR_LOGS] ?: "[]"
-            try {
-                Json.decodeFromString<List<com.jian.nemo.core.domain.model.SyncErrorLog>>(json)
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
-
-    override suspend fun addSyncErrorLog(error: String) {
-        dataStore.edit { preferences ->
-            val json = preferences[PreferencesKeys.SYNC_ERROR_LOGS] ?: "[]"
-            val currentList = try {
-                Json.decodeFromString<List<com.jian.nemo.core.domain.model.SyncErrorLog>>(json)
-            } catch (e: Exception) {
-                emptyList()
-            }
-            val newLog = com.jian.nemo.core.domain.model.SyncErrorLog(
-                timestamp = System.currentTimeMillis(),
-                message = error
-            )
-            val newList = (listOf(newLog) + currentList).take(50)
-            preferences[PreferencesKeys.SYNC_ERROR_LOGS] = Json.encodeToString(newList)
-            preferences[PreferencesKeys.LAST_SYNC_ERROR] = error
-        }
-    }
-
-    override suspend fun clearSyncErrorLogs() {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SYNC_ERROR_LOGS] = "[]"
-            preferences[PreferencesKeys.LAST_SYNC_ERROR] = ""
-        }
-    }
-
-
 
     override val lastContentVersionFlow: Flow<Int> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.LAST_CONTENT_VERSION] ?: 0
@@ -1173,38 +1090,6 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    override val lastSyncConflictCountFlow: Flow<Int> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_CONFLICT_COUNT] ?: 0
-        }
-
-    override suspend fun setLastSyncConflictCount(count: Int) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.LAST_SYNC_CONFLICT_COUNT] = count
-        }
-    }
-
-    override val isSyncOnLearningCompleteFlow: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] ?: true
-        }
-
-    override suspend fun setSyncOnLearningComplete(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] = enabled
-        }
-    }
-
-    override val isSyncOnTestCompleteFlow: Flow<Boolean> = dataStore.data
-        .map { preferences ->
-            preferences[PreferencesKeys.SYNC_ON_TEST_COMPLETE] ?: true
-        }
-
-    override suspend fun setSyncOnTestComplete(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SYNC_ON_TEST_COMPLETE] = enabled
-        }
-    }
 
 
     // ========== 学习高级设置 ==========
@@ -1514,13 +1399,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.TEST_SELECTED_GRAMMAR_LEVELS)
 
 
-            // 同步状态 (保留 AUTO_SYNC_ENABLED)
-            preferences.remove(PreferencesKeys.LAST_SYNC_TIME)
-            preferences.remove(PreferencesKeys.LAST_SYNC_SUCCESS)
-            preferences.remove(PreferencesKeys.LAST_SYNC_ERROR)
-            preferences.remove(PreferencesKeys.LAST_SYNC_CONFLICT_COUNT)
-            preferences.remove(PreferencesKeys.SYNC_ON_LEARNING_COMPLETE)
-            preferences.remove(PreferencesKeys.SYNC_ON_TEST_COMPLETE)
+            // 同步状态配置 (已移除)
             preferences.remove(PreferencesKeys.AI_READING_THEME)
             preferences.remove(PreferencesKeys.AI_RECENT_GRAMMAR_IDS)
 
@@ -1609,8 +1488,6 @@ class SettingsRepositoryImpl @Inject constructor(
             isRandomNewContentEnabled = prefs[PreferencesKeys.IS_RANDOM_NEW_CONTENT_ENABLED] ?: true,
             targetRetention = prefs[PreferencesKeys.TARGET_RETENTION] ?: 0.9f,
 
-            isSyncOnLearningComplete = prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] ?: true,
-            isSyncOnTestComplete = prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] ?: true,
 
             aiPlatform = prefs[PreferencesKeys.AI_PLATFORM] ?: "openai",
             aiApiKey = prefs[PreferencesKeys.AI_API_KEY] ?: "",
@@ -1673,8 +1550,7 @@ class SettingsRepositoryImpl @Inject constructor(
             prefs[PreferencesKeys.RELEARNING_STEPS] = settings.relearningSteps
             prefs[PreferencesKeys.IS_RANDOM_NEW_CONTENT_ENABLED] = settings.isRandomNewContentEnabled
             prefs[PreferencesKeys.TARGET_RETENTION] = settings.targetRetention
-            prefs[PreferencesKeys.SYNC_ON_LEARNING_COMPLETE] = settings.isSyncOnLearningComplete
-            prefs[PreferencesKeys.SYNC_ON_TEST_COMPLETE] = settings.isSyncOnTestComplete
+
 
             prefs[PreferencesKeys.AI_PLATFORM] = settings.aiPlatform
             prefs[PreferencesKeys.AI_API_KEY] = settings.aiApiKey

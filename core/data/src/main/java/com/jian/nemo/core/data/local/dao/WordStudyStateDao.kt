@@ -60,4 +60,5 @@ interface WordStudyStateDao {
 
     @Query("DELETE FROM word_study_states")
     suspend fun deleteAll()
+
 }

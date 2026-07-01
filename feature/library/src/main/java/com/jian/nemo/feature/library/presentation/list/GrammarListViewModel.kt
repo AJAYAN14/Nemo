@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import com.jian.nemo.core.domain.repository.DictionarySyncManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.jian.nemo.core.common.util.GrammarSearchUtils
-import com.jian.nemo.core.domain.repository.SyncRepository
 import javax.inject.Inject
 
 /**
@@ -37,7 +37,7 @@ data class GrammarListUiState(
 @HiltViewModel
 class GrammarListViewModel @Inject constructor(
     private val grammarRepository: GrammarRepository,
-    private val syncRepository: SyncRepository
+    private val syncManager: DictionarySyncManager
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -118,24 +118,22 @@ class GrammarListViewModel @Inject constructor(
     fun onRefresh() {
         viewModelScope.launch {
             _isRefreshing.value = true
-            _syncMessage.value = null
             try {
-                // 触发强制增量同步，绕过版本号检查，且不会清空本地库
-                val result = syncRepository.performDictionarySync(forceIncremental = true)
-                val wordCount = result.updatedWords
-                val grammarCount = result.updatedGrammars
-                if (wordCount == 0 && grammarCount == 0) {
-                    _syncMessage.value = "词库已经是最新版本"
-                } else {
-                    val msg = buildString {
+                // 默认执行增量同步 (force = false)
+                val result = syncManager.performDictionarySync(force = false)
+                
+                if (result.updatedWords > 0 || result.updatedGrammars > 0) {
+                    val message = buildString {
                         append("词库已更新：")
-                        if (wordCount > 0) append("${wordCount}条单词 ")
-                        if (grammarCount > 0) append("${grammarCount}条语法")
+                        if (result.updatedWords > 0) append("${result.updatedWords}条单词 ")
+                        if (result.updatedGrammars > 0) append("${result.updatedGrammars}条语法")
                     }
-                    _syncMessage.value = msg.trim()
+                    _syncMessage.value = message
+                } else {
+                    _syncMessage.value = "词库已是最新 (本地:V${result.localVersion}, 远程:V${result.remoteVersion})"
                 }
             } catch (e: Exception) {
-                _syncMessage.value = "网络错误，更新失败"
+                _syncMessage.value = "同步失败: ${e.message}"
             } finally {
                 _isRefreshing.value = false
             }

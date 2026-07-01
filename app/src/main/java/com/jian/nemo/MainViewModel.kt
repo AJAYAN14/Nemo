@@ -41,6 +41,8 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+
+
     private val _updateCheckEvents = kotlinx.coroutines.channels.Channel<UpdateCheckEvent>(kotlinx.coroutines.channels.Channel.BUFFERED)
     val updateCheckEvents = _updateCheckEvents.receiveAsFlow()
 

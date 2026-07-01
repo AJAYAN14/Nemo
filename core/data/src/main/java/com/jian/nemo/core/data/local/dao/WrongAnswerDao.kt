@@ -81,4 +81,5 @@ interface WrongAnswerDao {
      */
     @Query("SELECT * FROM wrong_answers WHERE uuid IN (:uuids)")
     suspend fun getByUuids(uuids: List<String>): List<WrongAnswerEntity>
+
 }

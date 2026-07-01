@@ -13,21 +13,7 @@ import androidx.datastore.preferences.core.stringSetPreferencesKey
  */
 object PreferencesKeys {
 
-    // ========== 数据同步 ==========
-    val AUTO_SYNC_ENABLED = booleanPreferencesKey("auto_sync_enabled")
-    val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
-    val LAST_SYNC_SUCCESS = booleanPreferencesKey("last_sync_success")
-    val LAST_SYNC_ERROR = stringPreferencesKey("last_sync_error")
-    val SYNC_ERROR_LOGS = stringPreferencesKey("sync_error_logs")
-    /** 上次同步冲突数量 */
-    val LAST_SYNC_CONFLICT_COUNT = intPreferencesKey("last_sync_conflict_count")
 
-
-    /** 学习完成后同步 默认: true */
-    val SYNC_ON_LEARNING_COMPLETE = booleanPreferencesKey("sync_on_learning_complete")
-
-    /** 测试完成后同步 默认: true */
-    val SYNC_ON_TEST_COMPLETE = booleanPreferencesKey("sync_on_test_complete")
 
     // ========== 用户设置 ==========
 

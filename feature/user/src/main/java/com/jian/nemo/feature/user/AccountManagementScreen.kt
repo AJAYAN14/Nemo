@@ -142,65 +142,10 @@ fun AccountManagementScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Group 3: Data Sync
-                PremiumSettingsGroup(title = "数据同步", cardBg = cardBg) {
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.CloudUpload,
-                        iconTint = Color(0xFFAF52DE), // Purple
-                        title = "立即同步",
-                        subtitle = when {
-                            uiState.isSyncLoading -> uiState.syncStatus.ifEmpty { "正在同步数据..." }
-                            uiState.showSyncSuccess -> "同步成功"
-                            else -> uiState.lastSyncTimeText
-                        },
-                        trailingContent = @Composable {
-                            AnimatedContent(
-                                targetState = when {
-                                    uiState.isSyncLoading -> 1 // Loading
-                                    uiState.showSyncSuccess -> 2 // Success
-                                    else -> 0 // Default
-                                },
-                                label = "SyncStatusAnimation"
-                            ) { state ->
-                                when (state) {
-                                    1 -> NemoChasingDotsLoader(size = 16.dp)
-                                    2 -> Icon(
-                                        imageVector = Icons.Rounded.CheckCircle,
-                                        contentDescription = null,
-                                        tint = Color(0xFF34C759), // Green
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    else -> Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                            }
-                        },
-                        onClick = {
-                            if (!uiState.isSyncLoading) {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                viewModel.syncToCloud()
-                            }
-                        }
-                    )
 
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
 
                 // Group 4: Danger Zone
                 PremiumSettingsGroup(title = "危险区域", cardBg = cardBg) {
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.CloudOff,
-                        iconTint = Color(0xFFFF9500), // Orange (Match Dialog)
-                        title = "清空云端同步数据",
-                        titleColor = Color(0xFFFF9500), // Orange
-                        onClick = { viewModel.showDialog(UserDialogType.DELETE_CLOUD_SYNC_DATA) }
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
                     PremiumSettingsItem(
                         icon = Icons.Rounded.DeleteForever,
                         iconTint = MaterialTheme.colorScheme.error,
@@ -286,18 +231,7 @@ fun AccountManagementScreen(
                 useDarkTheme = useDarkTheme
             )
         }
-        UserDialogType.DELETE_CLOUD_SYNC_DATA -> {
-            DeleteCloudSyncDataDialog(
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = {
-                    viewModel.deleteAllCloudSyncData(
-                        onSuccess = { viewModel.dismissDialog() },
-                        onError = { /* 对话框保持打开，错误信息通过 Toast 展示 */ }
-                    )
-                },
-                useDarkTheme = useDarkTheme
-            )
-        }
+
         UserDialogType.LOGOUT_CONFIRM -> {
             LogoutWarningDialog(
                 isLoading = uiState.isLoading,
@@ -305,9 +239,6 @@ fun AccountManagementScreen(
                 onConfirmLogout = {
                     viewModel.logout()
                     viewModel.dismissDialog()
-                },
-                onBackup = {
-                    viewModel.syncToCloud()
                 },
                 useDarkTheme = useDarkTheme
             )
@@ -384,7 +315,7 @@ fun ProfileHeaderSection(
 
              // Email
              Text(
-                 text = uiState.user?.email ?: "请登录以同步数据",
+                 text = uiState.user?.email ?: "未登录",
                  style = MaterialTheme.typography.bodyMedium,
                  color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                  modifier = Modifier.padding(top = 4.dp)

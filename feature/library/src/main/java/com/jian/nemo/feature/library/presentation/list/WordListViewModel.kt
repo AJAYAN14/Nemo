@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
-import com.jian.nemo.core.domain.repository.SyncRepository
+import com.jian.nemo.core.domain.repository.DictionarySyncManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,13 +35,13 @@ data class WordListUiState(
 @HiltViewModel
 class WordListViewModel @Inject constructor(
     private val wordRepository: WordRepository,
-    private val syncRepository: SyncRepository
+    private val syncManager: DictionarySyncManager
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)
-    private val _syncMessage = MutableStateFlow<String?>(null)
     private val _filterState = MutableStateFlow(StudyFilter.ALL)
+    private val _syncMessage = MutableStateFlow<String?>(null)
 
     // 所有单词聚合 Flow
     private val allWordsFlow = combine(
@@ -116,8 +116,8 @@ class WordListViewModel @Inject constructor(
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
-                // 触发强制增量同步 (forceIncremental = true)，绕过版本号检查
-                val result = syncRepository.performDictionarySync(forceIncremental = true)
+                // 默认执行增量同步 (force = false)
+                val result = syncManager.performDictionarySync(force = false)
                 
                 if (result.updatedWords > 0 || result.updatedGrammars > 0) {
                     val message = buildString {
@@ -127,7 +127,6 @@ class WordListViewModel @Inject constructor(
                     }
                     _syncMessage.value = message
                 } else {
-                    // 如果没有更新，显示更详细的信息（用于排查）
                     _syncMessage.value = "词库已是最新 (本地:V${result.localVersion}, 远程:V${result.remoteVersion})"
                 }
             } catch (e: Exception) {

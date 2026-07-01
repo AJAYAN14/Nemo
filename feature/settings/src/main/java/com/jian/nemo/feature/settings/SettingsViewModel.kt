@@ -6,7 +6,6 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import com.jian.nemo.core.domain.repository.SyncRepository
 import android.util.Log
 import javax.inject.Inject
 
@@ -22,8 +21,6 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val authRepository: com.jian.nemo.core.domain.repository.AuthRepository,
-    private val syncRepository: SyncRepository,
-
     private val exportDataUseCase: com.jian.nemo.core.domain.usecase.settings.ExportDataUseCase,
     private val importDataUseCase: com.jian.nemo.core.domain.usecase.settings.ImportDataUseCase,
     private val resetProgressUseCase: com.jian.nemo.core.domain.usecase.settings.ResetProgressUseCase,
@@ -124,25 +121,6 @@ class SettingsViewModel @Inject constructor(
                 GoalSettings(dailyGoal, grammarDailyGoal, resetHour, isRandom)
             }
 
-            val syncFlow = combine(
-                settingsRepository.lastSyncTimeFlow,
-                settingsRepository.isAutoSyncEnabledFlow,
-                settingsRepository.lastSyncConflictCountFlow,
-                settingsRepository.lastDictionarySyncTimestampFlow,
-                settingsRepository.lastContentVersionFlow,
-                settingsRepository.lastSyncErrorFlow,
-                settingsRepository.syncErrorLogsFlow
-            ) { args ->
-                SyncSettings(
-                    lastSyncTime = args[0] as Long,
-                    isAutoSyncEnabled = args[1] as Boolean,
-                    lastSyncConflictCount = args[2] as Int,
-                    lastDictionarySyncTimestamp = args[3] as Long,
-                    lastContentVersion = args[4] as Int,
-                    lastSyncError = args[5] as String,
-                    syncErrorLogs = args[6] as List<com.jian.nemo.core.domain.model.SyncErrorLog>
-                )
-            }
 
             val advancedFlow = combine(
                  settingsRepository.learningStepsFlow,
@@ -171,10 +149,9 @@ class SettingsViewModel @Inject constructor(
             combine(
                 appearanceFlow,
                 goalsFlow,
-                syncFlow,
                 advancedFlow,
                 ttsFlow
-            ) { theme, goals, sync, advanced, tts ->
+            ) { theme, goals, advanced, tts ->
                 val (dailyGoal, grammarDailyGoal, resetHour, isRandom) = goals
                 val (rate, pitch, voiceName) = tts
                 _uiState.update { state ->
@@ -196,13 +173,6 @@ class SettingsViewModel @Inject constructor(
                         grammarDailyGoal = grammarDailyGoal,
                         learningDayResetHour = resetHour,
                         isRandomNewContentEnabled = isRandom,
-                        lastSyncTime = sync.lastSyncTime,
-                        isAutoSyncEnabled = sync.isAutoSyncEnabled,
-                        lastSyncConflictCount = sync.lastSyncConflictCount,
-                        lastDictionarySyncTimestamp = sync.lastDictionarySyncTimestamp,
-                        lastContentVersion = sync.lastContentVersion,
-                        lastSyncError = sync.lastSyncError,
-                        syncErrorLogs = sync.syncErrorLogs.toList(),
                         learningSteps = advanced.learningSteps,
                         relearningSteps = advanced.relearningSteps,
                         learnAheadLimit = advanced.learnAheadLimit,
@@ -256,37 +226,24 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.PreviewTts -> previewTts(event.text)
             is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text)
 
-            is SettingsEvent.SyncData -> syncData()
-            is SettingsEvent.SetAutoSyncEnabled -> setAutoSyncEnabled(event.enabled)
-            is SettingsEvent.ResolveConflict -> resolveConflict(event.option)
+
             is SettingsEvent.ExportData -> exportData(event.uri)
             is SettingsEvent.ImportData -> importData(event.uri)
-            is SettingsEvent.ResetProgress -> resetProgress(event.includeCloud)
+            is SettingsEvent.ResetProgress -> resetProgress()
             is SettingsEvent.RepairLocalData -> repairData()
-            is SettingsEvent.ClearSyncError -> clearSyncError()
+
         }
     }
 
-    private fun updateStatusMessage(message: String?, delayMs: Long = 5000) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(syncMessage = message) }
-            if (message != null) {
-                kotlinx.coroutines.delay(delayMs)
-                _uiState.update { it.copy(syncMessage = null) }
-            }
-        }
-    }
 
     private fun exportData(uri: android.net.Uri) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val success = exportDataUseCase(uri.toString())
-                _uiState.update { it.copy(isLoading = false) }
-                updateStatusMessage(if (success) "导出成功" else "导出失败", 5000)
+                // Success message can be handled without syncMessage if needed.
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
-                updateStatusMessage("导出出错: ${e.message}", 5000)
+                Log.e("SettingsViewModel", "Export failed", e)
             }
         }
     }
@@ -296,63 +253,13 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val message = importDataUseCase(uri.toString())
-                _uiState.update { it.copy(isLoading = false) }
-                updateStatusMessage(message, 5000)
+                // Handle message
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
-                updateStatusMessage("导入出错: ${e.message}", 5000)
+                Log.e("SettingsViewModel", "Import failed", e)
             }
         }
     }
 
-    private fun resolveConflict(option: ConflictResolutionOption) {
-        when (option) {
-            ConflictResolutionOption.FORCE_CLOUD -> syncData(force = true)
-            ConflictResolutionOption.FORCE_LOCAL -> syncData(force = true)
-        }
-    }
-
-    private fun syncData(force: Boolean = false) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-
-            val userId = _uiState.value.user?.id ?: return@launch
-            syncRepository.performSync(userId, force).collect { progress ->
-                when(progress) {
-                    is com.jian.nemo.core.domain.model.SyncProgress.Running -> {
-                         val msg = "${progress.section} (${progress.current}/${progress.total})"
-                         _uiState.update { it.copy(syncMessage = msg) }
-                    }
-                    is com.jian.nemo.core.domain.model.SyncProgress.Completed -> {
-                        val stats = progress.report.stats
-                        val detail = buildString {
-                            append("同步成功: ")
-                            if (stats.addedItems > 0) append("新增 ${stats.addedItems} 条, ")
-                            if (stats.updatedItems > 0) append("更新 ${stats.updatedItems} 条")
-                        }.removeSuffix(", ")
-
-                        _uiState.update { it.copy(isLoading = false, syncMessage = null) }
-                        updateStatusMessage(detail)
-                    }
-                    is com.jian.nemo.core.domain.model.SyncProgress.Failed -> {
-                        _uiState.update { it.copy(isLoading = false, syncMessage = null) }
-                        updateStatusMessage("同步失败: ${progress.error}", 5000)
-                    }
-                    else -> {}
-                }
-            }
-        }
-    }
-
-
-    private fun setAutoSyncEnabled(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsRepository.setAutoSyncEnabled(enabled)
-            // 如果开启了自动同步，可以考虑立即触发一次 worker 检查或者 update worker constraint
-            // 但 AutoSyncWorker 是基于 PeriodicWorkRequest 的，
-            // 通常由系统调度。这里只需保存配置，Worker 会读取该配置决定是否执行实际同步逻辑。
-        }
-    }
 
     /**
      * 设置深色模式
@@ -415,7 +322,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setDailyGoal(goal)
             _uiState.update { it.copy(showDailyGoalDialog = false) }
-            updateStatusMessage("每日单词目标已更新为 ${goal} 个", 3000)
         }
     }
 
@@ -426,7 +332,6 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setGrammarDailyGoal(goal)
             _uiState.update { it.copy(showGrammarDailyGoalDialog = false) }
-            updateStatusMessage("每日语法目标已更新为 ${goal} 条", 3000)
         }
     }
 
@@ -466,10 +371,8 @@ class SettingsViewModel @Inject constructor(
                 }
                 
                 Log.i("SettingsViewModel", "App icon changed to: $iconName")
-                updateStatusMessage("应用图标已切换为 [$iconName]，桌面图标更新可能需要几秒钟")
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Failed to change app icon", e)
-                updateStatusMessage("切换图标失败: ${e.message}")
             }
         }
     }
@@ -490,12 +393,6 @@ class SettingsViewModel @Inject constructor(
     private fun setRandomNewContentEnabled(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setRandomNewContentEnabled(enabled)
-            val message = if (enabled) {
-                "下次开始学习时，新单词将随机出现"
-            } else {
-                "下次开始学习时，新单词将按顺序出现"
-            }
-            updateStatusMessage(message, 5000)
         }
     }
 
@@ -590,20 +487,14 @@ class SettingsViewModel @Inject constructor(
 
     /**
      * 重置所有学习进度
-     * @param includeCloud 是否同时删除云端同步数据
      */
-    private fun resetProgress(includeCloud: Boolean) {
+    private fun resetProgress() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
 
-            when (val result = resetProgressUseCase(includeCloud)) {
+            when (val result = resetProgressUseCase()) {
                 is com.jian.nemo.core.common.Result.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
-                    updateStatusMessage("学习进度已重置，所有学习数据已清除", 5000)
-                }
-                is com.jian.nemo.core.common.Result.Error -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    updateStatusMessage("重置失败: ${result.exception.message}", 5000)
                 }
                 else -> {
                     _uiState.update { it.copy(isLoading = false) }
@@ -619,11 +510,6 @@ class SettingsViewModel @Inject constructor(
             when (val result = repairDataUseCase()) {
                 is com.jian.nemo.core.common.Result.Success -> {
                     _uiState.update { it.copy(isLoading = false) }
-                    updateStatusMessage(result.data, 5000)
-                }
-                is com.jian.nemo.core.common.Result.Error -> {
-                    _uiState.update { it.copy(isLoading = false) }
-                    updateStatusMessage("修复失败: ${result.exception.message}", 5000)
                 }
                 else -> {
                     _uiState.update { it.copy(isLoading = false) }
@@ -632,11 +518,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun clearSyncError() {
-        viewModelScope.launch {
-            settingsRepository.clearSyncErrorLogs()
-        }
-    }
+
 }
 
 private data class ThemeSettings(
@@ -666,12 +548,4 @@ private data class AdvancedSettings(
     val targetRetention: Float
 )
 
-private data class SyncSettings(
-    val lastSyncTime: Long,
-    val isAutoSyncEnabled: Boolean,
-    val lastSyncConflictCount: Int,
-    val lastDictionarySyncTimestamp: Long,
-    val lastContentVersion: Int,
-    val lastSyncError: String,
-    val syncErrorLogs: List<com.jian.nemo.core.domain.model.SyncErrorLog>
-)
+

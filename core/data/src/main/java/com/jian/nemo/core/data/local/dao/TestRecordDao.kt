@@ -90,4 +90,5 @@ interface TestRecordDao {
      */
     @Query("SELECT * FROM test_records WHERE uuid IN (:uuids)")
     suspend fun getByUuids(uuids: List<String>): List<TestRecordEntity>
+
 }

@@ -361,9 +361,11 @@ class WordRepositoryImpl @Inject constructor(
 
     override suspend fun updateWord(word: Word): Result<Unit> = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
         try {
-            // 强制刷新时间戳，确保同步系统能捕捉到改动
+            // 强制刷新时间戳，并标记为待同步
             val now = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
-            val stateEntity = word.toStudyStateEntity().copy(lastModifiedTime = now)
+            val stateEntity = word.toStudyStateEntity().copy(
+                lastModifiedTime = now
+            )
 
             wordStudyStateDao.insert(stateEntity)
 

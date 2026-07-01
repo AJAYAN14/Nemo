@@ -1,28 +1,18 @@
 package com.jian.nemo
 
 import android.app.Application
-import androidx.hilt.work.HiltWorkerFactory
-import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
 
 /**
- * Application class for Nemo 2.0
- * Enables Hilt dependency injection across the app
- * Configures WorkManager with HiltWorkerFactory
+ * Nemo 2.0 的应用程序类
+ * 负责在整个应用中启用 Hilt 依赖注入
  */
 @HiltAndroidApp
-class NemoApplication : Application(), Configuration.Provider {
+class NemoApplication : Application() {
 
-    @Inject
-    lateinit var workerFactory: HiltWorkerFactory
 
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
     override fun onCreate() {
         super.onCreate()
-        // Supabase is initialized via Hilt (SupabaseModule); no SDK init here.
+        // Supabase 通过 Hilt (SupabaseModule) 进行初始化；此处无需进行 SDK 初始化。
     }
 }

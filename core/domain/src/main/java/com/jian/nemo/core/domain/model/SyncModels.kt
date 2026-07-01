@@ -62,9 +62,6 @@ data class AppSettings(
     val isRandomNewContentEnabled: Boolean = true,
     val targetRetention: Float = 0.9f,
 
-    // 同步触发策略
-    val isSyncOnLearningComplete: Boolean = true,
-    val isSyncOnTestComplete: Boolean = true,
 
     // AI 工坊配置
     val aiPlatform: String = "openai",
@@ -248,87 +245,3 @@ data class NemoExportData(
     val userData: UserData
 )
 
-@Serializable
-data class SyncReport(
-    val timestamp: Long = System.currentTimeMillis(),
-    val deviceId: String = "",
-    val syncVersion: Int = 0,
-    val stats: SyncStats = SyncStats(),
-    val conflicts: List<ConflictInfo> = emptyList(),
-    val operationType: SyncOperation = SyncOperation.PUSH
-)
-
-/**
- * 同步统计信息
- */
-@Serializable
-data class SyncStats(
-    val totalItems: Int = 0,
-    val changedItems: Int = 0,
-    val mergedItems: Int = 0,
-    val wordCount: Int = 0,
-    val grammarCount: Int = 0,
-    val wrongAnswerCount: Int = 0,
-    val testRecordCount: Int = 0,
-    val favoriteQuestionCount: Int = 0, // [NEW] Added for sync
-    val addedItems: Int = 0,
-    val updatedItems: Int = 0,
-    val deletedItems: Int = 0
-)
-
-/**
- * 词库同步结果
- */
-data class DictionarySyncResult(
-    val updatedWords: Int = 0,
-    val updatedGrammars: Int = 0,
-    val isFullSync: Boolean = false,
-    val localVersion: Int = 0,
-    val remoteVersion: Int = 0
-)
-
-/**
- * 冲突信息
- */
-@Serializable
-data class ConflictInfo(
-    val itemType: String,
-    val itemId: Int,
-    val fieldName: String,
-    val localValue: String,
-    val remoteValue: String,
-    val resolvedValue: String,
-    val resolutionStrategy: String
-)
-
-/**
- * 同步操作类型
- */
-@Serializable
-enum class SyncOperation {
-    PUSH,
-    RESTORE
-}
-
-/**
- * 同步进度状态
- */
-sealed class SyncProgress {
-    data object Idle : SyncProgress()
-
-    data class Running(
-        val section: String,
-        val current: Int = 0,
-        val total: Int = 0
-    ) : SyncProgress()
-
-    data class Completed(val report: SyncReport) : SyncProgress()
-
-    data class Failed(val error: String) : SyncProgress()
-
-    /** 已经有同步任务正在运行 */
-    data object AlreadyRunning : SyncProgress()
-
-    /** 恢复前需要用户确认（发现本地有未同步内容） */
-    data object RequireConfirmation : SyncProgress()
-}
