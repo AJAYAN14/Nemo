@@ -28,6 +28,8 @@ import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.feature.settings.components.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -59,12 +61,26 @@ fun SettingsScreen(
 
     var isResetting by remember { mutableStateOf(false) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isExportCompressed by remember { mutableStateOf(true) }
+
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
+
+    LaunchedEffect(uiState.toastMessage) {
+        uiState.toastMessage?.let {
+            snackbarMessage = it
+            snackbarType = if (it.contains("失败") || it.contains("异常")) NemoSnackbarType.ERROR else NemoSnackbarType.SUCCESS
+            snackbarVisible = true
+            viewModel.onEvent(SettingsEvent.ClearToast)
+        }
+    }
 
     // 导出文件选择器
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        uri?.let { viewModel.onEvent(SettingsEvent.ExportData(it)) }
+        uri?.let { viewModel.onEvent(SettingsEvent.ConfirmExport(it, isExportCompressed)) }
     }
 
     // 导入文件选择器
@@ -328,8 +344,7 @@ fun SettingsScreen(
                         title = "导出数据",
                         subtitle = "导出本地数据文件",
                         onClick = {
-                             val fileName = "nemo_backup_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}.json"
-                            exportLauncher.launch(fileName)
+                            viewModel.onEvent(SettingsEvent.RequestExport)
                         },
                         showDivider = true
                     )
@@ -379,6 +394,15 @@ fun SettingsScreen(
         }
 
 
+        NemoSnackbar(
+            visible = snackbarVisible,
+            message = snackbarMessage,
+            type = snackbarType,
+            onDismiss = { snackbarVisible = false },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarHeight + 8.dp)
+        )
     }
 
     // 对话框和 Bottom Sheet 保持不变
@@ -426,8 +450,19 @@ fun SettingsScreen(
     }
 
 
-
-
+    // 导出选项对话框
+    if (uiState.showExportOptionsDialog) {
+        ExportOptionsDialog(
+            onDismiss = { viewModel.onEvent(SettingsEvent.CancelExport) },
+            onConfirm = { isCompressed -> 
+                isExportCompressed = isCompressed
+                viewModel.onEvent(SettingsEvent.CancelExport)
+                val ext = if (isCompressed) ".json.gz" else ".json"
+                val fileName = "nemo_backup_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}$ext"
+                exportLauncher.launch(fileName)
+            }
+        )
+    }
 }
 
 /**

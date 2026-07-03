@@ -9,7 +9,7 @@ import javax.inject.Inject
 class ExportDataUseCase @Inject constructor(
     private val repository: DataExportRepository
 ) {
-    suspend operator fun invoke(uri: String): Boolean {
-        return repository.exportDataToUri(uri)
+    suspend operator fun invoke(uri: String, isCompressed: Boolean = true): Boolean {
+        return repository.exportDataToUri(uri, isCompressed)
     }
 }

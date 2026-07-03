@@ -77,6 +77,36 @@ data class AppSettings(
 )
 
 /**
+ * 用于本地文件导出的精简且安全的应用设置
+ */
+@Serializable
+data class ExportAppSettings(
+    val dailyGoal: Int,
+    val grammarDailyGoal: Int,
+    val learningDayResetHour: Int,
+    val testQuestionCount: Int,
+    val testTimeLimitMinutes: Int,
+    val testShuffleQuestions: Boolean,
+    val testShuffleOptions: Boolean,
+    val testAutoAdvance: Boolean,
+    val testPrioritizeWrong: Boolean,
+    val testPrioritizeNew: Boolean,
+    val testQuestionSource: String,
+    val testWrongAnswerRemovalThreshold: Int,
+    val testContentType: String,
+    val testSelectedWordLevels: Set<String>,
+    val testSelectedGrammarLevels: Set<String>,
+    val learningSteps: String,
+    val learnAheadLimit: Int,
+    val relearningSteps: String,
+    val isRandomNewContentEnabled: Boolean,
+    val targetRetention: Float,
+    val aiWorkshopDifficulty: String,
+    val aiReadingTheme: String,
+    val aiReadingDifficulty: String
+)
+
+/**
  * 单词学习进度
  */
 @Serializable
@@ -95,12 +125,7 @@ data class WordProgress(
     val lastReviewedDate: Long? = null,
     val firstLearnedDate: Long? = null,
     val type: Int = 0,
-    // 兼容旧备份
-    val japanese: String? = null,
-    val hiragana: String? = null,
-    val chinese: String? = null,
-    val level: String? = null,
-    val rawId: String? = null
+    val rawId: String
 )
 
 /**
@@ -123,10 +148,7 @@ data class GrammarProgress(
     val firstLearnedDate: Long? = null,
     val type: Int = 0,
     val uuid: String? = null,
-    // 兼容旧备份
-    val grammar: String? = null,
-    val grammarLevel: String? = null,
-    val rawId: String? = null
+    val rawId: String
 )
 
 /**
@@ -142,7 +164,8 @@ data class WrongAnswerItem(
     val uuid: String? = null,
     val isDeleted: Boolean = false,
     val deletedTime: Long = 0,
-    val lastModifiedTime: Long = 0
+    val lastModifiedTime: Long = 0,
+    val rawId: String
 )
 
 @Serializable
@@ -155,7 +178,8 @@ data class GrammarWrongAnswerItem(
     val uuid: String? = null,
     val isDeleted: Boolean = false,
     val deletedTime: Long = 0,
-    val lastModifiedTime: Long = 0
+    val lastModifiedTime: Long = 0,
+    val rawId: String
 )
 
 /**
@@ -221,7 +245,7 @@ data class FavoriteQuestionItem(
 @Serializable
 data class UserData(
     val profile: UserProfile,
-    val settings: AppSettings?,
+    val settings: ExportAppSettings? = null,
     val wordProgress: List<WordProgress>,
     val grammarProgress: List<GrammarProgress>,
     val favoriteQuestions: List<FavoriteQuestionItem> = emptyList(), // [NEW] Added for sync

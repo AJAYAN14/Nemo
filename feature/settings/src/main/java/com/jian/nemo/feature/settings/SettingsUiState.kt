@@ -16,6 +16,9 @@ data class SettingsUiState(
     // 学习设置
     val dailyGoal: Int = 20,
     val grammarDailyGoal: Int = 10,
+    val testStreak: Int = 0,
+    val maxTestStreak: Int = 0,
+    val toastMessage: String? = null,
     val learningDayResetHour: Int = 4, // 学习日重置时间 (0-23)
     val isRandomNewContentEnabled: Boolean = true, // 默认开启随机抽取
     val learningSteps: String = "1 10", // 学习步进
@@ -29,6 +32,8 @@ data class SettingsUiState(
     val showDailyGoalDialog: Boolean = false,
     val showGrammarDailyGoalDialog: Boolean = false,
     val showLearningDayResetHourDialog: Boolean = false,
+    val showExportOptionsDialog: Boolean = false,
+    val pendingExportUri: android.net.Uri? = null,
 
 
 
@@ -126,7 +131,9 @@ sealed interface SettingsEvent {
 
 
     // 文件导出导入
-    data class ExportData(val uri: android.net.Uri) : SettingsEvent
+    data object RequestExport : SettingsEvent
+    data class ConfirmExport(val uri: android.net.Uri, val isCompressed: Boolean) : SettingsEvent
+    data object CancelExport : SettingsEvent
     data class ImportData(val uri: android.net.Uri) : SettingsEvent
 
     // 重置进度
@@ -134,6 +141,9 @@ sealed interface SettingsEvent {
 
     // 修复数据 (清理重复)
     data object RepairLocalData : SettingsEvent
+
+    // 清除 Toast
+    data object ClearToast : SettingsEvent
 
 
 }

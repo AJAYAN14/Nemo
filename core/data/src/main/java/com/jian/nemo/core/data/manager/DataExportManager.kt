@@ -75,7 +75,7 @@ class DataExportManager @Inject constructor(
      * @param outputFile 输出文件
      * @return 输出文件
      */
-    suspend fun exportDataToFile(userId: String = "default_user", outputFile: java.io.File): java.io.File = withContext(Dispatchers.IO) {
+    suspend fun exportDataToFile(userId: String = "default_user", outputFile: java.io.File, isCompressed: Boolean = true): java.io.File = withContext(Dispatchers.IO) {
         Log.d(TAG, "开始流式导出数据到文件: ${outputFile.absolutePath}")
 
         val totalStudyDays = settingsRepository.totalStudyDaysFlow.first()
@@ -88,10 +88,16 @@ class DataExportManager @Inject constructor(
 
         try {
             database.withTransaction {
+                val wordIdToRawIdMap = database.wordDao().getAllWordsSync().associate { it.id to it.rawId }
+                val grammarIdToRawIdMap = database.grammarDao().getAllGrammarsSync().associate { it.id to it.rawId }
+
                 FileOutputStream(outputFile).use { fileOs ->
-                    Base64OutputStream(fileOs, Base64.NO_WRAP).use { base64Os ->
-                        GZIPOutputStream(base64Os).use { gzipOs ->
-                            java.io.BufferedWriter(OutputStreamWriter(gzipOs, Charsets.UTF_8)).use { writer ->
+                    val base64Os = if (isCompressed) Base64OutputStream(fileOs, Base64.NO_WRAP) else null
+                    try {
+                        val gzipOs = if (isCompressed) GZIPOutputStream(base64Os) else null
+                        try {
+                            val targetOs = if (isCompressed) gzipOs!! else fileOs
+                            java.io.BufferedWriter(OutputStreamWriter(targetOs, Charsets.UTF_8)).use { writer ->
 
                                 writer.write("{")
 
@@ -105,7 +111,33 @@ class DataExportManager @Inject constructor(
                                 writer.write(json.encodeToString(UserProfile(userId, "User", "")))
                                 writer.write(",")
 
-                                writer.write("\"settings\":null,")
+                                val settingsSnapshot = settingsRepository.getAppSettingsSnapshot()
+                                val exportSettings = ExportAppSettings(
+                                    dailyGoal = settingsSnapshot.dailyGoal,
+                                    grammarDailyGoal = settingsSnapshot.grammarDailyGoal,
+                                    learningDayResetHour = settingsSnapshot.learningDayResetHour,
+                                    testQuestionCount = settingsSnapshot.testQuestionCount,
+                                    testTimeLimitMinutes = settingsSnapshot.testTimeLimitMinutes,
+                                    testShuffleQuestions = settingsSnapshot.testShuffleQuestions,
+                                    testShuffleOptions = settingsSnapshot.testShuffleOptions,
+                                    testAutoAdvance = settingsSnapshot.testAutoAdvance,
+                                    testPrioritizeWrong = settingsSnapshot.testPrioritizeWrong,
+                                    testPrioritizeNew = settingsSnapshot.testPrioritizeNew,
+                                    testQuestionSource = settingsSnapshot.testQuestionSource,
+                                    testWrongAnswerRemovalThreshold = settingsSnapshot.testWrongAnswerRemovalThreshold,
+                                    testContentType = settingsSnapshot.testContentType,
+                                    testSelectedWordLevels = settingsSnapshot.testSelectedWordLevels,
+                                    testSelectedGrammarLevels = settingsSnapshot.testSelectedGrammarLevels,
+                                    learningSteps = settingsSnapshot.learningSteps,
+                                    learnAheadLimit = settingsSnapshot.learnAheadLimit,
+                                    relearningSteps = settingsSnapshot.relearningSteps,
+                                    isRandomNewContentEnabled = settingsSnapshot.isRandomNewContentEnabled,
+                                    targetRetention = settingsSnapshot.targetRetention,
+                                    aiWorkshopDifficulty = settingsSnapshot.aiWorkshopDifficulty,
+                                    aiReadingTheme = settingsSnapshot.aiReadingTheme,
+                                    aiReadingDifficulty = settingsSnapshot.aiReadingDifficulty
+                                )
+                                writer.write("\"settings\":${json.encodeToString(exportSettings)},")
 
                                 writer.write("\"wordProgress\":[")
                                 var isFirstWord = true
@@ -121,10 +153,6 @@ class DataExportManager @Inject constructor(
                                     val lastModIdx = cursor.getColumnIndexOrThrow("lastModifiedTime")
                                     val lastRevIdx = cursor.getColumnIndexOrThrow("lastReviewedDate")
                                     val firstLearnIdx = cursor.getColumnIndexOrThrow("firstLearnedDate")
-                                    val japIdx = cursor.getColumnIndexOrThrow("japanese")
-                                    val hiraIdx = cursor.getColumnIndexOrThrow("hiragana")
-                                    val chiIdx = cursor.getColumnIndexOrThrow("chinese")
-                                    val lvlIdx = cursor.getColumnIndexOrThrow("level")
                                     val rawIdIdx = cursor.getColumnIndexOrThrow("raw_id")
                                     val delIdx = cursor.getColumnIndexOrThrow("isDeleted")
 
@@ -146,11 +174,7 @@ class DataExportManager @Inject constructor(
                                             firstLearnedDate = if (cursor.isNull(firstLearnIdx)) null else cursor.getLong(firstLearnIdx),
                                             isDeleted = cursor.getInt(delIdx) == 1,
                                             deletedTime = cursor.getLong(cursor.getColumnIndexOrThrow("deletedTime")),
-                                            japanese = cursor.getString(japIdx),
-                                            hiragana = cursor.getString(hiraIdx),
-                                            chinese = cursor.getString(chiIdx),
-                                            level = cursor.getString(lvlIdx),
-                                            rawId = if (cursor.isNull(rawIdIdx)) null else cursor.getString(rawIdIdx)
+                                            rawId = cursor.getString(rawIdIdx)
                                         )
                                         writer.write(json.encodeToString(word))
                                         wordCount++
@@ -171,8 +195,6 @@ class DataExportManager @Inject constructor(
                                     val lastModIdx = cursor.getColumnIndexOrThrow("lastModifiedTime")
                                     val lastRevIdx = cursor.getColumnIndexOrThrow("lastReviewedDate")
                                     val firstLearnIdx = cursor.getColumnIndexOrThrow("firstLearnedDate")
-                                    val gramIdx = cursor.getColumnIndexOrThrow("grammar")
-                                    val lvlIdx = cursor.getColumnIndexOrThrow("grammar_level")
                                     val rawIdIdx = cursor.getColumnIndexOrThrow("raw_id")
                                     val delIdx = cursor.getColumnIndexOrThrow("isDeleted")
 
@@ -193,9 +215,7 @@ class DataExportManager @Inject constructor(
                                             firstLearnedDate = if (cursor.isNull(firstLearnIdx)) null else cursor.getLong(firstLearnIdx),
                                             isDeleted = cursor.getInt(delIdx) == 1,
                                             deletedTime = cursor.getLong(cursor.getColumnIndexOrThrow("deletedTime")),
-                                            grammar = cursor.getString(gramIdx),
-                                            grammarLevel = cursor.getString(lvlIdx),
-                                            rawId = if (cursor.isNull(rawIdIdx)) null else cursor.getString(rawIdIdx)
+                                            rawId = cursor.getString(rawIdIdx)
                                         )
                                         writer.write(json.encodeToString(grammar))
                                         grammarCount++
@@ -215,16 +235,21 @@ class DataExportManager @Inject constructor(
                                     val uuidIdx = cursor.getColumnIndexOrThrow("uuid")
 
                                     while (cursor.moveToNext()) {
+                                        val wordId = cursor.getInt(wIdIdx)
+                                        val rawId = wordIdToRawIdMap[wordId]
+                                        if (rawId == null) continue
+
                                         if (!isFirstWaWord) writer.write(",")
                                         isFirstWaWord = false
 
                                         val item = WrongAnswerItem(
-                                            wordId = cursor.getInt(wIdIdx),
+                                            wordId = wordId,
                                             timestamp = cursor.getLong(tsIdx),
                                             testMode = cursor.getString(modeIdx),
                                             userAnswer = cursor.getString(userAnsIdx),
                                             correctAnswer = cursor.getString(corrAnsIdx),
-                                            uuid = cursor.getString(uuidIdx)
+                                            uuid = cursor.getString(uuidIdx),
+                                            rawId = rawId
                                         )
                                         writer.write(json.encodeToString(item))
                                     }
@@ -242,16 +267,21 @@ class DataExportManager @Inject constructor(
                                     val uuidIdx = cursor.getColumnIndexOrThrow("uuid")
 
                                     while (cursor.moveToNext()) {
+                                        val grammarId = cursor.getInt(gIdIdx)
+                                        val rawId = grammarIdToRawIdMap[grammarId]
+                                        if (rawId == null) continue
+
                                         if (!isFirstWaGrammar) writer.write(",")
                                         isFirstWaGrammar = false
 
                                         val item = GrammarWrongAnswerItem(
-                                            grammarId = cursor.getInt(gIdIdx),
+                                            grammarId = grammarId,
                                             timestamp = cursor.getLong(tsIdx),
                                             testMode = cursor.getString(modeIdx),
                                             userAnswer = cursor.getString(userAnsIdx),
                                             correctAnswer = cursor.getString(corrAnsIdx),
-                                            uuid = cursor.getString(uuidIdx)
+                                            uuid = cursor.getString(uuidIdx),
+                                            rawId = rawId
                                         )
                                         writer.write(json.encodeToString(item))
                                     }
@@ -360,7 +390,11 @@ class DataExportManager @Inject constructor(
                                 writer.write("}")
                                 writer.write("}")
                             }
+                        } finally {
+                            gzipOs?.close()
                         }
+                    } finally {
+                        base64Os?.close()
                     }
                 }
             }
@@ -392,46 +426,48 @@ class DataExportManager @Inject constructor(
             val exportData = json.decodeFromString<NemoExportData>(jsonString)
             val userData = exportData.userData
 
+            userData.settings?.let { settings ->
+                settings.dailyGoal?.let { settingsRepository.setDailyGoal(it) }
+                settings.grammarDailyGoal?.let { settingsRepository.setGrammarDailyGoal(it) }
+                settings.learningDayResetHour?.let { settingsRepository.setLearningDayResetHour(it) }
+                settings.testQuestionCount?.let { settingsRepository.setTestQuestionCount(it) }
+                settings.testTimeLimitMinutes?.let { settingsRepository.setTestTimeLimitMinutes(it) }
+                settings.testShuffleQuestions?.let { settingsRepository.setTestShuffleQuestions(it) }
+                settings.testShuffleOptions?.let { settingsRepository.setTestShuffleOptions(it) }
+                settings.testAutoAdvance?.let { settingsRepository.setTestAutoAdvance(it) }
+                settings.testPrioritizeWrong?.let { settingsRepository.setTestPrioritizeWrong(it) }
+                settings.testPrioritizeNew?.let { settingsRepository.setTestPrioritizeNew(it) }
+                settings.testQuestionSource?.let { settingsRepository.setTestQuestionSource(it) }
+                settings.testWrongAnswerRemovalThreshold?.let { settingsRepository.setTestWrongAnswerRemovalThreshold(it) }
+                settings.testContentType?.let { settingsRepository.setTestContentType(it) }
+                settings.testSelectedWordLevels?.let { settingsRepository.setTestSelectedWordLevels(it) }
+                settings.testSelectedGrammarLevels?.let { settingsRepository.setTestSelectedGrammarLevels(it) }
+                settings.aiWorkshopDifficulty?.let { settingsRepository.setAiWorkshopDifficulty(it) }
+                settings.aiReadingTheme?.let { settingsRepository.setAiReadingTheme(it) }
+                settings.aiReadingDifficulty?.let { settingsRepository.setAiReadingDifficulty(it) }
+                settings.learningSteps?.let { settingsRepository.setLearningSteps(it) }
+                settings.learnAheadLimit?.let { settingsRepository.setLearnAheadLimit(it) }
+                settings.relearningSteps?.let { settingsRepository.setRelearningSteps(it) }
+                settings.isRandomNewContentEnabled?.let { settingsRepository.setRandomNewContentEnabled(it) }
+                settings.targetRetention?.let { settingsRepository.setTargetRetention(it) }
+            }
+
             database.withTransaction {
                 val wordDao = database.wordDao()
                 val wordStudyStateDao = database.wordStudyStateDao()
                 
-                // 加载全文映射
                 val localWordStates = wordStudyStateDao.getAllSync().associateBy { it.wordId }
                 val allLocalWords = wordDao.getAllWordsSync()
-                val localWordIdMap = allLocalWords.associateBy { it.id }
-                val localWordSemanticGroups = allLocalWords.groupBy { "${it.level}_${it.japanese}" }
+                val localWordRawIdMap = allLocalWords.associateBy { it.rawId }
 
                 val wordIdRedirectMap = mutableMapOf<Int, Int>()
                 userData.wordProgress.forEach { remoteWord ->
-                    val remoteKey = "${remoteWord.level}_${remoteWord.japanese}"
-                    
-                    // 确定目标本地 ID
-                    val targetLocalId = when {
-                        localWordIdMap.containsKey(remoteWord.wordId) -> remoteWord.wordId
-                        localWordSemanticGroups.containsKey(remoteKey) -> {
-                            val candidates = localWordSemanticGroups[remoteKey]!!
-                            // 精确匹配 ID 或匹配 ID 偏移量 (处理旧版 ID)
-                            candidates.find { it.id == remoteWord.wordId }?.id 
-                                ?: candidates.find { it.id % 10000 == remoteWord.wordId % 10000 }?.id 
-                                ?: candidates.first().id
-                        }
-                        else -> remoteWord.wordId
+                    val targetLocalId = localWordRawIdMap[remoteWord.rawId]?.id
+                    if (targetLocalId == null) {
+                        Log.w(TAG, "跳过未找到对应 rawId 的词条: ${remoteWord.rawId}")
+                        return@forEach
                     }
                     wordIdRedirectMap[remoteWord.wordId] = targetLocalId
-
-                    if (!localWordIdMap.containsKey(targetLocalId) && 
-                        !localWordSemanticGroups.containsKey(remoteKey) && 
-                        !remoteWord.japanese.isNullOrBlank()) {
-                        wordDao.insert(WordEntity(
-                            id = targetLocalId,
-                            japanese = remoteWord.japanese ?: "",
-                            hiragana = remoteWord.hiragana ?: "",
-                            chinese = remoteWord.chinese ?: "",
-                            level = remoteWord.level ?: "N5",
-                            rawId = remoteWord.rawId ?: ""
-                        ))
-                    }
 
                     val localState = localWordStates[targetLocalId]
                     if (localState != null) {
@@ -477,41 +513,18 @@ class DataExportManager @Inject constructor(
                 val grammarDao = database.grammarDao()
                 val grammarStudyStateDao = database.grammarStudyStateDao()
                 
-                // 加载全文映射，用于语义匹配
                 val localGrammarStates = grammarStudyStateDao.getAllSync().associateBy { it.grammarId }
                 val allLocalGrammars = grammarDao.getAllGrammarsSync()
-                val localGrammarIdMap = allLocalGrammars.associateBy { it.id }
-                val localGrammarSemanticGroups = allLocalGrammars.groupBy { "${it.grammarLevel.uppercase()}_${it.grammar}" }
+                val localGrammarRawIdMap = allLocalGrammars.associateBy { it.rawId }
 
                 val grammarIdRedirectMap = mutableMapOf<Int, Int>()
                 userData.grammarProgress.forEach { remoteGrammar ->
-                    val remoteKey = "${(remoteGrammar.grammarLevel ?: "N5").uppercase()}_${remoteGrammar.grammar ?: ""}"
-                    
-                    // 确定目标本地 ID
-                    val targetLocalId = when {
-                        localGrammarIdMap.containsKey(remoteGrammar.grammarId) -> remoteGrammar.grammarId
-                        localGrammarSemanticGroups.containsKey(remoteKey) -> {
-                            val candidates = localGrammarSemanticGroups[remoteKey]!!
-                            // 优先精确匹配 ID，否则匹配 ID 偏移量（针对旧版 ID），最后选第一个
-                            candidates.find { it.id == remoteGrammar.grammarId }?.id
-                                ?: candidates.find { it.id % 10000 == remoteGrammar.grammarId % 10000 }?.id
-                                ?: candidates.first().id
-                        }
-                        else -> remoteGrammar.grammarId
+                    val targetLocalId = localGrammarRawIdMap[remoteGrammar.rawId]?.id
+                    if (targetLocalId == null) {
+                        Log.w(TAG, "跳过未找到对应 rawId 的语法: ${remoteGrammar.rawId}")
+                        return@forEach
                     }
                     grammarIdRedirectMap[remoteGrammar.grammarId] = targetLocalId
-
-                    // 如果本地完全没有这个语法条目且内容不为空，则插入
-                    if (!localGrammarIdMap.containsKey(targetLocalId) && 
-                        !localGrammarSemanticGroups.containsKey(remoteKey) && 
-                        !remoteGrammar.grammar.isNullOrBlank()) {
-                        grammarDao.insert(GrammarEntity(
-                            id = targetLocalId,
-                            grammar = remoteGrammar.grammar ?: "",
-                            grammarLevel = remoteGrammar.grammarLevel ?: "N5",
-                            rawId = remoteGrammar.rawId ?: ""
-                        ))
-                    }
 
                     val localState = localGrammarStates[targetLocalId]
                     if (localState != null) {
@@ -557,11 +570,17 @@ class DataExportManager @Inject constructor(
                 val wrongAnswerDao = database.wrongAnswerDao()
                 val localWrongAnswers = wrongAnswerDao.getAllWrongAnswersSync().associateBy { it.uuid }
                 userData.wrongAnswers.words.forEach { remote ->
+                    val targetLocalId = localWordRawIdMap[remote.rawId]?.id
+                    if (targetLocalId == null) {
+                        Log.w(TAG, "跳过未找到对应 rawId 的单词错题: ${remote.rawId}")
+                        return@forEach
+                    }
+
                     val local = localWrongAnswers[remote.uuid]
                     if (local == null) {
                         wrongAnswerDao.insert(WrongAnswerEntity(
                             id = 0,
-                            wordId = wordIdRedirectMap[remote.wordId] ?: remote.wordId,
+                            wordId = targetLocalId,
                             testMode = remote.testMode ?: "",
                             userAnswer = remote.userAnswer ?: "",
                             correctAnswer = remote.correctAnswer ?: "",
@@ -581,11 +600,17 @@ class DataExportManager @Inject constructor(
                 val grammarWrongAnswerDao = database.grammarWrongAnswerDao()
                 val localGrammarWrongAnswers = grammarWrongAnswerDao.getAllWrongAnswersSync().associateBy { it.uuid }
                 userData.wrongAnswers.grammars.forEach { remote ->
+                    val targetLocalId = localGrammarRawIdMap[remote.rawId]?.id
+                    if (targetLocalId == null) {
+                        Log.w(TAG, "跳过未找到对应 rawId 的语法错题: ${remote.rawId}")
+                        return@forEach
+                    }
+
                     val local = localGrammarWrongAnswers[remote.uuid]
                     if (local == null) {
                         grammarWrongAnswerDao.insert(GrammarWrongAnswerEntity(
                             id = 0,
-                            grammarId = grammarIdRedirectMap[remote.grammarId] ?: remote.grammarId,
+                            grammarId = targetLocalId,
                             testMode = remote.testMode ?: "",
                             userAnswer = remote.userAnswer ?: "",
                             correctAnswer = remote.correctAnswer ?: "",
@@ -699,11 +724,11 @@ class DataExportManager @Inject constructor(
         }
     }
 
-    override suspend fun exportDataToUri(uriString: String): Boolean = withContext(Dispatchers.IO) {
+    override suspend fun exportDataToUri(uriString: String, isCompressed: Boolean): Boolean = withContext(Dispatchers.IO) {
         val tempFile = java.io.File(context.cacheDir, "temp_export_uri_${System.currentTimeMillis()}.json.gz")
         try {
             val uri = Uri.parse(uriString)
-            exportDataToFile("default_user", tempFile)
+            exportDataToFile("default_user", tempFile, isCompressed)
 
             val outputStream = context.contentResolver.openOutputStream(uri)
             if (outputStream == null) {

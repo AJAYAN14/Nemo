@@ -5,7 +5,7 @@ interface DataExportRepository {
      * 导出数据到指定 URI (String format)
      * @return 是否成功
      */
-    suspend fun exportDataToUri(uriString: String): Boolean
+    suspend fun exportDataToUri(uriString: String, isCompressed: Boolean = true): Boolean
 
     /**
      * 从指定 URI (String format) 导入数据

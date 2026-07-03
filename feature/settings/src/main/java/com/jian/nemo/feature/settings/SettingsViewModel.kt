@@ -227,23 +227,36 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text)
 
 
-            is SettingsEvent.ExportData -> exportData(event.uri)
+            is SettingsEvent.RequestExport -> requestExport()
+            is SettingsEvent.ConfirmExport -> confirmExport(event.uri, event.isCompressed)
+            is SettingsEvent.CancelExport -> cancelExport()
             is SettingsEvent.ImportData -> importData(event.uri)
             is SettingsEvent.ResetProgress -> resetProgress()
             is SettingsEvent.RepairLocalData -> repairData()
+            is SettingsEvent.ClearToast -> _uiState.update { it.copy(toastMessage = null) }
 
         }
     }
 
 
-    private fun exportData(uri: android.net.Uri) {
+    private fun requestExport() {
+        _uiState.update { it.copy(showExportOptionsDialog = true) }
+    }
+
+    private fun cancelExport() {
+        _uiState.update { it.copy(showExportOptionsDialog = false) }
+    }
+
+    private fun confirmExport(uri: android.net.Uri, isCompressed: Boolean) {
+        cancelExport() // 关闭弹窗并清理临时变量
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val success = exportDataUseCase(uri.toString())
-                // Success message can be handled without syncMessage if needed.
+                val success = exportDataUseCase(uri.toString(), isCompressed)
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Export failed", e)
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -253,9 +266,12 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             try {
                 val message = importDataUseCase(uri.toString())
-                // Handle message
+                _uiState.update { it.copy(toastMessage = message) }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Import failed", e)
+                _uiState.update { it.copy(toastMessage = "导入过程中发生异常: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
