@@ -21,6 +21,7 @@ import com.jian.nemo.core.domain.usecase.word.GetNewWordsUseCase
 import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
 import com.jian.nemo.core.domain.repository.ContentReportRepository
+import com.jian.nemo.core.data.manager.CloudBackupManager
 import com.jian.nemo.feature.learning.domain.LearningSessionPolicy
 import com.jian.nemo.feature.learning.domain.LearningSessionStatsManager
 import com.jian.nemo.feature.learning.domain.LearningQueueManager
@@ -36,6 +37,7 @@ import com.jian.nemo.feature.learning.domain.SrsIntervalPreview
 import com.jian.nemo.feature.learning.domain.LearningTtsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,7 +88,8 @@ class LearningViewModel @Inject constructor(
     private val learningScheduler: LearningScheduler,
     private val learningUndoHelper: LearningUndoHelper,
     private val learningTtsManager: LearningTtsManager,
-    private val contentReportRepository: ContentReportRepository
+    private val contentReportRepository: ContentReportRepository,
+    private val cloudBackupManager: CloudBackupManager
 ) : ViewModel() {
     companion object {
         /** 导航防抖延迟 (ms) */
@@ -676,6 +679,10 @@ class LearningViewModel @Inject constructor(
                 checkAndRestoreOrReset()
                 val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
                 val totalDuration = sessionStatsManager.completeSession(mode, todayEpoch)
+                // 触发静默自动备份（防抖 2 小时）
+                viewModelScope.launch(Dispatchers.IO) {
+                    cloudBackupManager.tryAutoBackup(intervalHours = 2)
+                }
                 _uiState.update {
                     it.copy(
                         status = LearningStatus.SessionCompleted,

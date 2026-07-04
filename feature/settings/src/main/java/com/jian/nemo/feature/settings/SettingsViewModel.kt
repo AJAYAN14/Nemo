@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import android.util.Log
 import javax.inject.Inject
+import com.jian.nemo.core.data.manager.CloudBackupManager
 
 /**
  * 设置界面ViewModel
@@ -27,6 +28,7 @@ class SettingsViewModel @Inject constructor(
     private val repairDataUseCase: com.jian.nemo.core.domain.usecase.settings.RepairDataUseCase,
     private val playTtsUseCase: com.jian.nemo.core.domain.usecase.audio.PlayTtsUseCase,
     private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
+    private val cloudBackupManager: CloudBackupManager,
     private val application: android.app.Application
 ) : ViewModel() {
 
@@ -234,6 +236,13 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.ResetProgress -> resetProgress()
             is SettingsEvent.RepairLocalData -> repairData()
             is SettingsEvent.ClearToast -> _uiState.update { it.copy(toastMessage = null) }
+            
+            // 云端备份事件
+            is SettingsEvent.BackupToCloud -> backupToCloud()
+            is SettingsEvent.ShowCloudBackupList -> loadCloudBackups()
+            is SettingsEvent.SelectRestoreFile -> _uiState.update { it.copy(showRestoreStrategyDialog = true, pendingRestoreFileName = event.fileName) }
+            is SettingsEvent.CancelRestore -> _uiState.update { it.copy(showRestoreStrategyDialog = false, pendingRestoreFileName = null) }
+            is SettingsEvent.RestoreFromCloud -> restoreFromCloud(event.fileName, event.strategy)
 
         }
     }
@@ -272,6 +281,59 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(toastMessage = "导入过程中发生异常: ${e.message}") }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    private fun backupToCloud() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCloudSyncing = true) }
+            try {
+                cloudBackupManager.uploadBackup()
+                _uiState.update { it.copy(toastMessage = "云端备份成功") }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Backup to cloud failed", e)
+                _uiState.update { it.copy(toastMessage = "备份失败: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isCloudSyncing = false) }
+                // 备份后刷新列表
+                loadCloudBackups()
+            }
+        }
+    }
+
+    private fun loadCloudBackups() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCloudSyncing = true) }
+            try {
+                val backups = cloudBackupManager.listBackups()
+                _uiState.update { 
+                    it.copy(
+                        cloudBackupList = backups,
+                        toastMessage = "备份列表已刷新"
+                    ) 
+                }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Load cloud backups failed", e)
+                _uiState.update { it.copy(toastMessage = "获取备份列表失败: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isCloudSyncing = false) }
+            }
+        }
+    }
+
+    private fun restoreFromCloud(fileName: String, strategy: com.jian.nemo.core.data.manager.ImportStrategy) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(showRestoreStrategyDialog = false, pendingRestoreFileName = null, isCloudSyncing = true) }
+            try {
+                val message = cloudBackupManager.downloadAndRestore(fileName, strategy)
+                _uiState.update { it.copy(toastMessage = message) }
+                // 恢复成功后通知 (不再需要收起底栏，因为它是单独页面)
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Restore from cloud failed", e)
+                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isCloudSyncing = false) }
             }
         }
     }

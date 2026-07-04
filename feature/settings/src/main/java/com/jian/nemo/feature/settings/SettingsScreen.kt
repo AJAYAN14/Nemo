@@ -46,6 +46,7 @@ fun SettingsScreen(
     onNavigateToAdvancedLearning: () -> Unit,
     onNavigateToThemeSettings: () -> Unit,
     onNavigateToAiSettings: () -> Unit,
+    onNavigateToCloudBackupHistory: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -148,7 +149,10 @@ fun SettingsScreen(
                             avatarPath = avatarPath,
                             onClick = onNavigateToLogin
                         )
-
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 72.dp, end = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                        )
                     } else {
                         // 未登录
                         SquircleSettingItem(
@@ -157,9 +161,26 @@ fun SettingsScreen(
                             title = "登录/注册",
                             subtitle = "登录以体验完整功能",
                             onClick = onNavigateToLogin,
-                            showDivider = false
+                            showDivider = true
                         )
                     }
+
+                     SquircleSettingItem(
+                        icon = Icons.Rounded.CloudUpload,
+                        iconColor = NemoCyan,
+                        title = "备份到云端",
+                        subtitle = "将当前进度安全保存在云端",
+                        onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
+                        showDivider = true
+                    )
+                     SquircleSettingItem(
+                        icon = Icons.Rounded.CloudSync,
+                        iconColor = NemoPurple,
+                        title = "云端备份历史",
+                        subtitle = "查看或从云端恢复历史备份",
+                        onClick = onNavigateToCloudBackupHistory,
+                        showDivider = false
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -351,11 +372,12 @@ fun SettingsScreen(
                      SquircleSettingItem(
                         icon = Icons.Rounded.FileUpload,
                         iconColor = NemoPrimary,
-                        title = "导入数据",
+                        title = "导入本地数据",
                         subtitle = "从文件恢复进度",
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
                         showDivider = true
                     )
+
                      SquircleSettingItem(
                         icon = Icons.Rounded.Delete,
                         iconColor = NemoDanger, // NemoRed/Danger
@@ -460,6 +482,18 @@ fun SettingsScreen(
                 val ext = if (isCompressed) ".json.gz" else ".json"
                 val fileName = "nemo_backup_${SimpleDateFormat("yyyyMMdd_HHmm", Locale.getDefault()).format(Date())}$ext"
                 exportLauncher.launch(fileName)
+            }
+        )
+    }
+
+    if (uiState.showRestoreStrategyDialog && uiState.pendingRestoreFileName != null) {
+        RestoreStrategyDialog(
+            fileName = uiState.pendingRestoreFileName!!,
+            onConfirm = { strategy ->
+                viewModel.onEvent(SettingsEvent.RestoreFromCloud(uiState.pendingRestoreFileName!!, strategy))
+            },
+            onDismiss = {
+                viewModel.onEvent(SettingsEvent.CancelRestore)
             }
         )
     }

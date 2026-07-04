@@ -1,4 +1,6 @@
 package com.jian.nemo.feature.settings
+import com.jian.nemo.core.data.manager.BackupInfo
+import com.jian.nemo.core.data.manager.ImportStrategy
 
 /**
  * 设置界面UI状态
@@ -56,7 +58,13 @@ data class SettingsUiState(
     // 用户状态 (从 AuthRepository 观察)
     val isLoggedIn: Boolean = false,
     val user: com.jian.nemo.core.domain.model.User? = null,
-    val avatarPath: String? = null
+    val avatarPath: String? = null,
+
+    // 云端备份
+    val isCloudSyncing: Boolean = false,
+    val cloudBackupList: List<BackupInfo> = emptyList(),
+    val showRestoreStrategyDialog: Boolean = false,
+    val pendingRestoreFileName: String? = null
 )
 
 /**
@@ -145,5 +153,10 @@ sealed interface SettingsEvent {
     // 清除 Toast
     data object ClearToast : SettingsEvent
 
-
+    // 云端备份事件
+    data object BackupToCloud : SettingsEvent
+    data object ShowCloudBackupList : SettingsEvent
+    data class SelectRestoreFile(val fileName: String) : SettingsEvent
+    data object CancelRestore : SettingsEvent
+    data class RestoreFromCloud(val fileName: String, val strategy: ImportStrategy) : SettingsEvent
 }

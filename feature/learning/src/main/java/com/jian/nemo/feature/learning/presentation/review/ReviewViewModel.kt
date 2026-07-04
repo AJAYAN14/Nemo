@@ -24,10 +24,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Inject
+import com.jian.nemo.core.data.manager.CloudBackupManager
 
 /**
  * Review status
@@ -69,7 +74,8 @@ class ReviewViewModel @Inject constructor(
     private val updateWordUseCase: UpdateWordUseCase,
     private val updateGrammarUseCase: UpdateGrammarUseCase,
     private val studyRecordRepository: StudyRecordRepository,
-    private val learningQueueManager: LearningQueueManager
+    private val learningQueueManager: LearningQueueManager,
+    private val cloudBackupManager: CloudBackupManager
 ) : ViewModel() {
 
     companion object {
@@ -112,6 +118,16 @@ class ReviewViewModel @Inject constructor(
             settingsRepository.leechActionFlow.collect { action ->
                 _leechAction = action
             }
+        }
+
+        // 监听完成状态以触发自动备份
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.map { it.status }
+                .distinctUntilChanged()
+                .filter { it == ReviewStatus.SessionCompleted }
+                .collect {
+                    cloudBackupManager.tryAutoBackup(intervalHours = 2)
+                }
         }
     }
 

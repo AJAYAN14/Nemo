@@ -33,8 +33,6 @@ import com.jian.nemo.core.ui.navigation.NavDestination
 import com.jian.nemo.core.ui.component.splash.SplashScreen
 import com.jian.nemo.feature.user.AuthViewModel
 import com.jian.nemo.core.ui.animation.NemoNavigationAnimations
-
-
 import com.jian.nemo.feature.learning.presentation.home.HomeScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIWorkshopScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIReadingScreen
@@ -646,6 +644,9 @@ fun NemoNavHost(
                 onNavigateToThemeSettings = {
                     navController.navigate(NavDestination.THEME_SETTINGS)
                 },
+                onNavigateToCloudBackupHistory = {
+                    navController.navigate(NavDestination.CLOUD_BACKUP_HISTORY)
+                },
                 onCheckUpdate = onCheckUpdate
             )
         }
@@ -655,6 +656,13 @@ fun NemoNavHost(
         // TTS设置
         composable(NavDestination.TTS_SETTINGS) {
              TtsSettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // 云端备份历史
+        composable(NavDestination.CLOUD_BACKUP_HISTORY) {
+            com.jian.nemo.feature.settings.CloudBackupHistoryScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

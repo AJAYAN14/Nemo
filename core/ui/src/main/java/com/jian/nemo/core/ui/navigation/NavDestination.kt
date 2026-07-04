@@ -14,6 +14,7 @@ object NavDestination {
     const val SETTINGS = "settings"  // 个人/设置页
     const val TTS_SETTINGS = "tts_settings" // TTS设置页
     const val SYNC_DIAGNOSTICS = "sync_diagnostics" // 同步故障诊断页
+    const val CLOUD_BACKUP_HISTORY = "cloud_backup_history" // 云端备份历史页
     const val THEME_SETTINGS = "theme_settings" // 主题设置页
     const val ADVANCED_LEARNING = "advanced_learning" // 记忆算法配置页
     const val AI_WORKSHOP = "ai_workshop"       // AI 工坊

@@ -33,6 +33,7 @@ import android.util.Base64OutputStream
 import android.util.Base64
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
+import com.jian.nemo.core.data.validator.BackupValidator
 
 
 /**
@@ -42,6 +43,16 @@ data class ImportResult(
     val success: Boolean,
     val message: String
 )
+
+/**
+ * 导入策略
+ */
+enum class ImportStrategy {
+    /** 智能合并：只更新较新的记录 */
+    MERGE,
+    /** 完全覆盖：清空本地进度后全量写入 */
+    REPLACE
+}
 
 
 /**
@@ -411,11 +422,13 @@ class DataExportManager @Inject constructor(
      * 导入数据
      * @param dataString 可能是压缩的 Base64 字符串，也可能是原始 JSON
      */
-    suspend fun importData(dataString: String): ImportResult = withContext(Dispatchers.IO) {
+    suspend fun importData(dataString: String, strategy: ImportStrategy = ImportStrategy.MERGE): ImportResult = withContext(Dispatchers.IO) {
         var importedWords = 0
         var importedGrammars = 0
+        // 设置回滚用：缓存旧值
+        var oldSettingsSnapshot: Map<String, Any?>? = null
         try {
-            Log.d(TAG, "开始导入数据...")
+            Log.d(TAG, "开始导入数据 (策略: $strategy)...")
 
             val jsonString = if (BackupCompression.isCompressed(dataString)) {
                 BackupCompression.decompress(dataString)
@@ -424,35 +437,113 @@ class DataExportManager @Inject constructor(
             }
 
             val exportData = json.decodeFromString<NemoExportData>(jsonString)
-            val userData = exportData.userData
 
+            // 第一道防线：版本校验 + 数据清洗
+            val validationResult = BackupValidator.validate(exportData)
+            val cleanedData = validationResult.data
+            val userData = cleanedData.userData
+
+            // 缓存旧设置（用于回滚）
+            oldSettingsSnapshot = captureSettingsSnapshot()
+
+            // 写入设置（在事务外，但有回滚保护）
             userData.settings?.let { settings ->
-                settings.dailyGoal?.let { settingsRepository.setDailyGoal(it) }
-                settings.grammarDailyGoal?.let { settingsRepository.setGrammarDailyGoal(it) }
-                settings.learningDayResetHour?.let { settingsRepository.setLearningDayResetHour(it) }
-                settings.testQuestionCount?.let { settingsRepository.setTestQuestionCount(it) }
-                settings.testTimeLimitMinutes?.let { settingsRepository.setTestTimeLimitMinutes(it) }
-                settings.testShuffleQuestions?.let { settingsRepository.setTestShuffleQuestions(it) }
-                settings.testShuffleOptions?.let { settingsRepository.setTestShuffleOptions(it) }
-                settings.testAutoAdvance?.let { settingsRepository.setTestAutoAdvance(it) }
-                settings.testPrioritizeWrong?.let { settingsRepository.setTestPrioritizeWrong(it) }
-                settings.testPrioritizeNew?.let { settingsRepository.setTestPrioritizeNew(it) }
-                settings.testQuestionSource?.let { settingsRepository.setTestQuestionSource(it) }
-                settings.testWrongAnswerRemovalThreshold?.let { settingsRepository.setTestWrongAnswerRemovalThreshold(it) }
-                settings.testContentType?.let { settingsRepository.setTestContentType(it) }
-                settings.testSelectedWordLevels?.let { settingsRepository.setTestSelectedWordLevels(it) }
-                settings.testSelectedGrammarLevels?.let { settingsRepository.setTestSelectedGrammarLevels(it) }
-                settings.aiWorkshopDifficulty?.let { settingsRepository.setAiWorkshopDifficulty(it) }
-                settings.aiReadingTheme?.let { settingsRepository.setAiReadingTheme(it) }
-                settings.aiReadingDifficulty?.let { settingsRepository.setAiReadingDifficulty(it) }
-                settings.learningSteps?.let { settingsRepository.setLearningSteps(it) }
-                settings.learnAheadLimit?.let { settingsRepository.setLearnAheadLimit(it) }
-                settings.relearningSteps?.let { settingsRepository.setRelearningSteps(it) }
-                settings.isRandomNewContentEnabled?.let { settingsRepository.setRandomNewContentEnabled(it) }
-                settings.targetRetention?.let { settingsRepository.setTargetRetention(it) }
+                applySettings(settings)
             }
 
-            database.withTransaction {
+            when (strategy) {
+                ImportStrategy.MERGE -> {
+                    importedWords = importMerge(userData)
+                    importedGrammars = userData.grammarProgress.size
+                }
+                ImportStrategy.REPLACE -> {
+                    importedWords = importReplace(userData)
+                    importedGrammars = userData.grammarProgress.size
+                }
+            }
+
+            // 导入成功后执行数据去重修复
+            repairDataDuplicates()
+
+            val validationSummary = validationResult.toSummary()
+            val suffix = if (validationSummary.isNotEmpty()) "\n校验提示: $validationSummary" else ""
+            Log.d(TAG, "导入完成: 单词$importedWords, 语法$importedGrammars")
+            ImportResult(true, "导入成功！\n更新单词: $importedWords\n更新语法: $importedGrammars$suffix")
+
+        } catch (e: Exception) {
+            Log.e(TAG, "导入失败", e)
+            // 回滚设置
+            oldSettingsSnapshot?.let {
+                try {
+                    restoreSettingsSnapshot(it)
+                    Log.d(TAG, "设置已回滚")
+                } catch (rollbackEx: Exception) {
+                    Log.e(TAG, "设置回滚失败", rollbackEx)
+                }
+            }
+            val errorMsg = when (e) {
+                is kotlinx.serialization.SerializationException -> "文件格式异常，无法解析"
+                is IllegalArgumentException -> e.message ?: "数据校验失败"
+                else -> "导入失败: ${e.message}"
+            }
+            ImportResult(false, errorMsg)
+        }
+    }
+
+    /**
+     * 将设置应用到 SettingsRepository
+     */
+    private suspend fun applySettings(settings: ExportAppSettings) {
+        settings.dailyGoal.let { settingsRepository.setDailyGoal(it) }
+        settings.grammarDailyGoal.let { settingsRepository.setGrammarDailyGoal(it) }
+        settings.learningDayResetHour.let { settingsRepository.setLearningDayResetHour(it) }
+        settings.testQuestionCount.let { settingsRepository.setTestQuestionCount(it) }
+        settings.testTimeLimitMinutes.let { settingsRepository.setTestTimeLimitMinutes(it) }
+        settings.testShuffleQuestions.let { settingsRepository.setTestShuffleQuestions(it) }
+        settings.testShuffleOptions.let { settingsRepository.setTestShuffleOptions(it) }
+        settings.testAutoAdvance.let { settingsRepository.setTestAutoAdvance(it) }
+        settings.testPrioritizeWrong.let { settingsRepository.setTestPrioritizeWrong(it) }
+        settings.testPrioritizeNew.let { settingsRepository.setTestPrioritizeNew(it) }
+        settings.testQuestionSource.let { settingsRepository.setTestQuestionSource(it) }
+        settings.testWrongAnswerRemovalThreshold.let { settingsRepository.setTestWrongAnswerRemovalThreshold(it) }
+        settings.testContentType.let { settingsRepository.setTestContentType(it) }
+        settings.testSelectedWordLevels.let { settingsRepository.setTestSelectedWordLevels(it) }
+        settings.testSelectedGrammarLevels.let { settingsRepository.setTestSelectedGrammarLevels(it) }
+        settings.aiWorkshopDifficulty.let { settingsRepository.setAiWorkshopDifficulty(it) }
+        settings.aiReadingTheme.let { settingsRepository.setAiReadingTheme(it) }
+        settings.aiReadingDifficulty.let { settingsRepository.setAiReadingDifficulty(it) }
+        settings.learningSteps.let { settingsRepository.setLearningSteps(it) }
+        settings.learnAheadLimit.let { settingsRepository.setLearnAheadLimit(it) }
+        settings.relearningSteps.let { settingsRepository.setRelearningSteps(it) }
+        settings.isRandomNewContentEnabled.let { settingsRepository.setRandomNewContentEnabled(it) }
+        settings.targetRetention.let { settingsRepository.setTargetRetention(it) }
+    }
+
+    /**
+     * 捕获当前设置快照（用于回滚）
+     */
+    private suspend fun captureSettingsSnapshot(): Map<String, Any?> {
+        return mapOf(
+            "dailyGoal" to settingsRepository.dailyGoalFlow.first(),
+            "grammarDailyGoal" to settingsRepository.grammarDailyGoalFlow.first(),
+            "learningDayResetHour" to settingsRepository.learningDayResetHourFlow.first()
+        )
+    }
+
+    /**
+     * 恢复设置快照
+     */
+    private suspend fun restoreSettingsSnapshot(snapshot: Map<String, Any?>) {
+        (snapshot["dailyGoal"] as? Int)?.let { settingsRepository.setDailyGoal(it) }
+        (snapshot["grammarDailyGoal"] as? Int)?.let { settingsRepository.setGrammarDailyGoal(it) }
+        (snapshot["learningDayResetHour"] as? Int)?.let { settingsRepository.setLearningDayResetHour(it) }
+    }
+
+    /**
+     * MERGE 模式：智能合并
+     */
+    private suspend fun importMerge(userData: UserData): Int {
+        database.withTransaction {
                 val wordDao = database.wordDao()
                 val wordStudyStateDao = database.wordStudyStateDao()
                 
@@ -508,7 +599,6 @@ class DataExportManager @Inject constructor(
                         ))
                     }
                 }
-                importedWords = userData.wordProgress.size
 
                 val grammarDao = database.grammarDao()
                 val grammarStudyStateDao = database.grammarStudyStateDao()
@@ -565,7 +655,6 @@ class DataExportManager @Inject constructor(
                          ))
                     }
                 }
-                importedGrammars = userData.grammarProgress.size
 
                 val wrongAnswerDao = database.wrongAnswerDao()
                 val localWrongAnswers = wrongAnswerDao.getAllWrongAnswersSync().associateBy { it.uuid }
@@ -709,19 +798,178 @@ class DataExportManager @Inject constructor(
                         maxTestStreak = userData.maxTestStreak ?: 0,
                         testStreak = userData.testStreak ?: 0
                     )
+            }
+        }
+
+        return userData.wordProgress.size
+    }
+
+    /**
+     * REPLACE 模式：清空进度表后全量写入
+     * 注意：只清空进度相关表，不清空词库基础表（words/grammars）
+     */
+    private suspend fun importReplace(userData: UserData): Int {
+        database.withTransaction {
+            // 清空进度相关表
+            database.wordStudyStateDao().deleteAll()
+            database.grammarStudyStateDao().deleteAll()
+            database.wrongAnswerDao().deleteAll()
+            database.grammarWrongAnswerDao().deleteAll()
+            database.testRecordDao().deleteAll()
+            database.studyRecordDao().deleteAll()
+            database.favoriteQuestionDao().deleteAll()
+
+            // 重建 rawId 映射
+            val wordDao = database.wordDao()
+            val wordStudyStateDao = database.wordStudyStateDao()
+            val allLocalWords = wordDao.getAllWordsSync()
+            val localWordRawIdMap = allLocalWords.associateBy { it.rawId }
+
+            // 全量写入单词进度（不做时间戳对比）
+            userData.wordProgress.forEach { remoteWord ->
+                val targetLocalId = localWordRawIdMap[remoteWord.rawId]?.id
+                if (targetLocalId == null) {
+                    Log.w(TAG, "[REPLACE] 跳过未找到对应 rawId 的词条: ${remoteWord.rawId}")
+                    return@forEach
                 }
+                wordStudyStateDao.insert(WordStudyStateEntity(
+                    wordId = targetLocalId,
+                    repetitionCount = remoteWord.srsLevel,
+                    stability = remoteWord.stability,
+                    difficulty = remoteWord.difficulty,
+                    interval = remoteWord.interval,
+                    nextReviewDate = remoteWord.nextReviewDate,
+                    isFavorite = remoteWord.isFavorite,
+                    isSkipped = remoteWord.isSkipped,
+                    lastModifiedTime = remoteWord.lastModifiedTime,
+                    lastReviewedDate = remoteWord.lastReviewedDate,
+                    firstLearnedDate = remoteWord.firstLearnedDate,
+                    type = remoteWord.type,
+                    isDeleted = remoteWord.isDeleted,
+                    deletedTime = remoteWord.deletedTime
+                ))
             }
 
-            // 导入成功后，执行一次数据去重修复，清理可能已存在的重复条目
-            repairDataDuplicates()
+            // 全量写入语法进度
+            val grammarDao = database.grammarDao()
+            val grammarStudyStateDao = database.grammarStudyStateDao()
+            val allLocalGrammars = grammarDao.getAllGrammarsSync()
+            val localGrammarRawIdMap = allLocalGrammars.associateBy { it.rawId }
 
-            Log.d(TAG, "导入完成: 单词$importedWords, 语法$importedGrammars")
-            ImportResult(true, "导入成功！\n更新单词: $importedWords\n更新语法: $importedGrammars\n已执行数据自动优化修复。")
+            userData.grammarProgress.forEach { remoteGrammar ->
+                val targetLocalId = localGrammarRawIdMap[remoteGrammar.rawId]?.id
+                if (targetLocalId == null) {
+                    Log.w(TAG, "[REPLACE] 跳过未找到对应 rawId 的语法: ${remoteGrammar.rawId}")
+                    return@forEach
+                }
+                grammarStudyStateDao.insert(GrammarStudyStateEntity(
+                    grammarId = targetLocalId,
+                    repetitionCount = remoteGrammar.srsLevel,
+                    stability = remoteGrammar.stability,
+                    difficulty = remoteGrammar.difficulty,
+                    interval = remoteGrammar.interval,
+                    nextReviewDate = remoteGrammar.nextReviewDate,
+                    isFavorite = remoteGrammar.isFavorite,
+                    isSkipped = remoteGrammar.isSkipped,
+                    lastModifiedTime = remoteGrammar.lastModifiedTime,
+                    lastReviewedDate = remoteGrammar.lastReviewedDate,
+                    firstLearnedDate = remoteGrammar.firstLearnedDate,
+                    type = remoteGrammar.type,
+                    isDeleted = remoteGrammar.isDeleted,
+                    deletedTime = remoteGrammar.deletedTime
+                ))
+            }
 
-        } catch (e: Exception) {
-            Log.e(TAG, "导入失败", e)
-            ImportResult(false, "导入失败: ${e.message}")
+            // 全量写入错题、测试记录、学习记录等
+            val wrongAnswerDao = database.wrongAnswerDao()
+            val wordIdRedirectMap = mutableMapOf<Int, Int>()
+            userData.wordProgress.forEach { w -> localWordRawIdMap[w.rawId]?.id?.let { wordIdRedirectMap[w.wordId] = it } }
+
+            userData.wrongAnswers.words.forEach { remote ->
+                val targetLocalId = localWordRawIdMap[remote.rawId]?.id ?: return@forEach
+                wrongAnswerDao.insert(WrongAnswerEntity(
+                    id = 0,
+                    wordId = targetLocalId,
+                    testMode = remote.testMode ?: "",
+                    userAnswer = remote.userAnswer ?: "",
+                    correctAnswer = remote.correctAnswer ?: "",
+                    uuid = remote.uuid ?: java.util.UUID.randomUUID().toString(),
+                    timestamp = remote.timestamp
+                ))
+            }
+
+            val grammarWrongAnswerDao = database.grammarWrongAnswerDao()
+            val grammarIdRedirectMap = mutableMapOf<Int, Int>()
+            userData.grammarProgress.forEach { g -> localGrammarRawIdMap[g.rawId]?.id?.let { grammarIdRedirectMap[g.grammarId] = it } }
+
+            userData.wrongAnswers.grammars.forEach { remote ->
+                val targetLocalId = localGrammarRawIdMap[remote.rawId]?.id ?: return@forEach
+                grammarWrongAnswerDao.insert(GrammarWrongAnswerEntity(
+                    id = 0,
+                    grammarId = targetLocalId,
+                    testMode = remote.testMode ?: "",
+                    userAnswer = remote.userAnswer ?: "",
+                    correctAnswer = remote.correctAnswer ?: "",
+                    uuid = remote.uuid ?: java.util.UUID.randomUUID().toString(),
+                    timestamp = remote.timestamp
+                ))
+            }
+
+            val testRecordDao = database.testRecordDao()
+            userData.testRecords.forEach { remote ->
+                testRecordDao.insert(TestRecordEntity(
+                    id = 0,
+                    date = remote.date,
+                    totalQuestions = remote.totalQuestions,
+                    correctAnswers = remote.correctAnswers,
+                    testMode = remote.testMode,
+                    uuid = remote.uuid ?: java.util.UUID.randomUUID().toString(),
+                    timestamp = remote.timestamp
+                ))
+            }
+
+            val studyRecordDao = database.studyRecordDao()
+            userData.studyRecords.forEach { remote ->
+                studyRecordDao.insert(StudyRecordEntity(
+                    date = remote.date,
+                    learnedWords = remote.learnedWords,
+                    learnedGrammars = remote.learnedGrammars,
+                    reviewedWords = remote.reviewedWords,
+                    reviewedGrammars = remote.reviewedGrammars,
+                    skippedWords = remote.skippedWords,
+                    skippedGrammars = remote.skippedGrammars,
+                    testCount = remote.testCount,
+                    timestamp = remote.timestamp
+                ))
+            }
+
+            val favoriteQuestionDao = database.favoriteQuestionDao()
+            userData.favoriteQuestions.forEach { remote ->
+                favoriteQuestionDao.insert(FavoriteQuestionEntity(
+                    id = 0,
+                    grammarId = remote.grammarId?.let { grammarIdRedirectMap[it] ?: it },
+                    jsonId = remote.jsonId,
+                    questionType = remote.questionType,
+                    questionText = remote.questionText,
+                    optionsJson = remote.optionsJson,
+                    correctAnswer = remote.correctAnswer,
+                    explanation = remote.explanation,
+                    timestamp = remote.timestamp
+                ))
+            }
+
+            userData.totalStudyDays?.let { totalStudyDays ->
+                settingsRepository.restoreStudyStats(
+                    totalStudyDays = totalStudyDays,
+                    dailyStreak = userData.studyStreak ?: 0,
+                    lastStudyDate = userData.studyRecords.maxOfOrNull { it.date } ?: 0L,
+                    maxTestStreak = userData.maxTestStreak ?: 0,
+                    testStreak = userData.testStreak ?: 0
+                )
+            }
         }
+
+        return userData.wordProgress.size
     }
 
     override suspend fun exportDataToUri(uriString: String, isCompressed: Boolean): Boolean = withContext(Dispatchers.IO) {
