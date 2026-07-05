@@ -38,7 +38,8 @@ fun LoginForm(
     passwordFocusRequester: FocusRequester,
     onForgotPasswordClick: () -> Unit,
     emailError: Boolean = false, // Added error state
-    passwordError: Boolean = false // Added error state
+    passwordError: Boolean = false, // Added error state
+    onGoogleLoginClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -110,6 +111,47 @@ fun LoginForm(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+            Text(
+                text = "或者",
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = onGoogleLoginClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp),
+            shape = RoundedCornerShape(50),
+            enabled = !isLoading,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Icon(
+                imageVector = GoogleIcon,
+                contentDescription = "Google Sign In",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Unspecified
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "使用 Google 登录",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
         TextButton(
             onClick = onForgotPasswordClick,
             modifier = Modifier.align(Alignment.End),

@@ -52,9 +52,18 @@ interface AuthRepository {
     /** 验证更新邮箱 OTP */
     suspend fun verifyEmailChangeOtp(email: String, token: String): Result<Unit>
 
+    /** 绑定 Google 账号到当前已登录用户 */
+    suspend fun linkGoogleAccount(idToken: String): Result<Unit>
+
+    /** 解绑 Google 账号 */
+    suspend fun unlinkGoogleAccount(): Result<Unit>
+
+    /** 同步最新用户信息 */
+    suspend fun syncUser(): Result<User>
+
     /** 更新密码 */
     suspend fun updatePassword(newPassword: String): Result<Unit>
 
     /** 注销/销毁账户 */
-    suspend fun deleteAccount(password: String): Result<Unit>
+    suspend fun deleteAccount(password: String? = null): Result<Unit>
 }

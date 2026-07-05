@@ -8,5 +8,8 @@ data class User(
     val username: String,
     val email: String?,
     val avatarUrl: String? = null,
-    val sessionToken: String
+    val sessionToken: String,
+    val hasGoogleLinked: Boolean = false,
+    val isOnlyGoogleIdentity: Boolean = false,
+    val isNewUser: Boolean = false
 )

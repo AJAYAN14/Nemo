@@ -324,14 +324,16 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun deleteAccount(password: String): Result<Unit> = withContext(Dispatchers.IO) {
+    override suspend fun deleteAccount(password: String?): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
             val email = userInfo.email ?: throw IllegalStateException("User email is null")
-            // Re-verify password
-            supabase.auth.signInWith(Email) {
-                this.email = email
-                this.password = password
+            // Re-verify password if provided
+            if (!password.isNullOrEmpty()) {
+                supabase.auth.signInWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
             }
             // Call Edge Function to perform physical deletion on server side
             try {
@@ -354,17 +356,75 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun unlinkGoogleAccount(): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
+            // 找到 google provider 的 identity
+            val googleIdentity = userInfo.identities?.find { it.provider == "google" }
+            if (googleIdentity != null) {
+                val id = googleIdentity.identityId ?: throw IllegalStateException("Identity ID is null")
+                supabase.auth.unlinkIdentity(id)
+                // 解绑后刷新本地数据
+                val updatedUserInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
+                saveUserToLocal(updatedUserInfo)
+                _userFlow.value = updatedUserInfo.toDomainModel()
+            }
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.toAuthException())
+        }
+    }
+
+    override suspend fun linkGoogleAccount(idToken: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            // In Supabase-KT 3.0.0, native linkIdentityWithIdToken is not available.
+            // However, GoTrue links identities automatically if signInWith is called while the user has an active session.
+            supabase.auth.signInWith(io.github.jan.supabase.auth.providers.builtin.IDToken) {
+                this.idToken = idToken
+                this.provider = io.github.jan.supabase.auth.providers.Google
+            }
+            // After linking, refresh user info
+            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
+            saveUserToLocal(userInfo)
+            _userFlow.value = userInfo.toDomainModel()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.toAuthException())
+        }
+    }
+
+    override suspend fun syncUser(): Result<User> = withContext(Dispatchers.IO) {
+        try {
+            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
+            saveUserToLocal(userInfo)
+            _userFlow.value = userInfo.toDomainModel()
+            Result.Success(userInfo.toDomainModel())
+        } catch (e: Exception) {
+            Result.Error(e.toAuthException())
+        }
+    }
+
     private suspend fun saveUserToLocal(userInfo: UserInfo) {
         val nickname = userInfo.userMetadata?.stringOrNull("nickname")?.takeIf { it.isNotEmpty() }
+            ?: userInfo.userMetadata?.stringOrNull("full_name")?.takeIf { it.isNotEmpty() }
+            ?: userInfo.userMetadata?.stringOrNull("name")?.takeIf { it.isNotEmpty() }
             ?: userInfo.email?.substringBefore('@').orEmpty()
+            
         val avatar = userInfo.userMetadata?.stringOrNull("avatar")?.takeIf { it.isNotEmpty() }
+            ?: userInfo.userMetadata?.stringOrNull("avatar_url")?.takeIf { it.isNotEmpty() }
+            ?: userInfo.userMetadata?.stringOrNull("picture")?.takeIf { it.isNotEmpty() }
+            
         val session = supabase.auth.currentSessionOrNull()
+        val hasGoogleLinked = userInfo.identities?.any { it.provider == "google" } == true
+        val isOnlyGoogleIdentity = userInfo.identities?.size == 1 && hasGoogleLinked
         val userEntity = UserEntity(
             id = userInfo.id,
             username = nickname,
             email = userInfo.email ?: "",
             sessionToken = session?.accessToken ?: "",
-            avatar = avatar
+            avatar = avatar,
+            hasGoogleLinked = hasGoogleLinked,
+            isOnlyGoogleIdentity = isOnlyGoogleIdentity
         )
         userDao.insert(userEntity)
     }
@@ -378,6 +438,12 @@ class AuthRepositoryImpl @Inject constructor(
                     code = -1,
                     cause = this
                 )
+            message?.contains("Bearer token", ignoreCase = true) == true ->
+                AuthException(
+                    message = "登录状态已过期或网络异常，请重新登录后再尝试此操作。",
+                    code = 401,
+                    cause = this
+                )
             else -> AuthException(
                 message = message ?: "Authentication failed",
                 code = -1,
@@ -388,15 +454,32 @@ class AuthRepositoryImpl @Inject constructor(
 
     private fun UserInfo.toDomainModel(): User {
         val nickname = userMetadata?.stringOrNull("nickname")?.takeIf { it.isNotEmpty() }
+            ?: userMetadata?.stringOrNull("full_name")?.takeIf { it.isNotEmpty() }
+            ?: userMetadata?.stringOrNull("name")?.takeIf { it.isNotEmpty() }
             ?: email?.substringBefore('@').orEmpty()
+            
         val avatarUrl = userMetadata?.stringOrNull("avatar")?.takeIf { it.isNotEmpty() }
+            ?: userMetadata?.stringOrNull("avatar_url")?.takeIf { it.isNotEmpty() }
+            ?: userMetadata?.stringOrNull("picture")?.takeIf { it.isNotEmpty() }
+            
         val session = supabase.auth.currentSessionOrNull()
+        val hasGoogleLinked = identities?.any { it.provider == "google" } == true
+        val isOnlyGoogleIdentity = identities?.size == 1 && hasGoogleLinked
+        
+        // 判断是否为新用户 (创建时间在两分钟以内)
+        val createdAtInstant = createdAt
+        val isNewUser = createdAtInstant != null && 
+            (kotlinx.datetime.Clock.System.now() - createdAtInstant).inWholeSeconds < 120
+
         return User(
             id = id,
             username = nickname,
             email = email,
             avatarUrl = avatarUrl,
-            sessionToken = session?.accessToken ?: ""
+            sessionToken = session?.accessToken ?: "",
+            hasGoogleLinked = hasGoogleLinked,
+            isOnlyGoogleIdentity = isOnlyGoogleIdentity,
+            isNewUser = isNewUser
         )
     }
 

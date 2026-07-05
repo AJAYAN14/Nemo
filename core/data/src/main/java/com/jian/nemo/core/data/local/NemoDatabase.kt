@@ -27,7 +27,7 @@ import com.jian.nemo.core.data.local.entity.*
         AIExerciseEntity::class,
         AIReadingHistoryEntity::class
     ],
-    version = 24,  // v24: 数据库升级
+    version = 25,  // v25: 增加 hasGoogleLinked
     exportSchema = true
 )
 abstract class NemoDatabase : RoomDatabase() {

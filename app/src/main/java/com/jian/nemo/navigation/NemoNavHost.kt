@@ -844,10 +844,23 @@ fun NemoNavHost(
         // 用户中心与认证模块 (Login, Register, Profile)
         userGraph(
             navController = navController,
-            onLoginSuccess = {
-                // 登录成功后跳转到学习主页
+            onLoginSuccess = { isNewUser ->
+                if (isNewUser) {
+                    // 新用户登录成功后跳转到引导页完善资料
+                    navController.navigate(com.jian.nemo.feature.user.navigation.ROUTE_PROFILE_SETUP) {
+                        popUpTo(ROUTE_LOGIN) { inclusive = true }
+                    }
+                } else {
+                    // 老用户直接进主页
+                    navController.navigate(NavDestination.LEARNING) {
+                        popUpTo(ROUTE_LOGIN) { inclusive = true }
+                    }
+                }
+            },
+            onSetupComplete = {
+                // 引导完成，跳转主页
                 navController.navigate(NavDestination.LEARNING) {
-                    popUpTo(ROUTE_LOGIN) { inclusive = true }
+                    popUpTo(com.jian.nemo.feature.user.navigation.ROUTE_PROFILE_SETUP) { inclusive = true }
                 }
             }
         )

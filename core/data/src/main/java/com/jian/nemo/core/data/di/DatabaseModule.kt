@@ -1,4 +1,4 @@
-package com.jian.nemo.core.data.di
+﻿package com.jian.nemo.core.data.di
 
 import android.content.Context
 import androidx.room.Room
@@ -13,6 +13,7 @@ import com.jian.nemo.core.data.local.migration.MIGRATION_17_18
 import com.jian.nemo.core.data.local.migration.MIGRATION_20_21
 import com.jian.nemo.core.data.local.migration.MIGRATION_21_22
 import com.jian.nemo.core.data.local.migration.MIGRATION_22_23
+import com.jian.nemo.core.data.local.migration.MIGRATION_24_25
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,25 +23,25 @@ import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 /**
- * 数据库依赖注入模块
+ * 鏁版嵁搴撲緷璧栨敞鍏ユā鍧?
  *
- * 提供：
- * - NemoDatabase（单例）
- * - 所有DAO实例
+ * 鎻愪緵锛?
+ * - NemoDatabase锛堝崟渚嬶級
+ * - 鎵€鏈塂AO瀹炰緥
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     /**
-     * 提供NemoDatabase实例
+     * 鎻愪緵NemoDatabase瀹炰緥
      *
-     * ⚠️ 开发阶段配置：
+     * 鈿狅笍 寮€鍙戦樁娈甸厤缃細
      * - version = 1
-     * - fallbackToDestructiveMigration()（允许破坏性迁移）
+     * - fallbackToDestructiveMigration()锛堝厑璁哥牬鍧忔€ц縼绉伙級
      */
     /**
-     * 提供 Json 实例（用于数据导入）
+     * 鎻愪緵 Json 瀹炰緥锛堢敤浜庢暟鎹鍏ワ級
      */
     @Provides
     @Singleton
@@ -55,16 +56,16 @@ object DatabaseModule {
     @Singleton
     fun provideNemoDatabase(
         @ApplicationContext context: Context,
-        databaseCallback: NemoDatabaseCallback  // 注入回调
+        databaseCallback: NemoDatabaseCallback  // 娉ㄥ叆鍥炶皟
     ): NemoDatabase {
         return Room.databaseBuilder(
             context,
             NemoDatabase::class.java,
             NemoDatabase.DATABASE_NAME
         )
-            .addCallback(databaseCallback)  // 添加回调
-            .addMigrations(MIGRATION_2_3, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_14_15, MIGRATION_17_18, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23)
-            .fallbackToDestructiveMigration() // 当找不到迁移路径时允许清空并重建数据库
+            .addCallback(databaseCallback)  // 娣诲姞鍥炶皟
+            .addMigrations(MIGRATION_2_3, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_14_15, MIGRATION_17_18, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_24_25)
+            .fallbackToDestructiveMigration() // 褰撴壘涓嶅埌杩佺Щ璺緞鏃跺厑璁告竻绌哄苟閲嶅缓鏁版嵁搴?
             .build()
     }
 

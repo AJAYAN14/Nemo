@@ -27,6 +27,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.activity.compose.BackHandler
 
+import io.github.jan.supabase.compose.auth.composeAuth
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
+
 /**
  * 包含动画背景和登录/注册 Tab 切换
  */
@@ -34,7 +38,7 @@ import androidx.activity.compose.BackHandler
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (isNewUser: Boolean) -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,9 +60,38 @@ fun LoginScreen(
     val passwordFocusRequester = remember { FocusRequester() }
     val confirmPasswordFocusRequester = remember { FocusRequester() }
 
+    val googleSignInState = viewModel.supabaseClient.composeAuth.rememberSignInWithGoogle(
+        onResult = { result ->
+            android.util.Log.d("GoogleLogin", "NativeSignInResult: ${result::class.simpleName}")
+            when (result) {
+                is NativeSignInResult.Success -> {
+                    android.util.Log.d("GoogleLogin", "Google sign in success!")
+                    Toast.makeText(context, "Google授权成功，正在同步登录状态...", Toast.LENGTH_SHORT).show()
+                }
+                is NativeSignInResult.Error -> {
+                    android.util.Log.e("GoogleLogin", "Error: ${result.message}")
+                    Toast.makeText(context, "Google登录失败: ${result.message}", Toast.LENGTH_LONG).show()
+                }
+                is NativeSignInResult.NetworkError -> {
+                    Toast.makeText(context, "网络错误: ${result.message}", Toast.LENGTH_LONG).show()
+                }
+                is NativeSignInResult.ClosedByUser -> {
+                    Toast.makeText(context, "用户取消登录", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    android.util.Log.d("GoogleLogin", "Other result: $result")
+                }
+            }
+        },
+        fallback = {
+            android.util.Log.e("GoogleLogin", "Fallback called! Credential Manager failed or not supported.")
+            Toast.makeText(context, "当前设备不支持原生 Google 登录", Toast.LENGTH_LONG).show()
+        }
+    )
+
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
-            onLoginSuccess()
+            onLoginSuccess(uiState.user?.isNewUser == true)
         }
     }
 
@@ -202,7 +235,10 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             onForgotPasswordClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) },
                             emailError = uiState.emailError,
-                            passwordError = uiState.passwordError
+                            passwordError = uiState.passwordError,
+                            onGoogleLoginClick = {
+                                googleSignInState.startFlow()
+                            }
                         )
                     } else {
                         RegisterForm(

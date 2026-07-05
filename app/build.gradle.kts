@@ -40,6 +40,7 @@ android {
         }
         buildConfigField("String", "SUPABASE_URL", "\"${supabaseUrl ?: "https://your-project.supabase.co"}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${supabaseAnonKey ?: "your-anon-key"}\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"145393831996-h6492m0q51ru7llsdbkggr2ps28rlve0.apps.googleusercontent.com\"")
     }
 
     signingConfigs {
@@ -130,6 +131,11 @@ dependencies {
     implementation(libs.supabase.storage)
     implementation(libs.supabase.postgrest)
     implementation(libs.supabase.functions)
+    implementation(libs.supabase.compose.auth)
+    implementation(libs.supabase.compose.auth.ui)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     implementation(libs.ktor.client.android)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)

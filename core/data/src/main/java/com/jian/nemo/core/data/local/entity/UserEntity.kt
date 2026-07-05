@@ -45,5 +45,15 @@ data class UserEntity(
     /**
      * 更新时间
      */
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+
+    /**
+     * 是否绑定了 Google 账号
+     */
+    val hasGoogleLinked: Boolean = false,
+
+    /**
+     * 是否仅通过 Google 身份登录（没有其他登录方式）
+     */
+    val isOnlyGoogleIdentity: Boolean = false
 )

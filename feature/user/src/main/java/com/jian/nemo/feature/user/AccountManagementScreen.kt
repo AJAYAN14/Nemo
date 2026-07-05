@@ -31,6 +31,9 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import io.github.jan.supabase.compose.auth.composeAuth
+import io.github.jan.supabase.compose.auth.composable.rememberSignInWithGoogle
+import io.github.jan.supabase.compose.auth.composable.NativeSignInResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +52,25 @@ fun AccountManagementScreen(
 
     // 头像相关状态
     val avatarPath = uiState.avatarPath
+
+    val googleSignInState = viewModel.supabaseClient.composeAuth.rememberSignInWithGoogle(
+        onResult = { result ->
+            when (result) {
+                is NativeSignInResult.Success -> {
+                    viewModel.syncGoogleAccount()
+                }
+                is NativeSignInResult.Error -> {
+                    Toast.makeText(context, "Google授权失败: ${result.message}", Toast.LENGTH_SHORT).show()
+                }
+                is NativeSignInResult.ClosedByUser -> {
+                    Toast.makeText(context, "用户取消操作", Toast.LENGTH_SHORT).show()
+                }
+                is NativeSignInResult.NetworkError -> {
+                    Toast.makeText(context, "网络错误，请检查网络设置", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    )
 
     // Handle Toasts
     LaunchedEffect(uiState.error) {
@@ -142,6 +164,30 @@ fun AccountManagementScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                val hasGoogleLinked = uiState.user?.hasGoogleLinked == true
+                PremiumSettingsGroup(title = "账号绑定", cardBg = cardBg) {
+                    PremiumSettingsItem(
+                        icon = Icons.Rounded.AccountCircle,
+                        iconTint = if (hasGoogleLinked) Color(0xFF34C759) else Color(0xFF8E8E93),
+                        title = "Google 账号",
+                        subtitle = if (hasGoogleLinked) "已绑定" else "未绑定",
+                        trailingContent = {
+                            if (hasGoogleLinked) {
+                                TextButton(onClick = { viewModel.showDialog(UserDialogType.UNLINK_GOOGLE_CONFIRM) }) {
+                                    Text("解绑", color = MaterialTheme.colorScheme.error)
+                                }
+                            } else {
+                                TextButton(onClick = { googleSignInState.startFlow() }) {
+                                    Text("绑定", color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        },
+                        onClick = { }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
 
 
                 // Group 4: Danger Zone
@@ -149,7 +195,7 @@ fun AccountManagementScreen(
                     PremiumSettingsItem(
                         icon = Icons.Rounded.DeleteForever,
                         iconTint = MaterialTheme.colorScheme.error,
-                        title = "删除账户",
+                        title = "注销账户",
                          titleColor = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
                     )
@@ -220,6 +266,8 @@ fun AccountManagementScreen(
         }
         UserDialogType.DELETE_ACCOUNT -> {
             DeleteAccountDialog(
+                isOnlyGoogleIdentity = uiState.user?.isOnlyGoogleIdentity == true,
+                userEmail = uiState.user?.email ?: "",
                 onDismiss = { viewModel.dismissDialog() },
                 onConfirmDelete = { password ->
                     viewModel.deleteAccount(
@@ -239,6 +287,20 @@ fun AccountManagementScreen(
                 onConfirmLogout = {
                     viewModel.logout()
                     viewModel.dismissDialog()
+                },
+                useDarkTheme = useDarkTheme
+            )
+        }
+
+        UserDialogType.UNLINK_GOOGLE_CONFIRM -> {
+            UnlinkGoogleDialog(
+                isLoading = uiState.isLoading,
+                isOnlyGoogleIdentity = uiState.user?.isOnlyGoogleIdentity == true,
+                onDismiss = { viewModel.dismissDialog() },
+                onConfirmUnlink = { viewModel.unlinkGoogleAccount() },
+                onGoToSetPassword = { 
+                    viewModel.dismissDialog()
+                    viewModel.showDialog(UserDialogType.RESET_PASSWORD)
                 },
                 useDarkTheme = useDarkTheme
             )

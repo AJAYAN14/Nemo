@@ -1100,7 +1100,6 @@ fun LogoutWarningDialog(
                     }
                 }
 
-
                 TextButton(
                     onClick = onDismiss,
                     enabled = !isLoading,
@@ -1114,4 +1113,340 @@ fun LogoutWarningDialog(
             }
         }
     }
+}
+
+@Composable
+fun DeleteAccountDialog(
+    isOnlyGoogleIdentity: Boolean,
+    userEmail: String,
+    onDismiss: () -> Unit,
+    onConfirmDelete: (String?) -> Unit,
+    useDarkTheme: Boolean = isSystemInDarkTheme()
+) {
+    var input by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showFinalConfirm by remember { mutableStateOf(false) }
+
+    // UI/UX Pro Max Colors & Styles (Red Theme for Delete Account)
+    val primaryColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+    val titleColor = if (useDarkTheme) Color.White else Color.Black
+    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
+    val focusedBorderColor = primaryColor
+    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
+    val errorColor = primaryColor // Red for error too
+    val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
+        handleColor = primaryColor,
+        backgroundColor = primaryColor.copy(alpha = 0.4f)
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = containerColor,
+        titleContentColor = titleColor,
+        textContentColor = bodyColor,
+        iconContentColor = primaryColor,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+        icon = {
+            Icon(
+                imageVector = Icons.Rounded.Warning,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "注销账户",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor, // Red Title for danger
+                letterSpacing = (-0.5).sp
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                if (!showFinalConfirm) {
+                    Text(
+                        text = "注销账户是不可逆的操作，将永久删除您的所有数据，包括：",
+                        fontSize = 15.sp,
+                        color = bodyColor,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "• 学习进度和统计数据\n• 测试记录和错题记录\n• 个人设置和偏好\n• 头像和用户信息",
+                        fontSize = 14.sp,
+                        color = bodyColor,
+                        lineHeight = 22.sp
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = if (isOnlyGoogleIdentity) "请输入当前邮箱以确认注销：" else "请输入您的密码以确认注销：",
+                        fontSize = 15.sp,
+                        color = bodyColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = input,
+                        onValueChange = { input = it },
+                        label = {
+                            Text(
+                                text = if (isOnlyGoogleIdentity) "邮箱" else "密码",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
+                        singleLine = true,
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        visualTransformation = if (isOnlyGoogleIdentity) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = if (isOnlyGoogleIdentity) KeyboardType.Email else KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = titleColor,
+                            unfocusedTextColor = titleColor,
+                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
+                            errorTextColor = errorColor,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            errorContainerColor = Color.Transparent,
+                            cursorColor = primaryColor,
+                            errorCursorColor = errorColor,
+                            selectionColors = selectionColors,
+                            focusedBorderColor = focusedBorderColor,
+                            unfocusedBorderColor = unfocusedBorderColor,
+                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
+                            errorBorderColor = errorColor,
+                            focusedLabelColor = primaryColor,
+                            unfocusedLabelColor = bodyColor,
+                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
+                            errorLabelColor = errorColor
+                        )
+                    )
+                } else {
+                    Text(
+                        text = "最终确认",
+                        fontSize = 18.sp,
+                        color = primaryColor,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "您确定要永久注销您的账户吗？\n\n此操作无法撤销！",
+                        fontSize = 16.sp,
+                        color = primaryColor,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 24.sp
+                    )
+                }
+
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = it,
+                        color = errorColor,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (!showFinalConfirm) {
+                        if (isOnlyGoogleIdentity) {
+                            if (input.trim() == userEmail) {
+                                showFinalConfirm = true
+                                errorMessage = null
+                            } else {
+                                errorMessage = "邮箱输入不匹配，请重新输入"
+                            }
+                        } else {
+                            if (input.isNotEmpty()) {
+                                showFinalConfirm = true
+                                errorMessage = null
+                            } else {
+                                errorMessage = "请输入密码"
+                            }
+                        }
+                    } else {
+                        isLoading = true
+                        errorMessage = null
+                        onConfirmDelete(if (isOnlyGoogleIdentity) null else input)
+                    }
+                },
+                enabled = !isLoading && (showFinalConfirm || input.isNotEmpty()),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = primaryColor,
+                    contentColor = Color.White,
+                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
+                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
+                ),
+                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+            ) {
+                if (isLoading) {
+                    NemoChasingDotsLoader(size = 18.dp)
+                } else {
+                    Text(
+                        text = if (showFinalConfirm) "确认注销" else "下一步",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    if (showFinalConfirm) {
+                        showFinalConfirm = false
+                        errorMessage = null
+                    } else {
+                        onDismiss()
+                    }
+                },
+                enabled = !isLoading,
+                shape = androidx.compose.foundation.shape.CircleShape,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = bodyColor,
+                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
+                ),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = if (showFinalConfirm) "返回" else "取消",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun UnlinkGoogleDialog(
+    isLoading: Boolean,
+    isOnlyGoogleIdentity: Boolean,
+    onDismiss: () -> Unit,
+    onConfirmUnlink: () -> Unit,
+    onGoToSetPassword: () -> Unit,
+    useDarkTheme: Boolean
+) {
+    if (isLoading) {
+        Dialog(onDismissRequest = {}) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(Color.Transparent, RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                NemoChasingDotsLoader()
+            }
+        }
+        return
+    }
+
+    val primaryColor = if (isOnlyGoogleIdentity) (if (useDarkTheme) Color(0xFFFF9F0A) else Color(0xFFFF9500)) 
+                       else (if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30))
+    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+    val titleColor = if (useDarkTheme) Color.White else Color.Black
+    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = containerColor,
+        titleContentColor = titleColor,
+        textContentColor = bodyColor,
+        iconContentColor = primaryColor,
+        shape = RoundedCornerShape(26.dp),
+        icon = {
+            Icon(
+                imageVector = if (isOnlyGoogleIdentity) Icons.Rounded.Warning else Icons.Rounded.LinkOff,
+                contentDescription = null,
+                modifier = Modifier.size(28.dp),
+                tint = primaryColor
+            )
+        },
+        title = {
+            Text(
+                text = if (isOnlyGoogleIdentity) "账号风险警告" else "确认解绑",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = titleColor,
+                letterSpacing = (-0.5).sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Text(
+                text = if (isOnlyGoogleIdentity) 
+                    "系统检测到您当前仅使用了 Google 快捷登录，尚未设置密码。\n\n如果现在解绑，您将无法再次登录此账号！建议您先设置密码。" 
+                else 
+                    "解绑后将无法通过此 Google 账号快捷登录，确定要解绑吗？",
+                fontSize = 15.sp,
+                color = bodyColor,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.Normal,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            if (isOnlyGoogleIdentity) {
+                Button(
+                    onClick = onGoToSetPassword,
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = primaryColor,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+                ) {
+                    Text("去设置密码", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+            } else {
+                Button(
+                    onClick = onConfirmUnlink,
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = primaryColor,
+                        contentColor = Color.White
+                    ),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
+                ) {
+                    Text("确认解绑", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                shape = CircleShape,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = bodyColor
+                ),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = if (isOnlyGoogleIdentity) "我再想想" else "取消",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    )
 }

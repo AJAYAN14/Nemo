@@ -71,6 +71,7 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.coil.compose)
+    implementation(libs.supabase.compose.auth)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

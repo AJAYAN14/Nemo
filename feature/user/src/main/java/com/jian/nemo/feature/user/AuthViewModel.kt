@@ -29,7 +29,8 @@ class AuthViewModel @Inject constructor(
     private val getUserFlowUseCase: GetUserFlowUseCase,
     private val settingsRepository: SettingsRepository,
     private val getUserAvatarPathUseCase: GetUserAvatarPathUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    val supabaseClient: io.github.jan.supabase.SupabaseClient
 ) : ViewModel() {
     
     // 用于隔离登录/注册期间产生的全局状态扰动，防止过早跳转
@@ -154,6 +155,77 @@ class AuthViewModel @Inject constructor(
             clearAvatar()
         }
         dismissDialog()
+    }
+
+    fun syncGoogleAccount() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            isAuthActionInProgress = true
+            try {
+                when (val result = authRepository.syncUser()) {
+                    is Result.Success -> {
+                        // 登录成功后，如果云端有 avatarUrl，写回本地 Settings
+                        val fetchedAvatarUrl = result.data.avatarUrl
+                        if (!fetchedAvatarUrl.isNullOrEmpty()) {
+                            settingsRepository.setUserAvatarPath(fetchedAvatarUrl)
+                        }
+
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                user = result.data
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        handleAuthError(result.exception, "登录失败")
+                    }
+                    else -> {}
+                }
+            } finally {
+                isAuthActionInProgress = false
+            }
+        }
+    }
+
+    fun unlinkGoogleAccount() {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            isAuthActionInProgress = true
+            try {
+                when (val result = authRepository.unlinkGoogleAccount()) {
+                    is Result.Success -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                successMessage = "已成功解绑 Google 账号"
+                            )
+                        }
+                        // Dismiss dialog
+                        dismissDialog()
+                    }
+                    is Result.Error -> {
+                        handleAuthError(result.exception, "解绑失败")
+                    }
+                    else -> {}
+                }
+            } finally {
+                isAuthActionInProgress = false
+            }
+        }
     }
 
     fun login(email: String, password: String) {
@@ -361,6 +433,38 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun completeProfileSetup(nickname: String, password: String?, onSuccess: () -> Unit, onError: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            // 1. 更新密码 (如果填写了)
+            if (!password.isNullOrBlank()) {
+                val passResult = authRepository.updatePassword(password)
+                if (passResult is Result.Error) {
+                    val msg = passResult.exception.message ?: "设置密码失败"
+                    _uiState.update { it.copy(isLoading = false, error = msg) }
+                    onError(msg)
+                    return@launch
+                }
+            }
+
+            // 2. 更新昵称 (如果有修改)
+            val currentUsername = _uiState.value.user?.username
+            if (nickname.isNotBlank() && nickname != currentUsername) {
+                val nameResult = updateUserProfileUseCase.updateUsername(nickname)
+                if (nameResult is Result.Error) {
+                    val msg = nameResult.exception.message ?: "设置昵称失败"
+                    _uiState.update { it.copy(isLoading = false, error = msg) }
+                    onError(msg)
+                    return@launch
+                }
+            }
+            
+            _uiState.update { it.copy(isLoading = false) }
+            onSuccess()
+        }
+    }
+
     fun updateEmail(newEmail: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
@@ -402,7 +506,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun deleteAccount(password: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+    fun deleteAccount(password: String? = null, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
             when (val result = deleteAccountUseCase(password)) {
@@ -466,7 +570,8 @@ enum class UserDialogType {
     UPDATE_EMAIL,
     DELETE_ACCOUNT,
     LOGOUT_CONFIRM,
-    UPDATE_AVATAR
+    UPDATE_AVATAR,
+    UNLINK_GOOGLE_CONFIRM
 }
 
 data class AuthUiState(
