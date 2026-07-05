@@ -157,76 +157,7 @@ class AuthViewModel @Inject constructor(
         dismissDialog()
     }
 
-    fun syncGoogleAccount() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true,
-                    error = null,
-                    successMessage = null
-                )
-            }
-            isAuthActionInProgress = true
-            try {
-                when (val result = authRepository.syncUser()) {
-                    is Result.Success -> {
-                        // 登录成功后，如果云端有 avatarUrl，写回本地 Settings
-                        val fetchedAvatarUrl = result.data.avatarUrl
-                        if (!fetchedAvatarUrl.isNullOrEmpty()) {
-                            settingsRepository.setUserAvatarPath(fetchedAvatarUrl)
-                        }
 
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isLoggedIn = true,
-                                user = result.data
-                            )
-                        }
-                    }
-                    is Result.Error -> {
-                        handleAuthError(result.exception, "登录失败")
-                    }
-                    else -> {}
-                }
-            } finally {
-                isAuthActionInProgress = false
-            }
-        }
-    }
-
-    fun unlinkGoogleAccount() {
-        viewModelScope.launch {
-            _uiState.update {
-                it.copy(
-                    isLoading = true,
-                    error = null,
-                    successMessage = null
-                )
-            }
-            isAuthActionInProgress = true
-            try {
-                when (val result = authRepository.unlinkGoogleAccount()) {
-                    is Result.Success -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                successMessage = "已成功解绑 Google 账号"
-                            )
-                        }
-                        // Dismiss dialog
-                        dismissDialog()
-                    }
-                    is Result.Error -> {
-                        handleAuthError(result.exception, "解绑失败")
-                    }
-                    else -> {}
-                }
-            } finally {
-                isAuthActionInProgress = false
-            }
-        }
-    }
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
@@ -570,8 +501,7 @@ enum class UserDialogType {
     UPDATE_EMAIL,
     DELETE_ACCOUNT,
     LOGOUT_CONFIRM,
-    UPDATE_AVATAR,
-    UNLINK_GOOGLE_CONFIRM
+    UPDATE_AVATAR
 }
 
 data class AuthUiState(

@@ -15,6 +15,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"145393831996-h6492m0q51ru7llsdbkggr2ps28rlve0.apps.googleusercontent.com\"")
     }
 
     buildTypes {
@@ -35,6 +36,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -72,6 +74,10 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.supabase.compose.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation("com.google.android.gms:play-services-auth:21.1.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

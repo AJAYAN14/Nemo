@@ -15,6 +15,9 @@ import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import io.ktor.client.HttpClient
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.content.TextContent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +30,11 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.request.header
+import io.ktor.http.contentType
+import io.ktor.http.ContentType
 import java.io.File
 import javax.inject.Inject
 import com.jian.nemo.core.common.di.ApplicationScope
@@ -356,53 +364,6 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun unlinkGoogleAccount(): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
-            // 找到 google provider 的 identity
-            val googleIdentity = userInfo.identities?.find { it.provider == "google" }
-            if (googleIdentity != null) {
-                val id = googleIdentity.identityId ?: throw IllegalStateException("Identity ID is null")
-                supabase.auth.unlinkIdentity(id)
-                // 解绑后刷新本地数据
-                val updatedUserInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
-                saveUserToLocal(updatedUserInfo)
-                _userFlow.value = updatedUserInfo.toDomainModel()
-            }
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e.toAuthException())
-        }
-    }
-
-    override suspend fun linkGoogleAccount(idToken: String): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            // In Supabase-KT 3.0.0, native linkIdentityWithIdToken is not available.
-            // However, GoTrue links identities automatically if signInWith is called while the user has an active session.
-            supabase.auth.signInWith(io.github.jan.supabase.auth.providers.builtin.IDToken) {
-                this.idToken = idToken
-                this.provider = io.github.jan.supabase.auth.providers.Google
-            }
-            // After linking, refresh user info
-            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
-            saveUserToLocal(userInfo)
-            _userFlow.value = userInfo.toDomainModel()
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e.toAuthException())
-        }
-    }
-
-    override suspend fun syncUser(): Result<User> = withContext(Dispatchers.IO) {
-        try {
-            val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("User not logged in")
-            saveUserToLocal(userInfo)
-            _userFlow.value = userInfo.toDomainModel()
-            Result.Success(userInfo.toDomainModel())
-        } catch (e: Exception) {
-            Result.Error(e.toAuthException())
-        }
-    }
 
     private suspend fun saveUserToLocal(userInfo: UserInfo) {
         val nickname = userInfo.userMetadata?.stringOrNull("nickname")?.takeIf { it.isNotEmpty() }
