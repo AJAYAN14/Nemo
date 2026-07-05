@@ -73,7 +73,8 @@ class CloudBackupManager @Inject constructor(
         val tempFile = File(context.cacheDir, "cloud_backup_temp_$epochSeconds.json.gz")
         try {
             Log.d(TAG, "开始生成备份文件...")
-            dataExportManager.exportDataToFile("default_user", tempFile, isCompressed = true)
+            // 使用真实用户 ID 生成备份（避免使用硬编码的 default_user）
+            dataExportManager.exportDataToFile(userId, tempFile, isCompressed = true)
 
             Log.d(TAG, "上传备份到云端: $remotePath (${tempFile.length()} bytes)")
             withTimeout(UPLOAD_TIMEOUT_MS) {
@@ -134,36 +135,70 @@ class CloudBackupManager @Inject constructor(
         val userId = requireUserId()
         val remotePath = "$userId/$fileName"
 
-        val tempFile = File(context.cacheDir, "cloud_restore_temp_${System.currentTimeMillis()}.json.gz")
-        try {
-            Log.d(TAG, "开始从云端下载: $remotePath")
+        Log.d(TAG, "开始从云端下载: $remotePath")
 
-            val bytes = withTimeout(DOWNLOAD_TIMEOUT_MS) {
-                supabase.storage.from(BUCKET_NAME).downloadAuthenticated(remotePath)
-            }
-
-            // 前置大小检查
-            if (bytes.size > MAX_DOWNLOAD_SIZE) {
-                throw IllegalStateException("备份文件异常过大 (${bytes.size / 1024 / 1024}MB)，已拒绝导入")
-            }
-
-            tempFile.writeBytes(bytes)
-            Log.d(TAG, "下载完成: ${bytes.size} bytes，开始导入...")
-
-            // 将文件内容传给导入引擎
-            val content = tempFile.readText(Charsets.UTF_8)
-            val result = dataExportManager.importData(content, strategy)
-            result.message
-        } finally {
-            if (tempFile.exists()) tempFile.delete()
+        val bytes = withTimeout(DOWNLOAD_TIMEOUT_MS) {
+            supabase.storage.from(BUCKET_NAME).downloadAuthenticated(remotePath)
         }
+
+        // 前置大小检查
+        if (bytes.size > MAX_DOWNLOAD_SIZE) {
+            throw IllegalStateException("备份文件异常过大 (${bytes.size / 1024 / 1024}MB)，已拒绝导入")
+        }
+
+        Log.d(TAG, "下载完成: ${bytes.size} bytes，开始导入...")
+
+        // 云端备份内容为 Base64(GZIP(JSON)) 文本，直接转为 String 传入导入引擎
+        val content = bytes.toString(Charsets.UTF_8)
+        val result = dataExportManager.importData(content, strategy)
+        result.message
+    }
+
+    /**
+     * 仅从云端下载备份内容，不执行导入
+     * @return 下载的字符串内容
+     */
+    suspend fun downloadBackup(fileName: String): String = withContext(Dispatchers.IO) {
+        val userId = requireUserId()
+        val remotePath = "$userId/$fileName"
+
+        Log.d(TAG, "开始从云端下载用于预览: $remotePath")
+
+        val bytes = withTimeout(DOWNLOAD_TIMEOUT_MS) {
+            supabase.storage.from(BUCKET_NAME).downloadAuthenticated(remotePath)
+        }
+
+        if (bytes.size > MAX_DOWNLOAD_SIZE) {
+            throw IllegalStateException("备份文件异常过大 (${bytes.size / 1024 / 1024}MB)，已拒绝预览")
+        }
+
+        bytes.toString(Charsets.UTF_8)
+    }
+
+    /**
+     * 预览云端备份恢复（dry-run）
+     */
+    suspend fun previewRestore(
+        fileName: String,
+        strategy: ImportStrategy
+    ): com.jian.nemo.core.data.manager.ImportPreview {
+        val content = downloadBackup(fileName)
+        return dataExportManager.previewImport(content, strategy)
+    }
+
+    /**
+     * 执行云端备份恢复
+     */
+    suspend fun executeRestore(content: String, strategy: ImportStrategy): String = withContext(Dispatchers.IO) {
+        val result = dataExportManager.importData(content, strategy)
+        result.message
     }
 
     /**
      * 尝试自动备份（防抖）
      * 距离上次自动备份不足 [intervalHours] 小时则跳过。
      */
-    suspend fun tryAutoBackup(intervalHours: Int = 12) {
+    suspend fun tryAutoBackup(intervalHours: Int = 2) {
         val lastBackupTime = sharedPreferences.getLong("last_auto_backup_time", 0L)
         val now = System.currentTimeMillis()
         val intervalMillis = intervalHours * 60 * 60 * 1000L

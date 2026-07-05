@@ -54,6 +54,39 @@ enum class ImportStrategy {
     REPLACE
 }
 
+/**
+ * 导入统计（精确计数）
+ */
+data class ImportStats(
+    val wordUpdateCount: Int = 0,
+    val wordInsertCount: Int = 0,
+    val wordSkipCount: Int = 0,
+    val grammarUpdateCount: Int = 0,
+    val grammarInsertCount: Int = 0,
+    val grammarSkipCount: Int = 0
+)
+
+/**
+ * 导入预览结果（dry-run 模式）
+ */
+data class ImportPreview(
+    val strategy: ImportStrategy,
+    val wordUpdateCount: Int = 0,
+    val wordInsertCount: Int = 0,
+    val wordSkipCount: Int = 0,
+    val grammarUpdateCount: Int = 0,
+    val grammarInsertCount: Int = 0,
+    val grammarSkipCount: Int = 0,
+    val wrongAnswerNewCount: Int = 0,
+    val testRecordNewCount: Int = 0,
+    val studyRecordNewCount: Int = 0,
+    val favoriteNewCount: Int = 0,
+    val localWordStateCount: Int = 0,
+    val localGrammarStateCount: Int = 0,
+    val settingsWillChange: Boolean = false,
+    val validationSummary: String = ""
+)
+
 
 /**
  * 数据导出/导入管理器
@@ -423,10 +456,8 @@ class DataExportManager @Inject constructor(
      * @param dataString 可能是压缩的 Base64 字符串，也可能是原始 JSON
      */
     suspend fun importData(dataString: String, strategy: ImportStrategy = ImportStrategy.MERGE): ImportResult = withContext(Dispatchers.IO) {
-        var importedWords = 0
-        var importedGrammars = 0
-        // 设置回滚用：缓存旧值
-        var oldSettingsSnapshot: Map<String, Any?>? = null
+        // 设置回滚用：缓存旧值（完整快照，确保所有字段可回滚）
+        var oldSettingsSnapshot: ExportAppSettings? = null
         try {
             Log.d(TAG, "开始导入数据 (策略: $strategy)...")
 
@@ -443,36 +474,29 @@ class DataExportManager @Inject constructor(
             val cleanedData = validationResult.data
             val userData = cleanedData.userData
 
-            // 缓存旧设置（用于回滚）
-            oldSettingsSnapshot = captureSettingsSnapshot()
-
-            // 写入设置（在事务外，但有回滚保护）
-            userData.settings?.let { settings ->
-                applySettings(settings)
-            }
-
-            when (strategy) {
-                ImportStrategy.MERGE -> {
-                    importedWords = importMerge(userData)
-                    importedGrammars = userData.grammarProgress.size
-                }
-                ImportStrategy.REPLACE -> {
-                    importedWords = importReplace(userData)
-                    importedGrammars = userData.grammarProgress.size
-                }
+            // 先执行数据库事务（不改动设置）
+            val stats = when (strategy) {
+                ImportStrategy.MERGE -> importMerge(userData)
+                ImportStrategy.REPLACE -> importReplace(userData)
             }
 
             // 导入成功后执行数据去重修复
             repairDataDuplicates()
 
+            // 数据库事务成功后才应用设置，避免事务失败导致设置不一致
+            userData.settings?.let { settings ->
+                oldSettingsSnapshot = captureSettingsSnapshot()
+                applySettings(settings)
+            }
+
             val validationSummary = validationResult.toSummary()
             val suffix = if (validationSummary.isNotEmpty()) "\n校验提示: $validationSummary" else ""
-            Log.d(TAG, "导入完成: 单词$importedWords, 语法$importedGrammars")
-            ImportResult(true, "导入成功！\n更新单词: $importedWords\n更新语法: $importedGrammars$suffix")
+            Log.d(TAG, "导入完成: 单词更新${stats.wordUpdateCount}/新增${stats.wordInsertCount}/跳过${stats.wordSkipCount}, 语法更新${stats.grammarUpdateCount}/新增${stats.grammarInsertCount}/跳过${stats.grammarSkipCount}")
+            ImportResult(true, "导入成功！\n单词: 更新${stats.wordUpdateCount} / 新增${stats.wordInsertCount} / 跳过${stats.wordSkipCount}\n语法: 更新${stats.grammarUpdateCount} / 新增${stats.grammarInsertCount} / 跳过${stats.grammarSkipCount}$suffix")
 
         } catch (e: Exception) {
             Log.e(TAG, "导入失败", e)
-            // 回滚设置
+            // 回滚设置（仅在设置已被修改的情况下）
             oldSettingsSnapshot?.let {
                 try {
                     restoreSettingsSnapshot(it)
@@ -521,28 +545,177 @@ class DataExportManager @Inject constructor(
 
     /**
      * 捕获当前设置快照（用于回滚）
+     * 使用 ExportAppSettings 覆盖全部可导入字段，确保导入失败时完整回滚
      */
-    private suspend fun captureSettingsSnapshot(): Map<String, Any?> {
-        return mapOf(
-            "dailyGoal" to settingsRepository.dailyGoalFlow.first(),
-            "grammarDailyGoal" to settingsRepository.grammarDailyGoalFlow.first(),
-            "learningDayResetHour" to settingsRepository.learningDayResetHourFlow.first()
+    private suspend fun captureSettingsSnapshot(): ExportAppSettings {
+        val snapshot = settingsRepository.getAppSettingsSnapshot()
+        return ExportAppSettings(
+            dailyGoal = snapshot.dailyGoal,
+            grammarDailyGoal = snapshot.grammarDailyGoal,
+            learningDayResetHour = snapshot.learningDayResetHour,
+            testQuestionCount = snapshot.testQuestionCount,
+            testTimeLimitMinutes = snapshot.testTimeLimitMinutes,
+            testShuffleQuestions = snapshot.testShuffleQuestions,
+            testShuffleOptions = snapshot.testShuffleOptions,
+            testAutoAdvance = snapshot.testAutoAdvance,
+            testPrioritizeWrong = snapshot.testPrioritizeWrong,
+            testPrioritizeNew = snapshot.testPrioritizeNew,
+            testQuestionSource = snapshot.testQuestionSource,
+            testWrongAnswerRemovalThreshold = snapshot.testWrongAnswerRemovalThreshold,
+            testContentType = snapshot.testContentType,
+            testSelectedWordLevels = snapshot.testSelectedWordLevels,
+            testSelectedGrammarLevels = snapshot.testSelectedGrammarLevels,
+            learningSteps = snapshot.learningSteps,
+            learnAheadLimit = snapshot.learnAheadLimit,
+            relearningSteps = snapshot.relearningSteps,
+            isRandomNewContentEnabled = snapshot.isRandomNewContentEnabled,
+            targetRetention = snapshot.targetRetention,
+            aiWorkshopDifficulty = snapshot.aiWorkshopDifficulty,
+            aiReadingTheme = snapshot.aiReadingTheme,
+            aiReadingDifficulty = snapshot.aiReadingDifficulty
         )
     }
 
     /**
      * 恢复设置快照
+     * 复用 applySettings 确保回滚路径与写入路径一致
      */
-    private suspend fun restoreSettingsSnapshot(snapshot: Map<String, Any?>) {
-        (snapshot["dailyGoal"] as? Int)?.let { settingsRepository.setDailyGoal(it) }
-        (snapshot["grammarDailyGoal"] as? Int)?.let { settingsRepository.setGrammarDailyGoal(it) }
-        (snapshot["learningDayResetHour"] as? Int)?.let { settingsRepository.setLearningDayResetHour(it) }
+    private suspend fun restoreSettingsSnapshot(snapshot: ExportAppSettings) {
+        applySettings(snapshot)
+    }
+
+    /**
+     * 预览导入（dry-run 模式）
+     * 不写入数据库，只做解析、校验和统计对比
+     */
+    suspend fun previewImport(dataString: String, strategy: ImportStrategy): ImportPreview = withContext(Dispatchers.IO) {
+        val jsonString = if (BackupCompression.isCompressed(dataString)) {
+            BackupCompression.decompress(dataString)
+        } else {
+            dataString
+        }
+
+        val exportData = json.decodeFromString<NemoExportData>(jsonString)
+        val validationResult = BackupValidator.validate(exportData)
+        val userData = validationResult.data.userData
+        val validationSummary = validationResult.toSummary()
+
+        when (strategy) {
+            ImportStrategy.MERGE -> previewMerge(userData, validationSummary)
+            ImportStrategy.REPLACE -> previewReplace(userData, validationSummary)
+        }
+    }
+
+    /**
+     * MERGE 模式预览：与本地数据对比统计
+     */
+    private suspend fun previewMerge(userData: UserData, validationSummary: String): ImportPreview {
+        val wordDao = database.wordDao()
+        val wordStudyStateDao = database.wordStudyStateDao()
+        val localWordStates = wordStudyStateDao.getAllSync().associateBy { it.wordId }
+        val allLocalWords = wordDao.getAllWordsSync()
+        val localWordRawIdMap = allLocalWords.associateBy { it.rawId }
+
+        var wordUpdate = 0; var wordInsert = 0; var wordSkip = 0
+        userData.wordProgress.forEach { remote ->
+            val targetLocalId = localWordRawIdMap[remote.rawId]?.id
+            if (targetLocalId == null) { wordSkip++; return@forEach }
+            val local = localWordStates[targetLocalId]
+            if (local == null) { wordInsert++ }
+            else if (remote.lastModifiedTime > local.lastModifiedTime) { wordUpdate++ }
+            else { wordSkip++ }
+        }
+
+        val grammarDao = database.grammarDao()
+        val grammarStudyStateDao = database.grammarStudyStateDao()
+        val localGrammarStates = grammarStudyStateDao.getAllSync().associateBy { it.grammarId }
+        val allLocalGrammars = grammarDao.getAllGrammarsSync()
+        val localGrammarRawIdMap = allLocalGrammars.associateBy { it.rawId }
+
+        var grammarUpdate = 0; var grammarInsert = 0; var grammarSkip = 0
+        userData.grammarProgress.forEach { remote ->
+            val targetLocalId = localGrammarRawIdMap[remote.rawId]?.id
+            if (targetLocalId == null) { grammarSkip++; return@forEach }
+            val local = localGrammarStates[targetLocalId]
+            if (local == null) { grammarInsert++ }
+            else if (remote.lastModifiedTime > local.lastModifiedTime) { grammarUpdate++ }
+            else { grammarSkip++ }
+        }
+
+        val wrongAnswerDao = database.wrongAnswerDao()
+        val localWrongAnswers = wrongAnswerDao.getAllWrongAnswersSync().associateBy { it.uuid }
+        var wrongAnswerNew = 0
+        userData.wrongAnswers.words.forEach { remote ->
+            if (localWordRawIdMap[remote.rawId]?.id != null && localWrongAnswers[remote.uuid] == null) wrongAnswerNew++
+        }
+        val grammarWrongAnswerDao = database.grammarWrongAnswerDao()
+        val localGrammarWrongAnswers = grammarWrongAnswerDao.getAllWrongAnswersSync().associateBy { it.uuid }
+        userData.wrongAnswers.grammars.forEach { remote ->
+            if (localGrammarRawIdMap[remote.rawId]?.id != null && localGrammarWrongAnswers[remote.uuid] == null) wrongAnswerNew++
+        }
+
+        val testRecordDao = database.testRecordDao()
+        val localTestRecords = testRecordDao.getAllTestRecordsSync().associateBy { it.uuid }
+        val testRecordNew = userData.testRecords.count { localTestRecords[it.uuid] == null }
+
+        val studyRecordDao = database.studyRecordDao()
+        val localStudyRecords = studyRecordDao.getAllStudyRecordsSync().associateBy { it.date }
+        val studyRecordNew = userData.studyRecords.count { localStudyRecords[it.date] == null }
+
+        val favoriteQuestionDao = database.favoriteQuestionDao()
+        val localFavorites = favoriteQuestionDao.getAllFavoriteQuestionsSync().associateBy { it.jsonId ?: it.id.toString() }
+        val favoriteNew = userData.favoriteQuestions.count { localFavorites[it.jsonId ?: it.id.toString()] == null }
+
+        return ImportPreview(
+            strategy = ImportStrategy.MERGE,
+            wordUpdateCount = wordUpdate,
+            wordInsertCount = wordInsert,
+            wordSkipCount = wordSkip,
+            grammarUpdateCount = grammarUpdate,
+            grammarInsertCount = grammarInsert,
+            grammarSkipCount = grammarSkip,
+            wrongAnswerNewCount = wrongAnswerNew,
+            testRecordNewCount = testRecordNew,
+            studyRecordNewCount = studyRecordNew,
+            favoriteNewCount = favoriteNew,
+            settingsWillChange = userData.settings != null,
+            validationSummary = validationSummary
+        )
+    }
+
+    /**
+     * REPLACE 模式预览：统计本地将被清空的数据量和远端将写入的数据量
+     */
+    private suspend fun previewReplace(userData: UserData, validationSummary: String): ImportPreview {
+        val localWordStateCount = database.wordStudyStateDao().getAllSync().size
+        val localGrammarStateCount = database.grammarStudyStateDao().getAllSync().size
+
+        return ImportPreview(
+            strategy = ImportStrategy.REPLACE,
+            wordInsertCount = userData.wordProgress.size,
+            grammarInsertCount = userData.grammarProgress.size,
+            wrongAnswerNewCount = userData.wrongAnswers.words.size + userData.wrongAnswers.grammars.size,
+            testRecordNewCount = userData.testRecords.size,
+            studyRecordNewCount = userData.studyRecords.size,
+            favoriteNewCount = userData.favoriteQuestions.size,
+            localWordStateCount = localWordStateCount,
+            localGrammarStateCount = localGrammarStateCount,
+            settingsWillChange = userData.settings != null,
+            validationSummary = validationSummary
+        )
     }
 
     /**
      * MERGE 模式：智能合并
      */
-    private suspend fun importMerge(userData: UserData): Int {
+    private suspend fun importMerge(userData: UserData): ImportStats {
+        var wordUpdateCount = 0
+        var wordInsertCount = 0
+        var wordSkipCount = 0
+        var grammarUpdateCount = 0
+        var grammarInsertCount = 0
+        var grammarSkipCount = 0
+
         database.withTransaction {
                 val wordDao = database.wordDao()
                 val wordStudyStateDao = database.wordStudyStateDao()
@@ -555,6 +728,7 @@ class DataExportManager @Inject constructor(
                 userData.wordProgress.forEach { remoteWord ->
                     val targetLocalId = localWordRawIdMap[remoteWord.rawId]?.id
                     if (targetLocalId == null) {
+                        wordSkipCount++
                         Log.w(TAG, "跳过未找到对应 rawId 的词条: ${remoteWord.rawId}")
                         return@forEach
                     }
@@ -563,6 +737,7 @@ class DataExportManager @Inject constructor(
                     val localState = localWordStates[targetLocalId]
                     if (localState != null) {
                         if (remoteWord.lastModifiedTime > localState.lastModifiedTime) {
+                            wordUpdateCount++
                             wordStudyStateDao.insert(WordStudyStateEntity(
                                 wordId = targetLocalId,
                                 repetitionCount = remoteWord.srsLevel,
@@ -579,8 +754,11 @@ class DataExportManager @Inject constructor(
                                 isDeleted = remoteWord.isDeleted,
                                 deletedTime = remoteWord.deletedTime
                             ))
+                        } else {
+                            wordSkipCount++
                         }
                     } else {
+                        wordInsertCount++
                         wordStudyStateDao.insert(WordStudyStateEntity(
                             wordId = targetLocalId,
                             repetitionCount = remoteWord.srsLevel,
@@ -611,6 +789,7 @@ class DataExportManager @Inject constructor(
                 userData.grammarProgress.forEach { remoteGrammar ->
                     val targetLocalId = localGrammarRawIdMap[remoteGrammar.rawId]?.id
                     if (targetLocalId == null) {
+                        grammarSkipCount++
                         Log.w(TAG, "跳过未找到对应 rawId 的语法: ${remoteGrammar.rawId}")
                         return@forEach
                     }
@@ -619,6 +798,7 @@ class DataExportManager @Inject constructor(
                     val localState = localGrammarStates[targetLocalId]
                     if (localState != null) {
                          if (remoteGrammar.lastModifiedTime > localState.lastModifiedTime) {
+                            grammarUpdateCount++
                             grammarStudyStateDao.insert(GrammarStudyStateEntity(
                                 grammarId = targetLocalId,
                                 repetitionCount = remoteGrammar.srsLevel,
@@ -635,8 +815,11 @@ class DataExportManager @Inject constructor(
                                 isDeleted = remoteGrammar.isDeleted,
                                 deletedTime = remoteGrammar.deletedTime
                             ))
+                         } else {
+                            grammarSkipCount++
                          }
                     } else {
+                         grammarInsertCount++
                          grammarStudyStateDao.insert(GrammarStudyStateEntity(
                              grammarId = targetLocalId,
                              repetitionCount = remoteGrammar.srsLevel,
@@ -801,14 +984,19 @@ class DataExportManager @Inject constructor(
             }
         }
 
-        return userData.wordProgress.size
+        return ImportStats(wordUpdateCount, wordInsertCount, wordSkipCount, grammarUpdateCount, grammarInsertCount, grammarSkipCount)
     }
 
     /**
      * REPLACE 模式：清空进度表后全量写入
      * 注意：只清空进度相关表，不清空词库基础表（words/grammars）
      */
-    private suspend fun importReplace(userData: UserData): Int {
+    private suspend fun importReplace(userData: UserData): ImportStats {
+        var wordInsertCount = 0
+        var wordSkipCount = 0
+        var grammarInsertCount = 0
+        var grammarSkipCount = 0
+
         database.withTransaction {
             // 清空进度相关表
             database.wordStudyStateDao().deleteAll()
@@ -829,9 +1017,11 @@ class DataExportManager @Inject constructor(
             userData.wordProgress.forEach { remoteWord ->
                 val targetLocalId = localWordRawIdMap[remoteWord.rawId]?.id
                 if (targetLocalId == null) {
+                    wordSkipCount++
                     Log.w(TAG, "[REPLACE] 跳过未找到对应 rawId 的词条: ${remoteWord.rawId}")
                     return@forEach
                 }
+                wordInsertCount++
                 wordStudyStateDao.insert(WordStudyStateEntity(
                     wordId = targetLocalId,
                     repetitionCount = remoteWord.srsLevel,
@@ -859,9 +1049,11 @@ class DataExportManager @Inject constructor(
             userData.grammarProgress.forEach { remoteGrammar ->
                 val targetLocalId = localGrammarRawIdMap[remoteGrammar.rawId]?.id
                 if (targetLocalId == null) {
+                    grammarSkipCount++
                     Log.w(TAG, "[REPLACE] 跳过未找到对应 rawId 的语法: ${remoteGrammar.rawId}")
                     return@forEach
                 }
+                grammarInsertCount++
                 grammarStudyStateDao.insert(GrammarStudyStateEntity(
                     grammarId = targetLocalId,
                     repetitionCount = remoteGrammar.srsLevel,
@@ -969,7 +1161,7 @@ class DataExportManager @Inject constructor(
             }
         }
 
-        return userData.wordProgress.size
+        return ImportStats(0, wordInsertCount, wordSkipCount, 0, grammarInsertCount, grammarSkipCount)
     }
 
     override suspend fun exportDataToUri(uriString: String, isCompressed: Boolean): Boolean = withContext(Dispatchers.IO) {

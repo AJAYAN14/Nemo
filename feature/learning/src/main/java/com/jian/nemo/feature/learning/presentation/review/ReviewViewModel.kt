@@ -126,7 +126,7 @@ class ReviewViewModel @Inject constructor(
                 .distinctUntilChanged()
                 .filter { it == ReviewStatus.SessionCompleted }
                 .collect {
-                    cloudBackupManager.tryAutoBackup(intervalHours = 2)
+                    cloudBackupManager.tryAutoBackup()
                 }
         }
     }

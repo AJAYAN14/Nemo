@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.jian.nemo.feature.settings.components.RestoreStrategyDialog
+import com.jian.nemo.feature.settings.components.RestorePreviewDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -118,6 +119,14 @@ fun CloudBackupHistoryScreen(
                     onDismiss = {
                         viewModel.onEvent(SettingsEvent.CancelRestore)
                     }
+                )
+            }
+            
+            if (uiState.restorePreview != null) {
+                RestorePreviewDialog(
+                    preview = uiState.restorePreview!!,
+                    onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmRestore) },
+                    onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
                 )
             }
         } // 闭合内层 Box

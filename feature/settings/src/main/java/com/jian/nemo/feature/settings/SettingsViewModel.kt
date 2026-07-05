@@ -243,6 +243,8 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SelectRestoreFile -> _uiState.update { it.copy(showRestoreStrategyDialog = true, pendingRestoreFileName = event.fileName) }
             is SettingsEvent.CancelRestore -> _uiState.update { it.copy(showRestoreStrategyDialog = false, pendingRestoreFileName = null) }
             is SettingsEvent.RestoreFromCloud -> restoreFromCloud(event.fileName, event.strategy)
+            is SettingsEvent.ConfirmRestore -> confirmRestore()
+            is SettingsEvent.CancelRestorePreview -> cancelRestorePreview()
 
         }
     }
@@ -324,17 +326,58 @@ class SettingsViewModel @Inject constructor(
 
     private fun restoreFromCloud(fileName: String, strategy: com.jian.nemo.core.data.manager.ImportStrategy) {
         viewModelScope.launch {
-            _uiState.update { it.copy(showRestoreStrategyDialog = false, pendingRestoreFileName = null, isCloudSyncing = true) }
+            _uiState.update { it.copy(showRestoreStrategyDialog = false, isCloudSyncing = true) }
             try {
-                val message = cloudBackupManager.downloadAndRestore(fileName, strategy)
-                _uiState.update { it.copy(toastMessage = message) }
-                // 恢复成功后通知 (不再需要收起底栏，因为它是单独页面)
+                // 下载并预览
+                val preview = cloudBackupManager.previewRestore(fileName, strategy)
+                val content = cloudBackupManager.downloadBackup(fileName)
+                _uiState.update { 
+                    it.copy(
+                        restorePreview = preview,
+                        pendingRestoreContent = content
+                    ) 
+                }
             } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Restore from cloud failed", e)
-                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}") }
+                Log.e("SettingsViewModel", "Preview restore failed", e)
+                _uiState.update { it.copy(toastMessage = "预览失败: ${e.message}", pendingRestoreFileName = null) }
             } finally {
                 _uiState.update { it.copy(isCloudSyncing = false) }
             }
+        }
+    }
+
+    private fun confirmRestore() {
+        val content = _uiState.value.pendingRestoreContent
+        val preview = _uiState.value.restorePreview
+        if (content == null || preview == null) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(restorePreview = null, isCloudSyncing = true) }
+            try {
+                val message = cloudBackupManager.executeRestore(content, preview.strategy)
+                _uiState.update { it.copy(toastMessage = message) }
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Confirm restore failed", e)
+                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}") }
+            } finally {
+                _uiState.update { 
+                    it.copy(
+                        isCloudSyncing = false,
+                        pendingRestoreFileName = null,
+                        pendingRestoreContent = null
+                    ) 
+                }
+            }
+        }
+    }
+
+    private fun cancelRestorePreview() {
+        _uiState.update { 
+            it.copy(
+                restorePreview = null,
+                pendingRestoreContent = null,
+                pendingRestoreFileName = null
+            ) 
         }
     }
 

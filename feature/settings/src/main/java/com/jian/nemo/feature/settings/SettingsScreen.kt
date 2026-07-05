@@ -497,6 +497,14 @@ fun SettingsScreen(
             }
         )
     }
+
+    if (uiState.restorePreview != null) {
+        RestorePreviewDialog(
+            preview = uiState.restorePreview!!,
+            onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmRestore) },
+            onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
+        )
+    }
 }
 
 /**

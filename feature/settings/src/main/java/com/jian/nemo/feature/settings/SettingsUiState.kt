@@ -56,6 +56,7 @@ data class SettingsUiState(
     val isLoading: Boolean = false,
 
     // 用户状态 (从 AuthRepository 观察)
+
     val isLoggedIn: Boolean = false,
     val user: com.jian.nemo.core.domain.model.User? = null,
     val avatarPath: String? = null,
@@ -64,7 +65,9 @@ data class SettingsUiState(
     val isCloudSyncing: Boolean = false,
     val cloudBackupList: List<BackupInfo> = emptyList(),
     val showRestoreStrategyDialog: Boolean = false,
-    val pendingRestoreFileName: String? = null
+    val pendingRestoreFileName: String? = null,
+    val pendingRestoreContent: String? = null,
+    val restorePreview: com.jian.nemo.core.data.manager.ImportPreview? = null
 )
 
 /**
@@ -159,4 +162,6 @@ sealed interface SettingsEvent {
     data class SelectRestoreFile(val fileName: String) : SettingsEvent
     data object CancelRestore : SettingsEvent
     data class RestoreFromCloud(val fileName: String, val strategy: ImportStrategy) : SettingsEvent
+    data object ConfirmRestore : SettingsEvent
+    data object CancelRestorePreview : SettingsEvent
 }

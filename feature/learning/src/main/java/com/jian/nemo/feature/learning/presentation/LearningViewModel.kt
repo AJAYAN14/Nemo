@@ -681,7 +681,7 @@ class LearningViewModel @Inject constructor(
                 val totalDuration = sessionStatsManager.completeSession(mode, todayEpoch)
                 // 触发静默自动备份（防抖 2 小时）
                 viewModelScope.launch(Dispatchers.IO) {
-                    cloudBackupManager.tryAutoBackup(intervalHours = 2)
+                    cloudBackupManager.tryAutoBackup()
                 }
                 _uiState.update {
                     it.copy(
