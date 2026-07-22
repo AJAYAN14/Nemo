@@ -22,8 +22,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -251,9 +254,10 @@ fun LearningFinishedContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 1. Hero Icon with Animation (Morph Loading with Check)
             Box(
@@ -476,39 +480,7 @@ fun LearningFinishedContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 4. 极简名言卡片
             val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
-            val quoteBgColor = if (isDark) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-            } else {
-                Color.White
-            }
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = quoteBgColor
-                ),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .graphicsLayer {
-                        alpha = quoteAlpha.value
-                        translationY = with(density) { quoteOffsetY.value.dp.toPx() }
-                    }
-            ) {
-                Column(
-                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "“温故而知新，可以为师矣。”",
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                        ),
-                        color = if (isDark) NemoText else Color(0xFF64748B),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -626,6 +598,8 @@ fun LearningFinishedContent(
                     }
                 )
             }
+
+            Spacer(modifier = Modifier.height(48.dp))
         }
 
         // 彩花特效层

@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -71,7 +72,7 @@ fun BonusStudyDialog(
     var selectedQuantity by remember { mutableIntStateOf(initialQuantity) }
     // 6 个全胶囊快捷预设
     val presetOptions = listOf(5, 10, 15, 20, 30, 50)
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
 
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
