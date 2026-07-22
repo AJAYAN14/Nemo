@@ -35,6 +35,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -43,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -63,6 +66,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -70,14 +74,15 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * 高级质感加减器 (PremiumStepper)
- * 依据 web-haptics / Apple HIG 设计规范注入原生 3 阶沉浸触觉震动：
- * 1. Tick 按键微震 (VibrationEffect.EFFECT_TICK / 轻短机械齿轮感)
- * 2. Heavy 边界止动重震 (VibrationEffect.EFFECT_HEAVY_CLICK / 到达边界物理碰撞感)
- * 3. 机械分位独立滚轮计数器 (Per-Digit Odometer Counter)
- * 4. 软灰色按键与点击数字键盘手写输入
+ * 特点：
+ * 1. 输入编辑模式配备 16.dp 绝美软圆角底框与亮橙边框焦点线。
+ * 2. 机械分位独立滚轮计数器 (Per-Digit Odometer Counter)。
+ * 3. 3 阶原生触觉震动 (Tick / Heavy Boundary)。
+ * 4. 软灰色按键与点击数字键盘手写输入。
  */
 @Composable
 fun PremiumStepper(
@@ -172,69 +177,80 @@ fun PremiumStepper(
         }
     }
 
-    Surface(
-        modifier = modifier
-            .border(
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                ),
-                shape = CircleShape
-            )
-            .clip(CircleShape),
-        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color(0xFFF8FAFC),
-        shadowElevation = 0.dp
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            // 减号软灰按钮
-            StepperIconButton(
-                onClick = {
-                    if (isEditing) {
-                        submitInput()
-                    }
-                    if (value - step >= min) {
-                        performHapticTick()
-                        onValueChange(value - step)
-                    } else {
-                        performHapticHeavyBoundary()
-                    }
-                },
-                enabled = enabled,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = "减少",
-                        tint = if (enabled && value - step >= min) {
-                            if (isDark) Color.White else Color(0xFF334155)
-                        } else {
-                            (if (isDark) Color.White else Color(0xFF334155)).copy(alpha = 0.38f)
-                        }
-                    )
-                }
-            )
-
-            // 中央数字区域：点击切换输入模式，平时呈现【分位独立机械滚轮】
-            Box(
-                modifier = Modifier
-                    .width(96.dp)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .clickable(enabled = enabled) {
-                        performHapticTick()
-                        textFieldValue = TextFieldValue(
-                            text = value.toString(),
-                            selection = TextRange(0, value.toString().length)
-                        )
-                        isEditing = true
-                    },
-                contentAlignment = Alignment.Center
-            ) {
+        // 减号软灰 58.dp 大按钮
+        StepperIconButton(
+            onClick = {
                 if (isEditing) {
+                    submitInput()
+                }
+                if (value - step >= min) {
+                    performHapticTick()
+                    onValueChange(value - step)
+                } else {
+                    performHapticHeavyBoundary()
+                }
+            },
+            enabled = enabled,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = "减少",
+                    modifier = Modifier.size(28.dp),
+                    tint = if (enabled && value - step >= min) {
+                        if (isDark) Color.White else Color(0xFF1E293B)
+                    } else {
+                        (if (isDark) Color.White else Color(0xFF1E293B)).copy(alpha = 0.35f)
+                    }
+                )
+            }
+        )
+
+        // 中央大号数字区域：点击切换输入模式，平时呈现【分位独立机械滚轮】
+        Box(
+            modifier = Modifier
+                .width(130.dp)
+                .height(64.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(
+                    if (isEditing) {
+                        if (isDark) Color(0xFF332014) else Color(0xFFFFF1E6)
+                    } else {
+                        Color.Transparent
+                    }
+                )
+                .then(
+                    if (isEditing) {
+                        Modifier.border(
+                            BorderStroke(1.5.dp, Color(0xFFFF5500)),
+                            RoundedCornerShape(16.dp)
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .clickable(enabled = enabled) {
+                    performHapticTick()
+                    textFieldValue = TextFieldValue(
+                        text = value.toString(),
+                        selection = TextRange(0, value.toString().length)
+                    )
+                    isEditing = true
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            if (isEditing) {
+                // 自定义选中颜色，配合 16.dp 软圆角外框
+                val customSelectionColors = TextSelectionColors(
+                    handleColor = Color(0xFFFF5500),
+                    backgroundColor = Color(0x33FF5500)
+                )
+
+                CompositionLocalProvider(LocalTextSelectionColors provides customSelectionColors) {
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = { newValue ->
@@ -242,13 +258,14 @@ fun PremiumStepper(
                                 textFieldValue = newValue
                             }
                         },
-                        textStyle = MaterialTheme.typography.headlineSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
+                        textStyle = TextStyle(
+                            fontSize = 42.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFFFF5500),
                             textAlign = TextAlign.Center
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        cursorBrush = SolidColor(Color(0xFFFF5500)),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done
@@ -268,72 +285,74 @@ fun PremiumStepper(
                             .fillMaxSize()
                             .focusRequester(focusRequester)
                     )
-                } else {
-                    // 分位独立机械滚轮计数器 (Per-Digit Odometer Counter)
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        val digitChars = value.toString().map { it }
-                        digitChars.forEachIndexed { index, char ->
-                            AnimatedContent(
-                                targetState = char,
-                                transitionSpec = {
-                                    if (isIncreasing) {
-                                        (slideInVertically { height -> height } + fadeIn()) togetherWith
-                                                (slideOutVertically { height -> -height } + fadeOut())
-                                    } else {
-                                        (slideInVertically { height -> -height } + fadeIn()) togetherWith
-                                                (slideOutVertically { height -> height } + fadeOut())
-                                    }.using(SizeTransform(clip = false))
-                                },
-                                label = "PerDigitOdometerAnimation_$index"
-                            ) { digitChar ->
-                                Text(
-                                    text = digitChar.toString(),
-                                    style = MaterialTheme.typography.headlineSmall.copy(
-                                        fontWeight = FontWeight.Bold
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
+                }
+            } else {
+                // 分位独立机械滚轮计数器 (Per-Digit Odometer Counter)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    val digitChars = value.toString().map { it }
+                    digitChars.forEachIndexed { index, char ->
+                        AnimatedContent(
+                            targetState = char,
+                            transitionSpec = {
+                                if (isIncreasing) {
+                                    (slideInVertically { height -> height } + fadeIn()) togetherWith
+                                            (slideOutVertically { height -> -height } + fadeOut())
+                                } else {
+                                    (slideInVertically { height -> -height } + fadeIn()) togetherWith
+                                            (slideOutVertically { height -> height } + fadeOut())
+                                }.using(SizeTransform(clip = false))
+                            },
+                            label = "PerDigitOdometerAnimation_$index"
+                        ) { digitChar ->
+                            Text(
+                                text = digitChar.toString(),
+                                style = TextStyle(
+                                    fontSize = 44.sp,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
             }
-
-            // 加号软灰按钮
-            StepperIconButton(
-                onClick = {
-                    if (isEditing) {
-                        submitInput()
-                    }
-                    if (value + step <= max) {
-                        performHapticTick()
-                        onValueChange(value + step)
-                    } else {
-                        performHapticHeavyBoundary()
-                    }
-                },
-                enabled = enabled,
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "增加",
-                        tint = if (enabled && value + step <= max) {
-                            if (isDark) Color.White else Color(0xFF334155)
-                        } else {
-                            (if (isDark) Color.White else Color(0xFF334155)).copy(alpha = 0.38f)
-                        }
-                    )
-                }
-            )
         }
+
+        // 加号软灰 58.dp 大按钮
+        StepperIconButton(
+            onClick = {
+                if (isEditing) {
+                    submitInput()
+                }
+                if (value + step <= max) {
+                    performHapticTick()
+                    onValueChange(value + step)
+                } else {
+                    performHapticHeavyBoundary()
+                }
+            },
+            enabled = enabled,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "增加",
+                    modifier = Modifier.size(28.dp),
+                    tint = if (enabled && value + step <= max) {
+                        if (isDark) Color.White else Color(0xFF1E293B)
+                    } else {
+                        (if (isDark) Color.White else Color(0xFF1E293B)).copy(alpha = 0.35f)
+                    }
+                )
+            }
+        )
     }
 }
 
 /**
- * 软灰色按压缩放按钮
+ * 参考图大号 58.dp 软灰色按压缩放按钮
  */
 @Composable
 private fun StepperIconButton(
@@ -355,21 +374,16 @@ private fun StepperIconButton(
         label = "StepperIconButtonScale"
     )
 
-    // 软灰色调：Light 模式下采用柔软沉稳的 #E2E8F0 浅灰色，Dark 模式下采用 #262626
-    val softButtonColor = if (isDark) Color(0xFF262626) else Color(0xFFE2E8F0)
+    val softButtonColor = if (isDark) Color(0xFF262626) else Color(0xFFF1F5F9)
+    val borderColor = if (isDark) Color(0xFF383838) else Color(0xFFE2E8F0)
 
     Box(
         modifier = modifier
-            .size(44.dp)
+            .size(58.dp)
             .scale(scale)
+            .border(BorderStroke(1.dp, borderColor), CircleShape)
             .clip(CircleShape)
-            .background(
-                color = if (enabled) {
-                    softButtonColor
-                } else {
-                    softButtonColor.copy(alpha = 0.4f)
-                }
-            )
+            .background(color = softButtonColor)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
