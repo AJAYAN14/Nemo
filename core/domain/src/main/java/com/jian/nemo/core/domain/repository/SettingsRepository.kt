@@ -59,6 +59,17 @@ interface SettingsRepository {
     suspend fun setGrammarDailyGoal(goal: Int)
 
     /**
+     * 默认加餐单组数量Flow
+     * 默认值: 10
+     */
+    val defaultBonusBatchSizeFlow: Flow<Int>
+
+    /**
+     * 设置默认加餐单组数量
+     */
+    suspend fun setDefaultBonusBatchSize(size: Int)
+
+    /**
      * 主题色 Flow (ARGB Long, null = 默认品牌蓝)
      */
     val themeColorFlow: Flow<Long?>

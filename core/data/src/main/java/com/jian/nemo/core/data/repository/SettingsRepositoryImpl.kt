@@ -95,6 +95,22 @@ class SettingsRepositoryImpl @Inject constructor(
         preferences[PreferencesKeys.GRAMMAR_DAILY_GOAL] ?: 10
     }
 
+    /** 默认加餐单组数量 Flow */
+    override val defaultBonusBatchSizeFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.DEFAULT_BONUS_BATCH_SIZE] ?: 10
+    }
+
+    /**
+     * 设置默认加餐单组数量
+     */
+    override suspend fun setDefaultBonusBatchSize(size: Int) {
+        val validSize = size.coerceIn(1, 200)
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DEFAULT_BONUS_BATCH_SIZE] = validSize
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     /**
      * 设置每日语法目标 (立即生效)
      * @param goal 每日学习语法条数

@@ -44,6 +44,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -86,6 +87,7 @@ fun LearningFinishedContent(
     sessionReviewCount: Int = 0,
     sessionRelearnCount: Int = 0,
     tomorrowReviewForecastCount: Int = 0,
+    onConfirmBonus: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -498,6 +500,69 @@ fun LearningFinishedContent(
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ⚡ 今日加餐配置按钮 (Nemo UI/UX 规范：24.dp 圆角 + NemoPrimary 品牌蓝)
+            var showBonusDialog by remember { mutableStateOf(false) }
+
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = com.jian.nemo.core.designsystem.theme.NemoPrimary,
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showBonusDialog = true }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = "⚡",
+                            fontSize = 20.sp
+                        )
+                        Column {
+                            Text(
+                                text = "今日加餐 (额外拓展)",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = "学有余力？点击配置今日额外加练组数",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color.White.copy(alpha = 0.85f)
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Rounded.Star,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            if (showBonusDialog) {
+                com.jian.nemo.core.ui.component.dialog.BonusStudyDialog(
+                    onDismissRequest = { showBonusDialog = false },
+                    onConfirmBonus = { bonusCount ->
+                        onConfirmBonus(bonusCount)
+                    }
+                )
             }
         }
 

@@ -24,6 +24,7 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
  * - 复习与训练卡片
  * - 数据与资料卡片
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressDashboardScreen(
     onNavigateBack: () -> Unit = {},

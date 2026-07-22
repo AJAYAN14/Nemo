@@ -18,6 +18,7 @@ data class SettingsUiState(
     // 学习设置
     val dailyGoal: Int = 20,
     val grammarDailyGoal: Int = 10,
+    val defaultBonusBatchSize: Int = 10,
     val testStreak: Int = 0,
     val maxTestStreak: Int = 0,
     val toastMessage: String? = null,
@@ -33,6 +34,7 @@ data class SettingsUiState(
     // 弹窗状态
     val showDailyGoalDialog: Boolean = false,
     val showGrammarDailyGoalDialog: Boolean = false,
+    val showBonusBatchSizeDialog: Boolean = false,
     val showLearningDayResetHourDialog: Boolean = false,
     val showExportOptionsDialog: Boolean = false,
     val pendingExportUri: android.net.Uri? = null,
@@ -107,6 +109,7 @@ sealed interface SettingsEvent {
     data class SetDailyGoal(val goal: Int) : SettingsEvent
     data class SetAppIcon(val iconName: String) : SettingsEvent
     data class SetGrammarDailyGoal(val goal: Int) : SettingsEvent
+    data class SetDefaultBonusBatchSize(val size: Int) : SettingsEvent
     data class SetLearningDayResetHour(val hour: Int) : SettingsEvent
     data class SetRandomNewContentEnabled(val enabled: Boolean) : SettingsEvent
     data class SetLearningSteps(val steps: String) : SettingsEvent
@@ -138,6 +141,7 @@ sealed interface SettingsEvent {
     // 弹窗控制
     data class ShowDailyGoalDialog(val show: Boolean) : SettingsEvent
     data class ShowGrammarDailyGoalDialog(val show: Boolean) : SettingsEvent
+    data class ShowBonusBatchSizeDialog(val show: Boolean) : SettingsEvent
     data class ShowLearningDayResetHourDialog(val show: Boolean) : SettingsEvent
 
 

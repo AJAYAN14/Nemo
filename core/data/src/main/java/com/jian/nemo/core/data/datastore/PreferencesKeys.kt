@@ -26,6 +26,9 @@ object PreferencesKeys {
     /** 每日学习目标（语法条数）默认: 10 */
     val GRAMMAR_DAILY_GOAL = intPreferencesKey("grammar_daily_goal")
 
+    /** 默认加餐单组数量 默认: 10 */
+    val DEFAULT_BONUS_BATCH_SIZE = intPreferencesKey("default_bonus_batch_size")
+
     /** 待定每日学习目标（单词数）- 次日生效 */
     val PENDING_DAILY_GOAL = intPreferencesKey("pending_daily_goal")
 

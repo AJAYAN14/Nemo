@@ -39,6 +39,7 @@ import java.util.*
  *
  * 采用 Premium Card + List 布局，配合 Squircle 图标
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateToLogin: () -> Unit,
@@ -260,6 +261,8 @@ fun SettingsScreen(
                         }
                     )
 
+
+
                     SquircleSettingItem(
                         icon = Icons.Rounded.Schedule,
                         iconColor = NemoIndigo,
@@ -443,6 +446,8 @@ fun SettingsScreen(
             onGoalSelected = { viewModel.onEvent(SettingsEvent.SetGrammarDailyGoal(it)) }
         )
     }
+
+
 
     if (uiState.showLearningDayResetHourDialog) {
         LearningDayResetHourBottomSheet(

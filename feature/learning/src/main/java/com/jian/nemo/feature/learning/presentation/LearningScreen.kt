@@ -502,7 +502,10 @@ fun WordLearningContent(
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                onConfirmBonus = { bonusCount ->
+                    onEvent(LearningEvent.StartLearning(LearningMode.Word))
+                }
             )
         } else {
             LearningFinishedContent(

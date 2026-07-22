@@ -129,7 +129,6 @@ fun LearningSummaryCard(
 
     val todayProgress = when {
         dailyGoal <= 0 -> 0
-        todayLearned >= dailyGoal -> 100
         else -> ((todayLearned.toFloat() / dailyGoal) * 100).toInt()
     }
 

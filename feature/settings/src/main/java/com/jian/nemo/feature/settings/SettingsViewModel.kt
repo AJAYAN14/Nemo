@@ -117,10 +117,11 @@ class SettingsViewModel @Inject constructor(
             val goalsFlow = combine(
                 settingsRepository.dailyGoalFlow,
                 settingsRepository.grammarDailyGoalFlow,
+                settingsRepository.defaultBonusBatchSizeFlow,
                 settingsRepository.learningDayResetHourFlow,
                 settingsRepository.isRandomNewContentEnabledFlow
-            ) { dailyGoal, grammarDailyGoal, resetHour, isRandom ->
-                GoalSettings(dailyGoal, grammarDailyGoal, resetHour, isRandom)
+            ) { dailyGoal, grammarDailyGoal, defaultBonusBatchSize, resetHour, isRandom ->
+                GoalSettings(dailyGoal, grammarDailyGoal, defaultBonusBatchSize, resetHour, isRandom)
             }
 
 
@@ -154,7 +155,7 @@ class SettingsViewModel @Inject constructor(
                 advancedFlow,
                 ttsFlow
             ) { theme, goals, advanced, tts ->
-                val (dailyGoal, grammarDailyGoal, resetHour, isRandom) = goals
+                val (dailyGoal, grammarDailyGoal, defaultBonusBatchSize, resetHour, isRandom) = goals
                 val (rate, pitch, voiceName) = tts
                 _uiState.update { state ->
                     state.copy(
@@ -173,6 +174,7 @@ class SettingsViewModel @Inject constructor(
                         themeColor = theme.themeColor,
                         dailyGoal = dailyGoal,
                         grammarDailyGoal = grammarDailyGoal,
+                        defaultBonusBatchSize = defaultBonusBatchSize,
                         learningDayResetHour = resetHour,
                         isRandomNewContentEnabled = isRandom,
                         learningSteps = advanced.learningSteps,
@@ -202,10 +204,12 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
             is SettingsEvent.SetAppIcon -> setAppIcon(event.iconName)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
+            is SettingsEvent.SetDefaultBonusBatchSize -> setDefaultBonusBatchSize(event.size)
             is SettingsEvent.SetLearningDayResetHour -> setLearningDayResetHour(event.hour)
             is SettingsEvent.SetRandomNewContentEnabled -> setRandomNewContentEnabled(event.enabled)
             is SettingsEvent.ShowDailyGoalDialog -> _uiState.update { it.copy(showDailyGoalDialog = event.show) }
             is SettingsEvent.ShowGrammarDailyGoalDialog -> _uiState.update { it.copy(showGrammarDailyGoalDialog = event.show) }
+            is SettingsEvent.ShowBonusBatchSizeDialog -> _uiState.update { it.copy(showBonusBatchSizeDialog = event.show) }
             is SettingsEvent.ShowLearningDayResetHourDialog -> _uiState.update { it.copy(showLearningDayResetHourDialog = event.show) }
             is SettingsEvent.SetLearningSteps -> setLearningSteps(event.steps)
             is SettingsEvent.SetRelearningSteps -> setRelearningSteps(event.steps)
@@ -287,11 +291,21 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private var lastSuccessfulBackupTime = 0L
+    private val BACKUP_DEBOUNCE_INTERVAL = 60_000L
+
     private fun backupToCloud() {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastSuccessfulBackupTime < BACKUP_DEBOUNCE_INTERVAL) {
+            _uiState.update { it.copy(toastMessage = "备份过于频繁，请稍后再试") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isCloudSyncing = true) }
             try {
                 cloudBackupManager.uploadBackup()
+                lastSuccessfulBackupTime = System.currentTimeMillis()
                 _uiState.update { it.copy(toastMessage = "云端备份成功") }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Backup to cloud failed", e)
@@ -453,6 +467,16 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setGrammarDailyGoal(goal)
             _uiState.update { it.copy(showGrammarDailyGoalDialog = false) }
+        }
+    }
+
+    /**
+     * 设置默认加餐单组数量
+     */
+    private fun setDefaultBonusBatchSize(size: Int) {
+        viewModelScope.launch {
+            settingsRepository.setDefaultBonusBatchSize(size)
+            _uiState.update { it.copy(showBonusBatchSizeDialog = false) }
         }
     }
 
@@ -654,6 +678,7 @@ private data class ThemeSettings(
 private data class GoalSettings(
     val dailyGoal: Int,
     val grammarDailyGoal: Int,
+    val defaultBonusBatchSize: Int,
     val resetHour: Int,
     val isRandom: Boolean
 )
