@@ -10,6 +10,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -17,12 +18,13 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -38,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Card
@@ -52,8 +55,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -504,55 +512,109 @@ fun LearningFinishedContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ⚡ 今日加餐配置按钮 (Nemo UI/UX 规范：24.dp 圆角 + NemoPrimary 品牌蓝)
+            // 🚩 今日加餐配置按钮 (参照 portal_labs 源码接入 2.4s 45° Shimmer 流光扫过 + 遮挡修复 + 左右平衡排版)
             var showBonusDialog by remember { mutableStateOf(false) }
 
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = com.jian.nemo.core.designsystem.theme.NemoPrimary,
-                    contentColor = Color.White
+            // portal_labs 闪光流光 (Shimmer Sweep) 频率与轨迹控制 (2.4 秒平滑呼吸)
+            val shimmerTransition = rememberInfiniteTransition(label = "ShimmerTransition")
+            val shimmerProgress by shimmerTransition.animateFloat(
+                initialValue = -1.5f,
+                targetValue = 2.5f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = 2400, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
                 ),
+                label = "ShimmerProgress"
+            )
+
+            Surface(
+                onClick = { showBonusDialog = true },
+                shape = RoundedCornerShape(24.dp),
+                color = if (isDark) Color(0xFF2B1F17) else Color(0xFFFFF7ED),
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = Color(0xFFFF5500).copy(alpha = if (isDark) 0.35f else 0.20f)
+                ),
+                shadowElevation = 0.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { showBonusDialog = true }
+                    .clip(RoundedCornerShape(24.dp))
+                    .drawWithContent {
+                        drawContent()
+                        // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                        val width = size.width
+                        val height = size.height
+                        val xOffset = shimmerProgress * width
+
+                        val shimmerBrush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = if (isDark) 0.25f else 0.45f),
+                                Color.Transparent
+                            ),
+                            start = Offset(xOffset, 0f),
+                            end = Offset(xOffset + width * 0.4f, height * 1.2f)
+                        )
+                        drawRect(brush = shimmerBrush)
+                    }
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = "⚡",
-                            fontSize = 20.sp
+                        // 纯净自然亮橙 Google 旗帜 Icon (无粗糙底块)
+                        Icon(
+                            imageVector = Icons.Rounded.Flag,
+                            contentDescription = null,
+                            tint = Color(0xFFFF5500),
+                            modifier = Modifier.size(26.dp)
                         )
-                        Column {
+
+                        // 舒展文本排版 (彻底解决文字遮挡问题)
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
                             Text(
-                                text = "今日加餐 (额外拓展)",
+                                text = "今日加餐",
                                 style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold
-                                )
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 17.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "学有余力？点击配置今日额外加练组数",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White.copy(alpha = 0.85f)
+                                text = "突破常规，设定追加练习目标",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    fontSize = 13.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f)
                             )
                         }
                     }
 
-                    Icon(
-                        imageVector = Icons.Rounded.Star,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    // 右侧精致亮橙全胶囊标签 (平衡左右排版视效)
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFFFF5500),
+                        contentColor = Color.White
+                    ) {
+                        Text(
+                            text = "去加餐",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            ),
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        )
+                    }
                 }
             }
 
