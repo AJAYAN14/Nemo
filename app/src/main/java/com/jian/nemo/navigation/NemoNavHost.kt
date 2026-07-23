@@ -222,36 +222,7 @@ fun NemoNavHost(
         }
 
         // 学习页（原首页） - 主界面 (重构为 HomeScreen)
-        composable(
-            route = NavDestination.LEARNING,
-            enterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            exitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-                else BottomNavTransition.exitTransition()
-            },
-            popEnterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            popExitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                BottomNavTransition.exitTransition()
-            }
-        ) {
+        composable(route = NavDestination.LEARNING) {
             HomeScreen(
                 onNavigateToLearning = { mode ->
                     when (mode) {
@@ -324,36 +295,7 @@ fun NemoNavHost(
         }
 
         // 进度页 - 主界面
-        composable(
-            route = NavDestination.PROGRESS,
-            enterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            exitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-                else BottomNavTransition.exitTransition()
-            },
-            popEnterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            popExitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                BottomNavTransition.exitTransition()
-            }
-        ) {
+        composable(route = NavDestination.PROGRESS) {
             com.jian.nemo.feature.statistics.presentation.dashboard.ProgressDashboardScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToDueReview = {
@@ -393,36 +335,7 @@ fun NemoNavHost(
         }
 
         // 测试页 - 主界面
-        composable(
-            route = NavDestination.TEST,
-            enterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            exitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-                else BottomNavTransition.exitTransition()
-            },
-            popEnterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            popExitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                BottomNavTransition.exitTransition()
-            }
-        ) {
+        composable(route = NavDestination.TEST) {
             com.jian.nemo.feature.test.presentation.dashboard.TestDashboardScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToTestSettings = { testModeId ->
@@ -598,36 +511,7 @@ fun NemoNavHost(
         testScreen(navController)
 
         // 设置（底部导航栏"个人"tab） - 主界面
-        composable(
-            route = NavDestination.SETTINGS,
-            enterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            exitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-                else BottomNavTransition.exitTransition()
-            },
-            popEnterTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-                if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-                else BottomNavTransition.enterTransition()
-            },
-            popExitTransition = {
-                val initialRoute = initialState.destination.route
-                val targetRoute = targetState.destination.route
-                HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-                BottomNavTransition.exitTransition()
-            }
-        ) {
+        composable(route = NavDestination.SETTINGS) {
             SettingsScreen(
                 onNavigateToLogin = {
                     navController.navigate(NavDestination.PROFILE) // userGraph 处理登录/资料切换

@@ -1,11 +1,16 @@
 package com.jian.nemo.core.ui.animation
 
-import androidx.compose.animation.*
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 
 /**
- * 通过横向平移配合 Z 轴缩放及透明度渐变，在页面切换时构建空间纵深感。
+ * 界面切换动画：移植自 Open-notes 项目的全局视差平移与淡入淡出动画
  */
 object NemoNavigationAnimations {
 
@@ -15,25 +20,9 @@ object NemoNavigationAnimations {
     private const val ANIMATION_DURATION = 300
 
     /**
-     * 透明度渐变动画时长 (ms)
-     */
-    private const val FADE_DURATION = 150
-
-    /**
-     * 进场动画的初始缩放比例
-     */
-    private const val ENTER_INITIAL_SCALE = 1.02f
-
-    /**
-     * 退场动画的目标缩放比例
-     */
-    private const val EXIT_TARGET_SCALE = 0.98f
-
-    /**
      * 页面推入时的进场动画。
-     * 从屏幕右侧向左横向滑入，伴随淡入及缩放恢复效果。
+     * 从屏幕右侧向左完全滑入，伴随淡入效果。
      */
-    @OptIn(ExperimentalAnimationApi::class)
     fun enterTransition(): EnterTransition {
         return slideInHorizontally(
             initialOffsetX = { it },
@@ -43,68 +32,51 @@ object NemoNavigationAnimations {
             )
         ) + fadeIn(
             animationSpec = tween(
-                durationMillis = FADE_DURATION
-            )
-        ) + scaleIn(
-            initialScale = ENTER_INITIAL_SCALE,
-            animationSpec = tween(
-                durationMillis = ANIMATION_DURATION,
-                easing = FastOutSlowInEasing
+                durationMillis = ANIMATION_DURATION
             )
         )
     }
 
     /**
      * 页面推入时的旧页面退场动画。
-     * 向屏幕左侧完全滑出，伴随缩放缩小效果。
+     * 向屏幕左侧微移 1/3 屏幕宽度（视差重叠感），伴随淡出效果。
      */
-    @OptIn(ExperimentalAnimationApi::class)
     fun exitTransition(): ExitTransition {
         return slideOutHorizontally(
-            targetOffsetX = { -it },
+            targetOffsetX = { -it / 3 },
             animationSpec = tween(
                 durationMillis = ANIMATION_DURATION,
                 easing = FastOutSlowInEasing
             )
-        ) + scaleOut(
-            targetScale = EXIT_TARGET_SCALE,
+        ) + fadeOut(
             animationSpec = tween(
-                durationMillis = ANIMATION_DURATION,
-                easing = FastOutSlowInEasing
+                durationMillis = ANIMATION_DURATION
             )
         )
     }
 
     /**
      * 页面返回时的进场动画。
-     * 从屏幕左侧滑入，伴随淡入及缩放恢复效果。
+     * 从左侧 -1/3 屏幕宽度处滑动复位，伴随淡入效果。
      */
-    @OptIn(ExperimentalAnimationApi::class)
     fun popEnterTransition(): EnterTransition {
         return slideInHorizontally(
-            initialOffsetX = { -it },
+            initialOffsetX = { -it / 3 },
             animationSpec = tween(
                 durationMillis = ANIMATION_DURATION,
                 easing = FastOutSlowInEasing
             )
         ) + fadeIn(
             animationSpec = tween(
-                durationMillis = FADE_DURATION
-            )
-        ) + scaleIn(
-            initialScale = EXIT_TARGET_SCALE,
-            animationSpec = tween(
-                durationMillis = ANIMATION_DURATION,
-                easing = FastOutSlowInEasing
+                durationMillis = ANIMATION_DURATION
             )
         )
     }
 
     /**
      * 页面返回时的当前页面退场动画。
-     * 向屏幕右侧滑出，伴随淡出及轻微放大效果。
+     * 向屏幕右侧完全滑出，伴随淡出效果。
      */
-    @OptIn(ExperimentalAnimationApi::class)
     fun popExitTransition(): ExitTransition {
         return slideOutHorizontally(
             targetOffsetX = { it },
@@ -114,14 +86,9 @@ object NemoNavigationAnimations {
             )
         ) + fadeOut(
             animationSpec = tween(
-                durationMillis = FADE_DURATION
-            )
-        ) + scaleOut(
-            targetScale = ENTER_INITIAL_SCALE,
-            animationSpec = tween(
-                durationMillis = ANIMATION_DURATION,
-                easing = FastOutSlowInEasing
+                durationMillis = ANIMATION_DURATION
             )
         )
     }
 }
+
