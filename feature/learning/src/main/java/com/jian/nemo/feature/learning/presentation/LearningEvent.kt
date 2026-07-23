@@ -14,6 +14,16 @@ sealed interface LearningEvent {
     ) : LearningEvent
 
     /**
+     * 追加学习/去加餐 (仅补充未学习的新词/新语法)
+     * @param count 申请追加的条目数量
+     * @param mode 学习模式
+     */
+    data class StartBonusLearning(
+        val count: Int,
+        val mode: LearningMode = LearningMode.Word
+    ) : LearningEvent
+
+    /**
      * 切换学习模式（单词↔️语法）
      */
     data class ChangeLearningMode(

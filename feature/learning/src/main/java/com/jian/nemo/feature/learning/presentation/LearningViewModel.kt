@@ -323,6 +323,10 @@ class LearningViewModel @Inject constructor(
                 _uiState.update { it.copy(learningMode = event.mode) }
                 startLearning()
             }
+            is LearningEvent.StartBonusLearning -> {
+                _uiState.update { it.copy(learningMode = event.mode) }
+                startBonusLearning(event.count)
+            }
             is LearningEvent.ChangeLearningMode -> changeLearningMode(event.mode)
 
 
@@ -496,6 +500,130 @@ class LearningViewModel @Inject constructor(
                     it.copy(
                         status = LearningStatus.Error,
                         error = "启动失败: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * 启动加餐学习会话 (仅补充未学习的新词/新语法)
+     */
+    private fun startBonusLearning(count: Int) {
+        learningUndoHelper.clear()
+        syncUndoAvailability()
+
+        loadingJob?.cancel()
+        loadingJob = viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    status = LearningStatus.Loading,
+                    selectedLevel = "GLOBAL",
+                    error = null
+                )
+            }
+
+            try {
+                val mode = _uiState.value.learningMode
+                val isRandom = settingsRepository.isRandomNewContentEnabledFlow.first()
+
+                val completedToday = when (mode) {
+                    LearningMode.Word -> {
+                        getTodayLearnedWordsCountUseCase()
+                            .first { it !is Result.Loading }
+                            .let { if (it is Result.Success) it.data else 0 }
+                    }
+                    LearningMode.Grammar -> {
+                        getTodayLearnedGrammarsCountUseCase()
+                            .first { it !is Result.Loading }
+                            .let { if (it is Result.Success) it.data else 0 }
+                    }
+                }
+
+                val dailyGoal = when (mode) {
+                    LearningMode.Word -> settingsRepository.dailyGoalFlow.first()
+                    LearningMode.Grammar -> settingsRepository.grammarDailyGoalFlow.first()
+                }
+
+                val newItems: List<Any> = when (mode) {
+                    LearningMode.Word -> {
+                        val r = getNewWordsUseCase(isRandom).first { it !is Result.Loading }
+                        if (r is Result.Success) r.data else emptyList()
+                    }
+                    LearningMode.Grammar -> {
+                        val r = getNewGrammarsUseCase(isRandom).first { it !is Result.Loading }
+                        if (r is Result.Success) r.data else emptyList()
+                    }
+                }
+
+                val bonusItems = newItems.take(count)
+
+                if (bonusItems.isEmpty()) {
+                    _uiState.update {
+                        it.copy(
+                            status = LearningStatus.SessionCompleted,
+                            error = "暂无更多未学新内容"
+                        )
+                    }
+                    return@launch
+                }
+
+                if (bonusItems.size < count) {
+                    val unit = if (mode == LearningMode.Word) "词" else "语法"
+                    _uiState.update {
+                        it.copy(successMessage = "已为你加载剩余的 ${bonusItems.size} 个新$unit")
+                    }
+                }
+
+                _learningSteps.clear()
+                _learningDueTimes.clear()
+                _requeuedItems.clear()
+
+                checkAndRestoreOrReset()
+                sessionStatsManager.resumeTimer()
+
+                val learningItems = bonusItems.toLearningItems()
+                val firstItem = learningItems.firstOrNull()
+
+                _uiState.update {
+                    it.copy(
+                        status = LearningStatus.Learning,
+                        wordList = if (mode == LearningMode.Word) bonusItems.filterIsInstance<Word>() else emptyList(),
+                        grammarList = if (mode == LearningMode.Grammar) bonusItems.filterIsInstance<Grammar>() else emptyList(),
+                        currentIndex = 0,
+                        currentWord = (firstItem as? LearningItem.WordItem)?.word,
+                        currentGrammar = (firstItem as? LearningItem.GrammarItem)?.grammar,
+                        currentGrammarIndex = 0,
+                        dailyGoal = dailyGoal,
+                        completedToday = completedToday,
+                        isAnswerShown = false,
+                        isCardFlipped = false,
+                        isGrammarDetailVisible = false,
+                        error = null,
+                        sessionInitialSize = learningItems.size,
+                        ratingIntervals = calculateRatingIntervals(firstItem),
+                        sessionProcessedCount = 0,
+                        waitingUntil = 0L,
+                        sessionDurationSeconds = 0L,
+                        sessionMaxCombo = sessionStatsManager.maxCombo,
+                        sessionNewCount = sessionStatsManager.sessionNewCount,
+                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
+                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount
+                    )
+                }
+                armShowAnswerDelay()
+                updateQueueBadgeCounts()
+
+                saveSessionState(learningItems.map { it.id }, 0, "GLOBAL")
+                println("加餐会话成功启动: ${learningItems.size} 个新项目")
+
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                println("启动加餐会话失败: ${e.message}")
+                _uiState.update {
+                    it.copy(
+                        status = LearningStatus.Error,
+                        error = "启动加餐失败: ${e.message}"
                     )
                 }
             }

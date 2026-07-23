@@ -42,14 +42,28 @@ fun NemoWhiteboard(
     // 每次切换单词（wordId 变化）时，自动清空画板
     val paths = remember(wordId) { mutableStateListOf<ColoredPath>() }
     
-    // 预设笔刷颜色
-    val penColors = listOf(
-        Color(0xFF1E1E1E), // 墨黑
-        Color(0xFFE53935), // 正红
-        Color(0xFF1E88E5), // 湖蓝
-        Color(0xFF43A047)  // 草绿
-    )
-    var currentColor by remember { mutableStateOf(penColors[0]) }
+    // 强制使用深/浅色模式自适应配置，模拟真实画板
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    // 预设笔刷颜色 (根据深浅色模式自适应)
+    val penColors = remember(isDarkTheme) {
+        if (isDarkTheme) {
+            listOf(
+                Color(0xFFF8FAFC), // 珍珠白 (默认)
+                Color(0xFFFF5252), // 霓虹红
+                Color(0xFF40C4FF), // 霓虹蓝
+                Color(0xFF69F0AE)  // 薄荷绿
+            )
+        } else {
+            listOf(
+                Color(0xFF1E1E1E), // 墨黑 (默认)
+                Color(0xFFE53935), // 正红
+                Color(0xFF1E88E5), // 湖蓝
+                Color(0xFF43A047)  // 草绿
+            )
+        }
+    }
+    var currentColor by remember(wordId, isDarkTheme) { mutableStateOf(penColors[0]) }
 
     // 当前正在绘制的路径
     var currentPath by remember(wordId) { mutableStateOf<Path?>(null) }
@@ -57,10 +71,12 @@ fun NemoWhiteboard(
     // 用于触发重绘的 State (仅触发 Draw 阶段，不触发 Recomposition，极大提升跟手性)
     var drawTrigger by remember(wordId) { mutableIntStateOf(0) }
 
-    // 强制使用纯白/近白背景，模拟真实的白板，并提供高对比度
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val boardBg = if (isDarkTheme) Color(0xFFE0E0E0) else Color(0xFFFAFAFA)
-    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.1f)
+    // 背景与工具栏暗色适配
+    val boardBg = if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFAFAFA)
+    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
+    val toolbarBg = if (isDarkTheme) Color(0xFF2C2C2E).copy(alpha = 0.9f) else Color.White.copy(alpha = 0.9f)
+    val iconTint = if (isDarkTheme) Color(0xFFF2F2F7) else Color(0xFF333333)
+    val iconBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
     
     // 绘制样式
     val drawStyle = Stroke(
@@ -74,6 +90,7 @@ fun NemoWhiteboard(
             .fillMaxSize()
             .clip(RoundedCornerShape(24.dp))
             .background(boardBg)
+            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
     ) {
         Canvas(
             modifier = Modifier
@@ -132,14 +149,14 @@ fun NemoWhiteboard(
                     .padding(12.dp)
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.1f))
+                    .background(iconBtnBg)
                     .clickable { onClose() },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
                     contentDescription = "隐藏画板",
-                    tint = Color.Black.copy(alpha = 0.7f),
+                    tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -153,7 +170,7 @@ fun NemoWhiteboard(
                     .padding(12.dp)
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(Color.Black.copy(alpha = 0.1f))
+                    .background(iconBtnBg)
                     .clickable {
                         paths.clear()
                         currentPath = null
@@ -164,7 +181,7 @@ fun NemoWhiteboard(
                 Icon(
                     imageVector = Icons.Rounded.DeleteOutline,
                     contentDescription = "清空画板",
-                    tint = Color.Black.copy(alpha = 0.7f),
+                    tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -175,8 +192,8 @@ fun NemoWhiteboard(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 12.dp)
-                .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(50))
-                .border(1.dp, Color.Black.copy(alpha = 0.05f), RoundedCornerShape(50))
+                .background(toolbarBg, RoundedCornerShape(50))
+                .border(1.dp, borderColor, RoundedCornerShape(50))
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -190,7 +207,7 @@ fun NemoWhiteboard(
                         .background(color)
                         .border(
                             width = if (isSelected) 3.dp else 1.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent,
+                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else Color.Transparent,
                             shape = CircleShape
                         )
                         .clickable { currentColor = color }

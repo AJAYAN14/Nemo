@@ -504,7 +504,7 @@ fun WordLearningContent(
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                 onConfirmBonus = { bonusCount ->
-                    onEvent(LearningEvent.StartLearning(LearningMode.Word))
+                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Word))
                 }
             )
         } else {
@@ -518,7 +518,10 @@ fun WordLearningContent(
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                onConfirmBonus = { bonusCount ->
+                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Word))
+                }
             )
         }
     }
@@ -684,7 +687,10 @@ fun GrammarLearningContent(
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                onConfirmBonus = { bonusCount ->
+                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Grammar))
+                }
             )
         } else {
             LearningFinishedContent(
@@ -697,7 +703,10 @@ fun GrammarLearningContent(
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                onConfirmBonus = { bonusCount ->
+                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Grammar))
+                }
             )
         }
     }
