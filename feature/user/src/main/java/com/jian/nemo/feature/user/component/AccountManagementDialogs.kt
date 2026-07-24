@@ -31,7 +31,6 @@ fun AccountResetPasswordDialog(
     onResetPassword: (String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     useDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
-    // Stage: 0=Email, 1=OTP, 2=NewPassword
     var stage by remember { mutableIntStateOf(0) }
     var email by remember { mutableStateOf(userEmail) }
     var otp by remember { mutableStateOf("") }
@@ -40,310 +39,151 @@ fun AccountResetPasswordDialog(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // UI/UX Pro Max Colors & Styles (Yellow/Orange Theme for Reset Password)
-    val primaryColor = if (useDarkTheme) Color(0xFFFF9F0A) else Color(0xFFFF9500)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
-    val titleColor = if (useDarkTheme) Color.White else Color.Black
     val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val focusedBorderColor = primaryColor
-    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
     val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-        handleColor = primaryColor,
-        backgroundColor = primaryColor.copy(alpha = 0.4f)
-    )
 
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        ),
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Lock,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
+        title = when (stage) {
+            0 -> "重置密码"
+            1 -> "输入验证码"
+            2 -> "设置新密码"
+            else -> "重置密码"
         },
-        title = {
-            Text(
-                text = when(stage) {
-                    0 -> "重置密码"
-                    1 -> "输入验证码"
-                    2 -> "设置新密码"
-                    else -> ""
-                },
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = titleColor,
-                letterSpacing = (-0.5).sp
-            )
+        confirmText = if (stage == 2) "重置密码" else "下一步",
+        dismissText = "取消",
+        confirmButtonColor = if (useDarkTheme) Color(0xFFFF9F0A) else Color(0xFFFF9500),
+        isLoading = isLoading,
+        onConfirm = {
+            errorMessage = null
+            when (stage) {
+                0 -> {
+                    if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        isLoading = true
+                        onSendOtp(
+                            email,
+                            {
+                                isLoading = false
+                                stage = 1
+                            },
+                            { error ->
+                                isLoading = false
+                                errorMessage = error
+                            }
+                        )
+                    } else {
+                        errorMessage = "请输入有效的邮箱地址"
+                    }
+                }
+                1 -> {
+                    if (otp.length == 8) {
+                        isLoading = true
+                        onVerifyOtp(
+                            email, otp,
+                            {
+                                isLoading = false
+                                stage = 2
+                            },
+                            { error ->
+                                isLoading = false
+                                errorMessage = error
+                            }
+                        )
+                    } else {
+                        errorMessage = "请输入 8 位验证码"
+                    }
+                }
+                2 -> {
+                    if (newPassword.length >= 8) {
+                        isLoading = true
+                        onResetPassword(
+                            newPassword,
+                            {
+                                isLoading = false
+                                onDismiss()
+                            },
+                            { error ->
+                                isLoading = false
+                                errorMessage = error
+                            }
+                        )
+                    } else {
+                        errorMessage = "密码长度至少为 8 位"
+                    }
+                }
+            }
         },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (stage == 0) {
                     Text(
                         text = "我们将向您的邮箱发送验证码。",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = {
-                            Text(
-                                "邮箱地址",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("邮箱地址", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
-                        )
+                        isError = errorMessage != null
                     )
                 } else if (stage == 1) {
                     Text(
                         text = "请输入发送至 $email 的 8 位验证码。",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = {
-                            Text(
-                                "验证码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("验证码", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
-                        )
+                        isError = errorMessage != null
                     )
                 } else {
                     Text(
                         text = "验证成功，请设置您的新密码。",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
-                        label = {
-                            Text(
-                                "新密码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("新密码", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
-                        )
+                        isError = errorMessage != null
                     )
                 }
 
                 if (errorMessage != null) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = "Error",
-                            tint = errorColor,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = errorMessage ?: "",
-                            color = errorColor,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    errorMessage = null
-                    when(stage) {
-                        0 -> {
-                             if (email.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                                 isLoading = true
-                                 onSendOtp(email,
-                                     { // onSuccess
-                                         isLoading = false
-                                         stage = 1
-                                     },
-                                     { error -> // onError
-                                         isLoading = false
-                                         errorMessage = error
-                                     }
-                                 )
-                             } else {
-                                 errorMessage = "请输入有效的邮箱地址"
-                             }
-                        }
-                        1 -> {
-                            if (otp.length == 8) {
-                                isLoading = true
-                                onVerifyOtp(email, otp,
-                                    { // onSuccess
-                                        isLoading = false
-                                        stage = 2
-                                    },
-                                    { error -> // onError
-                                        isLoading = false
-                                        errorMessage = error
-                                    }
-                                )
-                            } else {
-                                errorMessage = "请输入8位验证码"
-                            }
-                        }
-                        2 -> {
-                            if (newPassword.length >= 8) {
-                                isLoading = true
-                                onResetPassword(newPassword,
-                                    { // onSuccess
-                                        isLoading = false
-                                        onDismiss() // Close dialog
-                                    },
-                                    { error -> // onError
-                                        isLoading = false
-                                        errorMessage = error
-                                    }
-                                )
-                            } else {
-                                errorMessage = "密码长度至少为 8 位"
-                            }
-                        }
-                    }
-                },
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
-                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                if (isLoading) {
-                    NemoChasingDotsLoader(size = 18.dp)
-                } else {
                     Text(
-                        text = if (stage == 2) "重置密码" else "下一步",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = errorMessage ?: "",
+                        color = errorColor,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor,
-                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     )
@@ -368,179 +208,70 @@ fun AccountUpdateUsernameDialog(
     var newUsername by remember { mutableStateOf(currentUsername) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-
-    // UI/UX Pro Max Colors & Styles (Direct Color overrides, no MaterialTheme)
-    val primaryColor = if (useDarkTheme) Color(0xFF0A84FF) else Color(0xFF007AFF)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
-    val titleColor = if (useDarkTheme) Color.White else Color.Black
     val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val focusedBorderColor = primaryColor
-    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
     val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-        handleColor = primaryColor,
-        backgroundColor = primaryColor.copy(alpha = 0.4f)
-    )
 
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Person,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
+        title = "修改用户名",
+        confirmText = "确认修改",
+        dismissText = "取消",
+        confirmButtonColor = if (useDarkTheme) Color(0xFF0A84FF) else Color(0xFF007AFF),
+        confirmEnabled = newUsername.isNotBlank() && newUsername != currentUsername,
+        isLoading = isLoading,
+        onConfirm = {
+            if (newUsername.isNotBlank() && newUsername.length >= 2) {
+                if (newUsername != currentUsername) {
+                    isLoading = true
+                    errorMessage = null
+                    onUpdateUsername(
+                        newUsername,
+                        {
+                            isLoading = false
+                            onDismiss()
+                        },
+                        { error ->
+                            isLoading = false
+                            errorMessage = error
+                        }
+                    )
+                } else {
+                    errorMessage = "新用户名不能与当前用户名相同"
+                }
+            } else {
+                errorMessage = "用户名长度至少为 2 位"
+            }
         },
-        title = {
-            Text(
-                text = "修改用户名",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = titleColor,
-                letterSpacing = (-0.5).sp
-            )
-        },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "请输入新的用户名，这将是您在应用中的显示名称。",
                     fontSize = 15.sp,
                     color = bodyColor,
-                    lineHeight = 20.sp,
-                    fontWeight = FontWeight.Normal
+                    lineHeight = 20.sp
                 )
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
                     value = newUsername,
                     onValueChange = { newUsername = it },
-                    label = {
-                        Text(
-                            text = "用户名",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    },
+                    label = { Text("新用户名", fontSize = 14.sp) },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = titleColor,
-                        unfocusedTextColor = titleColor,
-                        disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                        errorTextColor = errorColor,
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        errorContainerColor = Color.Transparent,
-                        cursorColor = primaryColor,
-                        errorCursorColor = errorColor,
-                        selectionColors = selectionColors,
-                        focusedBorderColor = focusedBorderColor,
-                        unfocusedBorderColor = unfocusedBorderColor,
-                        disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                        errorBorderColor = errorColor,
-                        focusedLabelColor = primaryColor,
-                        unfocusedLabelColor = bodyColor,
-                        disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                        errorLabelColor = errorColor
-                    ),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     isError = errorMessage != null
                 )
 
                 if (errorMessage != null) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = "Error",
-                            tint = errorColor,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = errorMessage ?: "",
-                            color = errorColor,
-                            style = MaterialTheme.typography.bodySmall, // Keeping typography as style, overriding color
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (newUsername.isNotEmpty() && newUsername.length >= 2) {
-                        if (newUsername != currentUsername) {
-                            isLoading = true
-                            errorMessage = null
-                            onUpdateUsername(
-                                newUsername,
-                                { // onSuccess
-                                    isLoading = false
-                                    onDismiss()
-                                },
-                                { error -> // onError
-                                    isLoading = false
-                                    errorMessage = error
-                                }
-                            )
-                        } else {
-                            errorMessage = "新用户名不能与当前用户名相同"
-                        }
-                    } else {
-                        errorMessage = "用户名长度至少为2位"
-                    }
-                },
-                enabled = !isLoading && newUsername.isNotEmpty(),
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
-                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                if (isLoading) {
-                    NemoChasingDotsLoader(size = 18.dp)
-                } else {
                     Text(
-                        text = "确认修改",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = errorMessage ?: "",
+                        color = errorColor,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor,
-                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     )
@@ -554,102 +285,83 @@ fun AccountUpdateEmailDialog(
     onVerifyEmailUpdate: (String, String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     useDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
-    // Stage: 0=NewEmail, 1=OTP
     var stage by remember { mutableIntStateOf(0) }
     var newEmail by remember { mutableStateOf(currentEmail) }
     var otp by remember { mutableStateOf("") }
-
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // UI/UX Pro Max Colors & Styles (Green Theme for Email)
-    val primaryColor = if (useDarkTheme) Color(0xFF30D158) else Color(0xFF34C759)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
-    val titleColor = if (useDarkTheme) Color.White else Color.Black
     val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val focusedBorderColor = primaryColor
-    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
     val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-        handleColor = primaryColor,
-        backgroundColor = primaryColor.copy(alpha = 0.4f)
-    )
 
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        ),
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Email,
-                contentDescription = null,
-                tint = primaryColor,
-                modifier = Modifier.size(28.dp)
-            )
+        title = if (stage == 0) "修改邮箱" else "输入验证码",
+        confirmText = if (stage == 0) "下一步" else "确认修改",
+        dismissText = "取消",
+        confirmButtonColor = if (useDarkTheme) Color(0xFF30D158) else Color(0xFF34C759),
+        isLoading = isLoading,
+        onConfirm = {
+            errorMessage = null
+            if (stage == 0) {
+                if (newEmail.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+                    if (newEmail != currentEmail) {
+                        isLoading = true
+                        onUpdateEmail(
+                            newEmail,
+                            {
+                                isLoading = false
+                                stage = 1
+                            },
+                            { error ->
+                                isLoading = false
+                                errorMessage = error
+                            }
+                        )
+                    } else {
+                        errorMessage = "新邮箱不能与当前邮箱相同"
+                    }
+                } else {
+                    errorMessage = "请输入有效的邮箱地址"
+                }
+            } else {
+                if (otp.length == 8) {
+                    isLoading = true
+                    onVerifyEmailUpdate(
+                        newEmail, otp,
+                        {
+                            isLoading = false
+                            onDismiss()
+                        },
+                        { error ->
+                            isLoading = false
+                            errorMessage = error
+                        }
+                    )
+                } else {
+                    errorMessage = "请输入 8 位验证码"
+                }
+            }
         },
-        title = {
-            Text(
-                text = if (stage == 0) "修改邮箱" else "输入验证码",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = titleColor,
-                letterSpacing = (-0.5).sp
-            )
-        },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (stage == 0) {
                     Text(
                         text = "请输入新的邮箱地址，我们将发送验证码。",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = newEmail,
                         onValueChange = { newEmail = it },
-                        label = {
-                            Text(
-                                "新邮箱",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("新邮箱", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
-                        ),
                         isError = errorMessage != null
                     )
                 } else {
@@ -657,150 +369,31 @@ fun AccountUpdateEmailDialog(
                         text = "请输入发送至 $newEmail 的 8 位验证码。",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = {
-                            Text(
-                                "验证码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("验证码", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
-                        ),
                         isError = errorMessage != null
                     )
                 }
 
                 if (errorMessage != null) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Rounded.Info,
-                            contentDescription = "Error",
-                            tint = errorColor,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = errorMessage ?: "",
-                            color = errorColor,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    errorMessage = null
-                    if (stage == 0) {
-                        if (newEmail.isNotEmpty() && android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
-                            if (newEmail != currentEmail) {
-                                isLoading = true
-                                onUpdateEmail(newEmail,
-                                    { // onSuccess
-                                        isLoading = false
-                                        stage = 1
-                                    },
-                                    { error -> // onError
-                                        isLoading = false
-                                        errorMessage = error
-                                    }
-                                )
-                            } else {
-                                errorMessage = "新邮箱不能与当前邮箱相同"
-                            }
-                        } else {
-                            errorMessage = "请输入有效的邮箱地址"
-                        }
-                    } else {
-                        if (otp.length == 8) {
-                            isLoading = true
-                            onVerifyEmailUpdate(newEmail, otp,
-                                { // onSuccess
-                                    isLoading = false
-                                    onDismiss()
-                                },
-                                { error -> // onError
-                                    isLoading = false
-                                    errorMessage = error
-                                }
-                            )
-                        } else {
-                            errorMessage = "请输入8位验证码"
-                        }
-                    }
-                },
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
-                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                if (isLoading) {
-                    NemoChasingDotsLoader(size = 18.dp)
-                } else {
                     Text(
-                        text = if (stage == 0) "下一步" else "确认修改",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = errorMessage ?: "",
+                        color = errorColor,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor,
-                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     )
@@ -817,51 +410,46 @@ fun DeleteAccountDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showFinalConfirm by remember { mutableStateOf(false) }
 
-    // UI/UX Pro Max Colors & Styles (Red Theme for Delete Account)
     val primaryColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
-    val titleColor = if (useDarkTheme) Color.White else Color.Black
     val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val focusedBorderColor = primaryColor
-    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
-    val errorColor = primaryColor // Red for error too
-    val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
-        handleColor = primaryColor,
-        backgroundColor = primaryColor.copy(alpha = 0.4f)
-    )
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
+    com.jian.nemo.core.ui.component.NemoDialog(
+        onDismissRequest = {
+            if (showFinalConfirm) {
+                showFinalConfirm = false
+                errorMessage = null
+            } else {
+                onDismiss()
+            }
         },
-        title = {
-            Text(
-                text = "删除账户",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = primaryColor, // Red Title for danger
-                letterSpacing = (-0.5).sp
-            )
+        title = if (showFinalConfirm) "最终确认删除" else "删除账户",
+        isDangerous = true,
+        confirmText = if (showFinalConfirm) "确认删除" else "下一步",
+        dismissText = if (showFinalConfirm) "返回" else "取消",
+        confirmEnabled = showFinalConfirm || password.isNotEmpty(),
+        isLoading = isLoading,
+        onConfirm = {
+            if (!showFinalConfirm) {
+                if (password.isNotEmpty()) {
+                    showFinalConfirm = true
+                    errorMessage = null
+                } else {
+                    errorMessage = "请输入密码"
+                }
+            } else {
+                isLoading = true
+                errorMessage = null
+                onConfirmDelete(password)
+            }
         },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (!showFinalConfirm) {
                     Text(
                         text = "删除账户是不可逆的操作，将永久删除您的所有数据，包括：",
                         fontSize = 15.sp,
                         color = bodyColor,
-                        lineHeight = 20.sp,
-                        fontWeight = FontWeight.Normal
+                        lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -871,67 +459,25 @@ fun DeleteAccountDialog(
                         color = bodyColor,
                         lineHeight = 22.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "请输入您的密码以确认删除：",
-                        fontSize = 15.sp,
-                        color = bodyColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = {
-                            Text(
-                                "密码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
+                        label = { Text("验证登录密码", fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = titleColor,
-                            unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
-                            cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
                         )
                     )
                 } else {
                     Text(
-                        text = "最终确认",
-                        fontSize = 18.sp,
-                        color = primaryColor,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "您确定要永久删除您的账户吗？\n\n此操作无法撤销！",
+                        text = "您确定要永久删除您的账户吗？\n此操作无法撤销！",
                         fontSize = 16.sp,
                         color = primaryColor,
                         fontWeight = FontWeight.Medium,
@@ -943,74 +489,11 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = it,
-                        color = errorColor,
-                        style = MaterialTheme.typography.bodySmall,
+                        color = primaryColor,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (!showFinalConfirm) {
-                        if (password.isNotEmpty()) {
-                            showFinalConfirm = true
-                            errorMessage = null
-                        } else {
-                            errorMessage = "请输入密码"
-                        }
-                    } else {
-                        isLoading = true
-                        errorMessage = null
-                        onConfirmDelete(password)
-                    }
-                },
-                enabled = !isLoading && (showFinalConfirm || password.isNotEmpty()),
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
-                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                if (isLoading) {
-                    NemoChasingDotsLoader(size = 18.dp)
-                } else {
-                    Text(
-                        text = if (showFinalConfirm) "确认删除" else "下一步",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    if (showFinalConfirm) {
-                        showFinalConfirm = false
-                        errorMessage = null
-                    } else {
-                        onDismiss()
-                    }
-                },
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor,
-                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = if (showFinalConfirm) "返回" else "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     )
@@ -1021,98 +504,18 @@ fun LogoutWarningDialog(
     isLoading: Boolean,
     onDismiss: () -> Unit,
     onConfirmLogout: () -> Unit,
-    useDarkTheme: Boolean
+    useDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = if (useDarkTheme) Color(0xFF1C1C1E) else Color.White,
-            tonalElevation = 0.dp,
-            shadowElevation = 16.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 6.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(
-                            color = if (useDarkTheme) Color(0xFF2C2C2E) else Color(0xFFF2F2F7),
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.WarningAmber,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "即将清除数据",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = if (useDarkTheme) Color.White else Color.Black
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "退出登录将永久删除本机的学习进度和统计数据。此操作不可恢复。",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        lineHeight = 22.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF636366)
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = onConfirmLogout,
-                    enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30),
-                        contentColor = Color.White,
-                        disabledContainerColor = Color.Gray
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    if (isLoading) {
-                        NemoChasingDotsLoader(size = 20.dp)
-                    } else {
-                        Text("直接退出", fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                TextButton(
-                    onClick = onDismiss,
-                    enabled = !isLoading,
-                    modifier = Modifier.height(44.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color(0xFF8E8E93)
-                    )
-                ) {
-                    Text("取消", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-    }
+    com.jian.nemo.core.ui.component.NemoDialog(
+        onDismissRequest = onDismiss,
+        title = "即将清除数据",
+        text = "退出登录将永久删除本机的学习进度和统计数据。此操作不可恢复。",
+        isDangerous = true,
+        confirmText = "直接退出",
+        dismissText = "取消",
+        isLoading = isLoading,
+        onConfirm = onConfirmLogout
+    )
 }
 
 @Composable

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 /**
  * Nemo 通用高质感弹窗组件
@@ -39,6 +40,10 @@ import androidx.compose.ui.window.DialogProperties
  * @param confirmText 确认按钮文本，为 null 时不展示确认按钮
  * @param dismissText 取消按钮文本，为 null 时不展示取消按钮
  * @param onConfirm 点击确认按钮回调
+ * @param isDangerous 是否为危险警示操作（若为 true，确认按钮显示为警告红 `#FF3B30`）
+ * @param confirmButtonColor 自定义确认按钮背景颜色（为空时根据 [isDangerous] 自动决定）
+ * @param confirmEnabled 确认按钮是否允许点击
+ * @param isLoading 是否在确认按钮中展示加载转圈动画
  * @param content 自定义弹窗内部 Compose 布局
  */
 @Composable
@@ -49,25 +54,44 @@ fun NemoDialog(
     confirmText: String? = "确定",
     dismissText: String? = "取消",
     onConfirm: (() -> Unit)? = null,
+    isDangerous: Boolean = false,
+    confirmButtonColor: Color? = null,
+    confirmEnabled: Boolean = true,
+    isLoading: Boolean = false,
     content: (@Composable () -> Unit)? = null
 ) {
     // 自动判定 App 当前主题是否为深色模式（跟随 App 主题 colorScheme，而非盲目跟随系统开关）
     val isAppDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val dialogShape = RoundedRectangle(48.dp)
 
+    // 危险红颜色定义
+    val dangerRedColor = if (isAppDark) Color(0xFFFF453A) else Color(0xFFFF3B30)
+
     // 配色方案：自动对齐 App 主题
     val containerColor = if (isAppDark) Color(0xFF1E1E1E) else Color.White
-    val titleColor = MaterialTheme.colorScheme.onSurface
+    val titleColor = if (isDangerous) dangerRedColor else MaterialTheme.colorScheme.onSurface
     val textBodyColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val accentColor = MaterialTheme.colorScheme.primary
+
+    // 确认按钮背景色
+    val resolvedConfirmBgColor = when {
+        confirmButtonColor != null -> confirmButtonColor
+        isDangerous -> dangerRedColor
+        else -> MaterialTheme.colorScheme.primary
+    }
 
     val buttonBgColor = if (isAppDark) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.06f)
     val borderColor = if (isAppDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
 
     Dialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            if (!isLoading) {
+                onDismissRequest()
+            }
+        },
         properties = DialogProperties(
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = !isLoading,
+            dismissOnClickOutside = !isLoading
         )
     ) {
         Box(
@@ -140,13 +164,13 @@ fun NemoDialog(
                                     .height(48.dp)
                                     .clip(Capsule())
                                     .background(buttonBgColor, Capsule())
-                                    .clickable { onDismissRequest() },
+                                    .clickable(enabled = !isLoading) { onDismissRequest() },
                                 contentAlignment = Alignment.Center
                             ) {
                                 BasicText(
                                     text = dismissText,
                                     style = TextStyle(
-                                        color = titleColor.copy(alpha = 0.85f),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (isLoading) 0.38f else 0.85f),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -155,26 +179,32 @@ fun NemoDialog(
                         }
 
                         if (confirmText != null) {
+                            val isClickable = confirmEnabled && !isLoading
+                            val actualBgColor = if (confirmEnabled) resolvedConfirmBgColor else resolvedConfirmBgColor.copy(alpha = 0.4f)
+
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
                                     .clip(Capsule())
-                                    .background(accentColor, Capsule())
-                                    .clickable {
+                                    .background(actualBgColor, Capsule())
+                                    .clickable(enabled = isClickable) {
                                         onConfirm?.invoke()
-                                        onDismissRequest()
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                BasicText(
-                                    text = confirmText,
-                                    style = TextStyle(
-                                        color = Color.White,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold
+                                if (isLoading) {
+                                    NemoChasingDotsLoader(size = 20.dp, color = Color.White)
+                                } else {
+                                    BasicText(
+                                        text = confirmText,
+                                        style = TextStyle(
+                                            color = Color.White.copy(alpha = if (confirmEnabled) 1.0f else 0.6f),
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
                     }

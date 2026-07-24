@@ -28,21 +28,15 @@ fun RestoreStrategyDialog(
     onConfirm: (ImportStrategy) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "选择恢复方式",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
-            )
-        },
-        text = {
+        title = "选择恢复方式",
+        confirmText = null,
+        dismissText = "取消",
+        content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = "即将恢复备份: $fileName\n请选择以下数据处理方式：",
@@ -69,16 +63,7 @@ fun RestoreStrategyDialog(
                     onClick = { onConfirm(ImportStrategy.REPLACE) }
                 )
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        },
-        shape = RoundedCornerShape(24.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        titleContentColor = MaterialTheme.colorScheme.onSurface,
-        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        }
     )
 }
 

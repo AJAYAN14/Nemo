@@ -28,22 +28,12 @@ fun AppIconDialog(
     onDismiss: () -> Unit,
     onIconSelect: (String) -> Unit
 ) {
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        tonalElevation = 0.dp,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-        modifier = Modifier
-            .padding(24.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(28.dp)),
-        title = {
-            Text(
-                "更换应用图标",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.ExtraBold
-            )
-        },
-        text = {
+        title = "更换应用图标",
+        confirmText = null,
+        dismissText = "关闭",
+        content = {
             Column {
                 Text(
                     text = "选择一个图标样式，切换后桌面图标可能需要几秒钟才会更新。",
@@ -51,9 +41,8 @@ fun AppIconDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
                 )
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 
-                // 使用 FlowRow 或更好的网格布局
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -96,9 +85,8 @@ fun AppIconDialog(
                     }
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 
-                // 扁平化的按钮样式
                 Button(
                     onClick = { onIconSelect("Nemo") },
                     modifier = Modifier
@@ -114,16 +102,7 @@ fun AppIconDialog(
                     Text("恢复系统默认图标", fontWeight = FontWeight.Bold)
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = onDismiss,
-                modifier = Modifier.padding(bottom = 8.dp, end = 8.dp)
-            ) {
-                Text("关闭", fontWeight = FontWeight.SemiBold)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.surface // 确保浅色模式下为白色/表面色
+        }
     )
 }
 

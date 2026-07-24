@@ -84,50 +84,19 @@ fun TestScreen(
         }
     }
 
-    // 退出确认对话框（复刻旧项目TestScreen.kt L76-104）
+    // 退出确认对话框
     if (uiState.showExitConfirmation) {
-        AlertDialog(
+        com.jian.nemo.core.ui.component.NemoDialog(
             onDismissRequest = { viewModel.cancelExitTest() },
-            containerColor = MaterialTheme.colorScheme.surface, // 去除默认紫色背景
-            titleContentColor = MaterialTheme.colorScheme.onSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-            title = {
-                Text(
-                    text = "确认退出",
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            },
-            text = {
-                Text(
-                    text = "确定要退出测试吗？当前进度将丢失。",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        // 保存当前测试进度（错题）
-                        viewModel.actualExitTest()
-                        // 关闭弹窗并返回
-                        viewModel.cancelExitTest()
-                        onNavigateBack()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text("确认退出", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { viewModel.cancelExitTest() }
-                ) {
-                    Text("继续测试")
-                }
+            title = "确认退出测试",
+            text = "确定要退出测试吗？当前未提交进度将丢失。",
+            isDangerous = true,
+            confirmText = "确认退出",
+            dismissText = "继续测试",
+            onConfirm = {
+                viewModel.actualExitTest()
+                viewModel.cancelExitTest()
+                onNavigateBack()
             }
         )
     }
