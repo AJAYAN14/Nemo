@@ -486,6 +486,7 @@ private fun DashboardTile(
 
     Card(
         modifier = modifier
+            .clip(RoundedCornerShape(24.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = surfaceColor),

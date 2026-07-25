@@ -88,8 +88,10 @@ fun PremiumCard(
         enabled = onClick != null,
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
+        shadowElevation = if (isDark) 2.dp else 4.dp,
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale

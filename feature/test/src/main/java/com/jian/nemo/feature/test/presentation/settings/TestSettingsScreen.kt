@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.feature.test.presentation.settings.components.CustomQuestionCountDialog
 import com.jian.nemo.feature.test.presentation.settings.components.CustomTimeLimitDialog
 import com.jian.nemo.feature.test.domain.model.TestConfig
@@ -226,7 +227,7 @@ fun TestSettingsScreen(
                     onUpdateConfig = { viewModel.updateConfig(it) }
                 )
 
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(120.dp))
             }
 
             // ===== 悬浮开始测试按钮 (Floating Overlay) =====
@@ -234,7 +235,8 @@ fun TestSettingsScreen(
                  modifier = Modifier
                      .align(Alignment.BottomCenter)
                      .fillMaxWidth()
-                     .padding(20.dp)
+                     .navigationBarsPadding()
+                     .padding(horizontal = 24.dp, vertical = 16.dp)
              ) {
                  LaunchedEffect(Unit) {
                     starterViewModel.navigationEvent.collect { event -> onNavigate(event) }
@@ -246,7 +248,7 @@ fun TestSettingsScreen(
                     }
                 }
 
-                 Button(
+                 LiquidButton(
                      onClick = {
                          val currentTime = System.currentTimeMillis()
                          if (currentTime - lastClickTime > 500) {
@@ -262,17 +264,24 @@ fun TestSettingsScreen(
                              }
                          }
                      },
-                     enabled = !isGenerating,
-                     modifier = Modifier.fillMaxWidth().height(56.dp).shadow(8.dp, RoundedCornerShape(24.dp)),
-                     shape = RoundedCornerShape(24.dp),
-                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                     isInteractive = !isGenerating,
+                     modifier = Modifier
+                         .fillMaxWidth()
+                         .height(56.dp),
+                     shape = RoundedCornerShape(28.dp),
+                     backgroundColor = MaterialTheme.colorScheme.primary
                  ) {
-                     if (isGenerating) {
-                         NemoChasingDotsLoader(size = 24.dp)
-                         Spacer(Modifier.width(8.dp))
-                         Text("准备中...", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                     } else {
-                         Text("开始测试", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                     Row(
+                         horizontalArrangement = Arrangement.Center,
+                         verticalAlignment = Alignment.CenterVertically
+                     ) {
+                         if (isGenerating) {
+                             NemoChasingDotsLoader(size = 24.dp)
+                             Spacer(Modifier.width(8.dp))
+                             Text("准备中...", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                         } else {
+                             Text("开始测试", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                         }
                      }
                  }
             }
