@@ -169,13 +169,13 @@ fun AccountManagementScreen(
                 Spacer(modifier = Modifier.height(48.dp))
 
                 // Logout Button
-                OutlinedButton(
+                Button(
                     onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = CircleShape,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
                     Text("退出登录", fontWeight = FontWeight.SemiBold)

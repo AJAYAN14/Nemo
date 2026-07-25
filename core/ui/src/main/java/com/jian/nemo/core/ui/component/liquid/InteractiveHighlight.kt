@@ -65,13 +65,13 @@ half4 main(float2 coord) {
             if (progress > 0f) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && runtimeShader != null) {
                     drawRect(
-                        Color.White.copy(0.08f * progress),
+                        Color.White.copy(0.02f * progress),
                         blendMode = BlendMode.Plus
                     )
                     runtimeShader.apply {
                         val pos = position(size, positionAnimation.value)
                         setFloatUniform("size", size.width, size.height)
-                        setColorUniform("color", android.graphics.Color.valueOf(1f, 1f, 1f, 0.15f * progress).toArgb())
+                        setColorUniform("color", android.graphics.Color.valueOf(1f, 1f, 1f, 0.05f * progress).toArgb())
                         setFloatUniform("radius", size.minDimension * 1.5f)
                         setFloatUniform(
                             "position",
@@ -85,7 +85,7 @@ half4 main(float2 coord) {
                     )
                 } else {
                     drawRect(
-                        Color.White.copy(0.20f * progress),
+                        Color.White.copy(0.03f * progress),
                         blendMode = BlendMode.Plus
                     )
                 }

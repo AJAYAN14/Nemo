@@ -28,9 +28,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 
 /**
- * 朗读按钮组件，支持播放时的声纹动画效果
+ * 朗读按钮组件，支持播放时的声纹动画与液态交互效果
  *
  * @param isPlaying 是否正在播放（显示声纹动画）
  * @param onClick 点击回调
@@ -48,13 +49,12 @@ fun SpeakerButton(
     size: Dp = 44.dp,
     backgroundColor: Color = Color.Transparent
 ) {
-    Box(
-        modifier = modifier
-            .requiredSize(size)
-            .clip(CircleShape)
-            .background(backgroundColor)
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
+    LiquidButton(
+        onClick = onClick,
+        backgroundColor = backgroundColor,
+        shape = CircleShape,
+        elevation = 0.dp,
+        modifier = modifier.requiredSize(size)
     ) {
         if (isPlaying) {
             // 播放状态：显示声纹动画

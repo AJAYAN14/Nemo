@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -508,37 +509,35 @@ fun SRSLearningCard(
 
                     // 跟打练习按钮
                     if (onPracticeClick != null) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(practiceButtonBgColor)
-                                .clickable { onPracticeClick() },
-                            contentAlignment = Alignment.Center
+                        LiquidButton(
+                            onClick = { onPracticeClick() },
+                            backgroundColor = practiceButtonBgColor,
+                            shape = CircleShape,
+                            elevation = 0.dp,
+                            modifier = Modifier.size(44.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Translate,
                                 contentDescription = "跟打练习",
                                 tint = practiceButtonColor,
-                                modifier = Modifier.size(26.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
 
                     // 手写白板按钮 (背面固定显示，不用去 menu 再次打开了)
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor)
-                            .clickable { showBackWhiteboard = !showBackWhiteboard },
-                        contentAlignment = Alignment.Center
+                    LiquidButton(
+                        onClick = { showBackWhiteboard = !showBackWhiteboard },
+                        backgroundColor = if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Edit,
                             contentDescription = "临时手写板",
                             tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }

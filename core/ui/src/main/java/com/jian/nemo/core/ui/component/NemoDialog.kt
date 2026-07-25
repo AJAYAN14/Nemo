@@ -44,6 +44,7 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
  * @param confirmButtonColor 自定义确认按钮背景颜色（为空时根据 [isDangerous] 自动决定）
  * @param confirmEnabled 确认按钮是否允许点击
  * @param isLoading 是否在确认按钮中展示加载转圈动画
+ * @param onDismiss 点击取消/放弃按钮时的专门回调（未指定时默认触发 [onDismissRequest]）
  * @param content 自定义弹窗内部 Compose 布局
  */
 @Composable
@@ -54,6 +55,7 @@ fun NemoDialog(
     confirmText: String? = "确定",
     dismissText: String? = "取消",
     onConfirm: (() -> Unit)? = null,
+    onDismiss: (() -> Unit)? = null,
     isDangerous: Boolean = false,
     confirmButtonColor: Color? = null,
     confirmEnabled: Boolean = true,
@@ -164,7 +166,13 @@ fun NemoDialog(
                                     .height(48.dp)
                                     .clip(Capsule())
                                     .background(buttonBgColor, Capsule())
-                                    .clickable(enabled = !isLoading) { onDismissRequest() },
+                                    .clickable(enabled = !isLoading) {
+                                        if (onDismiss != null) {
+                                            onDismiss()
+                                        } else {
+                                            onDismissRequest()
+                                        }
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 BasicText(

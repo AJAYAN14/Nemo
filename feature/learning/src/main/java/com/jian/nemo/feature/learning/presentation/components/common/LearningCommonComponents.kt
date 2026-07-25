@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.SettingsBrightness
 import androidx.compose.material.icons.rounded.Edit
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -267,11 +268,12 @@ fun LearnHeader(
                     val remainingCount = totalCount
 
                     if (remainingCount > 0) {
-                        androidx.compose.material3.Surface(
-                            modifier = Modifier, // Removed padding(end) to accommodate menu
-                            color = navGroupBg,
-                            shape = RoundedCornerShape(12.dp),
-                            tonalElevation = 0.dp
+                        LiquidButton(
+                            onClick = {},
+                            backgroundColor = navGroupBg,
+                            shape = RoundedCornerShape(16.dp),
+                            elevation = 0.dp,
+                            isInteractive = false
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
@@ -280,12 +282,17 @@ fun LearnHeader(
                             ) {
                                 // Prev Button
                                 val canGoPrev = currentIndex > 0 && !isNavigating && !isAnswerShown
-                                IconButton(
+                                LiquidButton(
                                     onClick = {
-                                        performHapticFeedback()
-                                        onPrev()
+                                        if (canGoPrev) {
+                                            performHapticFeedback()
+                                            onPrev()
+                                        }
                                     },
-                                    enabled = canGoPrev,
+                                    backgroundColor = Color.Transparent,
+                                    shape = androidx.compose.foundation.shape.CircleShape,
+                                    elevation = 0.dp,
+                                    isInteractive = canGoPrev,
                                     modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
@@ -307,12 +314,17 @@ fun LearnHeader(
 
                                 // Next Button
                                 val canGoNext = currentIndex < totalCount - 1 && !isNavigating && !isAnswerShown
-                                IconButton(
+                                LiquidButton(
                                     onClick = {
-                                        performHapticFeedback()
-                                        onNext()
+                                        if (canGoNext) {
+                                            performHapticFeedback()
+                                            onNext()
+                                        }
                                     },
-                                    enabled = canGoNext,
+                                    backgroundColor = Color.Transparent,
+                                    shape = androidx.compose.foundation.shape.CircleShape,
+                                    elevation = 0.dp,
+                                    isInteractive = canGoNext,
                                     modifier = Modifier.size(40.dp)
                                 ) {
                                     Icon(
@@ -335,14 +347,12 @@ fun LearnHeader(
                             Box {
                                 var expanded by remember { mutableStateOf(false) }
 
-                                IconButton(
+                                LiquidButton(
                                     onClick = { expanded = true },
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .background(
-                                            navGroupBg,
-                                            androidx.compose.foundation.shape.CircleShape
-                                        )
+                                    backgroundColor = navGroupBg,
+                                    shape = androidx.compose.foundation.shape.CircleShape,
+                                    elevation = 0.dp,
+                                    modifier = Modifier.size(44.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.MoreVert,

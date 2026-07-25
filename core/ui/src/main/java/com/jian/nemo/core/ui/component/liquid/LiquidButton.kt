@@ -32,6 +32,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tanh
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+
 /**
  * 通用纯色液态按钮 (Unified Solid Color Liquid Button)
  * 完美融合物理弹簧形变、按压缩放与触摸滑动拉伸效果。
@@ -43,6 +46,7 @@ fun LiquidButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color(0xFF0088FF),
     shape: Shape = CircleShape,
+    border: BorderStroke? = null,
     elevation: Dp = 6.dp,
     isInteractive: Boolean = true,
     contentAlignment: Alignment = Alignment.Center,
@@ -83,12 +87,19 @@ fun LiquidButton(
                                 maxDragScale * abs(sin(offsetAngle) * offset.y / size.maxDimension) *
                                 (height / width).fastCoerceAtMost(1f)
                 }
-                clip = false
+                clip = true
                 this.shape = shape
             }
             .then(
                 if (elevation > 0.dp) {
                     Modifier.shadow(elevation, shape)
+                } else {
+                    Modifier
+                }
+            )
+            .then(
+                if (border != null) {
+                    Modifier.border(border, shape)
                 } else {
                     Modifier
                 }

@@ -18,12 +18,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.feature.learning.presentation.components.common.scaleOnPress
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+
+import androidx.compose.foundation.BorderStroke
 
 /**
- * SRS 评分按钮组件 (100% 还原 HTML SRSButton)
+ * SRS 评分按钮组件
  *
  * @param label 评分标签 (如 "完全忘记")
  * @param time 间隔时间 (如 "< 1m", "3d")
@@ -39,14 +42,13 @@ fun SRSRatingButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .height(56.dp) // h-14 = 56dp
-            .scaleOnPress(onTap = onClick)
-            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-            .background(containerColor, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp)),
-        contentAlignment = Alignment.Center
+    LiquidButton(
+        onClick = onClick,
+        backgroundColor = containerColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
+        elevation = 0.dp,
+        modifier = modifier.height(56.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

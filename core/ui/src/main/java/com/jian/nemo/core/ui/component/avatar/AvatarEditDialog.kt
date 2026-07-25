@@ -24,6 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -97,17 +98,8 @@ fun AvatarEditDialog(
         tempImageFile = createTempImageFile(context)
     }
 
-    // 基础入场动效状态
-    var isVisible by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
-
     Dialog(
-        onDismissRequest = {
-            isVisible = false
-            onDismiss()
-        },
+        onDismissRequest = onDismiss,
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
             decorFitsSystemWindows = false
@@ -120,179 +112,166 @@ fun AvatarEditDialog(
                     interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                     indication = null
                 ) {
-                    isVisible = false
                     onDismiss()
                 }
                 .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f)),
             contentAlignment = Alignment.Center
         ) {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn() + scaleIn(
-                    initialScale = 0.92f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessLow
-                    )
-                ),
-                exit = fadeOut() + scaleOut(targetScale = 0.92f)
+            Surface(
+                modifier = Modifier
+                    .padding(24.dp)
+                    .widthIn(max = 400.dp)
+                    .fillMaxWidth()
+                    .clickable(enabled = false) {}, // 防止点击内容区关闭
+                shape = RoundedCornerShape(24.dp), // 略微减小圆角以匹配扁平感
+                color = Color.White,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             ) {
-                Surface(
-                    modifier = Modifier
-                        .padding(24.dp)
-                        .widthIn(max = 400.dp)
-                        .fillMaxWidth()
-                        .clickable(enabled = false) {}, // 防止点击内容区关闭
-                    shape = RoundedCornerShape(24.dp), // 略微减小圆角以匹配扁平感
-                    color = Color.White,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .animateContentSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    // 1. Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // 1. Header
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "编辑头像",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.5.sp
-                                ),
-                                color = Color.Black // 纯白背景下使用黑字
-                            )
-                            IconButton(
-                                onClick = {
-                                    isVisible = false
-                                    onDismiss()
-                                },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "关闭",
-                                    tint = Color.Black.copy(alpha = 0.5f)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // 2. Preview Section
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(124.dp)
-                        ) {
-                            // 扁平外环
-                            Surface(
-                                shape = CircleShape,
-                                color = Color.Transparent,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-                                modifier = Modifier.fillMaxSize()
-                            ) {}
-                            
-                            // 头像图
-                            Surface(
-                                shape = CircleShape,
-                                border = BorderStroke(2.dp, Color.White),
-                                shadowElevation = 0.dp,
-                                modifier = Modifier.size(112.dp)
-                            ) {
-                                AvatarImage(
-                                    username = username,
-                                    avatarPath = currentAvatarPath,
-                                    size = 112.dp
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
                         Text(
-                            text = if (currentAvatarPath.isNullOrEmpty()) "尚未设置个性头像" else "当前的视觉识别符号",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            text = "编辑头像",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = Color.Black // 纯白背景下使用黑字
                         )
-
-                        Spacer(modifier = Modifier.height(40.dp))
-
-                        // 3. Action Grid
-                        val itemModifier = Modifier.weight(1f)
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.06f))
+                                .clickable { onDismiss() },
+                            contentAlignment = Alignment.Center
                         ) {
-                            AvatarActionCard(
-                                icon = Icons.Default.PhotoLibrary,
-                                label = "相册",
-                                containerColor = Color(0xFF007AFF), // 经典亮蓝
-                                contentColor = Color(0xFF007AFF),
-                                modifier = itemModifier,
-                                onClick = { galleryLauncher.launch("image/*") }
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "关闭",
+                                tint = Color.Black.copy(alpha = 0.6f),
+                                modifier = Modifier.size(18.dp)
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // 2. Preview Section
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(124.dp)
+                    ) {
+                        // 扁平外环
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.Transparent,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+                            modifier = Modifier.fillMaxSize()
+                        ) {}
+                        
+                        // 头像图
+                        Surface(
+                            shape = CircleShape,
+                            border = BorderStroke(2.dp, Color.White),
+                            shadowElevation = 0.dp,
+                            modifier = Modifier.size(112.dp)
+                        ) {
+                            AvatarImage(
+                                username = username,
+                                avatarPath = currentAvatarPath,
+                                size = 112.dp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Text(
+                        text = if (currentAvatarPath.isNullOrEmpty()) "尚未设置个性头像" else "当前的视觉识别符号",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    // 3. Action Grid
+                    val itemModifier = Modifier.weight(1f)
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        AvatarActionCard(
+                            icon = Icons.Default.PhotoLibrary,
+                            label = "相册",
+                            containerColor = Color(0xFF007AFF), // 经典亮蓝
+                            contentColor = Color(0xFF007AFF),
+                            modifier = itemModifier,
+                            onClick = { galleryLauncher.launch("image/*") }
+                        )
+                        AvatarActionCard(
+                            icon = Icons.Default.CameraAlt,
+                            label = "拍照",
+                            containerColor = Color(0xFF34C759), // 鲜活绿色
+                            contentColor = Color(0xFF34C759),
+                            modifier = itemModifier,
+                            onClick = {
+                                tempImageFile?.let { file ->
+                                    val uri = FileProvider.getUriForFile(
+                                        context,
+                                        "${context.packageName}.fileprovider",
+                                        file
+                                    )
+                                    cameraLauncher.launch(uri)
+                                }
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        AvatarActionCard(
+                            icon = Icons.Default.Palette,
+                            label = "预设",
+                            containerColor = Color(0xFFAF52DE), // 高级紫色
+                            contentColor = Color(0xFFAF52DE),
+                            modifier = itemModifier,
+                            onClick = { showPresetSelector = true }
+                        )
+                        
+                        if (!currentAvatarPath.isNullOrEmpty()) {
                             AvatarActionCard(
-                                icon = Icons.Default.CameraAlt,
-                                label = "拍照",
-                                containerColor = Color(0xFF34C759), // 鲜活绿色
-                                contentColor = Color(0xFF34C759),
+                                icon = Icons.Default.DeleteOutline,
+                                label = "移除",
+                                containerColor = Color(0xFFFF3B30), // 系统红
+                                contentColor = Color(0xFFFF3B30),
                                 modifier = itemModifier,
                                 onClick = {
-                                    tempImageFile?.let { file ->
-                                        val uri = FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            file
-                                        )
-                                        cameraLauncher.launch(uri)
-                                    }
+                                    onAvatarChanged(null)
+                                    onDismiss()
                                 }
                             )
+                        } else {
+                            // 占位保持布局对称
+                            Box(modifier = itemModifier)
                         }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            AvatarActionCard(
-                                icon = Icons.Default.Palette,
-                                label = "预设",
-                                containerColor = Color(0xFFAF52DE), // 高级紫色
-                                contentColor = Color(0xFFAF52DE),
-                                modifier = itemModifier,
-                                onClick = { showPresetSelector = true }
-                            )
-                            
-                            if (!currentAvatarPath.isNullOrEmpty()) {
-                                AvatarActionCard(
-                                    icon = Icons.Default.DeleteOutline,
-                                    label = "移除",
-                                    containerColor = Color(0xFFFF3B30), // 系统红
-                                    contentColor = Color(0xFFFF3B30),
-                                    modifier = itemModifier,
-                                    onClick = {
-                                        onAvatarChanged(null)
-                                        onDismiss()
-                                    }
-                                )
-                            } else {
-                                // 占位保持布局对称
-                                Box(modifier = itemModifier)
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
                     }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

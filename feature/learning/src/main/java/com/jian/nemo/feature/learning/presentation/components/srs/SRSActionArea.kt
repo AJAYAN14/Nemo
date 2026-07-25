@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.core.ui.util.SoundEffectPlayer
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import kotlinx.coroutines.delay
 
 /**
@@ -129,28 +130,24 @@ fun SRSActionArea(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
+                    LiquidButton(
+                        onClick = {
+                            if (canShowAnswer) {
+                                onShowAnswer()
+                            } else {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onShowAnswerBlocked?.invoke(remainingSec)
+                            }
+                        },
+                        backgroundColor = if (canShowAnswer) Color(0xFF111827) else Color(0xFF6B7280),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = 0.dp,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
-                            .scaleOnPress(onTap = {
-                                if (canShowAnswer) {
-                                    onShowAnswer()
-                                } else {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    onShowAnswerBlocked?.invoke(remainingSec)
-                                }
-                            })
-                            .shadow(8.dp, RoundedCornerShape(16.dp), ambientColor = Color.Gray, spotColor = Color.LightGray)
-                            .background(
-                                if (canShowAnswer) Color(0xFF111827) else Color(0xFF6B7280),
-                                RoundedCornerShape(16.dp)
-                            )
-                            .clip(RoundedCornerShape(16.dp)),
-                        contentAlignment = Alignment.Center
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 24.dp), // Add horizontal padding for safety
+                            modifier = Modifier.padding(horizontal = 24.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center
                         ) {

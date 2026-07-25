@@ -32,6 +32,7 @@ fun UnsavedChangesDialog(
         confirmText = "应用更改",
         dismissText = "放弃更改",
         confirmButtonColor = MaterialTheme.colorScheme.primary,
-        onConfirm = onSaveAndExit
+        onConfirm = onSaveAndExit,
+        onDismiss = onDiscardChanges
     )
 }
