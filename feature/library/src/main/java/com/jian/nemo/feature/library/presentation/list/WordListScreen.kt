@@ -238,7 +238,23 @@ fun WordListScreen(
                 }
             }
 
-
+            // 同步通知组件
+            com.jian.nemo.core.ui.component.common.NemoSnackbar(
+                visible = uiState.syncMessage != null,
+                message = uiState.syncMessage ?: "",
+                type = if (uiState.syncMessage?.contains("失败") == true)
+                    com.jian.nemo.core.ui.component.common.NemoSnackbarType.ERROR
+                else
+                    com.jian.nemo.core.ui.component.common.NemoSnackbarType.SUCCESS,
+                icon = if (uiState.syncMessage?.contains("失败") == true)
+                    Icons.Rounded.Warning
+                else
+                    Icons.Rounded.CheckCircle,
+                onDismiss = { viewModel.clearSyncMessage() },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+            )
         }
     }
 }
