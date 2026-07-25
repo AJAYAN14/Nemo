@@ -217,7 +217,7 @@ object LavenderTheme : NemoTheme {
 }
 
 // 容器与表面语义 (重命名自原有的 Learning/Test/App 专用色)
-val NemoSurfaceBackground = Color(0xFFF4F6F9)   // 语义化的页面背景
+val NemoSurfaceBackground = Color(0xFFF7F8FA)   // 语义化的页面背景
 val NemoSurfaceCard = Color(0xFFFFFFFF)         // 语义化的卡片容器
 val NemoSurfaceBorder = Color(0xFFE0E0E0)       // 语义化的边框颜色
 

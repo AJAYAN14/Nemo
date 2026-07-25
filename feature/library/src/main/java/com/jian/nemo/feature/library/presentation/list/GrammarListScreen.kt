@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
@@ -354,12 +355,16 @@ private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable Colu
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.98f else 1f, label = "scale")
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
         shape = RoundedCornerShape(22.dp),
-        color = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-        modifier = Modifier.fillMaxWidth().graphicsLayer { scaleX = scale; scaleY = scale }.shadow(4.dp, RoundedCornerShape(22.dp)),
+        color = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
+        modifier = Modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+            .graphicsLayer { scaleX = scale; scaleY = scale },
         interactionSource = interactionSource
     ) {
         Column(modifier = Modifier.padding(16.dp), content = content)

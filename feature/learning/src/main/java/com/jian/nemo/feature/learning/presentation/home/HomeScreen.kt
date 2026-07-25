@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
-import androidx.compose.animation.core.*
 import kotlin.math.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,12 +32,22 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -47,16 +56,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.foundation.Canvas
-import androidx.compose.animation.core.*
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.IosColors
@@ -65,6 +64,8 @@ import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.modifier.softShadow
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.feature.learning.presentation.home.components.*
 import com.jian.nemo.feature.learning.R
@@ -87,6 +88,7 @@ fun HomeScreen(
     var isInitialLoading by remember { mutableStateOf(true) }
     var isModeSwitching by remember { mutableStateOf(false) }
     
+
     // 首屏进入加载模拟 (500ms 演示感)
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(500)
@@ -303,7 +305,10 @@ fun HomeScreen(
                             shape = RoundedCornerShape(24.dp),
                             color = surfaceColor,
                             shadowElevation = 0.dp,
-                            modifier = Modifier.weight(1f).fillMaxHeight()
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .softCardShadow(borderRadius = 24.dp, isDark = isDark)
                         ) {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -362,7 +367,9 @@ fun HomeScreen(
                                 shape = RoundedCornerShape(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .softCardShadow(borderRadius = 24.dp, isDark = isDark)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -435,7 +442,9 @@ fun HomeScreen(
                                 shape = RoundedCornerShape(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .softCardShadow(borderRadius = 24.dp, isDark = isDark)
                             ) {
                                 Column(
                                     modifier = Modifier
@@ -493,10 +502,48 @@ fun HomeScreen(
                     }
 
                     // Bento 5: 底部主按钮 (全宽)
+                    val btnColor = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
+
+                    // 2.4s 45° 斜切流光扫过 (Shimmer Sweep) 动效
+                    val shimmerTransition = rememberInfiniteTransition(label = "Bento5Shimmer")
+                    val shimmerProgress by shimmerTransition.animateFloat(
+                        initialValue = -1.5f,
+                        targetValue = 2.5f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(durationMillis = 2400, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "ShimmerProgress"
+                    )
+
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
+                            .softShadow(
+                                color = btnColor.copy(alpha = 0.3f),
+                                borderRadius = 24.dp,
+                                blurRadius = 16.dp,
+                                offsetY = 4.dp
+                            )
+                            .clip(RoundedCornerShape(24.dp))
+                            .drawWithContent {
+                                drawContent()
+                                // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                                val width = size.width
+                                val height = size.height
+                                val xOffset = shimmerProgress * width
+                                val shimmerBrush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.White.copy(alpha = if (isDark) 0.15f else 0.25f),
+                                        Color.Transparent
+                                    ),
+                                    start = androidx.compose.ui.geometry.Offset(xOffset, 0f),
+                                    end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
+                                )
+                                drawRect(brush = shimmerBrush)
+                            }
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
@@ -509,7 +556,7 @@ fun HomeScreen(
                                 }
                             ),
                         shape = RoundedCornerShape(24.dp),
-                        color = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary,
+                        color = btnColor,
                         contentColor = Color.White
                     ) {
                         Row(
@@ -558,6 +605,7 @@ fun HomeScreen(
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .softCardShadow(borderRadius = 24.dp, isDark = isDark)
                                 .clickable(
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null,

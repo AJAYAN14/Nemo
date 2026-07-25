@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
@@ -172,18 +173,18 @@ fun SessionPrepScreen(
                          .fillMaxWidth()
                          .padding(20.dp)
                  ) {
-                     Button(
+                     LiquidButton(
                          onClick = {
                              onStartReview()
                          },
+                         backgroundColor = MaterialTheme.colorScheme.primary,
+                         shape = RoundedCornerShape(28.dp),
+                         elevation = 0.dp,
                          modifier = Modifier
                              .fillMaxWidth()
                              .height(56.dp)
-                             .shadow(8.dp, RoundedCornerShape(28.dp), spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
-                         shape = RoundedCornerShape(28.dp),
-                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                      ) {
-                         Text("开始复习", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                         Text("开始复习", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                      }
                  }
             }
