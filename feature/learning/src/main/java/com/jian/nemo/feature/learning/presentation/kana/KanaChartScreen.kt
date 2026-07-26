@@ -556,79 +556,90 @@ private fun KanaCard(
         label = "cardPlayingBorder"
     )
 
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    var clickPulse by remember { mutableStateOf(false) }
-
-    LaunchedEffect(clickPulse) {
-        if (clickPulse) {
-            delay(95)
-            clickPulse = false
-        }
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed || clickPulse) 0.94f else 1f,
-        animationSpec = spring(dampingRatio = 0.42f, stiffness = 420f),
-        label = "qqScale"
-    )
 
     val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
     val textOpacity = if (cell.isPlaceholder) 0.3f else 1f
+    val cardShape = RoundedCornerShape(20.dp)
+    val cardBorder = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
 
-    val cardModifier = if (!cell.isPlaceholder) {
-        modifier.softCardShadow(borderRadius = 20.dp, isDark = isDark)
-    } else {
-        modifier
-    }
-
-    Surface(
-        modifier = cardModifier
-            .aspectRatio(1f)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .noRippleClickable(interactionSource = interactionSource) {
-                if (!cell.isPlaceholder) {
-                    onHaptic()
-                    clickPulse = true
-                    val speakText = cell.speakText(isKatakana)
-                    onSpeak(speakText, cardAudioId)
-                }
-            },
-        shape = RoundedCornerShape(20.dp),
-        color = actualSurfaceColor,
-        shadowElevation = 0.dp,
-        border = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(actualSurfaceColor)
-                .padding(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+    if (cell.isPlaceholder) {
+        Surface(
+            modifier = modifier.aspectRatio(1f),
+            shape = cardShape,
+            color = Color.Transparent,
+            border = cardBorder
         ) {
-            val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
 
-            Text(
-                text = kanaText,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = NotoSerifJP,
-                    fontWeight = FontWeight.Black, // 900
-                    fontSize = kanaSize
-                ),
-                color = textMain.copy(alpha = textOpacity)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = cell.romaji,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Medium
-                ),
-                color = textSub.copy(alpha = textOpacity)
-            )
+                Text(
+                    text = kanaText,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = NotoSerifJP,
+                        fontWeight = FontWeight.Black,
+                        fontSize = kanaSize
+                    ),
+                    color = textMain.copy(alpha = textOpacity)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = cell.romaji,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = textSub.copy(alpha = textOpacity)
+                )
+            }
+        }
+    } else {
+        LiquidButton(
+            onClick = {
+                onHaptic()
+                val speakText = cell.speakText(isKatakana)
+                onSpeak(speakText, cardAudioId)
+            },
+            modifier = modifier
+                .softCardShadow(borderRadius = 20.dp, isDark = isDark)
+                .aspectRatio(1f),
+            backgroundColor = actualSurfaceColor,
+            shape = cardShape,
+            border = cardBorder,
+            elevation = 0.dp,
+            isInteractive = true
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
+
+                Text(
+                    text = kanaText,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = NotoSerifJP,
+                        fontWeight = FontWeight.Black,
+                        fontSize = kanaSize
+                    ),
+                    color = textMain.copy(alpha = textOpacity)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = cell.romaji,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = textSub.copy(alpha = textOpacity)
+                )
+            }
         }
     }
 }
