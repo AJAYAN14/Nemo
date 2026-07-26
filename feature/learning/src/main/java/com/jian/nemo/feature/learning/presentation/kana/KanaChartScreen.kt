@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.kana
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -128,7 +130,7 @@ fun KanaChartScreen(
     val isDark = colorScheme.background.luminance() < 0.5f
     val haptic = LocalHapticFeedback.current
 
-    val backgroundColor = colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
     val textMain = if (isDark) colorScheme.onSurface else Color(0xFF334155)
     val textSub = if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)

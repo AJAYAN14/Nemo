@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -54,7 +56,7 @@ fun FavoriteGrammarsScreen(
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     // Premium Aesthetics
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // Custom Premium Colors (Shared Palette)
     val premiumRed = Color(0xFFFF3B30)

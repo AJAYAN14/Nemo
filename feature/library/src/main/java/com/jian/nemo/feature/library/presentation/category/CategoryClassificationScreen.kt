@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.library.presentation.category
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -73,7 +75,7 @@ fun CategoryClassificationScreen(
     onNavigateBack: () -> Unit = {},
     onCategorySelected: (String, String) -> Unit = { _, _ -> }
 ) {
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 根据来源显示不同的标题
     val title = when (source) {

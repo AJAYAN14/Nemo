@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
@@ -57,7 +59,7 @@ fun FavoritesScreen(
 
 
 
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
         topBar = {

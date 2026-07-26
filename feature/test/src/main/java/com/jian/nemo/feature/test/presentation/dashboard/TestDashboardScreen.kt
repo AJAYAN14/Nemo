@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.test.presentation.dashboard
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,9 +66,7 @@ fun TestDashboardScreen(
     val isAbilityWorkshopEnabled = true
 
     val colorScheme = MaterialTheme.colorScheme
-    val isDark = colorScheme.background.luminance() < 0.5f
-
-    val backgroundColor = if (isDark) colorScheme.background else BentoColors.BgBase
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }

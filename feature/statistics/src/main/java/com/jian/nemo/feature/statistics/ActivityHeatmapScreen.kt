@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -42,7 +44,7 @@ fun ActivityHeatmapScreen(
     viewModel: ActivityHeatmapViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
 
 

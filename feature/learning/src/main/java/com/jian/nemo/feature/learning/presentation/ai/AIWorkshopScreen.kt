@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -90,7 +92,7 @@ fun AIWorkshopScreen(
     val isDark = colorScheme.background.luminance() < 0.5f
     
     // 语义化颜色映射
-    val backgroundColor = colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val textPrimary = colorScheme.onSurface
     val haptic = LocalHapticFeedback.current
 

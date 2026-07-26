@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.review
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
@@ -59,7 +61,7 @@ fun SessionPrepScreen(
     viewModel: SessionPrepViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // [New] 监听生命周期，回到页面时自动刷新数据
     val lifecycleOwner = LocalLifecycleOwner.current

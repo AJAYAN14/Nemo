@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -44,7 +46,7 @@ fun AIExerciseDetailDialog(
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val backgroundColor = if (isDark) NemoSurfaceBackgroundDark else NemoSurfaceBackground
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 拦截物理返回键
     BackHandler(onBack = onDismiss)

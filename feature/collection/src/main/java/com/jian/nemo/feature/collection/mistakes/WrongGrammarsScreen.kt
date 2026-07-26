@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.collection.mistakes
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -41,7 +43,7 @@ fun WrongGrammarsScreen(
     val premiumBlue = Color(0xFF007AFF)
     val premiumRed = Color(0xFFFF3B30)
     val premiumGray = Color(0xFF8E8E93)
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }

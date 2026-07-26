@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics.presentation.dashboard
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,7 +47,7 @@ fun ProgressDashboardScreen(
     val stats = uiState.stats
 
     // MD3 规范：使用 MaterialTheme.colorScheme 语义化颜色
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val cardColor = MaterialTheme.colorScheme.surface
     val isDarkTheme = backgroundColor.luminance < 0.5f
 

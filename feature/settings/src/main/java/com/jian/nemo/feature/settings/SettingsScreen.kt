@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.settings
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -112,7 +114,7 @@ fun SettingsScreen(
         }
     }
 
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // Edge-to-Edge
     val density = LocalDensity.current

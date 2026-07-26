@@ -99,3 +99,12 @@ fun NemoTheme(
         content = content
     )
 }
+
+/**
+ * 统一的页面背景色访问扩展
+ * 所有主界面的 Scaffold 统一使用此颜色，以消除各界面间的硬编码导致的色差。
+ * 浅色模式下为 #F7F8FA (NemoSurfaceBackground)，深色模式下自动适配深色。
+ */
+val androidx.compose.material3.ColorScheme.screenBackground: Color
+    @Composable
+    get() = background

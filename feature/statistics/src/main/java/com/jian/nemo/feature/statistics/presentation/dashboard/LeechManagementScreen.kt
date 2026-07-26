@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics.presentation.dashboard
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -54,7 +56,7 @@ fun LeechManagementScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Background color
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
         uiState.successMessage?.let {

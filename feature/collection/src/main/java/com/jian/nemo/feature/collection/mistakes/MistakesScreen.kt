@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
+import com.jian.nemo.core.designsystem.theme.screenBackground
 
 // 临时本地定义 (对应 Color.kt 中的值)，解决模块间引用编译问题
 private val NemoSecondary = Color(0xFF4CAF50)
@@ -57,7 +58,7 @@ fun MistakesScreen(
 
 
 
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
         topBar = {

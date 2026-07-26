@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.library.presentation.category
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -82,7 +84,7 @@ fun CategoryWordsScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     val isDark = isSystemInDarkTheme()
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // Expanded State (Track which levels are OPEN)
     // Default: Empty (All Closed). Logic copied from WordListScreen
@@ -450,7 +452,7 @@ private fun LevelHeader(
     color: Color,
     onToggle: () -> Unit
 ) {
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Surface(
         color = backgroundColor.copy(alpha = 0.95f),

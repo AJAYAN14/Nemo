@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.library.presentation.list
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -76,7 +78,7 @@ fun GrammarListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     val expandedLevels = rememberSaveable(
         saver = androidx.compose.runtime.saveable.listSaver(

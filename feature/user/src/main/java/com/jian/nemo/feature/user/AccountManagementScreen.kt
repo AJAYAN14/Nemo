@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.AvatarImage
@@ -81,7 +82,7 @@ fun AccountManagementScreen(
     }
 
     // Colors
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     // Premium Card Colors
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 

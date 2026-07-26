@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -58,7 +60,7 @@ fun StatisticsScreen(
     val words = uiState.todaysWords
     val grammars = uiState.todaysGrammars
 
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
         topBar = {

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.screenBackground
 
 @Composable
 fun UnifiedTestScreen(
@@ -23,7 +24,7 @@ fun UnifiedTestScreen(
 ) {
     // 动态背景色：适配深色模式
     val colorScheme = MaterialTheme.colorScheme
-    val backgroundColor = colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val isDark = backgroundColor.luminance() < 0.5f
 
     Box(

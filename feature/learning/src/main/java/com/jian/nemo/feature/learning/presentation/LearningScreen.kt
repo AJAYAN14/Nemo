@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,7 +96,7 @@ fun LearningScreen(
     }
 
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val backgroundColor = if (isDarkTheme) NemoSurfaceBackgroundDark else NemoSurfaceBackground
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 状态
     var showRatingGuide by rememberSaveable { mutableStateOf(false) }

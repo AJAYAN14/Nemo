@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -51,7 +53,7 @@ fun ForgettingCurveScreen(
     viewModel: ForgettingCurveViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
         topBar = {

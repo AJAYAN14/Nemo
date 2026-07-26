@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.components.guide
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,7 +64,7 @@ fun RatingGuideScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
-    val backgroundColor = if (isDark) NemoSurfaceBackgroundDark else NemoSurfaceBackground
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else NemoSurfaceCard
     val textMain = if (isDark) colorScheme.onSurface else RatingGuideTitleText
     val textSub = if (isDark) colorScheme.onSurfaceVariant else RatingGuideCoreText

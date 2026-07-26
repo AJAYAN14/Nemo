@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -55,7 +57,7 @@ fun FavoriteQuestionsScreen(
     val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
     val premiumGreen = Color(0xFF34C759)
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态
     var selectedQuestionIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }

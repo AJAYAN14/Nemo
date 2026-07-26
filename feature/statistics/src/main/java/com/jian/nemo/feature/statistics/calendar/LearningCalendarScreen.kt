@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics.calendar
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -60,7 +62,7 @@ fun LearningCalendarScreen(
     val selectedDate = uiState.selectedDate
     val todayStats = uiState.todayStats ?: LearningStats(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
 
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
         topBar = {

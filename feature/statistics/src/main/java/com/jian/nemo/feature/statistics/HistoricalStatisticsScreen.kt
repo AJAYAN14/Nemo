@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -52,7 +54,7 @@ fun HistoricalStatisticsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val words = uiState.learnedWords
     val grammars = uiState.learnedGrammars
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     var showWordDialog by remember { mutableStateOf(false) }
     var showGrammarDialog by remember { mutableStateOf(false) }

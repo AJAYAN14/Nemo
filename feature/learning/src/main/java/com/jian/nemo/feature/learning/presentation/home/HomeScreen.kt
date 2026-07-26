@@ -1,5 +1,8 @@
 package com.jian.nemo.feature.learning.presentation.home
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -111,8 +114,7 @@ fun HomeScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     
-    // 动态语义颜色
-    val backgroundColor = if (isDark) colorScheme.background else BentoColors.BgBase
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else BentoColors.Surface
     val textMain = if (isDark) colorScheme.onSurface else BentoColors.TextMain
     val textSub = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
@@ -516,17 +518,17 @@ fun HomeScreen(
                         label = "ShimmerProgress"
                     )
 
-                    Surface(
+                    LiquidButton(
+                        onClick = {
+                            val now = System.currentTimeMillis()
+                            if (now - lastClickTime > 2000L) {
+                                lastClickTime = now
+                                onNavigateToLearning(uiState.learningMode)
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(64.dp)
-                            .softShadow(
-                                color = btnColor.copy(alpha = 0.3f),
-                                borderRadius = 24.dp,
-                                blurRadius = 16.dp,
-                                offsetY = 4.dp
-                            )
-                            .clip(RoundedCornerShape(24.dp))
                             .drawWithContent {
                                 drawContent()
                                 // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
@@ -543,21 +545,10 @@ fun HomeScreen(
                                     end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
                                 )
                                 drawRect(brush = shimmerBrush)
-                            }
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = {
-                                    val now = System.currentTimeMillis()
-                                    if (now - lastClickTime > 2000L) {
-                                        lastClickTime = now
-                                        onNavigateToLearning(uiState.learningMode)
-                                    }
-                                }
-                            ),
+                            },
+                        backgroundColor = btnColor,
                         shape = RoundedCornerShape(24.dp),
-                        color = btnColor,
-                        contentColor = Color.White
+                        elevation = 6.dp
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.Center,
@@ -566,7 +557,8 @@ fun HomeScreen(
                         ) {
                             Text(
                                 text = if (uiState.currentProgress > 0) stringResource(R.string.btn_continue_home) else stringResource(R.string.btn_start_home),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                                color = Color.White
                             )
                             // 基于学习进度切换图标及应用闪烁动效
                             val isLearned = uiState.currentProgress > 0

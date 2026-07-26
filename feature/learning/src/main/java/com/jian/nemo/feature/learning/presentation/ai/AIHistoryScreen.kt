@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
+import com.jian.nemo.core.designsystem.theme.screenBackground
+
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -40,7 +42,7 @@ fun AIHistoryScreen(
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val backgroundColor = colorScheme.background
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val textPrimary = colorScheme.onSurface
 
     Box(modifier = Modifier.fillMaxSize()) {
