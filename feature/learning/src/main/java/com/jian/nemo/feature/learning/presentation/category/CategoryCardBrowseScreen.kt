@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -333,18 +334,15 @@ fun CategoryCardBrowseActionButtons(
             modifier = Modifier.size(56.dp)
         )
 
+        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
         // 跟打练习按钮
         Button(
             onClick = onPractice,
             modifier = Modifier
                 .weight(1f)
                 .height(56.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(28.dp),
-                    spotColor = themeColor.copy(alpha = 0.4f),
-                    ambientColor = themeColor.copy(alpha = 0.2f)
-                ),
+                .softCardShadow(borderRadius = 28.dp, isDark = isDark),
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = themeColor,

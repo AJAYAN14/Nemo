@@ -33,6 +33,8 @@ import androidx.compose.material.icons.rounded.Report
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
+import com.jian.nemo.core.ui.modifier.softCardShadow
+
 /**
  * 单词详情界面 (UI/UX Pro Max)
  */
@@ -366,18 +368,11 @@ private fun PremiumDetailCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val shadowElevation = if (isDark) 2.dp else 8.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f)
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(24.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         content = { Column(content = content) }

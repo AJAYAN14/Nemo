@@ -22,6 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
@@ -226,12 +228,13 @@ fun CategoryFlatCard(
     onClick: () -> Unit
 ) {
     val themeColor = getCategoryColor(category.categoryKey)
-    
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Card(
         onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth()
-            .height(200.dp),
+            .aspectRatio(1.35f)
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface

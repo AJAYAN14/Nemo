@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -289,22 +290,14 @@ private fun MemoryPanoramaCard(
 ) {
     val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val shadowElevation = if (isDarkTheme) 2.dp else 10.dp
-    val shadowColor = if (isDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
 
     Surface(
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
         border = BorderStroke(0.5.dp, borderColor),
-        shadowElevation = shadowElevation,
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            )
+            .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             // Header: Icon and Title

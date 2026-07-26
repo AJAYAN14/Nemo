@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -325,25 +326,16 @@ private fun CategoryCard(
     val themeColors = item.colors()
     val isDark = MaterialTheme.colorScheme.background.luminance < 0.5f // Use standard check
 
-    // Premium Card Style (Matches Logic in LearningCalendarScreen)
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.05f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)
-    val shadowElevation = if (isDark) 4.dp else 12.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.06f)
-
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
         border = BorderStroke(0.5.dp, borderColor),
         modifier = modifier
-            .height(100.dp) // Adjusted height
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            )
+            .height(100.dp)
+            .softCardShadow(borderRadius = 26.dp, isDark = isDark)
     ) {
         Row(
             modifier = Modifier

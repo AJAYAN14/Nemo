@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -498,13 +499,7 @@ private fun ThemeGridItem(
                 this.scaleX = scale
                 this.scaleY = scale
             }
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(18.dp),
-                clip = false,
-                ambientColor = if (isDark) Color.Transparent else BentoColors.Primary.copy(alpha = 0.15f),
-                spotColor = if (isDark) Color.Transparent else BentoColors.Primary.copy(alpha = 0.1f)
-            )
+            .softCardShadow(borderRadius = 18.dp, isDark = isDark)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,

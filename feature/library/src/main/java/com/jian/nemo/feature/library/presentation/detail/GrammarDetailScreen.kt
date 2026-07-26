@@ -16,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -374,7 +375,8 @@ private fun GrammarDetailContent(
                             // Example Container
                             Surface(
                                 color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.3f),
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(16.dp),
+                                modifier = Modifier.softCardShadow(borderRadius = 16.dp, isDark = isDark)
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     usage.examples.forEachIndexed { exIndex, example ->
@@ -496,18 +498,11 @@ private fun PremiumDetailCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val shadowElevation = if (isDark) 2.dp else 8.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f)
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            .softCardShadow(borderRadius = 20.dp, isDark = isDark),
         shape = RoundedCornerShape(20.dp),
         color = containerColor,
         content = { Column(content = content) }

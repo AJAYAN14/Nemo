@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -294,10 +295,12 @@ private fun FavoriteWordItem(
     tagColor: Color
 ) {
     val premiumRed = Color(0xFFFF3B30)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 20.dp, isDark = isDark)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

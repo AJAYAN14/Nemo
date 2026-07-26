@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -478,16 +479,11 @@ private fun PremiumCard(
         border = BorderStroke(0.5.dp, borderColor),
         modifier = modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 26.dp, isDark = isDark)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            }
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            },
         interactionSource = interactionSource,
         content = { Column(modifier = Modifier.padding(20.dp), content = content) }
     )

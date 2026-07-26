@@ -32,6 +32,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 
@@ -169,17 +171,21 @@ fun AccountManagementScreen(
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                // Logout Button
-                Button(
+                // Liquid Logout Button
+                LiquidButton(
                     onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    backgroundColor = MaterialTheme.colorScheme.error,
                     shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
+                    elevation = 6.dp
                 ) {
-                    Text("退出登录", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        text = "退出登录",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onError
+                    )
                 }
 
                  Spacer(modifier = Modifier.height(64.dp))
@@ -354,12 +360,16 @@ fun PremiumSettingsGroup(
             modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)
         )
 
+        val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
         Card(
             shape = RoundedCornerShape(26.dp),
             colors = CardDefaults.cardColors(containerColor = cardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .softCardShadow(borderRadius = 26.dp, isDark = useDarkTheme)
         ) {
             Column(
                 modifier = Modifier.padding(vertical = 8.dp)

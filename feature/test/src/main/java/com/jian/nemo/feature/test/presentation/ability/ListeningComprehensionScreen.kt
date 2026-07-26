@@ -18,6 +18,8 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -345,10 +347,12 @@ private fun ReadyView(
 
         // 2. 声波拟真控制台 (核心听音盘)
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = wordCardBg),
-            elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(24.dp),
@@ -745,11 +749,12 @@ private fun OptionButton(
     Surface(
         modifier = modifier
             .height(72.dp)
+            .softCardShadow(borderRadius = 18.dp, isDark = isDark)
             .clip(RoundedCornerShape(18.dp))
             .clickable(enabled = !isAnswered) { onClick() }
             .border(2.dp, borderColor, RoundedCornerShape(18.dp)),
         color = bgColor,
-        shadowElevation = if (isDark) 0.dp else 1.dp
+        shadowElevation = 0.dp
     ) {
         Box(
             modifier = Modifier.fillMaxSize().padding(12.dp),

@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -176,12 +177,7 @@ fun SRSLearningCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(
-                    elevation = shadowElevation,
-                    shape = RoundedCornerShape(26.dp),
-                    spotColor = shadowColor,
-                    ambientColor = shadowColor
-                )
+                .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
                 .clip(RoundedCornerShape(26.dp))
                 .background(cardBackground, RoundedCornerShape(26.dp))
         ) {
@@ -364,13 +360,8 @@ fun SRSLearningCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            elevation = shadowElevation,
-                            shape = RoundedCornerShape(26.dp),
-                            spotColor = shadowColor,
-                            ambientColor = shadowColor
-                        )
-                        .background(cardBackground.copy(alpha = 0.95f), RoundedCornerShape(26.dp)) // Slightly increased opacity
+                        .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
+                        .background(cardBackground.copy(alpha = 0.95f), RoundedCornerShape(26.dp))
                         .padding(24.dp)
                 ) {
                     // Meaning

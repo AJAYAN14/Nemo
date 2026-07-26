@@ -31,6 +31,9 @@ import com.jian.nemo.core.domain.model.Word
  * @param onUnfavorite 取消收藏回调
  * @param onClick 点击项目回调（查看详情）
  */
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
+
 @Composable
 fun WordListItem(
     word: Word,
@@ -38,11 +41,14 @@ fun WordListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 16.dp, isDark = isDark)
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier

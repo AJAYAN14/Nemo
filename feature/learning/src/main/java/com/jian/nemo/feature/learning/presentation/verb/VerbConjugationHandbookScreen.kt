@@ -23,6 +23,7 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import kotlinx.coroutines.launch
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
@@ -313,10 +314,11 @@ fun VerbConjugationHandbookScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 16.dp)
+                    .softCardShadow(borderRadius = 24.dp, isDark = isDark),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = cardBgColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = if (isDark) 0.dp else 1.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 border = microBorderStroke
             ) {
                 Column(

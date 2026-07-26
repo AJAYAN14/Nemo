@@ -26,6 +26,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -278,12 +279,8 @@ private fun LeechItemCardBase(
 ) {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
     // Premium Style Colors match ProgressComponents / WordList
-    val containerColor = if(isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val contentColor = MaterialTheme.colorScheme.onSurface
-
-    // Premium Shadow settings
-    val shadowElevation = if (isDark) 4.dp else 10.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f)
 
     var isRecovering by remember { mutableStateOf(false) }
 
@@ -291,12 +288,7 @@ private fun LeechItemCardBase(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(24.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         contentColor = contentColor

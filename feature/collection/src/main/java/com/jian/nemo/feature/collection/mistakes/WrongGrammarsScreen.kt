@@ -15,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.jian.nemo.core.ui.animation.animateListItem
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -238,10 +240,12 @@ private fun WrongGrammarCard(
     val premiumRed = Color(0xFFFF3B30)
     val premiumGreen = Color(0xFF34C759)
     val premiumBlue = Color(0xFF007AFF)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 20.dp, isDark = isDark)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

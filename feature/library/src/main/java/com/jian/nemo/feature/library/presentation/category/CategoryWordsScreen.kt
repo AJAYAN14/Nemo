@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
@@ -614,8 +615,6 @@ private fun PremiumCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val shadowElevation = if (isDark) 2.dp else 4.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
 
     Surface(
         onClick = onClick ?: {},
@@ -625,16 +624,11 @@ private fun PremiumCard(
         border = BorderStroke(0.5.dp, borderColor),
         modifier = modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            }
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(22.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            },
         interactionSource = interactionSource,
         content = { Column(modifier = Modifier.padding(16.dp), content = content) }
     )

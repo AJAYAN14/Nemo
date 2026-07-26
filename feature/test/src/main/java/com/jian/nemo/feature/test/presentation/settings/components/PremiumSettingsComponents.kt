@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
+import com.jian.nemo.core.ui.modifier.softCardShadow
 
 @Composable
 fun SectionTitle(text: String) {
@@ -39,14 +40,14 @@ fun PremiumGroupCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val shadowElevation = if (isDark) 2.dp else 10.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.03f)
 
     Surface(
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         border = BorderStroke(0.5.dp, borderColor),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
     ) {
         Column(
             modifier = Modifier.padding(vertical = 8.dp),

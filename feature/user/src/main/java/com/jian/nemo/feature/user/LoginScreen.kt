@@ -18,6 +18,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.user.component.*
 import com.jian.nemo.core.ui.component.animation.AnimatedWordBackground
@@ -160,14 +162,17 @@ fun LoginScreen(
             }
         }
 
+        val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(3.5f)
-                .imePadding(),
+                .imePadding()
+                .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme),
             shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp), // 26dp Corner Radius
             colors = CardDefaults.cardColors(containerColor = surfaceColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp) // Added shadow for depth
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                 modifier = Modifier

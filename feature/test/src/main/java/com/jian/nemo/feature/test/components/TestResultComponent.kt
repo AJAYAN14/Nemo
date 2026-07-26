@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -427,8 +429,9 @@ fun StatCard(
     contentColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val isDark = backgroundColor.luminance() < 0.5f
     Surface(
-        modifier = modifier,
+        modifier = modifier.softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         color = backgroundColor,
         shadowElevation = 0.dp
@@ -479,7 +482,9 @@ fun ContentAnalysisSection(
     val outlineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, outlineColor)
@@ -559,7 +564,9 @@ fun TodaySummarySection(
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedCornerShape(24.dp),
         color = containerColor
     ) {

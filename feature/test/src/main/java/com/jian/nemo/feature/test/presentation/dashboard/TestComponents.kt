@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -81,18 +82,15 @@ fun PremiumCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     // Light mode: Pure white + strong soft shadow. Dark mode: Surface Container + light shadow.
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val shadowElevation = if (isDark) 4.dp else 12.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f) // Very soft ambient shadow
 
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
-        shadowElevation = if (isDark) 2.dp else 4.dp,
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale

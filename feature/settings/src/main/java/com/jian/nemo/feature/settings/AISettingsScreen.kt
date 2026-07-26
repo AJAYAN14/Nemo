@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -266,15 +267,15 @@ fun AISettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(0.85f)
-                        .imePadding(),
+                        .imePadding()
+                        .softCardShadow(borderRadius = 24.dp, isDark = isDark),
                     shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                     color = MaterialTheme.colorScheme.surface,
                     border = BorderStroke(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.2f)
                     ),
-                    tonalElevation = 0.dp,
-                    shadowElevation = 16.dp
+                    tonalElevation = 0.dp
                 ) {
                     Column(
                         modifier = Modifier

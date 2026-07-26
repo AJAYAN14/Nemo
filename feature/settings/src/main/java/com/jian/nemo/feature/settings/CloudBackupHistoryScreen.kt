@@ -21,6 +21,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -185,10 +187,13 @@ private fun BackupItemCard(
     val dateString = formatter.format(Date(backup.createdAt))
     val sizeKb = String.format("%.1f", backup.sizeBytes / 1024f)
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 16.dp, isDark = isDark),
         color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp,
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(

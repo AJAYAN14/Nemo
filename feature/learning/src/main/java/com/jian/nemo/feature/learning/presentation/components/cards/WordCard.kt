@@ -36,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -90,18 +92,16 @@ fun WordCard(
     // 90° 临界点切换内容：卡片侧立时不可见，切换无感知
     val isFrontVisible = rotation < 90f
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Surface(
         modifier = modifier
             .fillMaxSize()
+            .softCardShadow(borderRadius = 32.dp, isDark = isDark)
             .graphicsLayer {
                 rotationY = if (isFrontVisible) rotation else rotation - 180f
                 cameraDistance = 16f * density
-            }
-            .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(32.dp),
-                spotColor = posColor.copy(alpha = 0.2f)
-            ),
+            },
         shape = RoundedCornerShape(32.dp),
         color = cardColor,
         shadowElevation = 0.dp

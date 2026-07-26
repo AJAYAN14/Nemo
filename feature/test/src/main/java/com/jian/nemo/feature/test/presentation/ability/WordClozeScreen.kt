@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -624,11 +625,7 @@ private fun ReadyView(
                     .fillMaxWidth()
                     .graphicsLayer(scaleX = cardScale, scaleY = cardScale)
                     .padding(vertical = 12.dp)
-                    .shadow(
-                        elevation = if (isCurrentQCorrect) 1.dp else 4.dp,
-                        shape = RoundedCornerShape(32.dp),
-                        clip = false
-                    ),
+                    .softCardShadow(borderRadius = 32.dp, isDark = isDark),
                 shape = RoundedCornerShape(32.dp),
                 color = cardBgColor
             ) {
@@ -962,7 +959,7 @@ private fun ReadyView(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(elevation = 16.dp, shape = RoundedCornerShape(28.dp)),
+                    .softCardShadow(borderRadius = 28.dp, isDark = isDark),
                 color = (if (isDark) NemoNeutrals.Gray900 else Color.White).copy(alpha = 0.88f), // 玻璃半透明感
                 shape = RoundedCornerShape(28.dp),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
@@ -1137,7 +1134,7 @@ private fun ResultView(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .shadow(4.dp, shape = RoundedCornerShape(24.dp)),
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
             shape = RoundedCornerShape(24.dp),
             color = cardBg
         ) {
@@ -1425,7 +1422,7 @@ private fun JapaneseInputGuideDialog(
                 .fillMaxWidth(0.92f)
                 .fillMaxHeight(0.82f)
                 .padding(16.dp)
-                .shadow(24.dp, shape = RoundedCornerShape(28.dp)),
+                .softCardShadow(borderRadius = 28.dp, isDark = isDark),
             shape = RoundedCornerShape(28.dp),
             color = bg,
             border = BorderStroke(
@@ -1658,7 +1655,7 @@ private fun JapaneseInputGuideDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
-                        .shadow(4.dp, shape = RoundedCornerShape(24.dp)),
+                        .softCardShadow(borderRadius = 24.dp, isDark = isDark),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = IosColors.Orange,
                         contentColor = Color.White

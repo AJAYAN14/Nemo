@@ -32,15 +32,22 @@ import java.util.Locale
  * @param wrongAnswer 错题数据
  * @param onDelete 删除回调
  */
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
+
 @Composable
 fun WrongAnswerCard(
     wrongAnswer: WrongAnswer,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 12.dp, isDark = isDark),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.errorContainer
         )

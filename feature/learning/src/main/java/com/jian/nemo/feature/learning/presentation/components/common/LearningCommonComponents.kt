@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -692,12 +694,14 @@ fun ContentUnavailable(text: String, cardColor: Color) {
         modifier = Modifier.fillMaxWidth(), // Legacy fillMaxSize
         contentAlignment = Alignment.Center
     ) {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp),
+                .height(400.dp)
+                .softCardShadow(borderRadius = 20.dp, isDark = isDark),
             colors = CardDefaults.cardColors(containerColor = cardColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             shape = RoundedCornerShape(20.dp)
         ) {
             Box(

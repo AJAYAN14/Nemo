@@ -27,6 +27,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -299,16 +302,12 @@ private fun MorphingContainer(
     content: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(height / 2)
+    val isDark = backgroundColor.luminance() < 0.5f
     Box(
         modifier = modifier
             .width(width)
             .height(height)
-            .shadow(
-                elevation = 8.dp,
-                shape = shape,
-                ambientColor = Color.Black.copy(alpha = 0.05f),
-                spotColor = Color.Black.copy(alpha = 0.05f),
-            )
+            .softCardShadow(borderRadius = height / 2, isDark = isDark)
             .clip(shape)
             .background(backgroundColor),
         contentAlignment = Alignment.Center,

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -207,11 +208,7 @@ fun ThemeColorDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
-                            .shadow(
-                                elevation = 8.dp,
-                                shape = RoundedCornerShape(25.dp),
-                                spotColor = currentlySelectedColor
-                            ),
+                            .softCardShadow(borderRadius = 25.dp, isDark = currentlySelectedColor.luminance() < 0.5f),
                         shape = RoundedCornerShape(25.dp),
                         contentPadding = PaddingValues(0.dp)
                     ) {

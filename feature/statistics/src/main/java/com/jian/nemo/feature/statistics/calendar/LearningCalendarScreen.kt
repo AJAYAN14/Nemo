@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
@@ -54,6 +55,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -174,8 +176,6 @@ fun PremiumCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val shadowElevation = if (isDark) 2.dp else 10.dp
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
 
     Surface(
         onClick = {
@@ -190,16 +190,11 @@ fun PremiumCard(
         border = BorderStroke(0.5.dp, borderColor),
         modifier = modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 26.dp, isDark = isDark)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            }
-            .shadow(
-                elevation = shadowElevation,
-                shape = RoundedCornerShape(26.dp),
-                spotColor = shadowColor,
-                ambientColor = shadowColor
-            ),
+            },
         interactionSource = interactionSource,
         content = { Column(modifier = Modifier.padding(20.dp), content = content) }
     )
@@ -319,12 +314,7 @@ fun SegmentedCalendarToggle(
             // "周" 按钮
             Box(
                 modifier = Modifier
-                    .shadow(
-                        elevation = if (isWeekSelected) 3.dp else 0.dp,
-                        shape = RoundedCornerShape(12.dp),
-                        spotColor = shadowColor,
-                        ambientColor = shadowColor
-                    )
+                    .softCardShadow(borderRadius = 12.dp, isDark = isDark)
                     .clip(RoundedCornerShape(12.dp))
                     .background(if (isWeekSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable {
@@ -348,12 +338,7 @@ fun SegmentedCalendarToggle(
             // "月" 按钮
             Box(
                 modifier = Modifier
-                    .shadow(
-                        elevation = if (isMonthSelected) 3.dp else 0.dp,
-                        shape = RoundedCornerShape(12.dp),
-                        spotColor = shadowColor,
-                        ambientColor = shadowColor
-                    )
+                    .softCardShadow(borderRadius = 12.dp, isDark = isDark)
                     .clip(RoundedCornerShape(12.dp))
                     .background(if (isMonthSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable {

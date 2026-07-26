@@ -10,7 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.modifier.softCardShadow
 
 /**
  * 个人中心界面
@@ -25,6 +27,8 @@ fun ProfileScreen(
     onNavigateToMistakes: () -> Unit = {},
     onNavigateToPartOfSpeech: () -> Unit = {}
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -58,7 +62,9 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .softCardShadow(borderRadius = 16.dp, isDark = isDark)
             ) {
                 Column {
                     ProfileMenuItem(
@@ -99,7 +105,9 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .softCardShadow(borderRadius = 16.dp, isDark = isDark)
             ) {
                 Column {
                     ProfileMenuItem(
