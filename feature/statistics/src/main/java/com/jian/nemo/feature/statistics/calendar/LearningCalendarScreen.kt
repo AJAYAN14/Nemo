@@ -17,13 +17,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Book
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.PlayArrow
-import androidx.compose.material.icons.rounded.Update
-import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.TaskAlt
+import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Update
+import androidx.compose.material.icons.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,6 +46,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
+import android.view.HapticFeedbackConstants
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.ReviewForecast
@@ -61,6 +71,7 @@ fun LearningCalendarScreen(
     val uiState by viewModel.uiState.collectAsState()
     val selectedDate = uiState.selectedDate
     val todayStats = uiState.todayStats ?: LearningStats(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    var isMonthMode by remember { mutableStateOf(false) }
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
@@ -91,14 +102,27 @@ fun LearningCalendarScreen(
                 )
             }
 
-
-            // 3. 周视图 (Week View)
+            // 2. 动态日历卡片 (周模式 ↔ 月模式)
             item {
-                CalendarSectionTitle("本周进度")
-                WeekViewCard(
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CalendarSectionTitle(if (isMonthMode) "月度学习日历" else "本周进度")
+                    SegmentedCalendarToggle(
+                        isMonthMode = isMonthMode,
+                        onToggle = { isMonthMode = it }
+                    )
+                }
+                InteractiveCalendarCard(
+                    isMonthMode = isMonthMode,
                     selectedDate = selectedDate,
                     todayEpochDay = uiState.todayEpochDay,
                     weekForecast = uiState.weekForecast,
+                    heatmapData = uiState.heatmapData,
                     onDateSelected = viewModel::onDateSelected
                 )
             }
@@ -134,6 +158,7 @@ fun PremiumCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val view = LocalView.current
     val interactionSource = remember { MutableInteractionSource() }
     val scale by if(onClick != null) {
         val isPressed by interactionSource.collectIsPressedAsState()
@@ -153,7 +178,12 @@ fun PremiumCard(
     val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)
 
     Surface(
-        onClick = onClick ?: {},
+        onClick = {
+            if (onClick != null) {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                onClick()
+            }
+        },
         enabled = onClick != null,
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
@@ -263,18 +293,138 @@ fun StatItem(
     }
 }
 
-// 周视图卡片
+// 分段切换器 [ 周 | 月 ] (淡蓝色主调底色 + 规范阴影)
 @Composable
-fun WeekViewCard(
+fun SegmentedCalendarToggle(
+    isMonthMode: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    val view = LocalView.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val containerColor = if (isDark) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+    } else {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+    }
+    val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.06f)
+
+    Surface(
+        color = containerColor,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            val isWeekSelected = !isMonthMode
+            // "周" 按钮
+            Box(
+                modifier = Modifier
+                    .shadow(
+                        elevation = if (isWeekSelected) 3.dp else 0.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = shadowColor,
+                        ambientColor = shadowColor
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isWeekSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable {
+                        if (isMonthMode) {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            onToggle(false)
+                        }
+                    }
+                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "周",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (isWeekSelected) Color.White else MaterialTheme.colorScheme.primary
+                )
+            }
+
+            val isMonthSelected = isMonthMode
+            // "月" 按钮
+            Box(
+                modifier = Modifier
+                    .shadow(
+                        elevation = if (isMonthSelected) 3.dp else 0.dp,
+                        shape = RoundedCornerShape(12.dp),
+                        spotColor = shadowColor,
+                        ambientColor = shadowColor
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isMonthSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable {
+                        if (!isMonthMode) {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            onToggle(true)
+                        }
+                    }
+                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "月",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (isMonthSelected) Color.White else MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
+
+// 可交互日历卡片 (支持周/月模式动画切换)
+@Composable
+fun InteractiveCalendarCard(
+    isMonthMode: Boolean,
+    selectedDate: Date,
+    todayEpochDay: Long,
+    weekForecast: Map<Long, ReviewForecast>,
+    heatmapData: List<com.jian.nemo.core.domain.usecase.statistics.HeatmapDay>,
+    onDateSelected: (Date) -> Unit
+) {
+    PremiumCard {
+        AnimatedContent(
+            targetState = isMonthMode,
+            transitionSpec = {
+                (fadeIn(animationSpec = tween(220)) + slideInVertically { it / 8 }).togetherWith(
+                    fadeOut(animationSpec = tween(120))
+                )
+            },
+            label = "CalendarViewSwitch"
+        ) { inMonthMode ->
+            if (inMonthMode) {
+                MonthViewContent(
+                    selectedDate = selectedDate,
+                    todayEpochDay = todayEpochDay,
+                    heatmapData = heatmapData,
+                    onDateSelected = onDateSelected
+                )
+            } else {
+                WeekViewContent(
+                    selectedDate = selectedDate,
+                    todayEpochDay = todayEpochDay,
+                    weekForecast = weekForecast,
+                    onDateSelected = onDateSelected
+                )
+            }
+        }
+    }
+}
+
+// 周视图卡片内容
+@Composable
+fun WeekViewContent(
     selectedDate: Date,
     todayEpochDay: Long,
     weekForecast: Map<Long, ReviewForecast>,
     onDateSelected: (Date) -> Unit
 ) {
-    // 将 todayEpochDay 转换回 Date 对象作为本周显示基准的起点 (也就是逻辑上的今天)
     val today = Date(todayEpochDay * 86400000L)
 
-    // 生成选中日期的具体日期文本
     val selectedCal = Calendar.getInstance()
     selectedCal.time = selectedDate
     selectedCal.set(Calendar.HOUR_OF_DAY, 0)
@@ -282,11 +432,9 @@ fun WeekViewCard(
     selectedCal.set(Calendar.SECOND, 0)
     selectedCal.set(Calendar.MILLISECOND, 0)
 
-    // 周几标签映射
     val weekDayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
 
-    PremiumCard {
-        // 周日期网格
+    Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -298,7 +446,6 @@ fun WeekViewCard(
             currentCal.set(Calendar.SECOND, 0)
             currentCal.set(Calendar.MILLISECOND, 0)
 
-            // 显示今天及未来6天，共7天
             for (i in 0 until 7) {
                 val dateCal = Calendar.getInstance()
                 dateCal.time = currentCal.time
@@ -316,7 +463,7 @@ fun WeekViewCard(
                 val dateEpochDay = todayEpochDay + i
                 val forecast = weekForecast[dateEpochDay]
                 val count = (forecast?.wordCount ?: 0) + (forecast?.grammarCount ?: 0)
-                
+
                 val warningColor = when {
                     count >= 50 -> MaterialTheme.colorScheme.error
                     count > 0 -> NemoPrimary
@@ -342,10 +489,9 @@ fun WeekViewCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Selected Date Indicator Text underneath
         val dateText = "${selectedCal.get(Calendar.MONTH) + 1}月${selectedCal.get(Calendar.DAY_OF_MONTH)}日"
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-             Surface(
+            Surface(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 shape = CircleShape
             ) {
@@ -361,6 +507,260 @@ fun WeekViewCard(
     }
 }
 
+// 月视图卡片内容
+@Composable
+fun MonthViewContent(
+    selectedDate: Date,
+    todayEpochDay: Long,
+    heatmapData: List<com.jian.nemo.core.domain.usecase.statistics.HeatmapDay>,
+    onDateSelected: (Date) -> Unit
+) {
+    val view = LocalView.current
+    var displayedDate by remember { mutableStateOf(selectedDate) }
+
+    val displayedCal = remember(displayedDate) {
+        Calendar.getInstance().apply {
+            time = displayedDate
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+    }
+
+    val selectedCal = remember(selectedDate) {
+        Calendar.getInstance().apply {
+            time = selectedDate
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+    }
+
+    val todayCal = remember(todayEpochDay) {
+        Calendar.getInstance().apply {
+            timeInMillis = todayEpochDay * 86400000L
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+    }
+
+    val heatmapMap = remember(heatmapData) {
+        heatmapData.associateBy { it.date }
+    }
+
+    val weekDayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
+
+    Column {
+        // 月份切换控制条
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                val c = Calendar.getInstance().apply {
+                    time = displayedCal.time
+                    add(Calendar.MONTH, -1)
+                }
+                displayedDate = c.time
+            }) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowLeft,
+                    contentDescription = "上一月",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Text(
+                text = "${displayedCal.get(Calendar.YEAR)}年 ${displayedCal.get(Calendar.MONTH) + 1}月",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            IconButton(onClick = {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                val c = Calendar.getInstance().apply {
+                    time = displayedCal.time
+                    add(Calendar.MONTH, 1)
+                }
+                displayedDate = c.time
+            }) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowRight,
+                    contentDescription = "下一月",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // 月历网格背景卡片
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                // 星期表头
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    weekDayLabels.forEach { label ->
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                // 月历天数 7x6 矩阵
+                val firstDayOfWeek = displayedCal.get(Calendar.DAY_OF_WEEK)
+                val offset = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - Calendar.MONDAY
+                val daysInMonth = displayedCal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+                var dayCounter = 1
+                for (row in 0 until 6) {
+                    if (dayCounter > daysInMonth && row > 0) break
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        for (col in 0 until 7) {
+                            val cellIndex = row * 7 + col
+                            if (cellIndex < offset || dayCounter > daysInMonth) {
+                                Box(modifier = Modifier.weight(1f))
+                            } else {
+                                val currentDayNumber = dayCounter
+                                val cellCal = Calendar.getInstance().apply {
+                                    time = displayedCal.time
+                                    set(Calendar.DAY_OF_MONTH, currentDayNumber)
+                                    set(Calendar.HOUR_OF_DAY, 0)
+                                    set(Calendar.MINUTE, 0)
+                                    set(Calendar.SECOND, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
+
+                                val cellDate = cellCal.time
+                                val isSelected = cellCal.timeInMillis == selectedCal.timeInMillis
+                                val isToday = cellCal.timeInMillis == todayCal.timeInMillis
+                                val epochDay = (cellCal.timeInMillis + TimeZone.getDefault().getOffset(cellCal.timeInMillis)) / 86400000L
+                                val dayRecord = heatmapMap[epochDay]
+                                val hasStudyRecord = dayRecord != null && dayRecord.count > 0
+
+                                MonthDayCell(
+                                    dayNumber = currentDayNumber.toString(),
+                                    isSelected = isSelected,
+                                    isToday = isToday,
+                                    hasRecord = hasStudyRecord,
+                                    onClick = { onDateSelected(cellDate) },
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                dayCounter++
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        // Selected Date Tag
+        val selMonth = selectedCal.get(Calendar.MONTH) + 1
+        val selDay = selectedCal.get(Calendar.DAY_OF_MONTH)
+        val dateText = "${selMonth}月${selDay}日"
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = CircleShape
+            ) {
+                Text(
+                    text = if(selectedCal.timeInMillis == todayCal.timeInMillis) "今天 · $dateText" else dateText,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+    }
+}
+
+// 月历天数网格单元 (圆形选中效果 + 调大字号)
+@Composable
+fun MonthDayCell(
+    dayNumber: String,
+    isSelected: Boolean,
+    isToday: Boolean,
+    hasRecord: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val view = LocalView.current
+
+    val bgColor = when {
+        isSelected -> MaterialTheme.colorScheme.primary
+        isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+        else -> Color.Transparent
+    }
+
+    val contentColor = when {
+        isSelected -> Color.White
+        isToday -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    Column(
+        modifier = modifier
+            .padding(2.dp)
+            .aspectRatio(1f)
+            .clip(CircleShape)
+            .background(bgColor)
+            .clickable {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                onClick()
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = dayNumber,
+            fontSize = 16.sp,
+            fontWeight = if (isSelected || isToday) FontWeight.ExtraBold else FontWeight.Bold,
+            color = contentColor
+        )
+
+        if (hasRecord && !isSelected) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Box(
+                modifier = Modifier
+                    .size(4.dp)
+                    .clip(CircleShape)
+                    .background(NemoTeal)
+            )
+        }
+    }
+}
+
 // 周日期项组件 (Vertical Pill Style)
 @Composable
 fun WeekDayItem(
@@ -371,6 +771,7 @@ fun WeekDayItem(
     warningColor: Color? = null,
     onClick: () -> Unit
 ) {
+    val view = LocalView.current
     val backgroundColor = when {
         isSelected -> MaterialTheme.colorScheme.primary
         isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
@@ -392,7 +793,10 @@ fun WeekDayItem(
             .width(42.dp) // 更符合胶囊型的宽度比例
             .clip(CircleShape)
             .background(backgroundColor)
-            .clickable(onClick = onClick)
+            .clickable {
+                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                onClick()
+            }
             .padding(vertical = 14.dp, horizontal = 4.dp)
     ) {
         Text(
@@ -501,7 +905,7 @@ fun DayDetailPanel(
                 ) {
                     if (reviewWordsValue > 0) {
                         DetailSquircleItem(
-                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.PlayArrow,
+                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.Refresh,
                             color = if (isFuture) NemoIndigo else NemoOrange,
                             label = "${reviewLabelSuffix}单词",
                             value = "$reviewWordsValue 个",
@@ -510,7 +914,7 @@ fun DayDetailPanel(
                     }
                     if (reviewGrammarValue > 0) {
                         DetailSquircleItem(
-                            icon = if (isFuture) Icons.Rounded.Schedule else Icons.Rounded.PlayCircle,
+                            icon = if (isFuture) Icons.Rounded.Schedule else Icons.Rounded.MenuBook,
                             color = if (isFuture) NemoPurple else NemoTeal,
                             label = "${reviewLabelSuffix}语法",
                             value = "$reviewGrammarValue 条",
@@ -519,7 +923,7 @@ fun DayDetailPanel(
                     }
                     if (todayActualReviewWordsValue > 0) {
                         DetailSquircleItem(
-                            icon = Icons.Rounded.PlayArrow,
+                            icon = Icons.Rounded.CheckCircle,
                             color = NemoSecondary,
                             label = "今日已复习单词",
                             value = "$todayActualReviewWordsValue 个",
@@ -528,7 +932,7 @@ fun DayDetailPanel(
                     }
                     if (todayActualReviewGrammarValue > 0) {
                         DetailSquircleItem(
-                            icon = Icons.Rounded.PlayCircle,
+                            icon = Icons.Rounded.TaskAlt,
                             color = NemoIndigo,
                             label = "今日已复习语法",
                             value = "$todayActualReviewGrammarValue 条",
@@ -537,7 +941,7 @@ fun DayDetailPanel(
                     }
                     if (newWordsValue > 0) {
                         DetailSquircleItem(
-                            icon = Icons.Rounded.Book,
+                            icon = Icons.Rounded.Translate,
                             color = NemoPrimary,
                             label = "${newLabelSuffix}单词",
                             value = "$newWordsValue 个",
@@ -546,7 +950,7 @@ fun DayDetailPanel(
                     }
                     if (newGrammarValue > 0) {
                         DetailSquircleItem(
-                            icon = Icons.Rounded.Create,
+                            icon = Icons.Rounded.AutoAwesome,
                             color = NemoSecondary,
                             label = "${newLabelSuffix}语法",
                             value = "$newGrammarValue 条",
