@@ -1,6 +1,10 @@
 package com.jian.nemo.feature.learning.presentation.kana
 
+import android.view.HapticFeedbackConstants
+import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -67,6 +72,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,18 +100,22 @@ private enum class KanaType {
     Katakana
 }
 
-private val MacaronColors = listOf(
-    Color(0xFFFFE5EC), // 0
-    Color(0xFFFFF3E0), // 1
-    Color(0xFFFFF9C4), // 2
-    Color(0xFFE8F5E9), // 3
-    Color(0xFFE3F2FD), // 4
-    Color(0xFFF3E5F5), // 5
-    Color(0xFFFFEBEE), // 6
-    Color(0xFFE0F7FA), // 7
-    Color(0xFFFCE4EC), // 8
-    Color(0xFFF0F4C3), // 9
-    Color(0xFFEDE7F6)  // 10
+private data class KanaCardColorPair(
+    val bg: Color,
+    val text: Color
+)
+
+private val PremiumCategoryPalette = listOf(
+    KanaCardColorPair(NemoCategoryColors.CardVerbBgLight, NemoCategoryColors.CardVerbTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardAdjIBgLight, NemoCategoryColors.CardAdjITextLight),
+    KanaCardColorPair(NemoCategoryColors.CardAdjNaBgLight, NemoCategoryColors.CardAdjNaTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardNounBgLight, NemoCategoryColors.CardNounTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardAdvBgLight, NemoCategoryColors.CardAdvTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardConjBgLight, NemoCategoryColors.CardConjTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardFixBgLight, NemoCategoryColors.CardFixTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardKataBgLight, NemoCategoryColors.CardKataTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardKeigoBgLight, NemoCategoryColors.CardKeigoTextLight),
+    KanaCardColorPair(NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight)
 )
 
 private val EP = KanaCell("", "", "", isEmpty = true)
@@ -129,6 +139,7 @@ fun KanaChartScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
@@ -157,25 +168,30 @@ fun KanaChartScreen(
                 actions = {
                     val toggleBg = if (currentType == 0) Color(0xFFEEF2FF) else Color(0xFFFDF2F8)
                     val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
-                    Surface(
+                    LiquidButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            currentType = if (currentType == 0) 1 else 0
+                        },
                         modifier = Modifier
                             .padding(end = 16.dp)
-                            .noRippleClickable {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                currentType = if (currentType == 0) 1 else 0
-                            },
-                        shape = RoundedCornerShape(16.dp),
-                        color = toggleBg
+                            .height(44.dp),
+                        backgroundColor = toggleBg,
+                        shape = RoundedCornerShape(22.dp),
+                        elevation = 0.dp
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .padding(horizontal = 14.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SwapHoriz,
                                 contentDescription = "Toggle Kana Type",
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(18.dp),
                                 tint = toggleFg
                             )
                             Text(
@@ -451,10 +467,16 @@ private fun KanaGrid(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { cell ->
+                    val colorPair = PremiumCategoryPalette[rowIndex % PremiumCategoryPalette.size]
                     val cardColor = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) {
-                        MacaronColors[rowIndex % MacaronColors.size]
+                        colorPair.bg
                     } else {
                         surfaceColor
+                    }
+                    val cardTextMain = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) {
+                        colorPair.text
+                    } else {
+                        textMain
                     }
                     
                     KanaCard(
@@ -464,7 +486,7 @@ private fun KanaGrid(
                         cell = cell,
                         isKatakana = isKatakana,
                         surfaceColor = cardColor,
-                        textMain = textMain,
+                        textMain = cardTextMain,
                         textSub = textSub,
                         isDark = isDark,
                         playingAudioId = playingAudioId,
@@ -554,8 +576,14 @@ private fun KanaCard(
     val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
     val textOpacity = if (cell.isPlaceholder) 0.3f else 1f
 
+    val cardModifier = if (!cell.isPlaceholder) {
+        modifier.softCardShadow(borderRadius = 20.dp, isDark = isDark)
+    } else {
+        modifier
+    }
+
     Surface(
-        modifier = modifier
+        modifier = cardModifier
             .aspectRatio(1f)
             .graphicsLayer {
                 scaleX = scale
@@ -571,7 +599,7 @@ private fun KanaCard(
             },
         shape = RoundedCornerShape(20.dp),
         color = actualSurfaceColor,
-        shadowElevation = 0.dp, // Flat UI
+        shadowElevation = 0.dp,
         border = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
     ) {
         Column(
