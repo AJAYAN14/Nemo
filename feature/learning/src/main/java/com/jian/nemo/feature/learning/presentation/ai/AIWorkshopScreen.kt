@@ -34,6 +34,8 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -108,28 +110,58 @@ fun AIWorkshopScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
+                val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
                 CommonHeader(
                     title = "AI 例文工坊",
                     onBack = onNavigateBack,
                     backgroundColor = backgroundColor,
                     actions = {
-                        IconButton(onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) }) {
-                            val platform = uiState.aiPlatform
-                            when (platform) {
-                                "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LiquidButton(
+                                onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
+                                backgroundColor = navGroupBg,
+                                shape = CircleShape,
+                                elevation = 0.dp,
+                                isInteractive = true,
+                                modifier = Modifier
+                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                                    .size(44.dp)
+                            ) {
+                                val platform = uiState.aiPlatform
+                                when (platform) {
+                                    "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                                    else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
+                                }
                             }
-                        }
-                        IconButton(onClick = onNavigateToHistory) {
-                            Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
-                        }
-                        IconButton(onClick = { showHelp = true }) {
-                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
+                            LiquidButton(
+                                onClick = onNavigateToHistory,
+                                backgroundColor = navGroupBg,
+                                shape = CircleShape,
+                                elevation = 0.dp,
+                                isInteractive = true,
+                                modifier = Modifier
+                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                                    .size(44.dp)
+                            ) {
+                                Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
+                            }
+                            LiquidButton(
+                                onClick = { showHelp = true },
+                                backgroundColor = navGroupBg,
+                                shape = CircleShape,
+                                elevation = 0.dp,
+                                isInteractive = true,
+                                modifier = Modifier
+                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                                    .size(44.dp)
+                            ) {
+                                Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
+                            }
                         }
                     }
                 )
@@ -1034,19 +1066,34 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        Button(
+        LiquidButton(
             onClick = onNavigateToSettings,
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
-            ),
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
+            backgroundColor = MaterialTheme.colorScheme.primary,
+            shape = CircleShape,
+            elevation = 0.dp,
+            isInteractive = true,
+            modifier = Modifier
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark)
+                .height(48.dp)
         ) {
-            Icon(Icons.Rounded.Settings, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("立即去配置", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Row(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Rounded.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "立即去配置",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.White
+                )
+            }
         }
     }
 }

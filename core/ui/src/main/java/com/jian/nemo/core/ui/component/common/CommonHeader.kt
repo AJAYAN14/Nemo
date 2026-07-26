@@ -1,5 +1,6 @@
 package com.jian.nemo.core.ui.component.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
@@ -47,17 +48,16 @@ fun CommonHeader(
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
     val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = backgroundColor,
-        tonalElevation = 0.dp
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
     ) {
         Column(modifier = Modifier.statusBarsPadding()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

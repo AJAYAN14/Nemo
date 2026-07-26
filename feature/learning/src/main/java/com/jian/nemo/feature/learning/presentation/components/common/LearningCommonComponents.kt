@@ -213,21 +213,19 @@ fun LearnHeader(
     }
 
     // MD3: 使用 Surface 提供容器结构，但背景透明以融入界面
-    androidx.compose.material3.Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = Color.Transparent, // 透明背景，与整个界面背景色一致
-        tonalElevation = 0.dp
+    Box(
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 8.dp) // MD3: leading 4dp, trailing 24dp (内部调整)
+                .padding(horizontal = 4.dp, vertical = 4.dp)
         ) {
-            // Top Row - MD3: 标准 64dp 高度的主要内容行
+            // Top Row - 无剪裁弹性容器
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp), // MD3: TopAppBar 内容高度 56dp
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
