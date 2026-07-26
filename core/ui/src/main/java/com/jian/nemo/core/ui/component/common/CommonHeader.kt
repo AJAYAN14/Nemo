@@ -2,15 +2,19 @@ package com.jian.nemo.core.ui.component.common
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 
 /**
  * 通用带返回按钮的顶部栏组件
@@ -29,7 +33,6 @@ import androidx.compose.ui.unit.dp
  * @param backgroundColor 背景颜色，默认为透明
  * @param actions 可选的右侧操作按钮
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommonHeader(
     title: String,
@@ -41,53 +44,79 @@ fun CommonHeader(
     centerContent: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null
 ) {
-    // MD3 TopAppBar 使用 Surface 提供容器
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
+    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = backgroundColor,
         tonalElevation = 0.dp
     ) {
         Column(modifier = Modifier.statusBarsPadding()) {
-            // MD3: TopAppBar 标准内容高度 64dp (包含 padding)
-            TopAppBar(
-                title = {
-                    if (centerContent != null) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            centerContent()
-                        }
-                    } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .padding(horizontal = 20.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // 左侧：返回按钮 + 标题
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    LiquidButton(
+                        onClick = onBack,
+                        backgroundColor = navGroupBg,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        isInteractive = true,
+                        modifier = Modifier
+                            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                            .size(44.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    if (centerContent == null) {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.titleLarge, // MD3: 标准 titleLarge (22sp)
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
-                },
-                navigationIcon = {
-                    // MD3: 标准 48dp × 48dp 触摸目标
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                            tint = MaterialTheme.colorScheme.onSurface // MD3: 使用主题颜色
-                        )
+                }
+
+                // 中间自定义内容（若指定）
+                if (centerContent != null) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        centerContent()
                     }
-                },
-                actions = {
-                    // 如果提供了 actions，则显示
+                }
+
+                // 右侧：Actions 与头像
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
                     actions?.invoke(this)
 
-                    // Avatar Area
                     if (username != null) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
-                                .padding(end = 16.dp)
-                                .size(36.dp) // Optimized size
+                                .size(36.dp)
                                 .clickable(enabled = onAvatarClick != null, onClick = { onAvatarClick?.invoke() }),
                             contentAlignment = Alignment.Center
                         ) {
@@ -95,19 +124,13 @@ fun CommonHeader(
                                 username = username,
                                 avatarPath = avatarUrl,
                                 size = 36.dp,
-                                borderWidth = 1.dp, // Subtle border
+                                borderWidth = 1.dp,
                                 borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
+                }
+            }
         }
     }
 }
