@@ -3,6 +3,7 @@ package com.jian.nemo.feature.learning.presentation
 import com.jian.nemo.core.designsystem.theme.screenBackground
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -118,12 +119,15 @@ fun LearningScreen(
         }
     }
 
+    var isMenuExpanded by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = backgroundColor
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+            // 1. 页面主体内容 (Z = 0)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -151,6 +155,8 @@ fun LearningScreen(
                     onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
                     onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
                     onShowRatingGuide = { showRatingGuide = true },
+                    isMenuExpanded = isMenuExpanded,
+                    onToggleMenu = { isMenuExpanded = it },
                     isAutoAudioEnabled = uiState.isAutoAudioEnabled,
                     onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
                         { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
@@ -215,6 +221,24 @@ fun LearningScreen(
                         }
                     }
                 }
+            }
+
+            // 2. 页面全屏聚焦遮罩 (Z = 1，完全覆盖整个页面包括 Header 按钮组)
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isMenuExpanded,
+                enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
+                exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.28f))
+                        .clickable(
+                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                            indication = null,
+                            onClick = { isMenuExpanded = false }
+                        )
+                )
             }
 
             // 顶部撤销 Snackbar

@@ -115,6 +115,16 @@ fun SRSActionArea(
     val remainingSec = ((remainingMs + 999L) / 1000L).toInt()
 
 
+    val lastRateClickTime = androidx.compose.runtime.remember { androidx.compose.runtime.mutableLongStateOf(0L) }
+    val safeRate: (Int, () -> Unit) -> Unit = { quality, feedback ->
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastRateClickTime.longValue >= 200L) {
+            lastRateClickTime.longValue = currentTime
+            feedback()
+            onRate(quality)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -185,9 +195,10 @@ fun SRSActionArea(
                         color = colorRose700,
                         containerColor = colorRose100,
                         onClick = { 
-                            view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                            SoundEffectPlayer.playOtherSound(context)
-                            onRate(1) 
+                            safeRate(1) {
+                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                                SoundEffectPlayer.playOtherSound(context)
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -199,9 +210,10 @@ fun SRSActionArea(
                         color = colorOrange600,
                         containerColor = colorOrange50,
                         onClick = { 
-                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                            SoundEffectPlayer.playOtherSound(context)
-                            onRate(3) 
+                            safeRate(3) {
+                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                SoundEffectPlayer.playOtherSound(context)
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -213,9 +225,10 @@ fun SRSActionArea(
                         color = colorBlue600,
                         containerColor = colorBlue50,
                         onClick = { 
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            SoundEffectPlayer.playGoodSound(context)
-                            onRate(4) 
+                            safeRate(4) {
+                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                SoundEffectPlayer.playGoodSound(context)
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -227,9 +240,10 @@ fun SRSActionArea(
                         color = colorEmerald600,
                         containerColor = colorEmerald50,
                         onClick = { 
-                            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                            SoundEffectPlayer.playGoodSound(context)
-                            onRate(5) 
+                            safeRate(5) {
+                                view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                                SoundEffectPlayer.playGoodSound(context)
+                            }
                         },
                         modifier = Modifier.weight(1f)
                     )

@@ -176,7 +176,9 @@ fun LearnHeader(
     queueNewCount: Int = 0,
     queueLearningCount: Int = 0,
     queueReviewCount: Int = 0,
-    queueRelearnCount: Int = 0
+    queueRelearnCount: Int = 0,
+    isMenuExpanded: Boolean = false,
+    onToggleMenu: ((Boolean) -> Unit)? = null
 ) {
     val progress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
 
@@ -345,10 +347,18 @@ fun LearnHeader(
                             menu()
                         } else {
                             Box {
-                                var expanded by remember { mutableStateOf(false) }
+                                var internalExpanded by remember { mutableStateOf(false) }
+                                val expanded = if (onToggleMenu != null) isMenuExpanded else internalExpanded
+                                val setExpanded: (Boolean) -> Unit = { expandedValue ->
+                                    internalExpanded = expandedValue
+                                    onToggleMenu?.invoke(expandedValue)
+                                }
 
                                 LiquidButton(
-                                    onClick = { expanded = true },
+                                    onClick = {
+                                        performHapticFeedback()
+                                        setExpanded(true)
+                                    },
                                     backgroundColor = navGroupBg,
                                     shape = androidx.compose.foundation.shape.CircleShape,
                                     elevation = 0.dp,
@@ -363,13 +373,14 @@ fun LearnHeader(
 
                                 NemoDropdownMenu(
                                     expanded = expanded,
-                                    onDismissRequest = { expanded = false }
+                                    onDismissRequest = { setExpanded(false) }
                                 ) {
                                     if (onUndo != null && canUndo) {
                                         NemoMenuItem(
                                             text = "撤销上一次评分",
                                             onClick = {
-                                                expanded = false
+                                                performHapticFeedback()
+                                                setExpanded(false)
                                                 onUndo()
                                             },
                                             leadingIcon = Icons.AutoMirrored.Rounded.Undo
@@ -385,7 +396,8 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "评分说明（新学/复习）",
                                             onClick = {
-                                                expanded = false
+                                                performHapticFeedback()
+                                                setExpanded(false)
                                                 onShowRatingGuide()
                                             },
                                             leadingIcon = Icons.Rounded.CheckCircle
@@ -400,7 +412,8 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "暂停此卡片 (Suspend)",
                                             onClick = {
-                                                expanded = false
+                                                performHapticFeedback()
+                                                setExpanded(false)
                                                 onSuspend()
                                             },
                                             leadingIcon = Icons.Rounded.Pause
@@ -408,7 +421,8 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "今日暂缓此项 (Bury)",
                                             onClick = {
-                                                expanded = false
+                                                performHapticFeedback()
+                                                setExpanded(false)
                                                 onBury()
                                             },
                                             leadingIcon = Icons.Rounded.AccessTime
@@ -417,7 +431,8 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "报告条目错误",
                                             onClick = {
-                                                expanded = false
+                                                performHapticFeedback()
+                                                setExpanded(false)
                                                 onReportError()
                                             },
                                             leadingIcon = Icons.Rounded.Report

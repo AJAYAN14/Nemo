@@ -22,6 +22,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.UnsavedChangesDialog
 
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+
 /**
  * 记忆算法配置二级页面 (SRS Memory Algorithm Configuration)
  * 采用与设置主页一致的 Premium 设计风格
@@ -94,6 +96,29 @@ fun AdvancedLearningSettingsScreen(
                         }
                     }) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    Box(modifier = Modifier.padding(end = 12.dp)) {
+                        LiquidButton(
+                            onClick = {
+                                if (hasUnsavedChanges) {
+                                    onSaveAndExit()
+                                }
+                            },
+                            backgroundColor = if (hasUnsavedChanges) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = 0.dp,
+                            isInteractive = hasUnsavedChanges
+                        ) {
+                            Text(
+                                text = "应用",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (hasUnsavedChanges) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -375,31 +400,6 @@ fun AdvancedLearningSettingsScreen(
                 }
             }
 
-            // 4. 保存按钮
-            Button(
-                onClick = {
-                    if (stepsInput.isNotBlank() && relearningStepsInput.isNotBlank()) {
-                         viewModel.onEvent(SettingsEvent.SaveAdvancedLearningSettings(
-                             learningSteps = stepsInput,
-                             relearningSteps = relearningStepsInput,
-                             learnAheadLimit = limitInput.toInt(),
-                             leechThreshold = leechThresholdInput,
-                             leechAction = leechActionInput,
-                             targetRetention = retentionInput.toFloatOrNull() ?: uiState.targetRetention
-                         ))
-                         onNavigateBack()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = accentColor),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-            ) {
-                Text("确认并应用配置", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-            }
-            
             Spacer(modifier = Modifier.height(navigationBarHeight + 16.dp))
         }
     }

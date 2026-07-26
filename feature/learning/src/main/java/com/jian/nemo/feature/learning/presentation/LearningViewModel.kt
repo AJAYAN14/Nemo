@@ -1178,6 +1178,7 @@ class LearningViewModel @Inject constructor(
                 delay(RATING_DEBOUNCE_MS)
 
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 println("评分异常: ${e.message}")
                 _uiState.update {
                     it.copy(

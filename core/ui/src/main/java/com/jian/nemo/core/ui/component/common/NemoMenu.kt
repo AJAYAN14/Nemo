@@ -16,20 +16,32 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.jian.nemo.core.ui.modifier.softCardShadow
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+
 /**
  * Nemo 风格的顶级下拉菜单 (Premium Design)
  *
  * 遵循项目 UI/UX 规范：
- * - 圆角: 16dp (一致性)
- * - 阴影: 12dp (Glassmorphism 质感模拟)
- * - 边框: 极细的 0.5dp 边框增强层级
- * - 配色: 使用 NemoPrimary 与 Surface 语义色
+ * - 圆角: 16dp
+ * - 阴影: 8dp 高质感悬浮阴影
+ * - 边框: 0.5dp 柔和微光感边框
+ * - 配色: 适配深浅模式 Semantic Colors
  *
  * @param expanded 是否展开
  * @param onDismissRequest 关闭回调
@@ -45,8 +57,10 @@ fun NemoDropdownMenu(
     offset: DpOffset = DpOffset(0.dp, 8.dp), // 增加垂直偏移，避免紧贴按钮
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // 容器颜色：使用主题定义的 Surface 颜色 (通常是 NemoSurfaceCard)
-    val containerColor = MaterialTheme.colorScheme.surface
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface
+    // 极致柔和微光边框：浅色 8% 软黑折射，深色 15% 水晶高光
+    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
     val shape = RoundedCornerShape(16.dp)
 
     MaterialTheme(
@@ -58,14 +72,14 @@ fun NemoDropdownMenu(
             modifier = modifier
                 .background(containerColor, shape)
                 .border(
-                    BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)),
+                    BorderStroke(0.5.dp, borderColor),
                     shape
                 )
-                .widthIn(min = 200.dp), // 增加最小宽度，显得更大气
+                .widthIn(min = 200.dp),
             offset = offset,
             containerColor = containerColor,
-            tonalElevation = 0.dp, // 禁用默认 tonal，使用 shadow
-            shadowElevation = 12.dp, // 增强阴影，营造悬浮感
+            tonalElevation = 0.dp,
+            shadowElevation = 8.dp, // 恢复 8dp 系统悬浮立面阴影
             content = content
         )
     }

@@ -244,6 +244,7 @@ class ReviewViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 println("❌ 复习评分异常: ${e.message}")
                 _uiState.update {
                     it.copy(isProcessing = false, error = "评分异常: ${e.message}")
