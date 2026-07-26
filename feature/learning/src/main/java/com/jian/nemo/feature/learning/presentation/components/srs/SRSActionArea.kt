@@ -37,6 +37,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import android.view.HapticFeedbackConstants
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.core.ui.util.SoundEffectPlayer
@@ -65,6 +67,7 @@ fun SRSActionArea(
     val graceMs = 150L
     val context = androidx.compose.ui.platform.LocalContext.current
     val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -182,6 +185,7 @@ fun SRSActionArea(
                         color = colorRose700,
                         containerColor = colorRose100,
                         onClick = { 
+                            view.performHapticFeedback(HapticFeedbackConstants.REJECT)
                             SoundEffectPlayer.playOtherSound(context)
                             onRate(1) 
                         },
@@ -195,6 +199,7 @@ fun SRSActionArea(
                         color = colorOrange600,
                         containerColor = colorOrange50,
                         onClick = { 
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             SoundEffectPlayer.playOtherSound(context)
                             onRate(3) 
                         },
@@ -208,6 +213,7 @@ fun SRSActionArea(
                         color = colorBlue600,
                         containerColor = colorBlue50,
                         onClick = { 
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             SoundEffectPlayer.playGoodSound(context)
                             onRate(4) 
                         },
@@ -221,6 +227,7 @@ fun SRSActionArea(
                         color = colorEmerald600,
                         containerColor = colorEmerald50,
                         onClick = { 
+                            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
                             SoundEffectPlayer.playGoodSound(context)
                             onRate(5) 
                         },
