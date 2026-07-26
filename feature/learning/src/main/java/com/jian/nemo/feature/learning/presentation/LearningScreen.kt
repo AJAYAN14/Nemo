@@ -139,19 +139,11 @@ fun LearningScreen(
                     learningMode = uiState.learningMode,
                     completedCount = uiState.completedToday,
                     dailyGoal = uiState.dailyGoal,
-                    currentIndex = if (uiState.learningMode == LearningMode.Word)
-                        uiState.currentIndex
-                    else
-                        uiState.currentGrammarIndex,
                     totalCount = if (uiState.learningMode == LearningMode.Word)
                         uiState.wordList.size
                     else
                         uiState.grammarList.size,
-                    isNavigating = uiState.isNavigating,
-                    isAnswerShown = uiState.isAnswerShown,
                     onClose = onNavigateBack,
-                    onPrev = { viewModel.onEvent(LearningEvent.NavigatePrev) },
-                    onNext = { viewModel.onEvent(LearningEvent.NavigateNext) },
                     onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
                     onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
                     onShowRatingGuide = { showRatingGuide = true },

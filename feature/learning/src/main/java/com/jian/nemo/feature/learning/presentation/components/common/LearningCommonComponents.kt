@@ -21,7 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+
 import androidx.compose.material.icons.automirrored.rounded.Undo
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -34,6 +34,7 @@ import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.SettingsBrightness
 import androidx.compose.material.icons.rounded.Edit
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,6 +56,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -144,13 +148,8 @@ fun LearnHeader(
     learningMode: LearningMode,
     completedCount: Int,
     dailyGoal: Int,
-    currentIndex: Int,
     totalCount: Int,
-    isNavigating: Boolean = false,
-    isAnswerShown: Boolean = false,
     onClose: () -> Unit,
-    onPrev: () -> Unit,
-    onNext: () -> Unit,
     onSuspend: () -> Unit,
     onBury: () -> Unit,
     onReportError: () -> Unit,
@@ -237,13 +236,18 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    // MD3: 使用 IconButton，标准触摸目标 48dp × 48dp
-                    IconButton(
+                    LiquidButton(
                         onClick = onClose,
-                        modifier = Modifier.size(48.dp)
+                        backgroundColor = navGroupBg,
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        elevation = 0.dp,
+                        isInteractive = true,
+                        modifier = Modifier
+                            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                            .size(44.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
                             contentDescription = "返回",
                             tint = contentColor
                         )
@@ -273,70 +277,36 @@ fun LearnHeader(
                         LiquidButton(
                             onClick = {},
                             backgroundColor = navGroupBg,
-                            shape = RoundedCornerShape(16.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
                             elevation = 0.dp,
-                            isInteractive = false
+                            isInteractive = true,
+                            modifier = Modifier
+                                .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                                .height(44.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                // Prev Button
-                                val canGoPrev = currentIndex > 0 && !isNavigating && !isAnswerShown
-                                LiquidButton(
-                                    onClick = {
-                                        if (canGoPrev) {
-                                            performHapticFeedback()
-                                            onPrev()
-                                        }
-                                    },
-                                    backgroundColor = Color.Transparent,
-                                    shape = androidx.compose.foundation.shape.CircleShape,
-                                    elevation = 0.dp,
-                                    isInteractive = canGoPrev,
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                        contentDescription = "上一个",
-                                        tint = contentColor.copy(alpha = if (canGoPrev) 1f else 0.38f),
-                                        modifier = Modifier.size(24.dp)
+                            val annotatedText = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = contentColor.copy(alpha = 0.6f),
+                                        fontWeight = FontWeight.Medium
                                     )
+                                ) {
+                                    append("剩余 ")
                                 }
-
-                                // Count Text
-                                Text(
-                                    text = "剩余 $remainingCount",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = contentColor.copy(alpha = 0.6f),
-                                    fontWeight = FontWeight.Medium,
-                                    modifier = Modifier.padding(horizontal = 10.dp)
-                                )
-
-                                // Next Button
-                                val canGoNext = currentIndex < totalCount - 1 && !isNavigating && !isAnswerShown
-                                LiquidButton(
-                                    onClick = {
-                                        if (canGoNext) {
-                                            performHapticFeedback()
-                                            onNext()
-                                        }
-                                    },
-                                    backgroundColor = Color.Transparent,
-                                    shape = androidx.compose.foundation.shape.CircleShape,
-                                    elevation = 0.dp,
-                                    isInteractive = canGoNext,
-                                    modifier = Modifier.size(40.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                        contentDescription = "下一个",
-                                        tint = contentColor.copy(alpha = if (canGoNext) 1f else 0.38f),
-                                        modifier = Modifier.size(24.dp)
+                                withStyle(
+                                    style = SpanStyle(
+                                        color = contentColor.copy(alpha = 0.95f),
+                                        fontWeight = FontWeight.Bold
                                     )
+                                ) {
+                                    append("$remainingCount")
                                 }
                             }
+                            Text(
+                                text = annotatedText,
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
                         }
                     }
 
@@ -362,7 +332,9 @@ fun LearnHeader(
                                     backgroundColor = navGroupBg,
                                     shape = androidx.compose.foundation.shape.CircleShape,
                                     elevation = 0.dp,
-                                    modifier = Modifier.size(44.dp)
+                                    modifier = Modifier
+                                        .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                                        .size(44.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.MoreVert,
