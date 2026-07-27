@@ -145,6 +145,7 @@ interface WordDao {
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
         WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
+        AND (s.type IS NULL OR s.type = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND w.is_delisted = 0
@@ -169,6 +170,7 @@ interface WordDao {
         SELECT w.* FROM words w
         LEFT JOIN word_study_states s ON w.id = s.word_id
         WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
+        AND (s.type IS NULL OR s.type = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND w.is_delisted = 0
@@ -184,6 +186,20 @@ interface WordDao {
             RANDOM()
     """)
     fun getGlobalNewWordsRandom(): Flow<List<WordEntity>>
+
+    /**
+     * 获取学习中/重学中的单词 (type 为 1 或 3，且未毕业)
+     */
+    @Query("""
+        SELECT w.* FROM words w
+        JOIN word_study_states s ON w.id = s.word_id
+        WHERE s.type IN (1, 3)
+        AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY s.last_modified_time ASC
+    """)
+    fun getLearningWords(): Flow<List<WordEntity>>
 
     /**
      * 获取到期复习单词

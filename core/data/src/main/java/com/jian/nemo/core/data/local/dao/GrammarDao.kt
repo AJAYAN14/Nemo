@@ -148,6 +148,7 @@ interface GrammarDao {
         SELECT g.* FROM grammars g
         LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
         WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
+        AND (s.type IS NULL OR s.type = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND g.is_delisted = 0
@@ -173,6 +174,7 @@ interface GrammarDao {
         SELECT g.* FROM grammars g
         LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
         WHERE (s.repetition_count IS NULL OR s.repetition_count = 0)
+        AND (s.type IS NULL OR s.type = 0)
         AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
         AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
         AND g.is_delisted = 0
@@ -188,6 +190,21 @@ interface GrammarDao {
             RANDOM()
     """)
     fun getGlobalNewGrammarsWithUsagesRandom(): Flow<List<GrammarWithUsages>>
+
+    /**
+     * 获取学习中/重学中的语法 (type 为 1 或 3，且未毕业)
+     */
+    @Transaction
+    @Query("""
+        SELECT g.* FROM grammars g
+        JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE s.type IN (1, 3)
+        AND (s.is_skipped = 0 OR s.is_skipped IS NULL)
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        ORDER BY s.last_modified_time ASC
+    """)
+    fun getLearningGrammarsWithUsages(): Flow<List<GrammarWithUsages>>
 
     @Transaction
     @Query("""

@@ -80,6 +80,15 @@ class GrammarRepositoryImpl @Inject constructor(
         return getDueGrammars(today).map { it.size }
     }
 
+    override fun getLearningGrammars(): Flow<List<Grammar>> {
+        return grammarDao.getLearningGrammarsWithUsages()
+            .map { it.toDomainModels().filter { g -> !g.isDelisted() } }
+            .catch { e ->
+                println("❌ 获取学习中语法失败: error=${e.message}")
+                emit(emptyList())
+            }
+    }
+
     override fun getSkippedGrammars(limit: Int): Flow<List<Grammar>> {
         return grammarDao.getSkippedGrammarsWithUsages(limit)
             .map { it.toDomainModels() }

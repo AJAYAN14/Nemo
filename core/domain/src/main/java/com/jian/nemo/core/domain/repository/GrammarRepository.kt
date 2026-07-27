@@ -50,6 +50,11 @@ interface GrammarRepository {
     fun getDueGrammars(today: Long): Flow<List<Grammar>>
 
     /**
+     * 获取处于学习中/重学中（未毕业）的语法
+     */
+    fun getLearningGrammars(): Flow<List<Grammar>>
+
+    /**
      * 获取今日首次学习的语法
      */
     fun getTodayLearnedGrammars(today: Long): Flow<List<Grammar>>

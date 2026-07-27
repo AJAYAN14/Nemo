@@ -94,6 +94,16 @@ class WordRepositoryImpl @Inject constructor(
         return getDueWords(today).map { it.size }
     }
 
+    override fun getLearningWords(): Flow<List<Word>> {
+        return wordDao.getLearningWords()
+            .map { entities ->
+                mapWithStudyState(entities).filter { w -> !w.isDelisted() }
+            }
+            .catch { e ->
+                emit(emptyList())
+            }.flowOn(kotlinx.coroutines.Dispatchers.IO)
+    }
+
     override fun getTodayLearnedWords(today: Long): Flow<List<Word>> {
         return wordDao.getTodayLearnedWords(today)
             .map { entities ->

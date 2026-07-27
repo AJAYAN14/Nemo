@@ -13,10 +13,12 @@ import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.service.SrsCalculator
 import com.jian.nemo.core.domain.usecase.grammar.GetDueGrammarsUseCase
+import com.jian.nemo.core.domain.usecase.grammar.GetLearningGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetNewGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetTodayLearnedGrammarsCountUseCase
 import com.jian.nemo.core.domain.usecase.grammar.UpdateGrammarUseCase
 import com.jian.nemo.core.domain.usecase.word.GetDueWordsUseCase
+import com.jian.nemo.core.domain.usecase.word.GetLearningWordsUseCase
 import com.jian.nemo.core.domain.usecase.word.GetNewWordsUseCase
 import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
@@ -65,11 +67,13 @@ class LearningViewModel @Inject constructor(
     // Word UseCases
     private val getNewWordsUseCase: GetNewWordsUseCase,
     private val getDueWordsUseCase: GetDueWordsUseCase,
+    private val getLearningWordsUseCase: GetLearningWordsUseCase,
     private val updateWordUseCase: UpdateWordUseCase,
     private val getTodayLearnedWordsCountUseCase: GetTodayLearnedWordsCountUseCase,
     // Grammar UseCases
     private val getNewGrammarsUseCase: GetNewGrammarsUseCase,
     private val getDueGrammarsUseCase: GetDueGrammarsUseCase,
+    private val getLearningGrammarsUseCase: GetLearningGrammarsUseCase,
     private val updateGrammarUseCase: UpdateGrammarUseCase,
     private val getTodayLearnedGrammarsCountUseCase: GetTodayLearnedGrammarsCountUseCase,
     // Repositories
@@ -667,6 +671,10 @@ class LearningViewModel @Inject constructor(
                 val r = getNewWordsUseCase(isRandom).first { it !is Result.Loading }
                 if (r is Result.Success) r.data else emptyList()
             },
+            getLearningItems = {
+                val r = getLearningWordsUseCase().first { it !is Result.Loading }
+                if (r is Result.Success) r.data else emptyList()
+            },
             getItemId = { it.id },
             filterByLevel = { true }, // 全局进阶不再按等级过滤
             isItemNew = { it.repetitionCount == 0 }
@@ -691,6 +699,10 @@ class LearningViewModel @Inject constructor(
             getNewItems = {
                 val isRandom = settingsRepository.isRandomNewContentEnabledFlow.first()
                 val r = getNewGrammarsUseCase(isRandom).first { it !is Result.Loading }
+                if (r is Result.Success) r.data else emptyList()
+            },
+            getLearningItems = {
+                val r = getLearningGrammarsUseCase().first { it !is Result.Loading }
                 if (r is Result.Success) r.data else emptyList()
             },
             getItemId = { it.id },

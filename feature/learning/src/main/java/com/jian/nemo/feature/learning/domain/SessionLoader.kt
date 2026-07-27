@@ -90,6 +90,7 @@ class SessionLoader @Inject constructor(
         getItemsByIds: suspend (List<Int>) -> List<T>,
         getDueItems: suspend () -> List<T>,
         getNewItems: suspend () -> List<T>,
+        getLearningItems: (suspend () -> List<T>)? = null,
         getItemId: (T) -> Int,
         filterByLevel: (T) -> Boolean,
         isItemNew: (T) -> Boolean // 新增：判断是否为新词
@@ -156,9 +157,10 @@ class SessionLoader @Inject constructor(
             }
         }
 
-        // 2. 获取到期复习项
+        // 2. 获取到期复习项与跨天学习中项
+        val learningItems = getLearningItems?.invoke() ?: emptyList()
         val allDueItems = getDueItems()
-        val dueItems = allDueItems // 不再按等级过滤复习项，全量复习
+        val dueItems = learningItems + allDueItems // 学习中项与复习项合并
         val dueCount = dueItems.size
 
         // 3. 计算新项配额（当前策略：不减载）
@@ -166,10 +168,10 @@ class SessionLoader @Inject constructor(
         val adjustedQuota = learningSessionPolicy.calculateAdjustedNewQuota(rawRemainingQuota, dueCount)
 
         // [Debug Log]
-        println("📊 会话规划: 目标=$dailyGoal, 已学=$completedToday, 复习堆积=$dueCount")
+        println("📊 会话规划: 目标=$dailyGoal, 已学=$completedToday, 学习中=$learningItems.size, 复习堆积=${allDueItems.size}")
         println("   -> 新词配额=$adjustedQuota")
 
-        // 4. 如果调整后配额为0且无复习项，则会话完成
+        // 4. 如果调整后配额为0且无复习项与学习中项，则会话完成
         if (adjustedQuota == 0 && dueItems.isEmpty()) {
             return SessionLoadResult.Completed(
                 dailyGoal = dailyGoal,

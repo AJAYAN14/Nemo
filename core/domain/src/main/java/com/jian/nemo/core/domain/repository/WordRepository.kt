@@ -43,6 +43,11 @@ interface WordRepository {
     fun getDueWordsCount(today: Long): Flow<Int>
 
     /**
+     * 获取处于学习中/重学中（未毕业）的单词
+     */
+    fun getLearningWords(): Flow<List<Word>>
+
+    /**
      * 获取今日首次学习的单词
      */
     fun getTodayLearnedWords(today: Long): Flow<List<Word>>
