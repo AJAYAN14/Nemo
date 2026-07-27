@@ -456,7 +456,12 @@ class SettingsViewModel @Inject constructor(
     private fun setDailyGoal(goal: Int) {
         viewModelScope.launch {
             settingsRepository.setDailyGoal(goal)
-            _uiState.update { it.copy(showDailyGoalDialog = false) }
+            _uiState.update { 
+                it.copy(
+                    showDailyGoalDialog = false,
+                    toastMessage = "每日目标已更新，将在下一个学习日生效"
+                ) 
+            }
         }
     }
 
@@ -466,7 +471,12 @@ class SettingsViewModel @Inject constructor(
     private fun setGrammarDailyGoal(goal: Int) {
         viewModelScope.launch {
             settingsRepository.setGrammarDailyGoal(goal)
-            _uiState.update { it.copy(showGrammarDailyGoalDialog = false) }
+            _uiState.update { 
+                it.copy(
+                    showGrammarDailyGoalDialog = false,
+                    toastMessage = "每日语法目标已更新，将在下一个学习日生效"
+                ) 
+            }
         }
     }
 

@@ -173,23 +173,19 @@ class LearningViewModel @Inject constructor(
 
         // 监听设置变化
         viewModelScope.launch {
-            // 监听每日目标变化 - 豁免机制 (Hot-swap)
-            // 设计文档 7.4: 学习中途改了每日目标会怎样？
-            // 不强制结束当前会话，只更新目标并提示
+            // 监听每日目标变化 (新目标将在下个学习日新会话生效，中途修改不干预当前会话)
             launch {
                 settingsRepository.dailyGoalFlow.distinctUntilChanged().collect { newGoal ->
-                    val state = _uiState.value
-                    if (state.learningMode == LearningMode.Word && state.status == LearningStatus.Learning) {
-                        handleDailyGoalChange(newGoal)
+                    if (_uiState.value.learningMode == LearningMode.Word && _uiState.value.status != LearningStatus.Learning) {
+                        _uiState.update { it.copy(dailyGoal = newGoal) }
                     }
                 }
             }
 
             launch {
                 settingsRepository.grammarDailyGoalFlow.distinctUntilChanged().collect { newGoal ->
-                    val state = _uiState.value
-                    if (state.learningMode == LearningMode.Grammar && state.status == LearningStatus.Learning) {
-                        handleDailyGoalChange(newGoal)
+                    if (_uiState.value.learningMode == LearningMode.Grammar && _uiState.value.status != LearningStatus.Learning) {
+                        _uiState.update { it.copy(dailyGoal = newGoal) }
                     }
                 }
             }
@@ -288,34 +284,10 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 处理每日目标变化 - 豁免机制 (Hot-swap)
+     * 处理每日目标变化 (新目标将在下个学习日或下一次新建会话时生效)
      */
     private fun handleDailyGoalChange(newGoal: Int) {
-        val state = _uiState.value
-        val completedToday = state.completedToday
-
         _uiState.update { it.copy(dailyGoal = newGoal) }
-
-        if (state.status == LearningStatus.Learning || state.status == LearningStatus.Waiting) {
-            println("每日目标变更 ($newGoal)，正在触发热重载以同步队列...")
-            
-            // 1. 立即保存当前进度到 DataStore，确保重载时能恢复到当前位置
-            saveSessionState(
-                ids = if (state.learningMode == LearningMode.Word) state.wordList.map { it.id } else state.grammarList.map { it.id },
-                index = state.currentIndex,
-                level = state.selectedLevel
-            )
-
-            // 2. 重新触发启动逻辑（利用 SessionLoader 的恢复模式进行动态裁剪）
-            startLearning()
-        }
-
-        if (completedToday >= newGoal) {
-            println("豁免机制: 目标改为 $newGoal，已学 $completedToday，今日已达标")
-            _uiState.update {
-                it.copy(error = "今日目标已达标！可继续学习或退出")
-            }
-        }
     }
 
     /**

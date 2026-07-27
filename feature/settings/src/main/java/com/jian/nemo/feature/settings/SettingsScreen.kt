@@ -425,6 +425,7 @@ fun SettingsScreen(
             visible = snackbarVisible,
             message = snackbarMessage,
             type = snackbarType,
+            autoDismissMs = 2000L,
             onDismiss = { snackbarVisible = false },
             modifier = Modifier
                 .align(Alignment.TopCenter)

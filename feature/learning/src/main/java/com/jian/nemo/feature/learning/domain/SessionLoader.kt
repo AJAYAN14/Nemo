@@ -105,41 +105,14 @@ class SessionLoader @Inject constructor(
             val itemMap = allItems.associateBy { getItemId(it) }
             val restoredItems = ids.mapNotNull { itemMap[it] }
 
-            // 恢复已保存的会话队列：全量保留已保存的卡片（支持常规中途恢复与加餐恢复）
+            // 恢复已保存的会话队列：全量保留已保存的卡片，不受中途目标修改干扰
             val prunedItems = restoredItems.toMutableList()
-
-            // 计算如果用户在中途调大了每日目标，是否需要补货新词
-            val remainingNewQuota = (dailyGoal - completedToday).coerceAtLeast(0)
-            val existingNewCountInSession = restoredItems.drop(index).count { isItemNew(it) }
-            val newItemsRemaining = remainingNewQuota - existingNewCountInSession
 
             // 确保恢复后的列表不为空，且索引有效
             if (prunedItems.isNotEmpty() && index < prunedItems.size) {
-                
-                // 如果目标调大且配额还有剩余，动态补货
-                val finalItems: List<T> = if (newItemsRemaining > 0) {
-                    println("📦 热重载补货: 发现配额缺口 $newItemsRemaining，正在从词库抓取新词...")
-                    val supplementalNewItems = getNewItems()
-                    val existingIds = prunedItems.map { getItemId(it) }.toSet()
-                    
-                    // 过滤掉已经在队列里的，取前 N 个
-                    val newSupplement = supplementalNewItems
-                        .filter { getItemId(it) !in existingIds }
-                        .take(newItemsRemaining)
-                    
-                    if (newSupplement.isNotEmpty()) {
-                        println("✅ 补货成功: 增加了 ${newSupplement.size} 个新词")
-                        prunedItems + newSupplement
-                    } else {
-                        prunedItems
-                    }
-                } else {
-                    prunedItems
-                }
-
-                println("✅ 恢复并同步学习会话: Index $index / ${finalItems.size} (目标: $dailyGoal)")
+                println("✅ 恢复学习会话: Index $index / ${prunedItems.size} (会话卡片数: ${prunedItems.size})")
                 return SessionLoadResult.Restored(
-                    items = finalItems,
+                    items = prunedItems,
                     index = index,
                     steps = steps,
                     dailyGoal = dailyGoal,
@@ -148,8 +121,7 @@ class SessionLoader @Inject constructor(
                     isAnswerShown = savedSession.isAnswerShown
                 )
             } else if (prunedItems.isNotEmpty() && index >= prunedItems.size) {
-                // 边界情况：如果当前索引因为裁剪而变为了最后一个之后，说明任务已完成
-                println("🏁 目标缩减导致会话提前完成")
+                println("🏁 会话已完成")
                 return SessionLoadResult.Completed(
                     dailyGoal = dailyGoal,
                     completedToday = completedToday
