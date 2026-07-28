@@ -1279,18 +1279,12 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override val autoRevealAnswerMsFlow: Flow<Long> = dataStore.data
         .map { preferences ->
-            when (val ms = preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] ?: 5000L) {
-                5000L, 6000L, 7000L, 8000L, 9000L, 10000L -> ms
-                else -> 5000L
-            }
+            (preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] ?: 5000L).coerceIn(1000L, 20000L)
         }
 
     override suspend fun setAutoRevealAnswerMs(ms: Long) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] = when (ms) {
-                5000L, 6000L, 7000L, 8000L, 9000L, 10000L -> ms
-                else -> 5000L
-            }
+            preferences[PreferencesKeys.AUTO_REVEAL_ANSWER_MS] = ms.coerceIn(1000L, 20000L)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
@@ -1307,18 +1301,12 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override val grammarAutoRevealAnswerMsFlow: Flow<Long> = dataStore.data
         .map { preferences ->
-            when (val ms = preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] ?: 10000L) {
-                10000L, 11000L, 12000L, 13000L, 14000L, 15000L -> ms
-                else -> 10000L
-            }
+            (preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] ?: 10000L).coerceIn(1000L, 20000L)
         }
 
     override suspend fun setGrammarAutoRevealAnswerMs(ms: Long) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] = when (ms) {
-                10000L, 11000L, 12000L, 13000L, 14000L, 15000L -> ms
-                else -> 10000L
-            }
+            preferences[PreferencesKeys.GRAMMAR_AUTO_REVEAL_ANSWER_MS] = ms.coerceIn(1000L, 20000L)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
@@ -1335,18 +1323,12 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override val showAnswerDelayMsFlow: Flow<Long> = dataStore.data
         .map { preferences ->
-            when (preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L) {
-                2000L, 3000L, 4000L, 5000L -> preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L
-                else -> 5000L
-            }
+            (preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L).coerceIn(1000L, 20000L)
         }
 
     override suspend fun setShowAnswerDelayMs(ms: Long) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] = when (ms) {
-                2000L, 3000L, 4000L, 5000L -> ms
-                else -> 5000L
-            }
+            preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] = ms.coerceIn(1000L, 20000L)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
