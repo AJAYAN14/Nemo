@@ -27,6 +27,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
+import com.jian.nemo.feature.settings.components.ChineseVoiceSelectionBottomSheet
 import com.jian.nemo.feature.settings.components.VoiceSelectionBottomSheet
 import java.util.Locale
 
@@ -71,14 +72,24 @@ fun TtsSettingsScreen(
             SettingsSectionTitle("语音来源")
 
             PremiumCard {
-                SquircleSettingItem(
-                    title = "选择语音",
-                    subtitle = uiState.ttsVoiceName ?: "系统默认",
-                    icon = Icons.Rounded.RecordVoiceOver,
-                    iconColor = IosColors.Red,
-                    onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
-                    showDivider = false
-                )
+                Column {
+                    SquircleSettingItem(
+                        title = "选择日语语音",
+                        subtitle = uiState.ttsVoiceName ?: "系统默认",
+                        icon = Icons.Rounded.RecordVoiceOver,
+                        iconColor = IosColors.Red,
+                        onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
+                        showDivider = true
+                    )
+                    SquircleSettingItem(
+                        title = "选择中文语音",
+                        subtitle = uiState.ttsChineseVoiceName ?: "系统默认",
+                        icon = Icons.Rounded.RecordVoiceOver,
+                        iconColor = IosColors.Orange,
+                        onClick = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(true)) },
+                        showDivider = false
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -140,15 +151,33 @@ fun TtsSettingsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // 试听按钮 - Flat UI 风格
-                    FlatPrimaryButton(
-                        text = "试听 (日语)",
-                        icon = Icons.Rounded.PlayArrow,
-                        color = accentColor,
-                        onClick = {
-                            viewModel.onEvent(SettingsEvent.PreviewTts("これは音声テストです。"))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            // 试听按钮 (日语)
+                            FlatPrimaryButton(
+                                text = "试听 (日语)",
+                                icon = Icons.Rounded.PlayArrow,
+                                color = accentColor,
+                                onClick = {
+                                    viewModel.onEvent(SettingsEvent.PreviewTts("これは音声テストです。"))
+                                }
+                            )
                         }
-                    )
+                        Box(modifier = Modifier.weight(1f)) {
+                            // 试听按钮 (中文)
+                            FlatPrimaryButton(
+                                text = "试听 (中文)",
+                                icon = Icons.Rounded.PlayArrow,
+                                color = IosColors.Orange,
+                                onClick = {
+                                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(uiState.ttsChineseVoiceName ?: "", "这是中文语音测试。"))
+                                }
+                            )
+                        }
+                    }
 
                     // 重置按钮 - 文字按钮
                     FlatTextButton(
@@ -165,7 +194,7 @@ fun TtsSettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // 语音选择 BottomSheet
+        // 日语语音选择 BottomSheet
         if (uiState.showVoiceSelectionDialog) {
             VoiceSelectionBottomSheet(
                 currentVoiceName = uiState.ttsVoiceName,
@@ -180,6 +209,24 @@ fun TtsSettingsScreen(
                 },
                 isLoading = uiState.isLoadingVoices,
                 previewingVoiceName = uiState.previewingVoiceName
+            )
+        }
+
+        // 中文语音选择 BottomSheet
+        if (uiState.showChineseVoiceSelectionDialog) {
+            ChineseVoiceSelectionBottomSheet(
+                currentVoiceName = uiState.ttsChineseVoiceName,
+                voices = uiState.availableChineseVoices,
+                onDismiss = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(false)) },
+                onVoiceSelected = { voiceName ->
+                    viewModel.onEvent(SettingsEvent.SetTtsChineseVoiceName(voiceName))
+                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, "这是中文语音测试。"))
+                },
+                onPreviewVoice = { voiceName ->
+                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, "这是中文语音测试。"))
+                },
+                isLoading = uiState.isLoadingVoices,
+                previewingVoiceName = uiState.previewingChineseVoiceName
             )
         }
     }

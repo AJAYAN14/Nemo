@@ -61,10 +61,14 @@ class AudioRepositoryImpl @Inject constructor(
         return ttsManager.getVoices()
     }
 
-    override suspend fun previewVoice(voiceName: String, text: String) {
+    override fun getAvailableChineseVoices(): List<com.jian.nemo.core.domain.model.TtsVoice> {
+        return ttsManager.getChineseVoices()
+    }
+
+    override suspend fun previewVoice(voiceName: String, text: String, language: java.util.Locale) {
         ttsManager.initialize()
         // Temporarily set voice and speak (does not persist to settings)
         ttsManager.setVoice(voiceName)
-        ttsManager.speak(text, java.util.Locale.JAPAN, id = "preview-${System.currentTimeMillis()}")
+        ttsManager.speak(text, language, id = "preview-${System.currentTimeMillis()}")
     }
 }

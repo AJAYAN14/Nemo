@@ -38,14 +38,19 @@ interface AudioRepository {
     fun release()
 
     /**
-     * 获取可用语音列表 (当前语言)
+     * 获取可用语音列表 (日语)
      */
     fun getAvailableVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
 
     /**
+     * 获取可用语音列表 (中文)
+     */
+    fun getAvailableChineseVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
+
+    /**
      * 预览指定语音（不保存设置，仅临时切换并播放）
      */
-    suspend fun previewVoice(voiceName: String, text: String)
+    suspend fun previewVoice(voiceName: String, text: String, language: java.util.Locale = java.util.Locale.JAPAN)
 }
 
 sealed interface TtsEvent {

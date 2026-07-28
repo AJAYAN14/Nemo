@@ -45,7 +45,7 @@ data class SettingsUiState(
     val appVersion: String = "1.0.0",
 
 
-    // TTS 设置
+    // TTS 设置 (日语)
     val ttsSpeechRate: Float = 1.0f,
     val ttsPitch: Float = 1.0f,
     val ttsVoiceName: String? = null,
@@ -53,6 +53,12 @@ data class SettingsUiState(
     val showVoiceSelectionDialog: Boolean = false,
     val isLoadingVoices: Boolean = false,       // 语音列表加载中
     val previewingVoiceName: String? = null,    // 当前正在试听的语音名称
+
+    // TTS 设置 (中文)
+    val ttsChineseVoiceName: String? = null,
+    val availableChineseVoices: List<com.jian.nemo.core.domain.model.TtsVoice> = emptyList(),
+    val showChineseVoiceSelectionDialog: Boolean = false,
+    val previewingChineseVoiceName: String? = null,
 
     // 加载状态
     val isLoading: Boolean = false,
@@ -135,8 +141,11 @@ sealed interface SettingsEvent {
     data class SetTtsPitch(val pitch: Float) : SettingsEvent
     data class SetTtsVoiceName(val voiceName: String) : SettingsEvent
     data class ShowVoiceSelectionDialog(val show: Boolean) : SettingsEvent
+    data class SetTtsChineseVoiceName(val voiceName: String) : SettingsEvent
+    data class ShowChineseVoiceSelectionDialog(val show: Boolean) : SettingsEvent
     data class PreviewTts(val text: String) : SettingsEvent
     data class PreviewVoice(val voiceName: String, val text: String) : SettingsEvent
+    data class PreviewChineseVoice(val voiceName: String, val text: String) : SettingsEvent
 
     // 弹窗控制
     data class ShowDailyGoalDialog(val show: Boolean) : SettingsEvent

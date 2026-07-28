@@ -93,7 +93,8 @@ class SettingsViewModel @Inject constructor(
         // 加载可用语音列表
         viewModelScope.launch {
             val voices = audioRepository.getAvailableVoices()
-            _uiState.update { it.copy(availableVoices = voices) }
+            val chineseVoices = audioRepository.getAvailableChineseVoices()
+            _uiState.update { it.copy(availableVoices = voices, availableChineseVoices = chineseVoices) }
         }
     }
 
@@ -146,8 +147,12 @@ class SettingsViewModel @Inject constructor(
             val ttsFlow = combine(
                 settingsRepository.ttsSpeechRateFlow,
                 settingsRepository.ttsPitchFlow,
-                settingsRepository.ttsVoiceNameFlow
-            ) { rate, pitch, voiceName -> Triple(rate, pitch, voiceName) }
+                settingsRepository.ttsVoiceNameFlow,
+                settingsRepository.ttsChineseVoiceNameFlow
+            ) { rate, pitch, voiceName, chineseVoiceName ->
+                data class TtsSettingsSnapshot(val rate: Float, val pitch: Float, val voiceName: String?, val chineseVoiceName: String?)
+                TtsSettingsSnapshot(rate, pitch, voiceName, chineseVoiceName)
+            }
 
             combine(
                 appearanceFlow,
@@ -156,7 +161,6 @@ class SettingsViewModel @Inject constructor(
                 ttsFlow
             ) { theme, goals, advanced, tts ->
                 val (dailyGoal, grammarDailyGoal, defaultBonusBatchSize, resetHour, isRandom) = goals
-                val (rate, pitch, voiceName) = tts
                 _uiState.update { state ->
                     state.copy(
                         darkMode = when (theme.darkMode) {
@@ -183,9 +187,10 @@ class SettingsViewModel @Inject constructor(
                         leechThreshold = advanced.leechThreshold,
                         leechAction = advanced.leechAction,
                         targetRetention = advanced.targetRetention,
-                        ttsSpeechRate = rate,
-                        ttsPitch = pitch,
-                        ttsVoiceName = voiceName,
+                        ttsSpeechRate = tts.rate,
+                        ttsPitch = tts.pitch,
+                        ttsVoiceName = tts.voiceName,
+                        ttsChineseVoiceName = tts.chineseVoiceName,
                         isLoading = false
                     )
                 }
@@ -229,8 +234,11 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetTtsPitch -> setTtsPitch(event.pitch)
             is SettingsEvent.SetTtsVoiceName -> setTtsVoiceName(event.voiceName)
             is SettingsEvent.ShowVoiceSelectionDialog -> _uiState.update { it.copy(showVoiceSelectionDialog = event.show) }
+            is SettingsEvent.SetTtsChineseVoiceName -> setTtsChineseVoiceName(event.voiceName)
+            is SettingsEvent.ShowChineseVoiceSelectionDialog -> _uiState.update { it.copy(showChineseVoiceSelectionDialog = event.show) }
             is SettingsEvent.PreviewTts -> previewTts(event.text)
-            is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text)
+            is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.JAPAN)
+            is SettingsEvent.PreviewChineseVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.CHINA)
 
 
             is SettingsEvent.RequestExport -> requestExport()
@@ -624,6 +632,13 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    private fun setTtsChineseVoiceName(voiceName: String) {
+        viewModelScope.launch {
+            settingsRepository.setTtsChineseVoiceName(voiceName)
+            _uiState.update { it.copy(showChineseVoiceSelectionDialog = false) }
+        }
+    }
+
     private fun previewTts(text: String) {
         val id = System.currentTimeMillis().toString()
         playTtsUseCase(text, "ja-JP", id)
@@ -632,11 +647,15 @@ class SettingsViewModel @Inject constructor(
     /**
      * 预览指定语音（不保存设置）
      */
-    private fun previewVoiceWithName(voiceName: String, text: String) {
+    private fun previewVoiceWithName(voiceName: String, text: String, language: java.util.Locale = java.util.Locale.JAPAN) {
         // Use audio repository to temporarily set voice and play
         viewModelScope.launch {
-            _uiState.update { it.copy(previewingVoiceName = voiceName) }
-            audioRepository.previewVoice(voiceName, text)
+            if (language == java.util.Locale.CHINA) {
+                _uiState.update { it.copy(previewingChineseVoiceName = voiceName) }
+            } else {
+                _uiState.update { it.copy(previewingVoiceName = voiceName) }
+            }
+            audioRepository.previewVoice(voiceName, text, language)
         }
     }
 

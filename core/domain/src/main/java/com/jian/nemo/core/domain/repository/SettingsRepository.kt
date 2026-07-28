@@ -498,9 +498,13 @@ interface SettingsRepository {
     val ttsPitchFlow: Flow<Float>
     suspend fun setTtsPitch(pitch: Float)
 
-    /** 朗读语音名称 (Locale + Name) 默认: null */
+    /** 朗读语音名称 (日语) 默认: null */
     val ttsVoiceNameFlow: Flow<String?>
     suspend fun setTtsVoiceName(voiceName: String?)
+
+    /** 朗读语音名称 (中文) 默认: null */
+    val ttsChineseVoiceNameFlow: Flow<String?>
+    suspend fun setTtsChineseVoiceName(voiceName: String?)
 
     /** 翻面自动朗读开关Flow 默认: false */
     val isAutoPlayAudioEnabledFlow: Flow<Boolean>

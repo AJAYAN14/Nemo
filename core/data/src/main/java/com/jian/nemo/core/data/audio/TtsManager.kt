@@ -58,6 +58,8 @@ class TtsManager @Inject constructor(
 
     private var currentSpeechRate: Float = 1.0f
     private var currentPitch: Float = 1.0f
+    private var savedJapaneseVoiceName: String? = null
+    private var savedChineseVoiceName: String? = null
 
     // TTS 状态事件流
     private val _events = MutableSharedFlow<TtsEvent>(replay = 1, extraBufferCapacity = 1)
@@ -65,6 +67,37 @@ class TtsManager @Inject constructor(
 
     init {
         observeSettings()
+    }
+
+    private fun observeSettings() {
+        scope.launch {
+            settingsRepository.ttsSpeechRateFlow.collect { rate ->
+                currentSpeechRate = rate
+                tts?.setSpeechRate(rate)
+            }
+        }
+
+        scope.launch {
+            settingsRepository.ttsPitchFlow.collect { pitch ->
+                currentPitch = pitch
+                tts?.setPitch(pitch)
+            }
+        }
+
+        scope.launch {
+            settingsRepository.ttsVoiceNameFlow.collect { voiceName ->
+                savedJapaneseVoiceName = voiceName
+                if (voiceName != null) {
+                    setVoice(voiceName)
+                }
+            }
+        }
+
+        scope.launch {
+            settingsRepository.ttsChineseVoiceNameFlow.collect { voiceName ->
+                savedChineseVoiceName = voiceName
+            }
+        }
     }
 
     suspend fun initialize() {
@@ -116,29 +149,7 @@ class TtsManager @Inject constructor(
         }
     }
 
-    private fun observeSettings() {
-        scope.launch {
-            settingsRepository.ttsSpeechRateFlow.collect { rate ->
-                currentSpeechRate = rate
-                tts?.setSpeechRate(rate)
-            }
-        }
 
-        scope.launch {
-            settingsRepository.ttsPitchFlow.collect { pitch ->
-                currentPitch = pitch
-                tts?.setPitch(pitch)
-            }
-        }
-
-        scope.launch {
-            settingsRepository.ttsVoiceNameFlow.collect { voiceName ->
-                if (voiceName != null) {
-                    setVoice(voiceName)
-                }
-            }
-        }
-    }
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
@@ -153,12 +164,16 @@ class TtsManager @Inject constructor(
                 isInitialized = true
                 isInitializing = false
 
-                // Initialize with saved voice if available
+                // Initialize with saved voices if available
                 scope.launch {
                     try {
-                        val savedVoiceName = settingsRepository.ttsVoiceNameFlow.first()
-                        if (!savedVoiceName.isNullOrBlank()) {
-                            setVoice(savedVoiceName)
+                        val savedJpVoice = settingsRepository.ttsVoiceNameFlow.first()
+                        val savedCnVoice = settingsRepository.ttsChineseVoiceNameFlow.first()
+                        savedJapaneseVoiceName = savedJpVoice
+                        savedChineseVoiceName = savedCnVoice
+
+                        if (!savedJpVoice.isNullOrBlank()) {
+                            setVoice(savedJpVoice)
                         }
                     } catch (e: Exception) {
                         Log.e("TtsManager", "Error loading saved voice", e)
@@ -275,9 +290,15 @@ class TtsManager @Inject constructor(
                 return
             }
 
-            if (currentVoice != null && currentVoice.locale.language == targetLanguage.language) {
-                 moveProceed = true
-            } else {
+            val isChinese = targetLanguage.language == Locale.CHINESE.language ||
+                    targetLanguage.language == Locale.CHINA.language ||
+                    targetLanguage.language == "zh"
+
+            val targetVoiceName = if (isChinese) savedChineseVoiceName else savedJapaneseVoiceName
+
+            val needLanguageSwitch = currentVoice == null || currentVoice.locale.language != targetLanguage.language
+
+            if (needLanguageSwitch) {
                  val result = tts?.setLanguage(targetLanguage)
                  if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     Log.e("TtsManager", "Language $targetLanguage is not supported or missing data")
@@ -289,6 +310,18 @@ class TtsManager @Inject constructor(
                  } else {
                     moveProceed = true
                  }
+            } else {
+                moveProceed = true
+            }
+
+            // setLanguage 会把系统 Voice 重置，因此在语言设置/检查后，确保把保存的 Voice 设置回 tts.voice
+            if (!targetVoiceName.isNullOrBlank()) {
+                if (tts?.voice?.name != targetVoiceName) {
+                    val targetVoice = tts?.voices?.find { it.name == targetVoiceName }
+                    if (targetVoice != null) {
+                        tts?.voice = targetVoice
+                    }
+                }
             }
 
              if (moveProceed) {
@@ -344,6 +377,46 @@ class TtsManager @Inject constructor(
             // Determine gender if possible (Android Voice API doesn't strictly expose gender enum easily in older APIs via features)
             // But we can try to guess from features or name
             // Determine gender if possible
+            val features = voice.features
+            val gender = when {
+                features != null && features.contains("latency_very_low") -> "fast"
+                voice.name.contains("female", ignoreCase = true) -> "female"
+                voice.name.contains("male", ignoreCase = true) -> "male"
+                else -> "unknown"
+            }
+
+            val quality = when {
+                 voice.quality == android.speech.tts.Voice.QUALITY_VERY_HIGH -> "very_high"
+                 voice.quality == android.speech.tts.Voice.QUALITY_HIGH -> "high"
+                 else -> "normal"
+            }
+
+            com.jian.nemo.core.domain.model.TtsVoice(
+                name = voice.name,
+                locale = voice.locale.toLanguageTag(),
+                isNetworkConnectionRequired = voice.isNetworkConnectionRequired,
+                quality = quality,
+                gender = gender
+            )
+        }
+    }
+
+    /**
+     * 获取可用中文语音列表 ("zh")
+     */
+    fun getChineseVoices(): List<com.jian.nemo.core.domain.model.TtsVoice> {
+        val voices = try {
+            tts?.voices
+        } catch (e: Exception) {
+            return emptyList()
+        }
+
+        if (voices.isNullOrEmpty()) return emptyList()
+
+        return voices.filter { voice ->
+            val lang = voice.locale.language
+            lang == Locale.CHINESE.language || lang == Locale.CHINA.language || lang == "zh"
+        }.map { voice ->
             val features = voice.features
             val gender = when {
                 features != null && features.contains("latency_very_low") -> "fast"

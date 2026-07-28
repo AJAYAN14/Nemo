@@ -53,6 +53,7 @@ data class AppSettings(
     val ttsSpeechRate: Float = 1.0f,
     val ttsPitch: Float = 1.0f,
     val ttsVoiceName: String? = null,
+    val ttsChineseVoiceName: String? = null,
     val isAutoPlayAudioEnabled: Boolean = false,
 
     // 高级学习策略

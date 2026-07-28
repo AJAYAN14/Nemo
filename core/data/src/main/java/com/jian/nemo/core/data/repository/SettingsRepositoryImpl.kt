@@ -1243,6 +1243,20 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    override val ttsChineseVoiceNameFlow: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.TTS_CHINESE_VOICE_NAME]
+    }
+
+    override suspend fun setTtsChineseVoiceName(voiceName: String?) {
+        dataStore.edit { preferences ->
+            if (voiceName == null) {
+                preferences.remove(PreferencesKeys.TTS_CHINESE_VOICE_NAME)
+            } else {
+                preferences[PreferencesKeys.TTS_CHINESE_VOICE_NAME] = voiceName
+            }
+        }
+    }
+
     override val isAutoPlayAudioEnabledFlow: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[PreferencesKeys.IS_AUTO_PLAY_AUDIO_ENABLED] ?: true }
 
@@ -1478,6 +1492,7 @@ class SettingsRepositoryImpl @Inject constructor(
             ttsSpeechRate = prefs[PreferencesKeys.TTS_SPEECH_RATE] ?: 1.0f,
             ttsPitch = prefs[PreferencesKeys.TTS_PITCH] ?: 1.0f,
             ttsVoiceName = prefs[PreferencesKeys.TTS_VOICE_NAME],
+            ttsChineseVoiceName = prefs[PreferencesKeys.TTS_CHINESE_VOICE_NAME],
             isAutoPlayAudioEnabled = prefs[PreferencesKeys.IS_AUTO_PLAY_AUDIO_ENABLED] ?: true,
 
             learningSteps = prefs[PreferencesKeys.LEARNING_STEPS] ?: "1 10",
@@ -1539,6 +1554,13 @@ class SettingsRepositoryImpl @Inject constructor(
                 prefs[PreferencesKeys.TTS_VOICE_NAME] = voiceName
             } else {
                 prefs.remove(PreferencesKeys.TTS_VOICE_NAME)
+            }
+
+            val chineseVoiceName = settings.ttsChineseVoiceName
+            if (chineseVoiceName != null) {
+                prefs[PreferencesKeys.TTS_CHINESE_VOICE_NAME] = chineseVoiceName
+            } else {
+                prefs.remove(PreferencesKeys.TTS_CHINESE_VOICE_NAME)
             }
 
             prefs[PreferencesKeys.IS_AUTO_PLAY_AUDIO_ENABLED] = settings.isAutoPlayAudioEnabled

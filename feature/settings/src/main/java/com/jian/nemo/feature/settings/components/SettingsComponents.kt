@@ -634,7 +634,7 @@ fun VoiceSelectionBottomSheet(
  * 分组标题
  */
 @Composable
-private fun VoiceGroupHeader(
+fun VoiceGroupHeader(
     title: String,
     count: Int
 ) {
@@ -663,7 +663,7 @@ private fun VoiceGroupHeader(
  * 加载骨架屏项
  */
 @Composable
-private fun VoiceSkeletonItem() {
+fun VoiceSkeletonItem() {
     val infiniteTransition = rememberInfiniteTransition(label = "skeleton")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -765,7 +765,7 @@ private fun formatVoiceName(voice: com.jian.nemo.core.domain.model.TtsVoice): Vo
  * 语音选择项 (V3: 支持播放脉冲动画)
  */
 @Composable
-private fun VoiceSelectionItem(
+fun VoiceSelectionItem(
     displayInfo: VoiceDisplayInfo,
     isSelected: Boolean,
     isPreviewing: Boolean,

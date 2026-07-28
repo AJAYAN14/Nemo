@@ -258,8 +258,11 @@ object PreferencesKeys {
     /** 朗读音调 默认: 1.0f */
     val TTS_PITCH = androidx.datastore.preferences.core.floatPreferencesKey("tts_pitch")
 
-    /** 朗读语音名称 (Locale + Name) 默认: null (system default) */
+    /** 朗读语音名称 (日语 Locale + Name) 默认: null (system default) */
     val TTS_VOICE_NAME = stringPreferencesKey("tts_voice_name")
+
+    /** 朗读语音名称 (中文 Locale + Name) 默认: null (system default) */
+    val TTS_CHINESE_VOICE_NAME = stringPreferencesKey("tts_chinese_voice_name")
 
     /** 翻面自动朗读开关 默认: true */
     val IS_AUTO_PLAY_AUDIO_ENABLED = booleanPreferencesKey("is_auto_play_audio_enabled")
