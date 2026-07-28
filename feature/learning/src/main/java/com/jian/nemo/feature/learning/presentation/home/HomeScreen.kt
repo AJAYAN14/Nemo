@@ -50,6 +50,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -531,7 +532,7 @@ fun HomeScreen(
                             .height(64.dp)
                             .drawWithContent {
                                 drawContent()
-                                // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                                // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，基于 Canvas clipPath 约束在圆角内部
                                 val width = size.width
                                 val height = size.height
                                 val xOffset = shimmerProgress * width
@@ -544,7 +545,18 @@ fun HomeScreen(
                                     start = androidx.compose.ui.geometry.Offset(xOffset, 0f),
                                     end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
                                 )
-                                drawRect(brush = shimmerBrush)
+                                val cornerRadiusPx = 24.dp.toPx()
+                                val clipPathObj = androidx.compose.ui.graphics.Path().apply {
+                                    addRoundRect(
+                                        androidx.compose.ui.geometry.RoundRect(
+                                            rect = androidx.compose.ui.geometry.Rect(androidx.compose.ui.geometry.Offset.Zero, size),
+                                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadiusPx, cornerRadiusPx)
+                                        )
+                                    )
+                                }
+                                clipPath(clipPathObj) {
+                                    drawRect(brush = shimmerBrush)
+                                }
                             },
                         backgroundColor = btnColor,
                         shape = RoundedCornerShape(24.dp),
