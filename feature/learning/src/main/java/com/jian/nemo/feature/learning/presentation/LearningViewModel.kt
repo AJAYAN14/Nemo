@@ -1,3 +1,4 @@
+
 package com.jian.nemo.feature.learning.presentation
 
 import android.content.Context
@@ -1097,16 +1098,9 @@ class LearningViewModel @Inject constructor(
 
                 // 委托给 StatsManager 进行计数统计与实时持久化
                 val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
-                sessionStatsManager.onItemRated(_uiState.value.learningMode, quality, currentItem.cardBadge, today)
+                sessionStatsManager.onItemRated(_uiState.value.learningMode, quality, currentItem.cardBadge, currentItem.id, today)
 
-                _uiState.update {
-                    it.copy(
-                        sessionNewCount = sessionStatsManager.sessionNewCount,
-                        sessionReviewCount = sessionStatsManager.sessionReviewCount,
-                        sessionRelearnCount = sessionStatsManager.sessionRelearnCount,
-                        sessionMaxCombo = sessionStatsManager.maxCombo
-                    )
-                }
+                syncTodayCounts()
 
                 val isNew = currentItem.isNew
                 val currentStep = _learningSteps[currentItem.id]
@@ -1692,8 +1686,48 @@ class LearningViewModel @Inject constructor(
 
         clearSession()
         syncUndoAvailability()
+        syncTodayCounts()
 
         println("会话完成！")
+    }
+
+    /**
+     * 从数据库安全同步今日去重的新学数与复习数，并更新到 UiState
+     */
+    private fun syncTodayCounts() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+            val isWordMode = _uiState.value.learningMode == LearningMode.Word
+
+            val newCount = try {
+                if (isWordMode) {
+                    wordRepository.getTodayLearnedWords(today).first().size
+                } else {
+                    grammarRepository.getTodayLearnedGrammars(today).first().size
+                }
+            } catch (e: Exception) {
+                sessionStatsManager.sessionNewCount
+            }
+
+            val reviewCount = try {
+                if (isWordMode) {
+                    wordRepository.getTodayReviewedWords(today).first().size
+                } else {
+                    grammarRepository.getTodayReviewedGrammars(today).first().size
+                }
+            } catch (e: Exception) {
+                sessionStatsManager.sessionReviewCount
+            }
+
+            _uiState.update {
+                it.copy(
+                    sessionNewCount = newCount,
+                    sessionReviewCount = reviewCount,
+                    sessionRelearnCount = sessionStatsManager.sessionRelearnCount,
+                    sessionMaxCombo = sessionStatsManager.maxCombo
+                )
+            }
+        }
     }
 
     /**

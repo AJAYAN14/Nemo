@@ -22,6 +22,9 @@ class LearningSessionStatsManager(private val context: Context) {
 
     private val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
 
+    private val relearnWordIds = mutableSetOf<Int>()
+    private val relearnGrammarIds = mutableSetOf<Int>()
+
     var sessionStartTime: Long = 0L
         private set
 
@@ -62,6 +65,8 @@ class LearningSessionStatsManager(private val context: Context) {
             sessionNewCount = 0
             sessionReviewCount = 0
             sessionRelearnCount = 0
+            relearnWordIds.clear()
+            relearnGrammarIds.clear()
 
             sharedPrefs.edit()
                 .putLong("last_reset_day", today)
@@ -72,11 +77,13 @@ class LearningSessionStatsManager(private val context: Context) {
                 .putInt("word_session_new_count", 0)
                 .putInt("word_session_review_count", 0)
                 .putInt("word_session_relearn_count", 0)
+                .putString("word_relearn_ids", "")
                 .putInt("grammar_current_combo", 0)
                 .putInt("grammar_max_combo", 0)
                 .putInt("grammar_session_new_count", 0)
                 .putInt("grammar_session_review_count", 0)
                 .putInt("grammar_session_relearn_count", 0)
+                .putString("grammar_relearn_ids", "")
                 .apply()
             println("StatsManager: 跨越重置学习日，清零全部累计战报数据")
         } else {
@@ -88,7 +95,20 @@ class LearningSessionStatsManager(private val context: Context) {
             maxCombo = sharedPrefs.getInt("${prefix}max_combo", 0)
             sessionNewCount = sharedPrefs.getInt("${prefix}session_new_count", 0)
             sessionReviewCount = sharedPrefs.getInt("${prefix}session_review_count", 0)
-            sessionRelearnCount = sharedPrefs.getInt("${prefix}session_relearn_count", 0)
+
+            val wordIdsStr = sharedPrefs.getString("word_relearn_ids", "") ?: ""
+            relearnWordIds.clear()
+            if (wordIdsStr.isNotEmpty()) {
+                wordIdsStr.split(",").mapNotNull { it.toIntOrNull() }.forEach { relearnWordIds.add(it) }
+            }
+
+            val grammarIdsStr = sharedPrefs.getString("grammar_relearn_ids", "") ?: ""
+            relearnGrammarIds.clear()
+            if (grammarIdsStr.isNotEmpty()) {
+                grammarIdsStr.split(",").mapNotNull { it.toIntOrNull() }.forEach { relearnGrammarIds.add(it) }
+            }
+
+            sessionRelearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
 
             println("StatsManager: 恢复同学习日数据 [模式: $mode, 已学时间(词/法): $wordElapsedTime/$grammarElapsedTime, 新:$sessionNewCount, 复:$sessionReviewCount, 重:$sessionRelearnCount, Combo:$maxCombo]")
         }
@@ -129,13 +149,23 @@ class LearningSessionStatsManager(private val context: Context) {
     /**
      * 每次评分卡片时，更新战报统计并实时持久化
      */
-    fun onItemRated(mode: LearningMode, quality: Int, badge: CardBadge, today: Long) {
+    fun onItemRated(mode: LearningMode, quality: Int, badge: CardBadge, itemId: Int = 0, today: Long) {
         // 1. 统计学习数量分类
         when (badge) {
             CardBadge.NEW -> sessionNewCount++
             CardBadge.REVIEW -> sessionReviewCount++
-            CardBadge.LEARNING, CardBadge.RELEARN -> sessionRelearnCount++
+            CardBadge.LEARNING, CardBadge.RELEARN -> { /* 由数据库去重逻辑处理 */ }
         }
+
+        // 仅当原本是复习卡片(REVIEW)且评分<3(重来/忘记)时记录重学 ID
+        if (badge == CardBadge.REVIEW && quality < 3 && itemId != 0) {
+            if (mode == LearningMode.Word) {
+                relearnWordIds.add(itemId)
+            } else {
+                relearnGrammarIds.add(itemId)
+            }
+        }
+        sessionRelearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
 
         // 2. 统计连击数
         if (quality >= 3) {
@@ -147,6 +177,7 @@ class LearningSessionStatsManager(private val context: Context) {
 
         // 3. 实时写入 SharedPreferences
         val prefix = if (mode == LearningMode.Word) "word_" else "grammar_"
+        val relearnIdsStr = if (mode == LearningMode.Word) relearnWordIds.joinToString(",") else relearnGrammarIds.joinToString(",")
         sharedPrefs.edit()
             .putLong("last_reset_day", today)
             .putInt("${prefix}current_combo", currentCombo)
@@ -154,9 +185,10 @@ class LearningSessionStatsManager(private val context: Context) {
             .putInt("${prefix}session_new_count", sessionNewCount)
             .putInt("${prefix}session_review_count", sessionReviewCount)
             .putInt("${prefix}session_relearn_count", sessionRelearnCount)
+            .putString("${prefix}relearn_ids", relearnIdsStr)
             .apply()
 
-        println("StatsManager: 用户评分(quality=$quality, badge=$badge) -> 战报更新: 新学=$sessionNewCount, 复习=$sessionReviewCount, 重学=$sessionRelearnCount, 连击=$currentCombo/$maxCombo")
+        println("StatsManager: 用户评分(quality=$quality, badge=$badge, itemId=$itemId) -> 战报更新: 新学=$sessionNewCount, 复习=$sessionReviewCount, 重学=$sessionRelearnCount, 连击=$currentCombo/$maxCombo")
     }
 
     /**
@@ -198,7 +230,7 @@ class LearningSessionStatsManager(private val context: Context) {
             maxCombo = maxCombo,
             newCount = sessionNewCount,
             reviewCount = sessionReviewCount,
-            relearnCount = sessionRelearnCount
+            relearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
         )
     }
 
