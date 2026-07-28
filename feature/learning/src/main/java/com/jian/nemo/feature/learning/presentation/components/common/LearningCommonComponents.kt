@@ -163,10 +163,12 @@ fun LearnHeader(
     onToggleShowAnswerDelay: ((Boolean) -> Unit)? = null,
     showAnswerDelayDurationLabel: String = "1.0s",
     onCycleShowAnswerDelayDuration: (() -> Unit)? = null,
+    onOpenShowAnswerDelayDialog: (() -> Unit)? = null,
     isAutoRevealAnswerEnabled: Boolean = false,
     onToggleAutoRevealAnswer: ((Boolean) -> Unit)? = null,
     autoRevealAnswerDurationLabel: String = "5.0s",
     onCycleAutoRevealAnswerDuration: (() -> Unit)? = null,
+    onOpenAutoRevealAnswerDialog: (() -> Unit)? = null,
     isWhiteboardEnabled: Boolean = false,
     onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     canUndo: Boolean = false,
@@ -351,7 +353,6 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "撤销上一次评分",
                                             onClick = {
-                                                performHapticFeedback()
                                                 setExpanded(false)
                                                 onUndo()
                                             },
@@ -368,7 +369,6 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "评分说明（新学/复习）",
                                             onClick = {
-                                                performHapticFeedback()
                                                 setExpanded(false)
                                                 onShowRatingGuide()
                                             },
@@ -384,7 +384,6 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "暂停此卡片 (Suspend)",
                                             onClick = {
-                                                performHapticFeedback()
                                                 setExpanded(false)
                                                 onSuspend()
                                             },
@@ -393,7 +392,6 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "今日暂缓此项 (Bury)",
                                             onClick = {
-                                                performHapticFeedback()
                                                 setExpanded(false)
                                                 onBury()
                                             },
@@ -403,7 +401,6 @@ fun LearnHeader(
                                         NemoMenuItem(
                                             text = "报告条目错误",
                                             onClick = {
-                                                performHapticFeedback()
                                                 setExpanded(false)
                                                 onReportError()
                                             },
@@ -476,11 +473,16 @@ fun LearnHeader(
                                             }
                                         )
 
-                                        if (onCycleShowAnswerDelayDuration != null) {
+                                        if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
                                             NemoMenuItem(
                                                 text = "等待时长: $showAnswerDelayDurationLabel",
                                                 onClick = {
-                                                    onCycleShowAnswerDelayDuration()
+                                                    setExpanded(false)
+                                                    if (onOpenShowAnswerDelayDialog != null) {
+                                                        onOpenShowAnswerDelayDialog()
+                                                    } else {
+                                                        onCycleShowAnswerDelayDuration?.invoke()
+                                                    }
                                                 },
                                                 leadingIcon = Icons.Rounded.Timer
                                             )
@@ -514,11 +516,16 @@ fun LearnHeader(
                                             }
                                         )
 
-                                        if (onCycleAutoRevealAnswerDuration != null) {
+                                        if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
                                             NemoMenuItem(
                                                 text = "翻面时长: $autoRevealAnswerDurationLabel",
                                                 onClick = {
-                                                    onCycleAutoRevealAnswerDuration()
+                                                    setExpanded(false)
+                                                    if (onOpenAutoRevealAnswerDialog != null) {
+                                                        onOpenAutoRevealAnswerDialog()
+                                                    } else {
+                                                        onCycleAutoRevealAnswerDuration?.invoke()
+                                                    }
                                                 },
                                                 leadingIcon = Icons.Rounded.Timer
                                             )

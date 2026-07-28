@@ -165,6 +165,11 @@ sealed interface LearningEvent {
     data object CycleAutoRevealAnswerDuration : LearningEvent
 
     /**
+     * 直接设置自动翻面时长 (Word)
+     */
+    data class SetAutoRevealAnswerMs(val ms: Long) : LearningEvent
+
+    /**
      * 切换自动翻面状态 (Grammar)
      */
     data class ToggleGrammarAutoRevealAnswer(val enabled: Boolean) : LearningEvent
@@ -175,9 +180,19 @@ sealed interface LearningEvent {
     data object CycleGrammarAutoRevealAnswerDuration : LearningEvent
 
     /**
+     * 直接设置自动翻面时长 (Grammar)
+     */
+    data class SetGrammarAutoRevealAnswerMs(val ms: Long) : LearningEvent
+
+    /**
      * 切换显示答案等待时长（循环档位）
      */
     data object CycleShowAnswerDelayDuration : LearningEvent
+
+    /**
+     * 直接设置显示答案等待时长
+     */
+    data class SetShowAnswerDelayMs(val ms: Long) : LearningEvent
 
     /**
      * 报告当前条目内容错误

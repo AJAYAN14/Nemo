@@ -60,6 +60,7 @@ import com.jian.nemo.feature.learning.presentation.components.cards.SRSGrammarCa
 import com.jian.nemo.feature.learning.presentation.components.guide.RatingGuideScreen
 import com.jian.nemo.feature.learning.presentation.components.srs.SRSActionArea
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.dialog.DurationPickerDialog
 
 
 @Composable
@@ -104,6 +105,8 @@ fun LearningScreen(
     var showAnswerDelayHint by rememberSaveable { mutableStateOf(false) }
     var showAnswerDelayHintSec by rememberSaveable { mutableStateOf(1) }
     var showUndoHint by rememberSaveable { mutableStateOf(false) }
+    var showAutoRevealDurationDialog by rememberSaveable { mutableStateOf(false) }
+    var showDelayDurationDialog by rememberSaveable { mutableStateOf(false) }
 
     val delayDurationLabel = when (uiState.showAnswerDelayMs) {
         2000L -> "2s"
@@ -157,6 +160,10 @@ fun LearningScreen(
                     onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
                     showAnswerDelayDurationLabel = delayDurationLabel,
                     onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                    onOpenShowAnswerDelayDialog = {
+                        isMenuExpanded = false
+                        showDelayDurationDialog = true
+                    },
                     isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
                     onToggleAutoRevealAnswer = {
                         if (uiState.learningMode == LearningMode.Word) {
@@ -172,6 +179,10 @@ fun LearningScreen(
                         } else {
                             viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
                         }
+                    },
+                    onOpenAutoRevealAnswerDialog = {
+                        isMenuExpanded = false
+                        showAutoRevealDurationDialog = true
                     },
                     isWhiteboardEnabled = uiState.isWhiteboardEnabled,
                     onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
@@ -308,6 +319,37 @@ fun LearningScreen(
                     learningMode = uiState.learningMode,
                     onDismiss = { viewModel.onEvent(LearningEvent.CancelReportErrorDialog) },
                     onConfirm = { errorType, desc -> viewModel.onEvent(LearningEvent.ReportContentError(errorType, desc)) }
+                )
+            }
+
+            if (showAutoRevealDurationDialog) {
+                val currentSec = ((if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000).toInt()
+                DurationPickerDialog(
+                    title = "自动翻面时长",
+                    initialSeconds = currentSec,
+                    onDismissRequest = { showAutoRevealDurationDialog = false },
+                    onConfirm = { seconds ->
+                        showAutoRevealDurationDialog = false
+                        val ms = seconds * 1000L
+                        if (uiState.learningMode == LearningMode.Word) {
+                            viewModel.onEvent(LearningEvent.SetAutoRevealAnswerMs(ms))
+                        } else {
+                            viewModel.onEvent(LearningEvent.SetGrammarAutoRevealAnswerMs(ms))
+                        }
+                    }
+                )
+            }
+
+            if (showDelayDurationDialog) {
+                val currentSec = (uiState.showAnswerDelayMs / 1000).toInt()
+                DurationPickerDialog(
+                    title = "显示答案等待时长",
+                    initialSeconds = currentSec,
+                    onDismissRequest = { showDelayDurationDialog = false },
+                    onConfirm = { seconds ->
+                        showDelayDurationDialog = false
+                        viewModel.onEvent(LearningEvent.SetShowAnswerDelayMs(seconds * 1000L))
+                    }
                 )
             }
         }

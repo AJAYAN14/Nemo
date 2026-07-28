@@ -348,10 +348,13 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.ToggleAutoPlayAudio -> toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> toggleShowAnswerDelay(event.enabled)
             is LearningEvent.CycleShowAnswerDelayDuration -> cycleShowAnswerDelayDuration()
+            is LearningEvent.SetShowAnswerDelayMs -> setShowAnswerDelayMs(event.ms)
             is LearningEvent.ToggleAutoRevealAnswer -> toggleAutoRevealAnswer(event.enabled)
             is LearningEvent.CycleAutoRevealAnswerDuration -> cycleAutoRevealAnswerDuration()
+            is LearningEvent.SetAutoRevealAnswerMs -> setAutoRevealAnswerMs(event.ms)
             is LearningEvent.ToggleGrammarAutoRevealAnswer -> toggleGrammarAutoRevealAnswer(event.enabled)
             is LearningEvent.CycleGrammarAutoRevealAnswerDuration -> cycleGrammarAutoRevealAnswerDuration()
+            is LearningEvent.SetGrammarAutoRevealAnswerMs -> setGrammarAutoRevealAnswerMs(event.ms)
             is LearningEvent.ReportContentError -> handleReportError(event.errorType, event.description)
             is LearningEvent.OpenReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = true) }
             is LearningEvent.CancelReportErrorDialog -> _uiState.update { it.copy(showReportErrorDialog = false) }
@@ -892,6 +895,12 @@ class LearningViewModel @Inject constructor(
         }
     }
 
+    private fun setShowAnswerDelayMs(ms: Long) {
+        viewModelScope.launch {
+            settingsRepository.setShowAnswerDelayMs(ms)
+        }
+    }
+
     private fun toggleAutoRevealAnswer(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setAutoRevealAnswerEnabled(enabled)
@@ -913,6 +922,12 @@ class LearningViewModel @Inject constructor(
         }
     }
 
+    private fun setAutoRevealAnswerMs(ms: Long) {
+        viewModelScope.launch {
+            settingsRepository.setAutoRevealAnswerMs(ms)
+        }
+    }
+
     private fun toggleGrammarAutoRevealAnswer(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setGrammarAutoRevealAnswerEnabled(enabled)
@@ -931,6 +946,12 @@ class LearningViewModel @Inject constructor(
         }
         viewModelScope.launch {
             settingsRepository.setGrammarAutoRevealAnswerMs(next)
+        }
+    }
+
+    private fun setGrammarAutoRevealAnswerMs(ms: Long) {
+        viewModelScope.launch {
+            settingsRepository.setGrammarAutoRevealAnswerMs(ms)
         }
     }
 
