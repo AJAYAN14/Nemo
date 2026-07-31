@@ -14,8 +14,10 @@ import com.jian.nemo.feature.test.TestViewModel
 import com.jian.nemo.feature.test.components.MultipleChoiceTestContent
 import com.jian.nemo.feature.test.components.SimpleProgressIndicator
 import com.jian.nemo.feature.test.components.TestFooter
-import com.jian.nemo.feature.test.components.TestHeader
 import com.jian.nemo.feature.test.components.UnifiedTestScreen
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.feature.test.components.TestHeaderCenterContent
+import com.jian.nemo.feature.test.components.TestHeaderActions
 
 /**
  * 选择题界面
@@ -33,14 +35,23 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
     // 使用 AnimatedContent 为选择题切换添加动画效果（复刻旧项目 L41-55）
     UnifiedTestScreen(
         headerContent = {
-            TestHeader(
+            CommonHeader(
+                title = "",
                 onBack = { viewModel.confirmExitTest() },
-                timeLimitSeconds = uiState.timeLimitSeconds,
-                timeRemainingSeconds = uiState.timeRemainingSeconds,
-                word = currentQuestion.word,
-                grammar = currentQuestion.grammar,
-                onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) },
-                onPause = { viewModel.pauseTest() }
+                centerContent = {
+                    TestHeaderCenterContent(
+                        timeLimitSeconds = uiState.timeLimitSeconds,
+                        timeRemainingSeconds = uiState.timeRemainingSeconds
+                    )
+                },
+                actions = {
+                    TestHeaderActions(
+                        word = currentQuestion.word,
+                        grammar = currentQuestion.grammar,
+                        onToggleFavorite = { itemId, isFavorite -> viewModel.toggleFavorite(itemId, isFavorite) },
+                        onPause = { viewModel.pauseTest() }
+                    )
+                }
             )
         },
         progressContent = {
@@ -95,3 +106,4 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
         }
     )
 }
+

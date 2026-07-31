@@ -30,8 +30,7 @@ fun UnifiedTestScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(backgroundColor) // 极致纯白背景
-            .windowInsetsPadding(WindowInsets.statusBars)
+            .background(backgroundColor)
     ) {
         // 可滚动内容区域
         Column(

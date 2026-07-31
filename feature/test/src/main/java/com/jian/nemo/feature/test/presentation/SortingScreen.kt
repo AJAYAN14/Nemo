@@ -87,13 +87,22 @@ fun SortingScreen(
     ) {
         com.jian.nemo.feature.test.components.UnifiedTestScreen(
             headerContent = {
-                com.jian.nemo.feature.test.components.TestHeader(
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = "",
                     onBack = { viewModel.confirmExitTest() },
-                    timeLimitSeconds = uiState.timeLimitSeconds,
-                    timeRemainingSeconds = uiState.timeRemainingSeconds,
-                    word = currentQuestion.word,
-                    onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                    onPause = { viewModel.pauseTest() }
+                    centerContent = {
+                        com.jian.nemo.feature.test.components.TestHeaderCenterContent(
+                            timeLimitSeconds = uiState.timeLimitSeconds,
+                            timeRemainingSeconds = uiState.timeRemainingSeconds
+                        )
+                    },
+                    actions = {
+                        com.jian.nemo.feature.test.components.TestHeaderActions(
+                            word = currentQuestion.word,
+                            onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
+                            onPause = { viewModel.pauseTest() }
+                        )
+                    }
                 )
             },
             progressContent = {

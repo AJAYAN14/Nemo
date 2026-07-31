@@ -13,9 +13,11 @@ import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.feature.test.TestViewModel
 import com.jian.nemo.feature.test.components.SimpleProgressIndicator
 import com.jian.nemo.feature.test.components.TestFooter
-import com.jian.nemo.feature.test.components.TestHeader
 import com.jian.nemo.feature.test.components.TypingTestContent
 import com.jian.nemo.feature.test.components.UnifiedTestScreen
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.feature.test.components.TestHeaderCenterContent
+import com.jian.nemo.feature.test.components.TestHeaderActions
 
 /**
  * 手打题界面
@@ -33,13 +35,22 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
     // 使用 AnimatedContent 为手打题切换添加动画效果（复刻旧项目 L29-44）
     UnifiedTestScreen(
         headerContent = {
-            TestHeader(
+            CommonHeader(
+                title = "",
                 onBack = { viewModel.confirmExitTest() },
-                timeLimitSeconds = uiState.timeLimitSeconds,
-                timeRemainingSeconds = uiState.timeRemainingSeconds,
-                word = question.word,
-                onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                onPause = { viewModel.pauseTest() }
+                centerContent = {
+                    TestHeaderCenterContent(
+                        timeLimitSeconds = uiState.timeLimitSeconds,
+                        timeRemainingSeconds = uiState.timeRemainingSeconds
+                    )
+                },
+                actions = {
+                    TestHeaderActions(
+                        word = question.word,
+                        onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
+                        onPause = { viewModel.pauseTest() }
+                    )
+                }
             )
         },
         progressContent = {
@@ -89,3 +100,4 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
         }
     )
 }
+
