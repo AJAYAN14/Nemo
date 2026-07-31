@@ -56,7 +56,7 @@ fun TestHeaderCenterContent(
         backgroundColor = navGroupBg,
         shape = CircleShape,
         elevation = 0.dp,
-        isInteractive = false,
+        isInteractive = true,
         modifier = Modifier
             .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
     ) {

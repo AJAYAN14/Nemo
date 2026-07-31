@@ -37,13 +37,14 @@ fun UnifiedTestScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
         ) {
             headerContent()
             Spacer(modifier = Modifier.height(16.dp))
-            progressContent()
-            Spacer(modifier = Modifier.height(16.dp))
-            testContent()
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                progressContent()
+                Spacer(modifier = Modifier.height(16.dp))
+                testContent()
+            }
 
             // 动态底部留白，确保解析卡片全展现，不被悬浮按钮及渐变蒙层遮挡
             Spacer(modifier = Modifier.height(160.dp))
