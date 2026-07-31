@@ -70,11 +70,8 @@ fun CommonHeader(
                         onClick = onBack,
                         backgroundColor = navGroupBg,
                         shape = CircleShape,
-                        elevation = 0.dp,
                         isInteractive = true,
-                        modifier = Modifier
-                            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                            .size(44.dp)
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,

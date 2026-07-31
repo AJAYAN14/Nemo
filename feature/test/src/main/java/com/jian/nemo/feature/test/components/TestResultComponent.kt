@@ -42,6 +42,8 @@ import android.annotation.SuppressLint
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import androidx.compose.ui.unit.sp
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -314,24 +316,53 @@ fun TestResultComponent(
             }
         }
 
-        // 底部操作按钮
+        // 底部操作按钮 - 使用项目通用 LiquidButton 液态按钮
+        val indigo600 = Color(0xFF4F46E5)
+        val slate700 = Color(0xFF334155)
+        val slate200 = Color(0xFFE2E8F0)
+        val buttonShape = RoundedCornerShape(24.dp)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AnimatedButton(
-                text = "返回菜单",
+            LiquidButton(
                 onClick = onExitTest,
-                modifier = Modifier.weight(1f),
-                isOutlined = true
-            )
-            AnimatedButton(
-                text = "再来一次",
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                backgroundColor = if (isDark) Color(0xFF334155) else slate200,
+                shape = buttonShape,
+                isInteractive = true,
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "返回菜单",
+                    color = if (isDark) Color.White else slate700,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp
+                )
+            }
+
+            LiquidButton(
                 onClick = onRetakeTest,
-                modifier = Modifier.weight(1f)
-            )
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                backgroundColor = indigo600,
+                shape = buttonShape,
+                isInteractive = true,
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "再来一次",
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp
+                )
+            }
         }
     }
 

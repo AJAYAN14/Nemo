@@ -35,10 +35,14 @@ import kotlin.math.tanh
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.modifier.softCardShadow
+
 /**
  * 通用纯色液态按钮 (Unified Solid Color Liquid Button)
  * 完美融合物理弹簧形变、按压缩放与触摸滑动拉伸效果。
- * 支持通过 [shape] 参数动态配置胶囊形、正圆形、圆角矩形等任意形状，并可由 [backgroundColor] 自定义背景颜色。
+ * 内置项目通用 softCardShadow 极简高质感弥散阴影，支持通过 [shape] 动态配置形状。
  */
 @Composable
 fun LiquidButton(
@@ -48,11 +52,13 @@ fun LiquidButton(
     shape: Shape = CircleShape,
     border: BorderStroke? = null,
     elevation: Dp = 6.dp,
+    useSoftShadow: Boolean = true,
     isInteractive: Boolean = true,
     contentAlignment: Alignment = Alignment.Center,
     content: @Composable BoxScope.() -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val interactiveHighlight = remember(animationScope) {
         InteractiveHighlight(
@@ -92,7 +98,11 @@ fun LiquidButton(
             }
             .then(
                 if (elevation > 0.dp) {
-                    Modifier.shadow(elevation, shape)
+                    if (useSoftShadow) {
+                        Modifier.softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                    } else {
+                        Modifier.shadow(elevation, shape)
+                    }
                 } else {
                     Modifier
                 }

@@ -31,11 +31,13 @@ import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.test.presentation.theme.TestDanger
 
+import androidx.compose.ui.graphics.lerp
+
 /**
  * 测试头部中间内容：倒计时显示（液态按钮容器）
  *
  * 供 CommonHeader 的 centerContent 插槽使用。
- * 当 timeLimitSeconds > 0 时显示倒计时，时间 < 60 秒时文字变红。
+ * 当时间比例进入最后 30% 时，背景色与文字颜色在同红色系中平滑渐变。
  */
 @Composable
 fun TestHeaderCenterContent(
@@ -45,25 +47,41 @@ fun TestHeaderCenterContent(
     if (timeLimitSeconds <= 0) return
 
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+    val defaultBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+    val defaultTextColor = MaterialTheme.colorScheme.onBackground
+
+    // 计算剩余时间比例 (0.0f ~ 1.0f)
+    val remainingRatio = (timeRemainingSeconds.toFloat() / timeLimitSeconds.toFloat()).coerceIn(0f, 1f)
+
+    // 触发阈值：最后 30% (即 remainingRatio <= 0.3f 时启动渐变)
+    val threshold = 0.3f
+    val alertFraction = if (remainingRatio < threshold) {
+        ((threshold - remainingRatio) / threshold).coerceIn(0f, 1f)
+    } else {
+        0f
+    }
+
+    // 同色系目标颜色 (Red Tonal Scale：浅红背景 + 深红文字，深色模式适配)
+    val targetBg = if (isDarkTheme) Color(0xFF450A0A) else Color(0xFFFEE2E2)
+    val targetTextColor = if (isDarkTheme) Color(0xFFFCA5A5) else Color(0xFF991B1B)
+
+    // 动态平滑插值
+    val animatedBgColor = lerp(defaultBg, targetBg, alertFraction)
+    val animatedTextColor = lerp(defaultTextColor, targetTextColor, alertFraction)
 
     val minutes = timeRemainingSeconds / 60
     val seconds = timeRemainingSeconds % 60
-    val isRunningOut = timeRemainingSeconds < 60
 
     LiquidButton(
         onClick = { /* 倒计时按钮不触发操作 */ },
-        backgroundColor = navGroupBg,
+        backgroundColor = animatedBgColor,
         shape = CircleShape,
-        elevation = 0.dp,
-        isInteractive = true,
-        modifier = Modifier
-            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+        isInteractive = true
     ) {
         Text(
             text = "%02d:%02d".format(minutes, seconds),
-            color = if (isRunningOut) TestDanger else MaterialTheme.colorScheme.onBackground,
-            fontWeight = FontWeight.Bold,
+            color = animatedTextColor,
+            fontWeight = FontWeight.Black,
             fontFamily = FontFamily.Monospace,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
@@ -96,11 +114,8 @@ fun TestHeaderActions(
             onClick = { expanded = true },
             backgroundColor = navGroupBg,
             shape = CircleShape,
-            elevation = 0.dp,
             isInteractive = true,
-            modifier = Modifier
-                .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                .size(44.dp)
+            modifier = Modifier.size(44.dp)
         ) {
             Icon(
                 imageVector = Icons.Rounded.MoreVert,
