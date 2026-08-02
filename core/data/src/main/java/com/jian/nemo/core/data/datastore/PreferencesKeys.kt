@@ -279,11 +279,17 @@ object PreferencesKeys {
     /** 自动翻面时长 (Grammar) 默认: 10000L */
     val GRAMMAR_AUTO_REVEAL_ANSWER_MS = longPreferencesKey("grammar_auto_reveal_answer_ms")
 
-    /** 显示答案等待开关 默认: false */
+    /** 显示答案等待开关 (Word) 默认: false */
     val IS_SHOW_ANSWER_DELAY_ENABLED = booleanPreferencesKey("is_show_answer_delay_enabled")
 
-    /** 显示答案等待时长 (毫秒) 默认: 5000 */
+    /** 显示答案等待时长 (Word, 毫秒) 默认: 5000 */
     val SHOW_ANSWER_DELAY_MS = longPreferencesKey("show_answer_delay_ms")
+
+    /** 显示答案等待开关 (Grammar) 默认: false */
+    val IS_GRAMMAR_SHOW_ANSWER_DELAY_ENABLED = booleanPreferencesKey("is_grammar_show_answer_delay_enabled")
+
+    /** 显示答案等待时长 (Grammar, 毫秒) 默认: 5000 */
+    val GRAMMAR_SHOW_ANSWER_DELAY_MS = longPreferencesKey("grammar_show_answer_delay_ms")
 
     // ========== AI 工坊配置 ==========
     /** AI 平台 (openai, gemini, claude, deepseek, doubao, mimo) */

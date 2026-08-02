@@ -237,20 +237,45 @@ class LearningViewModel @Inject constructor(
                 }
             }
 
-            // 监听显示答案等待开关
+            // 监听显示答案等待开关 (Word)
             launch {
                 settingsRepository.isShowAnswerDelayEnabledFlow.collect { enabled ->
-                    _uiState.update { it.copy(isShowAnswerDelayEnabled = enabled) }
-                    armShowAnswerDelay()
+                    if (_uiState.value.learningMode == LearningMode.Word) {
+                        _uiState.update { it.copy(isShowAnswerDelayEnabled = enabled) }
+                        armShowAnswerDelay()
+                    }
                 }
             }
 
-            // 监听显示答案等待时长
+            // 监听显示答案等待开关 (Grammar)
+            launch {
+                settingsRepository.isGrammarShowAnswerDelayEnabledFlow.collect { enabled ->
+                    if (_uiState.value.learningMode == LearningMode.Grammar) {
+                        _uiState.update { it.copy(isShowAnswerDelayEnabled = enabled) }
+                        armShowAnswerDelay()
+                    }
+                }
+            }
+
+            // 监听显示答案等待时长 (Word)
             launch {
                 settingsRepository.showAnswerDelayMsFlow.collect { delayMs ->
-                    _showAnswerDelayMs = delayMs
-                    _uiState.update { it.copy(showAnswerDelayMs = delayMs) }
-                    armShowAnswerDelay()
+                    if (_uiState.value.learningMode == LearningMode.Word) {
+                        _showAnswerDelayMs = delayMs
+                        _uiState.update { it.copy(showAnswerDelayMs = delayMs) }
+                        armShowAnswerDelay()
+                    }
+                }
+            }
+
+            // 监听显示答案等待时长 (Grammar)
+            launch {
+                settingsRepository.grammarShowAnswerDelayMsFlow.collect { delayMs ->
+                    if (_uiState.value.learningMode == LearningMode.Grammar) {
+                        _showAnswerDelayMs = delayMs
+                        _uiState.update { it.copy(showAnswerDelayMs = delayMs) }
+                        armShowAnswerDelay()
+                    }
                 }
             }
 
@@ -879,7 +904,8 @@ class LearningViewModel @Inject constructor(
 
     private fun toggleShowAnswerDelay(enabled: Boolean) {
         viewModelScope.launch {
-            settingsRepository.setShowAnswerDelayEnabled(enabled)
+            val isGrammar = _uiState.value.learningMode == LearningMode.Grammar
+            settingsRepository.setShowAnswerDelayEnabled(enabled, isGrammar = isGrammar)
         }
     }
 
@@ -891,13 +917,15 @@ class LearningViewModel @Inject constructor(
             else -> 2000L
         }
         viewModelScope.launch {
-            settingsRepository.setShowAnswerDelayMs(next)
+            val isGrammar = _uiState.value.learningMode == LearningMode.Grammar
+            settingsRepository.setShowAnswerDelayMs(next, isGrammar = isGrammar)
         }
     }
 
     private fun setShowAnswerDelayMs(ms: Long) {
         viewModelScope.launch {
-            settingsRepository.setShowAnswerDelayMs(ms)
+            val isGrammar = _uiState.value.learningMode == LearningMode.Grammar
+            settingsRepository.setShowAnswerDelayMs(ms, isGrammar = isGrammar)
         }
     }
 
@@ -1120,8 +1148,6 @@ class LearningViewModel @Inject constructor(
                 // 委托给 StatsManager 进行计数统计与实时持久化
                 val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
                 sessionStatsManager.onItemRated(_uiState.value.learningMode, quality, currentItem.cardBadge, currentItem.id, today)
-
-                syncTodayCounts()
 
                 val isNew = currentItem.isNew
                 val currentStep = _learningSteps[currentItem.id]
@@ -1428,6 +1454,9 @@ class LearningViewModel @Inject constructor(
                         )
                     }
 
+                    // 数据库更新成功后同步最新战报与统计
+                    syncTodayCounts()
+
                     // 移出队列并前进
                     removeCurrentAndMoveNext()
                 }
@@ -1722,9 +1751,13 @@ class LearningViewModel @Inject constructor(
 
             val newCount = try {
                 if (isWordMode) {
-                    wordRepository.getTodayLearnedWords(today).first().size
+                    getTodayLearnedWordsCountUseCase()
+                        .first { it !is Result.Loading }
+                        .let { if (it is Result.Success) it.data else 0 }
                 } else {
-                    grammarRepository.getTodayLearnedGrammars(today).first().size
+                    getTodayLearnedGrammarsCountUseCase()
+                        .first { it !is Result.Loading }
+                        .let { if (it is Result.Success) it.data else 0 }
                 }
             } catch (e: Exception) {
                 sessionStatsManager.sessionNewCount
@@ -1975,6 +2008,19 @@ class LearningViewModel @Inject constructor(
 
     private fun changeLearningMode(mode: LearningMode) {
         _uiState.update { it.copy(learningMode = mode) }
+        viewModelScope.launch {
+            val isGrammar = mode == LearningMode.Grammar
+            val enabled = if (isGrammar) settingsRepository.isGrammarShowAnswerDelayEnabledFlow.first() else settingsRepository.isShowAnswerDelayEnabledFlow.first()
+            val delayMs = if (isGrammar) settingsRepository.grammarShowAnswerDelayMsFlow.first() else settingsRepository.showAnswerDelayMsFlow.first()
+            _showAnswerDelayMs = delayMs
+            _uiState.update {
+                it.copy(
+                    isShowAnswerDelayEnabled = enabled,
+                    showAnswerDelayMs = delayMs
+                )
+            }
+            armShowAnswerDelay()
+        }
         // 模式切换时，立即触发新模式的会话加载
         startLearning()
     }

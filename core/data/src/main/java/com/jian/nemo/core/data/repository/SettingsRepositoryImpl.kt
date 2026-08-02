@@ -1328,9 +1328,13 @@ class SettingsRepositoryImpl @Inject constructor(
     override val isShowAnswerDelayEnabledFlow: Flow<Boolean> = dataStore.data
         .map { preferences -> preferences[PreferencesKeys.IS_SHOW_ANSWER_DELAY_ENABLED] ?: false }
 
-    override suspend fun setShowAnswerDelayEnabled(enabled: Boolean) {
+    override val isGrammarShowAnswerDelayEnabledFlow: Flow<Boolean> = dataStore.data
+        .map { preferences -> preferences[PreferencesKeys.IS_GRAMMAR_SHOW_ANSWER_DELAY_ENABLED] ?: false }
+
+    override suspend fun setShowAnswerDelayEnabled(enabled: Boolean, isGrammar: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.IS_SHOW_ANSWER_DELAY_ENABLED] = enabled
+            val key = if (isGrammar) PreferencesKeys.IS_GRAMMAR_SHOW_ANSWER_DELAY_ENABLED else PreferencesKeys.IS_SHOW_ANSWER_DELAY_ENABLED
+            preferences[key] = enabled
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
@@ -1340,9 +1344,15 @@ class SettingsRepositoryImpl @Inject constructor(
             (preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] ?: 5000L).coerceIn(1000L, 20000L)
         }
 
-    override suspend fun setShowAnswerDelayMs(ms: Long) {
+    override val grammarShowAnswerDelayMsFlow: Flow<Long> = dataStore.data
+        .map { preferences ->
+            (preferences[PreferencesKeys.GRAMMAR_SHOW_ANSWER_DELAY_MS] ?: 5000L).coerceIn(1000L, 20000L)
+        }
+
+    override suspend fun setShowAnswerDelayMs(ms: Long, isGrammar: Boolean) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SHOW_ANSWER_DELAY_MS] = ms.coerceIn(1000L, 20000L)
+            val key = if (isGrammar) PreferencesKeys.GRAMMAR_SHOW_ANSWER_DELAY_MS else PreferencesKeys.SHOW_ANSWER_DELAY_MS
+            preferences[key] = ms.coerceIn(1000L, 20000L)
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

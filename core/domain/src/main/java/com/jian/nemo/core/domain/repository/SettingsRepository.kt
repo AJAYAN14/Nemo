@@ -530,13 +530,17 @@ interface SettingsRepository {
     val grammarAutoRevealAnswerMsFlow: Flow<Long>
     suspend fun setGrammarAutoRevealAnswerMs(ms: Long)
 
-    /** 显示答案等待开关 Flow 默认: false */
+    /** 显示答案等待开关 (Word) Flow 默认: false */
     val isShowAnswerDelayEnabledFlow: Flow<Boolean>
-    suspend fun setShowAnswerDelayEnabled(enabled: Boolean)
+    /** 显示答案等待开关 (Grammar) Flow 默认: false */
+    val isGrammarShowAnswerDelayEnabledFlow: Flow<Boolean>
+    suspend fun setShowAnswerDelayEnabled(enabled: Boolean, isGrammar: Boolean = false)
 
-    /** 显示答案等待时长 (ms) Flow 默认: 5000，可选: 2000/3000/4000/5000 */
+    /** 显示答案等待时长 (Word, ms) Flow 默认: 5000 */
     val showAnswerDelayMsFlow: Flow<Long>
-    suspend fun setShowAnswerDelayMs(ms: Long)
+    /** 显示答案等待时长 (Grammar, ms) Flow 默认: 5000 */
+    val grammarShowAnswerDelayMsFlow: Flow<Long>
+    suspend fun setShowAnswerDelayMs(ms: Long, isGrammar: Boolean = false)
 
     /**
      * 清除用户相关数据 (保留设备配置)
