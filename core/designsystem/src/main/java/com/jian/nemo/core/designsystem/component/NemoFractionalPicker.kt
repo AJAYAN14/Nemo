@@ -1,14 +1,19 @@
 package com.jian.nemo.core.designsystem.component
 
-import android.content.Context
+
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.graphics.BlurMaskFilter
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -30,14 +35,18 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -47,7 +56,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.abs
 
 /**
@@ -80,14 +88,10 @@ fun NemoFractionalPicker(
 
     // 硬件 Vibrator 震动控制
     val vibrator = remember(context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            context.getSystemService(Vibrator::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-        }
+        context.getSystemService(Vibrator::class.java)
     }
 
+    @SuppressLint("MissingPermission")
     fun performHapticTick() {
         if (vibrator != null && vibrator.hasVibrator()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -160,21 +164,38 @@ fun NemoFractionalPicker(
         }
     }
 
-    val containerBg = if (isDark) Color(0xFF1E1F22) else Color(0xFFF8FAFC)
-    val containerBorder = if (isDark) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.06f)
     val indicatorColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    // 内阴影颜色：深色模式用黑色，浅色模式用深灰
+    val innerShadowColor = if (isDark) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
+    // 边缘渐变遮罩：从弹窗表面色渐变到透明
+    val surfaceColor = MaterialTheme.colorScheme.surface
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(130.dp)
-            .shadow(
-                elevation = if (isDark) 0.dp else 4.dp,
-                shape = RoundedCornerShape(24.dp),
-                clip = false
-            )
             .clip(RoundedCornerShape(24.dp))
-            .background(containerBg)
+            // 内阴影绘制实现凹陷深度感
+            .drawWithContent {
+                drawContent()
+                drawIntoCanvas { canvas ->
+                    val paint = Paint().asFrameworkPaint().apply {
+                        isAntiAlias = true
+                        color = innerShadowColor.toArgb()
+                        xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP)
+                        maskFilter = BlurMaskFilter(12.dp.toPx(), BlurMaskFilter.Blur.NORMAL)
+                    }
+                    val androidCanvas = canvas.nativeCanvas
+                    // 顶部内阴影
+                    androidCanvas.drawRect(
+                        0f, -12.dp.toPx(), size.width, 6.dp.toPx(), paint
+                    )
+                    // 底部内阴影
+                    androidCanvas.drawRect(
+                        0f, size.height - 6.dp.toPx(), size.width, size.height + 12.dp.toPx(), paint
+                    )
+                }
+            }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -207,14 +228,17 @@ fun NemoFractionalPicker(
             Spacer(modifier = Modifier.height(4.dp))
 
             // 2. 核心标尺水平 LazyRow
-            Box(
+            @Suppress("UnusedBoxWithConstraintsScope")
+            BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
+                // 动态计算居中内边距，确保任何屏幕宽度下项目都精确居中
+                val horizontalPadding = (maxWidth - itemWidth) / 2
                 LazyRow(
                     state = listState,
                     flingBehavior = snapFlingBehavior,
-                    contentPadding = PaddingValues(horizontal = 140.dp), // Padding 让两端项目能滑动到绝对居中
+                    contentPadding = PaddingValues(horizontal = horizontalPadding),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(totalItems) { index ->
@@ -279,6 +303,43 @@ fun NemoFractionalPicker(
                             }
                         }
                     }
+                }
+
+                // 左右边缘渐变遮罩，增强凹槽深度视觉
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                ) {
+                    // 左侧渐变
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .width(48.dp)
+                            .height(80.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        surfaceColor.copy(alpha = 0.8f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+                    // 右侧渐变
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .width(48.dp)
+                            .height(80.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        surfaceColor.copy(alpha = 0.8f)
+                                    )
+                                )
+                            )
+                    )
                 }
             }
         }
