@@ -6,6 +6,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -125,14 +127,18 @@ fun NemoFractionalPicker(
     }
 
     var lastReportedIndex by remember { mutableIntStateOf(initialIndex) }
+    var isProgrammaticScroll by remember { mutableStateOf(false) }
 
     // 监听状态改变并回调
     LaunchedEffect(currentCenteredIndex) {
         if (currentCenteredIndex != lastReportedIndex) {
             lastReportedIndex = currentCenteredIndex
-            val selectedValue = min + currentCenteredIndex
             performHapticTick()
-            onValueChange(selectedValue)
+            // 程序化滚动期间不回调中间值，避免干扰目标值
+            if (!isProgrammaticScroll) {
+                val selectedValue = min + currentCenteredIndex
+                onValueChange(selectedValue)
+            }
         }
     }
 
@@ -140,7 +146,17 @@ fun NemoFractionalPicker(
     LaunchedEffect(value) {
         val targetIndex = (value - min).coerceIn(0, totalItems - 1)
         if (targetIndex != currentCenteredIndex && !listState.isScrollInProgress) {
-            listState.animateScrollToItem(targetIndex)
+            try {
+                isProgrammaticScroll = true
+                // 以当前 snap 对齐位置为基准，按整数倍 item 宽度滚动，保证目标项精确居中
+                val scrollDelta = (targetIndex - currentCenteredIndex) * itemWidthPx
+                listState.animateScrollBy(scrollDelta)
+                // 滚动完成后报告最终值
+                lastReportedIndex = targetIndex
+                onValueChange(min + targetIndex)
+            } finally {
+                isProgrammaticScroll = false
+            }
         }
     }
 
