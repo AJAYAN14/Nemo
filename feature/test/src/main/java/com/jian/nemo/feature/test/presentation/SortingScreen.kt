@@ -385,15 +385,17 @@ private fun SortableChip(
 
     LiquidButton(
         onClick = {
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onClick()
+            if (enabled) {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            }
         },
         modifier = modifier,
         backgroundColor = chipColor,
         shape = chipShape,
         border = borderStroke,
         useSoftShadow = true,
-        isInteractive = enabled,
+        isInteractive = true,
         contentAlignment = Alignment.Center
     ) {
         Box(

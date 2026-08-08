@@ -53,7 +53,7 @@ fun TestFooter(
                 .height(56.dp),
             backgroundColor = if (canGoPrev) slate200 else slate100,
             shape = shape,
-            isInteractive = canGoPrev,
+            isInteractive = true,
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -88,7 +88,7 @@ fun TestFooter(
                 .height(56.dp),
             backgroundColor = if (isMainEnabled) indigo600 else indigo100,
             shape = shape,
-            isInteractive = isMainEnabled,
+            isInteractive = true,
             contentAlignment = Alignment.Center
         ) {
             Text(
