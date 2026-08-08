@@ -11,11 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.feature.test.TestViewModel
 import com.jian.nemo.core.domain.model.TestQuestion
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.feature.test.components.TestHeaderCenterContent
+import com.jian.nemo.feature.test.components.TestHeaderActions
+import com.jian.nemo.feature.test.components.SimpleProgressIndicator
 
 /**
  * 卡片题主界面
- *
- * 参考: 旧项目 CardMatchingPage (CardMatchingScreen.kt 行34-107)
  */
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Suppress("UnusedContentLambdaTargetStateParameter")
@@ -34,33 +36,42 @@ fun CardMatchingScreen(
         }
     }
 
-    // 使用AnimatedContent为卡片题切换添加动画效果
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            // 头部 (固定)
-            CardMatchingTestHeader(
+            // 头部 - 统一使用 CommonHeader（与选择题/手打题/排序题一致）
+            CommonHeader(
+                title = "",
                 onBack = { viewModel.confirmExitTest() },
-                timeLimitSeconds = uiState.timeLimitSeconds,
-                timeRemainingSeconds = uiState.timeRemainingSeconds,
-                onPause = { viewModel.pauseTest() }
+                centerContent = {
+                    TestHeaderCenterContent(
+                        timeLimitSeconds = uiState.timeLimitSeconds,
+                        timeRemainingSeconds = uiState.timeRemainingSeconds
+                    )
+                },
+                actions = {
+                    TestHeaderActions(
+                        word = null,
+                        onToggleFavorite = { _, _ -> },
+                        onPause = { viewModel.pauseTest() }
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 进度条 (固定)
-            com.jian.nemo.feature.test.components.SimpleProgressIndicator(
-                current = uiState.questions.count { it.isAnswered },
-                total = uiState.questions.size
-            )
+            // 进度条
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                SimpleProgressIndicator(
+                    current = uiState.questions.count { it.isAnswered },
+                    total = uiState.questions.size
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -77,9 +88,10 @@ fun CardMatchingScreen(
                     }
                 },
                 label = "card_matching_transition",
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp)
             ) { targetIndex ->
-                // 注意：卡片初始化由外部 LaunchedEffect 处理，这里只需展示
                 CardMatchingContentArea(
                     termCards = uiState.termCards,
                     definitionCards = uiState.definitionCards,

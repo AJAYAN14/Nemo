@@ -20,15 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Pause
-import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
-import com.jian.nemo.core.ui.component.common.NemoMenuItem
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,21 +47,21 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.IosColors
-import java.util.Locale
 
-private val PAIR_CHECK_PALETTE = listOf(
-    Color(0xFF6366F1), // Indigo
-    Color(0xFFEC4899), // Pink
-    Color(0xFF10B981), // Emerald
-    Color(0xFFF59E0B), // Amber
-    Color(0xFF06B6D4), // Cyan
-    Color(0xFF8B5CF6), // Purple
-    Color(0xFFF97316), // Orange
-    Color(0xFF14B8A6)  // Teal
+
+private val DISTINCT_PAIR_PALETTE = listOf(
+    Color(0xFFF97316), // 1. 珊瑚橙 (Orange)
+    Color(0xFF10B981), // 2. 翡翠亮绿 (Green)
+    Color(0xFF3B82F6), // 3. 湛蓝色 (Blue)
+    Color(0xFFF59E0B), // 4. 琥珀金黄 (Yellow/Orange)
+    Color(0xFF8B5CF6), // 5. 亮罗兰紫 (Purple)
+    Color(0xFF06B6D4), // 6. 青空蓝 (Cyan)
+    Color(0xFFEC4899), // 7. 玫瑰粉 (Pink)
+    Color(0xFF14B8A6)  // 8. 绿松石 (Teal)
 )
 
-private fun getPairColor(cardId: Int): Color {
-    return PAIR_CHECK_PALETTE[Math.abs(cardId.hashCode()) % PAIR_CHECK_PALETTE.size]
+private fun getPairColor(pairIndex: Int): Color {
+    return DISTINCT_PAIR_PALETTE[Math.abs(pairIndex) % DISTINCT_PAIR_PALETTE.size]
 }
 
 /**
@@ -77,12 +74,13 @@ private fun getPairColor(cardId: Int): Color {
 fun FlippableCard(
     card: MatchableCard,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    pairIndex: Int = 0
 ) {
     val cardState = card.state
     val context = LocalContext.current
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
-    val pairColor = getPairColor(card.id)
+    val pairColor = getPairColor(pairIndex)
 
     // Flat UI Colors - Using Material Theme Semantics
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -235,8 +233,6 @@ fun FlippableCard(
 
 /**
  * 卡片内容区域(左右分栏)
- *
- * 参考: 旧项目 CardMatchingScreen.kt 行111-178
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -246,6 +242,10 @@ fun CardMatchingContentArea(
     onCardClick: (MatchableCard) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val pairIndexMap = remember(termCards) {
+        termCards.mapIndexed { index, card -> card.id to index }.toMap()
+    }
+
     Row(
         modifier = modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -261,6 +261,7 @@ fun CardMatchingContentArea(
             ) { card ->
                 FlippableCard(
                     card = card,
+                    pairIndex = pairIndexMap[card.id] ?: 0,
                     onClick = { onCardClick(card) },
                     modifier = Modifier.animateItemPlacement(
                         animationSpec = tween(
@@ -283,6 +284,7 @@ fun CardMatchingContentArea(
             ) { card ->
                 FlippableCard(
                     card = card,
+                    pairIndex = pairIndexMap[card.id] ?: 0,
                     onClick = { onCardClick(card) },
                     modifier = Modifier.animateItemPlacement(
                         animationSpec = tween(
@@ -397,98 +399,6 @@ fun MatchingFeedbackPanel(
                         onNextGroup()
                     }
                 }
-            }
-        }
-    }
-}
-
-/**
- * 卡片题测试头部
- *
- * 参考: 旧项目 TestComponents.kt 行753-800
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CardMatchingTestHeader(
-    onBack: () -> Unit,
-    timeLimitSeconds: Int,
-    timeRemainingSeconds: Int,
-    onPause: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    // 倒计时紧迫感脉冲动画（≤30 秒时触发），必须在 Composable 顶层调用
-    val isUrgent = timeLimitSeconds > 0 && timeRemainingSeconds in 1..30
-    val infiniteTransition = rememberInfiniteTransition(label = "timer_pulse")
-    val timerPulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = if (isUrgent) 0.4f else 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(500),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "timer_alpha"
-    )
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 返回按钮
-        IconButton(onClick = onBack) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "返回"
-            )
-        }
-
-        // 倒计时显示
-        if (timeLimitSeconds > 0) {
-            val minutes = timeRemainingSeconds / 60
-            val seconds = timeRemainingSeconds % 60
-            Text(
-                text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = if (timeRemainingSeconds < 60) {
-                    MaterialTheme.colorScheme.error.copy(
-                        alpha = if (isUrgent) timerPulseAlpha else 1f
-                    )
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-        }
-
-        // 菜单入口按钮
-        Box {
-            var expanded by remember { mutableStateOf(false) }
-
-            IconButton(
-                onClick = { expanded = true },
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = "更多选项",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            NemoDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                // 暂停测试选项
-                NemoMenuItem(
-                    text = "暂停测试",
-                    onClick = {
-                        expanded = false
-                        onPause()
-                    },
-                    leadingIcon = Icons.Rounded.Pause
-                )
             }
         }
     }
