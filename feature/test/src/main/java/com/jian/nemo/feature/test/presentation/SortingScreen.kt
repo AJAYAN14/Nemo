@@ -34,9 +34,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.BorderStroke
 import com.jian.nemo.core.domain.model.ExplanationPayload
 import com.jian.nemo.core.domain.model.SortableChar
 import com.jian.nemo.core.domain.model.TestQuestion
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.feature.test.components.QuestionExplanationCard
 import com.jian.nemo.feature.test.TestViewModel
 
@@ -332,15 +334,7 @@ private fun SortableChip(
     enabled: Boolean = true
 ) {
     val hapticFeedback = LocalHapticFeedback.current
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
-
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.92f else 1f,
-        label = "chipScale",
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
-    )
 
     val targetBackgroundColor = when {
         status == ChipStatus.CORRECT -> Color(0xFF4CAF50)
@@ -358,38 +352,38 @@ private fun SortableChip(
     val textColor = if (isSelected || status != ChipStatus.NORMAL) Color.White else MaterialTheme.colorScheme.onSurface
     val borderColor = if (isSelected || status != ChipStatus.NORMAL) Color.Transparent else if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFF1F5F9)
 
-    Box(
-        modifier = modifier
-            .graphicsLayer { 
-                scaleX = scale
-                scaleY = scale 
-            }
-            .clip(RoundedCornerShape(18.dp))
-            .background(chipColor)
-            .then(
-                if (status == ChipStatus.NORMAL && !isSelected) 
-                    Modifier.border(1.dp, borderColor, RoundedCornerShape(18.dp))
-                else Modifier
-            )
-            .clickable(
-                enabled = enabled,
-                interactionSource = interactionSource,
-                indication = null
-            ) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
-            }
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+    val chipShape = RoundedCornerShape(18.dp)
+    val borderStroke = if (status == ChipStatus.NORMAL && !isSelected) {
+        BorderStroke(1.dp, borderColor)
+    } else null
+
+    LiquidButton(
+        onClick = {
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
+        modifier = modifier,
+        backgroundColor = chipColor,
+        shape = chipShape,
+        border = borderStroke,
+        useSoftShadow = true,
+        isInteractive = enabled,
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = char.char.toString(),
-            color = textColor,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
+        Box(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = char.char.toString(),
+                color = textColor,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
+
 
 @Composable
 private fun SortingFeedback(
