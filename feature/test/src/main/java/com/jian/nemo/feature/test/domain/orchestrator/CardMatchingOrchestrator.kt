@@ -243,7 +243,7 @@ class CardMatchingOrchestrator @Inject constructor(
         effectEmitter(TestEffect.PlaySound(isCorrect = false))
         effectEmitter(TestEffect.Vibrate)
 
-        delay(1200)
+        delay(600)
 
         // Refetch state for wrong count
         val newState = stateProvider()

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -51,11 +52,21 @@ import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.IosColors
 import java.util.Locale
 
-/**
- * 可翻转卡片组件
- *
- * 参考: 旧项目 TestComponents.kt 行284-404
- */
+private val PAIR_CHECK_PALETTE = listOf(
+    Color(0xFF6366F1), // Indigo
+    Color(0xFFEC4899), // Pink
+    Color(0xFF10B981), // Emerald
+    Color(0xFFF59E0B), // Amber
+    Color(0xFF06B6D4), // Cyan
+    Color(0xFF8B5CF6), // Purple
+    Color(0xFFF97316), // Orange
+    Color(0xFF14B8A6)  // Teal
+)
+
+private fun getPairColor(cardId: Int): Color {
+    return PAIR_CHECK_PALETTE[Math.abs(cardId.hashCode()) % PAIR_CHECK_PALETTE.size]
+}
+
 /**
  * 可翻转卡片组件
  * Refactored to Flat UI
@@ -71,6 +82,7 @@ fun FlippableCard(
     val cardState = card.state
     val context = LocalContext.current
     val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
+    val pairColor = getPairColor(card.id)
 
     // Flat UI Colors - Using Material Theme Semantics
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -83,6 +95,7 @@ fun FlippableCard(
             CardState.SELECTED -> primaryColor.copy(alpha = 0.15f)
             CardState.CORRECT -> secondaryColor.copy(alpha = 0.15f)
             CardState.INCORRECT -> errorColor.copy(alpha = 0.15f)
+            CardState.MATCHED -> pairColor.copy(alpha = 0.12f)
             else -> MaterialTheme.colorScheme.surface
         },
         label = "backgroundColor",
@@ -94,6 +107,7 @@ fun FlippableCard(
             CardState.SELECTED -> primaryColor
             CardState.CORRECT -> secondaryColor
             CardState.INCORRECT -> errorColor
+            CardState.MATCHED -> pairColor.copy(alpha = 0.5f)
             else -> MaterialTheme.colorScheme.outlineVariant.copy(
                 alpha = if (isSystemInDarkTheme()) 0.8f else 0.5f
             )
@@ -107,6 +121,7 @@ fun FlippableCard(
             CardState.SELECTED -> primaryColor
             CardState.CORRECT -> secondaryColor
             CardState.INCORRECT -> errorColor
+            CardState.MATCHED -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
             else -> MaterialTheme.colorScheme.onSurface
         },
         label = "textColor",
@@ -146,15 +161,12 @@ fun FlippableCard(
 
     androidx.compose.animation.AnimatedVisibility(
         modifier = modifier,
-        visible = cardState != CardState.MATCHED,
+        visible = true,
         enter = fadeIn() + scaleIn(
             animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
             initialScale = 0.8f
         ),
-        exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-            animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
-            targetScale = 0.4f
-        )
+        exit = fadeOut(animationSpec = tween(200))
     ) {
         Box(
             modifier = Modifier
@@ -179,20 +191,43 @@ fun FlippableCard(
                 isInteractive = true,
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = card.text,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = if (cardState in listOf(CardState.CORRECT, CardState.INCORRECT, CardState.SELECTED))
-                            FontWeight.Bold
-                        else
-                            FontWeight.Medium
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = textColor,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = card.text,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = if (cardState in listOf(CardState.CORRECT, CardState.INCORRECT, CardState.SELECTED, CardState.MATCHED))
+                                FontWeight.Bold
+                            else
+                                FontWeight.Medium
+                        ),
+                        textAlign = TextAlign.Center,
+                        color = textColor,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+
+                    if (cardState == CardState.MATCHED) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 8.dp, end = 8.dp)
+                                .size(22.dp)
+                                .background(pairColor, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = "已配对",
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
