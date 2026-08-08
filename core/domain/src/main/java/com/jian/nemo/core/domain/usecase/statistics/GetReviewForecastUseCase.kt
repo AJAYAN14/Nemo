@@ -13,7 +13,7 @@ import javax.inject.Inject
 /**
  * 获取复习预测 Use Case
  *
- * 获取未来7天的复习预测数据 (单词 + 语法)
+ * 获取所有未来的复习预测数据 (单词 + 语法)
  */
 class GetReviewForecastUseCase @Inject constructor(
     private val wordRepository: WordRepository,
@@ -24,7 +24,7 @@ class GetReviewForecastUseCase @Inject constructor(
     operator fun invoke(): Flow<List<ReviewForecast>> {
         return settingsRepository.learningDayResetHourFlow.flatMapLatest { resetHour ->
             val today = DateTimeUtils.getLearningDay(resetHour)
-            val endDate = today + 6 // 从今天起共7天
+            val endDate = Long.MAX_VALUE // 查询所有未来有复习任务的日期
 
             val wordForecastFlow = wordRepository.getReviewForecast(today, endDate)
             val grammarForecastFlow = grammarRepository.getReviewForecast(today, endDate)

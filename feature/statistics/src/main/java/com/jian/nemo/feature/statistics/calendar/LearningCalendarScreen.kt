@@ -386,6 +386,7 @@ fun InteractiveCalendarCard(
                     selectedDate = selectedDate,
                     todayEpochDay = todayEpochDay,
                     heatmapData = heatmapData,
+                    weekForecast = weekForecast,
                     onDateSelected = onDateSelected
                 )
             } else {
@@ -498,6 +499,7 @@ fun MonthViewContent(
     selectedDate: Date,
     todayEpochDay: Long,
     heatmapData: List<com.jian.nemo.core.domain.usecase.statistics.HeatmapDay>,
+    weekForecast: Map<Long, ReviewForecast>,
     onDateSelected: (Date) -> Unit
 ) {
     val view = LocalView.current
@@ -648,7 +650,9 @@ fun MonthViewContent(
                                 val isToday = cellCal.timeInMillis == todayCal.timeInMillis
                                 val epochDay = (cellCal.timeInMillis + TimeZone.getDefault().getOffset(cellCal.timeInMillis)) / 86400000L
                                 val dayRecord = heatmapMap[epochDay]
-                                val hasStudyRecord = dayRecord != null && dayRecord.count > 0
+                                val forecast = weekForecast[epochDay]
+                                val hasStudyRecord = (dayRecord != null && dayRecord.count > 0) ||
+                                    (epochDay > todayEpochDay && forecast != null && (forecast.wordCount + forecast.grammarCount) > 0)
 
                                 MonthDayCell(
                                     dayNumber = currentDayNumber.toString(),
