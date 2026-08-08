@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.CardState
 import com.jian.nemo.core.domain.model.FeedbackPanelState
 import com.jian.nemo.core.domain.model.MatchableCard
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -79,9 +80,9 @@ fun FlippableCard(
     // 颜色动画
     val backgroundColor by animateColorAsState(
         targetValue = when (cardState) {
-            CardState.SELECTED -> primaryColor.copy(alpha = 0.1f)
-            CardState.CORRECT -> secondaryColor.copy(alpha = 0.1f)
-            CardState.INCORRECT -> errorColor.copy(alpha = 0.1f)
+            CardState.SELECTED -> primaryColor.copy(alpha = 0.15f)
+            CardState.CORRECT -> secondaryColor.copy(alpha = 0.15f)
+            CardState.INCORRECT -> errorColor.copy(alpha = 0.15f)
             else -> MaterialTheme.colorScheme.surface
         },
         label = "backgroundColor",
@@ -116,7 +117,7 @@ fun FlippableCard(
     val scale by animateFloatAsState(
         targetValue = if (cardState == CardState.SELECTED) 1.02f else 1f,
         label = "scale",
-        animationSpec = tween(300)
+        animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f)
     )
 
     // 错误时触发震动 + 播放提示音；正确时播放提示音
@@ -140,52 +141,59 @@ fun FlippableCard(
 
     // Haptic feedback
     val hapticFeedback = LocalHapticFeedback.current
+    val cardShape = RoundedCornerShape(22.dp)
+    val borderWidth = if (cardState == CardState.DEFAULT) 1.dp else 2.dp
 
     androidx.compose.animation.AnimatedVisibility(
         modifier = modifier,
         visible = cardState != CardState.MATCHED,
-        enter = fadeIn() + scaleIn(initialScale = 0.95f),
-        exit = fadeOut(animationSpec = tween(300))
+        enter = fadeIn() + scaleIn(
+            animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
+            initialScale = 0.8f
+        ),
+        exit = fadeOut(animationSpec = tween(200)) + scaleOut(
+            animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
+            targetScale = 0.4f
+        )
     ) {
         Box(
             modifier = Modifier
-                .padding(vertical = 4.dp)
+                .padding(vertical = 6.dp)
                 .fillMaxWidth()
-                .heightIn(min = 80.dp)
                 .scale(scale)
-                .clip(RoundedCornerShape(24.dp))
-                .border(
-                    width = if (cardState == CardState.DEFAULT) 1.dp else 2.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .background(
-                    color = backgroundColor,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .clickable(
-                    enabled = cardState == CardState.DEFAULT || cardState == CardState.SELECTED,
-                    onClick = {
+        ) {
+            LiquidButton(
+                onClick = {
+                    if (cardState == CardState.DEFAULT || cardState == CardState.SELECTED) {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         onClick()
                     }
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = card.text,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = if (cardState in listOf(CardState.CORRECT, CardState.INCORRECT, CardState.SELECTED))
-                        FontWeight.Bold
-                    else
-                        FontWeight.Medium
-                ),
-                textAlign = TextAlign.Center,
-                color = textColor,
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
+                    .heightIn(min = 80.dp),
+                backgroundColor = backgroundColor,
+                shape = cardShape,
+                border = BorderStroke(borderWidth, borderColor),
+                useSoftShadow = true,
+                isInteractive = true,
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = card.text,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = if (cardState in listOf(CardState.CORRECT, CardState.INCORRECT, CardState.SELECTED))
+                            FontWeight.Bold
+                        else
+                            FontWeight.Medium
+                    ),
+                    textAlign = TextAlign.Center,
+                    color = textColor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
         }
     }
 }
