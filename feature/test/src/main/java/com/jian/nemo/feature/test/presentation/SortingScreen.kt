@@ -260,20 +260,37 @@ private fun AnswerContainer(
             }
         } else {
             userAnswer.forEachIndexed { index, char ->
-                val rotation = remember(char.id) { ((-8..8).random()).toFloat() }
-                
-                SortableChip(
-                    char = char,
-                    isSelected = true,
-                    backgroundColor = if (question.isAnswered) null else getMacaronColor(index, char.id),
-                    modifier = Modifier.graphicsLayer { rotationZ = rotation },
-                    onClick = { onDeselect(char) },
-                    status = when {
-                        !question.isAnswered -> ChipStatus.NORMAL
-                        question.isCorrect -> ChipStatus.CORRECT
-                        else -> ChipStatus.WRONG
+                key(char.id) {
+                    val animProgress = remember { androidx.compose.animation.core.Animatable(0f) }
+                    LaunchedEffect(char.id) {
+                        animProgress.animateTo(
+                            targetValue = 1f,
+                            animationSpec = spring(
+                                dampingRatio = 0.5f,
+                                stiffness = 300f
+                            )
+                        )
                     }
-                )
+                    val rotation = remember(char.id) { ((-8..8).random()).toFloat() }
+
+                    SortableChip(
+                        char = char,
+                        isSelected = true,
+                        backgroundColor = if (question.isAnswered) null else getMacaronColor(index, char.id),
+                        modifier = Modifier.graphicsLayer {
+                            alpha = animProgress.value
+                            scaleX = 0.5f + animProgress.value * 0.5f
+                            scaleY = 0.5f + animProgress.value * 0.5f
+                            rotationZ = rotation
+                        },
+                        onClick = { onDeselect(char) },
+                        status = when {
+                            !question.isAnswered -> ChipStatus.NORMAL
+                            question.isCorrect -> ChipStatus.CORRECT
+                            else -> ChipStatus.WRONG
+                        }
+                    )
+                }
             }
         }
     }
@@ -304,6 +321,15 @@ private fun OptionsContainer(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             options.forEachIndexed { index, char ->
+                val animProgress by animateFloatAsState(
+                    targetValue = if (char.isSelected) 0f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = 0.5f,
+                        stiffness = 300f
+                    ),
+                    label = "optionLiquidAnim_${char.id}"
+                )
+
                 Box {
                     SortableChip(
                         char = char,
@@ -311,9 +337,9 @@ private fun OptionsContainer(
                         backgroundColor = getMacaronColor(index, char.id),
                         enabled = !char.isSelected,
                         modifier = Modifier.graphicsLayer { 
-                            alpha = if (char.isSelected) 0f else 1f 
-                            scaleX = if (char.isSelected) 0.8f else 1f
-                            scaleY = if (char.isSelected) 0.8f else 1f
+                            alpha = animProgress
+                            scaleX = 0.5f + animProgress * 0.5f
+                            scaleY = 0.5f + animProgress * 0.5f
                         },
                         onClick = { if (!char.isSelected) onSelect(char) }
                     )
