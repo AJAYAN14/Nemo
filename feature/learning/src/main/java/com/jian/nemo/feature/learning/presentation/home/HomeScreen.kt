@@ -529,39 +529,12 @@ fun HomeScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
-                            .drawWithContent {
-                                drawContent()
-                                // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，基于 Canvas clipPath 约束在圆角内部
-                                val width = size.width
-                                val height = size.height
-                                val xOffset = shimmerProgress * width
-                                val shimmerBrush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.White.copy(alpha = if (isDark) 0.15f else 0.25f),
-                                        Color.Transparent
-                                    ),
-                                    start = androidx.compose.ui.geometry.Offset(xOffset, 0f),
-                                    end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
-                                )
-                                val cornerRadiusPx = 24.dp.toPx()
-                                val clipPathObj = androidx.compose.ui.graphics.Path().apply {
-                                    addRoundRect(
-                                        androidx.compose.ui.geometry.RoundRect(
-                                            rect = androidx.compose.ui.geometry.Rect(androidx.compose.ui.geometry.Offset.Zero, size),
-                                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadiusPx, cornerRadiusPx)
-                                        )
-                                    )
-                                }
-                                clipPath(clipPathObj) {
-                                    drawRect(brush = shimmerBrush)
-                                }
-                            },
+                            .height(64.dp),
                         backgroundColor = btnColor,
                         shape = RoundedCornerShape(24.dp),
                         elevation = 6.dp
                     ) {
+                        // 按钮内容
                         Row(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically,
@@ -585,6 +558,38 @@ fun HomeScreen(
                                 tint = Color.White
                             )
                         }
+                        // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，放在 content 内部以跟随按钮拖拽位移
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .drawWithContent {
+                                    drawContent()
+                                    val width = size.width
+                                    val height = size.height
+                                    val xOffset = shimmerProgress * width
+                                    val shimmerBrush = Brush.linearGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.White.copy(alpha = if (isDark) 0.15f else 0.25f),
+                                            Color.Transparent
+                                        ),
+                                        start = androidx.compose.ui.geometry.Offset(xOffset, 0f),
+                                        end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
+                                    )
+                                    val cornerRadiusPx = 24.dp.toPx()
+                                    val clipPathObj = androidx.compose.ui.graphics.Path().apply {
+                                        addRoundRect(
+                                            androidx.compose.ui.geometry.RoundRect(
+                                                rect = androidx.compose.ui.geometry.Rect(androidx.compose.ui.geometry.Offset.Zero, size),
+                                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadiusPx, cornerRadiusPx)
+                                            )
+                                        )
+                                    }
+                                    clipPath(clipPathObj) {
+                                        drawRect(brush = shimmerBrush)
+                                    }
+                                }
+                        )
                     }
                 }
             }
