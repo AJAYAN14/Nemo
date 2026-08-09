@@ -244,62 +244,77 @@ fun LearningScreen(
                 )
             }
 
-            // 顶部撤销 Snackbar
-            NemoSnackbar(
-                visible = uiState.canUndo && showUndoHint,
-                message = "点击撤销上一次评分",
-                actionText = "撤销",
-                icon = Icons.AutoMirrored.Filled.Undo,
-                type = NemoSnackbarType.INFO,
-                autoDismissMs = 5000L,
-                onDismiss = { showUndoHint = false },
-                onClick = {
-                    showUndoHint = false
-                    viewModel.onEvent(LearningEvent.Undo)
-                },
+            // 动态构建通知列表（最新产生的通知插入在最上方）
+            val notificationList = remember(
+                uiState.canUndo, showUndoHint,
+                uiState.successMessage,
+                uiState.error,
+                showAnswerDelayHint, showAnswerDelayHintSec
+            ) {
+                buildList {
+                    if (showAnswerDelayHint) {
+                        add(
+                            com.jian.nemo.core.ui.component.common.NemoNotificationData(
+                                id = "delay_hint",
+                                message = "等待中，请先回想 (${showAnswerDelayHintSec}s)",
+                                type = NemoSnackbarType.WARNING,
+                                icon = Icons.Default.AccessTime,
+                                autoDismissMs = 4000L,
+                                onDismiss = { showAnswerDelayHint = false }
+                            )
+                        )
+                    }
+                    if (uiState.error != null) {
+                        add(
+                            com.jian.nemo.core.ui.component.common.NemoNotificationData(
+                                id = "error_${uiState.error}",
+                                message = uiState.error ?: "",
+                                type = NemoSnackbarType.ERROR,
+                                icon = Icons.Rounded.Report,
+                                autoDismissMs = 4000L,
+                                onDismiss = { viewModel.onEvent(LearningEvent.ClearErrorMessage) }
+                            )
+                        )
+                    }
+                    if (uiState.successMessage != null) {
+                        add(
+                            com.jian.nemo.core.ui.component.common.NemoNotificationData(
+                                id = "success_${uiState.successMessage}",
+                                message = uiState.successMessage ?: "",
+                                type = NemoSnackbarType.SUCCESS,
+                                icon = Icons.Rounded.CheckCircle,
+                                autoDismissMs = 4000L,
+                                onDismiss = { viewModel.onEvent(LearningEvent.ClearSuccessMessage) }
+                            )
+                        )
+                    }
+                    if (uiState.canUndo && showUndoHint) {
+                        add(
+                            com.jian.nemo.core.ui.component.common.NemoNotificationData(
+                                id = "undo_hint",
+                                message = "点击撤销上一次评分",
+                                type = NemoSnackbarType.INFO,
+                                icon = Icons.AutoMirrored.Filled.Undo,
+                                actionText = "撤销",
+                                autoDismissMs = 4000L,
+                                onDismiss = { showUndoHint = false },
+                                onClick = {
+                                    showUndoHint = false
+                                    viewModel.onEvent(LearningEvent.Undo)
+                                }
+                            )
+                        )
+                    }
+                }
+            }
+
+            // 顶部垂直堆叠通知容器 (消除位置重叠与硬编码 72.dp)
+            com.jian.nemo.core.ui.component.common.NemoNotificationStackHost(
+                notifications = notificationList,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .statusBarsPadding()
                     .padding(top = 8.dp)
-            )
-
-            // 反馈成功提示
-            NemoSnackbar(
-                visible = uiState.successMessage != null,
-                message = uiState.successMessage ?: "",
-                type = NemoSnackbarType.SUCCESS,
-                icon = Icons.Rounded.CheckCircle,
-                onDismiss = { viewModel.onEvent(LearningEvent.ClearSuccessMessage) },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 8.dp)
-            )
-
-            // 错误/异常提示
-            NemoSnackbar(
-                visible = uiState.error != null,
-                message = uiState.error ?: "",
-                type = NemoSnackbarType.ERROR,
-                icon = Icons.Rounded.Report,
-                onDismiss = { viewModel.onEvent(LearningEvent.ClearErrorMessage) },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 8.dp)
-            )
-
-            NemoSnackbar(
-                visible = showAnswerDelayHint,
-                message = "等待中，请先回想 (${showAnswerDelayHintSec}s)",
-                icon = Icons.Default.AccessTime,
-                type = NemoSnackbarType.WARNING,
-                autoDismissMs = 2600L,
-                onDismiss = { showAnswerDelayHint = false },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 72.dp)
             )
 
             // 评分说明覆盖层 (Edge-to-Edge with Animation)

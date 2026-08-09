@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,9 +38,12 @@ fun ContentReportDialog(
 ) {
     // 颜色配置
     val primaryColor = NemoIndigo
-    val containerColor = MaterialTheme.colorScheme.surface
-    val titleColor = MaterialTheme.colorScheme.onSurface
-    val bodyColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val containerColor = if (useDarkTheme) MaterialTheme.colorScheme.surface else Color.White
+    val titleColor = if (useDarkTheme) Color.White else Color(0xFF1A1A1A)
+    val bodyColor = if (useDarkTheme) Color(0xFFB0B0B0) else Color(0xFF555555)
+    val chipBg = if (useDarkTheme) Color(0xFF2A2A2E) else Color(0xFFF5F6F8)
+    val chipBorder = if (useDarkTheme) Color(0xFF3A3A3E) else Color(0xFFE0E2E6)
+    val inputBg = if (useDarkTheme) Color(0xFF2A2A2E) else Color(0xFFF8F9FA)
 
     // 错误选项配置
     val errorOptions = remember(learningMode) {
@@ -68,56 +72,55 @@ fun ContentReportDialog(
     var otherDescription by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = containerColor,
-            tonalElevation = 6.dp,
-            shadowElevation = 16.dp,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = 12.dp)
+                .shadow(12.dp, RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(24.dp))
+                .background(containerColor)
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 28.dp, horizontal = 24.dp),
+                modifier = Modifier.padding(vertical = 24.dp, horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 1. Header Icon With Feedback Background
+                // 1. Header Icon
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(52.dp)
                         .background(
-                            color = primaryColor.copy(alpha = 0.12f),
+                            color = primaryColor.copy(alpha = 0.10f),
                             shape = CircleShape
                         )
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Report,
                         contentDescription = null,
-                        modifier = Modifier.size(28.dp),
+                        modifier = Modifier.size(26.dp),
                         tint = primaryColor
                     )
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // 2. Title
                 Text(
                     text = "报告内容错误",
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.2.sp
+                        letterSpacing = 0.sp
                     ),
                     textAlign = TextAlign.Center,
                     color = titleColor
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 // 3. Description
                 val itemName = if (learningMode == LearningMode.Word) "单词" else "语法"
                 Text(
-                    text = "确定要向开发者报告当前这个 ${itemName} 的内容有误吗？请选择错误类型：",
+                    text = "请选择当前${itemName}内容的错误类型：",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         lineHeight = 20.sp
                     ),
@@ -125,9 +128,9 @@ fun ContentReportDialog(
                     color = bodyColor
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
-                // 4. Choice Grid (2 Columns, Selectable Card)
+                // 4. Choice Grid (2 Columns)
                 val rows = errorOptions.chunked(2)
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -144,19 +147,19 @@ fun ContentReportDialog(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(44.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .height(42.dp)
+                                        .clip(RoundedCornerShape(10.dp))
                                         .background(
                                             if (isSelected) primaryColor.copy(alpha = 0.08f)
-                                            else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+                                            else chipBg
                                         )
                                         .border(
                                             BorderStroke(
-                                                width = if (isSelected) 1.5.dp else 1.dp,
+                                                width = if (isSelected) 1.5.dp else 0.8.dp,
                                                 color = if (isSelected) primaryColor
-                                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+                                                else chipBorder
                                             ),
-                                            shape = RoundedCornerShape(12.dp)
+                                            shape = RoundedCornerShape(10.dp)
                                         )
                                         .clickable { selectedType = code }
                                         .padding(horizontal = 8.dp)
@@ -164,7 +167,7 @@ fun ContentReportDialog(
                                     Text(
                                         text = label,
                                         style = MaterialTheme.typography.bodyMedium.copy(
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                             fontSize = 13.5.sp
                                         ),
                                         color = if (isSelected) primaryColor else titleColor,
@@ -173,7 +176,6 @@ fun ContentReportDialog(
                                     )
                                 }
                             }
-                            // If row has only one item, fill space
                             if (rowItems.size < 2) {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
@@ -181,23 +183,23 @@ fun ContentReportDialog(
                     }
                 }
 
-                // 4b. Description Input Field (Always visible, mandatory for 'other')
+                // 5. Description Input Field
                 val isDescriptionRequired = selectedType == "other"
                 val isSubmitEnabled = !isDescriptionRequired || otherDescription.trim().isNotEmpty()
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 OutlinedTextField(
                     value = otherDescription,
                     onValueChange = { if (it.length <= 100) otherDescription = it },
                     placeholder = {
                         Text(
-                            text = if (isDescriptionRequired) "请详细描述错误内容（必填，100字以内）" else "请补充具体错误细节（选填，100字以内）",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            text = if (isDescriptionRequired) "请详细描述错误内容（必填，100字以内）" else "补充具体错误细节（选填，100字以内）",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = bodyColor.copy(alpha = 0.5f)
                             )
                         )
                     },
-                    textStyle = MaterialTheme.typography.bodyMedium,
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = titleColor),
                     maxLines = 3,
                     supportingText = {
                         Box(
@@ -210,24 +212,27 @@ fun ContentReportDialog(
                                 color = if (isDescriptionRequired && otherDescription.trim().isEmpty()) {
                                     MaterialTheme.colorScheme.error
                                 } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    bodyColor.copy(alpha = 0.5f)
                                 }
                             )
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 86.dp),
+                        .heightIn(min = 80.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        unfocusedBorderColor = chipBorder,
+                        focusedContainerColor = inputBg,
+                        unfocusedContainerColor = inputBg,
+                        cursorColor = primaryColor
                     )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // 5. Action Buttons (Standard Pro Max Style)
+                // 6. Action Buttons (Original Style)
                 Button(
                     onClick = { 
                         val desc = otherDescription.trim().takeIf { it.isNotEmpty() }
@@ -268,3 +273,4 @@ fun ContentReportDialog(
         }
     }
 }
+

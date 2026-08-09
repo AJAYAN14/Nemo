@@ -131,11 +131,15 @@ class GrammarDetailViewModel @Inject constructor(
                 _successMessage.value = "反馈成功，感谢您的反馈！"
             } else if (result is Result.Error) {
                 val message = result.exception.message ?: ""
-                if (message.contains("unique_user_item_report")) {
-                    _errorMessage.value = "您已经提交过对此类型问题的反馈了，请勿重复提交。"
-                } else {
-                    _errorMessage.value = "反馈失败: $message"
+                val friendlyError = when {
+                    message.contains("unique_user_item_report") -> "您已经提交过对此类型问题的反馈了，请勿重复提交。"
+                    message.contains("connection closed", ignoreCase = true) ||
+                    message.contains("Unable to resolve host", ignoreCase = true) ||
+                    message.contains("timeout", ignoreCase = true) ||
+                    message.contains("HTTP request to", ignoreCase = true) -> "网络连接失败，请检查网络后重试。"
+                    else -> "反馈失败: $message"
                 }
+                _errorMessage.value = friendlyError
             }
         }
     }

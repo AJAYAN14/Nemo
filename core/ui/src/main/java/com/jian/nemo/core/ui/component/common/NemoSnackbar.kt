@@ -172,7 +172,7 @@ private fun getGradientColors(type: NemoSnackbarType, isDarkTheme: Boolean): Lis
             if (isDarkTheme) {
                 listOf(Color(0xFF3D3A50), Color(0xFF2B2930))
             } else {
-                listOf(NemoPrimary.copy(alpha = 0.95f), Color(0xFF4A90D9))
+                listOf(NemoPrimary, Color(0xFF4A90D9))
             }
         }
         NemoSnackbarType.SUCCESS -> {
