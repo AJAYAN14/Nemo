@@ -203,7 +203,7 @@ class TestQuestionFactory @Inject constructor() {
          * 词性模式干扰项生成的“后备池”
          * 当干扰词池中词性过于单一（例如全是名词）时，从该池中抽取不同词性补原。
          */
-        private val FALLBACK_POS_LIST = listOf("名", "动", "形", "形动", "副", "代", "接", "感", "助", "连体", "接头", "接尾")
+        private val FALLBACK_POS_LIST = listOf("惯用表达", "名", "动", "形", "形动", "副", "代", "接", "感", "助", "连体", "接头", "接尾")
 
         /**
          * 常用平假名池，用于为排序题生成干扰项

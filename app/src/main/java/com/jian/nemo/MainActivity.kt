@@ -65,12 +65,17 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
-
+    @Inject
+    lateinit var cloudBackupManager: com.jian.nemo.core.data.manager.CloudBackupManager
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onStart() {
         super.onStart()
+        // 进入前台时检查是否达到 2 小时保底备份时间
+        applicationScope.launch {
+            cloudBackupManager.tryAutoBackup()
+        }
     }
 
     override fun onStop() {

@@ -195,8 +195,41 @@ class CloudBackupManager @Inject constructor(
     }
 
     /**
-     * 尝试自动备份（防抖）
-     * 距离上次自动备份不足 [intervalHours] 小时则跳过。
+     * 检查当前网络是否可用
+     */
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? android.net.ConnectivityManager
+            ?: return false
+        val activeNetwork = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    /**
+     * 立即执行自动备份（用于学习/复习完成等即时事件，无 2 小时间隔限制）
+     */
+    suspend fun performImmediateAutoBackup() {
+        if (!isNetworkAvailable()) {
+            Log.d(TAG, "performImmediateAutoBackup: 无可用网络，跳过即时备份")
+            return
+        }
+        if (supabase.auth.currentUserOrNull() == null) {
+            Log.d(TAG, "performImmediateAutoBackup: 用户未登录，跳过即时备份")
+            return
+        }
+        try {
+            Log.d(TAG, "performImmediateAutoBackup: 触发即时自动备份")
+            uploadBackup()
+            val now = System.currentTimeMillis()
+            sharedPreferences.edit().putLong("last_auto_backup_time", now).apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "performImmediateAutoBackup: 即时自动备份失败", e)
+        }
+    }
+
+    /**
+     * 尝试保底自动备份（自然时间间隔防抖）
+     * 距离上次备份不足 [intervalHours] 小时则跳过。
      */
     suspend fun tryAutoBackup(intervalHours: Int = 2) {
         val lastBackupTime = sharedPreferences.getLong("last_auto_backup_time", 0L)
@@ -204,18 +237,20 @@ class CloudBackupManager @Inject constructor(
         val intervalMillis = intervalHours * 60 * 60 * 1000L
 
         if (now - lastBackupTime >= intervalMillis) {
+            if (!isNetworkAvailable()) {
+                Log.d(TAG, "tryAutoBackup: 无可用网络，跳过保底备份")
+                return
+            }
+            if (supabase.auth.currentUserOrNull() == null) {
+                Log.d(TAG, "tryAutoBackup: 用户未登录，跳过保底备份")
+                return
+            }
             try {
-                // 检查是否登录
-                if (supabase.auth.currentUserOrNull() == null) {
-                    Log.d(TAG, "tryAutoBackup: 用户未登录，跳过自动备份")
-                    return
-                }
-
-                Log.d(TAG, "tryAutoBackup: 触发自动备份")
+                Log.d(TAG, "tryAutoBackup: 满 ${intervalHours} 小时，触发保底自动备份")
                 uploadBackup()
                 sharedPreferences.edit().putLong("last_auto_backup_time", now).apply()
             } catch (e: Exception) {
-                Log.e(TAG, "tryAutoBackup: 自动备份失败", e)
+                Log.e(TAG, "tryAutoBackup: 保底自动备份失败", e)
             }
         } else {
             val hoursLeft = (intervalMillis - (now - lastBackupTime)) / (60 * 60 * 1000f)

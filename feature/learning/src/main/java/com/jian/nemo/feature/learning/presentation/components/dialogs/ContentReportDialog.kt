@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
@@ -34,16 +34,19 @@ fun ContentReportDialog(
     learningMode: LearningMode,
     onDismiss: () -> Unit,
     onConfirm: (errorType: String, description: String?) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
+    // 自动判断深色模式状态（跟随 App 当前 MaterialTheme 主题，而不是系统）
+    val isDark = useDarkTheme
+
     // 颜色配置
     val primaryColor = NemoIndigo
-    val containerColor = if (useDarkTheme) MaterialTheme.colorScheme.surface else Color.White
-    val titleColor = if (useDarkTheme) Color.White else Color(0xFF1A1A1A)
-    val bodyColor = if (useDarkTheme) Color(0xFFB0B0B0) else Color(0xFF555555)
-    val chipBg = if (useDarkTheme) Color(0xFF2A2A2E) else Color(0xFFF5F6F8)
-    val chipBorder = if (useDarkTheme) Color(0xFF3A3A3E) else Color(0xFFE0E2E6)
-    val inputBg = if (useDarkTheme) Color(0xFF2A2A2E) else Color(0xFFF8F9FA)
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+    val titleColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF1A1A1A)
+    val bodyColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF555555)
+    val chipBg = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color(0xFFF5F6F8)
+    val chipBorder = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else Color(0xFFE0E2E6)
+    val inputBg = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color(0xFFF8F9FA)
 
     // 错误选项配置
     val errorOptions = remember(learningMode) {
@@ -222,6 +225,8 @@ fun ContentReportDialog(
                         .heightIn(min = 80.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = titleColor,
+                        unfocusedTextColor = titleColor,
                         focusedBorderColor = primaryColor,
                         unfocusedBorderColor = chipBorder,
                         focusedContainerColor = inputBg,

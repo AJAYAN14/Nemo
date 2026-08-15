@@ -470,10 +470,10 @@ interface WordDao {
     suspend fun getInterjections(): List<WordEntity>
 
     /**
-     * 获取所有固定表达（惯用语/连语）
-     * 首成分为：連語
+     * 获取所有固定表达（惯用语/连语/固定表达）
+     * 支持：連語、惯用表达、固定表达等
      */
-    @Query("SELECT * FROM words WHERE pos LIKE '連語%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("SELECT * FROM words WHERE (pos LIKE '連語%' OR pos LIKE '%惯用%' OR pos LIKE '%固定%') AND is_delisted = 0 ORDER BY id ASC")
     suspend fun getFixedExpressions(): List<WordEntity>
 
     // ========== 批量操作 ==========

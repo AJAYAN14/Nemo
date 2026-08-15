@@ -120,13 +120,13 @@ class ReviewViewModel @Inject constructor(
             }
         }
 
-        // 监听完成状态以触发自动备份
+        // 监听完成状态以触发即时自动备份
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.map { it.status }
                 .distinctUntilChanged()
                 .filter { it == ReviewStatus.SessionCompleted }
                 .collect {
-                    cloudBackupManager.tryAutoBackup()
+                    cloudBackupManager.performImmediateAutoBackup()
                 }
         }
     }

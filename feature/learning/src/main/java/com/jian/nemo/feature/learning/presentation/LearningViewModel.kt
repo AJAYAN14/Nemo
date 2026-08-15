@@ -824,9 +824,9 @@ class LearningViewModel @Inject constructor(
                 checkAndRestoreOrReset()
                 val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
                 val totalDuration = sessionStatsManager.completeSession(mode, todayEpoch)
-                // 触发静默自动备份（防抖 2 小时）
+                // 触发即时自动备份
                 viewModelScope.launch(Dispatchers.IO) {
-                    cloudBackupManager.tryAutoBackup()
+                    cloudBackupManager.performImmediateAutoBackup()
                 }
                 _uiState.update {
                     it.copy(
@@ -1741,6 +1741,11 @@ class LearningViewModel @Inject constructor(
         clearSession()
         syncUndoAvailability()
         syncTodayCounts()
+
+        // 触发即时自动备份
+        viewModelScope.launch(Dispatchers.IO) {
+            cloudBackupManager.performImmediateAutoBackup()
+        }
 
         println("会话完成！")
     }
