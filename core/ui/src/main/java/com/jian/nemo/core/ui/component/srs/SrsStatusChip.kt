@@ -9,19 +9,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.util.SrsDateUtils
 
 /**
- * SRS 记忆状态 Chip (紧凑型，适用于 AppBar)
+ * SRS 记忆状态 Chip (液态紧凑型，适用于 AppBar)
  */
 @Composable
 fun SrsStatusChip(
     nextReviewDay: Long,
     repetitionCount: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val isNew = repetitionCount == 0
     val isOverdue = !isNew && SrsDateUtils.isOverdue(nextReviewDay)
@@ -29,39 +30,42 @@ fun SrsStatusChip(
     val text = if (isNew) "未学习" else SrsDateUtils.formatNextReviewDate(nextReviewDay)
 
     val containerColor = when {
-        isNew -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        isNew -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
         isOverdue -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f)
-        else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
+        else -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
     }
 
     val contentColor = when {
-        isNew -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+        isNew -> MaterialTheme.colorScheme.onSurfaceVariant
         isOverdue -> MaterialTheme.colorScheme.onErrorContainer
         else -> MaterialTheme.colorScheme.onPrimaryContainer
     }
 
     val icon = if (isNew) Icons.Rounded.RadioButtonUnchecked else Icons.Rounded.Schedule
 
-    Surface(
+    LiquidButton(
+        onClick = { onClick?.invoke() },
+        backgroundColor = containerColor,
         shape = RoundedCornerShape(50),
-        color = containerColor,
-        modifier = modifier.height(24.dp)
+        elevation = 2.dp,
+        isInteractive = true,
+        modifier = modifier.height(30.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.padding(horizontal = 10.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(12.dp),
+                modifier = Modifier.size(13.dp),
                 tint = contentColor
             )
-            Spacer(modifier = Modifier.width(4.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 10.sp,
+                    fontSize = 11.sp,
                     letterSpacing = 0.sp
                 ),
                 color = contentColor

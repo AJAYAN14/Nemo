@@ -244,6 +244,7 @@ private fun WordDetailContent(
             }
 
             // Common Header (Overlaid)
+            val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
             com.jian.nemo.core.ui.component.common.CommonHeader(
                 title = "", // Empty title for hero section look
                 onBack = onBack,
@@ -255,11 +256,17 @@ private fun WordDetailContent(
                     )
                 },
                 actions = {
-                    IconButton(onClick = onReportClick) {
+                    com.jian.nemo.core.ui.component.liquid.LiquidButton(
+                        onClick = onReportClick,
+                        backgroundColor = navGroupBg,
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        isInteractive = true,
+                        modifier = Modifier.size(44.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Rounded.Report,
                             contentDescription = "举报内容",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
