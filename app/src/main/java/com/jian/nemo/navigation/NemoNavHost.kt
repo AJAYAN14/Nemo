@@ -51,7 +51,6 @@ import com.jian.nemo.feature.settings.AISettingsScreen
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.feature.learning.presentation.kana.KanaChartScreen
-import com.jian.nemo.feature.learning.presentation.review.ReviewScreen
 import com.jian.nemo.feature.collection.navigation.favoritesScreen
 import com.jian.nemo.feature.collection.navigation.mistakesScreen
 import com.jian.nemo.feature.collection.navigation.wrongWordsScreen
@@ -298,9 +297,6 @@ fun NemoNavHost(
         composable(route = NavDestination.PROGRESS) {
             com.jian.nemo.feature.statistics.presentation.dashboard.ProgressDashboardScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToDueReview = {
-                    navController.navigate(NavDestination.DUE_REVIEW)
-                },
                 onNavigateToCategoryPractice = {
                     navController.navigate(NavDestination.categoryClassification("practice"))
                 },
@@ -419,21 +415,6 @@ fun NemoNavHost(
             )
         }
 
-        // 单词复习
-        composable(NavDestination.WORD_REVIEW) {
-            ReviewScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onStartReview = { navController.navigate("review_session") }
-            )
-        }
-
-        // 语法复习
-        composable(NavDestination.GRAMMAR_REVIEW) {
-            ReviewScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onStartReview = { navController.navigate("review_session") }
-            )
-        }
 
         // 收藏列表 - Note: favoritesScreen is an extension function, likely wraps 'composable'.
         // If it uses default composable, it will inherit NavHost's defaults (Secondary transition), which is correct.
@@ -650,22 +631,6 @@ fun NemoNavHost(
             )
         }
 
-        // 今日到期复习
-        composable(NavDestination.DUE_REVIEW) {
-            ReviewScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onStartReview = {
-                    navController.navigate("review_session")
-                }
-            )
-        }
-
-        // 统一复习会话 (Mock)
-        composable("review_session") {
-            com.jian.nemo.feature.learning.presentation.review.ReviewSessionScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
 
         // 学习日历
         composable(NavDestination.LEARNING_CALENDAR) {

@@ -94,7 +94,8 @@ class LearningViewModel @Inject constructor(
     private val learningUndoHelper: LearningUndoHelper,
     private val learningTtsManager: LearningTtsManager,
     private val contentReportRepository: ContentReportRepository,
-    private val cloudBackupManager: CloudBackupManager
+    private val cloudBackupManager: CloudBackupManager,
+    private val reviewLogRepository: com.jian.nemo.core.domain.repository.ReviewLogRepository
 ) : ViewModel() {
     companion object {
         /** 导航防抖延迟 (ms) */
@@ -1299,7 +1300,7 @@ class LearningViewModel @Inject constructor(
                 )
                 println("重学毕业: id=${updatedWord.id}, stability=${updatedWord.stability}, next_interval=${updatedWord.interval}d")
                 val result = updateWordUseCase(updatedWord)
-                handleSrsUpdateResult(result, isNew, isLapse = false)
+                handleSrsUpdateResult(result, isNew, isLapse = false, item = item, quality = 3)
             }
             is LearningItem.GrammarItem -> {
                 val grammar = item.grammar
@@ -1315,7 +1316,7 @@ class LearningViewModel @Inject constructor(
                 )
                 println("重学毕业: id=${updatedGrammar.id}, stability=${updatedGrammar.stability}, next_interval=${updatedGrammar.interval}d")
                 val result = updateGrammarUseCase(updatedGrammar)
-                handleSrsUpdateResult(result, isNew, isLapse = false)
+                handleSrsUpdateResult(result, isNew, isLapse = false, item = item, quality = 3)
             }
         }
     }
@@ -1406,7 +1407,7 @@ class LearningViewModel @Inject constructor(
 
                 println("更新单词: id=${updatedWord.id}, rep=${updatedWord.repetitionCount}, interval=${updatedWord.interval}d")
                 val result = updateWordUseCase(updatedWord)
-                handleSrsUpdateResult(result, isNew, isLapse)
+                handleSrsUpdateResult(result, isNew, isLapse, item, quality)
             }
 
             is LearningItem.GrammarItem -> {
@@ -1426,12 +1427,18 @@ class LearningViewModel @Inject constructor(
 
                 println("更新语法: id=${updatedGrammar.id}, rep=${updatedGrammar.repetitionCount}, interval=${updatedGrammar.interval}d")
                 val result = updateGrammarUseCase(updatedGrammar)
-                handleSrsUpdateResult(result, isNew, isLapse)
+                handleSrsUpdateResult(result, isNew, isLapse, item, quality)
             }
         }
     }
 
-    private suspend fun handleSrsUpdateResult(result: Result<Unit>, isNew: Boolean, isLapse: Boolean) {
+    private suspend fun handleSrsUpdateResult(
+        result: Result<Unit>,
+        isNew: Boolean,
+        isLapse: Boolean,
+        item: LearningItem? = null,
+        quality: Int = 4
+    ) {
         when (result) {
             is Result.Success -> {
                 if (isLapse) {
@@ -1447,6 +1454,65 @@ class LearningViewModel @Inject constructor(
                         LearningMode.Grammar -> {
                             if (isNew) studyRecordRepository.incrementLearnedGrammars(1)
                             else studyRecordRepository.incrementReviewedGrammars(1)
+                        }
+                    }
+
+                    // 补全复习日志与统计记录（仅在复习旧词且成功时执行）
+                    if (!isNew && item != null) {
+                        val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+                        when (item) {
+                            is LearningItem.WordItem -> {
+                                settingsRepository.addTodayTestedWordId(item.word.id)
+                                if (quality <= 2) {
+                                    settingsRepository.addTodayWrongWordId(item.word.id)
+                                }
+                                try {
+                                    val lastDate = item.word.lastReviewedDate
+                                    val actualInterval = if (lastDate != null && lastDate > 0L) {
+                                        (today - lastDate).toInt()
+                                    } else {
+                                        0
+                                    }
+                                    reviewLogRepository.insertLog(
+                                        com.jian.nemo.core.domain.model.ReviewLog(
+                                            itemId = item.word.id,
+                                            itemType = "word",
+                                            reviewDate = DateTimeUtils.getCurrentCompensatedMillis(),
+                                            intervalDays = actualInterval,
+                                            rating = quality
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    println("记录复习日志失败: ${e.message}")
+                                }
+                                srsCalculator.notifyReviewCompleted()
+                            }
+                            is LearningItem.GrammarItem -> {
+                                settingsRepository.addTodayTestedGrammarId(item.grammar.id)
+                                if (quality <= 2) {
+                                    settingsRepository.addTodayWrongGrammarId(item.grammar.id)
+                                }
+                                try {
+                                    val lastDate = item.grammar.lastReviewedDate
+                                    val actualInterval = if (lastDate != null && lastDate > 0L) {
+                                        (today - lastDate).toInt()
+                                    } else {
+                                        0
+                                    }
+                                    reviewLogRepository.insertLog(
+                                        com.jian.nemo.core.domain.model.ReviewLog(
+                                            itemId = item.grammar.id,
+                                            itemType = "grammar",
+                                            reviewDate = DateTimeUtils.getCurrentCompensatedMillis(),
+                                            intervalDays = actualInterval,
+                                            rating = quality
+                                        )
+                                    )
+                                } catch (e: Exception) {
+                                    println("记录复习日志失败: ${e.message}")
+                                }
+                                srsCalculator.notifyReviewCompleted()
+                            }
                         }
                     }
 

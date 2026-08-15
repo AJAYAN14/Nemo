@@ -30,7 +30,6 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 @Composable
 fun ProgressDashboardScreen(
     onNavigateBack: () -> Unit = {},
-    onNavigateToDueReview: () -> Unit = {},
     onNavigateToCategoryPractice: () -> Unit = {},
     onNavigateToLearningCalendar: () -> Unit = {},
     onNavigateToStatistics: () -> Unit = {},
@@ -95,22 +94,12 @@ fun ProgressDashboardScreen(
                     )
                 }
 
-
-                // 复习与训练部分
-                item {
-                    ReviewSection(
-                        isDarkTheme = isDarkTheme,
-                        cardColor = cardColor,
-                        onDueReviewClick = onNavigateToDueReview,
-                        onCategoryPracticeClick = onNavigateToCategoryPractice
-                    )
-                }
-
                 // 数据与资料部分
                 item {
                     DataAndResourcesSection(
                         isDarkTheme = isDarkTheme,
                         cardColor = cardColor,
+                        onCategoryPracticeClick = onNavigateToCategoryPractice,
                         onStatisticsClick = onNavigateToStatistics,
                         onLearningCalendarClick = onNavigateToLearningCalendar,
                         onHistoricalStatisticsClick = onNavigateToHistoricalStatistics,

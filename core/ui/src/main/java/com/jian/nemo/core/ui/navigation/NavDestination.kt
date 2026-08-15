@@ -38,10 +38,6 @@ object NavDestination {
     const val WORD_LEARNING = "word_learning/{level}"
     @Deprecated("Move to feature:learning module", ReplaceWith("LearningDestination.GRAMMAR_LEARNING"))
     const val GRAMMAR_LEARNING = "grammar_learning/{level}"
-    @Deprecated("Move to feature:learning module", ReplaceWith("LearningDestination.WORD_REVIEW"))
-    const val WORD_REVIEW = "word_review"
-    @Deprecated("Move to feature:learning module", ReplaceWith("LearningDestination.GRAMMAR_REVIEW"))
-    const val GRAMMAR_REVIEW = "grammar_review"
 
     const val STATISTICS = "statistics"
     const val PROFILE = "profile"
@@ -51,8 +47,6 @@ object NavDestination {
     const val POS_WORDS = "pos_words/{pos}"
 
     // 复习与训练路由
-    @Deprecated("Move to feature:learning module")
-    const val DUE_REVIEW = "due_review"
     const val CATEGORY_CLASSIFICATION = "category_classification/{source}"
     const val CATEGORY_CARD_BROWSE = "category_card_browse/{category}/{categoryTitle}"
     const val CATEGORY_WORDS = "category_words/{category}/{categoryTitle}"

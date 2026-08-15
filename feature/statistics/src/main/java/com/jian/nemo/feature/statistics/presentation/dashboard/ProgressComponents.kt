@@ -469,48 +469,13 @@ fun PremiumCard(
 }
 
 /**
- * 复习与训练 Box
- */
-@Composable
-fun ReviewSection(
-    isDarkTheme: Boolean,
-    cardColor: Color,
-    onDueReviewClick: () -> Unit,
-    onCategoryPracticeClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        SectionTitle("复习与训练")
-
-        PremiumCard {
-            Column(modifier = Modifier.padding(8.dp)) {
-                SquircleListItem(
-                    icon = Icons.Rounded.Schedule,
-                    color = NemoPrimary,
-                    title = "今日到期复习",
-                    subtitle = "核心复习任务",
-                    onClick = onDueReviewClick,
-                    showDivider = true
-                )
-                SquircleListItem(
-                    icon = Icons.Rounded.SportsEsports,
-                    color = NemoSecondary,
-                    title = "专项训练",
-                    subtitle = "针对性强化练习",
-                    onClick = onCategoryPracticeClick,
-                    showDivider = false
-                )
-            }
-        }
-    }
-}
-
-/**
  * 数据与资料 Box
  */
 @Composable
 fun DataAndResourcesSection(
     isDarkTheme: Boolean,
     cardColor: Color,
+    onCategoryPracticeClick: () -> Unit = {},
     onStatisticsClick: () -> Unit,
     onLearningCalendarClick: () -> Unit,
     onHistoricalStatisticsClick: () -> Unit,
@@ -526,6 +491,13 @@ fun DataAndResourcesSection(
 
         PremiumCard {
              Column(modifier = Modifier.padding(8.dp)) {
+                SquircleListItem(
+                    icon = Icons.Rounded.SportsEsports,
+                    color = NemoSecondary,
+                    title = "专项训练",
+                    subtitle = "针对性强化练习",
+                    onClick = onCategoryPracticeClick
+                )
                 SquircleListItem(
                     icon = Icons.Rounded.BubbleChart,
                     color = NemoPrimary,
