@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -43,6 +45,7 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
 import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPracticeDialog
 import com.jian.nemo.feature.learning.presentation.components.cards.WordCard
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,13 +91,21 @@ fun CategoryCardBrowseScreen(
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 actions = {
-                    IconButton(
-                        onClick = { showAnswerSheetDrawer = true }
+                    val navBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+                    LiquidButton(
+                        onClick = { showAnswerSheetDrawer = true },
+                        backgroundColor = navBtnBg,
+                        shape = CircleShape,
+                        isInteractive = true,
+                        elevation = 4.dp,
+                        useSoftShadow = true,
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.FormatListNumbered,
+                            painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
                             contentDescription = "答题卡",
-                            modifier = Modifier.size(24.dp)
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
@@ -250,6 +261,8 @@ fun CategoryCardBrowseScreen(
                             WordCard(
                                 word = word,
                                 isFlipped = localFlippedState, // 使用本地状态
+                                isPlaying = if (isCurrentWord) uiState.isPlaying else false,
+                                playingText = if (isCurrentWord) uiState.playingText else null,
                                 onFlip = { viewModel.flipCard() },
                                 onSpeak = { viewModel.speakCurrentWord() },
                                 onSpeakText = { text -> viewModel.speakText(text) },
@@ -321,8 +334,8 @@ fun CategoryCardBrowseActionButtons(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp), // Increased horizontal padding
-        horizontalArrangement = Arrangement.spacedBy(16.dp), // Increased spacing
+            .padding(horizontal = 24.dp, vertical = 24.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 向后翻页按钮
@@ -334,29 +347,22 @@ fun CategoryCardBrowseActionButtons(
             modifier = Modifier.size(56.dp)
         )
 
-        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
         // 跟打练习按钮
-        Button(
+        LiquidButton(
             onClick = onPractice,
             modifier = Modifier
                 .weight(1f)
-                .height(56.dp)
-                .softCardShadow(borderRadius = 28.dp, isDark = isDark),
+                .height(56.dp),
+            backgroundColor = themeColor,
             shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = themeColor,
-                contentColor = Color.White
-            ),
-            elevation = ButtonDefaults.buttonElevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 0.dp
-            )
+            elevation = 6.dp,
+            useSoftShadow = true
         ) {
             Text(
                 text = "跟打练习",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
 
@@ -372,7 +378,7 @@ fun CategoryCardBrowseActionButtons(
 }
 
 /**
- * 带色调的圆角矩形图标按钮组件
+ * 带色调的圆角矩形液态图标按钮组件
  */
 @Composable
 private fun TintedSquircleIconButton(
@@ -382,15 +388,17 @@ private fun TintedSquircleIconButton(
     themeColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val containerColor = if (enabled) themeColor.copy(alpha = 0.1f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+    val containerColor = if (enabled) themeColor.copy(alpha = 0.12f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
     val contentColor = if (enabled) themeColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
 
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp)) // Squircle
-            .background(containerColor)
-            .clickable(enabled = enabled, onClick = onClick),
-        contentAlignment = Alignment.Center
+    LiquidButton(
+        onClick = onClick,
+        modifier = modifier,
+        backgroundColor = containerColor,
+        shape = RoundedCornerShape(20.dp),
+        elevation = if (enabled) 4.dp else 0.dp,
+        useSoftShadow = enabled,
+        isInteractive = enabled
     ) {
         Icon(
             imageVector = icon,

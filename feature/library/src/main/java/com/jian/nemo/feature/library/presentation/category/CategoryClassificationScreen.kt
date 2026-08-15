@@ -326,36 +326,38 @@ private fun CategoryCard(
     val themeColors = item.colors()
     val isDark = MaterialTheme.colorScheme.background.luminance < 0.5f // Use standard check
 
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.05f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f)
+    val containerColor = themeColors.containerColor
+    val borderColor = if (isDark) themeColors.contentColor.copy(alpha = 0.2f) else themeColors.contentColor.copy(alpha = 0.12f)
+    val iconContainerColor = if (isDark) themeColors.contentColor.copy(alpha = 0.15f) else Color.White
+
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedCornerShape(20.dp),
         color = containerColor,
         border = BorderStroke(0.5.dp, borderColor),
         modifier = modifier
-            .height(100.dp)
-            .softCardShadow(borderRadius = 26.dp, isDark = isDark)
+            .height(76.dp)
+            .softCardShadow(borderRadius = 20.dp, isDark = isDark)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Squircle Icon Container
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(themeColors.containerColor), // Pastel background
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconContainerColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = item.icon,
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(22.dp),
                     tint = themeColors.contentColor // Strong tint
                 )
             }
@@ -369,15 +371,17 @@ private fun CategoryCard(
                     text = item.title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
+                        fontSize = 15.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface, // Clean text color
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = item.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 12.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     maxLines = 1
                 )

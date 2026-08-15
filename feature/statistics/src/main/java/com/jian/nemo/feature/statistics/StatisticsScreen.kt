@@ -578,25 +578,31 @@ private fun StatCard(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
+    val containerColor = if (isDark) {
+        color.copy(alpha = 0.16f)
+    } else {
+        color.copy(alpha = 0.08f)
+    }
 
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = containerColor,
-        border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
         modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
-                    .background(color.copy(alpha = 0.15f), androidx.compose.foundation.shape.CircleShape),
+                    .size(38.dp)
+                    .background(
+                        color = if (isDark) color.copy(alpha = 0.25f) else color.copy(alpha = 0.16f),
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
@@ -615,3 +621,4 @@ private fun StatCard(
         }
     }
 }
+

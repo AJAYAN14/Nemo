@@ -56,6 +56,7 @@ import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.ui.component.text.FuriganaText
 
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
+import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 
 /**
  * 单词卡片组件 (3D Flip)
@@ -72,6 +73,8 @@ fun WordCard(
     onFlip: () -> Unit,
     onSpeak: () -> Unit,
     onSpeakText: (String) -> Unit = {},
+    isPlaying: Boolean = false,
+    playingText: String? = null,
     cardColor: Color = MaterialTheme.colorScheme.surface,
     categoryId: String? = null, // 锁定的分类 ID
     modifier: Modifier = Modifier
@@ -131,16 +134,17 @@ fun WordCard(
                 )
         ) {
             if (isFrontVisible) {
-                WordCardFront(word = word, onFlip = onFlip, onSpeak = onSpeak, themeColor = posColor)
+                val isFrontWordPlaying = isPlaying || (playingText != null && playingText == word.japanese)
+                WordCardFront(word = word, onFlip = onFlip, onSpeak = onSpeak, themeColor = posColor, isPlaying = isFrontWordPlaying)
             } else {
-                WordCardBack(word = word, onFlip = onFlip, onSpeak = onSpeak, onSpeakText = onSpeakText, themeColor = posColor)
+                WordCardBack(word = word, onFlip = onFlip, onSpeak = onSpeak, onSpeakText = onSpeakText, themeColor = posColor, playingText = playingText)
             }
         }
     }
 }
 
 @Composable
-private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, themeColor: Color) {
+private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, themeColor: Color, isPlaying: Boolean = false) {
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -186,43 +190,14 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // UI/UX PRO: 带有交互动效的大朗读按钮
-            var isPressed by remember { mutableStateOf(false) }
-            val scale by animateFloatAsState(
-                targetValue = if (isPressed) 0.9f else 1.0f,
-                animationSpec = spring(dampingRatio = 0.4f, stiffness = 400f),
-                label = "speakButtonScale"
+            // UI/UX PRO: 带有声纹律动动效的大朗读按钮
+            SpeakerButton(
+                isPlaying = isPlaying,
+                onClick = onSpeak,
+                tint = themeColor,
+                size = 80.dp,
+                backgroundColor = themeColor.copy(alpha = 0.1f)
             )
-
-            Box(
-                modifier = Modifier
-                    .graphicsLayer(scaleX = scale, scaleY = scale)
-                    .size(84.dp)
-                    .background(themeColor.copy(alpha = 0.1f), CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { onSpeak() }
-                    )
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onPress = {
-                                isPressed = true
-                                tryAwaitRelease()
-                                isPressed = false
-                            },
-                            onTap = { onSpeak() }
-                        )
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                androidx.compose.material3.Icon(
-                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = "朗读",
-                    tint = themeColor,
-                    modifier = Modifier.size(42.dp)
-                )
-            }
         }
         
         Text(
@@ -238,7 +213,14 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
 }
 
 @Composable
-private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, onSpeakText: (String) -> Unit, themeColor: Color) {
+private fun WordCardBack(
+    word: Word,
+    onFlip: () -> Unit,
+    onSpeak: () -> Unit,
+    onSpeakText: (String) -> Unit,
+    themeColor: Color,
+    playingText: String? = null
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -330,16 +312,21 @@ private fun WordCardBack(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, on
                 modifier = Modifier.align(Alignment.Start)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Spacer(modifier = Modifier.height(12.dp))
-            ExampleSentence(sentence = word.example1!!, translation = word.gloss1, onSpeakText = onSpeakText, themeColor = themeColor)
-            word.example2?.let { ExampleSentence(sentence = it, translation = word.gloss2, onSpeakText = onSpeakText, themeColor = themeColor) }
-            word.example3?.let { ExampleSentence(sentence = it, translation = word.gloss3, onSpeakText = onSpeakText, themeColor = themeColor) }
+            ExampleSentence(sentence = word.example1!!, translation = word.gloss1, onSpeakText = onSpeakText, themeColor = themeColor, playingText = playingText)
+            word.example2?.let { ExampleSentence(sentence = it, translation = word.gloss2, onSpeakText = onSpeakText, themeColor = themeColor, playingText = playingText) }
+            word.example3?.let { ExampleSentence(sentence = it, translation = word.gloss3, onSpeakText = onSpeakText, themeColor = themeColor, playingText = playingText) }
         }
     }
 }
 
 @Composable
-private fun ExampleSentence(sentence: String, translation: String?, onSpeakText: (String) -> Unit, themeColor: Color) {
+private fun ExampleSentence(
+    sentence: String,
+    translation: String?,
+    onSpeakText: (String) -> Unit,
+    themeColor: Color,
+    playingText: String? = null
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -372,39 +359,14 @@ private fun ExampleSentence(sentence: String, translation: String?, onSpeakText:
             }
         }
         
-        // UI/UX PRO: 带有交互动效的播放按钮
-        var isPressed by remember { mutableStateOf(false) }
-        val scale by animateFloatAsState(
-            targetValue = if (isPressed) 0.8f else 1.0f,
-            animationSpec = spring(dampingRatio = 0.4f, stiffness = 400f),
-            label = "playButtonScale"
+        // UI/UX PRO: 带有声纹跳动与液态交互的例句播放按钮
+        val isSentencePlaying = playingText != null && playingText == sentence
+        SpeakerButton(
+            isPlaying = isSentencePlaying,
+            onClick = { onSpeakText(sentence) },
+            tint = themeColor.copy(alpha = if (isSentencePlaying) 1.0f else 0.6f),
+            size = 40.dp
         )
-
-        Box(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(40.dp)
-                .graphicsLayer(scaleX = scale, scaleY = scale)
-                .background(Color.Transparent, CircleShape)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            isPressed = true
-                            tryAwaitRelease()
-                            isPressed = false
-                        },
-                        onTap = { onSpeakText(sentence) }
-                    )
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            androidx.compose.material3.Icon(
-                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = "朗读例句",
-                tint = themeColor.copy(alpha = 0.6f),
-                modifier = Modifier.size(24.dp)
-            )
-        }
     }
 }
 

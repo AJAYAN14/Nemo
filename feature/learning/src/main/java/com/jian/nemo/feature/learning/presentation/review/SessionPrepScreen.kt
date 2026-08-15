@@ -94,7 +94,7 @@ fun SessionPrepScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (uiState.isLoading) {
+            if (uiState.isLoading && uiState.reviewItems.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -133,7 +133,15 @@ fun SessionPrepScreen(
                     }
 
                     // 3. 复习列表项
-                    items(uiState.reviewItems) { item ->
+                    items(
+                        items = uiState.reviewItems,
+                        key = { item ->
+                            when (item) {
+                                is ReviewPreviewItem.WordItem -> "word_${item.word.id}"
+                                is ReviewPreviewItem.GrammarItem -> "grammar_${item.grammar.id}"
+                            }
+                        }
+                    ) { item ->
                         when (item) {
                             is ReviewPreviewItem.WordItem -> {
                                 PreviewWordCard(

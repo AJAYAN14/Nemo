@@ -48,7 +48,10 @@ class SessionPrepViewModel @Inject constructor(
 
     fun loadData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            // 仅在首次且没有数据时展示全屏 Loading，已有数据时进行静默刷新，避免界面闪烁跳动
+            if (_uiState.value.reviewItems.isEmpty()) {
+                _uiState.update { it.copy(isLoading = true) }
+            }
 
             try {
 

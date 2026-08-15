@@ -35,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
@@ -43,7 +44,7 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
  * 复学清单 (Leech Management) - Hybrid Design
  *
  * 结合了用户喜爱的设计元素：
- * 1. Tabs: Floating Pills (Clean & Airy)
+ * 1. Tabs: Floating Liquid Pills (Clean & Airy with Soft Shadow)
  * 2. Cards: Premium Shadow (Consistent with App)
  */
 @Composable
@@ -86,11 +87,11 @@ fun LeechManagementScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            // 1. Floating Pill Tabs
+            // 1. Floating Liquid Pill Tabs
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 LeechPillTab(
@@ -130,7 +131,8 @@ fun LeechManagementScreen(
                         LeechTab.Word -> {
                             LeechList(
                                 items = uiState.skippedWords,
-                                emptyMessage = "太棒了！\n没有需要复学的单词",
+                                emptyTitle = "暂无待复学单词",
+                                emptySubtitle = "当前没有被冻结的难点单词，继续保持哦",
                                 onItemKey = { it.id },
                                 itemContent = { word, onRecover ->
                                     LeechWordCard(
@@ -145,7 +147,8 @@ fun LeechManagementScreen(
                         LeechTab.Grammar -> {
                             LeechList(
                                 items = uiState.skippedGrammars,
-                                emptyMessage = "太棒了！\n没有需要复学的语法",
+                                emptyTitle = "暂无待复学语法",
+                                emptySubtitle = "当前没有被冻结的难点语法，继续保持哦",
                                 onItemKey = { it.id },
                                 itemContent = { grammar, onRecover ->
                                     LeechGrammarCard(
@@ -165,7 +168,7 @@ fun LeechManagementScreen(
 }
 
 /**
- * Clean Floating Pill Tab
+ * Liquid Floating Pill Tab with Soft Shadow
  */
 @Composable
 private fun RowScope.LeechPillTab(
@@ -175,24 +178,36 @@ private fun RowScope.LeechPillTab(
     selectedColor: Color,
     onClick: () -> Unit
 ) {
-    val containerColor = if (isSelected) selectedColor else Color.Transparent
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val containerColor = if (isSelected) {
+        selectedColor
+    } else {
+        if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    }
     val contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-    val borderColor = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    val borderColor = if (isSelected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
 
-    Surface(
+    LiquidButton(
         onClick = onClick,
-        modifier = Modifier.weight(1f).height(40.dp),
-        shape = RoundedCornerShape(20.dp), // Fully rounded pill
-        color = containerColor,
-        contentColor = contentColor,
-        border = BorderStroke(1.dp, borderColor)
+        modifier = Modifier
+            .weight(1f)
+            .height(44.dp),
+        backgroundColor = containerColor,
+        shape = RoundedCornerShape(22.dp),
+        border = borderColor,
+        elevation = if (isSelected) 6.dp else 2.dp,
+        useSoftShadow = true
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = "$title ($count)",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                )
+                ),
+                color = contentColor
             )
         }
     }
@@ -205,13 +220,14 @@ private fun RowScope.LeechPillTab(
 @Composable
 private fun <T> LeechList(
     items: List<T>,
-    emptyMessage: String,
+    emptyTitle: String,
+    emptySubtitle: String,
     onItemKey: (T) -> Int,
     itemContent: @Composable (T, () -> Unit) -> Unit,
     onRecover: (Int) -> Unit
 ) {
     if (items.isEmpty()) {
-        EmptyLeechView(message = emptyMessage)
+        EmptyLeechView(title = emptyTitle, subtitle = emptySubtitle)
     } else {
         LazyColumn(
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp), // More horizontal padding
@@ -353,32 +369,52 @@ private fun LeechItemCardBase(
     }
 }
 
+/**
+ * Premium Empty State (Consistent with Favorites / Collection)
+ */
 @Composable
-private fun EmptyLeechView(message: String) {
-    Column(
+private fun EmptyLeechView(
+    title: String,
+    subtitle: String
+) {
+    Box(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest, CircleShape),
-            contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                imageVector = Icons.Rounded.CheckCircle,
-                contentDescription = null,
-                modifier = Modifier.size(36.dp),
-                tint = MaterialTheme.colorScheme.primary
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.size(100.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 32.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
     }
 }

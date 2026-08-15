@@ -27,6 +27,8 @@ data class CategoryCardBrowseUiState(
     val words: List<Word> = emptyList(),
     val currentWordIndex: Int = 0,
     val isFlipped: Boolean = false,
+    val isPlaying: Boolean = false,
+    val playingText: String? = null,
     val isProcessingClick: Boolean = false,
     val slideDirection: SlideDirection = SlideDirection.FORWARD,
     val error: String? = null,
@@ -66,11 +68,30 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
     init {
         loadCategoryWords()
         initializeTts()
+        observeTtsEvents()
     }
 
     private fun initializeTts() {
         viewModelScope.launch {
             ttsManager.initialize()
+        }
+    }
+
+    private fun observeTtsEvents() {
+        viewModelScope.launch {
+            ttsManager.events.collect { event ->
+                when (event) {
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> {
+                        _uiState.value = _uiState.value.copy(isPlaying = true)
+                    }
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnDone,
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
+                    com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
+                        _uiState.value = _uiState.value.copy(isPlaying = false, playingText = null)
+                    }
+                    else -> Unit
+                }
+            }
         }
     }
 
@@ -129,7 +150,7 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
     }
 
     /**
-     * 翻转卡片
+     * 翻转卡片（仅由正面翻到背面时自动朗读，翻回正面时不播放）
      */
     fun flipCard() {
         val currentState = _uiState.value
@@ -137,9 +158,10 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
             val newFlippedState = !currentState.isFlipped
             _uiState.value = currentState.copy(isFlipped = newFlippedState)
             
-            // 翻转到背面时自动朗读（如果需要显示背面信息）
-            // 或者翻转动作本身触发朗读
-            speakCurrentWord()
+            // 仅在从正面翻到背面时自动朗读，翻回正面静音
+            if (newFlippedState) {
+                speakCurrentWord()
+            }
         }
     }
 
@@ -148,6 +170,7 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
      */
     fun speakCurrentWord() {
         uiState.value.currentWord?.let { word ->
+            _uiState.value = _uiState.value.copy(playingText = word.japanese)
             ttsManager.speak(word.japanese)
         }
     }
@@ -156,6 +179,7 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
      * 朗读指定文本
      */
     fun speakText(text: String) {
+        _uiState.value = _uiState.value.copy(playingText = text)
         ttsManager.speak(text)
     }
 
