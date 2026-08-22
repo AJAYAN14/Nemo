@@ -1,4 +1,4 @@
-package com.jian.nemo.feature.library.presentation.list
+package com.jian.nemo.core.ui.component.discoverybar
 
 import android.view.HapticFeedbackConstants
 import androidx.compose.animation.AnimatedContent
@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,19 +47,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 /**
  * A premium Discovery Bar composable that uses robust morphing containers to switch
@@ -121,6 +119,9 @@ fun DiscoveryBar(
         }
     }
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val searchIconTint = if (isDark) Color.White else Color.Black
+
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
@@ -176,7 +177,7 @@ fun DiscoveryBar(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = style.textStyle.color,
+                        tint = searchIconTint,
                         modifier = Modifier.size(style.searchIconSize),
                     )
 
@@ -265,7 +266,7 @@ fun DiscoveryBar(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Close",
-                            tint = style.textStyle.color,
+                            tint = searchIconTint,
                             modifier = Modifier.size(style.searchIconSize),
                         )
                     }

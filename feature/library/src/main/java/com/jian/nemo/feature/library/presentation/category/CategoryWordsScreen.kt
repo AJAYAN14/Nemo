@@ -17,16 +17,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Layers
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Apps
-import androidx.compose.material.icons.rounded.DoneAll
-import androidx.compose.material.icons.rounded.HourglassEmpty
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -51,6 +47,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
@@ -84,7 +83,7 @@ fun CategoryWordsScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // Expanded State (Track which levels are OPEN)
@@ -101,7 +100,6 @@ fun CategoryWordsScreen(
     // effectively mirroring WordListScreen's behavior.
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
-    var showFilterMenu by remember { mutableStateOf(false) }
 
     // Filter logic
     val filteredWordsByLevel = remember(uiState.wordsByLevel, searchQuery, filterState) {
@@ -145,142 +143,59 @@ fun CategoryWordsScreen(
                 CommonHeader(
                     title = if(uiState.isLoading) categoryTitle else "$categoryTitle (${uiState.words.size})",
                     onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        Box {
-                            IconButton(onClick = { showFilterMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Layers,
-                                    contentDescription = "筛选",
-                                    tint = if (filterState != StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showFilterMenu,
-                                onDismissRequest = { showFilterMenu = false },
-                                shape = RoundedCornerShape(16.dp),
-                                containerColor = if (isDark) Color.Black else Color.White
-                            ) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "全部",
-                                            fontWeight = if (filterState == StudyFilter.ALL) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (filterState == StudyFilter.ALL) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        filterState = StudyFilter.ALL
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoIndigo.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Apps,
-                                                contentDescription = null,
-                                                tint = NemoIndigo,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (filterState == StudyFilter.ALL) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "已学",
-                                            fontWeight = if (filterState == StudyFilter.LEARNED) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (filterState == StudyFilter.LEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        filterState = StudyFilter.LEARNED
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoSecondary.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.DoneAll,
-                                                contentDescription = null,
-                                                tint = NemoSecondary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (filterState == StudyFilter.LEARNED) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "未学",
-                                            fontWeight = if (filterState == StudyFilter.UNLEARNED) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (filterState == StudyFilter.UNLEARNED) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    },
-                                    onClick = {
-                                        filterState = StudyFilter.UNLEARNED
-                                        showFilterMenu = false
-                                    },
-                                    leadingIcon = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(32.dp)
-                                                .background(NemoOrange.copy(alpha = 0.15f), CircleShape),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.HourglassEmpty,
-                                                contentDescription = null,
-                                                tint = NemoOrange,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    },
-                                    trailingIcon = {
-                                        if (filterState == StudyFilter.UNLEARNED) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Check,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    backgroundColor = backgroundColor
                 )
+                val options = remember {
+                    listOf(
+                        DiscoveryOption(
+                            label = "全部",
+                            icon = Icons.Default.Book,
+                            activeColor = NemoIndigo,
+                        ),
+                        DiscoveryOption(
+                            label = "已学",
+                            icon = Icons.Default.CheckCircle,
+                            activeColor = NemoSecondary,
+                        ),
+                        DiscoveryOption(
+                            label = "未学",
+                            icon = Icons.Default.Error,
+                            activeColor = NemoOrange,
+                        ),
+                    )
+                }
+                val selectedIndex = when (filterState) {
+                    StudyFilter.ALL -> 0
+                    StudyFilter.LEARNED -> 1
+                    StudyFilter.UNLEARNED -> 2
+                }
 
-                // Search Bar
-                SearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
+                DiscoveryBar(
+                    options = options,
+                    selectedOptionIndex = selectedIndex,
+                    onOptionSelected = { index ->
+                        val newFilter = when (index) {
+                            0 -> StudyFilter.ALL
+                            1 -> StudyFilter.LEARNED
+                            2 -> StudyFilter.UNLEARNED
+                            else -> StudyFilter.ALL
+                        }
+                        filterState = newFilter
+                    },
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    searchPlaceholder = "搜索：汉字 / 假名 / 释义",
+                    style = DiscoveryBarStyle(
+                        backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
+                        inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ),
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -369,83 +284,6 @@ fun CategoryWordsScreen(
 // --- Local Copies of Helper Components (To avoid modifying WordListScreen.kt) ---
 
 @Composable
-private fun SearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surface
-    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-
-    // 使用本地 String 状态，确保打字不跳动
-    var text by remember { mutableStateOf(query) }
-
-    // 仅在外部清空或初始加载时同步外部 query
-    LaunchedEffect(query) {
-        if (query != text) {
-            if (query.isEmpty() || text.isEmpty()) {
-                text = query
-            }
-        }
-    }
-
-    Surface(
-        modifier = modifier.fillMaxWidth().height(50.dp),
-        shape = RoundedCornerShape(25.dp),
-        color = containerColor,
-        border = BorderStroke(1.dp, borderColor),
-        shadowElevation = 2.dp
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                if (text.isEmpty()) {
-                    Text(
-                        text = "搜索：汉字 / 假名 / 释义",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
-                BasicTextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                        onQueryChange(it)
-                    },
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    singleLine = true,
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            if (text.isNotEmpty()) {
-                IconButton(onClick = { 
-                    text = ""
-                    onQueryChange("") 
-                }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Close,
-                        contentDescription = "Clear",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun LevelHeader(
     level: String,
     count: Int,
@@ -477,6 +315,7 @@ private fun LevelHeader(
                 text = level,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Black,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.width(8.dp))

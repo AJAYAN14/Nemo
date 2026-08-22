@@ -114,17 +114,85 @@ fun TestSettingsScreen(
     // 选项数据准备 - 使用 remember 优化
     val questionCountOptions = remember { listOf(10, 15, 20, 25, 30, 40) }
     val timeLimitOptions = remember { listOf(0, 5, 10, 15, 30) }
-    val questionSourceOptions = remember(uiState.todayLearnedCount, uiState.todayLearnedGrammarCount) {
+
+    val questionSourceOptions = remember(
+        uiState.wrongWordsCount, uiState.wrongGrammarsCount,
+        uiState.favoriteWordsCount, uiState.favoriteGrammarsCount,
+        uiState.todayLearnedCount, uiState.todayLearnedGrammarCount,
+        uiState.todayReviewedCount, uiState.todayReviewedGrammarCount,
+        uiState.allLearnedWordsCount, uiState.allLearnedGrammarsCount,
+        uiState.totalWordsCount, uiState.totalGrammarsCount
+    ) {
         listOf(
-            "我的错题" to QuestionSource.WRONG.key,
-            "我的收藏" to QuestionSource.FAVORITE.key,
-            "今日学习的内容 (${uiState.todayLearnedCount}词 / ${uiState.todayLearnedGrammarCount}语法)" to QuestionSource.TODAY.key,
-            "今日复习的内容 (${uiState.todayReviewedCount}词 / ${uiState.todayReviewedGrammarCount}语法)" to QuestionSource.TODAY_REVIEWED.key,
-            "所有已学习过的内容" to QuestionSource.LEARNED.key,
-            "所有内容" to QuestionSource.ALL.key
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.WRONG.key,
+                title = "我的错题",
+                subtitle = "${uiState.wrongWordsCount} 词 · ${uiState.wrongGrammarsCount} 语法",
+                isEnabled = (uiState.wrongWordsCount + uiState.wrongGrammarsCount) > 0
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.FAVORITE.key,
+                title = "我的收藏",
+                subtitle = "${uiState.favoriteWordsCount} 词 · ${uiState.favoriteGrammarsCount} 语法",
+                isEnabled = (uiState.favoriteWordsCount + uiState.favoriteGrammarsCount) > 0
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.TODAY.key,
+                title = "今日学习的内容",
+                subtitle = "${uiState.todayLearnedCount} 词 · ${uiState.todayLearnedGrammarCount} 语法",
+                isEnabled = (uiState.todayLearnedCount + uiState.todayLearnedGrammarCount) > 0
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.TODAY_REVIEWED.key,
+                title = "今日复习的内容",
+                subtitle = "${uiState.todayReviewedCount} 词 · ${uiState.todayReviewedGrammarCount} 语法",
+                isEnabled = (uiState.todayReviewedCount + uiState.todayReviewedGrammarCount) > 0
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.LEARNED.key,
+                title = "所有已学习过的内容",
+                subtitle = "${uiState.allLearnedWordsCount} 词 · ${uiState.allLearnedGrammarsCount} 语法",
+                isEnabled = (uiState.allLearnedWordsCount + uiState.allLearnedGrammarsCount) > 0
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = QuestionSource.ALL.key,
+                title = "所有内容",
+                subtitle = "${uiState.totalWordsCount} 词 · ${uiState.totalGrammarsCount} 语法",
+                isEnabled = (uiState.totalWordsCount + uiState.totalGrammarsCount) > 0
+            )
         )
     }
-    val wrongAnswerRemovalOptions = remember { listOf(0, 3, 5, 7, 10) }
+
+    val wrongAnswerRemovalOptions = remember {
+        listOf(
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = 0,
+                title = "不移除",
+                subtitle = "做对后保留在错题本中，由您手动管理"
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = 3,
+                title = "连续答对 3 次",
+                subtitle = "在测试中连续答对 3 次后自动移出错题本"
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = 5,
+                title = "连续答对 5 次",
+                subtitle = "在测试中连续答对 5 次后自动移出错题本"
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = 7,
+                title = "连续答对 7 次",
+                subtitle = "在测试中连续答对 7 次后自动移出错题本"
+            ),
+            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                key = 10,
+                title = "连续答对 10 次",
+                subtitle = "深度掌握标准，连续答对 10 次后自动移出错题本"
+            )
+        )
+    }
+
     val wrongAnswerRemovalLabels = remember {
         mapOf(
             0 to "不移除",
@@ -134,15 +202,38 @@ fun TestSettingsScreen(
             10 to "10次"
         )
     }
+
     val contentTypeOptions = remember(isRestrictedMode, testModeId) {
         if (isRestrictedMode) {
-            listOf("仅测试单词" to TestContentType.WORDS.key)
+            listOf(
+                com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                    key = TestContentType.WORDS.key,
+                    title = "仅测试单词",
+                    subtitle = "仅抽取词汇库中的单词进行测试"
+                )
+            )
         } else {
-            listOf("仅测试单词" to TestContentType.WORDS.key, "仅测试语法" to TestContentType.GRAMMAR.key, "单词和语法混合" to TestContentType.MIXED.key)
+            listOf(
+                com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                    key = TestContentType.WORDS.key,
+                    title = "仅测试单词",
+                    subtitle = "仅抽取词汇库中的单词进行测试"
+                ),
+                com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                    key = TestContentType.GRAMMAR.key,
+                    title = "仅测试语法",
+                    subtitle = "仅抽取文法库中的语法条目进行测试"
+                ),
+                com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
+                    key = TestContentType.MIXED.key,
+                    title = "单词和语法混合",
+                    subtitle = "按设置比例混合抽取词汇与语法进行综合测试"
+                )
+            )
         }
     }
     val currentContentTypeLabel = remember(contentTypeOptions, config.testContentType) {
-        contentTypeOptions.find { it.second == config.testContentType.key }?.first ?: "未知类型"
+        contentTypeOptions.find { it.key == config.testContentType.key }?.title ?: "未知类型"
     }
     val allLevels = remember { listOf("N5", "N4", "N3", "N2", "N1") }
 
@@ -154,6 +245,7 @@ fun TestSettingsScreen(
                 showBottomSheet = false
             },
             containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = null // 由内容组件内置居中 Indicator 和关闭按钮
         ) {
             TestSettingsBottomSheetContent(
                 currentSetting = currentSetting,
@@ -164,7 +256,6 @@ fun TestSettingsScreen(
                 timeLimitOptions = timeLimitOptions,
                 questionSourceOptions = questionSourceOptions,
                 wrongAnswerRemovalOptions = wrongAnswerRemovalOptions,
-                wrongAnswerRemovalLabels = wrongAnswerRemovalLabels,
                 contentTypeOptions = contentTypeOptions,
                 allLevels = allLevels,
                 onUpdateConfig = { viewModel.updateConfig(it) },

@@ -1,4 +1,4 @@
-package com.jian.nemo.feature.library.presentation.list
+package com.jian.nemo.core.ui.component.discoverybar
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring

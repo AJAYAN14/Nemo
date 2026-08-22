@@ -19,10 +19,9 @@ fun TestSettingsBottomSheetContent(
     testModeId: String?,
     questionCountOptions: List<Int>,
     timeLimitOptions: List<Int>,
-    questionSourceOptions: List<Pair<String, String>>,
-    wrongAnswerRemovalOptions: List<Int>,
-    wrongAnswerRemovalLabels: Map<Int, String>,
-    contentTypeOptions: List<Pair<String, String>>,
+    questionSourceOptions: List<SingleSelectOptionItem<String>>,
+    wrongAnswerRemovalOptions: List<SingleSelectOptionItem<Int>>,
+    contentTypeOptions: List<SingleSelectOptionItem<String>>,
     allLevels: List<String>,
     onUpdateConfig: (TestConfig) -> Unit,
     isQuestionTypeSupported: (String) -> Boolean,
@@ -68,7 +67,6 @@ fun TestSettingsBottomSheetContent(
             )
             "wrongAnswerRemoval" -> WrongAnswerRemovalSelector(
                 options = wrongAnswerRemovalOptions,
-                labels = wrongAnswerRemovalLabels,
                 currentValue = config.wrongAnswerRemovalThreshold,
                 onSelect = {
                     onUpdateConfig(config.copy(wrongAnswerRemovalThreshold = it))

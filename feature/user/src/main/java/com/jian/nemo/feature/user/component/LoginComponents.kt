@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -314,7 +315,7 @@ fun GitHubStyleTextField(
     // [Fix] Enforce Brand Blue everywhere instead of Theme Primary
     val brandBlue = Color(0xFF0E68FF)
     // [Fix] Dark Mode Logic
-    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val textColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
     val placeholderColor = if (isDark) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant

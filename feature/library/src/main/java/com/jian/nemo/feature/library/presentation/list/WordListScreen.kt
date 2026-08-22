@@ -31,7 +31,6 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.HourglassEmpty
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -62,6 +61,9 @@ import androidx.navigation.NavController
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
+import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.jian.nemo.core.ui.navigation.NavDestination
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 

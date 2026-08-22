@@ -22,7 +22,7 @@ fun BasicSettingsSection(
     config: TestConfig,
     testModeId: String?,
     uiState: com.jian.nemo.feature.test.presentation.settings.TestSettingsUiState,
-    questionSourceOptions: List<Pair<String, String>>,
+    questionSourceOptions: List<SingleSelectOptionItem<String>>,
     wrongAnswerRemovalLabels: Map<Int, String>,
     currentContentTypeLabel: String,
     onSettingClick: (String) -> Unit
@@ -80,7 +80,7 @@ fun BasicSettingsSection(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 
         // 4. 题目来源
-        val currentSourceLabel = questionSourceOptions.find { it.second == config.questionSource.key }?.first?.substringBefore(" ") ?: "未知"
+        val currentSourceLabel = questionSourceOptions.find { it.key == config.questionSource.key }?.title ?: "未知"
         PremiumSettingRow(
             label = "题目来源",
             value = currentSourceLabel,

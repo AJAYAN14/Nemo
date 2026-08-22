@@ -13,7 +13,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -107,7 +107,7 @@ fun FlippableCard(
             CardState.INCORRECT -> errorColor
             CardState.MATCHED -> pairColor.copy(alpha = 0.5f)
             else -> MaterialTheme.colorScheme.outlineVariant.copy(
-                alpha = if (isSystemInDarkTheme()) 0.8f else 0.5f
+                alpha = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) 0.8f else 0.5f
             )
         },
         label = "borderColor",

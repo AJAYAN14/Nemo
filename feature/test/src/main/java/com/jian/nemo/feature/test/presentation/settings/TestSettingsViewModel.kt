@@ -28,12 +28,23 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
+import com.jian.nemo.core.domain.repository.WrongAnswerRepository
+import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
+
 data class TestSettingsUiState(
     val testConfig: TestConfig = TestConfig(),
     val todayLearnedCount: Int = 0,
     val todayLearnedGrammarCount: Int = 0,
     val todayReviewedCount: Int = 0,
     val todayReviewedGrammarCount: Int = 0,
+    val wrongWordsCount: Int = 0,
+    val wrongGrammarsCount: Int = 0,
+    val favoriteWordsCount: Int = 0,
+    val favoriteGrammarsCount: Int = 0,
+    val allLearnedWordsCount: Int = 0,
+    val allLearnedGrammarsCount: Int = 0,
+    val totalWordsCount: Int = 0,
+    val totalGrammarsCount: Int = 0,
     val availableWordLevels: List<Pair<String, Int>> = emptyList(), // Level to Count
     val availableGrammarLevels: List<Pair<String, Int>> = emptyList(),
 
@@ -70,9 +81,7 @@ data class UIMessage(
     val priority: MessagePriority = MessagePriority.Low,
     val actionLabel: String? = null,
     val onAction: (() -> Unit)? = null
-) {
-    // fun getSnackbarDuration(): androidx.compose.material3.SnackbarDuration { ... } - Removed to decouple from UI
-}
+)
 
 /**
  * 测试设置 ViewModel
@@ -82,12 +91,13 @@ class TestSettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val wordRepository: WordRepository,
     private val grammarRepository: com.jian.nemo.core.domain.repository.GrammarRepository,
+    private val wrongAnswerRepository: WrongAnswerRepository,
+    private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository,
     private val allocateQuestionTypesUseCase: com.jian.nemo.feature.test.domain.usecase.AllocateQuestionTypesUseCase,
     private val queryAvailableLevelsUseCase: QueryAvailableLevelsUseCase,
     private val queryAvailableDataCountUseCase: QueryAvailableDataCountUseCase,
     private val validateTestConfigUseCase: ValidateTestConfigUseCase
 ) : ViewModel() {
-
 
     // 当前测试模式 ID (用于受限模式校验)
     private var currentTestModeId: String? = null
@@ -98,6 +108,7 @@ class TestSettingsViewModel @Inject constructor(
     init {
         // loadConfig() 由 setTestModeId() 触发，不在 init 中调用
         observeTodayStats()
+        observeQuestionSourceStats()
         observeAvailableDataCount()
     }
 
@@ -143,6 +154,69 @@ class TestSettingsViewModel @Inject constructor(
                             _uiState.update { it.copy(todayReviewedGrammarCount = grammars.size) }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    /**
+     * 响应式观察所有题源的数据量统计（错题、收藏、全部已学、总库数据）
+     */
+    private fun observeQuestionSourceStats() {
+        viewModelScope.launch {
+            // 错题统计
+            launch {
+                wrongAnswerRepository.getAllWrongAnswers().collect { wrongList ->
+                    _uiState.update { it.copy(wrongWordsCount = wrongList.size) }
+                }
+            }
+            launch {
+                grammarWrongAnswerRepository.getAllWrongAnswers().collect { wrongList ->
+                    _uiState.update { it.copy(wrongGrammarsCount = wrongList.size) }
+                }
+            }
+            // 收藏统计
+            launch {
+                wordRepository.getFavoriteWords().collect { favorites ->
+                    _uiState.update { it.copy(favoriteWordsCount = favorites.size) }
+                }
+            }
+            launch {
+                grammarRepository.getFavoriteGrammars().collect { favorites ->
+                    _uiState.update { it.copy(favoriteGrammarsCount = favorites.size) }
+                }
+            }
+            // 全部已学统计
+            launch {
+                wordRepository.getAllLearnedWords().collect { learned ->
+                    _uiState.update { it.copy(allLearnedWordsCount = learned.size) }
+                }
+            }
+            launch {
+                grammarRepository.getAllLearnedGrammars().collect { learned ->
+                    _uiState.update { it.copy(allLearnedGrammarsCount = learned.size) }
+                }
+            }
+            // 总库统计
+            launch {
+                val levels = listOf("N5", "N4", "N3", "N2", "N1")
+                val totalW = levels.sumOf { level ->
+                    try {
+                        wordRepository.getAllWordsByLevel(level).first().size
+                    } catch (e: Exception) {
+                        0
+                    }
+                }
+                val totalG = try {
+                    grammarRepository.getAllGrammars().first().size
+                } catch (e: Exception) {
+                    0
+                }
+                _uiState.update {
+                    it.copy(
+                        totalWordsCount = totalW,
+                        totalGrammarsCount = totalG
+                    )
                 }
             }
         }

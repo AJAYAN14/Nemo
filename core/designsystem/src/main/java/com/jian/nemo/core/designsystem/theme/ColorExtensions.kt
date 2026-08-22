@@ -1,15 +1,14 @@
 package com.jian.nemo.core.designsystem.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 /**
  * ColorScheme扩展属性
  *
  * 为学习、复习、测试等页面提供与旧项目一致的专用色彩
- * 参考: _reference/old-nemo/app/src/main/java/com/jian/nemo/ui/screen/LearningScreen.kt:65-67
  */
 
 /**
@@ -17,7 +16,7 @@ import androidx.compose.ui.graphics.Color
  */
 val ColorScheme.surfaceBackground: Color
     @Composable
-    get() = if (isSystemInDarkTheme()) {
+    get() = if (background.luminance() < 0.5f) {
         NemoSurfaceBackgroundDark
     } else {
         NemoSurfaceBackground
@@ -28,7 +27,7 @@ val ColorScheme.surfaceBackground: Color
  */
 val ColorScheme.surfaceCard: Color
     @Composable
-    get() = if (isSystemInDarkTheme()) {
+    get() = if (background.luminance() < 0.5f) {
         NemoSurfaceCardDark
     } else {
         NemoSurfaceCard

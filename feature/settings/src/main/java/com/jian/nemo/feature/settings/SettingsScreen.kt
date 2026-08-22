@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
@@ -62,6 +63,7 @@ fun SettingsScreen(
 
     // 对话框状态
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var showRandomNewContentConfirmDialog by remember { mutableStateOf(false) }
 
     var isResetting by remember { mutableStateOf(false) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
@@ -295,12 +297,12 @@ fun SettingsScreen(
                         iconColor = NemoPrimary,
                         title = "新内容乱序抽取",
                         subtitle = if (uiState.isRandomNewContentEnabled) "随机抽取新内容" else "按顺序抽取新内容",
-                        onClick = { viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(!uiState.isRandomNewContentEnabled)) },
+                        onClick = { showRandomNewContentConfirmDialog = true },
                         showDivider = true,
                         trailing = {
                             NemoGooeyToggle(
                                 checked = uiState.isRandomNewContentEnabled,
-                                onCheckedChange = { viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(it)) },
+                                onCheckedChange = { showRandomNewContentConfirmDialog = true },
                                 activeColor = MaterialTheme.colorScheme.primary,
                                 inactiveColor = MaterialTheme.colorScheme.surfaceVariant
                             )
@@ -511,6 +513,28 @@ fun SettingsScreen(
             preview = uiState.restorePreview!!,
             onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmRestore) },
             onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
+        )
+    }
+
+    if (showRandomNewContentConfirmDialog) {
+        val willEnable = !uiState.isRandomNewContentEnabled
+        NemoDialog(
+            onDismissRequest = { showRandomNewContentConfirmDialog = false },
+            title = if (willEnable) "开启乱序抽取" else "关闭乱序抽取",
+            text = if (willEnable) {
+                "确定要开启新内容乱序抽取吗？开启后将随机抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。"
+            } else {
+                "确定要关闭新内容乱序抽取吗？关闭后将按顺序抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。"
+            },
+            confirmText = "确认",
+            dismissText = "取消",
+            onConfirm = {
+                viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(willEnable))
+                showRandomNewContentConfirmDialog = false
+            },
+            onDismiss = {
+                showRandomNewContentConfirmDialog = false
+            }
         )
     }
 }

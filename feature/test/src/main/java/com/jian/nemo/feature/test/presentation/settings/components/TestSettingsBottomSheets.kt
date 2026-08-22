@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.sp
  * 统一采用 Grid (Column + Row) + Squircle Chips 设计
  */
 
+import androidx.compose.material.icons.filled.Close
+
 /**
  * 题目数量选择器
  */
@@ -40,7 +42,7 @@ fun QuestionCountSelector(
     onCustom: () -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择题目数量")
+    SelectorHeader("选择题目数量", onClose = onCancel)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val allOptionsWithCustom = options.map { it to "$it 题" }
@@ -72,8 +74,7 @@ fun QuestionCountSelector(
         PremiumCustomChip(onClick = onCustom)
     }
 
-    Spacer(modifier = Modifier.height(24.dp))
-    CancelButton(onCancel)
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 /**
@@ -87,7 +88,7 @@ fun TimeLimitSelector(
     onCustom: () -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择时间限制")
+    SelectorHeader("选择时间限制", onClose = onCancel)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val displayOptions = options.map {
@@ -116,101 +117,64 @@ fun TimeLimitSelector(
         }
         PremiumCustomChip(onClick = onCustom)
     }
-    Spacer(modifier = Modifier.height(24.dp))
-    CancelButton(onCancel)
+    Spacer(modifier = Modifier.height(16.dp))
 }
 
 /**
- * 题目来源选择器
+ * 题目来源选择器 (双行信息列表抽屉)
  */
 @Composable
 fun QuestionSourceSelector(
-    options: List<Pair<String, String>>,
+    options: List<SingleSelectOptionItem<String>>,
     currentValue: String,
     onSelect: (String) -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择题目来源")
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        options.forEach { option ->
-            PremiumSelectorChip(
-                text = option.first,
-                selected = option.second == currentValue,
-                onClick = { onSelect(option.second) },
-                modifier = Modifier.fillMaxWidth() // List style for longer text
-            )
-        }
-    }
-    Spacer(modifier = Modifier.height(24.dp))
-    CancelButton(onCancel)
+    SingleSelectBottomSheet(
+        title = "选择题目来源",
+        options = options,
+        selectedKey = currentValue,
+        onConfirm = onSelect,
+        onDismiss = onCancel
+    )
 }
 
 /**
- * 测试内容类型选择器
+ * 测试内容类型选择器 (双行信息列表抽屉)
  */
 @Composable
 fun ContentTypeSelector(
-    options: List<Pair<String, String>>,
+    options: List<SingleSelectOptionItem<String>>,
     currentValue: String,
     onSelect: (String) -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择测试内容类型")
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        options.forEach { option ->
-            PremiumSelectorChip(
-                text = option.first,
-                selected = option.second == currentValue,
-                onClick = { onSelect(option.second) },
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-    Spacer(modifier = Modifier.height(24.dp))
-    CancelButton(onCancel)
+    SingleSelectBottomSheet(
+        title = "选择测试内容类型",
+        options = options,
+        selectedKey = currentValue,
+        onConfirm = onSelect,
+        onDismiss = onCancel
+    )
 }
 
 /**
- * 错题移除阈值选择器
+ * 错题移除阈值选择器 (双行信息列表抽屉)
  */
 @Composable
 fun WrongAnswerRemovalSelector(
-    options: List<Int>,
-    labels: Map<Int, String>,
+    options: List<SingleSelectOptionItem<Int>>,
     currentValue: Int,
     onSelect: (Int) -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("答对几次后从错题中移除")
-
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        val displayOptions = options.map { it to (labels[it] ?: "") }
-
-        displayOptions.chunked(3).forEach { rowOptions ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                rowOptions.forEach { (threshold, label) ->
-                    PremiumSelectorChip(
-                        text = label,
-                        selected = threshold == currentValue,
-                        onClick = { onSelect(threshold) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                 if (rowOptions.size < 3) {
-                    repeat(3 - rowOptions.size) {
-                       Spacer(modifier = Modifier.weight(1f))
-                    }
-                }
-            }
-        }
-    }
-    Spacer(modifier = Modifier.height(24.dp))
-    CancelButton(onCancel)
+    SingleSelectBottomSheet(
+        title = "答对几次后从错题中移除",
+        options = options,
+        selectedKey = currentValue,
+        onConfirm = onSelect,
+        onDismiss = onCancel
+    )
 }
 
 
@@ -218,15 +182,59 @@ fun WrongAnswerRemovalSelector(
 // ===== Common Components =====
 
 @Composable
-private fun SelectorHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.titleMedium,
-        fontWeight = FontWeight.ExtraBold,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-        textAlign = TextAlign.Center
-    )
+private fun SelectorHeader(title: String, onClose: (() -> Unit)? = null) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        // 顶部居中 Pull Indicator
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp, bottom = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(36.dp)
+                    .height(4.dp)
+                    .clip(androidx.compose.foundation.shape.CircleShape)
+                    .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.28f))
+            )
+        }
+
+        // 标题栏：主标题靠左 + 右上角关闭图标
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 6.dp, end = 0.dp, top = 4.dp, bottom = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontSize = 20.sp,
+                    letterSpacing = (-0.4).sp,
+                    lineHeight = 26.sp
+                ),
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (onClose != null) {
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier.size(38.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "关闭",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -261,16 +269,25 @@ private fun PremiumSelectorChip(
 
 @Composable
 private fun PremiumCustomChip(onClick: () -> Unit) {
-    OutlinedButton(
+    Surface(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        modifier = Modifier.height(48.dp).fillMaxWidth(),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.primary
-        )
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+        modifier = Modifier
+            .height(48.dp)
+            .fillMaxWidth()
     ) {
-        Text("自定义...", fontWeight = FontWeight.SemiBold)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = "自定义",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
     }
 }
 
@@ -402,7 +419,7 @@ fun LevelSelector(
     onDismiss: () -> Unit,
     snackbarAction: (String) -> Unit
 ) {
-    SelectorHeader(title)
+    SelectorHeader(title, onClose = onDismiss)
 
     // 数据量统计
     val totalCount = remember(availableLevels) { availableLevels.sumOf { it.second } }

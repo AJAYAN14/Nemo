@@ -14,8 +14,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
@@ -29,7 +29,7 @@ fun AccountResetPasswordDialog(
     onSendOtp: (String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     onVerifyOtp: (String, String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     onResetPassword: (String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     var stage by remember { mutableIntStateOf(0) }
     var email by remember { mutableStateOf(userEmail) }
@@ -203,7 +203,7 @@ fun AccountUpdateUsernameDialog(
     currentUsername: String,
     onDismiss: () -> Unit,
     onUpdateUsername: (String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     var newUsername by remember { mutableStateOf(currentUsername) }
     var isLoading by remember { mutableStateOf(false) }
@@ -283,7 +283,7 @@ fun AccountUpdateEmailDialog(
     onDismiss: () -> Unit,
     onUpdateEmail: (String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
     onVerifyEmailUpdate: (String, String, onSuccess: () -> Unit, onError: (String) -> Unit) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     var stage by remember { mutableIntStateOf(0) }
     var newEmail by remember { mutableStateOf(currentEmail) }
@@ -403,7 +403,7 @@ fun AccountUpdateEmailDialog(
 fun DeleteAccountDialog(
     onDismiss: () -> Unit,
     onConfirmDelete: (String) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -504,7 +504,7 @@ fun LogoutWarningDialog(
     isLoading: Boolean,
     onDismiss: () -> Unit,
     onConfirmLogout: () -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
@@ -524,7 +524,7 @@ fun DeleteAccountDialog(
     userEmail: String,
     onDismiss: () -> Unit,
     onConfirmDelete: (String?) -> Unit,
-    useDarkTheme: Boolean = isSystemInDarkTheme()
+    useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
     var input by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }

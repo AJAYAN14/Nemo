@@ -1,6 +1,5 @@
 package com.jian.nemo.feature.settings.components
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,7 +20,7 @@ fun ExportOptionsDialog(
     onDismiss: () -> Unit,
     onConfirm: (isCompressed: Boolean) -> Unit
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     // 浅色纯白，深色纯净深灰，避免 MD3 默认自带的 primary tint
     val dialogBgColor = if (isDark) Color(0xFF202020) else Color.White
 

@@ -701,7 +701,7 @@ fun ContentUnavailable(text: String, cardColor: Color) {
         modifier = Modifier.fillMaxWidth(), // Legacy fillMaxSize
         contentAlignment = Alignment.Center
     ) {
-        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
         Card(
             modifier = Modifier
                 .fillMaxWidth()
