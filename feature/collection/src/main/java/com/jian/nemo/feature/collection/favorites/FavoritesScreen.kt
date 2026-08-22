@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -62,55 +63,78 @@ fun FavoritesScreen(
 
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
-    Scaffold(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .containerTransform(
                 key = "container_favorites",
                 shape = RoundedCornerShape(0.dp)
-            ),
-        topBar = {
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "我的收藏",
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                        wordCount = uiState.favoriteWordsCount,
-                        grammarCount = uiState.favoriteGrammarsCount,
-                        titleSuffix = "收藏",
-                        onClearAll = viewModel::clearAll,
-                        onClearWords = viewModel::clearAllWordFavorites,
-                        onClearGrammars = viewModel::clearAllGrammarFavorites
-                    )
-                }
             )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 20.dp)
-                .verticalScroll(rememberScrollState())
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = "我的收藏",
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        com.jian.nemo.feature.collection.components.CollectionActionMenu(
+                            wordCount = uiState.favoriteWordsCount,
+                            grammarCount = uiState.favoriteGrammarsCount,
+                            titleSuffix = "收藏",
+                            onClearAll = viewModel::clearAll,
+                            onClearWords = viewModel::clearAllWordFavorites,
+                            onClearGrammars = viewModel::clearAllGrammarFavorites,
+                            isExpanded = isMenuExpanded,
+                            onToggleMenu = { isMenuExpanded = it }
+                        )
+                    }
+                )
+            },
+            containerColor = backgroundColor
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 20.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 收藏列表
+                FavoritesList(
+                    favoriteWordsCount = uiState.favoriteWordsCount,
+                    favoriteGrammarsCount = uiState.favoriteGrammarsCount,
+                    onWordFavoritesClick = onNavigateToWordFavorites,
+                    onGrammarFavoritesClick = onNavigateToGrammarFavorites
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
+
+        // 页面全屏聚焦遮罩 (与学习界面完全一致的 28% 黑色半透明 + 200ms 淡入淡出)
+        androidx.compose.animation.AnimatedVisibility(
+            visible = isMenuExpanded,
+            enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
+            exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 收藏列表
-            FavoritesList(
-                favoriteWordsCount = uiState.favoriteWordsCount,
-                favoriteGrammarsCount = uiState.favoriteGrammarsCount,
-                onWordFavoritesClick = onNavigateToWordFavorites,
-                onGrammarFavoritesClick = onNavigateToGrammarFavorites
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.28f))
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null,
+                        onClick = { isMenuExpanded = false }
+                    )
             )
-
-            Spacer(modifier = Modifier.height(30.dp))
         }
     }
-
-
 }
 
 @Composable

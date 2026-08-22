@@ -5,6 +5,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -61,63 +62,85 @@ fun MistakesScreen(
 
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
-    Scaffold(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .containerTransform(
                 key = "container_mistakes",
                 shape = RoundedCornerShape(0.dp)
-            ),
-        topBar = {
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "我的错题",
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                        wordCount = uiState.wrongWordsCount,
-                        grammarCount = uiState.wrongGrammarsCount,
-                        titleSuffix = "错题",
-                        onClearAll = viewModel::clearAllWrongAnswers,
-                        onClearWords = viewModel::clearAllWordMistakes,
-                        onClearGrammars = viewModel::clearAllGrammarMistakes
-                    )
-                }
             )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = "我的错题",
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        com.jian.nemo.feature.collection.components.CollectionActionMenu(
+                            wordCount = uiState.wrongWordsCount,
+                            grammarCount = uiState.wrongGrammarsCount,
+                            titleSuffix = "错题",
+                            onClearAll = viewModel::clearAllWrongAnswers,
+                            onClearWords = viewModel::clearAllWordMistakes,
+                            onClearGrammars = viewModel::clearAllGrammarMistakes,
+                            isExpanded = isMenuExpanded,
+                            onToggleMenu = { isMenuExpanded = it }
+                        )
+                    }
+                )
+            },
+            containerColor = backgroundColor
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+            ) {
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 统计总览卡片
+                StatsOverviewCard(
+                    totalLearnedCount = uiState.totalLearnedCount,
+                    wrongWordsCount = uiState.wrongWordsCount,
+                    wrongGrammarsCount = uiState.wrongGrammarsCount
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // 错题分类列表
+                WrongAnswersList(
+                    wrongWordsCount = uiState.wrongWordsCount,
+                    wrongGrammarsCount = uiState.wrongGrammarsCount,
+                    onWordMistakesClick = onNavigateToWordMistakes,
+                    onGrammarMistakesClick = onNavigateToGrammarMistakes
+                )
+            }
+        }
+
+        // 页面全屏聚焦遮罩 (与学习界面完全一致的 28% 黑色半透明 + 200ms 淡入淡出)
+        androidx.compose.animation.AnimatedVisibility(
+            visible = isMenuExpanded,
+            enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
+            exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // 统计总览卡片
-            StatsOverviewCard(
-                totalLearnedCount = uiState.totalLearnedCount,
-                wrongWordsCount = uiState.wrongWordsCount,
-                wrongGrammarsCount = uiState.wrongGrammarsCount
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // 错题分类列表
-            WrongAnswersList(
-                wrongWordsCount = uiState.wrongWordsCount,
-                wrongGrammarsCount = uiState.wrongGrammarsCount,
-                onWordMistakesClick = onNavigateToWordMistakes,
-                onGrammarMistakesClick = onNavigateToGrammarMistakes
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.28f))
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null,
+                        onClick = { isMenuExpanded = false }
+                    )
             )
         }
     }
-
-    // 清除所有错题确认对话框 (保持原有逻辑)
-
 }
 
 @Composable

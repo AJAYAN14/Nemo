@@ -33,15 +33,26 @@ fun CollectionActionMenu(
     titleSuffix: String,
     onClearAll: () -> Unit,
     onClearWords: () -> Unit,
-    onClearGrammars: () -> Unit
+    onClearGrammars: () -> Unit,
+    isExpanded: Boolean = false,
+    onToggleMenu: ((Boolean) -> Unit)? = null
 ) {
     if (wordCount <= 0 && grammarCount <= 0) return
+
+    var internalExpanded by remember { mutableStateOf(false) }
+    val expanded = if (onToggleMenu != null) isExpanded else internalExpanded
+    val setExpanded: (Boolean) -> Unit = { expandedValue ->
+        internalExpanded = expandedValue
+        onToggleMenu?.invoke(expandedValue)
+    }
 
     var showClearAllDialog by remember { mutableStateOf(false) }
     var showClearWordsDialog by remember { mutableStateOf(false) }
     var showClearGrammarsDialog by remember { mutableStateOf(false) }
 
     com.jian.nemo.core.ui.component.common.NemoMorphMenu(
+        expanded = expanded,
+        onExpandedChange = setExpanded,
         icon = Icons.Default.MoreVert,
         contentDescription = "更多选项"
     ) {

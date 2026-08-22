@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -28,8 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -60,10 +61,10 @@ interface NemoMorphMenuScope {
  *
  * 核心动效：
  * 1. 触发按钮采用项目统一的 LiquidButton（液态物理微弹性与弥散阴影，与 CommonHeader 左侧返回按钮完全对齐）。
- * 2. 容器尺寸（Width/Height/BorderRadius）在 44dp 圆形按钮与大菜单面板之间做弹性形变过渡。
- * 3. 图标层：展开时伴随微缩放、旋转 (45°) 与向左位移并淡出。
- * 4. 菜单内容层：展开时从右侧位移 + 缩放淡入；收起时快速淡出。
- * 5. Popup 悬浮锚定在右上角，点击外部或返回键平滑收起。
+ * 2. 精准局部锚定：从 44dp 圆形按钮右上角原位平滑向左下方做贝塞尔弹性形变展开。
+ * 3. 状态栏 100% 保持正常原生显示，不产生多余状态栏偏移或遮挡。
+ * 4. 图标层：展开时伴随微缩放、旋转 (45°) 与向左位移并淡出。
+ * 5. 菜单内容层：展开时从右侧位移 + 缩放淡入；收起时快速淡出。
  *
  * @param modifier 修饰符
  * @param icon 触发按钮图标（默认三点图标 MoreVert，可自定义如 Add）
@@ -110,6 +111,7 @@ fun NemoMorphMenu(
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
     val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else Color.White
@@ -241,7 +243,10 @@ fun NemoMorphMenu(
         contentAlignment = Alignment.Center
     ) {
         LiquidButton(
-            onClick = { onExpandedChange(true) },
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onExpandedChange(true)
+            },
             backgroundColor = navGroupBg,
             shape = CircleShape,
             isInteractive = true,
@@ -254,7 +259,7 @@ fun NemoMorphMenu(
             )
         }
 
-        // 当需要渲染（展开中或正在进行收起动画）时挂载浮层 Popup
+        // 当需要渲染（展开中或正在进行收起动画）时挂载局部精准锚定的 Popup
         if (transitionState.currentState || transitionState.targetState) {
             Popup(
                 alignment = Alignment.TopEnd,
@@ -270,7 +275,7 @@ fun NemoMorphMenu(
                     onExpandedChange(false)
                 }
 
-                // 形变主卡片（自右上角向左下平滑展开）
+                // 形变主卡片（自按钮右上角原位向左下方平滑展开）
                 Box(
                     modifier = Modifier
                         .width(animatedWidth)
@@ -368,9 +373,13 @@ fun NemoMorphMenuItem(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val bgAlpha = if (isPressed) 0.08f else 0f
+    val haptic = LocalHapticFeedback.current
 
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
         enabled = enabled,
         interactionSource = interactionSource,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = bgAlpha),

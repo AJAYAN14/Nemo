@@ -43,6 +43,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import com.jian.nemo.core.ui.component.common.NemoMorphMenu
+import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
 import com.jian.nemo.core.ui.component.common.NemoMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -318,255 +320,171 @@ fun LearnHeader(
                         if (menu != null) {
                             menu()
                         } else {
-                            Box {
-                                var internalExpanded by remember { mutableStateOf(false) }
-                                val expanded = if (onToggleMenu != null) isMenuExpanded else internalExpanded
-                                val setExpanded: (Boolean) -> Unit = { expandedValue ->
-                                    internalExpanded = expandedValue
-                                    onToggleMenu?.invoke(expandedValue)
-                                }
+                            var internalExpanded by remember { mutableStateOf(false) }
+                            val expanded = if (onToggleMenu != null) isMenuExpanded else internalExpanded
+                            val setExpanded: (Boolean) -> Unit = { expandedValue ->
+                                internalExpanded = expandedValue
+                                onToggleMenu?.invoke(expandedValue)
+                            }
 
-                                LiquidButton(
-                                    onClick = {
-                                        performHapticFeedback()
-                                        setExpanded(true)
-                                    },
-                                    backgroundColor = navGroupBg,
-                                    shape = androidx.compose.foundation.shape.CircleShape,
-                                    elevation = 0.dp,
-                                    modifier = Modifier
-                                        .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                                        .size(44.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.MoreVert,
-                                        contentDescription = "更多选项",
-                                        tint = contentColor
-                                    )
-                                }
-
-                                NemoDropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { setExpanded(false) }
-                                ) {
-                                    if (onUndo != null && canUndo) {
-                                        NemoMenuItem(
-                                            text = "撤销上一次评分",
-                                            onClick = {
-                                                setExpanded(false)
-                                                onUndo()
-                                            },
-                                            leadingIcon = Icons.AutoMirrored.Rounded.Undo
-                                        )
-
-                                        androidx.compose.material3.HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 4.dp)
-                                        )
-                                    }
-
-                                    if (onShowRatingGuide != null) {
-
-                                        NemoMenuItem(
-                                            text = "评分说明（新学/复习）",
-                                            onClick = {
-                                                setExpanded(false)
-                                                onShowRatingGuide()
-                                            },
-                                            leadingIcon = Icons.Rounded.CheckCircle
-                                        )
-
-                                        androidx.compose.material3.HorizontalDivider(
-                                            modifier = Modifier.padding(vertical = 4.dp)
-                                        )
-                                    }
-
-                                    if (remainingCount > 0) {
-                                        NemoMenuItem(
-                                            text = "暂停此卡片 (Suspend)",
-                                            onClick = {
-                                                setExpanded(false)
-                                                onSuspend()
-                                            },
-                                            leadingIcon = Icons.Rounded.Pause
-                                        )
-                                        NemoMenuItem(
-                                            text = "今日暂缓此项 (Bury)",
-                                            onClick = {
-                                                setExpanded(false)
-                                                onBury()
-                                            },
-                                            leadingIcon = Icons.Rounded.AccessTime
-                                        )
-
-                                        NemoMenuItem(
-                                            text = "报告条目错误",
-                                            onClick = {
-                                                setExpanded(false)
-                                                onReportError()
-                                            },
-                                            leadingIcon = Icons.Rounded.Report
-                                        )
-                                    }
-
-
-                                    // 分隔线
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(
-                                            vertical = 4.dp
-                                        )
-                                    )
-
-                                    // 自动朗读开关
-                                    if (onToggleAutoAudio != null) {
-                                        androidx.compose.material3.DropdownMenuItem(
-                                            text = {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        "翻面自动朗读",
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                    NemoGooeyToggle(
-                                                        checked = isAutoAudioEnabled,
-                                                        onCheckedChange = {
-                                                            onToggleAutoAudio(it)
-                                                        },
-                                                        activeColor = MaterialTheme.colorScheme.primary,
-                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                                    )
-                                                }
-                                            },
-                                            onClick = {
-                                                // 点击整个条目也切换
-                                                onToggleAutoAudio(!isAutoAudioEnabled)
-                                            }
-                                        )
-                                    }
-
-                                    if (onToggleShowAnswerDelay != null) {
-                                        androidx.compose.material3.DropdownMenuItem(
-                                            text = {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        "显示答案等待",
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                    NemoGooeyToggle(
-                                                        checked = isShowAnswerDelayEnabled,
-                                                        onCheckedChange = {
-                                                            onToggleShowAnswerDelay(it)
-                                                        },
-                                                        activeColor = MaterialTheme.colorScheme.primary,
-                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                                    )
-                                                }
-                                            },
-                                            onClick = {
-                                                onToggleShowAnswerDelay(!isShowAnswerDelayEnabled)
-                                            }
-                                        )
-
-                                        if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
-                                            NemoMenuItem(
-                                                text = "等待时长: $showAnswerDelayDurationLabel",
-                                                onClick = {
-                                                    setExpanded(false)
-                                                    if (onOpenShowAnswerDelayDialog != null) {
-                                                        onOpenShowAnswerDelayDialog()
-                                                    } else {
-                                                        onCycleShowAnswerDelayDuration?.invoke()
-                                                    }
-                                                },
-                                                leadingIcon = Icons.Rounded.Timer
-                                            )
-                                        }
-                                    }
-
-                                    if (onToggleAutoRevealAnswer != null) {
-                                        androidx.compose.material3.DropdownMenuItem(
-                                            text = {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Text(
-                                                        "自动翻面",
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                    NemoGooeyToggle(
-                                                        checked = isAutoRevealAnswerEnabled,
-                                                        onCheckedChange = {
-                                                            onToggleAutoRevealAnswer(it)
-                                                        },
-                                                        activeColor = MaterialTheme.colorScheme.primary,
-                                                        inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                                    )
-                                                }
-                                            },
-                                            onClick = {
-                                                onToggleAutoRevealAnswer(!isAutoRevealAnswerEnabled)
-                                            }
-                                        )
-
-                                        if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
-                                            NemoMenuItem(
-                                                text = "翻面时长: $autoRevealAnswerDurationLabel",
-                                                onClick = {
-                                                    setExpanded(false)
-                                                    if (onOpenAutoRevealAnswerDialog != null) {
-                                                        onOpenAutoRevealAnswerDialog()
-                                                    } else {
-                                                        onCycleAutoRevealAnswerDuration?.invoke()
-                                                    }
-                                                },
-                                                leadingIcon = Icons.Rounded.Timer
-                                            )
-                                        }
-                                    }
-
-                                    if (onToggleWhiteboard != null) {
-                                        val whiteboardLabel = if (isWhiteboardEnabled) "已开启" else "已关闭"
-                                        NemoMenuItem(
-                                            text = "手写白板: $whiteboardLabel",
-                                            onClick = {
-                                                onToggleWhiteboard(!isWhiteboardEnabled)
-                                            },
-                                            leadingIcon = Icons.Rounded.Edit
-                                        )
-                                    }
-
-                                    // 主题切换项 (循环模式)
-                                    val themeLabel = when (isDarkMode) {
-                                        null -> "跟随系统"
-                                        true -> "深色模式"
-                                        false -> "浅色模式"
-                                    }
-                                    val themeIcon = when (isDarkMode) {
-                                        null -> Icons.Rounded.SettingsBrightness
-                                        true -> Icons.Rounded.DarkMode
-                                        false -> Icons.Rounded.LightMode
-                                    }
-
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(vertical = 4.dp)
-                                    )
-
-                                    NemoMenuItem(
-                                        text = "显示模式: $themeLabel",
+                            NemoMorphMenu(
+                                expanded = expanded,
+                                onExpandedChange = setExpanded,
+                                menuWidth = 240.dp,
+                                icon = Icons.Rounded.MoreVert,
+                                contentDescription = "更多选项"
+                            ) {
+                                if (onUndo != null && canUndo) {
+                                    NemoMorphMenuItem(
+                                        text = "撤销上一次评分",
+                                        leadingIcon = Icons.AutoMirrored.Rounded.Undo,
                                         onClick = {
-                                            onCycleDarkMode()
-                                        },
-                                        leadingIcon = themeIcon
+                                            close()
+                                            onUndo()
+                                        }
+                                    )
+
+                                    androidx.compose.material3.HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
                                     )
                                 }
+
+                                if (onShowRatingGuide != null) {
+                                    NemoMorphMenuItem(
+                                        text = "评分说明（新学/复习）",
+                                        leadingIcon = Icons.Rounded.CheckCircle,
+                                        onClick = {
+                                            close()
+                                            onShowRatingGuide()
+                                        }
+                                    )
+
+                                    androidx.compose.material3.HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                                    )
+                                }
+
+                                if (remainingCount > 0) {
+                                    NemoMorphMenuItem(
+                                        text = "暂停此卡片 (Suspend)",
+                                        leadingIcon = Icons.Rounded.Pause,
+                                        onClick = {
+                                            close()
+                                            onSuspend()
+                                        }
+                                    )
+                                    NemoMorphMenuItem(
+                                        text = "今日暂缓此项 (Bury)",
+                                        leadingIcon = Icons.Rounded.AccessTime,
+                                        onClick = {
+                                            close()
+                                            onBury()
+                                        }
+                                    )
+
+                                    NemoMorphMenuItem(
+                                        text = "报告条目错误",
+                                        leadingIcon = Icons.Rounded.Report,
+                                        onClick = {
+                                            close()
+                                            onReportError()
+                                        }
+                                    )
+
+                                    androidx.compose.material3.HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                                    )
+                                }
+
+                                // 自动朗读开关
+                                if (onToggleAutoAudio != null) {
+                                    MorphMenuToggleItem(
+                                        text = "翻面自动朗读",
+                                        checked = isAutoAudioEnabled,
+                                        onCheckedChange = { onToggleAutoAudio(it) }
+                                    )
+                                }
+
+                                if (onToggleShowAnswerDelay != null) {
+                                    MorphMenuToggleItem(
+                                        text = "显示答案等待",
+                                        checked = isShowAnswerDelayEnabled,
+                                        onCheckedChange = { onToggleShowAnswerDelay(it) }
+                                    )
+
+                                    if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
+                                        NemoMorphMenuItem(
+                                            text = "等待时长: $showAnswerDelayDurationLabel",
+                                            leadingIcon = Icons.Rounded.Timer,
+                                            onClick = {
+                                                close()
+                                                if (onOpenShowAnswerDelayDialog != null) {
+                                                    onOpenShowAnswerDelayDialog()
+                                                } else {
+                                                    onCycleShowAnswerDelayDuration?.invoke()
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+
+                                if (onToggleAutoRevealAnswer != null) {
+                                    MorphMenuToggleItem(
+                                        text = "自动翻面",
+                                        checked = isAutoRevealAnswerEnabled,
+                                        onCheckedChange = { onToggleAutoRevealAnswer(it) }
+                                    )
+
+                                    if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
+                                        NemoMorphMenuItem(
+                                            text = "翻面时长: $autoRevealAnswerDurationLabel",
+                                            leadingIcon = Icons.Rounded.Timer,
+                                            onClick = {
+                                                close()
+                                                if (onOpenAutoRevealAnswerDialog != null) {
+                                                    onOpenAutoRevealAnswerDialog()
+                                                } else {
+                                                    onCycleAutoRevealAnswerDuration?.invoke()
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+
+                                if (onToggleWhiteboard != null) {
+                                    val whiteboardLabel = if (isWhiteboardEnabled) "已开启" else "已关闭"
+                                    NemoMorphMenuItem(
+                                        text = "手写白板: $whiteboardLabel",
+                                        leadingIcon = Icons.Rounded.Edit,
+                                        onClick = {
+                                            onToggleWhiteboard(!isWhiteboardEnabled)
+                                        }
+                                    )
+                                }
+
+                                androidx.compose.material3.HorizontalDivider(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+                                )
+
+                                // 主题切换项 (循环模式)
+                                val themeLabel = when (isDarkMode) {
+                                    null -> "跟随系统"
+                                    true -> "深色模式"
+                                    false -> "浅色模式"
+                                }
+                                val themeIcon = when (isDarkMode) {
+                                    null -> Icons.Rounded.SettingsBrightness
+                                    true -> Icons.Rounded.DarkMode
+                                    false -> Icons.Rounded.LightMode
+                                }
+
+                                NemoMorphMenuItem(
+                                    text = "显示模式: $themeLabel",
+                                    leadingIcon = themeIcon,
+                                    onClick = {
+                                        onCycleDarkMode()
+                                    }
+                                )
                             }
                         }
                     }
@@ -826,6 +744,50 @@ fun WaitingContent(
                 text = "立即学习 (Learn Ahead)",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun MorphMenuToggleItem(
+    text: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+
+    androidx.compose.material3.Surface(
+        onClick = {
+            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+            onCheckedChange(!checked)
+        },
+        color = Color.Transparent,
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                fontSize = 15.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            com.jian.nemo.core.ui.component.common.NemoGooeyToggle(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                activeColor = MaterialTheme.colorScheme.primary,
+                inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
         }
     }
