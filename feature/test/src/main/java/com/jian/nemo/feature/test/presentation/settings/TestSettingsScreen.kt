@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
@@ -188,6 +189,12 @@ fun TestSettingsScreen(
     CustomTimeLimitDialog(showCustomTimeLimitDialog, config.timeLimitMinutes, { showCustomTimeLimitDialog = false }) { updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) } }
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .containerTransform(
+                key = "container_test_${testModeId ?: "default"}",
+                shape = RoundedCornerShape(0.dp)
+            ),
         topBar = {
             CommonHeader(
                 title = pageTitle,

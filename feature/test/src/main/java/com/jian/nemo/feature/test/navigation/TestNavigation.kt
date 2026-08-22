@@ -5,6 +5,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import com.jian.nemo.core.domain.model.QuestionType
 import com.jian.nemo.core.domain.model.TestMode
 import com.jian.nemo.feature.test.TestScreen
@@ -27,30 +32,36 @@ fun NavGraphBuilder.testScreen(navController: NavHostController) {
                 nullable = true
                 defaultValue = null
             }
-        )
+        ),
+        enterTransition = { fadeIn(animationSpec = tween(300)) },
+        exitTransition = { fadeOut(animationSpec = tween(300)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+        popExitTransition = { fadeOut(animationSpec = tween(300)) }
     ) { backStackEntry ->
         val testModeId = backStackEntry.arguments?.getString("testModeId")
 
-        com.jian.nemo.feature.test.presentation.settings.TestSettingsScreen(
-            testModeId = testModeId,
-            onBack = { navController.popBackStack() },
-            onNavigate = { event ->
-                when(event) {
-                    is com.jian.nemo.feature.test.presentation.settings.model.TestNavigationEvent.NavigateToTest -> {
-                        navController.navigateToTest(
-                            level = event.level,
-                            mode = event.mode,
-                            questionType = event.questionType,
-                            contentType = event.contentType,
-                            source = event.source
-                        )
-                    }
-                    is com.jian.nemo.feature.test.presentation.settings.model.TestNavigationEvent.NavigateToTypingTest -> {
-                        navController.navigateToTypingTest(event.level)
+        CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+            com.jian.nemo.feature.test.presentation.settings.TestSettingsScreen(
+                testModeId = testModeId,
+                onBack = { navController.popBackStack() },
+                onNavigate = { event ->
+                    when(event) {
+                        is com.jian.nemo.feature.test.presentation.settings.model.TestNavigationEvent.NavigateToTest -> {
+                            navController.navigateToTest(
+                                level = event.level,
+                                mode = event.mode,
+                                questionType = event.questionType,
+                                contentType = event.contentType,
+                                source = event.source
+                            )
+                        }
+                        is com.jian.nemo.feature.test.presentation.settings.model.TestNavigationEvent.NavigateToTypingTest -> {
+                            navController.navigateToTypingTest(event.level)
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 
     // 测试界面

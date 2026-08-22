@@ -2,6 +2,11 @@ package com.jian.nemo.navigation
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -161,6 +166,7 @@ object HorizontalNavTransition {
  * 更新: 集成新的 feature:learning 模块
  * 更新: 移植旧版导航动画 (BottomNavTransition + NemoNavigationAnimations)
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NemoNavHost(
     navController: NavHostController,
@@ -178,16 +184,20 @@ fun NemoNavHost(
         )
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = "splash",  // 启动时先显示启动屏
-        modifier = modifier,
-        // 设置默认动画为二级页面转场动画 (推箱子效果)
-        enterTransition = { NemoNavigationAnimations.enterTransition() },
-        exitTransition = { NemoNavigationAnimations.exitTransition() },
-        popEnterTransition = { NemoNavigationAnimations.popEnterTransition() },
-        popExitTransition = { NemoNavigationAnimations.popExitTransition() }
-    ) {
+    SharedTransitionLayout(modifier = modifier) {
+        CompositionLocalProvider(
+            LocalSharedTransitionScope provides this
+        ) {
+            NavHost(
+                navController = navController,
+                startDestination = "splash",  // 启动时先显示启动屏
+                modifier = Modifier.fillMaxSize(),
+                // 设置默认动画为二级页面转场动画 (推箱子效果)
+                enterTransition = { NemoNavigationAnimations.enterTransition() },
+                exitTransition = { NemoNavigationAnimations.exitTransition() },
+                popEnterTransition = { NemoNavigationAnimations.popEnterTransition() },
+                popExitTransition = { NemoNavigationAnimations.popExitTransition() }
+            ) {
         // 启动屏 (使用缩放并淡出动画)
         composable(
             route = "splash",
@@ -332,35 +342,45 @@ fun NemoNavHost(
 
         // 测试页 - 主界面
         composable(route = NavDestination.TEST) {
-            com.jian.nemo.feature.test.presentation.dashboard.TestDashboardScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToTestSettings = { testModeId ->
-                    navController.navigateToTestSettings(testModeId)
-                },
-                onNavigateToMistakes = {
-                    navController.navigate(NavDestination.MISTAKES)
-                },
-                onNavigateToFavorites = {
-                    navController.navigate(NavDestination.FAVORITES)
-                },
-                onNavigateToAbilityWorkshop = {
-                    navController.navigate(NavDestination.ABILITY_WORKSHOP)
-                }
-            )
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                com.jian.nemo.feature.test.presentation.dashboard.TestDashboardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToTestSettings = { testModeId ->
+                        navController.navigateToTestSettings(testModeId)
+                    },
+                    onNavigateToMistakes = {
+                        navController.navigate(NavDestination.MISTAKES)
+                    },
+                    onNavigateToFavorites = {
+                        navController.navigate(NavDestination.FAVORITES)
+                    },
+                    onNavigateToAbilityWorkshop = {
+                        navController.navigate(NavDestination.ABILITY_WORKSHOP)
+                    }
+                )
+            }
         }
 
-        composable(NavDestination.ABILITY_WORKSHOP) {
-            AbilityWorkshopScreen(
-                onBack = { navController.popBackStack() },
-                onNavigateToGame = { gameType ->
-                    when (gameType) {
-                        "verb_conjugation" -> navController.navigate(NavDestination.VERB_CONJUGATION)
-                        "listening_comprehension" -> navController.navigate(NavDestination.LISTENING_COMPREHENSION)
-                        "word_cloze" -> navController.navigate(NavDestination.WORD_CLOZE)
-                        // 其他游戏后续接入
+        composable(
+            route = NavDestination.ABILITY_WORKSHOP,
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) },
+            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+            popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        ) {
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                AbilityWorkshopScreen(
+                    onBack = { navController.popBackStack() },
+                    onNavigateToGame = { gameType ->
+                        when (gameType) {
+                            "verb_conjugation" -> navController.navigate(NavDestination.VERB_CONJUGATION)
+                            "listening_comprehension" -> navController.navigate(NavDestination.LISTENING_COMPREHENSION)
+                            "word_cloze" -> navController.navigate(NavDestination.WORD_CLOZE)
+                            // 其他游戏后续接入
+                        }
                     }
-                }
-            )
+                )
+            }
         }
 
         composable(NavDestination.VERB_CONJUGATION) {
@@ -714,6 +734,8 @@ fun NemoNavHost(
             }
         )
     }
+}
+}
 }
 
 /**

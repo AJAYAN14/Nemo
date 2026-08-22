@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoOrange
+import com.jian.nemo.core.ui.animation.containerTransform
 
 // 临时本地定义 (对应 Color.kt 中的值)，保证编译通过且视觉一致
 // private val NemoSecondary = Color(0xFF4CAF50)  // 绿色
@@ -63,6 +64,12 @@ fun FavoritesScreen(
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .containerTransform(
+                key = "container_favorites",
+                shape = RoundedCornerShape(0.dp)
+            ),
         topBar = {
             com.jian.nemo.core.ui.component.common.CommonHeader(
                 title = "我的收藏",

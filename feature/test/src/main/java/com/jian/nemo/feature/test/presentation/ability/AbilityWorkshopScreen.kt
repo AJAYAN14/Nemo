@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.animation.containerTransform
 
 /**
  * 能力工坊界面 - 提供多种专项能力训练游戏
@@ -31,6 +32,12 @@ fun AbilityWorkshopScreen(
     onNavigateToGame: (String) -> Unit = {}
 ) {
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .containerTransform(
+                key = "container_ability_workshop",
+                shape = RoundedCornerShape(0.dp)
+            ),
         topBar = {
             CommonHeader(
                 title = "能力工坊",

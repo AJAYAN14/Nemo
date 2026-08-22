@@ -4,6 +4,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import com.jian.nemo.feature.collection.favorites.FavoritesScreen
 import com.jian.nemo.feature.collection.favorites.FavoriteWordsScreen
 import com.jian.nemo.feature.collection.favorites.FavoriteGrammarsScreen
@@ -81,13 +86,21 @@ fun NavGraphBuilder.favoritesScreen(
     onWordClick: (Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    composable(route = FAVORITES_ROUTE) {
-        FavoritesScreen(
-            onNavigateToWordFavorites = onNavigateToWordFavorites,
-            onNavigateToGrammarFavorites = onNavigateToGrammarFavorites,
-            onWordClick = onWordClick,
-            onNavigateBack = onNavigateBack
-        )
+    composable(
+        route = FAVORITES_ROUTE,
+        enterTransition = { fadeIn(animationSpec = tween(300)) },
+        exitTransition = { fadeOut(animationSpec = tween(300)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+        popExitTransition = { fadeOut(animationSpec = tween(300)) }
+    ) {
+        CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+            FavoritesScreen(
+                onNavigateToWordFavorites = onNavigateToWordFavorites,
+                onNavigateToGrammarFavorites = onNavigateToGrammarFavorites,
+                onWordClick = onWordClick,
+                onNavigateBack = onNavigateBack
+            )
+        }
     }
 }
 
@@ -142,12 +155,20 @@ fun NavGraphBuilder.mistakesScreen(
     onNavigateToGrammarMistakes: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    composable(route = MISTAKES_ROUTE) {
-        MistakesScreen(
-            onNavigateToWordMistakes = onNavigateToWordMistakes,
-            onNavigateToGrammarMistakes = onNavigateToGrammarMistakes,
-            onNavigateBack = onNavigateBack
-        )
+    composable(
+        route = MISTAKES_ROUTE,
+        enterTransition = { fadeIn(animationSpec = tween(300)) },
+        exitTransition = { fadeOut(animationSpec = tween(300)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
+        popExitTransition = { fadeOut(animationSpec = tween(300)) }
+    ) {
+        CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+            MistakesScreen(
+                onNavigateToWordMistakes = onNavigateToWordMistakes,
+                onNavigateToGrammarMistakes = onNavigateToGrammarMistakes,
+                onNavigateBack = onNavigateBack
+            )
+        }
     }
 }
 

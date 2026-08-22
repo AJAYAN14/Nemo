@@ -40,6 +40,7 @@ import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.designsystem.theme.NemoPurple
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoTeal
+import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
 import kotlinx.coroutines.delay
@@ -102,7 +103,12 @@ fun TestDashboardScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DashboardTile(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .containerTransform(
+                            key = "container_mistakes",
+                            shape = RoundedCornerShape(24.dp)
+                        ),
                     title = "我的错题",
                     subtitle = "${uiState.wrongWordsCount} 个",
                     icon = Icons.Rounded.Cancel,
@@ -110,7 +116,12 @@ fun TestDashboardScreen(
                     onClick = onNavigateToMistakes
                 )
                 DashboardTile(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .containerTransform(
+                            key = "container_favorites",
+                            shape = RoundedCornerShape(24.dp)
+                        ),
                     title = "我的收藏",
                     subtitle = "${uiState.favoriteWordsCount} 个",
                     icon = Icons.Rounded.Star,
@@ -128,7 +139,12 @@ fun TestDashboardScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     DashboardTile(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .containerTransform(
+                                key = "container_test_multiple_choice",
+                                shape = RoundedCornerShape(24.dp)
+                            ),
                         title = "选择题",
                         subtitle = "快速认知",
                         icon = Icons.AutoMirrored.Rounded.Assignment,
@@ -136,7 +152,12 @@ fun TestDashboardScreen(
                         onClick = { onNavigateToTestSettings("multiple_choice") }
                     )
                     DashboardTile(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .containerTransform(
+                                key = "container_test_typing",
+                                shape = RoundedCornerShape(24.dp)
+                            ),
                         title = "手打题",
                         subtitle = "拼写强化",
                         icon = Icons.Rounded.TextFields,
@@ -149,7 +170,12 @@ fun TestDashboardScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     DashboardTile(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .containerTransform(
+                                key = "container_test_card_matching",
+                                shape = RoundedCornerShape(24.dp)
+                            ),
                         title = "卡片题",
                         subtitle = "翻牌记忆",
                         icon = Icons.Rounded.ViewModule,
@@ -157,7 +183,12 @@ fun TestDashboardScreen(
                         onClick = { onNavigateToTestSettings("card_matching") }
                     )
                     DashboardTile(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .containerTransform(
+                                key = "container_test_sorting",
+                                shape = RoundedCornerShape(24.dp)
+                            ),
                         title = "排序题",
                         subtitle = "逻辑构建",
                         icon = Icons.Rounded.Extension,
@@ -172,6 +203,10 @@ fun TestDashboardScreen(
 
                 SectionTitle("其他测试")
                 DashboardBanner(
+                    modifier = Modifier.containerTransform(
+                        key = "container_ability_workshop",
+                        shape = RoundedCornerShape(24.dp)
+                    ),
                     title = "能力工坊",
                     subtitle = "提升语感，全方位进阶",
                     icon = Icons.Rounded.AllInclusive,
@@ -540,6 +575,7 @@ private fun DashboardTile(
 
 @Composable
 private fun DashboardBanner(
+    modifier: Modifier = Modifier,
     title: String,
     subtitle: String,
     icon: ImageVector,
@@ -552,7 +588,7 @@ private fun DashboardBanner(
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else BentoColors.TextSub
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(120.dp)
             .clickable(onClick = onClick),
