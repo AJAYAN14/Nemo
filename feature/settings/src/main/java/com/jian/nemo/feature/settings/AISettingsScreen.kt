@@ -37,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -439,48 +440,17 @@ fun AISettingsScreen(
 
         // 删除二次确认弹窗
         configToDelete?.let { config ->
-            AlertDialog(
+            NemoDialog(
                 onDismissRequest = { configToDelete = null },
-                title = {
-                    Text(
-                        text = "确认删除此配置？",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                text = {
-                    Text(
-                        text = "您确认要删除 AI 配置 \"${config.name}\" 吗？删除后该配置的密钥和代理信息将永久丢失，且无法恢复。",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.onEvent(AISettingsEvent.DeleteConfig(config.id))
-                            configToDelete = null
-                        },
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text("确认删除", fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { configToDelete = null }
-                    ) {
-                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                },
-                shape = RoundedCornerShape(24.dp),
-                containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-                properties = androidx.compose.ui.window.DialogProperties(
-                    usePlatformDefaultWidth = true
-                )
+                title = "确认删除此配置？",
+                text = "您确认要删除 AI 配置 \"${config.name}\" 吗？删除后该配置的密钥和代理信息将永久丢失，且无法恢复。",
+                confirmText = "确认删除",
+                dismissText = "取消",
+                isDangerous = true,
+                onConfirm = {
+                    viewModel.onEvent(AISettingsEvent.DeleteConfig(config.id))
+                    configToDelete = null
+                }
             )
         }
     }

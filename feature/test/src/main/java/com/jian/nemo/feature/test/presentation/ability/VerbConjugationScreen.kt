@@ -28,6 +28,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -566,7 +567,7 @@ private fun ReadyView(
     // 反馈底栏
     if (showSheet) {
         val isCorrect = state.selectedOptionIndex == currentQuestion.correctIndex
-        ModalBottomSheet(
+        NemoModalBottomSheet(
             onDismissRequest = { /* 必须点击继续 */ },
             sheetState = sheetState,
             containerColor = if (isCorrect) {

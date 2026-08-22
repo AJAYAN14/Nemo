@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.components.dialogs
 
+import android.os.Build
+import android.view.WindowManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,12 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -75,6 +81,22 @@ fun ContentReportDialog(
     var otherDescription by remember { mutableStateOf("") }
 
     Dialog(onDismissRequest = onDismiss) {
+        val view = LocalView.current
+        val haptic = LocalHapticFeedback.current
+
+        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        DisposableEffect(view) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.attributes = window.attributes.apply {
+                    blurBehindRadius = 48 // 48px 原生 GPU 硬件级细腻毛玻璃
+                    dimAmount = 0.20f    // 20% 通透柔光暗化
+                }
+            }
+            onDispose { }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,7 +176,7 @@ fun ContentReportDialog(
                                         .clip(RoundedCornerShape(10.dp))
                                         .background(
                                             if (isSelected) primaryColor.copy(alpha = 0.08f)
-                                            else chipBg
+                                             else chipBg
                                         )
                                         .border(
                                             BorderStroke(
@@ -164,7 +186,10 @@ fun ContentReportDialog(
                                             ),
                                             shape = RoundedCornerShape(10.dp)
                                         )
-                                        .clickable { selectedType = code }
+                                        .clickable { 
+                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            selectedType = code 
+                                        }
                                         .padding(horizontal = 8.dp)
                                 ) {
                                     Text(
@@ -240,6 +265,7 @@ fun ContentReportDialog(
                 // 6. Action Buttons (Original Style)
                 Button(
                     onClick = { 
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         val desc = otherDescription.trim().takeIf { it.isNotEmpty() }
                         onConfirm(selectedType, desc) 
                     },
@@ -262,7 +288,10 @@ fun ContentReportDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 TextButton(
-                    onClick = onDismiss,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onDismiss()
+                    },
                     shape = CircleShape,
                     modifier = Modifier
                         .fillMaxWidth()

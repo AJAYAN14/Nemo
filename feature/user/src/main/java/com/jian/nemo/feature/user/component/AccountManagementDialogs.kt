@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
@@ -544,30 +545,46 @@ fun DeleteAccountDialog(
         backgroundColor = primaryColor.copy(alpha = 0.4f)
     )
 
-    AlertDialog(
+    NemoDialog(
         onDismissRequest = onDismiss,
-        containerColor = containerColor,
-        titleContentColor = titleColor,
-        textContentColor = bodyColor,
-        iconContentColor = primaryColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
-        icon = {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                contentDescription = null,
-                modifier = Modifier.size(28.dp)
-            )
+        title = "注销账户",
+        isDangerous = true,
+        confirmText = if (showFinalConfirm) "确认注销" else "下一步",
+        dismissText = if (showFinalConfirm) "返回" else "取消",
+        confirmEnabled = !isLoading && (showFinalConfirm || input.isNotEmpty()),
+        isLoading = isLoading,
+        onConfirm = {
+            if (!showFinalConfirm) {
+                if (isOnlyGoogleIdentity) {
+                    if (input.trim() == userEmail) {
+                        showFinalConfirm = true
+                        errorMessage = null
+                    } else {
+                        errorMessage = "邮箱输入不匹配，请重新输入"
+                    }
+                } else {
+                    if (input.isNotEmpty()) {
+                        showFinalConfirm = true
+                        errorMessage = null
+                    } else {
+                        errorMessage = "请输入密码"
+                    }
+                }
+            } else {
+                isLoading = true
+                errorMessage = null
+                onConfirmDelete(if (isOnlyGoogleIdentity) null else input)
+            }
         },
-        title = {
-            Text(
-                text = "注销账户",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = primaryColor, // Red Title for danger
-                letterSpacing = (-0.5).sp
-            )
+        onDismiss = {
+            if (showFinalConfirm) {
+                showFinalConfirm = false
+                errorMessage = null
+            } else {
+                onDismiss()
+            }
         },
-        text = {
+        content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (!showFinalConfirm) {
                     Text(
@@ -585,7 +602,7 @@ fun DeleteAccountDialog(
                         color = bodyColor,
                         lineHeight = 22.sp
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
                         text = if (isOnlyGoogleIdentity) "请输入当前邮箱以确认注销：" else "请输入您的密码以确认注销：",
@@ -663,77 +680,6 @@ fun DeleteAccountDialog(
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (!showFinalConfirm) {
-                        if (isOnlyGoogleIdentity) {
-                            if (input.trim() == userEmail) {
-                                showFinalConfirm = true
-                                errorMessage = null
-                            } else {
-                                errorMessage = "邮箱输入不匹配，请重新输入"
-                            }
-                        } else {
-                            if (input.isNotEmpty()) {
-                                showFinalConfirm = true
-                                errorMessage = null
-                            } else {
-                                errorMessage = "请输入密码"
-                            }
-                        }
-                    } else {
-                        isLoading = true
-                        errorMessage = null
-                        onConfirmDelete(if (isOnlyGoogleIdentity) null else input)
-                    }
-                },
-                enabled = !isLoading && (showFinalConfirm || input.isNotEmpty()),
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = primaryColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFE5E5EA),
-                    disabledContentColor = if (useDarkTheme) Color(0xFF636366) else Color(0xFFAEAEB2)
-                ),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
-            ) {
-                if (isLoading) {
-                    NemoChasingDotsLoader(size = 18.dp)
-                } else {
-                    Text(
-                        text = if (showFinalConfirm) "确认注销" else "下一步",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    if (showFinalConfirm) {
-                        showFinalConfirm = false
-                        errorMessage = null
-                    } else {
-                        onDismiss()
-                    }
-                },
-                enabled = !isLoading,
-                shape = androidx.compose.foundation.shape.CircleShape,
-                colors = ButtonDefaults.textButtonColors(
-                    contentColor = bodyColor,
-                    disabledContentColor = bodyColor.copy(alpha = 0.38f)
-                ),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
-            ) {
-                Text(
-                    text = if (showFinalConfirm) "返回" else "取消",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
     )

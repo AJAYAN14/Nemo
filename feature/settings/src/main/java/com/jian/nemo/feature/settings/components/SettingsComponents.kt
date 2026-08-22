@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -209,7 +210,7 @@ fun DailyGoalSelectionBottomSheet(
     val goals = listOf(5, 10, 20, 30, 50)
     val accentColor = Color(0xFFFF9500) // NemoOrange
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface, // Use surface for clean look
         dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -277,7 +278,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
     val goals = listOf(5, 10, 15, 20, 25)
     val accentColor = Color(0xFF34C759) // NemoGreen
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -389,7 +390,7 @@ fun LearningDayResetHourBottomSheet(
     val hours = listOf(0, 2, 4, 5, 6)
     val accentColor = Color(0xFF5856D6) // NemoIndigo
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -528,7 +529,7 @@ fun VoiceSelectionBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }

@@ -24,6 +24,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
@@ -63,7 +64,7 @@ fun AIWordTranslationSheet(
     val sheetBg = if (isDark) colorScheme.surfaceContainer else BentoColors.Surface
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
         dragHandle = null,

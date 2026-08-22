@@ -53,7 +53,7 @@ fun BonusStudyBottomSheet(
     var selectedQuantity by remember { mutableIntStateOf(initialQuantity) }
     val presetOptions = listOf(10, 20, 30)
 
-    ModalBottomSheet(
+    com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,

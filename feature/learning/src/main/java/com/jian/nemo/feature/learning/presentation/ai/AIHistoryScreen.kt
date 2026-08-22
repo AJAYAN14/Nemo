@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -122,28 +123,17 @@ fun AIHistoryScreen(
         }
 
         if (showClearConfirm) {
-            AlertDialog(
+            NemoDialog(
                 onDismissRequest = { showClearConfirm = false },
-                title = { Text("清空历史记录", fontWeight = FontWeight.Bold, color = colorScheme.onSurface) },
-                text = { Text("确定要清空所有的练习历史吗？此操作不可撤销。", color = colorScheme.onSurfaceVariant) },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.clearAllHistory()
-                            showClearConfirm = false
-                        }
-                    ) {
-                        Text("确认清空", color = NemoDanger, fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showClearConfirm = false }) {
-                        Text("取消", color = colorScheme.onSurfaceVariant)
-                    }
-                },
-                shape = RoundedCornerShape(24.dp),
-                containerColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White,
-                tonalElevation = 0.dp
+                title = "清空历史记录",
+                text = "确定要清空所有的练习历史吗？此操作不可撤销。",
+                confirmText = "确认清空",
+                dismissText = "取消",
+                isDangerous = true,
+                onConfirm = {
+                    viewModel.clearAllHistory()
+                    showClearConfirm = false
+                }
             )
         }
     }

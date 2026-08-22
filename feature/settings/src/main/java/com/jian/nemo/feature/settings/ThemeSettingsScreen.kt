@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
@@ -479,22 +480,16 @@ private fun TimePickerDialog(
         is24Hour = true
     )
 
-    AlertDialog(
+    NemoDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val formattedTime = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
-                onTimeSelected(formattedTime)
-            }) {
-                Text("确定")
-            }
+        title = "选择时间",
+        confirmText = "确定",
+        dismissText = "取消",
+        onConfirm = {
+            val formattedTime = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
+            onTimeSelected(formattedTime)
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
-        text = {
+        content = {
             TimePicker(state = timePickerState)
         }
     )

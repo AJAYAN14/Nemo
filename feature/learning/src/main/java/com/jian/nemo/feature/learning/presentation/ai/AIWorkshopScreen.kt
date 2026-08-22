@@ -32,6 +32,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
@@ -1100,39 +1101,20 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
 
 @Composable
 private fun HelpDialog(onDismiss: () -> Unit) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    
-    AlertDialog(
+    NemoDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = onDismiss,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                elevation = null
-            ) {
-                Text("我知道了", fontWeight = FontWeight.Bold)
-            }
-        },
-        title = { 
-            Text(
-                "工坊使用指南", 
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            ) 
-        },
-        text = {
+        title = "工坊使用指南",
+        confirmText = "我知道了",
+        dismissText = null,
+        onConfirm = onDismiss,
+        content = {
             Column {
                 HelpItem("1", "定制化练习", "AI 会根据您设置的日语等级（N1-N5）生成针对性的练习题。")
                 HelpItem("2", "多样化题型", "包含中译日和日译中两种类型，全面提升翻译和表达能力。")
                 HelpItem("3", "专业反馈", "提交后 AI 会即时评分并提供详细的语法及用词点评建议。")
                 HelpItem("4", "记录回顾", "所有练习均保存 30 天，可随时通过顶部历史图标回顾。")
             }
-        },
-        shape = RoundedCornerShape(28.dp),
-        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-        tonalElevation = 0.dp
+        }
     )
 }
 

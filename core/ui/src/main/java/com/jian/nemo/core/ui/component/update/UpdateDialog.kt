@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.AppUpdateConfig
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 
 /**
  * 应用更新弹窗 (Modern Flat UI Style)
@@ -51,7 +52,7 @@ fun UpdateDialog(
     val containerColor = MaterialTheme.colorScheme.surface
     val contentColor = MaterialTheme.colorScheme.onSurface
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = {
             if (canDismiss) {
                 onDismissRequest()

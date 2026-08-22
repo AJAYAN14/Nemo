@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.components.dialogs
 
+import android.os.Build
+import android.view.WindowManager
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -16,7 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -25,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 
@@ -37,8 +43,10 @@ fun TypingPracticeDialog(
 ) {
     val state = rememberTypingPracticeDialogState(onDismiss = onDismiss)
     val focusManager = LocalFocusManager.current
+    val haptic = LocalHapticFeedback.current
 
     val onConfirm = {
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         focusManager.clearFocus()
         state.validate(word)
     }
@@ -50,6 +58,21 @@ fun TypingPracticeDialog(
             dismissOnClickOutside = false // Disable dismiss on click outside
         )
     ) {
+        val view = LocalView.current
+
+        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        DisposableEffect(view) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.attributes = window.attributes.apply {
+                    blurBehindRadius = 48
+                    dimAmount = 0.20f
+                }
+            }
+            onDispose { }
+        }
+
         Surface(
             modifier = Modifier
                 .fillMaxWidth()

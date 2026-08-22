@@ -2,6 +2,8 @@ package com.jian.nemo.core.ui.component.avatar
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
@@ -28,12 +30,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.content.FileProvider
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.util.AvatarResult
@@ -105,6 +109,21 @@ fun AvatarEditDialog(
             decorFitsSystemWindows = false
         )
     ) {
+        val view = LocalView.current
+
+        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        DisposableEffect(view) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.attributes = window.attributes.apply {
+                    blurBehindRadius = 48
+                    dimAmount = 0.20f
+                }
+            }
+            onDispose { }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,7 +133,7 @@ fun AvatarEditDialog(
                 ) {
                     onDismiss()
                 }
-                .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f)),
+                .background(Color.Black.copy(alpha = 0.20f)),
             contentAlignment = Alignment.Center
         ) {
             Surface(

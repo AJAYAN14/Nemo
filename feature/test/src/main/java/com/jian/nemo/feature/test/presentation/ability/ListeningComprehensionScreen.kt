@@ -36,6 +36,7 @@ import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -627,7 +628,7 @@ private fun ReadyView(
     // 6. 底栏 ModalSheet 滑动解析 (解锁模式)
     if (isSheetOpen) {
         val isCorrect = state.selectedOptionIndex == currentQuestion.correctIndex
-        ModalBottomSheet(
+        NemoModalBottomSheet(
             onDismissRequest = {
                 coroutineScope.launch {
                     sheetState.hide()

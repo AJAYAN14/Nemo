@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 
 import com.jian.nemo.feature.test.presentation.settings.components.BasicSettingsSection
 import com.jian.nemo.feature.test.presentation.settings.components.QuizSettingsSection
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.test.presentation.settings.components.TestSettingsBottomSheetContent
 
 
@@ -239,7 +240,7 @@ fun TestSettingsScreen(
 
     // BottomSheet 逻辑
     if (showBottomSheet) {
-        ModalBottomSheet(
+        NemoModalBottomSheet(
             onDismissRequest = {
                 viewModel.ensureValidLevels()
                 showBottomSheet = false

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material3.*
+import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -107,24 +108,16 @@ fun AIReadingHistoryScreen(
     }
 
     if (showDeleteAllDialog) {
-        AlertDialog(
+        NemoDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = { Text("确认清空", fontWeight = FontWeight.Bold) },
-            text = { Text("您确定要清除所有的阅读和答题历史记录吗？此操作无法恢复。") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onEvent(AIReadingEvent.ClearAllHistory)
-                        showDeleteAllDialog = false
-                    }
-                ) {
-                    Text("清除", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteAllDialog = false }) {
-                    Text("取消")
-                }
+            title = "确认清空",
+            text = "您确定要清除所有的阅读和答题历史记录吗？此操作无法恢复。",
+            confirmText = "清除",
+            dismissText = "取消",
+            isDangerous = true,
+            onConfirm = {
+                viewModel.onEvent(AIReadingEvent.ClearAllHistory)
+                showDeleteAllDialog = false
             }
         )
     }

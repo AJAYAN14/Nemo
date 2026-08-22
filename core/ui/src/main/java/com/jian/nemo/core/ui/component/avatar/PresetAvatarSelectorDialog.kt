@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.util.PresetAvatars
 
 /**
@@ -32,16 +33,17 @@ fun PresetAvatarSelectorDialog(
 ) {
     var selectedPreset by remember { mutableStateOf<PresetAvatars.PresetAvatar?>(null) }
 
-    AlertDialog(
+    NemoDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "选择预设头像",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
+        title = "选择预设头像",
+        confirmText = "确定",
+        dismissText = "取消",
+        confirmEnabled = selectedPreset != null,
+        onConfirm = {
+            selectedPreset?.let { onPresetSelected(it) }
+            onDismiss()
         },
-        text = {
+        content = {
             Column {
                 Text(
                     text = "从精美的渐变色头像中选择一个",
@@ -55,7 +57,7 @@ fun PresetAvatarSelectorDialog(
                     columns = GridCells.Fixed(4),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.height(320.dp)
+                    modifier = Modifier.height(280.dp)
                 ) {
                     items(PresetAvatars.presets) { preset ->
                         PresetAvatarItem(
@@ -65,22 +67,6 @@ fun PresetAvatarSelectorDialog(
                         )
                     }
                 }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    selectedPreset?.let { onPresetSelected(it) }
-                    onDismiss()
-                },
-                enabled = selectedPreset != null
-            ) {
-                Text("确定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
             }
         }
     )

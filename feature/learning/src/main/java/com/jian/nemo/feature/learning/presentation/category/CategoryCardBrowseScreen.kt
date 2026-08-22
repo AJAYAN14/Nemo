@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
@@ -439,7 +440,7 @@ fun AnswerSheetDrawer(
         }
     }
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
         containerColor = MaterialTheme.colorScheme.surface,

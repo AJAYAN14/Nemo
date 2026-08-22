@@ -30,6 +30,7 @@ import androidx.activity.compose.BackHandler
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.GrammarWrongAnswer
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.NemoDialog
 
 /**
  * 错误语法列表界面 (题目快照版)
@@ -58,40 +59,18 @@ fun WrongGrammarsScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
+        NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    text = "移出错题本",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "确定要将选中的 ${selectedGrammarIds.size} 个语法从错题本中移除吗？此操作不会删除语法本身，仅清除错题记录。",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteWrongGrammars(selectedGrammarIds)
-                        selectedGrammarIds = emptySet()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("确认移除", color = premiumRed, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            shape = RoundedCornerShape(24.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
+            title = "移出错题本",
+            text = "确定要将选中的 ${selectedGrammarIds.size} 个语法从错题本中移除吗？此操作不会删除语法本身，仅清除错题记录。",
+            confirmText = "确认移除",
+            dismissText = "取消",
+            isDangerous = true,
+            onConfirm = {
+                viewModel.deleteWrongGrammars(selectedGrammarIds)
+                selectedGrammarIds = emptySet()
+                showDeleteDialog = false
+            }
         )
     }
 

@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.test.components
 
+import android.os.Build
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -8,15 +10,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 
 /**
  * 测试暂停对话框 (Premium Style)
@@ -31,6 +38,7 @@ fun PauseTestDialog(
     val containerColor = MaterialTheme.colorScheme.surface
     val titleColor = MaterialTheme.colorScheme.onSurface
     val bodyColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val haptic = LocalHapticFeedback.current
 
     Dialog(
         onDismissRequest = { }, // 禁用外部点击关闭
@@ -39,6 +47,21 @@ fun PauseTestDialog(
             dismissOnClickOutside = false
         )
     ) {
+        val view = LocalView.current
+
+        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        DisposableEffect(view) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.attributes = window.attributes.apply {
+                    blurBehindRadius = 48
+                    dimAmount = 0.20f
+                }
+            }
+            onDispose { }
+        }
+
         Surface(
             shape = RoundedCornerShape(26.dp),
             color = containerColor,
@@ -99,7 +122,10 @@ fun PauseTestDialog(
 
                 // 4. Action Button (Standard Pro Max Style)
                 Button(
-                    onClick = onConfirm,
+                    onClick = { 
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onConfirm() 
+                    },
                     shape = CircleShape,
                     modifier = Modifier
                         .fillMaxWidth()

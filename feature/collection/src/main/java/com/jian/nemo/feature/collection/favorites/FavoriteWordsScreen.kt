@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
@@ -75,40 +76,18 @@ fun FavoriteWordsScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
+        NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    text = "取消收藏",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "确定要将选中的 ${selectedWordIds.size} 个单词取消收藏吗？",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteWordFavorites(selectedWordIds)
-                        selectedWordIds = emptySet()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("确认移出", color = premiumRed, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            shape = RoundedCornerShape(24.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
+            title = "取消收藏",
+            text = "确定要将选中的 ${selectedWordIds.size} 个单词取消收藏吗？",
+            confirmText = "确认移出",
+            dismissText = "取消",
+            isDangerous = true,
+            onConfirm = {
+                viewModel.deleteWordFavorites(selectedWordIds)
+                selectedWordIds = emptySet()
+                showDeleteDialog = false
+            }
         )
     }
 

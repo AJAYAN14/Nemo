@@ -1,5 +1,7 @@
 package com.jian.nemo.core.ui.component
 
+import android.os.Build
+import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,18 +16,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 /**
@@ -96,6 +103,22 @@ fun NemoDialog(
             dismissOnClickOutside = !isLoading
         )
     ) {
+        val view = LocalView.current
+        val haptic = LocalHapticFeedback.current
+
+        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        DisposableEffect(view) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                window.attributes = window.attributes.apply {
+                    blurBehindRadius = 48 // 48px 原生 GPU 硬件级细腻毛玻璃
+                    dimAmount = 0.20f    // 20% 通透柔光暗化
+                }
+            }
+            onDispose { }
+        }
+
         Box(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
@@ -167,6 +190,7 @@ fun NemoDialog(
                                     .clip(Capsule())
                                     .background(buttonBgColor, Capsule())
                                     .clickable(enabled = !isLoading) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         if (onDismiss != null) {
                                             onDismiss()
                                         } else {
@@ -197,6 +221,7 @@ fun NemoDialog(
                                     .clip(Capsule())
                                     .background(actualBgColor, Capsule())
                                     .clickable(enabled = isClickable) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         onConfirm?.invoke()
                                     },
                                 contentAlignment = Alignment.Center

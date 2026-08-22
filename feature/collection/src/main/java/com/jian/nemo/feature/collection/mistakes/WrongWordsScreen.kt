@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
@@ -76,40 +77,18 @@ fun WrongWordsScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
+        NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = {
-                Text(
-                    text = "移出错题本",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "确定要将选中的 ${selectedWordIds.size} 个单词从错题本中移除吗？此操作不会删除单词本身，仅清除错题记录。",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.deleteWrongWords(selectedWordIds)
-                        selectedWordIds = emptySet()
-                        showDeleteDialog = false
-                    }
-                ) {
-                    Text("确认移除", color = premiumRed, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            shape = RoundedCornerShape(24.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            tonalElevation = 0.dp
+            title = "移出错题本",
+            text = "确定要将选中的 ${selectedWordIds.size} 个单词从错题本中移除吗？此操作不会删除单词本身，仅清除错题记录。",
+            confirmText = "确认移除",
+            dismissText = "取消",
+            isDangerous = true,
+            onConfirm = {
+                viewModel.deleteWrongWords(selectedWordIds)
+                selectedWordIds = emptySet()
+                showDeleteDialog = false
+            }
         )
     }
 

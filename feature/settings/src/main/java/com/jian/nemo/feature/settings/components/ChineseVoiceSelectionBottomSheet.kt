@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 
 /**
  * 独立的中文 TTS 语音选择抽屉弹窗 (Flat UI 风格)
@@ -43,7 +44,7 @@ fun ChineseVoiceSelectionBottomSheet(
         }
     }
 
-    ModalBottomSheet(
+    NemoModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
