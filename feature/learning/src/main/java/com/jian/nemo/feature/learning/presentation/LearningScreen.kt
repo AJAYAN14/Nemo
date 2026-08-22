@@ -34,8 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
@@ -124,16 +127,27 @@ fun LearningScreen(
 
     var isMenuExpanded by remember { mutableStateOf(false) }
 
+    // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡)
+    val animatedBlurRadius by animateDpAsState(
+        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "learningBlur"
+    )
+
     Scaffold(
         containerColor = backgroundColor
     ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. 页面主体内容 (Z = 0)
+            // 1. 页面主体内容 (Z = 0，高斯模糊景深)
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .then(
+                        if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
+                        else Modifier
+                    )
                     .padding(padding)
                     .padding(horizontal = 16.dp)
             ) {
@@ -226,7 +240,7 @@ fun LearningScreen(
                 }
             }
 
-            // 2. 页面全屏聚焦遮罩 (Z = 1，完全覆盖整个页面包括 Header 按钮组)
+            // 2. 页面全屏高斯模糊景深遮罩 (Z = 1，12% 柔光暗化 + 200ms 淡入淡出)
             androidx.compose.animation.AnimatedVisibility(
                 visible = isMenuExpanded,
                 enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
@@ -235,7 +249,7 @@ fun LearningScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.28f))
+                        .background(Color.Black.copy(alpha = 0.12f))
                         .clickable(
                             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                             indication = null,

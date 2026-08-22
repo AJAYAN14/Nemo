@@ -2,9 +2,11 @@ package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +25,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
@@ -60,10 +63,15 @@ fun FavoritesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-
-
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var isMenuExpanded by remember { mutableStateOf(false) }
+
+    // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡)
+    val animatedBlurRadius by animateDpAsState(
+        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "favoritesBlur"
+    )
 
     Box(
         modifier = Modifier
@@ -74,7 +82,12 @@ fun FavoritesScreen(
             )
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
+                    else Modifier
+                ),
             topBar = {
                 com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "我的收藏",
@@ -117,7 +130,7 @@ fun FavoritesScreen(
             }
         }
 
-        // 页面全屏聚焦遮罩 (与学习界面完全一致的 28% 黑色半透明 + 200ms 淡入淡出)
+        // 页面全屏高斯模糊景深遮罩 (12% 柔光暗化 + 200ms 淡入淡出)
         androidx.compose.animation.AnimatedVisibility(
             visible = isMenuExpanded,
             enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
@@ -126,7 +139,7 @@ fun FavoritesScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.28f))
+                    .background(Color.Black.copy(alpha = 0.12f))
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
