@@ -18,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import com.jian.nemo.core.domain.model.User
 import androidx.compose.ui.Alignment
@@ -100,8 +101,15 @@ fun NemoBottomBar(
     val currentOnNavigateState by androidx.compose.runtime.rememberUpdatedState(onNavigate)
 
     val tabsCount = BottomNavItem.entries.size
+    var lastValidIndex by rememberSaveable { mutableIntStateOf(0) }
     val selectedIndex = remember(currentRoute) {
-        BottomNavItem.entries.indexOfFirst { it.route == currentRoute }.coerceAtLeast(0)
+        val matchedIndex = BottomNavItem.entries.indexOfFirst { it.route == currentRoute }
+        if (matchedIndex >= 0) {
+            lastValidIndex = matchedIndex
+            matchedIndex
+        } else {
+            lastValidIndex
+        }
     }
 
     // 核心动画状态
