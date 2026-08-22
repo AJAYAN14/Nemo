@@ -9,10 +9,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
+import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -147,6 +151,7 @@ private fun RichStatsGrid(
         ) {
             // Streak
             RichStatItem(
+                icon = Icons.Rounded.LocalFireDepartment,
                 label = "当前坚持",
                 value = streak.toString(),
                 unit = "天",
@@ -157,6 +162,7 @@ private fun RichStatsGrid(
 
             // Total Days
             RichStatItem(
+                icon = Icons.Rounded.Bolt,
                 label = "累计活跃",
                 value = totalActiveDays.toString(),
                 unit = "天",
@@ -177,6 +183,7 @@ private fun RichStatsGrid(
             } else "--/--"
 
             RichStatItem(
+                icon = Icons.Rounded.EmojiEvents,
                 label = "单日最佳",
                 value = bestDayCount.toString(),
                 unit = "项",
@@ -187,11 +194,12 @@ private fun RichStatsGrid(
 
              // Daily Average
              RichStatItem(
+                icon = Icons.AutoMirrored.Rounded.TrendingUp,
                 label = "日均学习",
                 value = dailyAverage.toString(),
                 unit = "项",
                 subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "超过平均" else "稳步前进",
-                color = Color(0xFF5856D6), // Premium Purple
+                color = Color(0xFF8B5CF6), // Premium Purple
                 modifier = Modifier.weight(1f)
             )
         }
@@ -200,6 +208,7 @@ private fun RichStatsGrid(
 
 @Composable
 private fun RichStatItem(
+    icon: ImageVector,
     label: String,
     value: String,
     unit: String,
@@ -208,41 +217,66 @@ private fun RichStatItem(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else Color.White
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f)
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(22.dp),
         color = containerColor,
-        border = BorderStroke(1.dp, borderColor),
-        modifier = modifier.fillMaxWidth()
+        border = BorderStroke(0.5.dp, borderColor),
+        modifier = modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Left Accent Bar
-            Box(
-                modifier = Modifier
-                    .width(4.dp)
-                    .height(40.dp)
-                    .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-                    .background(color)
-            )
-
-            Column(
-                modifier = Modifier.padding(16.dp)
+            // 顶部：Squircle 语义图标 + 胶囊状态标签
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = color.copy(alpha = if (isDark) 0.2f else 0.12f),
+                            shape = RoundedCornerShape(10.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = color,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(4.dp))
+                if (subLabel.isNotBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = color.copy(alpha = if (isDark) 0.15f else 0.08f)
+                    ) {
+                        Text(
+                            text = subLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = color,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+            }
 
-                Row(verticalAlignment = Alignment.Bottom) {
+            // 中部与底部：粗体数据与淡雅指标说明
+            Column {
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
                     Text(
                         text = value,
                         style = MaterialTheme.typography.headlineMedium.copy(
@@ -251,21 +285,21 @@ private fun RichStatItem(
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = unit,
                         style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                         modifier = Modifier.padding(bottom = 3.dp)
                     )
                 }
 
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
-                    text = subLabel,
+                    text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = color.copy(alpha = 0.8f),
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Medium
                 )
             }
         }

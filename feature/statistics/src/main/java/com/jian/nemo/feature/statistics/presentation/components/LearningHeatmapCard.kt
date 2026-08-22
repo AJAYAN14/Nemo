@@ -30,6 +30,8 @@ import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
+import kotlinx.coroutines.delay
+
 // Heatmap Colors (Fire Style)
 private val Level0 = Color(0xFFEBEDF0)
 private val Level1 = Color(0xFFFFD7D5)
@@ -57,8 +59,17 @@ fun LearningHeatmapCard(
     if (heatmapData.isEmpty()) return
 
     var selectedDay by remember { mutableStateOf<HeatmapDay?>(null) }
+    var selectionTimestamp by remember { mutableLongStateOf(0L) }
     val totalCount = remember(heatmapData) { heatmapData.sumOf { it.count } }
     val activeDays = remember(heatmapData) { heatmapData.count { it.count > 0 } }
+
+    // 点击显示 3 秒后自动恢复，点击下一个立即打断并重新计时 3 秒
+    LaunchedEffect(selectionTimestamp) {
+        if (selectedDay != null) {
+            delay(3000L)
+            selectedDay = null
+        }
+    }
 
     Card(
         modifier = modifier
@@ -112,7 +123,10 @@ fun LearningHeatmapCard(
             HeatmapContent(
                 data = heatmapData,
                 isDarkTheme = isDarkTheme,
-                onDaySelected = { selectedDay = it }
+                onDaySelected = { day ->
+                    selectedDay = day
+                    selectionTimestamp = System.currentTimeMillis()
+                }
             )
         }
     }
@@ -224,7 +238,7 @@ private fun HeatmapContent(
                     .size(width = totalWidth - weekdayLabelWidth, height = totalHeight)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onPress = { offset ->
+                            onTap = { offset ->
                                 val col = (offset.x / (blockSizePx + spacingPx)).toInt()
                                 val row = ((offset.y - with(density) { monthHeaderHeight.toPx() }) / (blockSizePx + spacingPx)).toInt()
                                 val index = col * 7 + row
@@ -232,11 +246,9 @@ private fun HeatmapContent(
                                     val target = paddedData[index]
                                     if (target != null) {
                                         onDaySelected(target)
-                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
                                     }
                                 }
-                                tryAwaitRelease()
-                                onDaySelected(null)
                             }
                         )
                     }
