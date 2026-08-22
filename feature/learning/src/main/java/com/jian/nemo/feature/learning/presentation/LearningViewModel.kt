@@ -1145,9 +1145,51 @@ class LearningViewModel @Inject constructor(
             _uiState.update { it.copy(status = LearningStatus.Processing) }
 
             try {
-                val currentItem = getCurrentItem() ?: run {
-                    _uiState.update { it.copy(status = LearningStatus.Learning) }
-                    return@launch
+                // 1. 处理用户跳过卡片的自动顺延 (0 until currentIndex 的卡片移至末尾)
+                val state = _uiState.value
+                val mode = state.learningMode
+                var currentItem: LearningItem? = null
+
+                if (mode == LearningMode.Word) {
+                    val (rearrangedList, newIndex) = learningQueueManager.handleSkippedItemsOnRating(state.wordList, state.currentIndex)
+                    if (newIndex != state.currentIndex || rearrangedList != state.wordList) {
+                        _uiState.update {
+                            it.copy(
+                                wordList = rearrangedList,
+                                currentIndex = newIndex,
+                                currentWord = rearrangedList.getOrNull(newIndex)
+                            )
+                        }
+                    }
+                    val word = rearrangedList.getOrNull(newIndex) ?: run {
+                        _uiState.update { it.copy(status = LearningStatus.Learning) }
+                        return@launch
+                    }
+                    currentItem = LearningItem.WordItem(
+                        word = word,
+                        step = _learningSteps[word.id] ?: 0,
+                        dueTime = _learningDueTimes[word.id] ?: 0L
+                    )
+                } else {
+                    val (rearrangedList, newIndex) = learningQueueManager.handleSkippedItemsOnRating(state.grammarList, state.currentGrammarIndex)
+                    if (newIndex != state.currentGrammarIndex || rearrangedList != state.grammarList) {
+                        _uiState.update {
+                            it.copy(
+                                grammarList = rearrangedList,
+                                currentGrammarIndex = newIndex,
+                                currentGrammar = rearrangedList.getOrNull(newIndex)
+                            )
+                        }
+                    }
+                    val grammar = rearrangedList.getOrNull(newIndex) ?: run {
+                        _uiState.update { it.copy(status = LearningStatus.Learning) }
+                        return@launch
+                    }
+                    currentItem = LearningItem.GrammarItem(
+                        grammar = grammar,
+                        step = _learningSteps[grammar.id] ?: 0,
+                        dueTime = _learningDueTimes[grammar.id] ?: 0L
+                    )
                 }
 
                 // 委托给 StatsManager 进行计数统计与实时持久化
@@ -1166,25 +1208,25 @@ class LearningViewModel @Inject constructor(
                         processSrsUpdate(currentItem, quality, isLapse = false)
                     }
 
-                        // 忘记 (评分 < 3)
-                        quality < 3 -> {
-                            // 1. 先应用惩罚 (更新数据库中的 Interval/EF)，确保下次毕业时基于惩罚后的值计算
-                            val penalizedItem = applyLapsePenalty(currentItem, quality) ?: currentItem
+                    // 忘记 (评分 < 3)
+                    quality < 3 -> {
+                        // 1. 先应用惩罚 (更新数据库中的 Interval/EF)，确保下次毕业时基于惩罚后的值计算
+                        val penalizedItem = applyLapsePenalty(currentItem, quality) ?: currentItem
 
-                            // 2. 调度失败流程 (进入 Learning Queue)
-                            val currentLapseCount = _lapseCounts.value[currentItem.id] ?: 0
-                            
-                            // 新卡 Again 应该使用学习步长，复习卡 Again 使用重学步长
-                            val config = if (currentItem.isNew) _learningStepsConfig else _relearningStepsConfig
-                            
-                            val result = learningScheduler.scheduleFailure(
-                                penalizedItem, // 使用更新后的 item
-                                currentLapseCount,
-                                config,
-                                _leechThreshold
-                            )
-                            handleScheduleResult(result)
-                        }
+                        // 2. 调度失败流程 (进入 Learning Queue)
+                        val currentLapseCount = _lapseCounts.value[currentItem.id] ?: 0
+                        
+                        // 新卡 Again 应该使用学习步长，复习卡 Again 使用重学步长
+                        val config = if (currentItem.isNew) _learningStepsConfig else _relearningStepsConfig
+                        
+                        val result = learningScheduler.scheduleFailure(
+                            penalizedItem, // 使用更新后的 item
+                            currentLapseCount,
+                            config,
+                            _leechThreshold
+                        )
+                        handleScheduleResult(result)
+                    }
 
                     // 掌握 (评分 3-4)
                     else -> {
@@ -1365,16 +1407,16 @@ class LearningViewModel @Inject constructor(
                 }
 
                 if (result.isLapse) {
-                    println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, Due in ${(result.dueTime - System.currentTimeMillis())/1000}s")
+                    println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, 后移 ${result.relativeOffset} 张")
                 } else {
                     if (result.nextStepIndex == _learningSteps[item.id]) {
-                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
+                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, 后移 ${result.relativeOffset} 张")
                     } else {
-                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), Due in ${(result.dueTime - System.currentTimeMillis())/1000/60}m")
+                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), 后移 ${result.relativeOffset} 张")
                     }
                 }
 
-                reQueueToEnd(item)
+                reQueueAtRelativeOffset(item, result.relativeOffset)
             }
         }
     }
@@ -1527,7 +1569,7 @@ class LearningViewModel @Inject constructor(
                     // 数据库更新成功后同步最新战报与统计
                     syncTodayCounts()
 
-                    // 移出队列并前进
+                    // 移出已毕业卡片并前进
                     removeCurrentAndMoveNext()
                 }
             }
@@ -1544,134 +1586,105 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 重新入队到末尾
+     * 相对位置重新入队 (平滑调度)
      */
-    private fun reQueueToEnd(item: LearningItem) {
+    private fun reQueueAtRelativeOffset(item: LearningItem, offset: Int) {
         val state = _uiState.value
         val mode = state.learningMode
 
-        // 保存 Anki 状态 (Step & DueTime)
+        // 保存状态 (Step & DueTime)
         _learningSteps[item.id] = item.step
         _learningDueTimes[item.id] = item.dueTime
 
-        println("重入队: ${item.displayName}, Step=${item.step}")
-
-        // 注意: Requeue 不增加 sessionProcessedCount，
-        // 因为卡片尚未完成学习，后续毕业时才计数 (在 handleSrsUpdateResult 中)
         when (mode) {
             LearningMode.Word -> {
                 if (item is LearningItem.WordItem) {
-                    val newList = state.wordList.toMutableList().apply {
-                        add(item.word)
-                    }
-                    _uiState.update {
-                        it.copy(wordList = newList)
-                    }
+                    val currentIndex = state.currentIndex
+                    val newList = learningQueueManager.insertAtRelativeOffset(
+                        items = state.wordList,
+                        currentIndex = currentIndex,
+                        itemToInsert = item.word,
+                        offset = offset
+                    )
+                    val selection = learningQueueManager.selectNextItem(
+                        items = newList,
+                        preferredIndex = currentIndex
+                    )
+                    handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
                 }
             }
             LearningMode.Grammar -> {
                 if (item is LearningItem.GrammarItem) {
-                    val newList = state.grammarList.toMutableList().apply {
-                        add(item.grammar)
-                    }
-                    _uiState.update {
-                        it.copy(grammarList = newList)
-                    }
+                    val currentIndex = state.currentGrammarIndex
+                    val newList = learningQueueManager.insertAtRelativeOffset(
+                        items = state.grammarList,
+                        currentIndex = currentIndex,
+                        itemToInsert = item.grammar,
+                        offset = offset
+                    )
+                    val selection = learningQueueManager.selectNextItem(
+                        items = newList,
+                        preferredIndex = currentIndex
+                    )
+                    handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
                 }
             }
         }
-
-        // 移除当前项并前进
-        removeCurrentAndMoveNext()
     }
 
     /**
      * 从等待状态恢复
-     * 忽略时间限制，强制显示下一个卡片
      */
     private fun resumeFromWaiting() {
         val state = _uiState.value
         val mode = state.learningMode
-        val now = System.currentTimeMillis()
 
-        // 重置状态
         _uiState.update { it.copy(waitingUntil = 0L) }
 
         val selection = when (mode) {
             LearningMode.Word -> {
                 learningQueueManager.selectNextItem(
                     items = state.wordList,
-                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = now,
-                    learnAheadLimitMs = Long.MAX_VALUE, // 强制恢复，忽略限制
-                    preferredIndex = if (mode == LearningMode.Word) state.currentIndex else state.currentGrammarIndex
+                    preferredIndex = state.currentIndex
                 )
             }
             LearningMode.Grammar -> {
                 learningQueueManager.selectNextItem(
                     items = state.grammarList,
-                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = now,
-                    learnAheadLimitMs = Long.MAX_VALUE,
                     preferredIndex = state.currentGrammarIndex
                 )
             }
         }
 
-        // 复用 handleSelectionResult，但此时不应该再返回 Wait
-        // 因为我们传了 MAX_VALUE，除非队列为空
         val list = if (mode == LearningMode.Word) state.wordList else state.grammarList
         handleSelectionResult(selection, list, state.selectedLevel, isWord = mode == LearningMode.Word)
     }
 
     /**
-     * 移除当前项并移动到下一个
-     *
-     * Anki Logic: Priority Queue Selection + Learn Ahead Limit
-     * - 移除当前项
-     * - 扫描剩余项，优先选最早到期 (min dueTime) 的
-     * - Learn Ahead Check:
-     *   - 如果 dueTime <= now: 立即显示
-     *   - 如果 dueTime <= now + 20min: 提前显示 (Learn Ahead)
-     *   - 如果 dueTime > now + 20min: 理论上应等待 (但为防止数据丢失目前强制显示，未来可优化为 Waiting 状态)
+     * 移出当前已毕业卡片并平滑移动到下一个
      */
     private fun removeCurrentAndMoveNext() {
         val state = _uiState.value
         val mode = state.learningMode
-        val now = System.currentTimeMillis()
 
         when (mode) {
             LearningMode.Word -> {
                 val currentIndex = state.currentIndex
-                val newList = state.wordList.toMutableList().apply {
-                    if (currentIndex in indices) removeAt(currentIndex)
-                }
-
+                val newList = learningQueueManager.removeCurrent(state.wordList, currentIndex)
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
-                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = now,
-                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = currentIndex
                 )
-
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
             }
 
             LearningMode.Grammar -> {
                 val currentIndex = state.currentGrammarIndex
-                val newList = state.grammarList.toMutableList().apply {
-                    if (currentIndex in indices) removeAt(currentIndex)
-                }
-
+                val newList = learningQueueManager.removeCurrent(state.grammarList, currentIndex)
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
-                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = now,
-                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = currentIndex
                 )
-
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
             }
         }

@@ -15,7 +15,8 @@ sealed class ScheduleResult {
         val updatedItem: LearningItem,
         val nextStepIndex: Int,
         val dueTime: Long,
-        val isLapse: Boolean // 是否为失败导致
+        val isLapse: Boolean, // 是否为失败导致
+        val relativeOffset: Int = 3 // 相对卡片插入偏移量 (张数)
     ) : ScheduleResult()
 
     /**
@@ -40,7 +41,7 @@ sealed class ScheduleResult {
 /**
  * 学习调度器
  *
- * 负责处理卡片评分后的流转逻辑 (Anki 算法的核心状态机)。
+ * 负责处理卡片评分后的流转逻辑 (结合相对步长与 SRS 状态机)。
  * 不涉及数据库操作，只进行纯逻辑计算。
  */
 class LearningScheduler @Inject constructor() {
@@ -61,9 +62,8 @@ class LearningScheduler @Inject constructor() {
             return ScheduleResult.Leech(item, newLapseCount)
         }
 
-        // 2. Anki Logic: Again -> Reset to Step 0
+        // 2. Again -> Reset to Step 0
         val nextStep = 0
-        // Use the first step from config (e.g. 1 min for relearning steps)
         val firstStepMin = stepConfig.firstOrNull() ?: 1
         val dueTime = System.currentTimeMillis() + firstStepMin * 60 * 1000L
 
@@ -75,11 +75,16 @@ class LearningScheduler @Inject constructor() {
             is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime, type = newType)
         }
 
+        // 生疏词：相对当前位置后移 3~5 张卡片（根据 lapse 次数错峰微扰，避免连错扎堆）
+        val fuzz = (newLapseCount % 3)
+        val relativeOffset = 3 + fuzz
+
         return ScheduleResult.Requeue(
             updatedItem = updatedItem,
             nextStepIndex = nextStep,
             dueTime = dueTime,
-            isLapse = true
+            isLapse = true,
+            relativeOffset = relativeOffset
         )
     }
 
@@ -92,7 +97,7 @@ class LearningScheduler @Inject constructor() {
         currentStep: Int,
         stepConfig: List<Int>
     ): ScheduleResult {
-        // Hard (3): 对齐 Anki 逻辑
+        // Hard (3): 保持当前 Step，中度间隔后移 (5~7 张)
         if (quality == 3) {
             val hardDelayMillis = if (currentStep == 0) {
                 val againSecs = (stepConfig.getOrNull(0) ?: 1) * 60L
@@ -100,7 +105,6 @@ class LearningScheduler @Inject constructor() {
                     val nextSecs = (stepConfig.getOrNull(1) ?: 10) * 60L
                     (againSecs + nextSecs) / 2 * 1000L
                 } else {
-                    // 只有一步时，取 1.5 倍，最高不超过 1 天
                     (againSecs * 1.5 * 1000L).toLong().coerceAtMost((againSecs + 86400L) * 1000L)
                 }
             } else {
@@ -108,10 +112,8 @@ class LearningScheduler @Inject constructor() {
             }
             val dueTime = System.currentTimeMillis() + hardDelayMillis
             
-            // 计算新状态：如果是新词(0)，转为学习中(1)；如果是重学(3)或已在学习中(1)，保持不变
             val newType = if (item.type == 0) 1 else item.type
 
-            // Hard 依然保持 Learning/Relearning 状态
             val updatedItem = when (item) {
                 is LearningItem.WordItem -> item.copy(step = currentStep, dueTime = dueTime, type = newType)
                 is LearningItem.GrammarItem -> item.copy(step = currentStep, dueTime = dueTime, type = newType)
@@ -121,7 +123,8 @@ class LearningScheduler @Inject constructor() {
                 updatedItem = updatedItem,
                 nextStepIndex = currentStep,
                 dueTime = dueTime,
-                isLapse = false
+                isLapse = false,
+                relativeOffset = 6 // Hard 相对后移 6 张
             )
         }
 
@@ -140,7 +143,8 @@ class LearningScheduler @Inject constructor() {
                 updatedItem = updatedItem,
                 nextStepIndex = nextStep,
                 dueTime = dueTime,
-                isLapse = false
+                isLapse = false,
+                relativeOffset = 10 // Good 中间步：相对后移 10 张
             )
         }
 

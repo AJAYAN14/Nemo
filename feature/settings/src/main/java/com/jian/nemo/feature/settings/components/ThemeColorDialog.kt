@@ -1,5 +1,9 @@
 package com.jian.nemo.feature.settings.components
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
@@ -19,6 +23,9 @@ import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,6 +53,57 @@ fun ThemeColorDialog(
     onDismiss: () -> Unit,
     onColorSelect: (Color) -> Unit
 ) {
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+
+    // 硬件 Vibrator 初始化
+    val vibrator = remember(context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            context.getSystemService(Vibrator::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+    }
+
+    // 1. 细腻微触感 (Tick) - 用于色块飞行起飞瞬间
+    fun performHapticTick() {
+        try {
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(10, 60))
+                } else {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                }
+            } else {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            }
+        } catch (_: Exception) {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        }
+    }
+
+    // 2. 确认保存触感 (Click) - 用于保存完成
+    fun performHapticConfirm() {
+        try {
+            if (vibrator != null && vibrator.hasVibrator()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(20, 150))
+                } else {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+            } else {
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+            }
+        } catch (_: Exception) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
     val themeColors = listOf(
         ThemeColor("默认", Color(0xFF0E68FF)), // 品牌原生蓝置顶
         ThemeColor("蔷薇红", Color(0xFFFF2D55)),
@@ -175,6 +233,7 @@ fun ThemeColorDialog(
                                     .clickable(
                                         enabled = !isSelected,
                                         onClick = {
+                                            performHapticTick()
                                             currentlySelectedColor = themeColor.color
                                         },
                                         interactionSource = remember { MutableInteractionSource() },
@@ -199,6 +258,7 @@ fun ThemeColorDialog(
                     // 确认保存按钮 (发光投影胶囊样式)
                     Button(
                         onClick = {
+                            performHapticConfirm()
                             onColorSelect(currentlySelectedColor)
                             onDismiss()
                         },
