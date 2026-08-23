@@ -64,14 +64,22 @@ class AISettingsViewModel @Inject constructor(
                 var configs = parseAiConfigs(listJson)
                 var currentActiveId = activeId
                 
-                // 兼容性迁移：如果列表为空，尝试使用原本的单一平台配置数据并自动创建首个配置
+                // 兼容性清理与迁移：如果仅有之前自动生成的空默认配置，进行清理
+                if (configs.size == 1 && configs[0].id == "default_active_id" && configs[0].apiKey.isBlank()) {
+                    configs = emptyList()
+                    currentActiveId = ""
+                    settingsRepository.setAiConfigList("")
+                    settingsRepository.setAiActiveConfigId("")
+                }
+
+                // 兼容性迁移：如果列表为空，且旧版存储中存在有效的 API Key 时才创建初始配置
                 if (configs.isEmpty()) {
-                    val oldPlatform = settingsRepository.aiPlatformFlow.first()
                     val oldKey = settingsRepository.aiApiKeyFlow.first()
-                    val oldUrl = settingsRepository.aiBaseUrlFlow.first()
-                    val oldModel = settingsRepository.aiModelFlow.first()
-                    
-                    if (oldPlatform.isNotEmpty() || oldKey.isNotEmpty()) {
+                    if (oldKey.isNotBlank()) {
+                        val oldPlatform = settingsRepository.aiPlatformFlow.first()
+                        val oldUrl = settingsRepository.aiBaseUrlFlow.first()
+                        val oldModel = settingsRepository.aiModelFlow.first()
+                        
                         val initialConfig = AIConfig(
                             id = "default_active_id",
                             name = when(oldPlatform) {

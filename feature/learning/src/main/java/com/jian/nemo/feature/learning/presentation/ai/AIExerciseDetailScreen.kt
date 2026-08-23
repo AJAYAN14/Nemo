@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExerciseHistory
-import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 
 
@@ -43,51 +43,41 @@ fun AIExerciseDetailDialog(
     onSpeak: (String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
-
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 拦截物理返回键
     BackHandler(onBack = onDismiss)
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = backgroundColor
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // 1. Header
-            CommonHeader(
-                title = "练习详情",
-                onBack = onDismiss,
-                backgroundColor = backgroundColor
+    NemoScaffold(
+        title = "练习详情",
+        onBack = onDismiss,
+        backgroundColor = backgroundColor
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .navigationBarsPadding()
+        ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Score Card
+            ScoreCard(history.score, history.difficulty)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Question & Answer
+            DetailSectionCard(
+                title = if (history.type == "CN_TO_JP") "中文题目" else "日文题目",
+                content = history.question,
+                icon = Icons.Rounded.Info,
+                iconColor = MaterialTheme.colorScheme.primary,
+                isSpeaking = playingAudioId == "question",
+                showSpeaker = history.type == "JP_TO_CN",
+                onSpeak = { onSpeak(history.question, "question") }
             )
-
-            // 2. Scrollable Content
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
-                    .navigationBarsPadding() // 处理系统导航栏高度
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Score Card
-                ScoreCard(history.score, history.difficulty)
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Question & Answer
-                DetailSectionCard(
-                    title = if (history.type == "CN_TO_JP") "中文题目" else "日文题目",
-                    content = history.question,
-                    icon = Icons.Rounded.Info,
-                    iconColor = MaterialTheme.colorScheme.primary,
-                    isSpeaking = playingAudioId == "question",
-                    showSpeaker = history.type == "JP_TO_CN",
-                    onSpeak = { onSpeak(history.question, "question") }
-                )
 
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -124,7 +114,6 @@ fun AIExerciseDetailDialog(
 
                 Spacer(modifier = Modifier.height(32.dp))
             }
-        }
     }
 }
 

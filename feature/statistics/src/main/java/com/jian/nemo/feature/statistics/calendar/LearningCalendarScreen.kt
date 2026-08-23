@@ -54,16 +54,17 @@ import android.view.HapticFeedbackConstants
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.ReviewForecast
-import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
 
 /**
- * 学习日历界面 (UI/UX Pro Max)
+ * 学习日历界面 (Refactored)
+ * 
  * 风格统一：Solid Typography, Premium Card, Squircle Icons
- * 结构：Scaffold + CommonHeader 用于保持应用一致性
+ * 结构：NemoScaffold + CommonHeader 用于保持应用一致性与高斯毛玻璃穿透
  */
 @Composable
 fun LearningCalendarScreen(
@@ -77,14 +78,10 @@ fun LearningCalendarScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "学习日历",
-                onBack = onNavigateBack
-            )
-        },
-        containerColor = backgroundColor
+    NemoScaffold(
+        title = "学习日历",
+        onBack = onNavigateBack,
+        backgroundColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

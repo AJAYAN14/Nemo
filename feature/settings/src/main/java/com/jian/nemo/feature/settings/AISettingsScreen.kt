@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -37,9 +38,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.feature.settings.components.PremiumCard
@@ -54,11 +57,12 @@ fun AISettingsScreen(
     viewModel: AISettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val navigationBarHeight = with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
+    val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
-    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
+    val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(this).toDp() }
+    val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() }
     var configToDelete by remember { mutableStateOf<AIConfig?>(null) }
 
     LaunchedEffect(uiState.testResult) {
@@ -68,28 +72,26 @@ fun AISettingsScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                Column(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-                    CommonHeader(
-                        title = "AI 模型配置",
-                        onBack = onNavigateBack,
-                        actions = {
-                            IconButton(
-                                onClick = { viewModel.onEvent(AISettingsEvent.OpenEditModal(null)) }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Add,
-                                    contentDescription = "新建配置",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
+        NemoScaffold(
+            title = "AI 模型配置",
+            onBack = onNavigateBack,
+            actions = {
+                val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
+                LiquidButton(
+                    onClick = { viewModel.onEvent(AISettingsEvent.OpenEditModal(null)) },
+                    backgroundColor = navGroupBg,
+                    shape = CircleShape,
+                    isInteractive = true,
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Add,
+                        contentDescription = "新建配置",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
-            },
-            containerColor = MaterialTheme.colorScheme.background
+            }
         ) { paddingValues ->
             if (uiState.isLoading) {
                 Box(
@@ -100,12 +102,19 @@ fun AISettingsScreen(
                 ) {
                     NemoChasingDotsLoader(size = 40.dp)
                 }
-            } else {
-                LazyColumn(
+            } else if (uiState.configs.isEmpty()) {
+                EmptyAIConfigView(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
-                    contentPadding = PaddingValues(bottom = navigationBarHeight + 32.dp)
+                        .padding(paddingValues)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = paddingValues.calculateTopPadding() + 8.dp,
+                        bottom = navigationBarHeight + 32.dp
+                    )
                 ) {
                     item {
                         PremiumCard(
@@ -153,79 +162,19 @@ fun AISettingsScreen(
                         }
                     }
 
-                    if (uiState.configs.isEmpty()) {
-                        item {
-                            PremiumCard(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 24.dp, vertical = 40.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    // 优雅的 AI 平台微标联合行展示
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy((-8).dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        val brands = listOf(
-                                            DesignR.drawable.ic_gemini to Color(0xFF6E56CF),
-                                            DesignR.drawable.ic_deepseek to Color(0xFF1E88E5),
-                                            DesignR.drawable.ic_openai to Color(0xFF10A37F)
-                                        )
-                                        brands.forEach { (painterId, color) ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(38.dp)
-                                                    .border(2.dp, MaterialTheme.colorScheme.surface, RoundedCornerShape(10.dp))
-                                                    .background(color.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    painter = painterResource(id = painterId),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(20.dp),
-                                                    tint = color
-                                                )
-                                            }
-                                        }
-                                    }
-                                    
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    
-                                    Text(
-                                        text = "暂无任何 AI 配置",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "点击右上角 + 号新建您的首套模型密钥，支持 Gemini、DeepSeek、OpenAI 等主流大模型。",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        item {
-                            SettingsSectionTitle(text = "配置列表")
-                        }
-                        items(uiState.configs, key = { it.id }) { config ->
-                            val isActive = uiState.activeConfigId == config.id
-                            AIConfigCard(
-                                config = config,
-                                isActive = isActive,
-                                isDark = isDark,
-                                onSelect = { viewModel.onEvent(AISettingsEvent.SelectActiveConfig(config.id)) },
-                                onEdit = { viewModel.onEvent(AISettingsEvent.OpenEditModal(config.id)) },
-                                onDelete = { configToDelete = config }
-                            )
-                        }
+                    item {
+                        SettingsSectionTitle(text = "配置列表")
+                    }
+                    items(uiState.configs, key = { it.id }) { config ->
+                        val isActive = uiState.activeConfigId == config.id
+                        AIConfigCard(
+                            config = config,
+                            isActive = isActive,
+                            isDark = isDark,
+                            onSelect = { viewModel.onEvent(AISettingsEvent.SelectActiveConfig(config.id)) },
+                            onEdit = { viewModel.onEvent(AISettingsEvent.OpenEditModal(config.id)) },
+                            onDelete = { configToDelete = config }
+                        )
                     }
                 }
             }
@@ -950,3 +899,53 @@ fun AISettingTextField(
         )
     }
 }
+
+/**
+ * 与复学清单/错题本保持一致的高级空状态设计
+ */
+@Composable
+private fun EmptyAIConfigView(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.size(100.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "暂无 AI 模型配置",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "点击右上角「+」添加您的第一个 AI 模型配置",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 32.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
+    }
+}
+

@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.HazeState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,9 +38,12 @@ fun CardMatchingScreen(
         }
     }
 
+    val hazeState = remember { dev.chrisbanes.haze.HazeState() }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .haze(hazeState)
             .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
@@ -48,6 +53,7 @@ fun CardMatchingScreen(
             CommonHeader(
                 title = "",
                 onBack = { viewModel.confirmExitTest() },
+                hazeState = hazeState,
                 centerContent = {
                     TestHeaderCenterContent(
                         timeLimitSeconds = uiState.timeLimitSeconds,

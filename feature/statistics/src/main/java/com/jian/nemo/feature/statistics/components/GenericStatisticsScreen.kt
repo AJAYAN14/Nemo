@@ -43,14 +43,10 @@ fun GenericStatisticsScreen(
     val pagerState = rememberPagerState(pageCount = { tabItems.size })
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = title,
-                onBack = onBack,
-                backgroundColor = Color.Transparent
-            )
-        }
+    com.jian.nemo.core.ui.component.common.NemoScaffold(
+        title = title,
+        onBack = onBack,
+        backgroundColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(modifier = modifier.padding(paddingValues)) {
             TabRow(

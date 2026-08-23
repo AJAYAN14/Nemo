@@ -36,6 +36,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 
 import com.jian.nemo.feature.statistics.components.LevelBreakdownDialog
 
@@ -43,7 +44,7 @@ import com.jian.nemo.feature.statistics.components.LevelBreakdownDialog
  * 历史统计界面 (UI/UX Pro Max)
  *
  * 展示所有已学习的单词和语法
- * 风格统一：Solid Typography, Premium Card, Squircle Icons
+ * 包含：级别分布、词性分布、历史趋势
  */
 @Composable
 fun HistoricalStatisticsScreen(
@@ -72,16 +73,10 @@ fun HistoricalStatisticsScreen(
             .toSortedMap()
     }
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.background(backgroundColor)) {
-                CommonHeader(
-                    title = "历史统计",
-                    onBack = onBack
-                )
-            }
-        },
-        containerColor = backgroundColor
+    NemoScaffold(
+        title = "历史统计",
+        onBack = onBack,
+        backgroundColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

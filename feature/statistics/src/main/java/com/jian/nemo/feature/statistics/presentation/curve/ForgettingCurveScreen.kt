@@ -31,6 +31,7 @@ import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.feature.statistics.presentation.curve.components.ForgettingCurveChart
 
 /**
@@ -41,7 +42,7 @@ import com.jian.nemo.feature.statistics.presentation.curve.components.Forgetting
  * - 用户曲线：从所有已学习单词/语法的平均 stability 计算得出
  *
  * 页面结构（自上而下）：
- * 1. 顶部导航栏（CommonHeader）
+ * 1. 顶部导航栏（CommonHeader / 高斯毛玻璃）
  * 2. Tab 栏（遗忘曲线 / 学习情况 / 记忆持久度）
  * 3. Canvas 折线图区域
  * 4. 图例区域（颜色标识 + 文本）
@@ -55,16 +56,10 @@ fun ForgettingCurveScreen(
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.background(backgroundColor)) {
-                CommonHeader(
-                    title = "遗忘曲线",
-                    onBack = onBack
-                )
-            }
-        },
-        containerColor = backgroundColor
+    NemoScaffold(
+        title = "遗忘曲线",
+        onBack = onBack,
+        backgroundColor = backgroundColor
     ) { innerPadding ->
         if (uiState.isLoading || uiState.curveData == null) {
             Box(
@@ -79,8 +74,8 @@ fun ForgettingCurveScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
+                    .padding(innerPadding)
             ) {
 
                 // ========== 时间范围选择器 ==========

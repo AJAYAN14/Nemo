@@ -71,20 +71,15 @@ fun <T> GenericExpandableListScreen(
     // 检查是否有数据
     val hasData = filteredByLevel.any { it.value.isNotEmpty() }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = title,
-                onBack = onBack,
-                backgroundColor = Color.Transparent,
-                actions = {
-                    IconButton(onClick = { showSearch = !showSearch }) {
-                        Icon(Icons.Filled.Search, contentDescription = "搜索")
-                    }
-                }
-            )
+    com.jian.nemo.core.ui.component.common.NemoScaffold(
+        title = title,
+        onBack = onBack,
+        actions = {
+            IconButton(onClick = { showSearch = !showSearch }) {
+                Icon(Icons.Filled.Search, contentDescription = "搜索")
+            }
         },
-        containerColor = backgroundColor
+        backgroundColor = backgroundColor
     ) { paddingValues ->
         Column(modifier = modifier.padding(paddingValues)) {
             if (showSearch) {

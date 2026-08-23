@@ -32,7 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 import com.jian.nemo.core.designsystem.theme.*
-import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.feature.statistics.presentation.components.LearningHeatmapCard
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,16 +51,10 @@ fun ActivityHeatmapScreen(
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-
-
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "学习热力图", // Use dedicated title
-                onBack = onBack
-            )
-        },
-        containerColor = backgroundColor
+    NemoScaffold(
+        title = "学习热力图",
+        onBack = onBack,
+        backgroundColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

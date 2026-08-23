@@ -38,6 +38,7 @@ import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 
 // 动词变形规则数据模型
 data class GrammarRule(
@@ -294,20 +295,16 @@ fun VerbConjugationHandbookScreen(
         List(grammarList.size) { BringIntoViewRequester() }
     }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "日语动词活用大全",
-                onBack = onNavigateBack
-            )
-        },
-        containerColor = containerColor
+    NemoScaffold(
+        title = "日语动词活用大全",
+        onBack = onNavigateBack,
+        backgroundColor = containerColor
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(scrollState)
+                .padding(padding)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             // 前置知识卡片：动词三大分类

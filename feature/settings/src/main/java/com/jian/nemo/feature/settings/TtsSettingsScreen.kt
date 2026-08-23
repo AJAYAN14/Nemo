@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
@@ -50,20 +51,15 @@ fun TtsSettingsScreen(
     val secondaryAccent = IosColors.Cyan // 次要强调色
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CommonHeader(
-                title = "语音设置",
-                onBack = onNavigateBack
-            )
-        }
+    NemoScaffold(
+        title = "语音设置",
+        onBack = onNavigateBack
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .verticalScroll(scrollState)
+                .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
             // =====================

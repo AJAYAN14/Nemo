@@ -32,6 +32,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
@@ -108,77 +109,73 @@ fun AIWorkshopScreen(
 
     val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
 
+    val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
+
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
-                CommonHeader(
-                    title = "AI 例文工坊",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            LiquidButton(
-                                onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                val platform = uiState.aiPlatform
-                                when (platform) {
-                                    "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
-                                }
-                            }
-                            LiquidButton(
-                                onClick = onNavigateToHistory,
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
-                            }
-                            LiquidButton(
-                                onClick = { showHelp = true },
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
-                            }
+        NemoScaffold(
+            title = "AI 例文工坊",
+            onBack = onNavigateBack,
+            backgroundColor = backgroundColor,
+            actions = {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    LiquidButton(
+                        onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
+                        backgroundColor = navGroupBg,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        isInteractive = true,
+                        modifier = Modifier
+                            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                            .size(44.dp)
+                    ) {
+                        val platform = uiState.aiPlatform
+                        when (platform) {
+                            "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
                         }
                     }
-                )
-            },
-            containerColor = backgroundColor
+                    LiquidButton(
+                        onClick = onNavigateToHistory,
+                        backgroundColor = navGroupBg,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        isInteractive = true,
+                        modifier = Modifier
+                            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                            .size(44.dp)
+                    ) {
+                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
+                    }
+                    LiquidButton(
+                        onClick = { showHelp = true },
+                        backgroundColor = navGroupBg,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        isInteractive = true,
+                        modifier = Modifier
+                            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
+                            .size(44.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
+                    }
+                }
+            }
         ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .imePadding()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
+                    .padding(paddingValues)
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

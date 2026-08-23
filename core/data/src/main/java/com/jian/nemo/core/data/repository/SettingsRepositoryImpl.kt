@@ -1630,18 +1630,19 @@ class SettingsRepositoryImpl @Inject constructor(
         
         if (!listJson.isNullOrEmpty()) {
             val configs = parseAiConfigs(listJson)
-            val active = configs.find { it.id == activeId }
+            val validConfigs = configs.filterNot { it.id == "default_active_id" && it.apiKey.isBlank() }
+            val active = validConfigs.find { it.id == activeId }
             if (active != null) return active
-            if (configs.isNotEmpty()) return configs[0]
+            if (validConfigs.isNotEmpty()) return validConfigs[0]
         }
         
-        // 兼容性迁移：如果列表为空，尝试使用旧的单一配置信息并打包生成默认配置卡片
+        // 兼容性迁移：如果列表为空，且旧配置中有有效的 API Key，才打包生成默认配置
         val oldPlatform = preferences[PreferencesKeys.AI_PLATFORM]
         val oldKey = oldPlatform?.let { preferences[PreferencesKeys.getAiApiKeyKey(it)] } ?: preferences[PreferencesKeys.AI_API_KEY] ?: ""
         val oldUrl = oldPlatform?.let { preferences[PreferencesKeys.getAiBaseUrlKey(it)] } ?: preferences[PreferencesKeys.AI_BASE_URL] ?: ""
         val oldModel = oldPlatform?.let { preferences[PreferencesKeys.getAiModelKey(it)] } ?: preferences[PreferencesKeys.AI_MODEL] ?: ""
         
-        if (!oldPlatform.isNullOrEmpty() || oldKey.isNotEmpty()) {
+        if (oldKey.isNotBlank()) {
             val platform = oldPlatform ?: "openai"
             return AIConfig(
                 id = "default_active_id",

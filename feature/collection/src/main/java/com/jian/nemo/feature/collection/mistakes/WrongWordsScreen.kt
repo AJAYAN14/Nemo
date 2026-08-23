@@ -39,36 +39,34 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-
-
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
+import dev.chrisbanes.haze.hazeChild
 
 /**
  * 错误单词列表界面
  *
- * UI/UX Pro Max V2: Custom Premium Colors, Tinted Squircle Tags, High-Quality Surfaces
+ * 采用与学习页面对齐的高级毛玻璃卡片风格
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun WrongWordsScreen(
-    viewModel: WrongWordsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {},
     onWordClick: (Int) -> Unit = {},
-    onNavigateBack: () -> Unit = {}
+    viewModel: WrongWordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
-    // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // Custom Premium Colors
-    val premiumRed = Color(0xFFFF3B30) // Apple-style System Red
-    val premiumBlue = Color(0xFF007AFF) // Apple-style System Blue
-    val premiumOrange = Color(0xFFFF9500) // Apple-style System Orange
-    val premiumGray = Color(0xFF8E8E93) // System Gray
+    val premiumBlue = Color(0xFF007AFF)
+    val premiumRed = Color(0xFFFF3B30)
+    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
     // 多选状态
     var selectedWordIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
     val isSelectionMode = selectedWordIds.isNotEmpty()
+
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     // 拦截物理返回键
@@ -92,16 +90,17 @@ fun WrongWordsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
+    NemoScaffold(
+        topBar = { hazeState ->
             if (isSelectionMode) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .hazeChild(hazeState)
+                        .background(glassContainerColor)
                         .statusBarsPadding()
                         .height(56.dp),
-                    color = backgroundColor
+                    color = Color.Transparent
                 ) {
                     Row(
                         modifier = Modifier
@@ -150,14 +149,16 @@ fun WrongWordsScreen(
                     }
                 }
             } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
+                CommonHeader(
                     title = "错误的单词",
                     onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
+                    hazeState = hazeState,
+                    backgroundColor = Color.Transparent
                 )
             }
-        }
-    ) { paddingValues ->
+        },
+        backgroundColor = backgroundColor
+    ) { paddingValues, _ ->
         when {
             uiState.isLoading -> {
                 Box(
@@ -183,7 +184,7 @@ fun WrongWordsScreen(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(32.dp),
-                            color = premiumGray.copy(alpha = 0.1f),
+                            color = premiumRed.copy(alpha = 0.1f),
                             modifier = Modifier.size(100.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -191,34 +192,39 @@ fun WrongWordsScreen(
                                     imageVector = Icons.Rounded.Cancel,
                                     contentDescription = null,
                                     modifier = Modifier.size(48.dp),
-                                    tint = premiumGray.copy(alpha = 0.5f)
+                                    tint = premiumRed.copy(alpha = 0.6f)
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
-                            text = "暂无错词记录",
+                            text = "暂无错题记录",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "太棒了！继续保持全对的状态。",
+                            text = "答错的单词会自动收集在这里便于针对性复习",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            maxLines = 2,
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = paddingValues.calculateTopPadding() + 16.dp,
+                        bottom = paddingValues.calculateBottomPadding() + 24.dp
+                    )
                 ) {
                     items(
                         items = uiState.words,

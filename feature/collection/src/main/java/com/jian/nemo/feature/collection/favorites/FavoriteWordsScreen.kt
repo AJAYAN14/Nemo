@@ -39,31 +39,30 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
+import dev.chrisbanes.haze.hazeChild
 
 
 /**
  * 收藏单词列表界面
  *
- * UI/UX Pro Max V2: Custom Premium Colors, Tinted Squircle Tags, High-Quality Surfaces
+ * 采用与学习页面对齐的高级毛玻璃卡片风格
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FavoriteWordsScreen(
-    viewModel: FavoritesViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
     onWordClick: (Int) -> Unit = {},
-    onNavigateBack: () -> Unit = {}
+    viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
-    // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // Custom Premium Colors (Shared Palette)
-    val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
-    val premiumOrange = Color(0xFFFF9500)
-    val premiumGray = Color(0xFF8E8E93)
+    val premiumRed = Color(0xFFFF3B30)
+    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
     // 多选状态
     var selectedWordIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -91,16 +90,17 @@ fun FavoriteWordsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
+    NemoScaffold(
+        topBar = { hazeState ->
             if (isSelectionMode) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .hazeChild(hazeState)
+                        .background(glassContainerColor)
                         .statusBarsPadding()
                         .height(56.dp),
-                    color = backgroundColor
+                    color = Color.Transparent
                 ) {
                     Row(
                         modifier = Modifier
@@ -149,14 +149,16 @@ fun FavoriteWordsScreen(
                     }
                 }
             } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
+                CommonHeader(
                     title = "收藏单词",
                     onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
+                    hazeState = hazeState,
+                    backgroundColor = Color.Transparent
                 )
             }
-        }
-    ) { paddingValues ->
+        },
+        backgroundColor = backgroundColor
+    ) { paddingValues, _ ->
         when {
             uiState.isLoading -> {
                 Box(
@@ -215,12 +217,14 @@ fun FavoriteWordsScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = paddingValues.calculateTopPadding() + 16.dp,
+                        bottom = paddingValues.calculateBottomPadding() + 24.dp
+                    )
                 ) {
                     items(
                         items = uiState.favoriteWords,

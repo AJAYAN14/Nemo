@@ -36,7 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
-import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
@@ -71,16 +71,11 @@ fun LeechManagementScreen(
         }
     }
 
-    Scaffold(
+    NemoScaffold(
+        title = "复学清单",
+        onBack = onBack,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            CommonHeader(
-                title = "复学清单",
-                onBack = onBack,
-                backgroundColor = backgroundColor
-            )
-        },
-        containerColor = backgroundColor
+        backgroundColor = backgroundColor
     ) { paddingValues ->
         Column(
             modifier = Modifier

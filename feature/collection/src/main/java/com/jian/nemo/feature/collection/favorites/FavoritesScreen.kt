@@ -81,40 +81,35 @@ fun FavoritesScreen(
                 shape = RoundedCornerShape(0.dp)
             )
     ) {
-        Scaffold(
+        com.jian.nemo.core.ui.component.common.NemoScaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
                     if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
                     else Modifier
                 ),
-            topBar = {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "我的收藏",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                            wordCount = uiState.favoriteWordsCount,
-                            grammarCount = uiState.favoriteGrammarsCount,
-                            titleSuffix = "收藏",
-                            onClearAll = viewModel::clearAll,
-                            onClearWords = viewModel::clearAllWordFavorites,
-                            onClearGrammars = viewModel::clearAllGrammarFavorites,
-                            isExpanded = isMenuExpanded,
-                            onToggleMenu = { isMenuExpanded = it }
-                        )
-                    }
+            title = "我的收藏",
+            onBack = onNavigateBack,
+            backgroundColor = backgroundColor,
+            actions = {
+                com.jian.nemo.feature.collection.components.CollectionActionMenu(
+                    wordCount = uiState.favoriteWordsCount,
+                    grammarCount = uiState.favoriteGrammarsCount,
+                    titleSuffix = "收藏",
+                    onClearAll = viewModel::clearAll,
+                    onClearWords = viewModel::clearAllWordFavorites,
+                    onClearGrammars = viewModel::clearAllGrammarFavorites,
+                    isExpanded = isMenuExpanded,
+                    onToggleMenu = { isMenuExpanded = it }
                 )
-            },
-            containerColor = backgroundColor
+            }
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
                     .padding(paddingValues)
                     .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
 

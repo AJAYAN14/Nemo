@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.NemoDialog
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,29 +41,23 @@ fun AIHistoryScreen(
     var showClearConfirm by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<AIExerciseHistory?>(null) }
 
-
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val textPrimary = colorScheme.onSurface
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                CommonHeader(
-                    title = "练习历史",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        if (historyList.isNotEmpty()) {
-                            IconButton(onClick = { showClearConfirm = true }) {
-                                Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
-                            }
-                        }
+        NemoScaffold(
+            title = "练习历史",
+            onBack = onNavigateBack,
+            backgroundColor = backgroundColor,
+            actions = {
+                if (historyList.isNotEmpty()) {
+                    IconButton(onClick = { showClearConfirm = true }) {
+                        Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
                     }
-                )
-            },
-            containerColor = backgroundColor
+                }
+            }
         ) { padding ->
             if (historyList.isEmpty()) {
                 Box(
@@ -88,10 +83,13 @@ fun AIHistoryScreen(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = padding.calculateTopPadding() + 16.dp,
+                        bottom = padding.calculateBottomPadding() + 24.dp
+                    ),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(historyList) { history ->

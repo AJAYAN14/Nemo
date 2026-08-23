@@ -40,31 +40,30 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
+import dev.chrisbanes.haze.hazeChild
 
 /**
  * 收藏语法列表界面
  *
- * UI/UX Pro Max V2: Custom Premium Colors, Tinted Squircle Tags, High-Quality Surfaces
+ * 采用与学习页面对齐的高级毛玻璃卡片风格
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FavoriteGrammarsScreen(
-    viewModel: FavoriteGrammarsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit,
     onGrammarClick: (Int) -> Unit = {},
-    onNavigateBack: () -> Unit = {}
+    viewModel: FavoriteGrammarsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
-    // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // Custom Premium Colors (Shared Palette)
-    val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
+    val premiumRed = Color(0xFFFF3B30)
     val premiumOrange = Color(0xFFFF9500)
-    val premiumGray = Color(0xFF8E8E93)
+    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -92,16 +91,17 @@ fun FavoriteGrammarsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
+    NemoScaffold(
+        topBar = { hazeState ->
             if (isSelectionMode) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .hazeChild(hazeState)
+                        .background(glassContainerColor)
                         .statusBarsPadding()
                         .height(56.dp),
-                    color = backgroundColor
+                    color = Color.Transparent
                 ) {
                     Row(
                         modifier = Modifier
@@ -150,14 +150,16 @@ fun FavoriteGrammarsScreen(
                     }
                 }
             } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
+                CommonHeader(
                     title = "收藏语法",
                     onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
+                    hazeState = hazeState,
+                    backgroundColor = Color.Transparent
                 )
             }
-        }
-    ) { paddingValues ->
+        },
+        backgroundColor = backgroundColor
+    ) { paddingValues, _ ->
         when {
             uiState.isLoading -> {
                 Box(
@@ -170,7 +172,6 @@ fun FavoriteGrammarsScreen(
                 }
             }
             uiState.favoriteGrammars.isEmpty() -> {
-                // Premium Empty State
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -204,7 +205,7 @@ fun FavoriteGrammarsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "遇到重点语法记得收藏起来复习哦",
+                            text = "在学习过程中遇到重点语法可以收藏哦",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             maxLines = 2,
@@ -216,12 +217,14 @@ fun FavoriteGrammarsScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = paddingValues.calculateTopPadding() + 16.dp,
+                        bottom = paddingValues.calculateBottomPadding() + 24.dp
+                    )
                 ) {
                     items(
                         items = uiState.favoriteGrammars,

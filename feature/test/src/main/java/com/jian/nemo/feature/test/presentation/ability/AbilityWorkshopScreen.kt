@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.animation.containerTransform
 
 /**
@@ -31,26 +32,22 @@ fun AbilityWorkshopScreen(
     onBack: () -> Unit,
     onNavigateToGame: (String) -> Unit = {}
 ) {
-    Scaffold(
+    NemoScaffold(
         modifier = Modifier
             .fillMaxSize()
             .containerTransform(
                 key = "container_ability_workshop",
                 shape = RoundedCornerShape(0.dp)
             ),
-        topBar = {
-            CommonHeader(
-                title = "能力工坊",
-                onBack = onBack
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        title = "能力工坊",
+        onBack = onBack,
+        backgroundColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
                 .verticalScroll(rememberScrollState())
+                .padding(padding)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {

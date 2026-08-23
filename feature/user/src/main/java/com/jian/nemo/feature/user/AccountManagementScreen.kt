@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -88,32 +89,23 @@ fun AccountManagementScreen(
     // Premium Card Colors
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    NemoScaffold(
+        title = "账户管理",
+        onBack = onNavigateBack,
+        backgroundColor = backgroundColor
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(paddingValues)
         ) {
-            // 1. Common Header
-            CommonHeader(
-                title = "账户管理",
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor
+            // 2. Profile Header (Horizontal)
+            ProfileHeaderSection(
+                uiState = uiState,
+                avatarPath = avatarPath,
+                onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
             )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(scrollState)
-            ) {
-                // 2. Profile Header (Horizontal)
-                ProfileHeaderSection(
-                    uiState = uiState,
-                    avatarPath = avatarPath,
-                    onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
-                )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -190,9 +182,7 @@ fun AccountManagementScreen(
 
                  Spacer(modifier = Modifier.height(64.dp))
             }
-
         }
-    }
     }
 
     // Dialogs Management

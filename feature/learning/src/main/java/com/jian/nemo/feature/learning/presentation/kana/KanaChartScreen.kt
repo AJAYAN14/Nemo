@@ -82,6 +82,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.collectAsState
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -159,52 +160,47 @@ fun KanaChartScreen(
 
     val sectionOrder = remember { mapOf("seion" to 0, "dakuon" to 1, "yoon" to 2) }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.kana_chart_title),
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    val toggleBg = if (currentType == 0) Color(0xFFEEF2FF) else Color(0xFFFDF2F8)
-                    val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
-                    LiquidButton(
-                        onClick = {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            currentType = if (currentType == 0) 1 else 0
-                        },
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .height(44.dp),
-                        backgroundColor = toggleBg,
-                        shape = RoundedCornerShape(22.dp),
-                        elevation = 0.dp
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(horizontal = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = "Toggle Kana Type",
-                                modifier = Modifier.size(18.dp),
-                                tint = toggleFg
-                            )
-                            Text(
-                                text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = toggleFg
-                            )
-                        }
-                    }
+    NemoScaffold(
+        title = stringResource(R.string.kana_chart_title),
+        onBack = onNavigateBack,
+        backgroundColor = backgroundColor,
+        actions = {
+            val toggleBg = if (currentType == 0) Color(0xFFEEF2FF) else Color(0xFFFDF2F8)
+            val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+            LiquidButton(
+                onClick = {
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    currentType = if (currentType == 0) 1 else 0
+                },
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .height(44.dp),
+                backgroundColor = toggleBg,
+                shape = RoundedCornerShape(22.dp),
+                elevation = 0.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(horizontal = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwapHoriz,
+                        contentDescription = "Toggle Kana Type",
+                        modifier = Modifier.size(18.dp),
+                        tint = toggleFg
+                    )
+                    Text(
+                        text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = toggleFg
+                    )
                 }
-            )
-        },
-        containerColor = backgroundColor
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier

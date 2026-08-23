@@ -56,6 +56,7 @@ import com.jian.nemo.core.designsystem.theme.RatingGuideCoreText
 import com.jian.nemo.core.designsystem.theme.RatingGuidePrimaryButton
 import com.jian.nemo.core.designsystem.theme.RatingGuideTitleText
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 
 @Composable
 fun RatingGuideScreen(
@@ -73,28 +74,20 @@ fun RatingGuideScreen(
     val adviceText = if (isDark) colorScheme.onSurfaceVariant else RatingGuideAdviceText
     val buttonColor = if (isDark) colorScheme.primary else RatingGuidePrimaryButton
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = backgroundColor
-    ) {
+    NemoScaffold(
+        title = "评分说明",
+        onBack = onDismiss,
+        backgroundColor = backgroundColor
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            CommonHeader(
-                title = "评分说明",
-                onBack = onDismiss,
-                backgroundColor = backgroundColor
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -191,7 +184,6 @@ fun RatingGuideScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
             }
-        }
     }
 }
 

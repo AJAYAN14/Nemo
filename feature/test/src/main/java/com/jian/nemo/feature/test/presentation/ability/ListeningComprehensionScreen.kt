@@ -78,25 +78,21 @@ fun ListeningComprehensionScreen(
         return
     }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "听力挑战",
-                onBack = {
-                    if (uiState is ListeningUiState.Ready) {
-                        showExitDialog = true
-                    } else {
-                        onNavigateBack()
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showHistoryView = true }) {
-                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
-                    }
-                }
-            )
+    com.jian.nemo.core.ui.component.common.NemoScaffold(
+        title = "听力挑战",
+        onBack = {
+            if (uiState is ListeningUiState.Ready) {
+                showExitDialog = true
+            } else {
+                onNavigateBack()
+            }
         },
-        containerColor = containerColor
+        actions = {
+            IconButton(onClick = { showHistoryView = true }) {
+                Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
+            }
+        },
+        backgroundColor = containerColor
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             Crossfade(targetState = uiState, label = "state_transition") { state ->

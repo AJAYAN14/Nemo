@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
@@ -51,21 +52,15 @@ fun ThemeSettingsScreen(
     var showThemeColorDialog by remember { mutableStateOf(false) }
     var showAppIconDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "主题外观",
-                onBack = onBack,
-                backgroundColor = MaterialTheme.colorScheme.background
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+    NemoScaffold(
+        title = "主题外观",
+        onBack = onBack
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .verticalScroll(scrollState)
+                .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
