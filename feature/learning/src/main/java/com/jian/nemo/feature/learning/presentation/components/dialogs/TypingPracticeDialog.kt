@@ -70,7 +70,17 @@ fun TypingPracticeDialog(
                     dimAmount = 0.20f
                 }
             }
-            onDispose { }
+            onDispose {
+                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    try {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                        window.attributes = window.attributes.apply {
+                            blurBehindRadius = 0
+                            dimAmount = 0f
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
         }
 
         Surface(

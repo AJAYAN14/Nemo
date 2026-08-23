@@ -74,18 +74,60 @@ fun NemoModalBottomSheet(
         contentWindowInsets = contentWindowInsets
     ) {
         val view = LocalView.current
+        val isHiding = sheetState.targetValue == SheetValue.Hidden
 
-        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
+        // 绑定窗口级高斯毛玻璃与窗口动画优化
         DisposableEffect(view) {
             val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                window.attributes = window.attributes.apply {
-                    blurBehindRadius = 48 // 48px 原生 GPU 硬件级毛玻璃
-                    dimAmount = 0.20f    // 20% 通透柔光暗化
+            if (window != null) {
+                // 1. 禁用底层 Window 的系统级退出动画，消除多余的 300ms 窗口销毁滞后
+                window.setWindowAnimations(0)
+
+                // 2. 开启 Android 12+ 硬件级高斯毛玻璃
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                    window.attributes = window.attributes.apply {
+                        blurBehindRadius = 48
+                        dimAmount = 0.20f
+                    }
                 }
             }
-            onDispose { }
+
+            onDispose {
+                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    try {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                        window.attributes = window.attributes.apply {
+                            blurBehindRadius = 0
+                            dimAmount = 0f
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+        }
+
+        // 状态联动：关闭时第 0 毫秒先销毁高斯模糊，抽屉顺势滑下；重新打开时满血恢复
+        LaunchedEffect(isHiding) {
+            val window = (view.parent as? DialogWindowProvider)?.window
+            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                try {
+                    if (isHiding) {
+                        // 一触发关闭，立即清零高斯模糊，背景瞬间恢复清晰通透
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                        window.attributes = window.attributes.apply {
+                            blurBehindRadius = 0
+                            dimAmount = 0f
+                        }
+                    } else {
+                        // 打开或展开时，确保满血挂载毛玻璃
+                        window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+                        window.attributes = window.attributes.apply {
+                            blurBehindRadius = 48
+                            dimAmount = 0.20f
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
         }
 
         content()
