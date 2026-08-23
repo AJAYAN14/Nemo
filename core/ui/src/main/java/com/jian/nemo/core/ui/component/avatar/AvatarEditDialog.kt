@@ -105,8 +105,7 @@ fun AvatarEditDialog(
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
+            usePlatformDefaultWidth = false
         )
     ) {
         val view = LocalView.current
@@ -134,34 +133,21 @@ fun AvatarEditDialog(
             }
         }
 
-        Box(
+        Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .clickable(
-                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                    indication = null
-                ) {
-                    onDismiss()
-                }
-                .background(Color.Black.copy(alpha = 0.20f)),
-            contentAlignment = Alignment.Center
+                .padding(24.dp)
+                .widthIn(max = 400.dp)
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(24.dp), // 略微减小圆角以匹配扁平感
+            color = Color.White,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
         ) {
-            Surface(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .widthIn(max = 400.dp)
-                    .fillMaxWidth()
-                    .clickable(enabled = false) {}, // 防止点击内容区关闭
-                shape = RoundedCornerShape(24.dp), // 略微减小圆角以匹配扁平感
-                color = Color.White,
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
                     // 1. Header
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -178,7 +164,7 @@ fun AvatarEditDialog(
                         )
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
                                 .background(Color.Black.copy(alpha = 0.06f))
                                 .clickable { onDismiss() },
@@ -188,7 +174,7 @@ fun AvatarEditDialog(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "关闭",
                                 tint = Color.Black.copy(alpha = 0.6f),
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -303,7 +289,6 @@ fun AvatarEditDialog(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-        }
     }
 
     // ✅ 预设头像选择对话框
@@ -328,7 +313,7 @@ private fun AvatarActionCard(
     icon: ImageVector,
     label: String,
     containerColor: Color,
-    contentColor: Color,
+    contentColor: Color = Color.White,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -336,11 +321,11 @@ private fun AvatarActionCard(
         onClick = onClick,
         modifier = modifier.height(72.dp), // 略微降低高度，更显干练
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = containerColor,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        contentColor = contentColor,
+        border = null,
+        contentColor = Color.White,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -351,7 +336,7 @@ private fun AvatarActionCard(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(24.dp),
-                tint = containerColor // 使用原来的容器色作为图标色，保持识别度
+                tint = Color.White
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
@@ -359,7 +344,7 @@ private fun AvatarActionCard(
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = Color.Black.copy(alpha = 0.7f)
+                color = Color.White
             )
         }
     }

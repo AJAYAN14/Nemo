@@ -71,10 +71,12 @@ fun ThemeSettingsScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             SettingsSectionTitle(text = "显示模式")
-            ThemeSelectionGrid(
-                selectedMode = uiState.darkMode,
-                onModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) }
-            )
+            PremiumCard {
+                ThemeSelectionGrid(
+                    selectedMode = uiState.darkMode,
+                    onModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) }
+                )
+            }
 
             AnimatedVisibility(
                 visible = uiState.darkMode == DarkModeOption.AUTO,
@@ -82,6 +84,7 @@ fun ThemeSettingsScreen(
                 exit = fadeOut() + shrinkVertically()
             ) {
                 Column {
+                    Spacer(modifier = Modifier.height(20.dp))
                     SettingsSectionTitle(text = "自动切换模式")
                     PremiumCard {
                         StrategyOptionItem(
@@ -105,6 +108,7 @@ fun ThemeSettingsScreen(
                         exit = fadeOut() + shrinkVertically()
                     ) {
                         Column {
+                            Spacer(modifier = Modifier.height(20.dp))
                             SettingsSectionTitle(text = "深色模式定时")
                             PremiumCard {
                                 SquircleSettingItem(
@@ -143,6 +147,8 @@ fun ThemeSettingsScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             SettingsSectionTitle(text = "个性化")
             PremiumCard {
@@ -224,27 +230,30 @@ private fun ThemeSelectionGrid(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+            .padding(vertical = 16.dp, horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         ThemeOption(
             mode = DarkModeOption.LIGHT,
             label = "浅色",
             isSelected = selectedMode == DarkModeOption.LIGHT,
-            onClick = { onModeSelected(DarkModeOption.LIGHT) }
+            onClick = { onModeSelected(DarkModeOption.LIGHT) },
+            modifier = Modifier.weight(1f)
         )
         ThemeOption(
             mode = DarkModeOption.DARK,
             label = "深色",
             isSelected = selectedMode == DarkModeOption.DARK,
-            onClick = { onModeSelected(DarkModeOption.DARK) }
+            onClick = { onModeSelected(DarkModeOption.DARK) },
+            modifier = Modifier.weight(1f)
         )
         ThemeOption(
             mode = DarkModeOption.AUTO,
             label = "自动",
             isSelected = selectedMode == DarkModeOption.AUTO,
-            onClick = { onModeSelected(DarkModeOption.AUTO) }
+            onClick = { onModeSelected(DarkModeOption.AUTO) },
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -254,52 +263,26 @@ private fun ThemeOption(
     mode: DarkModeOption,
     label: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(4.dp)
+            .padding(vertical = 4.dp)
     ) {
         DeviceMockup(mode = mode, isSelected = isSelected)
         
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
         )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        // 选中指示器 (圆圈打勾)
-        Box(
-            modifier = Modifier
-                .size(22.dp)
-                .clip(RoundedCornerShape(11.dp))
-                .background(
-                    if (isSelected) MaterialTheme.colorScheme.primary 
-                    else Color.Transparent
-                )
-                .border(
-                    width = 1.dp,
-                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFC7C7CC),
-                    shape = RoundedCornerShape(11.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-        }
     }
 }
 
@@ -309,9 +292,9 @@ private fun DeviceMockup(
     isSelected: Boolean
 ) {
     val borderColor = when (mode) {
-        DarkModeOption.LIGHT -> Color(0xFFC7C7CC)
-        DarkModeOption.DARK -> Color(0xFF5C5C5E)
-        DarkModeOption.AUTO -> Color(0xFFC7C7CC)
+        DarkModeOption.LIGHT -> Color(0xFFE5E5EA)
+        DarkModeOption.DARK -> Color(0xFF3A3A3C)
+        DarkModeOption.AUTO -> Color(0xFF8E8E93).copy(alpha = 0.5f)
     }
 
     val mockupBackground = when (mode) {
@@ -319,11 +302,14 @@ private fun DeviceMockup(
         DarkModeOption.DARK -> Modifier.background(Color(0xFF1C1C1E))
         DarkModeOption.AUTO -> Modifier.background(
             brush = Brush.linearGradient(
-                0.0f to Color.White,
-                0.48f to Color.White,
-                0.52f to Color(0xFF1C1C1E),
-                1.0f to Color(0xFF1C1C1E),
-                start = Offset(0f, 0f),
+                colors = listOf(
+                    Color.White,
+                    Color(0xFFE5E5EA),
+                    Color(0xFF8E8E93),
+                    Color(0xFF2C2C2E),
+                    Color(0xFF1C1C1E)
+                ),
+                start = Offset.Zero,
                 end = Offset.Infinite
             )
         )
@@ -333,7 +319,7 @@ private fun DeviceMockup(
         contentAlignment = Alignment.Center,
         modifier = Modifier.padding(6.dp) // 为外部轮廓留出呼吸空间
     ) {
-        // 外部选中轮廓 (还原 HTML 的 outline 效果)
+        // 外部选中轮廓
         if (isSelected) {
             Box(
                 modifier = Modifier
@@ -375,40 +361,52 @@ private fun DeviceMockup(
 
 @Composable
 private fun MockupNav(mode: DarkModeOption) {
-    val color = when (mode) {
-        DarkModeOption.LIGHT -> Color(0xFFE5E5EA)
-        DarkModeOption.DARK -> Color(0xFF3A3A3C)
-        DarkModeOption.AUTO -> Color(0xFF8E8E93).copy(alpha = 0.4f)
+    val modifier = when (mode) {
+        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFE5E5EA))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
+        DarkModeOption.AUTO -> Modifier.background(
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFFE5E5EA), Color(0xFF8E8E93), Color(0xFF3A3A3C))
+            )
+        )
     }
     Box(
         modifier = Modifier
             .size(36.dp, 6.dp)
             .clip(RoundedCornerShape(3.dp))
-            .background(color)
+            .then(modifier)
     )
 }
 
 @Composable
 private fun MockupCard(mode: DarkModeOption) {
-    val color = when (mode) {
-        DarkModeOption.LIGHT -> Color(0xFFF2F2F7)
-        DarkModeOption.DARK -> Color(0xFF2C2C2E)
-        DarkModeOption.AUTO -> Color(0xFF8E8E93).copy(alpha = 0.3f)
+    val modifier = when (mode) {
+        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFF2F2F7))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
+        DarkModeOption.AUTO -> Modifier.background(
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFFF2F2F7), Color(0xFF636366), Color(0xFF2C2C2E))
+            )
+        )
     }
     Box(
         modifier = Modifier
             .size(52.dp, 30.dp)
             .clip(RoundedCornerShape(6.dp))
-            .background(color)
+            .then(modifier)
     )
 }
 
 @Composable
 private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
-    val color = when (mode) {
-        DarkModeOption.LIGHT -> Color(0xFFE5E5EA)
-        DarkModeOption.DARK -> Color(0xFF3A3A3C)
-        DarkModeOption.AUTO -> Color(0xFF8E8E93).copy(alpha = 0.4f)
+    val modifier = when (mode) {
+        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFE5E5EA))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
+        DarkModeOption.AUTO -> Modifier.background(
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFF8E8E93).copy(alpha = 0.6f), Color(0xFF3A3A3C))
+            )
+        )
     }
     Box(
         modifier = Modifier
@@ -416,7 +414,7 @@ private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
             .align(Alignment.Start)
             .size(if (isShort) 24.dp else 40.dp, 5.dp)
             .clip(RoundedCornerShape(2.5.dp))
-            .background(color)
+            .then(modifier)
     )
 }
 

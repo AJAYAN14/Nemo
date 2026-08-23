@@ -74,7 +74,6 @@ fun NemoModalBottomSheet(
         contentWindowInsets = contentWindowInsets
     ) {
         val view = LocalView.current
-        val isHiding = sheetState.targetValue == SheetValue.Hidden
 
         // 绑定窗口级高斯毛玻璃与窗口动画优化
         DisposableEffect(view) {
@@ -88,7 +87,7 @@ fun NemoModalBottomSheet(
                     window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
                     window.attributes = window.attributes.apply {
                         blurBehindRadius = 48
-                        dimAmount = 0.20f
+                        dimAmount = 0f
                     }
                 }
             }
@@ -103,30 +102,6 @@ fun NemoModalBottomSheet(
                         }
                     } catch (_: Exception) {}
                 }
-            }
-        }
-
-        // 状态联动：关闭时第 0 毫秒先销毁高斯模糊，抽屉顺势滑下；重新打开时满血恢复
-        LaunchedEffect(isHiding) {
-            val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                try {
-                    if (isHiding) {
-                        // 一触发关闭，立即清零高斯模糊，背景瞬间恢复清晰通透
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } else {
-                        // 打开或展开时，确保满血挂载毛玻璃
-                        window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 48
-                            dimAmount = 0.20f
-                        }
-                    }
-                } catch (_: Exception) {}
             }
         }
 

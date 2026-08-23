@@ -2,6 +2,11 @@ package com.jian.nemo.feature.statistics.presentation.curve
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
 
+import android.view.HapticFeedbackConstants
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,6 +37,8 @@ import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.discoverybar.TapPulseWrapper
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.statistics.presentation.curve.components.ForgettingCurveChart
 
 /**
@@ -264,9 +272,12 @@ private fun rememberMockForgettingCurveData(): ForgettingCurveData {
 }
 
 /**
- * 时间范围选择器
+ * 时间范围选择器 (DiscoveryBar 同款高质感弹簧滑动分段器)
  *
- * 使用 FilterChip 行排列，对应 HTML 中的下拉选择器功能
+ * - 56dp 高度胶囊容器 + 柔和卡片阴影
+ * - 弹簧物理滑块滑动指示器动画
+ * - 7天/30天/90天/365天 4 档差异化色彩过渡 (蓝/绿/橙/紫)
+ * - 点击微动效缩放与触感反馈
  */
 @Composable
 private fun TimeRangeSelector(
@@ -275,43 +286,110 @@ private fun TimeRangeSelector(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val bgColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100
-    val activeBgColor = if (isDark) NemoNeutrals.Gray700 else Color.White
-    val activeTextColor = ChartColors.FreshGreen
+    val containerBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val view = LocalView.current
+    val ranges = remember { CurveTimeRange.entries }
+    val selectedIndex = ranges.indexOf(selectedRange).coerceAtLeast(0)
+
+    // 4 档时间跨度色彩映射
+    val rangeColors = remember {
+        mapOf(
+            CurveTimeRange.SHORT to Color(0xFF007AFF),   // 7天: 经典蓝
+            CurveTimeRange.MEDIUM to Color(0xFF34C759),  // 30天: 鲜活绿
+            CurveTimeRange.LONG to Color(0xFFFF9500),    // 90天: 活力橙
+            CurveTimeRange.EXTENDED to Color(0xFFAF52DE) // 365天: 高级紫
+        )
+    }
+
+    val currentActiveColor = rangeColors[selectedRange] ?: Color(0xFF34C759)
     val inactiveTextColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
-    // 外层凹槽
+    val barHeight = 56.dp
+    val cornerRadius = 28.dp
+
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .background(color = bgColor, shape = RoundedCornerShape(20.dp))
-            .padding(4.dp)
+            .height(barHeight)
+            .softCardShadow(borderRadius = cornerRadius, isDark = isDark)
+            .clip(RoundedCornerShape(cornerRadius))
+            .background(containerBgColor)
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize()
         ) {
-            CurveTimeRange.entries.forEach { range ->
-                val isSelected = range == selectedRange
-                
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(if (isSelected) activeBgColor else Color.Transparent)
-                        .clickable { onRangeSelected(range) },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${range.days}天",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (isSelected) activeTextColor else inactiveTextColor,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 13.sp
+            val containerWidth = maxWidth
+            val optionWidth = containerWidth / ranges.size
+            val indicatorPadding = 4.dp
+
+            // 滑动指示器偏移量 (弹簧动效)
+            val indicatorOffset by animateDpAsState(
+                targetValue = optionWidth * selectedIndex + indicatorPadding,
+                animationSpec = spring(
+                    dampingRatio = 0.75f,
+                    stiffness = 350f,
+                ),
+                label = "timeRangeIndicatorOffset",
+            )
+
+            // 指示器背景色动画
+            val indicatorBgColor by animateColorAsState(
+                targetValue = currentActiveColor.copy(alpha = 0.12f),
+                animationSpec = tween(durationMillis = 300),
+                label = "timeRangeIndicatorBgColor",
+            )
+
+            // 滑块背景
+            Box(
+                modifier = Modifier
+                    .offset(x = indicatorOffset)
+                    .width(optionWidth - indicatorPadding * 2)
+                    .fillMaxHeight()
+                    .padding(vertical = indicatorPadding)
+                    .clip(RoundedCornerShape(cornerRadius - indicatorPadding))
+                    .background(indicatorBgColor)
+            )
+
+            // 选项行
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ranges.forEachIndexed { index, range ->
+                    val isSelected = range == selectedRange
+                    val itemColor = rangeColors[range] ?: Color(0xFF34C759)
+
+                    val textColor by animateColorAsState(
+                        targetValue = if (isSelected) itemColor else inactiveTextColor,
+                        animationSpec = tween(durationMillis = 300),
+                        label = "textColor_${range.name}",
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        TapPulseWrapper(
+                            onTap = {
+                                if (range != selectedRange) {
+                                    onRangeSelected(range)
+                                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                }
+                            },
+                            fullArea = true
+                        ) {
+                            Text(
+                                text = "${range.days}天",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 14.sp
+                                ),
+                                color = textColor
+                            )
+                        }
+                    }
                 }
             }
         }
