@@ -98,34 +98,38 @@ fun WordClozeScreen(
         return
     }
 
-    com.jian.nemo.core.ui.component.common.NemoScaffold(
-        title = "单词填空",
-        onBack = {
-            if (uiState is ClozeUiState.Ready) {
-                showExitDialog = true
-            } else {
-                onNavigateBack()
-            }
-        },
-        actions = {
-            if (uiState is ClozeUiState.Ready) {
-                IconButton(onClick = { viewModel.forceRegenerate() }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Refresh,
-                        contentDescription = "重新换一批",
-                        tint = textMain
-                    )
+    Scaffold(
+        topBar = {
+            CommonHeader(
+                title = "单词填空",
+                onBack = {
+                    if (uiState is ClozeUiState.Ready) {
+                        showExitDialog = true
+                    } else {
+                        onNavigateBack()
+                    }
+                },
+                actions = {
+                    if (uiState is ClozeUiState.Ready) {
+                        IconButton(onClick = { viewModel.forceRegenerate() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "重新换一批",
+                                tint = textMain
+                            )
+                        }
+                    }
+                    IconButton(onClick = { showHelpDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Help,
+                            contentDescription = "输入指南",
+                            tint = textMain
+                        )
+                    }
                 }
-            }
-            IconButton(onClick = { showHelpDialog = true }) {
-                Icon(
-                    imageVector = Icons.Rounded.Help,
-                    contentDescription = "输入指南",
-                    tint = textMain
-                )
-            }
+            )
         },
-        backgroundColor = containerColor
+        containerColor = containerColor
     ) { padding ->
         Box(
             modifier = Modifier

@@ -14,13 +14,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.screenBackground
 
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
-import androidx.compose.runtime.remember
-
 @Composable
 fun UnifiedTestScreen(
-    headerContent: @Composable (HazeState) -> Unit,
+    headerContent: @Composable () -> Unit,
     progressContent: @Composable () -> Unit,
     testContent: @Composable () -> Unit,
     footerContent: @Composable () -> Unit,
@@ -30,7 +26,6 @@ fun UnifiedTestScreen(
     val colorScheme = MaterialTheme.colorScheme
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val isDark = backgroundColor.luminance() < 0.5f
-    val hazeState = remember { HazeState() }
 
     Box(
         modifier = modifier
@@ -41,11 +36,9 @@ fun UnifiedTestScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .haze(hazeState)
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
-                .padding(top = 56.dp)
         ) {
+            headerContent()
             Spacer(modifier = Modifier.height(16.dp))
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 progressContent()
@@ -55,15 +48,6 @@ fun UnifiedTestScreen(
 
             // 动态底部留白，确保解析卡片全展现，不被悬浮按钮及渐变蒙层遮挡
             Spacer(modifier = Modifier.height(160.dp))
-        }
-
-        // 顶部悬浮毛玻璃 Header
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-        ) {
-            headerContent(hazeState)
         }
 
         // 底部渐变蒙层：从透明到纯白的平滑过渡

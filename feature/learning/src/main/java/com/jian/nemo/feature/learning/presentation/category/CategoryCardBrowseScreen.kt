@@ -85,28 +85,32 @@ fun CategoryCardBrowseScreen(
         categoryTitle
     }
 
-    com.jian.nemo.core.ui.component.common.NemoScaffold(
-        title = titleWithCount,
-        onBack = onNavigateBack,
-        backgroundColor = Color.Transparent,
-        actions = {
-            val navBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-            LiquidButton(
-                onClick = { showAnswerSheetDrawer = true },
-                backgroundColor = navBtnBg,
-                shape = CircleShape,
-                isInteractive = true,
-                elevation = 4.dp,
-                useSoftShadow = true,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
-                    contentDescription = "答题卡",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
+    Scaffold(
+        topBar = {
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = titleWithCount,
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                actions = {
+                    val navBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+                    LiquidButton(
+                        onClick = { showAnswerSheetDrawer = true },
+                        backgroundColor = navBtnBg,
+                        shape = CircleShape,
+                        isInteractive = true,
+                        elevation = 4.dp,
+                        useSoftShadow = true,
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
+                            contentDescription = "答题卡",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Box(

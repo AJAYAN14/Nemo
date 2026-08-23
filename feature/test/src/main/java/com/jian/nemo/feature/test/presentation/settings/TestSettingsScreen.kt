@@ -18,7 +18,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.feature.test.presentation.settings.components.CustomQuestionCountDialog
 import com.jian.nemo.feature.test.presentation.settings.components.CustomTimeLimitDialog
@@ -281,24 +280,28 @@ fun TestSettingsScreen(
     }
     CustomTimeLimitDialog(showCustomTimeLimitDialog, config.timeLimitMinutes, { showCustomTimeLimitDialog = false }) { updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) } }
 
-    NemoScaffold(
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
             .containerTransform(
                 key = "container_test_${testModeId ?: "default"}",
                 shape = RoundedCornerShape(0.dp)
             ),
-        title = pageTitle,
-        onBack = { if (isGenerating) starterViewModel.cancelGeneration() else onBack() },
+        topBar = {
+            CommonHeader(
+                title = pageTitle,
+                onBack = { if (isGenerating) starterViewModel.cancelGeneration() else onBack() },
+                backgroundColor = backgroundColor
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        backgroundColor = backgroundColor
+        containerColor = backgroundColor
     ) { padding ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(padding)
                     .padding(horizontal = 20.dp)
             ) {
                 Spacer(modifier = Modifier.height(24.dp))

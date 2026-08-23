@@ -41,30 +41,26 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
-import dev.chrisbanes.haze.hazeChild
 
 
 /**
  * 收藏题目列表界面
  *
- * 采用与学习页面对齐的高级毛玻璃卡片风格
+ * Flat Design: 无阴影、粗体色彩、简洁线条、排版为核心
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoriteQuestionsScreen(
-    onNavigateBack: () -> Unit = {},
-    viewModel: FavoriteQuestionsViewModel = hiltViewModel()
+    viewModel: FavoriteQuestionsViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val premiumBlue = Color(0xFF007AFF)
+    // Premium Flat Colors
     val premiumRed = Color(0xFFFF3B30)
+    val premiumBlue = Color(0xFF007AFF)
     val premiumGreen = Color(0xFF34C759)
-    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态
     var selectedQuestionIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -80,7 +76,7 @@ fun FavoriteQuestionsScreen(
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = "取消收藏",
-            text = "确定要将选中的 ${selectedQuestionIds.size} 道题目取消收藏吗？",
+            text = "确定要将选中的 ${selectedQuestionIds.size} 个题目取消收藏吗？",
             confirmText = "确认移出",
             dismissText = "取消",
             isDangerous = true,
@@ -92,17 +88,16 @@ fun FavoriteQuestionsScreen(
         )
     }
 
-    NemoScaffold(
-        topBar = { hazeState ->
+    Scaffold(
+        containerColor = backgroundColor,
+        topBar = {
             if (isSelectionMode) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .hazeChild(hazeState)
-                        .background(glassContainerColor)
                         .statusBarsPadding()
                         .height(56.dp),
-                    color = Color.Transparent
+                    color = backgroundColor
                 ) {
                     Row(
                         modifier = Modifier
@@ -151,16 +146,14 @@ fun FavoriteQuestionsScreen(
                     }
                 }
             } else {
-                CommonHeader(
+                com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "收藏题目",
                     onBack = onNavigateBack,
-                    hazeState = hazeState,
-                    backgroundColor = Color.Transparent
+                    backgroundColor = backgroundColor
                 )
             }
-        },
-        backgroundColor = backgroundColor
-    ) { paddingValues, _ ->
+        }
+    ) { paddingValues ->
         when {
             uiState.isLoading -> {
                 Box(
@@ -173,6 +166,7 @@ fun FavoriteQuestionsScreen(
                 }
             }
             uiState.favoriteQuestions.isEmpty() -> {
+                // Flat Empty State
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -206,7 +200,7 @@ fun FavoriteQuestionsScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "在刷题过程中遇到好题可以收藏哦",
+                            text = "做题时点击 ❤️ 收藏重点题目",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             maxLines = 2,
@@ -218,14 +212,12 @@ fun FavoriteQuestionsScreen(
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = paddingValues.calculateTopPadding() + 16.dp,
-                        bottom = paddingValues.calculateBottomPadding() + 24.dp
-                    )
+                    contentPadding = PaddingValues(vertical = 24.dp)
                 ) {
                     items(
                         items = uiState.favoriteQuestions,

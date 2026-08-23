@@ -85,16 +85,21 @@ fun CategoryClassificationScreen(
         else -> "专项分类"
     }
 
-    com.jian.nemo.core.ui.component.common.NemoScaffold(
-        title = title,
-        onBack = onNavigateBack,
-        backgroundColor = backgroundColor
+    Scaffold(
+        topBar = {
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = title,
+                onBack = onNavigateBack,
+                backgroundColor = backgroundColor // Header 背景与页面一致
+            )
+        },
+        containerColor = backgroundColor
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             // 1. 基础词性类

@@ -8,18 +8,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asComposeRenderEffect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.os.Build
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeChild
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
@@ -38,7 +32,6 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
  * @param title 标题文本
  * @param onBack 返回按钮回调
  * @param backgroundColor 背景颜色，默认为透明
- * @param hazeState 可选的 HazeState，若传入则启用与底部导航栏一致的高斯毛玻璃效果
  * @param actions 可选的右侧操作按钮
  */
 @Composable
@@ -46,7 +39,6 @@ fun CommonHeader(
     title: String,
     onBack: () -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    hazeState: HazeState? = null,
     avatarUrl: String? = null,
     username: String? = null,
     onAvatarClick: (() -> Unit)? = null,
@@ -56,26 +48,16 @@ fun CommonHeader(
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
     val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
 
-    // 纯色实体顶栏背景（恢复经典纯色风格，平滑遮挡滚动内容）
-    val actualBackgroundColor = if (backgroundColor != Color.Transparent) {
-        backgroundColor
-    } else {
-        MaterialTheme.colorScheme.background
-    }
-
-    val headerModifier = Modifier
-        .fillMaxWidth()
-        .background(actualBackgroundColor)
-
     Box(
-        modifier = headerModifier
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
     ) {
         Column(modifier = Modifier.statusBarsPadding()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 20.dp),
+                    .padding(horizontal = 20.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -88,11 +70,8 @@ fun CommonHeader(
                         onClick = onBack,
                         backgroundColor = navGroupBg,
                         shape = CircleShape,
-                        elevation = 0.dp,
                         isInteractive = true,
-                        modifier = Modifier
-                            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                            .size(44.dp)
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,

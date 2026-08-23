@@ -82,34 +82,39 @@ fun MistakesScreen(
                 shape = RoundedCornerShape(0.dp)
             )
     ) {
-        com.jian.nemo.core.ui.component.common.NemoScaffold(
+        Scaffold(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
                     if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
                     else Modifier
                 ),
-            title = "我的错题",
-            onBack = onNavigateBack,
-            backgroundColor = backgroundColor,
-            actions = {
-                com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                    wordCount = uiState.wrongWordsCount,
-                    grammarCount = uiState.wrongGrammarsCount,
-                    titleSuffix = "错题",
-                    onClearAll = viewModel::clearAllWrongAnswers,
-                    onClearWords = viewModel::clearAllWordMistakes,
-                    onClearGrammars = viewModel::clearAllGrammarMistakes,
-                    isExpanded = isMenuExpanded,
-                    onToggleMenu = { isMenuExpanded = it }
+            topBar = {
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = "我的错题",
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor,
+                    actions = {
+                        com.jian.nemo.feature.collection.components.CollectionActionMenu(
+                            wordCount = uiState.wrongWordsCount,
+                            grammarCount = uiState.wrongGrammarsCount,
+                            titleSuffix = "错题",
+                            onClearAll = viewModel::clearAllWrongAnswers,
+                            onClearWords = viewModel::clearAllWordMistakes,
+                            onClearGrammars = viewModel::clearAllGrammarMistakes,
+                            isExpanded = isMenuExpanded,
+                            onToggleMenu = { isMenuExpanded = it }
+                        )
+                    }
                 )
-            }
+            },
+            containerColor = backgroundColor
         ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
                     .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
                 Spacer(modifier = Modifier.height(20.dp))

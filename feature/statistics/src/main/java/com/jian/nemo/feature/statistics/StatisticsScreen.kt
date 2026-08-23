@@ -63,10 +63,16 @@ fun StatisticsScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    com.jian.nemo.core.ui.component.common.NemoScaffold(
-        title = "今日统计",
-        onBack = onBack,
-        backgroundColor = backgroundColor
+    Scaffold(
+        topBar = {
+            Column(modifier = Modifier.background(backgroundColor)) {
+                CommonHeader(
+                    title = "今日统计",
+                    onBack = onBack
+                )
+            }
+        },
+        containerColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

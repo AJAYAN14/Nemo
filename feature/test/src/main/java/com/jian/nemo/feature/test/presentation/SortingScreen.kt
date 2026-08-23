@@ -88,11 +88,10 @@ fun SortingScreen(
             )
     ) {
         com.jian.nemo.feature.test.components.UnifiedTestScreen(
-            headerContent = { hazeState ->
+            headerContent = {
                 com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "",
                     onBack = { viewModel.confirmExitTest() },
-                    hazeState = hazeState,
                     centerContent = {
                         com.jian.nemo.feature.test.components.TestHeaderCenterContent(
                             timeLimitSeconds = uiState.timeLimitSeconds,

@@ -61,8 +61,6 @@ import androidx.navigation.NavController
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
-import dev.chrisbanes.haze.hazeChild
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
@@ -72,8 +70,6 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 /**
  * 单词列表界面 (UI/UX Pro Max)
- *
- * 采用 Flat UI 风格，移除阴影，使用色彩和对比度区分层级
  */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -84,18 +80,13 @@ fun WordListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
-    val expandedLevels = remember { mutableStateListOf<String>() }
-
-    // 初始化时默认展开第一个有数据的级别
-    LaunchedEffect(uiState.wordsByLevel) {
-        if (expandedLevels.isEmpty() && uiState.wordsByLevel.isNotEmpty()) {
-            uiState.wordsByLevel.keys.sorted().firstOrNull()?.let {
-                expandedLevels.add(it)
-            }
-        }
-    }
+    val expandedLevels = rememberSaveable(
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) { mutableStateListOf<String>() }
 
     val filteredWordsByLevel = uiState.wordsByLevel
     val searchQuery = uiState.searchQuery
@@ -111,18 +102,13 @@ fun WordListScreen(
         }
     }
 
-    NemoScaffold(
-        topBar = { hazeState ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .hazeChild(hazeState)
-                    .background(glassContainerColor)
-            ) {
+    Scaffold(
+        topBar = {
+            Column(modifier = Modifier.background(backgroundColor)) {
                 CommonHeader(
                     title = "单词列表",
                     onBack = { navController.navigateUp() },
-                    backgroundColor = Color.Transparent
+                    backgroundColor = backgroundColor
                 )
                 val options = remember {
                     listOf(
@@ -180,11 +166,11 @@ fun WordListScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         },
-        backgroundColor = backgroundColor
-    ) { innerPadding, _ ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        containerColor = backgroundColor
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     NemoChasingDotsLoader()
                 }
             } else {
@@ -195,7 +181,7 @@ fun WordListScreen(
                     state = pullToRefreshState,
                     indicator = {
                         androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                            modifier = Modifier.align(Alignment.TopCenter).padding(top = innerPadding.calculateTopPadding()),
+                            modifier = Modifier.align(Alignment.TopCenter),
                             isRefreshing = uiState.isRefreshing,
                             state = pullToRefreshState,
                             containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
@@ -205,22 +191,17 @@ fun WordListScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     if (filteredWordsByLevel.isEmpty() && searchQuery.isNotEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             EmptyState("未找到相关单词")
                         }
                     } else if (filteredWordsByLevel.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             EmptyState("暂无单词数据")
                         }
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(
-                                start = 0.dp,
-                                end = 0.dp,
-                                top = innerPadding.calculateTopPadding() + 8.dp,
-                                bottom = innerPadding.calculateBottomPadding() + 24.dp
-                            ),
+                            contentPadding = PaddingValues(vertical = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             val sortedLevels = filteredWordsByLevel.keys.sorted()

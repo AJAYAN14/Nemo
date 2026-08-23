@@ -12,7 +12,6 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,38 +65,41 @@ fun CloudBackupHistoryScreen(
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        NemoScaffold(
-            title = "云端备份历史",
-            onBack = onNavigateBack,
-            actions = {
-                IconButton(onClick = { viewModel.onEvent(SettingsEvent.ShowCloudBackupList) }) {
-                    Icon(
-                        imageVector = Icons.Rounded.Refresh,
-                        contentDescription = "刷新列表"
-                    )
-                }
-            }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (uiState.isLoading || uiState.isCloudSyncing) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        NemoChasingDotsLoader()
+        Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+        topBar = {
+            CommonHeader(
+                title = "云端备份历史",
+                onBack = onNavigateBack,
+                actions = {
+                    IconButton(onClick = { viewModel.onEvent(SettingsEvent.ShowCloudBackupList) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "刷新列表"
+                        )
                     }
-                } else if (uiState.cloudBackupList.isEmpty()) {
-                    EmptyBackupState()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = paddingValues.calculateTopPadding() + 12.dp,
-                            bottom = paddingValues.calculateBottomPadding() + 24.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (uiState.isLoading || uiState.isCloudSyncing) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    NemoChasingDotsLoader()
+                }
+            } else if (uiState.cloudBackupList.isEmpty()) {
+                EmptyBackupState()
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     items(uiState.cloudBackupList, key = { it.fileName }) { backup ->
                         BackupItemCard(
                             backup = backup,

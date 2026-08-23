@@ -102,13 +102,18 @@ fun LevelBreakdownDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Header (Title + Close)
-                Box(modifier = Modifier.fillMaxWidth().height(32.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold, // 优雅的中粗体，避免压迫感
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.align(Alignment.Center)
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            letterSpacing = (-0.5).sp
+                        ),
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     
                     IconButton(
@@ -116,12 +121,11 @@ fun LevelBreakdownDialog(
                         modifier = Modifier
                             .size(32.dp)
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
-                            .align(Alignment.CenterEnd)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             modifier = Modifier.size(16.dp)
                         )
                     }

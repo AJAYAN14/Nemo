@@ -22,7 +22,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.UnsavedChangesDialog
 
-import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 
 /**
@@ -84,38 +83,50 @@ fun AdvancedLearningSettingsScreen(
         }
     }
 
-    NemoScaffold(
-        title = "记忆算法配置",
-        onBack = {
-            if (hasUnsavedChanges) {
-                showExitConfirmation = true
-            } else {
-                onNavigateBack()
-            }
-        },
-        actions = {
-            Box(modifier = Modifier.padding(end = 4.dp)) {
-                LiquidButton(
-                    onClick = {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("记忆算法配置", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = {
                         if (hasUnsavedChanges) {
-                            onSaveAndExit()
+                            showExitConfirmation = true
+                        } else {
+                            onNavigateBack()
                         }
-                    },
-                    backgroundColor = if (hasUnsavedChanges) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                    shape = RoundedCornerShape(20.dp),
-                    elevation = 0.dp,
-                    isInteractive = hasUnsavedChanges
-                ) {
-                    Text(
-                        text = "应用",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (hasUnsavedChanges) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                    )
-                }
-            }
-        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                actions = {
+                    Box(modifier = Modifier.padding(end = 12.dp)) {
+                        LiquidButton(
+                            onClick = {
+                                if (hasUnsavedChanges) {
+                                    onSaveAndExit()
+                                }
+                            },
+                            backgroundColor = if (hasUnsavedChanges) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(20.dp),
+                            elevation = 0.dp,
+                            isInteractive = hasUnsavedChanges
+                        ) {
+                            Text(
+                                text = "应用",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (hasUnsavedChanges) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         if (showExitConfirmation) {
             UnsavedChangesDialog(
@@ -128,8 +139,8 @@ fun AdvancedLearningSettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {

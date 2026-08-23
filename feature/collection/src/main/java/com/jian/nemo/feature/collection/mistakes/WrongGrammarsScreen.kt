@@ -31,9 +31,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.domain.model.GrammarWrongAnswer
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.NemoDialog
-import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
-import dev.chrisbanes.haze.hazeChild
 
 /**
  * 错误语法列表界面 (题目快照版)
@@ -46,22 +43,17 @@ fun WrongGrammarsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
-    // Premium Aesthetics
-    val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
-    val premiumGreen = Color(0xFF34C759)
-    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
+    val premiumRed = Color(0xFFFF3B30)
+    val premiumGray = Color(0xFF8E8E93)
+    val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
     val isSelectionMode = selectedGrammarIds.isNotEmpty()
-
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    // 拦截物理返回键
+    // 拦截物理返回
     BackHandler(enabled = isSelectionMode) {
         selectedGrammarIds = emptySet()
     }
@@ -70,7 +62,7 @@ fun WrongGrammarsScreen(
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = "移出错题本",
-            text = "确定要将选中的 ${selectedGrammarIds.size} 个语法错题记录移除吗？",
+            text = "确定要将选中的 ${selectedGrammarIds.size} 个语法从错题本中移除吗？此操作不会删除语法本身，仅清除错题记录。",
             confirmText = "确认移除",
             dismissText = "取消",
             isDangerous = true,
@@ -82,17 +74,16 @@ fun WrongGrammarsScreen(
         )
     }
 
-    NemoScaffold(
-        topBar = { hazeState ->
+    Scaffold(
+        containerColor = backgroundColor,
+        topBar = {
             if (isSelectionMode) {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .hazeChild(hazeState)
-                        .background(glassContainerColor)
                         .statusBarsPadding()
                         .height(56.dp),
-                    color = Color.Transparent
+                    color = backgroundColor
                 ) {
                     Row(
                         modifier = Modifier
@@ -141,16 +132,14 @@ fun WrongGrammarsScreen(
                     }
                 }
             } else {
-                CommonHeader(
+                com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "错误的语法",
                     onBack = onNavigateBack,
-                    hazeState = hazeState,
-                    backgroundColor = Color.Transparent
+                    backgroundColor = backgroundColor
                 )
             }
-        },
-        backgroundColor = backgroundColor
-    ) { paddingValues, _ ->
+        }
+    ) { paddingValues ->
         when {
             uiState.isLoading -> {
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
@@ -160,27 +149,22 @@ fun WrongGrammarsScreen(
             uiState.wrongAnswers.isEmpty() -> {
                 Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Surface(shape = RoundedCornerShape(32.dp), color = premiumRed.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
+                        Surface(shape = RoundedCornerShape(32.dp), color = premiumGray.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
                             Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Rounded.Cancel, null, modifier = Modifier.size(48.dp), tint = premiumRed.copy(alpha = 0.6f))
+                                Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = Color(0xFF34C759).copy(alpha = 0.5f))
                             }
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         Text("暂无错题记录", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Text("答错的语法会自动收集在这里便于针对性复习", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        Text("语法掌握得很好！继续保持。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     }
                 }
             }
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = paddingValues.calculateTopPadding() + 16.dp,
-                        bottom = paddingValues.calculateBottomPadding() + 24.dp
-                    )
+                    contentPadding = PaddingValues(vertical = 24.dp)
                 ) {
                     items(items = uiState.wrongAnswers, key = { "mistake_${it.id}" }) { mistake ->
                         val isSelected = selectedGrammarIds.contains(mistake.grammarId)

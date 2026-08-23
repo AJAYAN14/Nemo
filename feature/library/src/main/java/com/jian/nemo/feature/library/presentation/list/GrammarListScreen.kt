@@ -61,8 +61,6 @@ import androidx.navigation.NavController
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
-import dev.chrisbanes.haze.hazeChild
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
@@ -83,18 +81,13 @@ fun GrammarListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
-    val expandedLevels = remember { mutableStateListOf<String>() }
-
-    // 初始化时默认展开第一个有数据的级别
-    LaunchedEffect(uiState.grammarsByLevel) {
-        if (expandedLevels.isEmpty() && uiState.grammarsByLevel.isNotEmpty()) {
-            uiState.grammarsByLevel.keys.sorted().firstOrNull()?.let {
-                expandedLevels.add(it)
-            }
-        }
-    }
+    val expandedLevels = rememberSaveable(
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) { mutableStateListOf<String>() }
 
     val filteredGrammarsByLevel = uiState.grammarsByLevel
     val searchQuery = uiState.searchQuery
@@ -110,18 +103,13 @@ fun GrammarListScreen(
         }
     }
 
-    NemoScaffold(
-        topBar = { hazeState ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .hazeChild(hazeState)
-                    .background(glassContainerColor)
-            ) {
+    Scaffold(
+        topBar = {
+            Column(modifier = Modifier.background(backgroundColor)) {
                 CommonHeader(
                     title = "语法列表",
                     onBack = { navController.navigateUp() },
-                    backgroundColor = Color.Transparent
+                    backgroundColor = backgroundColor
                 )
                 val options = remember {
                     listOf(
@@ -179,11 +167,11 @@ fun GrammarListScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
         },
-        backgroundColor = backgroundColor
-    ) { innerPadding, _ ->
-        Box(modifier = Modifier.fillMaxSize()) {
+        containerColor = backgroundColor
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
             if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     NemoChasingDotsLoader()
                 }
             } else {
@@ -194,7 +182,7 @@ fun GrammarListScreen(
                     state = pullToRefreshState,
                     indicator = {
                         androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                            modifier = Modifier.align(Alignment.TopCenter).padding(top = innerPadding.calculateTopPadding()),
+                            modifier = Modifier.align(Alignment.TopCenter),
                             isRefreshing = uiState.isRefreshing,
                             state = pullToRefreshState,
                             containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
@@ -204,22 +192,17 @@ fun GrammarListScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                 if (filteredGrammarsByLevel.isEmpty() && searchQuery.isNotEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         EmptyState("未找到相关语法")
                     }
                 } else if (filteredGrammarsByLevel.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         EmptyState("暂无语法数据")
                     }
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            start = 0.dp,
-                            end = 0.dp,
-                            top = innerPadding.calculateTopPadding() + 8.dp,
-                            bottom = innerPadding.calculateBottomPadding() + 24.dp
-                        ),
+                        contentPadding = PaddingValues(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         val sortedLevels = filteredGrammarsByLevel.keys.sorted()

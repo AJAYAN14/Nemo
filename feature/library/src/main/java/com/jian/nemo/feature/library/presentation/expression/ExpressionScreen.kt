@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.ui.component.common.NemoScaffold
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.activity.compose.BackHandler
@@ -166,7 +165,7 @@ fun ExpressionScreen(
 }
 
 /**
- * 第一层：九宫格总览大厅 (UI/UX Pro Max 扁平卡片与灵动排版)
+ * 第一层：分类主控制板界面
  */
 @Composable
 fun CategoryDashboard(
@@ -174,37 +173,28 @@ fun CategoryDashboard(
     onCategorySelect: (ExpressionCategory) -> Unit,
     onNavigateBack: (() -> Unit)? = null
 ) {
-    if (onNavigateBack != null) {
-        NemoScaffold(
-            title = "灵动词法库",
-            onBack = onNavigateBack,
-            backgroundColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = paddingValues.calculateTopPadding() + 16.dp,
-                    bottom = paddingValues.calculateBottomPadding() + 24.dp
+    Scaffold(
+        topBar = {
+            if (onNavigateBack != null) {
+                CommonHeader(
+                    title = "灵动词法库",
+                    onBack = onNavigateBack
                 )
-            ) {
-                items(categories) { category ->
-                    CategoryFlatCard(
-                        category = category,
-                        onClick = { onCategorySelect(category) }
-                    )
-                }
             }
-        }
-    } else {
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .padding(paddingValues)
+                .run {
+                    if (onNavigateBack == null) {
+                        statusBarsPadding()
+                    } else {
+                        this
+                    }
+                }
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -359,10 +349,15 @@ fun ExpressionBrowser(
 ) {
     val themeColor = getCategoryColor(category.categoryKey)
 
-    NemoScaffold(
-        title = category.levelName,
-        onBack = onBack,
-        backgroundColor = MaterialTheme.colorScheme.background
+    Scaffold(
+        topBar = {
+            CommonHeader(
+                title = category.levelName,
+                onBack = onBack,
+                backgroundColor = MaterialTheme.colorScheme.background
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier

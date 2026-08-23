@@ -34,11 +34,10 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
 
     // 使用 AnimatedContent 为选择题切换添加动画效果（复刻旧项目 L41-55）
     UnifiedTestScreen(
-        headerContent = { hazeState ->
+        headerContent = {
             CommonHeader(
                 title = "",
                 onBack = { viewModel.confirmExitTest() },
-                hazeState = hazeState,
                 centerContent = {
                     TestHeaderCenterContent(
                         timeLimitSeconds = uiState.timeLimitSeconds,

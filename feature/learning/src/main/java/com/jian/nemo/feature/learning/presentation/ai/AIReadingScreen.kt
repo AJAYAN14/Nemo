@@ -32,7 +32,6 @@ import com.jian.nemo.core.domain.model.ReadingQuestion
 import com.jian.nemo.core.domain.model.ReadingVocabulary
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
@@ -77,44 +76,49 @@ fun AIReadingScreen(
     var snackbarMessage by remember { mutableStateOf("") }
     var snackbarType by remember { mutableStateOf(NemoSnackbarType.SUCCESS) }
 
-    NemoScaffold(
-        title = "AI 日语阅读",
-        onBack = {
-            if (uiState.currentArticle != null) {
-                viewModel.onEvent(AIReadingEvent.ResetReader)
-            } else {
-                onNavigateBack()
-            }
+    Scaffold(
+        topBar = {
+            CommonHeader(
+                title = "AI 日语阅读",
+                onBack = {
+                    if (uiState.currentArticle != null) {
+                        viewModel.onEvent(AIReadingEvent.ResetReader)
+                    } else {
+                        onNavigateBack()
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = "阅读历史",
+                            tint = colorScheme.onSurface
+                        )
+                    }
+                    IconButton(onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) }) {
+                        val platform = uiState.aiPlatform
+                        when (platform) {
+                            "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
+                            else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = colorScheme.onSurface)
+                        }
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "AI设置",
+                            tint = colorScheme.onSurface
+                        )
+                    }
+                },
+                backgroundColor = if (isDark) colorScheme.background else BentoColors.BgBase
+            )
         },
-        actions = {
-            IconButton(onClick = onNavigateToHistory) {
-                Icon(
-                    imageVector = Icons.Rounded.History,
-                    contentDescription = "阅读历史",
-                    tint = colorScheme.onSurface
-                )
-            }
-            IconButton(onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) }) {
-                val platform = uiState.aiPlatform
-                when (platform) {
-                    "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                    else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = colorScheme.onSurface)
-                }
-            }
-            IconButton(onClick = onNavigateToSettings) {
-                Icon(
-                    imageVector = Icons.Rounded.Settings,
-                    contentDescription = "AI设置",
-                    tint = colorScheme.onSurface
-                )
-            }
-        },
-        backgroundColor = if (isDark) colorScheme.background else BentoColors.BgBase
+        containerColor = if (isDark) colorScheme.background else BentoColors.BgBase
     ) { paddingValues ->
         Box(
             modifier = Modifier

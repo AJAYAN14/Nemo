@@ -47,8 +47,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoScaffold
-import dev.chrisbanes.haze.hazeChild
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
@@ -87,21 +85,35 @@ fun CategoryWordsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val glassContainerColor = if (isDark) Color(0xFF121212).copy(alpha = 0.65f) else Color(0xFFFAFAFA).copy(alpha = 0.75f)
 
-    var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
+    // Expanded State (Track which levels are OPEN)
+    // Default: Empty (All Closed). Logic copied from WordListScreen
+    val expandedLevels = rememberSaveable(
+        saver = androidx.compose.runtime.saveable.listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) { mutableStateListOf<String>() }
+
+    // Local Search State (If ViewModel doesn't have it, we handle locally or use VM if capable)
+    // Since CategoryWordsViewModel typically just loads, we'll add a local search query state for UI filtering
+    // effectively mirroring WordListScreen's behavior.
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    val expandedLevels = remember { mutableStateListOf<String>() }
+    var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
 
+    // Filter logic
     val filteredWordsByLevel = remember(uiState.wordsByLevel, searchQuery, filterState) {
         uiState.wordsByLevel.mapValues { (_, words) ->
             words.filter { word ->
+                // 1. 过滤已学/未学/全部
                 val matchesFilter = when (filterState) {
                     StudyFilter.ALL -> true
                     StudyFilter.LEARNED -> word.isLearned
                     StudyFilter.UNLEARNED -> !word.isLearned
                 }
                 if (!matchesFilter) return@filter false
+
+                // 2. 过滤搜索词
                 if (searchQuery.isBlank()) {
                     true
                 } else {
@@ -124,18 +136,14 @@ fun CategoryWordsScreen(
         }
     }
 
-    NemoScaffold(
-        topBar = { hazeState ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .hazeChild(hazeState)
-                    .background(glassContainerColor)
-            ) {
+    Scaffold(
+        containerColor = backgroundColor,
+        topBar = {
+            Column(modifier = Modifier.background(backgroundColor)) {
                 CommonHeader(
                     title = if(uiState.isLoading) categoryTitle else "$categoryTitle (${uiState.words.size})",
                     onBack = onNavigateBack,
-                    backgroundColor = Color.Transparent
+                    backgroundColor = backgroundColor
                 )
                 val options = remember {
                     listOf(
@@ -192,9 +200,8 @@ fun CategoryWordsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
-        },
-        backgroundColor = backgroundColor
-    ) { paddingValues, _ ->
+        }
+    ) { paddingValues ->
         when {
             uiState.isLoading -> {
                 Box(

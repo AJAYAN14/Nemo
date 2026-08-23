@@ -69,15 +69,19 @@ fun VerbConjugationScreen(
         return
     }
 
-    com.jian.nemo.core.ui.component.common.NemoScaffold(
-        title = "动词活用",
-        onBack = onNavigateBack,
-        actions = {
-            IconButton(onClick = { showHistoryView = true }) {
-                Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
-            }
+    Scaffold(
+        topBar = {
+            CommonHeader(
+                title = "动词活用",
+                onBack = onNavigateBack,
+                actions = {
+                    IconButton(onClick = { showHistoryView = true }) {
+                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
+                    }
+                }
+            )
         },
-        backgroundColor = containerColor
+        containerColor = containerColor
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             Crossfade(targetState = uiState, label = "state_transition") { state ->

@@ -2,8 +2,6 @@ package com.jian.nemo.feature.library.presentation.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -177,90 +175,114 @@ private fun GrammarDetailContent(
     onBack: () -> Unit,
     onReportClick: () -> Unit
 ) {
-    val scrollState = rememberScrollState()
-    val hazeState = remember { HazeState() }
-    val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
+     val scrollState = rememberScrollState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+     Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)
+    ) {
+        // === 1. Immersive Hero Section ===
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .haze(hazeState)
-                .verticalScroll(scrollState)
-        ) {
-            // === 1. Immersive Hero Section ===
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = if (isDark) listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                MaterialTheme.colorScheme.background
-                            ) else listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                MaterialTheme.colorScheme.background
-                            )
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = if (isDark) listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            MaterialTheme.colorScheme.background
+                        ) else listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.background
                         )
                     )
+                )
+        ) {
+            // Hero Content
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(top = 64.dp, bottom = 32.dp, start = 24.dp, end = 24.dp), // Increased top/bottom padding
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Hero Content
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(top = 64.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Grammar Title
-                    com.jian.nemo.core.ui.component.text.FuriganaText(
-                        text = grammar.grammar ?: "",
-                        baseTextStyle = MaterialTheme.typography.displaySmall.copy(
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.sp,
-                            fontFamily = NotoSerifJP
-                        ),
-                        baseTextColor = MaterialTheme.colorScheme.onBackground,
-                        furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                        furiganaTextSize = 12.sp,
-                        furiganaFontFamily = NotoSerifJP
-                    )
+                // Grammar Title
+                com.jian.nemo.core.ui.component.text.FuriganaText(
+                    text = grammar.grammar ?: "",
+                    baseTextStyle = MaterialTheme.typography.displaySmall.copy(
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp,
+                        fontFamily = NotoSerifJP
+                    ),
+                    baseTextColor = MaterialTheme.colorScheme.onBackground,
+                    furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    furiganaTextSize = 12.sp,
+                    furiganaFontFamily = NotoSerifJP
+                )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    // Level Tag (Enhanced)
-                    grammar.grammarLevel?.let { level ->
-                        Surface(
-                            shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.height(32.dp)
+                // Level Tag (Enhanced)
+                grammar.grammarLevel?.let { level ->
+                    Surface(
+                        shape = RoundedCornerShape(50),
+                        color = MaterialTheme.colorScheme.primaryContainer, // Use Primary Container for consistency
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                         Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.padding(horizontal = 20.dp)
                         ) {
-                             Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.padding(horizontal = 20.dp)
-                            ) {
-                                Text(
-                                    text = level,
-                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
+                            Text(
+                                text = level,
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Play Audio Button
-                    val grammarAudioId = "grammar_${grammar.id}"
-                    SpeakerButton(
-                        isPlaying = playingAudioId == grammarAudioId,
-                        onClick = { onPlayAudio(grammar.grammar ?: "", grammarAudioId) },
-                        size = 56.dp,
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Play Audio Button
+                val grammarAudioId = "grammar_${grammar.id}"
+                SpeakerButton(
+                    isPlaying = playingAudioId == grammarAudioId,
+                    onClick = { onPlayAudio(grammar.grammar ?: "", grammarAudioId) },
+                    size = 56.dp,
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
             }
+
+            // Common Header
+            val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = "",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                centerContent = {
+                    com.jian.nemo.core.ui.component.srs.SrsStatusChip(
+                        nextReviewDay = grammar.nextReviewDate,
+                        repetitionCount = grammar.repetitionCount
+                    )
+                },
+                actions = {
+                    com.jian.nemo.core.ui.component.liquid.LiquidButton(
+                        onClick = onReportClick,
+                        backgroundColor = navGroupBg,
+                        shape = androidx.compose.foundation.shape.CircleShape,
+                        isInteractive = true,
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Report,
+                            contentDescription = "举报内容",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            )
         }
 
         // === 2. Usages ===
@@ -390,35 +412,6 @@ private fun GrammarDetailContent(
             }
              Spacer(modifier = Modifier.height(48.dp))
         }
-
-        // Common Header (Overlaid on top with haze)
-        com.jian.nemo.core.ui.component.common.CommonHeader(
-            title = "",
-            onBack = onBack,
-            hazeState = hazeState,
-            backgroundColor = Color.Transparent,
-            centerContent = {
-                com.jian.nemo.core.ui.component.srs.SrsStatusChip(
-                    nextReviewDay = grammar.nextReviewDate,
-                    repetitionCount = grammar.repetitionCount
-                )
-            },
-            actions = {
-                com.jian.nemo.core.ui.component.liquid.LiquidButton(
-                    onClick = onReportClick,
-                    backgroundColor = navGroupBg,
-                    shape = androidx.compose.foundation.shape.CircleShape,
-                    isInteractive = true,
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Report,
-                        contentDescription = "举报内容",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        )
     }
 }
 
