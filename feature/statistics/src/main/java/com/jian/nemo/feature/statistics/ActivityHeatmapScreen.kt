@@ -5,7 +5,9 @@ import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,12 +35,15 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.feature.statistics.presentation.components.HeatmapShareBottomSheet
 import com.jian.nemo.feature.statistics.presentation.components.LearningHeatmapCard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 
 /**
  * 学习热力图与数据高光专属界面 (Activity Heatmap Pro Max)
@@ -50,14 +55,33 @@ fun ActivityHeatmapScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-
+    var showShareSheet by remember { mutableStateOf(false) }
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
 
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "学习热力图", // Use dedicated title
-                onBack = onBack
+                title = "学习热力图",
+                onBack = onBack,
+                actions = {
+                    if (!uiState.isLoading) {
+                        LiquidButton(
+                            onClick = { showShareSheet = true },
+                            backgroundColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White,
+                            shape = CircleShape,
+                            isInteractive = true,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share_ios),
+                                contentDescription = "分享",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
             )
         },
         containerColor = backgroundColor
@@ -130,6 +154,14 @@ fun ActivityHeatmapScreen(
                 }
             }
         }
+    }
+
+    // 分享底板
+    if (showShareSheet) {
+        HeatmapShareBottomSheet(
+            uiState = uiState,
+            onDismiss = { showShareSheet = false }
+        )
     }
 }
 

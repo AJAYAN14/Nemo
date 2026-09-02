@@ -36,6 +36,8 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.TwoStageScrollToTopButton
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 import com.jian.nemo.feature.statistics.components.LevelBreakdownDialog
 
@@ -56,6 +58,8 @@ fun HistoricalStatisticsScreen(
     val words = uiState.learnedWords
     val grammars = uiState.learnedGrammars
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+
+    val listState = rememberLazyListState()
 
     var showWordDialog by remember { mutableStateOf(false) }
     var showGrammarDialog by remember { mutableStateOf(false) }
@@ -81,9 +85,16 @@ fun HistoricalStatisticsScreen(
                 )
             }
         },
+        floatingActionButton = {
+            TwoStageScrollToTopButton(
+                listState = listState,
+                intermediateTargetIndex = 3
+            )
+        },
         containerColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = 16.dp,
@@ -155,6 +166,9 @@ fun HistoricalStatisticsScreen(
             data = wordLevelData,
             totalData = uiState.wordTotalCountMap,
             themeColor = NemoPrimary,
+            predictions = uiState.wordPredictions,
+            overallPrediction = uiState.wordOverallPrediction,
+            itemUnit = "词",
             onDismiss = { showWordDialog = false }
         )
     }
@@ -166,6 +180,9 @@ fun HistoricalStatisticsScreen(
             data = grammarLevelData,
             totalData = uiState.grammarTotalCountMap,
             themeColor = NemoSecondary,
+            predictions = uiState.grammarPredictions,
+            overallPrediction = uiState.grammarOverallPrediction,
+            itemUnit = "条",
             onDismiss = { showGrammarDialog = false }
         )
     }

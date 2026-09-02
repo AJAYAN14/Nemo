@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手机右上角菜单动画 · Menu Animation Preview</title>
+<style>
+  /* ============ 全局重置 ============ */
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #0f0f14;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(99,102,241,0.15), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(236,72,153,0.12), transparent 40%);
+    color: #e7e7ea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ============ 舞台 ============ */
+  .stage {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    padding: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ============ 手机外框 ============ */
+  .phone {
+    position: relative;
+    width: 360px;
+    height: 740px;
+    background: #1c1c22;
+    border-radius: 52px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 2px #2a2a32,
+      0 0 0 12px #0a0a0e,
+      0 30px 60px -20px rgba(0,0,0,0.8),
+      0 50px 120px -30px rgba(99,102,241,0.35);
+  }
+  /* 侧边按钮 */
+  .phone::before, .phone::after {
+    content: "";
+    position: absolute;
+    background: #0a0a0e;
+    border-radius: 4px;
+  }
+  .phone::before { /* 左侧静音/音量 */
+    left: -14px; top: 130px; width: 4px; height: 32px;
+    box-shadow: 0 50px 0 #0a0a0e, 0 96px 0 #0a0a0e;
+  }
+  .phone::after { /* 右侧电源 */
+    right: -14px; top: 180px; width: 4px; height: 80px;
+  }
+
+  /* ============ 屏幕 ============ */
+  .screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(160deg, #f5f3ff 0%, #ede9fe 40%, #ddd6fe 100%);
+    border-radius: 40px;
+    overflow: hidden;
+    color: #1c1c22;
+  }
+
+  /* 状态栏 */
+  .status-bar {
+    position: relative;
+    z-index: 30;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px 0 28px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c1c22;
+  }
+  .status-bar .time { letter-spacing: 0.5px; }
+  .status-bar .icons { display: flex; gap: 6px; align-items: center; }
+  .status-bar .icons svg { width: 16px; height: 16px; }
+
+  /* 动态岛 / 刘海 */
+  .notch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 30px;
+    background: #0a0a0e;
+    border-radius: 20px;
+    z-index: 40;
+  }
+
+  /* ============ 顶部 App Bar ============ */
+  .appbar {
+    position: relative;
+    z-index: 20;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px 0 20px;
+  }
+  .appbar .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d2a4a;
+    letter-spacing: -0.3px;
+  }
+
+  /* ============ 菜单按钮（汉堡 → X morph）============ */
+  .menu-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: none;
+    background: rgba(124, 58, 237, 0.12);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 60;
+  }
+  .menu-btn:active { transform: scale(0.92); }
+  .menu-btn.open { background: rgba(124, 58, 237, 0.22); }
+
+  .menu-btn .burger {
+    position: relative;
+    width: 20px;
+    height: 14px;
+  }
+  .menu-btn .burger span {
+    position: absolute;
+    left: 0;
+    height: 2.4px;
+    width: 100%;
+    background: #6d28d9;
+    border-radius: 2px;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+                opacity 0.25s ease,
+                top 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+                width 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+  .menu-btn .burger span:nth-child(1) { top: 0; }
+  .menu-btn .burger span:nth-child(2) { top: 6px; width: 14px; left: 3px; }
+  .menu-btn .burger span:nth-child(3) { top: 12px; }
+
+  .menu-btn.open .burger span:nth-child(1) {
+    top: 6px;
+    transform: rotate(45deg);
+  }
+  .menu-btn.open .burger span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  .menu-btn.open .burger span:nth-child(3) {
+    top: 6px;
+    transform: rotate(-45deg);
+  }
+
+  /* ============ 内容区（模拟 App 内容）============ */
+  .content {
+    padding: 8px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .hero-card {
+    background: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+    border-radius: 24px;
+    padding: 22px;
+    color: #fff;
+    box-shadow: 0 12px 30px -10px rgba(124,58,237,0.5);
+  }
+  .hero-card .label { font-size: 12px; opacity: 0.85; text-transform: uppercase; letter-spacing: 1.2px; }
+  .hero-card .value { font-size: 30px; font-weight: 800; margin-top: 6px; letter-spacing: -0.5px; }
+  .hero-card .sub { font-size: 13px; opacity: 0.9; margin-top: 4px; }
+
+  .list-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 4px 14px -6px rgba(76,29,149,0.18);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .list-card .avatar {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #a78bfa, #f0abfc);
+    flex-shrink: 0;
+  }
+  .list-card .avatar.b { background: linear-gradient(135deg, #fbbf24, #fb7185); }
+  .list-card .avatar.c { background: linear-gradient(135deg, #34d399, #22d3ee); }
+  .list-card .lines { flex: 1; }
+  .list-card .line1 { height: 10px; width: 70%; background: #e9d5ff; border-radius: 6px; }
+  .list-card .line2 { height: 8px; width: 45%; background: #ede9fe; border-radius: 6px; margin-top: 8px; }
+
+  /* ============ 遮罩层 ============ */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 14, 40, 0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    z-index: 40;
+    pointer-events: none;
+    transition: background 0.35s ease, backdrop-filter 0.35s ease;
+  }
+  .scrim.show {
+    background: rgba(20, 14, 40, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    pointer-events: auto;
+  }
+
+  /* ============ 菜单面板（下拉式）============ */
+  .menu-panel {
+    position: absolute;
+    top: 96px;
+    right: 14px;
+    width: 220px;
+    background: rgba(255,255,255,0.96);
+    border-radius: 20px;
+    padding: 8px;
+    z-index: 55;
+    box-shadow: 0 20px 50px -12px rgba(76,29,149,0.4), 0 0 0 1px rgba(124,58,237,0.08);
+    transform-origin: top right;
+    transform: scale(0.6) translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.3s ease;
+  }
+  .menu-panel.show {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  .menu-panel.show .menu-item {
+    animation: itemIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .menu-panel.show .menu-item:nth-child(1) { animation-delay: 0.08s; }
+  .menu-panel.show .menu-item:nth-child(2) { animation-delay: 0.14s; }
+  .menu-panel.show .menu-item:nth-child(3) { animation-delay: 0.20s; }
+  .menu-panel.show .menu-item:nth-child(4) { animation-delay: 0.26s; }
+  .menu-panel.show .menu-item:nth-child(5) { animation-delay: 0.32s; }
+
+  @keyframes itemIn {
+    0%   { opacity: 0; transform: translateX(24px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
+  }
+
+  .menu-item:hover { background: rgba(124,58,237,0.08); }
+  .menu-item .mi-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .menu-item .mi-icon svg { width: 18px; height: 18px; }
+  .menu-item .mi-text { font-size: 14px; font-weight: 600; color: #2d2a4a; }
+  .menu-item .mi-sub { font-size: 11px; color: #9ca3af; margin-top: 1px; }
+  .menu-item .mi-text-wrap { display: flex; flex-direction: column; }
+
+  /* 收起时反向 stagger */
+  .menu-panel.hide .menu-item {
+    animation: itemOut 0.3s ease forwards;
+  }
+  .menu-panel.hide .menu-item:nth-child(1) { animation-delay: 0.16s; }
+  .menu-panel.hide .menu-item:nth-child(2) { animation-delay: 0.12s; }
+  .menu-panel.hide .menu-item:nth-child(3) { animation-delay: 0.08s; }
+  .menu-panel.hide .menu-item:nth-child(4) { animation-delay: 0.04s; }
+  .menu-panel.hide .menu-item:nth-child(5) { animation-delay: 0s; }
+  @keyframes itemOut {
+    0%   { opacity: 1; transform: translateX(0) scale(1); }
+    100% { opacity: 0; transform: translateX(24px) scale(0.9); }
+  }
+
+  /* ============ 放射式菜单（Style B）============ */
+  .radial-wrap {
+    position: absolute;
+    top: 78px;
+    right: 22px;
+    z-index: 55;
+    pointer-events: none;
+  }
+  .radial-item {
+    position: absolute;
+    top: 0; right: 0;
+    width: 48px; height: 48px;
+    border-radius: 16px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px -6px rgba(76,29,149,0.45), 0 0 0 1px rgba(124,58,237,0.1);
+    color: #6d28d9;
+    transform: translate(0,0) scale(0);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .radial-item svg { width: 22px; height: 22px; }
+  .radial-wrap.show .radial-item { opacity: 1; pointer-events: auto; }
+  .radial-wrap.show .radial-item:nth-child(1) { transform: translate(-72px, 8px) scale(1); transition-delay: 0.04s; }
+  .radial-wrap.show .radial-item:nth-child(2) { transform: translate(-58px, 64px) scale(1); transition-delay: 0.08s; }
+  .radial-wrap.show .radial-item:nth-child(3) { transform: translate(-12px, 104px) scale(1); transition-delay: 0.12s; }
+  .radial-wrap.show .radial-item:nth-child(4) { transform: translate(48px, 116px) scale(1); transition-delay: 0.16s; }
+  .radial-wrap.show .radial-item:nth-child(5) { transform: translate(104px, 96px) scale(1); transition-delay: 0.20s; }
+
+  /* ============ 控制面板 ============ */
+  .controls {
+    width: 280px;
+    background: rgba(28,28,34,0.7);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 22px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .controls h2 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .controls .desc {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .seg {
+    display: flex;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+  }
+  .seg button {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    padding: 8px 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .seg button.active {
+    background: linear-gradient(135deg, #7c3aed, #c026d3);
+    color: #fff;
+    box-shadow: 0 4px 12px -2px rgba(124,58,237,0.6);
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 13px;
+    color: #d1d5db;
+  }
+  .switch {
+    width: 40px; height: 22px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.25s ease;
+  }
+  .switch.on { background: #7c3aed; }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .switch.on::after { transform: translateX(18px); }
+
+  .hint {
+    margin-top: 14px;
+    padding: 12px;
+    background: rgba(124,58,237,0.12);
+    border-radius: 12px;
+    font-size: 11px;
+    color: #c4b5fd;
+    line-height: 1.6;
+  }
+  .hint b { color: #fff; }
+
+  .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(34,211,238,0.15);
+    color: #67e8f9;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 760px) {
+    .stage { gap: 20px; }
+    .controls { width: 340px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- ============ 手机 ============ -->
+  <div class="phone">
+    <div class="screen">
+
+      <!-- 状态栏 -->
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons">
+          <!-- 信号 -->
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 12h2v3H1zm4-2h2v5H5zm4-3h2v8H9zm4-3h2v11h-2z"/></svg>
+          <!-- wifi -->
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 12.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM8 4C5 4 2.3 5.1.3 7l1.4 1.4C3.3 6.9 5.5 6 8 6s4.7.9 6.3 2.4L15.7 7C13.7 5.1 11 4 8 4zm0 4c-1.7 0-3.2.6-4.4 1.6l1.4 1.4C5.8 10.4 6.9 10 8 10s2.2.4 3 1l1.4-1.4C11.2 8.6 9.7 8 8 8z"/></svg>
+          <!-- 电池 -->
+          <svg viewBox="0 0 24 16" fill="none"><rect x="1" y="2" width="18" height="12" rx="3" stroke="currentColor" stroke-width="1.4" opacity="0.5"/><rect x="3" y="4" width="13" height="8" rx="1.5" fill="currentColor"/><rect x="20.5" y="5.5" width="2" height="5" rx="1" fill="currentColor" opacity="0.5"/></svg>
+        </div>
+      </div>
+      <div class="notch"></div>
+
+      <!-- App Bar -->
+      <div class="appbar">
+        <div class="title">我的应用</div>
+        <button class="menu-btn" id="menuBtn" aria-label="菜单">
+          <div class="burger">
+            <span></span><span></span><span></span>
+          </div>
+        </button>
+      </div>
+
+      <!-- 内容 -->
+      <div class="content">
+        <div class="hero-card">
+          <div class="label">今日概览</div>
+          <div class="value">¥ 12,480</div>
+          <div class="sub">较昨日 +8.2% ↑</div>
+        </div>
+        <div class="list-card">
+          <div class="avatar"></div>
+          <div class="lines"><div class="line1"></div><div class="line2"></div></div>
+        </div>
+        <div class="list-card">
+          <div class="avatar b"></div>
+          <div class="lines"><div class="line1"></div><div class="line2"></div></div>
+        </div>
+        <div class="list-card">
+          <div class="avatar c"></div>
+          <div class="lines"><div class="line1"></div><div class="line2"></div></div>
+        </div>
+      </div>
+
+      <!-- 遮罩 -->
+      <div class="scrim" id="scrim"></div>
+
+      <!-- 下拉式菜单 -->
+      <div class="menu-panel" id="menuPanel">
+        <div class="menu-item">
+          <div class="mi-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6L5.7 21l2.3-7.2-6-4.4h7.6z"/></svg>
+          </div>
+          <div class="mi-text-wrap"><span class="mi-text">收藏</span><span class="mi-sub">查看收藏内容</span></div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon" style="background:linear-gradient(135deg,#0ea5e9,#22d3ee)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <div class="mi-text-wrap"><span class="mi-text">消息</span><span class="mi-sub">3 条未读</span></div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon" style="background:linear-gradient(135deg,#f59e0b,#fb7185)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+          <div class="mi-text-wrap"><span class="mi-text">设置</span><span class="mi-sub">偏好与账户</span></div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon" style="background:linear-gradient(135deg,#10b981,#34d399)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="mi-text-wrap"><span class="mi-text">帮助</span><span class="mi-sub">常见问题</span></div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon" style="background:linear-gradient(135deg,#ef4444,#f87171)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+          <div class="mi-text-wrap"><span class="mi-text">退出登录</span><span class="mi-sub">安全退出账户</span></div>
+        </div>
+      </div>
+
+      <!-- 放射式菜单 -->
+      <div class="radial-wrap" id="radialWrap">
+        <div class="radial-item" title="收藏"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6L5.7 21l2.3-7.2-6-4.4h7.6z"/></svg></div>
+        <div class="radial-item" title="消息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <div class="radial-item" title="设置"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+        <div class="radial-item" title="帮助"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="radial-item" title="退出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 控制面板 ============ -->
+  <div class="controls">
+    <h2>菜单动画预览 <span class="badge">JC 可复刻</span></h2>
+    <div class="desc">点击手机右上角按钮查看开/关动画。两种风格均可使用 Jetpack Compose 的 <b style="color:#c4b5fd">animateFloatAsState</b> / <b style="color:#c4b5fd">AnimatedVisibility</b> 实现。</div>
+
+    <div class="seg" id="seg">
+      <button class="active" data-style="dropdown">下拉式</button>
+      <button data-style="radial">放射式</button>
+    </div>
+
+    <div class="toggle-row">
+      <span>背景模糊 (Scrim Blur)</span>
+      <div class="switch on" id="blurSwitch"></div>
+    </div>
+    <div class="toggle-row">
+      <span>汉堡 → X 变形</span>
+      <div class="switch on" id="morphSwitch"></div>
+    </div>
+    <div class="toggle-row">
+      <span>错峰 Stagger</span>
+      <div class="switch on" id="staggerSwitch"></div>
+    </div>
+
+    <div class="hint">
+      <b>提示：</b>关闭对应开关可对比有无该动画的视觉差异，便于你在 Compose 中按需取舍。
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const menuBtn = document.getElementById('menuBtn');
+  const scrim = document.getElementById('scrim');
+  const menuPanel = document.getElementById('menuPanel');
+  const radialWrap = document.getElementById('radialWrap');
+  const seg = document.getElementById('seg');
+  const blurSwitch = document.getElementById('blurSwitch');
+  const morphSwitch = document.getElementById('morphSwitch');
+  const staggerSwitch = document.getElementById('staggerSwitch');
+
+  let isOpen = false;
+  let style = 'dropdown'; // 'dropdown' | 'radial'
+
+  function applyStyle() {
+    if (style === 'dropdown') {
+      menuPanel.style.display = '';
+      radialWrap.style.display = 'none';
+    } else {
+      menuPanel.style.display = 'none';
+      radialWrap.style.display = '';
+    }
+    if (isOpen) {
+      closeMenu(); // 切换风格时先收起
+    }
+  }
+
+  function openMenu() {
+    isOpen = true;
+    menuBtn.classList.add('open');
+    scrim.classList.add('show');
+    if (style === 'dropdown') {
+      menuPanel.classList.remove('hide');
+      // 强制重排以重启动画
+      void menuPanel.offsetWidth;
+      menuPanel.classList.add('show');
+    } else {
+      radialWrap.classList.add('show');
+    }
+  }
+
+  function closeMenu() {
+    isOpen = false;
+    menuBtn.classList.remove('open');
+    scrim.classList.remove('show');
+    if (style === 'dropdown') {
+      // 先反向 stagger，再收起面板
+      menuPanel.classList.add('hide');
+      menuPanel.classList.remove('show');
+      setTimeout(() => { menuPanel.classList.remove('hide'); }, 450);
+    } else {
+      radialWrap.classList.remove('show');
+    }
+  }
+
+  menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isOpen) closeMenu(); else openMenu();
+  });
+
+  scrim.addEventListener('click', () => { if (isOpen) closeMenu(); });
+
+  // 风格切换
+  seg.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      seg.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      style = btn.dataset.style;
+      applyStyle();
+    });
+  });
+
+  // 开关：模糊
+  blurSwitch.addEventListener('click', () => {
+    blurSwitch.classList.toggle('on');
+    const on = blurSwitch.classList.contains('on');
+    scrim.style.transition = 'none';
+    if (on) {
+      scrim.style.backdropFilter = '';
+      scrim.style.webkitBackdropFilter = '';
+    } else {
+      scrim.style.backdropFilter = 'none';
+      scrim.style.webkitBackdropFilter = 'none';
+    }
+    setTimeout(() => scrim.style.transition = '', 50);
+  });
+
+  // 开关：morph
+  morphSwitch.addEventListener('click', () => {
+    morphSwitch.classList.toggle('on');
+    const on = morphSwitch.classList.contains('on');
+    const spans = menuBtn.querySelectorAll('.burger span');
+    if (!on) {
+      // 关闭 morph：固定为汉堡形态
+      menuBtn.classList.remove('open');
+      spans.forEach(s => s.style.transition = 'none');
+      spans[0].style.transform = 'none'; spans[0].style.top = '0px';
+      spans[1].style.opacity = '1'; spans[1].style.transform = 'none';
+      spans[2].style.transform = 'none'; spans[2].style.top = '12px';
+      setTimeout(() => spans.forEach(s => s.style.transition = ''), 50);
+    } else {
+      spans.forEach(s => s.style = '');
+    }
+  });
+
+  // 开关：stagger
+  staggerSwitch.addEventListener('click', () => {
+    staggerSwitch.classList.toggle('on');
+    const on = staggerSwitch.classList.contains('on');
+    const items = menuPanel.querySelectorAll('.menu-item');
+    if (on) {
+      items.forEach(it => it.style.animation = '');
+    } else {
+      // 关闭 stagger：所有 item 同时进出
+      items.forEach(it => {
+        it.style.animation = 'none';
+      });
+      // 用简单透明度过渡替代
+      const css = document.createElement('style');
+      css.id = 'noStagger';
+      document.getElementById('noStagger')?.remove();
+      document.head.appendChild(css);
+      css.textContent = `
+        .menu-panel.show .menu-item { animation: itemIn 0.35s ease forwards !important; animation-delay: 0s !important; }
+        .menu-panel.hide .menu-item { animation: itemOut 0.25s ease forwards !important; animation-delay: 0s !important; }
+      `;
+    }
+  });
+
+  // 初始化
+  applyStyle();
+</script>
+
+</body>
+</html>

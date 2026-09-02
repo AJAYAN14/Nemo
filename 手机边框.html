@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nemo 学习成就海报 · 手机真机预览</title>
+    <!-- 引入专业现代英数字体与 Google 字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* 页面背景与外部框架 */
+            --bg-page: #e8ecf3;
+            --phone-body: #1c1c22;
+            --phone-bezel: #282832;
+            --phone-shadow: rgba(15, 23, 42, 0.28);
+            
+            /* 浅色主题：纯白卡片 + 层次化弥散阴影系统 */
+            --screen-bg: #eef2f7;
+            --sheet-bg: #f5f7fb;
+            --poster-bg: #f4f6fa;
+            --poster-mesh: radial-gradient(circle at 85% 0%, rgba(14, 104, 255, 0.06) 0%, transparent 60%),
+                            radial-gradient(circle at 10% 25%, rgba(255, 149, 0, 0.05) 0%, transparent 50%);
+            
+            /* 纯白卡片定义 */
+            --bento-card-bg: #ffffff;
+            --bento-card-border: rgba(226, 232, 240, 0.7);
+            --bento-card-hover: #ffffff;
+            --card-subtle-bg: #f8fafc;
+            
+            /* 高阶多层柔和弥散阴影 (Diffuse Ambient Shadows) */
+            --shadow-diffuse-card: 0 10px 25px -4px rgba(22, 34, 56, 0.05),
+                                   0 4px 10px -2px rgba(14, 104, 255, 0.03),
+                                   0 1px 3px rgba(0, 0, 0, 0.02);
+            --shadow-diffuse-highlight: 0 14px 30px -6px rgba(14, 104, 255, 0.09),
+                                        0 6px 14px -3px rgba(0, 0, 0, 0.04);
+            --shadow-poster: 0 20px 48px -12px rgba(15, 23, 42, 0.08), 
+                             0 6px 18px -4px rgba(14, 104, 255, 0.04);
+            --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-subtle: #cbd5e1;
+            
+            --brand-primary: #0E68FF;
+            --brand-primary-light: rgba(14, 104, 255, 0.1);
+            --brand-primary-glow: rgba(14, 104, 255, 0.28);
+            
+            --flame-orange: #FF6B00;
+            --flame-amber: #FF9500;
+            --flame-yellow: #FFCC00;
+            --flame-glow: rgba(255, 107, 0, 0.2);
+            
+            --status-new: #EF4444;
+            --status-learning: #3B82F6;
+            --status-review: #10B981;
+            --status-mastered: #8B5CF6;
+            
+            --btn-outline-border: #dbe0ea;
+            --btn-outline-text: #334155;
+            --btn-outline-bg: #ffffff;
+            --heat-empty: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #0b0c10;
+            --phone-body: #0d0d12;
+            --phone-bezel: #1e1e28;
+            --phone-shadow: rgba(0, 0, 0, 0.6);
+            
+            /* 暗色主题：高级暗色卡片 + 环境发光弥散阴影 */
+            --screen-bg: #0f1017;
+            --sheet-bg: #141522;
+            --poster-bg: #171827;
+            --poster-mesh: radial-gradient(circle at 85% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+                            radial-gradient(circle at 10% 25%, rgba(255, 149, 0, 0.08) 0%, transparent 50%);
+            
+            --bento-card-bg: #202136;
+            --bento-card-border: rgba(255, 255, 255, 0.07);
+            --bento-card-hover: #25263f;
+            --card-subtle-bg: #1a1b2d;
+            
+            /* 暗色弥散阴影 */
+            --shadow-diffuse-card: 0 12px 28px -4px rgba(0, 0, 0, 0.45),
+                                   0 4px 10px -2px rgba(0, 0, 0, 0.3),
+                                   0 0 0 1px rgba(255, 255, 255, 0.03);
+            --shadow-diffuse-highlight: 0 14px 32px -6px rgba(59, 130, 246, 0.18),
+                                        0 6px 14px -3px rgba(0, 0, 0, 0.4);
+            --shadow-poster: 0 24px 50px -10px rgba(0, 0, 0, 0.65), 
+                             0 0 0 1px rgba(255, 255, 255, 0.05);
+            --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.3);
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --text-subtle: #334155;
+            
+            --brand-primary: #3b82f6;
+            --brand-primary-light: rgba(59, 130, 246, 0.18);
+            --brand-primary-glow: rgba(59, 130, 246, 0.35);
+            
+            --flame-orange: #FF7A1A;
+            --flame-amber: #FFA11A;
+            --flame-yellow: #FFD233;
+            --flame-glow: rgba(255, 122, 26, 0.28);
+            
+            --btn-outline-border: #2a2b42;
+            --btn-outline-text: #e2e8f0;
+            --btn-outline-bg: #1c1d2e;
+            --heat-empty: #24253a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-page);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 30px 16px;
+            transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+        }
+
+        /* 顶部悬浮控制台 */
+        .preview-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(24px);
+            padding: 8px 14px;
+            border-radius: 100px;
+            box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            z-index: 200;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .preview-controls {
+            background: rgba(26, 27, 43, 0.88);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        .control-pill-group {
+            display: flex;
+            background: rgba(0, 0, 0, 0.05);
+            padding: 3px;
+            border-radius: 30px;
+            gap: 2px;
+        }
+
+        [data-theme="dark"] .control-pill-group {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .pill-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pill-btn.active {
+            background: var(--brand-primary);
+            color: #ffffff;
+            box-shadow: 0 3px 10px var(--brand-primary-glow);
+        }
+
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bento-card-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--bento-card-border);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-1px);
+            border-color: var(--brand-primary);
+        }
+
+        /* 手机模型框架（iPhone 16 Pro 钛金属外观） */
+        .phone-mockup-frame {
+            position: relative;
+            width: 396px;
+            height: 844px;
+            background: var(--phone-body);
+            border-radius: 56px;
+            padding: 10px;
+            box-shadow: 
+                0 0 0 2px var(--phone-bezel),
+                0 0 0 4px rgba(255, 255, 255, 0.08) inset,
+                0 32px 70px -10px var(--phone-shadow),
+                0 12px 24px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* 手机屏幕本体 */
+        .phone-inner-screen {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: var(--screen-bg);
+            border-radius: 48px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s ease;
+        }
+
+        /* 灵动岛 (Dynamic Island) */
+        .dynamic-island-bar {
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 112px;
+            height: 29px;
+            background: #000000;
+            border-radius: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .island-lens {
+            width: 11px;
+            height: 11px;
+            background: #0d0f18;
+            border-radius: 50%;
+            border: 1.5px solid #1a1e30;
+            position: relative;
+        }
+
+        .island-lens::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 3px;
+            height: 3px;
+            background: rgba(59, 130, 246, 0.4);
+            border-radius: 50%;
+        }
+
+        .island-face-sensor {
+            width: 7.5px;
+            height: 7.5px;
+            background: #08090e;
+            border-radius: 50%;
+        }
+
+        /* 顶部状态栏 */
+        .native-status-bar {
+            height: 48px;
+            padding: 13px 26px 0 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-primary);
+            z-index: 90;
+        }
+
+        .status-indicators {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .status-indicators svg {
+            fill: var(--text-primary);
+        }
+
+        /* 抽屉弹窗主体 (NemoModalBottomSheet) */
+        .sheet-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--sheet-bg);
+            border-radius: 32px 32px 0 0;
+            margin-top: 6px;
+            padding: 8px 16px 14px 16px;
+            overflow: hidden;
+            box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.06);
+            transition: background 0.3s ease;
+        }
+
+        /* 抽屉顶部手柄 */
+        .sheet-drag-handle {
+            width: 38px;
+            height: 4px;
+            background: var(--text-muted);
+            opacity: 0.35;
+            border-radius: 3px;
+            margin: 0 auto 10px auto;
+        }
+
+        /* 抽屉标题栏 */
+        .sheet-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .sheet-nav-title {
+            font-size: 15.5px;
+            font-weight: 800;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.2px;
+            color: var(--text-primary);
+        }
+
+        .sheet-nav-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            background: var(--brand-primary-light);
+            color: var(--brand-primary);
+            border-radius: 12px;
+        }
+
+        /* 海报视口滚动区域 */
+        .poster-viewport-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 4px 4px 12px 4px;
+            display: flex;
+            justify-content: center;
+            scrollbar-width: none;
+        }
+
+        .poster-viewport-area::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ═════════════════════════════════════════════
+           海报主体卡片 (Poster Main Card)
+           ═════════════════════════════════════════════ */
+        .poster-card {
+            width: 100%;
+            background: var(--poster-bg);
+            background-image: var(--poster-mesh);
+            border-radius: 26px;
+            padding: 20px 18px 18px 18px;
+            box-shadow: var(--shadow-poster);
+            border: 1px solid var(--bento-card-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* 1. 顶部身份品牌行 */
+        .brand-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .brand-identity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo-gem {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #0E68FF, #3B82F6);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px var(--brand-primary-glow);
+        }
+
+        .brand-logo-gem svg {
+            width: 14px;
+            height: 14px;
+            fill: #ffffff;
+        }
+
+        .brand-titles {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-size: 13.5px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .brand-name-tag {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--brand-primary);
+            background: var(--brand-primary-light);
+            padding: 1px 5px;
+            border-radius: 4px;
+            letter-spacing: 0;
+        }
+
+        .poster-timestamp {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* 2. 核心 Hero 区 (Streak Spotlight) */
+        .hero-streak-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 10px 18px 10px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .flame-halo-container {
+            position: relative;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flame-halo-bg {
+            position: absolute;
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--flame-glow) 0%, rgba(255, 149, 0, 0.02) 70%, transparent 100%);
+            animation: pulseGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.92); opacity: 0.7; }
+            100% { transform: scale(1.18); opacity: 1; }
+        }
+
+        .flame-icon-pod {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            background: var(--bento-card-bg);
+            border: 1px solid rgba(255, 149, 0, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 24px -2px var(--flame-glow), var(--shadow-sm);
+        }
+
+        .flame-icon-pod svg {
+            width: 32px;
+            height: 32px;
+            fill: url(#flameGrad);
+        }
+
+        .streak-count-hero {
+            font-family: 'Rubik', sans-serif;
+            font-size: 54px;
+            font-weight: 900;
+            line-height: 0.95;
+            letter-spacing: -1.5px;
+            background: linear-gradient(180deg, var(--text-primary) 35%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .streak-unit-label {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: -0.1px;
+        }
+
+        .streak-honor-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            background: var(--bento-card-bg);
+            border: 1px solid var(--bento-card-border);
+            border-radius: 20px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .honor-star-icon {
+            width: 12px;
+            height: 12px;
+            fill: var(--flame-amber);
+        }
+
+        /* 3. 纯白 Bento 网格体系 + 柔和弥散阴影 */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 11px;
+            margin-bottom: 12px;
+        }
+
+        .bento-card {
+            background: var(--bento-card-bg);
+            border: 1px solid var(--bento-card-border);
+            border-radius: 19px;
+            padding: 14px 13px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            box-shadow: var(--shadow-diffuse-card);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px -4px rgba(22, 34, 56, 0.08), 0 4px 12px -2px rgba(14, 104, 255, 0.04);
+        }
+
+        /* 今日战报卡片（全宽主打高亮纯白） */
+        .bento-card-highlight {
+            grid-column: span 2;
+            background: var(--bento-card-bg);
+            padding: 14px 15px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid var(--brand-primary);
+            box-shadow: var(--shadow-diffuse-highlight);
+        }
+
+        .bento-highlight-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .bento-highlight-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bento-highlight-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .bento-highlight-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+
+        .bento-highlight-number {
+            font-family: 'Rubik', sans-serif;
+            font-size: 25px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .bento-highlight-unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .bento-highlight-tag {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 5px 9px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* 普通半宽 Bento 卡片 */
+        .bento-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 9px;
+        }
+
+        .bento-icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bento-icon-box svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .bento-sub-pill {
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2.5px 7px;
+            border-radius: 6px;
+        }
+
+        .bento-card-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bento-metric-row {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+            margin-bottom: 2px;
+        }
+
+        .bento-metric-number {
+            font-family: 'Rubik', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .bento-metric-unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .bento-metric-title {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* 4. 纯白记忆全景卡片 (Memory Panorama FSRS) */
+        .panorama-bento-card {
+            background: var(--bento-card-bg);
+            border: 1px solid var(--bento-card-border);
+            border-radius: 19px;
+            padding: 15px 14px 13px 14px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-diffuse-card);
+        }
+
+        .panorama-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 11px;
+        }
+
+        .panorama-title-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panorama-title-icon {
+            width: 16px;
+            height: 16px;
+            fill: var(--brand-primary);
+        }
+
+        .panorama-main-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .panorama-total-pill {
+            font-size: 11px;
+            font-weight: 700;
+            font-family: 'Rubik', sans-serif;
+            color: var(--text-secondary);
+            background: var(--card-subtle-bg);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--bento-card-border);
+        }
+
+        /* 胶囊分段进度条 */
+        .segmented-progress-track {
+            width: 100%;
+            height: 9px;
+            background: var(--heat-empty);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: 11px;
+        }
+
+        .progress-bar-seg {
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        /* 四阶段指标行 */
+        .panorama-stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        .stage-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 0;
+            background: var(--card-subtle-bg);
+            border-radius: 9px;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        [data-theme="dark"] .stage-stat-item {
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        .stage-badge-dot {
+            width: 6.5px;
+            height: 6.5px;
+            border-radius: 50%;
+            margin-bottom: 3px;
+        }
+
+        .stage-name {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .stage-percent {
+            font-family: 'Rubik', sans-serif;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* 5. 纯白微缩热力足迹点阵卡片 */
+        .micro-heatmap-card {
+            background: var(--bento-card-bg);
+            border: 1px solid var(--bento-card-border);
+            border-radius: 16px;
+            padding: 11px 13px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            box-shadow: var(--shadow-diffuse-card);
+        }
+
+        .micro-heat-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .micro-heat-label {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .micro-heat-active-text {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .micro-heat-matrix {
+            display: flex;
+            gap: 3.5px;
+            justify-content: space-between;
+        }
+
+        .heat-cell-col {
+            display: flex;
+            flex-direction: column;
+            gap: 3.5px;
+        }
+
+        .heat-cell-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2.5px;
+            background: var(--heat-empty);
+        }
+
+        .heat-lv-1 { background: #93c5fd; }
+        .heat-lv-2 { background: #3b82f6; }
+        .heat-lv-3 { background: #1d4ed8; }
+        .heat-lv-4 { background: #172554; }
+        [data-theme="dark"] .heat-lv-1 { background: #1e3a8a; }
+        [data-theme="dark"] .heat-lv-2 { background: #2563eb; }
+        [data-theme="dark"] .heat-lv-3 { background: #60a5fa; }
+        [data-theme="dark"] .heat-lv-4 { background: #93c5fd; }
+
+        /* 6. 底部格言与认证防伪章 */
+        .poster-signature-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 11px;
+            border-top: 1px dashed var(--bento-card-border);
+        }
+
+        .signature-quote-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .signature-motto {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: -0.2px;
+        }
+
+        .signature-sub {
+            font-size: 9.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .signature-seal {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: var(--bento-card-bg);
+            border: 1px solid var(--bento-card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .signature-seal svg {
+            width: 18px;
+            height: 18px;
+            fill: var(--text-muted);
+        }
+
+        /* ═════════════════════════════════════════════
+           底部原生操作栏
+           ═════════════════════════════════════════════ */
+        .sheet-actions-group {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            padding-top: 8px;
+        }
+
+        .action-button {
+            flex: 1;
+            height: 46px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 13.5px;
+            font-weight: 700;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .action-button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-save-image {
+            background: var(--btn-outline-bg);
+            border: 1px solid var(--btn-outline-border);
+            color: var(--btn-outline-text);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-save-image svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--btn-outline-text);
+        }
+
+        .btn-share-card {
+            background: var(--brand-primary);
+            border: none;
+            color: #ffffff;
+            box-shadow: 0 6px 18px var(--brand-primary-glow);
+        }
+
+        .btn-share-card svg {
+            width: 16px;
+            height: 16px;
+            fill: #ffffff;
+        }
+
+        /* 底部 Home Indicator 条 */
+        .home-swipe-indicator {
+            width: 136px;
+            height: 4.5px;
+            background: var(--text-muted);
+            opacity: 0.35;
+            border-radius: 4px;
+            margin: 10px auto 1px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SVG 渐变定义集合 -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">
+        <defs>
+            <linearGradient id="flameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF4500" />
+                <stop offset="40%" stop-color="#FF8C00" />
+                <stop offset="100%" stop-color="#FFD700" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- 顶部多功能控制台 -->
+    <div class="preview-controls">
+        <!-- 模板切换 -->
+        <div class="control-pill-group">
+            <button class="pill-btn active" id="btn-layout-bento" onclick="setLayout('bento')">🌟 Bento 高光版</button>
+            <button class="pill-btn" id="btn-layout-pro" onclick="setLayout('pro')">⚡ 全景极客版</button>
+        </div>
+
+        <!-- 主题切换 -->
+        <button class="theme-toggle-btn" onclick="toggleTheme()">
+            <svg id="theme-icon" style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+            <span id="theme-btn-text">暗色模式</span>
+        </button>
+    </div>
+
+    <!-- 手机真机机身模型 (iPhone 16 Pro 风格) -->
+    <div class="phone-mockup-frame">
+        <div class="phone-inner-screen">
+            
+            <!-- 灵动岛 (Dynamic Island) -->
+            <div class="dynamic-island-bar">
+                <div class="island-lens"></div>
+                <div class="island-face-sensor"></div>
+            </div>
+
+            <!-- 状态栏 -->
+            <div class="native-status-bar">
+                <span id="current-time">20:20</span>
+                <div class="status-indicators">
+                    <!-- 5G 信号 -->
+                    <svg width="15" height="13" viewBox="0 0 24 24"><path d="M2 17h2v4H2v-4zm4-5h2v9H6v-9zm4-4h2v13h-2V8zm4-4h2v17h-2V4zm4-2h2v19h-2V2z"/></svg>
+                    <!-- WiFi -->
+                    <svg width="15" height="13" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4zm0 3c3.7 0 7.07 1.42 9.61 3.75L12 18.37 2.39 10.75C4.93 8.42 8.3 7 12 7z"/></svg>
+                    <!-- 电池 88% -->
+                    <svg width="19" height="13" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13 7v5.5h2L11 20z"/></svg>
+                </div>
+            </div>
+
+            <!-- 底部抽屉底板 (NemoModalBottomSheet) -->
+            <div class="sheet-container">
+                <div class="sheet-drag-handle"></div>
+                
+                <div class="sheet-nav-header">
+                    <span class="sheet-nav-title">分享成就海报</span>
+                    <span class="sheet-nav-badge">🔥 坚持 41 天</span>
+                </div>
+
+                <!-- 海报滚动视口 -->
+                <div class="poster-viewport-area">
+                    <div class="poster-card">
+                        
+                        <!-- 1. 顶部品牌与时间 -->
+                        <div class="brand-header-row">
+                            <div class="brand-identity">
+                                <div class="brand-logo-gem">
+                                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 8.85L4.45 7.2 12 3.45l7.55 3.75L12 10.85zm0 2.3L3.8 8.65v6.7L12 20.2l8.2-4.85v-6.7L12 13.15z"/></svg>
+                                </div>
+                                <div class="brand-titles">
+                                    <div class="brand-name">
+                                        Nemo <span class="brand-name-tag">PRO</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="poster-timestamp" id="poster-date-display">2026年8月28日</span>
+                        </div>
+
+                        <!-- 2. 核心连胜 Hero 区 -->
+                        <div class="hero-streak-section">
+                            <div class="flame-halo-container">
+                                <div class="flame-halo-bg"></div>
+                                <div class="flame-icon-pod">
+                                    <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+                                </div>
+                            </div>
+                            <div class="streak-count-hero">41</div>
+                            <div class="streak-unit-label">天连续学习</div>
+                            <div class="streak-honor-pill">
+                                <svg class="honor-star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                <span>超越 96% 同行者 · 创个人最佳</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Bento 便签网格数据区（纯白卡片 + 弥散阴影） -->
+                        <div class="bento-grid">
+                            
+                            <!-- 今日战报（高亮主卡） -->
+                            <div class="bento-card bento-card-highlight">
+                                <div class="bento-highlight-left">
+                                    <div class="bento-icon-box" style="background: rgba(255, 149, 0, 0.12); color: #FF9500;">
+                                        <svg viewBox="0 0 24 24" style="fill: currentColor;"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+                                    </div>
+                                    <div class="bento-highlight-info">
+                                        <span class="bento-highlight-title">今日战报</span>
+                                        <div class="bento-highlight-value-row">
+                                            <span class="bento-highlight-number">112</span>
+                                            <span class="bento-highlight-unit">项完成</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bento-highlight-tag">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                                    已达标
+                                </div>
+                            </div>
+
+                            <!-- 累计活跃天数 -->
+                            <div class="bento-card">
+                                <div class="bento-card-head">
+                                    <div class="bento-icon-box" style="background: rgba(14, 104, 255, 0.12); color: #0E68FF;">
+                                        <svg viewBox="0 0 24 24" style="fill: currentColor;"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.9 17.55 11 21 11 21z"/></svg>
+                                    </div>
+                                    <span class="bento-sub-pill" style="background: rgba(14, 104, 255, 0.1); color: #0E68FF;">坚持不懈</span>
+                                </div>
+                                <div class="bento-card-body">
+                                    <div class="bento-metric-row">
+                                        <span class="bento-metric-number">45</span>
+                                        <span class="bento-metric-unit">天</span>
+                                    </div>
+                                    <span class="bento-metric-title">累计活跃</span>
+                                </div>
+                            </div>
+
+                            <!-- 单日最佳纪录 -->
+                            <div class="bento-card">
+                                <div class="bento-card-head">
+                                    <div class="bento-icon-box" style="background: rgba(52, 199, 89, 0.12); color: #34C759;">
+                                        <svg viewBox="0 0 24 24" style="fill: currentColor;"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+                                    </div>
+                                    <span class="bento-sub-pill" style="background: rgba(52, 199, 89, 0.1); color: #34C759;">08/24 巅峰</span>
+                                </div>
+                                <div class="bento-card-body">
+                                    <div class="bento-metric-row">
+                                        <span class="bento-metric-number">173</span>
+                                        <span class="bento-metric-unit">项</span>
+                                    </div>
+                                    <span class="bento-metric-title">单日最高</span>
+                                </div>
+                            </div>
+
+                            <!-- 日均学习量 -->
+                            <div class="bento-card">
+                                <div class="bento-card-head">
+                                    <div class="bento-icon-box" style="background: rgba(139, 92, 246, 0.12); color: #8B5CF6;">
+                                        <svg viewBox="0 0 24 24" style="fill: currentColor;"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                                    </div>
+                                    <span class="bento-sub-pill" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">稳步向前</span>
+                                </div>
+                                <div class="bento-card-body">
+                                    <div class="bento-metric-row">
+                                        <span class="bento-metric-number">83</span>
+                                        <span class="bento-metric-unit">项/天</span>
+                                    </div>
+                                    <span class="bento-metric-title">日均稳步</span>
+                                </div>
+                            </div>
+
+                            <!-- 掌握达成率 -->
+                            <div class="bento-card">
+                                <div class="bento-card-head">
+                                    <div class="bento-icon-box" style="background: rgba(239, 68, 68, 0.12); color: #EF4444;">
+                                        <svg viewBox="0 0 24 24" style="fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                    </div>
+                                    <span class="bento-sub-pill" style="background: rgba(239, 68, 68, 0.1); color: #EF4444;">FSRS 算法</span>
+                                </div>
+                                <div class="bento-card-body">
+                                    <div class="bento-metric-row">
+                                        <span class="bento-metric-number">92</span>
+                                        <span class="bento-metric-unit">%</span>
+                                    </div>
+                                    <span class="bento-metric-title">记忆留存</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- 4. 纯白记忆全景卡片 (Memory Panorama FSRS) -->
+                        <div class="panorama-bento-card">
+                            <div class="panorama-header">
+                                <div class="panorama-title-group">
+                                    <svg class="panorama-title-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                                    <span class="panorama-main-title">全库记忆全景</span>
+                                </div>
+                                <span class="panorama-total-pill">1,645 项</span>
+                            </div>
+
+                            <!-- 胶囊分段进度条 -->
+                            <div class="segmented-progress-track">
+                                <div class="progress-bar-seg" style="width: 5%; background: var(--status-new);"></div>
+                                <div class="progress-bar-seg" style="width: 21%; background: var(--status-learning);"></div>
+                                <div class="progress-bar-seg" style="width: 68%; background: var(--status-review);"></div>
+                                <div class="progress-bar-seg" style="width: 6%; background: var(--status-mastered);"></div>
+                            </div>
+
+                            <!-- 四阶段指标 -->
+                            <div class="panorama-stats-row">
+                                <div class="stage-stat-item">
+                                    <div class="stage-badge-dot" style="background: var(--status-new);"></div>
+                                    <span class="stage-name">初识</span>
+                                    <span class="stage-percent">5%</span>
+                                </div>
+                                <div class="stage-stat-item">
+                                    <div class="stage-badge-dot" style="background: var(--status-learning);"></div>
+                                    <span class="stage-name">熟悉</span>
+                                    <span class="stage-percent">21%</span>
+                                </div>
+                                <div class="stage-stat-item">
+                                    <div class="stage-badge-dot" style="background: var(--status-review);"></div>
+                                    <span class="stage-name">稳固</span>
+                                    <span class="stage-percent">68%</span>
+                                </div>
+                                <div class="stage-stat-item">
+                                    <div class="stage-badge-dot" style="background: var(--status-mastered);"></div>
+                                    <span class="stage-name">长效</span>
+                                    <span class="stage-percent">6%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. 纯白极客微缩热力足迹点阵 -->
+                        <div class="micro-heatmap-card" id="pro-heatmap-section">
+                            <div class="micro-heat-head">
+                                <span class="micro-heat-label">近 12 周学习足迹热力</span>
+                                <span class="micro-heat-active-text">🔥 持续点亮</span>
+                            </div>
+                            <div class="micro-heat-matrix" id="heat-matrix-container">
+                                <!-- 由 JS 自动填充 12 周 x 7 天微缩点阵 -->
+                            </div>
+                        </div>
+
+                        <!-- 6. 底部格言与认证防伪章 -->
+                        <div class="poster-signature-row">
+                            <div class="signature-quote-box">
+                                <span class="signature-motto">“每一步积累都算数 · 见证每日蜕变”</span>
+                                <span class="signature-sub">由 Nemo 科学记忆引擎驱动生成</span>
+                            </div>
+                            <div class="signature-seal" title="Nemo 认证印章">
+                                <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 底部操作按钮栏 -->
+                <div class="sheet-actions-group">
+                    <button class="action-button btn-save-image" onclick="triggerMockSave()">
+                        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                        <span>保存海报</span>
+                    </button>
+                    <button class="action-button btn-share-card" onclick="triggerMockShare()">
+                        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                        <span>立即分享</span>
+                    </button>
+                </div>
+
+                <!-- 底部原生小白条 -->
+                <div class="home-swipe-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交互脚本 -->
+    <script>
+        // 1. 初始化微缩热力图点阵 (12 周 x 7 天)
+        function renderMicroHeatmap() {
+            const container = document.getElementById('heat-matrix-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const pattern = [
+                [0, 1, 0, 2, 1, 0, 2],
+                [1, 2, 1, 0, 2, 3, 1],
+                [0, 2, 3, 1, 2, 0, 2],
+                [1, 1, 2, 3, 2, 1, 3],
+                [2, 3, 2, 1, 3, 2, 2],
+                [1, 2, 3, 4, 3, 2, 3],
+                [2, 3, 3, 2, 4, 3, 2],
+                [3, 2, 4, 3, 3, 4, 3],
+                [2, 4, 3, 4, 4, 3, 4],
+                [3, 4, 4, 3, 4, 4, 3],
+                [4, 3, 4, 4, 4, 4, 4],
+                [4, 4, 4, 4, 4, 4, 4]
+            ];
+
+            pattern.forEach(col => {
+                const colEl = document.createElement('div');
+                colEl.className = 'heat-cell-col';
+                col.forEach(level => {
+                    const dot = document.createElement('div');
+                    dot.className = 'heat-cell-dot' + (level > 0 ? ` heat-lv-${level}` : '');
+                    colEl.appendChild(dot);
+                });
+                container.appendChild(colEl);
+            });
+        }
+
+        // 2. 主题切换
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            document.getElementById('theme-btn-text').textContent = newTheme === 'dark' ? '浅色模式' : '暗色模式';
+        }
+
+        // 3. 版式切换
+        function setLayout(mode) {
+            const bentoBtn = document.getElementById('btn-layout-bento');
+            const proBtn = document.getElementById('btn-layout-pro');
+            const heatSection = document.getElementById('pro-heatmap-section');
+
+            if (mode === 'bento') {
+                bentoBtn.classList.add('active');
+                proBtn.classList.remove('active');
+                heatSection.style.display = 'none';
+            } else {
+                proBtn.classList.add('active');
+                bentoBtn.classList.remove('active');
+                heatSection.style.display = 'flex';
+            }
+        }
+
+        // 4. 模拟操作反馈
+        function triggerMockSave() {
+            const btn = document.querySelector('.btn-save-image span');
+            const orig = btn.textContent;
+            btn.textContent = '已保存到相册 ✓';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+        }
+
+        function triggerMockShare() {
+            const btn = document.querySelector('.btn-share-card span');
+            const orig = btn.textContent;
+            btn.textContent = '已调起系统分享...';
+            setTimeout(() => { btn.textContent = orig; }, 1500);
+        }
+
+        // 启动执行
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMicroHeatmap();
+            setLayout('pro');
+        });
+    </script>
+</body>
+</html>

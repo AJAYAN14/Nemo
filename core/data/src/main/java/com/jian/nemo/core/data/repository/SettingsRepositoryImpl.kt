@@ -1868,6 +1868,72 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    /** 单词各等级达成日期Flow (Level -> Epoch Day) */
+    override val wordLevelCompletionDatesFlow: Flow<Map<String, Long>> = dataStore.data.map { preferences ->
+        val jsonStr = preferences[PreferencesKeys.WORD_LEVEL_COMPLETION_DATES]
+        if (!jsonStr.isNullOrBlank()) {
+            try {
+                Json.decodeFromString<Map<String, Long>>(jsonStr)
+            } catch (e: Exception) {
+                Log.e(TAG, "解析单词等级达成日期失败", e)
+                emptyMap()
+            }
+        } else {
+            emptyMap()
+        }
+    }
+
+    override suspend fun setWordLevelCompletionDate(level: String, epochDay: Long) {
+        dataStore.edit { preferences ->
+            val jsonStr = preferences[PreferencesKeys.WORD_LEVEL_COMPLETION_DATES]
+            val currentMap = if (!jsonStr.isNullOrBlank()) {
+                try {
+                    Json.decodeFromString<Map<String, Long>>(jsonStr).toMutableMap()
+                } catch (_: Exception) {
+                    mutableMapOf()
+                }
+            } else {
+                mutableMapOf()
+            }
+            currentMap[level.uppercase()] = epochDay
+            preferences[PreferencesKeys.WORD_LEVEL_COMPLETION_DATES] = Json.encodeToString(currentMap)
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /** 语法各等级达成日期Flow (Level -> Epoch Day) */
+    override val grammarLevelCompletionDatesFlow: Flow<Map<String, Long>> = dataStore.data.map { preferences ->
+        val jsonStr = preferences[PreferencesKeys.GRAMMAR_LEVEL_COMPLETION_DATES]
+        if (!jsonStr.isNullOrBlank()) {
+            try {
+                Json.decodeFromString<Map<String, Long>>(jsonStr)
+            } catch (e: Exception) {
+                Log.e(TAG, "解析语法等级达成日期失败", e)
+                emptyMap()
+            }
+        } else {
+            emptyMap()
+        }
+    }
+
+    override suspend fun setGrammarLevelCompletionDate(level: String, epochDay: Long) {
+        dataStore.edit { preferences ->
+            val jsonStr = preferences[PreferencesKeys.GRAMMAR_LEVEL_COMPLETION_DATES]
+            val currentMap = if (!jsonStr.isNullOrBlank()) {
+                try {
+                    Json.decodeFromString<Map<String, Long>>(jsonStr).toMutableMap()
+                } catch (_: Exception) {
+                    mutableMapOf()
+                }
+            } else {
+                mutableMapOf()
+            }
+            currentMap[level.uppercase()] = epochDay
+            preferences[PreferencesKeys.GRAMMAR_LEVEL_COMPLETION_DATES] = Json.encodeToString(currentMap)
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
     /**
      * 迁移待生效的目标
      */

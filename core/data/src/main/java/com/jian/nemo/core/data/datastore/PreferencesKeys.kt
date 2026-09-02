@@ -100,6 +100,12 @@ object PreferencesKeys {
     /** 今日复习错误的语法IDs */
     val TODAY_WRONG_GRAMMAR_IDS = stringSetPreferencesKey("today_wrong_grammar_ids")
 
+    /** 各单词等级达成日期 (JSON: Level -> Epoch Day) */
+    val WORD_LEVEL_COMPLETION_DATES = stringPreferencesKey("word_level_completion_dates")
+
+    /** 各语法等级达成日期 (JSON: Level -> Epoch Day) */
+    val GRAMMAR_LEVEL_COMPLETION_DATES = stringPreferencesKey("grammar_level_completion_dates")
+
     // ========== 学习会话 ==========
 
     /** 当前会话单词ID列表（JSON字符串） */

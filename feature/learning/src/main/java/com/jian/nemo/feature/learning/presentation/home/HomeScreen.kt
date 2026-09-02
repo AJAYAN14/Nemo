@@ -121,6 +121,10 @@ fun HomeScreen(
     val textSub = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
     val textMuted = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else BentoColors.TextMuted
     val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else BentoColors.BgBase
+    val iconBgOrange = if (isDark) BentoColors.AccentOrange.copy(alpha = 0.15f) else BentoColors.IconBgOrange
+    val iconBgGreen = if (isDark) BentoColors.AccentGreen.copy(alpha = 0.15f) else BentoColors.IconBgGreen
+    val iconBgBlue = if (isDark) BentoColors.AccentBlue.copy(alpha = 0.15f) else BentoColors.IconBgBlue
+    val iconBgPurple = if (isDark) BentoColors.AccentPurple.copy(alpha = 0.15f) else BentoColors.IconBgPurple
 
     // 动态生成副标题短语 (中文随机版本)
     val subGreeting = remember {
@@ -382,7 +386,7 @@ fun HomeScreen(
                                 ) {
                                     Surface(
                                         shape = CircleShape,
-                                        color = BentoColors.IconBgOrange
+                                        color = iconBgOrange
                                     ) {
                                         Icon(
                                             imageVector = Icons.Rounded.Restore,
@@ -457,7 +461,7 @@ fun HomeScreen(
                                 ) {
                                     Surface(
                                         shape = CircleShape,
-                                        color = BentoColors.IconBgGreen
+                                        color = iconBgGreen
                                     ) {
                                         Icon(
                                             imageVector = Icons.Rounded.CheckCircle,
@@ -634,7 +638,7 @@ fun HomeScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Surface(
                                         shape = RoundedCornerShape(12.dp),
-                                        color = BentoColors.IconBgPurple
+                                        color = iconBgPurple
                                     ) {
                                         Icon(
                                             imageVector = Icons.Rounded.EmojiEvents,
@@ -707,7 +711,7 @@ fun HomeScreen(
                                     ) {
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
-                                            color = BentoColors.IconBgBlue
+                                            color = iconBgBlue
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.Language,
@@ -835,7 +839,7 @@ fun HomeScreen(
                                     ) {
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
-                                            color = BentoColors.IconBgPurple
+                                            color = iconBgPurple
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.AutoAwesome,
@@ -895,7 +899,7 @@ fun HomeScreen(
                                     ) {
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
-                                            color = BentoColors.IconBgGreen
+                                            color = iconBgGreen
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.ChromeReaderMode,

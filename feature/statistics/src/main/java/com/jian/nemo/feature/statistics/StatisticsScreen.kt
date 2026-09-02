@@ -39,6 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.TwoStageScrollToTopButton
+import androidx.compose.foundation.lazy.rememberLazyListState
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
 
@@ -62,6 +64,7 @@ fun StatisticsScreen(
     val grammars = uiState.todaysGrammars
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val listState = rememberLazyListState()
 
     Scaffold(
         topBar = {
@@ -72,9 +75,16 @@ fun StatisticsScreen(
                 )
             }
         },
+        floatingActionButton = {
+            TwoStageScrollToTopButton(
+                listState = listState,
+                intermediateTargetIndex = 3
+            )
+        },
         containerColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 start = 16.dp,
@@ -351,6 +361,24 @@ fun StatisticsItemRow(
                     Spacer(modifier = Modifier.width(8.dp))
                 }
 
+                if (item.level.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = item.level,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
                 if (isWord) {
                     Text(
                         text = item.japanese,
@@ -372,23 +400,6 @@ fun StatisticsItemRow(
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
-                }
-
-                if (item.level.isNotEmpty()) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = item.level,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
 

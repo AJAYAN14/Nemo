@@ -207,6 +207,26 @@ interface SettingsRepository {
      */
     suspend fun restoreStudyStats(totalStudyDays: Int, dailyStreak: Int, lastStudyDate: Long, maxTestStreak: Int, testStreak: Int)
 
+    /**
+     * 单词各等级达成日期Flow (Level -> Epoch Day)
+     */
+    val wordLevelCompletionDatesFlow: Flow<Map<String, Long>>
+
+    /**
+     * 记录单词等级达成日期
+     */
+    suspend fun setWordLevelCompletionDate(level: String, epochDay: Long)
+
+    /**
+     * 语法各等级达成日期Flow (Level -> Epoch Day)
+     */
+    val grammarLevelCompletionDatesFlow: Flow<Map<String, Long>>
+
+    /**
+     * 记录语法等级达成日期
+     */
+    suspend fun setGrammarLevelCompletionDate(level: String, epochDay: Long)
+
     // ========== 应用配置 ==========
 
     /**

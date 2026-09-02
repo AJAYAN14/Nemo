@@ -1,6 +1,7 @@
 package com.jian.nemo.core.ui.component.common
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
@@ -39,39 +40,74 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+// ──────────────────────────────────────────────────────────────────────────────
+// 动画时序与缓动曲线常量
+// ──────────────────────────────────────────────────────────────────────────────
+
+/** 超调弹性曲线 — 容器形变（展开/收起）、图标层动画、菜单项入场共用 */
+private val MorphEasing = CubicBezierEasing(0.34f, 1.56f, 0.64f, 1.0f)
+
+/** 标准减速曲线 — 菜单项退场 */
+private val ItemExitEasing = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1.0f)
+
+/** 容器（宽/高/圆角）形变时长 */
+private const val MORPH_DURATION = 300
+
+/** 图标（旋转/位移/淡出）渐变时长 */
+private const val FADE_DURATION = 160
+
+/** 单个菜单项入场动画时长 */
+private const val ITEM_ENTER_DURATION = 320
+
+/** 单个菜单项退场动画时长 */
+private const val ITEM_EXIT_DURATION = 180
+
+/** 入场错峰：相邻菜单项之间的延迟间隔 */
+private const val ITEM_STAGGER_ENTER_DELAY = 35
+
+/** 退场错峰：相邻菜单项之间的延迟间隔（逆序，最后一项先退） */
+private const val ITEM_STAGGER_EXIT_DELAY = 20
+
+/** 入场错峰：首个菜单项在容器开始展开后的初始等待 */
+private const val ITEM_INITIAL_DELAY = 30
 
 /**
- * 贝塞尔弹性与减速曲线定义 (严格对齐 Transitions.dev 规格)
- */
-private val MorphOpenEasing = CubicBezierEasing(0.34f, 1.25f, 0.64f, 1.0f)
-private val MorphCloseEasing = CubicBezierEasing(0.22f, 1.0f, 0.36f, 1.0f)
-private const val MORPH_OPEN_DURATION = 350
-private const val MORPH_CLOSE_DURATION = 250
-private const val FADE_DURATION = 200
-
-/**
- * Morph 菜单作用域，用于控制菜单项点击后的关闭操作
+ * Morph 菜单作用域，用于控制菜单项点击后的关闭操作，
+ * 并为每个菜单项自动分配错峰动画索引。
  */
 interface NemoMorphMenuScope {
+    /** 关闭菜单 */
     fun close()
+    /** 菜单当前是否处于展开状态 */
+    val isExpanded: Boolean
+    /** 根过渡动画驱动器 */
+    val transition: androidx.compose.animation.core.Transition<Boolean>
+    /** 获取下一个菜单项索引（Composition 期间自动递增） */
+    fun nextItemIndex(): Int
+    /** 菜单项总数 */
+    val itemCount: Int
 }
 
 /**
- * NemoMorphMenu - 形变展开菜单组件 (Plus/More to Menu Morph)
+ * NemoMorphMenu - 右上角下拉弹性展开菜单组件
  *
- * 核心动效：
- * 1. 触发按钮采用项目统一的 LiquidButton（液态物理微弹性与弥散阴影，与 CommonHeader 左侧返回按钮完全对齐）。
- * 2. 精准局部锚定：从 44dp 圆形按钮右上角原位平滑向左下方做贝塞尔弹性形变展开。
- * 3. 状态栏 100% 保持正常原生显示，不产生多余状态栏偏移或遮挡。
- * 4. 图标层：展开时伴随微缩放、旋转 (45°) 与向左位移并淡出。
- * 5. 菜单内容层：展开时从右侧位移 + 缩放淡入；收起时快速淡出。
+ * 核心动效规格：
+ * 1. 触发按钮采用项目统一的 LiquidButton（液态物理微弹性与弥散阴影）。
+ * 2. 精准局部锚定：以右上角为变换原点 (TransformOrigin(1f, 0f))，
+ *    面板通过 scale(0.6 -> 1.0) + translateY(-8dp -> 0dp) + alpha(0 -> 1)
+ *    搭配超调弹性曲线 (0.34, 1.56, 0.64, 1.0) 展开，具备极富弹性的丝滑回弹质感。
+ * 3. 菜单项错峰：展开时逐项自右向左 (translateX 24dp -> 0dp, scale 0.9 -> 1.0) 错峰滑入，
+ *    收起时逆序快速淡出，全程由 GPU 图层加速，零重排重测。
  *
  * @param modifier 修饰符
- * @param icon 触发按钮图标（默认三点图标 MoreVert，可自定义如 Add）
+ * @param icon 触发按钮图标（默认三点图标 MoreVert）
  * @param contentDescription 无障碍描述
- * @param buttonSize 触发按钮默认尺寸（默认 44.dp，与 CommonHeader 左侧返回按钮完全一致）
+ * @param buttonSize 触发按钮尺寸（默认 44.dp）
  * @param menuWidth 展开后菜单面板宽度（默认 192.dp）
- * @param content 菜单内容槽
+ * @param content 菜单内容槽（在 [NemoMorphMenuScope] 内组装菜单项）
  */
 @Composable
 fun NemoMorphMenu(
@@ -110,7 +146,6 @@ fun NemoMorphMenu(
     menuWidth: Dp = 192.dp,
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
-    val density = LocalDensity.current
     val haptic = LocalHapticFeedback.current
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
@@ -121,119 +156,57 @@ fun NemoMorphMenu(
     val transitionState = remember { MutableTransitionState(false) }
     transitionState.targetState = expanded
 
-    // 测量菜单内容的真实完整高度（不受父容器动画高度截断）
-    var menuMeasuredHeight by remember { mutableStateOf(168.dp) }
+    val transition = rememberTransition(transitionState, label = "NemoMenuTransition")
 
-    val transition = rememberTransition(transitionState, label = "NemoMorphTransition")
+    // ── 面板整体硬件加速动画（右上角为原点进行 scale + translateY + alpha）──
+    val panelScale by transition.animateFloat(
+        transitionSpec = {
+            tween(durationMillis = MORPH_DURATION, easing = MorphEasing)
+        },
+        label = "panelScale"
+    ) { isOpen ->
+        if (isOpen) 1f else 0.6f
+    }
 
-    // 容器尺寸与圆角动画
-    val animatedWidth by transition.animateDp(
+    val panelTranslationY by transition.animateDp(
+        transitionSpec = {
+            tween(durationMillis = MORPH_DURATION, easing = MorphEasing)
+        },
+        label = "panelTranslationY"
+    ) { isOpen ->
+        if (isOpen) 0.dp else (-8).dp
+    }
+
+    val panelAlpha by transition.animateFloat(
         transitionSpec = {
             if (targetState) {
-                tween(durationMillis = MORPH_OPEN_DURATION, easing = MorphOpenEasing)
+                tween(durationMillis = 180, easing = androidx.compose.animation.core.FastOutSlowInEasing)
             } else {
-                tween(durationMillis = MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
+                tween(durationMillis = 140, easing = androidx.compose.animation.core.FastOutSlowInEasing)
             }
         },
-        label = "morphWidth"
-    ) { isOpen ->
-        if (isOpen) menuWidth else buttonSize
-    }
-
-    val animatedHeight by transition.animateDp(
-        transitionSpec = {
-            if (targetState) {
-                tween(durationMillis = MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            } else {
-                tween(durationMillis = MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-            }
-        },
-        label = "morphHeight"
-    ) { isOpen ->
-        if (isOpen) menuMeasuredHeight else buttonSize
-    }
-
-    val animatedCornerRadius by transition.animateDp(
-        transitionSpec = {
-            if (targetState) {
-                tween(durationMillis = MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            } else {
-                tween(durationMillis = MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-            }
-        },
-        label = "morphRadius"
-    ) { isOpen ->
-        if (isOpen) 18.dp else (buttonSize / 2)
-    }
-
-    val animatedShadowElevation by transition.animateDp(
-        transitionSpec = { tween(durationMillis = 200) },
-        label = "morphShadow"
-    ) { isOpen ->
-        if (isOpen) 10.dp else 0.dp
-    }
-
-    // 图标动画 (旋转、位移、淡出)
-    val iconAlpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = FADE_DURATION, easing = MorphCloseEasing) },
-        label = "iconAlpha"
-    ) { isOpen ->
-        if (isOpen) 0f else 1f
-    }
-
-    val iconTranslationX by transition.animateDp(
-        transitionSpec = {
-            if (targetState) tween(MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            else tween(MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-        },
-        label = "iconTranslateX"
-    ) { isOpen ->
-        if (isOpen) (-28).dp else 0.dp
-    }
-
-    val iconRotation by transition.animateFloat(
-        transitionSpec = {
-            if (targetState) tween(MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            else tween(MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-        },
-        label = "iconRotate"
-    ) { isOpen ->
-        if (isOpen) 45f else 0f
-    }
-
-    // 菜单内容动画 (缩放、位移、淡入)
-    val contentAlpha by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = FADE_DURATION, easing = MorphOpenEasing) },
-        label = "contentAlpha"
+        label = "panelAlpha"
     ) { isOpen ->
         if (isOpen) 1f else 0f
     }
 
-    val contentTranslationX by transition.animateDp(
-        transitionSpec = {
-            if (targetState) tween(MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            else tween(MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-        },
-        label = "contentTranslateX"
-    ) { isOpen ->
-        if (isOpen) 0.dp else 20.dp
+    // ── 菜单项错峰索引管理 ──
+    val staggerInfo = remember {
+        object {
+            var counter = 0
+            var total = 0
+            var expanded = false
+        }
     }
+    staggerInfo.expanded = expanded
 
-    val contentScale by transition.animateFloat(
-        transitionSpec = {
-            if (targetState) tween(MORPH_OPEN_DURATION, easing = MorphOpenEasing)
-            else tween(MORPH_CLOSE_DURATION, easing = MorphCloseEasing)
-        },
-        label = "contentScale"
-    ) { isOpen ->
-        if (isOpen) 1f else 0.96f
-    }
-
-    val scope = remember(onExpandedChange) {
+    val scope = remember(transition, onExpandedChange) {
         object : NemoMorphMenuScope {
-            override fun close() {
-                onExpandedChange(false)
-            }
+            override fun close() { onExpandedChange(false) }
+            override val isExpanded: Boolean get() = staggerInfo.expanded
+            override val transition: androidx.compose.animation.core.Transition<Boolean> get() = transition
+            override fun nextItemIndex(): Int = staggerInfo.counter++
+            override val itemCount: Int get() = staggerInfo.total
         }
     }
 
@@ -275,69 +248,37 @@ fun NemoMorphMenu(
                     onExpandedChange(false)
                 }
 
-                // 形变主卡片（自按钮右上角原位向左下方平滑展开）
+                // 面板卡片容器（右上角原位弹性下拉展开）
                 Box(
                     modifier = Modifier
-                        .width(animatedWidth)
-                        .height(animatedHeight)
+                        .width(menuWidth)
+                        .graphicsLayer {
+                            scaleX = panelScale
+                            scaleY = panelScale
+                            translationY = panelTranslationY.toPx()
+                            alpha = panelAlpha
+                            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 0f)
+                        }
                         .shadow(
-                            elevation = animatedShadowElevation,
-                            shape = RoundedCornerShape(animatedCornerRadius)
+                            elevation = 16.dp,
+                            shape = RoundedCornerShape(20.dp)
                         )
-                        .clip(RoundedCornerShape(animatedCornerRadius))
+                        .clip(RoundedCornerShape(20.dp))
                         .background(containerColor)
                         .border(
                             BorderStroke(0.5.dp, borderColor),
-                            RoundedCornerShape(animatedCornerRadius)
+                            RoundedCornerShape(20.dp)
                         )
                 ) {
-                    // 1. 图标层（收起态居中，展开时滑出淡出）
-                    if (iconAlpha > 0.01f) {
-                        Box(
-                            modifier = Modifier
-                                .size(buttonSize)
-                                .align(Alignment.TopEnd)
-                                .graphicsLayer {
-                                    alpha = iconAlpha
-                                    translationX = iconTranslationX.toPx()
-                                    rotationZ = iconRotation
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    // 2. 菜单内容层（以固定 menuWidth 且不受高度约束进行真实高度测量与布局）
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .requiredWidth(menuWidth)
-                            .wrapContentHeight(unbounded = true)
-                            .onGloballyPositioned { coordinates ->
-                                val h = with(density) { coordinates.size.height.toDp() }
-                                if (h > 44.dp && h != menuMeasuredHeight) {
-                                    menuMeasuredHeight = h
-                                }
-                            }
-                            .graphicsLayer {
-                                alpha = contentAlpha
-                                translationX = contentTranslationX.toPx()
-                                scaleX = contentScale
-                                scaleY = contentScale
-                            }
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp)
-                        ) {
-                            scope.content()
-                        }
+                        // 重置计数器 → content 中各菜单项按顺序递增 → 捕获总数
+                        staggerInfo.counter = 0
+                        scope.content()
+                        staggerInfo.total = staggerInfo.counter
                     }
                 }
             }
@@ -346,10 +287,14 @@ fun NemoMorphMenu(
 }
 
 /**
- * NemoMorphMenuItem - 形变菜单标准项
+ * NemoMorphMenuItem - 形变菜单标准项（内置错峰入场/退场动画）
+ *
+ * 动效规格：
+ * - **入场**：延迟 80ms + index * 60ms，从右侧偏移 24dp + 缩放 0.9 伴随超调弹性曲线滑入
+ * - **退场**：逆序延迟 (total - 1 - index) * 40ms，减速曲线快速消失
  */
 @Composable
-fun NemoMorphMenuItem(
+fun NemoMorphMenuScope.NemoMorphMenuItem(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -358,6 +303,73 @@ fun NemoMorphMenuItem(
     enabled: Boolean = true,
     isDestructive: Boolean = false
 ) {
+    val itemIndex = nextItemIndex()
+    val totalCount = itemCount
+
+    // ── 从 scope.transition 派生高帧率、无协程开销的错峰动画 ──
+    val itemAlpha by transition.animateFloat(
+        transitionSpec = {
+            if (targetState) {
+                tween(
+                    durationMillis = ITEM_ENTER_DURATION,
+                    delayMillis = (ITEM_INITIAL_DELAY + itemIndex * ITEM_STAGGER_ENTER_DELAY).coerceAtLeast(0),
+                    easing = MorphEasing
+                )
+            } else {
+                tween(
+                    durationMillis = ITEM_EXIT_DURATION,
+                    delayMillis = ((totalCount - 1 - itemIndex).coerceAtLeast(0) * ITEM_STAGGER_EXIT_DELAY),
+                    easing = ItemExitEasing
+                )
+            }
+        },
+        label = "itemAlpha_$itemIndex"
+    ) { isOpen ->
+        if (isOpen) 1f else 0f
+    }
+
+    val itemTranslationX by transition.animateDp(
+        transitionSpec = {
+            if (targetState) {
+                tween(
+                    durationMillis = ITEM_ENTER_DURATION,
+                    delayMillis = (ITEM_INITIAL_DELAY + itemIndex * ITEM_STAGGER_ENTER_DELAY).coerceAtLeast(0),
+                    easing = MorphEasing
+                )
+            } else {
+                tween(
+                    durationMillis = ITEM_EXIT_DURATION,
+                    delayMillis = ((totalCount - 1 - itemIndex).coerceAtLeast(0) * ITEM_STAGGER_EXIT_DELAY),
+                    easing = ItemExitEasing
+                )
+            }
+        },
+        label = "itemTranslationX_$itemIndex"
+    ) { isOpen ->
+        if (isOpen) 0.dp else 24.dp
+    }
+
+    val itemScale by transition.animateFloat(
+        transitionSpec = {
+            if (targetState) {
+                tween(
+                    durationMillis = ITEM_ENTER_DURATION,
+                    delayMillis = (ITEM_INITIAL_DELAY + itemIndex * ITEM_STAGGER_ENTER_DELAY).coerceAtLeast(0),
+                    easing = MorphEasing
+                )
+            } else {
+                tween(
+                    durationMillis = ITEM_EXIT_DURATION,
+                    delayMillis = ((totalCount - 1 - itemIndex).coerceAtLeast(0) * ITEM_STAGGER_EXIT_DELAY),
+                    easing = ItemExitEasing
+                )
+            }
+        },
+        label = "itemScale_$itemIndex"
+    ) { isOpen ->
+        if (isOpen) 1f else 0.9f
+    }
+
     val mainColor = if (isDestructive) {
         MaterialTheme.colorScheme.error
     } else {
@@ -387,6 +399,12 @@ fun NemoMorphMenuItem(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 2.dp)
+            .graphicsLayer {
+                alpha = itemAlpha
+                translationX = itemTranslationX.toPx()
+                scaleX = itemScale
+                scaleY = itemScale
+            }
     ) {
         Row(
             modifier = Modifier

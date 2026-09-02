@@ -39,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -152,7 +151,6 @@ fun SRSLearningCard(
     // Labels
     val labelBgColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray100
     val labelTextColor = if (isDarkTheme) NemoNeutrals.DarkTextSecondary else NemoNeutrals.Gray500
-    val hiraganaColorHidden = if (isDarkTheme) Color.White.copy(alpha = 0.2f) else NemoNeutrals.Gray300
 
     // Indigo 标签色 (用于等级徽章)
     val indigoBg = if (isDarkTheme) Color(0xFF1E1B4B) else Color(0xFFEEF2FF)
@@ -224,20 +222,27 @@ fun SRSLearningCard(
                     )
                 )
 
-                // Hiragana
-                Text(
-                    text = word.hiragana,
-                    color = if (isAnswerShown) NemoNeutrals.Blue600 else hiraganaColorHidden,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = NotoSerifJP,
-                    style = TextStyle(
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    modifier = Modifier.then(
-                        if (!isAnswerShown) Modifier.blur(8.dp) else Modifier
+                // 假名读音 (答案显示时) / 思考提示 (答案隐藏时)
+                if (isAnswerShown) {
+                    Text(
+                        text = word.hiragana,
+                        color = NemoNeutrals.Blue600,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = NotoSerifJP,
+                        style = TextStyle(
+                            localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                        )
                     )
-                )
+                } else {
+                    Text(
+                        text = "思考这个单词的发音和含义...",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = secondaryTextColor.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
             // 左上角等级徽章 (镜像对称)
@@ -371,12 +376,12 @@ fun SRSLearningCard(
                             modifier = Modifier
                                 .padding(bottom = 8.dp)
                                 .background(labelBgColor, CircleShape)
-                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = word.pos ?: "未知",
                                 color = labelTextColor,
-                                fontSize = 10.sp,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             )
@@ -493,7 +498,7 @@ fun SRSLearningCard(
                             isPlaying = playingAudioId == "word",
                             onClick = { onSpeakWord() },
                             tint = practiceButtonColor,
-                            size = 48.dp,
+                            size = 44.dp,
                             backgroundColor = practiceButtonBgColor
                         )
                     }
@@ -528,7 +533,7 @@ fun SRSLearningCard(
                             imageVector = Icons.Rounded.Edit,
                             contentDescription = "临时手写板",
                             tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }

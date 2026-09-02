@@ -50,13 +50,13 @@ fun CollectionActionMenu(
     var showClearWordsDialog by remember { mutableStateOf(false) }
     var showClearGrammarsDialog by remember { mutableStateOf(false) }
 
-    com.jian.nemo.core.ui.component.common.NemoMorphMenu(
+    NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
         icon = Icons.Default.MoreVert,
         contentDescription = "更多选项"
     ) {
-        com.jian.nemo.core.ui.component.common.NemoMorphMenuItem(
+        NemoMorphMenuItem(
             text = "清除所有${titleSuffix}",
             leadingIcon = Icons.Rounded.DeleteSweep,
             isDestructive = true,
@@ -71,7 +71,7 @@ fun CollectionActionMenu(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
         )
 
-        com.jian.nemo.core.ui.component.common.NemoMorphMenuItem(
+        NemoMorphMenuItem(
             text = "清除单词${titleSuffix}",
             leadingIcon = Icons.Rounded.Delete,
             enabled = wordCount > 0,
@@ -81,7 +81,7 @@ fun CollectionActionMenu(
             }
         )
 
-        com.jian.nemo.core.ui.component.common.NemoMorphMenuItem(
+        NemoMorphMenuItem(
             text = "清除语法${titleSuffix}",
             leadingIcon = Icons.Rounded.FolderDelete,
             enabled = grammarCount > 0,
