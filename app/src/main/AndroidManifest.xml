@@ -5,7 +5,7 @@
     <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    
+
     <!-- 振动权限，用于测试答题时的错误反馈 -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -18,6 +18,7 @@
         </intent>
     </queries>
 
+    <!-- 预测性返回 / Predictive Back 开关 -->
     <application
         android:name=".NemoApplication"
         android:allowBackup="false"
@@ -27,11 +28,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        <!-- 预测性返回 / Predictive Back 开关 -->
-        android:enableOnBackInvokedCallback="false"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Nemo"
         android:networkSecurityConfig="@xml/network_security_config">
-        
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

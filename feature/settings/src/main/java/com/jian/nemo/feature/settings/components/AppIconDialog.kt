@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -142,35 +143,82 @@ private fun AppIconOption(
             val baseName = name.lowercase()
             
             val bgResId = remember(baseName) {
-                context.resources.getIdentifier(
-                    "ic_launcher_${baseName}_background",
-                    "drawable",
-                    context.packageName
-                )
-            }
-            val fgResId = remember(baseName) {
-                val resId = context.resources.getIdentifier(
-                    "ic_launcher_${baseName}_foreground",
-                    "drawable",
-                    context.packageName
-                )
-                if (resId != 0) resId else {
-                    context.resources.getIdentifier(
-                        "ic_launcher_${baseName}_foreground",
-                        "mipmap",
+                if (baseName == "nemo") {
+                    val colorId = context.resources.getIdentifier(
+                        "ic_launcher_background",
+                        "color",
                         context.packageName
                     )
+                    if (colorId != 0) colorId else {
+                        context.resources.getIdentifier(
+                            "ic_launcher_background",
+                            "drawable",
+                            context.packageName
+                        )
+                    }
+                } else {
+                    context.resources.getIdentifier(
+                        "ic_launcher_${baseName}_background",
+                        "drawable",
+                        context.packageName
+                    )
+                }
+            }
+            val isBgColor = remember(bgResId) {
+                if (bgResId != 0) {
+                    try {
+                        context.resources.getResourceTypeName(bgResId) == "color"
+                    } catch (e: Exception) {
+                        false
+                    }
+                } else false
+            }
+            val fgResId = remember(baseName) {
+                if (baseName == "nemo") {
+                    val resId = context.resources.getIdentifier(
+                        "ic_launcher_foreground",
+                        "drawable",
+                        context.packageName
+                    )
+                    if (resId != 0) resId else {
+                        context.resources.getIdentifier(
+                            "ic_launcher_foreground",
+                            "mipmap",
+                            context.packageName
+                        )
+                    }
+                } else {
+                    val resId = context.resources.getIdentifier(
+                        "ic_launcher_${baseName}_foreground",
+                        "drawable",
+                        context.packageName
+                    )
+                    if (resId != 0) resId else {
+                        context.resources.getIdentifier(
+                            "ic_launcher_${baseName}_foreground",
+                            "mipmap",
+                            context.packageName
+                        )
+                    }
                 }
             }
             
             Box(contentAlignment = Alignment.Center) {
                 // 背景图层
                 if (bgResId != 0) {
-                    Image(
-                        painter = painterResource(id = bgResId),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    if (isBgColor) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(colorResource(id = bgResId))
+                        )
+                    } else {
+                        Image(
+                            painter = painterResource(id = bgResId),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
                 
                 // 前景图层 (Logo)
