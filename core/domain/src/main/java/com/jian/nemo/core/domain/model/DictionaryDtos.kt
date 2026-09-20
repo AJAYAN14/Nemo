@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 data class DictionarySyncResult(
     val updatedWords: Int = 0,
     val updatedGrammars: Int = 0,
+    val updatedWordRelations: Int = 0,
     val isFullSync: Boolean = false,
     val localVersion: Int = 0,
     val remoteVersion: Int = 0

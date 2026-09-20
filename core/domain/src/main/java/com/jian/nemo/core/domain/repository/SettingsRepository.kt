@@ -469,6 +469,11 @@ interface SettingsRepository {
     val lastGrammarSyncTimestampFlow: Flow<Long>
     suspend fun getLastGrammarSyncTimestamp(): Long
     suspend fun setLastGrammarSyncTimestamp(timestamp: Long)
+    
+    /** 词库云更新：相关词上次同步时间戳 */
+    val lastWordRelationSyncTimestampFlow: Flow<Long>
+    suspend fun getLastWordRelationSyncTimestamp(): Long
+    suspend fun setLastWordRelationSyncTimestamp(timestamp: Long)
 
 
 

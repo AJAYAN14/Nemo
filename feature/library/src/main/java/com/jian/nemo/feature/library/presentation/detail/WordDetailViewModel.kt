@@ -10,10 +10,16 @@ import com.jian.nemo.core.domain.usecase.audio.PlayTtsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 import javax.inject.Inject
+import com.jian.nemo.core.domain.model.RelatedWordItem
+import com.jian.nemo.core.domain.repository.WordRelationRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
@@ -29,7 +35,8 @@ class WordDetailViewModel @Inject constructor(
     private val wordRepository: WordRepository,
     private val playTtsUseCase: PlayTtsUseCase,
     private val audioRepository: AudioRepository,
-    private val contentReportRepository: ContentReportRepository
+    private val contentReportRepository: ContentReportRepository,
+    private val wordRelationRepository: WordRelationRepository
 ) : ViewModel() {
 
     // Audio Status
@@ -94,6 +101,30 @@ class WordDetailViewModel @Inject constructor(
      */
     fun getWordFlow(id: Int): kotlinx.coroutines.flow.Flow<Word?> {
         return wordRepository.getWordById(id)
+    }
+
+    /**
+     * Get a flow for related words for a specific word by ID
+     */
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun getRelatedWordsFlow(wordId: Int): kotlinx.coroutines.flow.Flow<List<RelatedWordItem>> {
+        // 全局同步会保证本地数据的完整性，纯响应式观察本地数据并拼装
+        return wordRelationRepository.getRelationsByWordId(wordId)
+            .flatMapLatest { relations ->
+                if (relations.isEmpty()) {
+                    flowOf(emptyList())
+                } else {
+                    // 用现有的 getWordFlow 逐个获取并 combine
+                    combine(
+                        relations.map { rel ->
+                            val targetWordId = if (rel.wordId == wordId) rel.relatedWordId else rel.wordId
+                            getWordFlow(targetWordId).map { word ->
+                                word?.let { RelatedWordItem(relation = rel, relatedWord = it) }
+                            }
+                        }
+                    ) { items -> items.filterNotNull() }
+                }
+            }
     }
 
     private fun observeTtsEvents() {

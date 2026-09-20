@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.library.presentation.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,7 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Report
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
@@ -42,6 +44,7 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 @Composable
 fun WordDetailScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToWordDetail: (Int) -> Unit = {},
     viewModel: WordDetailViewModel = hiltViewModel()
 ) {
     val contextIds by viewModel.contextIds.collectAsState()
@@ -81,13 +84,16 @@ fun WordDetailScreen(
         if (contextIds.isEmpty()) {
             // Fallback: Show initial word or loading while fetching context
             if (initialWord != null) {
+                val relatedWords by remember(initialWord!!.id) { viewModel.getRelatedWordsFlow(initialWord!!.id) }.collectAsState(initial = emptyList())
                 WordDetailContent(
                     word = initialWord!!,
                     isDark = isDark,
                     playingAudioId = playingAudioId,
                     onPlayAudio = viewModel::playAudio,
                     onBack = onNavigateBack,
-                    onReportClick = viewModel::openReportDialog
+                    onReportClick = viewModel::openReportDialog,
+                    relatedWords = relatedWords,
+                    onNavigateToWordDetail = onNavigateToWordDetail
                 )
             } else {
                 Box(
@@ -109,6 +115,7 @@ fun WordDetailScreen(
                 val wordId = contextIds[page]
                 // Fetch word for this specific page
                 val word by remember(wordId) { viewModel.getWordFlow(wordId) }.collectAsState(initial = null)
+                val relatedWords by remember(wordId) { viewModel.getRelatedWordsFlow(wordId) }.collectAsState(initial = emptyList())
 
                 if (word != null) {
                     WordDetailContent(
@@ -117,7 +124,9 @@ fun WordDetailScreen(
                         playingAudioId = playingAudioId,
                         onPlayAudio = viewModel::playAudio,
                         onBack = onNavigateBack,
-                        onReportClick = viewModel::openReportDialog
+                        onReportClick = viewModel::openReportDialog,
+                        relatedWords = relatedWords,
+                        onNavigateToWordDetail = onNavigateToWordDetail
                     )
                 } else {
                      Box(
@@ -174,7 +183,9 @@ private fun WordDetailContent(
     playingAudioId: String?,
     onPlayAudio: (String, String?) -> Unit,
     onBack: () -> Unit,
-    onReportClick: () -> Unit
+    onReportClick: () -> Unit,
+    relatedWords: List<com.jian.nemo.core.domain.model.RelatedWordItem> = emptyList(),
+    onNavigateToWordDetail: (Int) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -321,6 +332,16 @@ private fun WordDetailContent(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            // === 2.5. Related Words ===
+            if (relatedWords.isNotEmpty()) {
+                RelatedWordsSection(
+                    relatedWords = relatedWords,
+                    isDark = isDark,
+                    onWordClick = onNavigateToWordDetail
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
 
             // === 3. Example Sentences ===
             Text(
@@ -476,6 +497,128 @@ private fun ExampleCard(
                 onClick = { onPlayAudio(sentence, exampleId) },
                 size = 44.dp,
                 tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun RelatedWordsSection(
+    relatedWords: List<com.jian.nemo.core.domain.model.RelatedWordItem>,
+    isDark: Boolean,
+    onWordClick: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+    ) {
+        // Section Title
+        Text(
+            text = "相关词",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
+            ),
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(start = 4.dp, bottom = 16.dp)
+        )
+
+        // List of Related Words
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            relatedWords.forEach { item ->
+                RelatedWordCard(
+                    item = item,
+                    isDark = isDark,
+                    onClick = { onWordClick(item.relatedWord.id) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RelatedWordCard(
+    item: com.jian.nemo.core.domain.model.RelatedWordItem,
+    isDark: Boolean,
+    onClick: () -> Unit
+) {
+    PremiumDetailCard(
+        isDark = isDark,
+        modifier = Modifier.clickable { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                // Relation Type Tag
+                DetailTag(
+                    text = item.relation.relationType,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Word Header (Kanji + Kana)
+                Row(
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = item.relatedWord.japanese,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = NotoSerifJP
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    
+                    if (item.relatedWord.hiragana.isNotEmpty() && item.relatedWord.hiragana != item.relatedWord.japanese) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = item.relatedWord.hiragana,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Meaning
+                Text(
+                    text = item.relatedWord.chinese,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                // Optional Note
+                val note = item.relation.note
+                if (!note.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = note,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
+            }
+
+            // Arrow Icon
+            Spacer(modifier = Modifier.width(16.dp))
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Rounded.ChevronRight,
+                contentDescription = "Go to related word",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.size(24.dp)
             )
         }
     }

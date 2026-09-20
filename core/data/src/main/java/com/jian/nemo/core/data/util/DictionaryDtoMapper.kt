@@ -6,6 +6,22 @@ import com.jian.nemo.core.data.local.entity.GrammarUsageEntity
 import com.jian.nemo.core.data.local.entity.WordEntity
 import com.jian.nemo.core.domain.model.GrammarDto
 import com.jian.nemo.core.domain.model.WordDto
+import com.jian.nemo.core.domain.model.WordRelationDto
+import com.jian.nemo.core.data.local.entity.WordRelationEntity
+
+/**
+ * 将网络 WordRelationDto 转换为 WordRelationEntity
+ */
+fun WordRelationDto.toEntity(): WordRelationEntity {
+    return WordRelationEntity(
+        id = id,
+        wordId = wordId,
+        relatedWordId = relatedWordId,
+        relationType = relationType,
+        note = note,
+        createdAt = createdAt
+    )
+}
 
 /**
  * 将网络 WordDto 转换为 WordEntity

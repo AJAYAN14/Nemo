@@ -34,4 +34,10 @@ interface ContentUpdateApplier {
      * @param isFullSync 是否为全量同步
      */
     suspend fun applyAllGrammars(grammars: List<GrammarDto>, isFullSync: Boolean = false)
+    
+    /**
+     * [New] 批量应用从 Supabase 获取的相关词 DTO
+     * @param isFullSync 是否为全量同步。全量同步时会先清空本地关联表。
+     */
+    suspend fun applyAllWordRelations(relations: List<com.jian.nemo.core.domain.model.WordRelationDto>, isFullSync: Boolean = false)
 }

@@ -32,6 +32,7 @@ class ContentUpdateApplierImpl @Inject constructor(
     private val grammarDao: GrammarDao,
     private val grammarUsageDao: GrammarUsageDao,
     private val grammarExampleDao: GrammarExampleDao,
+    private val wordRelationDao: com.jian.nemo.core.data.local.dao.WordRelationDao,
     private val json: Json
 ) : ContentUpdateApplier {
 
@@ -160,6 +161,26 @@ class ContentUpdateApplierImpl @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "applyAllGrammars failed", e)
+            }
+        }
+    }
+    
+    override suspend fun applyAllWordRelations(relations: List<com.jian.nemo.core.domain.model.WordRelationDto>, isFullSync: Boolean) {
+        withContext(Dispatchers.IO) {
+            try {
+                if (isFullSync) {
+                    // 全量更新前先清空旧数据
+                    wordRelationDao.deleteAll()
+                    Log.i(TAG, "applyAllWordRelations (FullSync): Deleted all local word_relations.")
+                }
+                
+                if (relations.isNotEmpty()) {
+                    val entities = relations.map { it.toEntity() }
+                    wordRelationDao.insertAll(entities)
+                    Log.i(TAG, "applyAllWordRelations: Inserted/Replaced ${entities.size} items.")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "applyAllWordRelations failed", e)
             }
         }
     }

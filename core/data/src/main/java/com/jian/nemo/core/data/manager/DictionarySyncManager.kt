@@ -88,90 +88,111 @@ class DictionarySyncManagerImpl @Inject constructor(
             // 鑾峰彇鏃х殑缁熶竴鏃堕棿鎴筹紙鐢ㄤ簬骞虫粦杩佺Щ锛?
             val oldGlobalSyncTimestamp = settingsRepository.getLastDictionarySyncTimestamp()
             
-            // 鑾峰彇鐙珛鐨勫崟璇嶅拰璇硶鏃堕棿鎴?
+            // 获取独立的单词、语法、相关词时间戳
             var lastWordSyncTimestamp = if (forceFullSync) 0L else settingsRepository.getLastWordSyncTimestamp()
             var lastGrammarSyncTimestamp = if (forceFullSync) 0L else settingsRepository.getLastGrammarSyncTimestamp()
+            var lastWordRelationSyncTimestamp = if (forceFullSync) 0L else settingsRepository.getLastWordRelationSyncTimestamp()
             
-            // 骞虫粦杩佺Щ锛氬鏋滅嫭绔嬫椂闂存埑涓?0 浣嗗叏灞€鏃堕棿鎴?> 0锛岃鏄庢槸鍗囩骇鍚庣殑棣栨鍚屾锛屽€熺敤鍏ㄥ眬鏃堕棿鎴?
+            // 平滑迁移：如果独立时间戳为 0 但全局时间戳 > 0，说明是升级后的首次同步，借用全局时间戳
             if (!forceFullSync && lastWordSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
                 lastWordSyncTimestamp = oldGlobalSyncTimestamp
-                Log.i(TAG, "鍗曡瘝鍚屾鍒嗗锛氭娴嬪埌鏃у叏灞€閿氱偣锛屽€熺敤 $oldGlobalSyncTimestamp 杩涜骞虫粦杩佺Щ")
+                Log.i(TAG, "单词同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
             }
             if (!forceFullSync && lastGrammarSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
                 lastGrammarSyncTimestamp = oldGlobalSyncTimestamp
-                Log.i(TAG, "璇硶鍚屾鍒嗗锛氭娴嬪埌鏃у叏灞€閿氱偣锛屽€熺敤 $oldGlobalSyncTimestamp 杩涜骞虫粦杩佺Щ")
+                Log.i(TAG, "语法同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
+            }
+            if (!forceFullSync && lastWordRelationSyncTimestamp == 0L && oldGlobalSyncTimestamp > 0L) {
+                lastWordRelationSyncTimestamp = oldGlobalSyncTimestamp
+                Log.i(TAG, "相关词同步分家：检测到旧全局锚点，借用 $oldGlobalSyncTimestamp 进行平滑迁移")
             }
 
-            // 濡傛灉鐗堟湰涓嶄竴鑷达紝鎴栬€呮湰鍦版暟鎹簱涓虹┖锛屽垯瑙﹀彂鍚屾
+            // 如果版本不一致，或者本地数据库为空，则触发同步
             val wordCount = wordDao.getWordCount()
             val grammarCount = grammarDao.getGrammarCount()
             val isDatabaseEmpty = wordCount == 0 || grammarCount == 0
-            val isAnySyncRequired = lastWordSyncTimestamp == 0L || lastGrammarSyncTimestamp == 0L
+            val isAnySyncRequired = lastWordSyncTimestamp == 0L || lastGrammarSyncTimestamp == 0L || lastWordRelationSyncTimestamp == 0L
 
-            Log.i(TAG, "璇嶅簱鍚屾鐘舵€佹鏌? RemoteV=$remoteVersion, LocalV=$lastVersion, WordTS=$lastWordSyncTimestamp, GrammarTS=$lastGrammarSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$forceFullSync, forceIncremental=$forceIncremental")
+            Log.i(TAG, "词库同步状态检查: RemoteV=$remoteVersion, LocalV=$lastVersion, WordTS=$lastWordSyncTimestamp, GrammarTS=$lastGrammarSyncTimestamp, WordRelTS=$lastWordRelationSyncTimestamp, WordCount=$wordCount, GrammarCount=$grammarCount, isEmpty=$isDatabaseEmpty, force=$forceFullSync, forceIncremental=$forceIncremental")
 
             if (forceFullSync || forceIncremental || (remoteVersion != null && (remoteVersion > lastVersion || isDatabaseEmpty || isAnySyncRequired))) {
-                val isFullSync = forceFullSync || isDatabaseEmpty || (lastWordSyncTimestamp == 0L && lastGrammarSyncTimestamp == 0L)
+                val isFullSync = forceFullSync || isDatabaseEmpty || (lastWordSyncTimestamp == 0L && lastGrammarSyncTimestamp == 0L && lastWordRelationSyncTimestamp == 0L)
                 Log.i(TAG, ">>> 寮€濮嬪悓姝ヨ瘝搴?(${if (isFullSync) "鍏ㄩ噺妯″紡" else "澧為噺妯″紡"}): force=$forceFullSync, forceIncremental=$forceIncremental, V$lastVersion -> V$remoteVersion")
 
                 if (forceFullSync) {
                     Log.w(TAG, "寮哄埗閲嶇疆妯″紡锛氬皢鎵ц鍏ㄩ噺瑕嗙洊骞堕€昏緫涓嬫灦杩囨椂鏁版嵁")
                 }
 
-                // 鎵ц鍚屾鎷夊彇
-                val (allWords: List<WordDto>, allGrammars: List<GrammarDto>) = coroutineScope {
+                // 执行同步拉取
+                val (allWords: List<WordDto>, allGrammars: List<GrammarDto>, allWordRelations: List<com.jian.nemo.core.domain.model.WordRelationDto>) = coroutineScope {
                     if (isFullSync) {
                         val w = async { contentRepository.fetchAllRemoteWords() }
                         val g = async { contentRepository.fetchAllRemoteGrammars() }
-                        w.await() to g.await()
+                        val r = async { contentRepository.fetchAllRemoteWordRelations() }
+                        Triple(w.await(), g.await(), r.await())
                     } else {
-                        // 澧為噺妯″紡锛氫娇鐢ㄥ悇鑷殑鏃堕棿鎴虫媺鍙?
+                        // 增量模式：使用各自的时间戳拉取
                         val wordTimestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastWordSyncTimestamp))
                         val grammarTimestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastGrammarSyncTimestamp))
+                        val wordRelationTimestampStr = DateTimeUtils.formatIso8601(java.util.Date(lastWordRelationSyncTimestamp))
                         
-                        Log.d(TAG, "澧為噺鎷夊彇鏃堕棿鎴? Word=$wordTimestampStr, Grammar=$grammarTimestampStr")
+                        Log.d(TAG, "增量拉取时间戳: Word=$wordTimestampStr, Grammar=$grammarTimestampStr, WordRelation=$wordRelationTimestampStr")
                         
                         val w = async { contentRepository.fetchWordsModifiedSince(wordTimestampStr) }
                         val g = async { contentRepository.fetchGrammarsModifiedSince(grammarTimestampStr) }
-                        w.await() to g.await()
+                        val r = async { contentRepository.fetchWordRelationsModifiedSince(wordRelationTimestampStr) }
+                        Triple(w.await(), g.await(), r.await())
                     }
                 }
 
-                Log.i(TAG, "涓嬭浇瀹屾垚: ${allWords.size} 鍗曡瘝, ${allGrammars.size} 璇硶")
+                Log.i(TAG, "下载完成: ${allWords.size} 单词, ${allGrammars.size} 语法, ${allWordRelations.size} 相关词")
 
-                // 搴旂敤鍙樻洿
+                // 应用变更
                 if (allWords.isNotEmpty()) {
                     contentUpdateApplier.applyAllWords(allWords, isFullSync)
                 }
                 if (allGrammars.isNotEmpty()) {
                     contentUpdateApplier.applyAllGrammars(allGrammars, isFullSync)
                 }
+                if (allWordRelations.isNotEmpty()) {
+                    contentUpdateApplier.applyAllWordRelations(allWordRelations, isFullSync)
+                }
 
-                // 璁＄畻骞舵洿鏂版柊鐨勫悓姝ラ敋鐐规椂闂存埑 (鍒嗗埆鍙栫粨鏋滀腑鏈€澶х殑 updated_at)
-                // [FIX] Supabase 鐨?updated_at 鏄井绉掔骇锛岃浆涓烘绉掓椂浼氫涪澶辩簿搴︼紝瀵艰嚧鍚庣画 gt 鏌ヨ鏃犻檺鍖归厤鍒板悓涓€鏉¤褰曘€傚姞 1 姣璺冲嚭寰幆銆?
+                // 计算并更新新的同步锚点时间戳 (分别取结果中最大的 updated_at)
+                // [FIX] Supabase 的 updated_at 是微秒级，转为毫秒时会丢失精度，导致后续 gt 查询无限匹配到同一条记录。加 1 毫秒跳出循环。
                 val maxWordTimestamp = allWords.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull()?.plus(1L) ?: 0L
                 val maxGrammarTimestamp = allGrammars.mapNotNull { DateTimeUtils.parseIso8601(it.updatedAt)?.time }.maxOrNull()?.plus(1L) ?: 0L
+                val maxWordRelationTimestamp = allWordRelations.mapNotNull { DateTimeUtils.parseIso8601(it.createdAt ?: "")?.time }.maxOrNull()?.plus(1L) ?: 0L
                 
-                // 鍗曡瘝閿氱偣澶勭悊
+                // 单词锚点处理
                 var newWordSyncTimestamp = maxOf(lastWordSyncTimestamp, maxWordTimestamp)
                 if (isFullSync && newWordSyncTimestamp == 0L) newWordSyncTimestamp = System.currentTimeMillis()
                 
                 if (newWordSyncTimestamp > lastWordSyncTimestamp) {
                     settingsRepository.setLastWordSyncTimestamp(newWordSyncTimestamp)
-                    Log.d(TAG, "鏇存柊鍗曡瘝鍚屾鏃堕棿鎴抽敋鐐? $newWordSyncTimestamp")
+                    Log.d(TAG, "更新单词同步时间戳锚点: $newWordSyncTimestamp")
                 }
 
-                // 璇硶閿氱偣澶勭悊
+                // 语法锚点处理
                 var newGrammarSyncTimestamp = maxOf(lastGrammarSyncTimestamp, maxGrammarTimestamp)
                 if (isFullSync && newGrammarSyncTimestamp == 0L) newGrammarSyncTimestamp = System.currentTimeMillis()
                 
                 if (newGrammarSyncTimestamp > lastGrammarSyncTimestamp) {
                     settingsRepository.setLastGrammarSyncTimestamp(newGrammarSyncTimestamp)
-                    Log.d(TAG, "鏇存柊璇硶鍚屾鏃堕棿鎴抽敋鐐? $newGrammarSyncTimestamp")
+                    Log.d(TAG, "更新语法同步时间戳锚点: $newGrammarSyncTimestamp")
+                }
+                
+                // 相关词锚点处理
+                var newWordRelationSyncTimestamp = maxOf(lastWordRelationSyncTimestamp, maxWordRelationTimestamp)
+                if (isFullSync && newWordRelationSyncTimestamp == 0L) newWordRelationSyncTimestamp = System.currentTimeMillis()
+                
+                if (newWordRelationSyncTimestamp > lastWordRelationSyncTimestamp) {
+                    settingsRepository.setLastWordRelationSyncTimestamp(newWordRelationSyncTimestamp)
+                    Log.d(TAG, "更新相关词同步时间戳锚点: $newWordRelationSyncTimestamp")
                 }
 
-                // 鍚屾椂鏇存柊鏃х殑鍏ㄥ眬鏃堕棿鎴充互淇濊瘉瀹屽叏鍏煎
-                val finalGlobalTS = maxOf(newWordSyncTimestamp, newGrammarSyncTimestamp)
+                // 同时更新旧的全局时间戳以保证完全兼容
+                val finalGlobalTS = maxOf(newWordSyncTimestamp, newGrammarSyncTimestamp, newWordRelationSyncTimestamp)
                 settingsRepository.setLastDictionarySyncTimestamp(finalGlobalTS)
 
                 // 鏇存柊鏈湴鐗堟湰鍙?
@@ -190,6 +211,7 @@ class DictionarySyncManagerImpl @Inject constructor(
                 return@withContext DictionarySyncResult(
                     updatedWords = allWords.size,
                     updatedGrammars = allGrammars.size,
+                    updatedWordRelations = allWordRelations.size,
                     isFullSync = isFullSync,
                     localVersion = lastVersion,
                     remoteVersion = remoteVersion ?: lastVersion

@@ -2,6 +2,7 @@ package com.jian.nemo.core.domain.repository
 
 import com.jian.nemo.core.domain.model.WordDto
 import com.jian.nemo.core.domain.model.GrammarDto
+import com.jian.nemo.core.domain.model.WordRelationDto
 
 /**
  * 词库内容云更新
@@ -49,4 +50,15 @@ interface ContentRepository {
      * @param timestamp ISO 8601 格式时间戳
      */
     suspend fun fetchGrammarsModifiedSince(timestamp: String): List<GrammarDto>
+
+    /**
+     * 从 Supabase 数据库拉取全量单词关系数据
+     */
+    suspend fun fetchAllRemoteWordRelations(): List<WordRelationDto>
+
+    /**
+     * 增量拉取自指定时间以来修改过的单词关系
+     * @param timestamp ISO 8601 格式时间戳
+     */
+    suspend fun fetchWordRelationsModifiedSince(timestamp: String): List<WordRelationDto>
 }

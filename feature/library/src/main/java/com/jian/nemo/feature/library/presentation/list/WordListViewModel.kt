@@ -119,11 +119,12 @@ class WordListViewModel @Inject constructor(
                 // 触发强制增量同步 (forceIncremental = true)，绕过版本号检查
                 val result = syncManager.performDictionarySync(forceIncremental = true)
                 
-                if (result.updatedWords > 0 || result.updatedGrammars > 0) {
+                if (result.updatedWords > 0 || result.updatedGrammars > 0 || result.updatedWordRelations > 0) {
                     val message = buildString {
                         append("词库已更新：")
                         if (result.updatedWords > 0) append("${result.updatedWords}条单词 ")
-                        if (result.updatedGrammars > 0) append("${result.updatedGrammars}条语法")
+                        if (result.updatedGrammars > 0) append("${result.updatedGrammars}条语法 ")
+                        if (result.updatedWordRelations > 0) append("${result.updatedWordRelations}条相关词")
                     }
                     _syncMessage.value = message
                 } else {

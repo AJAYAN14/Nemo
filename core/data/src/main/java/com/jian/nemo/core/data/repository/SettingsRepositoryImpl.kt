@@ -1105,6 +1105,20 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.LAST_GRAMMAR_SYNC_TIMESTAMP] = timestamp
         }
     }
+    
+    override val lastWordRelationSyncTimestampFlow: Flow<Long> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.LAST_WORD_RELATION_SYNC_TIMESTAMP] ?: 0L
+    }
+
+    override suspend fun getLastWordRelationSyncTimestamp(): Long {
+        return dataStore.data.map { it[PreferencesKeys.LAST_WORD_RELATION_SYNC_TIMESTAMP] ?: 0L }.first()
+    }
+
+    override suspend fun setLastWordRelationSyncTimestamp(timestamp: Long) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LAST_WORD_RELATION_SYNC_TIMESTAMP] = timestamp
+        }
+    }
 
 
 

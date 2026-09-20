@@ -37,6 +37,8 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import com.jian.nemo.core.domain.repository.WordRelationRepository
+import com.jian.nemo.core.data.repository.WordRelationRepositoryImpl
 
 /**
  * Repository 依赖注入模块
@@ -191,4 +193,9 @@ abstract class RepositoryModule {
         impl: AIWorkshopRepositoryImpl
     ): AIWorkshopRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindWordRelationRepository(
+        impl: WordRelationRepositoryImpl
+    ): WordRelationRepository
 }

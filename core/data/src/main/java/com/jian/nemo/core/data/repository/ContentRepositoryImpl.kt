@@ -9,6 +9,7 @@ import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import com.jian.nemo.core.domain.model.WordDto
 import com.jian.nemo.core.domain.model.GrammarDto
+import com.jian.nemo.core.domain.model.WordRelationDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
@@ -20,8 +21,6 @@ import javax.inject.Singleton
 
 /**
  * 词库云更新：从 Supabase Storage 拉取 content_version 与 word/grammar JSON
- *
- * 约定：桶名 [CONTENT_BUCKET]，文件 content_version.json、word/N1.json～N5.json、grammar/N1.json～N5.json
  */
 @Singleton
 class ContentRepositoryImpl @Inject constructor(
@@ -179,6 +178,55 @@ class ContentRepositoryImpl @Inject constructor(
             emptyList()
         }
     }
+    override suspend fun fetchAllRemoteWordRelations(): List<WordRelationDto> = withContext(Dispatchers.IO) {
+        try {
+            var offset = 0
+            val pageSize = 1000
+            val allRelations = mutableListOf<WordRelationDto>()
+
+            while (true) {
+                val batch = supabase.postgrest["word_relations"]
+                    .select {
+                        range(offset.toLong(), (offset + pageSize - 1).toLong())
+                    }.decodeList<WordRelationDto>()
+
+                if (batch.isEmpty()) break
+                allRelations.addAll(batch)
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allRelations
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchAllRemoteWordRelations failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+
+    override suspend fun fetchWordRelationsModifiedSince(timestamp: String): List<WordRelationDto> = withContext(Dispatchers.IO) {
+        try {
+            var offset = 0
+            val pageSize = 1000
+            val allRelations = mutableListOf<WordRelationDto>()
+
+            while (true) {
+                val batch = supabase.postgrest["word_relations"]
+                    .select {
+                        filter { gt("created_at", timestamp) }
+                        range(offset.toLong(), (offset + pageSize - 1).toLong())
+                    }.decodeList<WordRelationDto>()
+
+                if (batch.isEmpty()) break
+                allRelations.addAll(batch)
+                if (batch.size < pageSize) break
+                offset += pageSize
+            }
+            allRelations
+        } catch (e: Exception) {
+            Log.e(TAG, "fetchWordRelationsModifiedSince failed: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
 
     companion object {
         private const val TAG = "ContentRepository"

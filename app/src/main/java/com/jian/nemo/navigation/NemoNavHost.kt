@@ -690,13 +690,13 @@ fun NemoNavHost(
             )
         }
 
-        // 单词详情
         composable(
             route = NavDestination.WORD_DETAIL,
             arguments = listOf(navArgument("wordId") { type = NavType.IntType })
         ) {
             com.jian.nemo.feature.library.presentation.detail.WordDetailScreen(
-                onNavigateBack = { navController.navigateUp() }
+                onNavigateBack = { navController.navigateUp() },
+                onNavigateToWordDetail = { wordId -> navController.navigate(NavDestination.wordDetail(wordId)) }
             )
         }
 
