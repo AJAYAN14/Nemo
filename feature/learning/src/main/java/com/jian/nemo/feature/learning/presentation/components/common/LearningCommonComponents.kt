@@ -271,6 +271,30 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // 撤销上一次评分按钮 (动态平滑展开/收起)
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = onUndo != null && canUndo,
+                        enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
+                        exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally()
+                    ) {
+                        LiquidButton(
+                            onClick = { onUndo?.invoke() },
+                            backgroundColor = navGroupBg,
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            elevation = 0.dp,
+                            isInteractive = true,
+                            modifier = Modifier
+                                .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
+                                .size(44.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.Undo,
+                                contentDescription = "撤销上一次评分",
+                                tint = contentColor
+                            )
+                        }
+                    }
+
                     // 【硬约束】剩余数量 (Remaining Count) 定义：
                     // 这里显示的是当前学习队列（wordList/grammarList）中的总数。
                     // 它是“待处理任务量”，而不是“页面浏览进度”。
@@ -315,7 +339,7 @@ fun LearnHeader(
                     }
 
                     // More Menu
-                    val canShowMenu = remainingCount > 0 || onUndo != null
+                    val canShowMenu = true
                     if (canShowMenu) {
                         if (menu != null) {
                             menu()
@@ -334,21 +358,6 @@ fun LearnHeader(
                                 icon = Icons.Rounded.MoreVert,
                                 contentDescription = "更多选项"
                             ) {
-                                if (onUndo != null && canUndo) {
-                                    NemoMorphMenuItem(
-                                        text = "撤销上一次评分",
-                                        leadingIcon = Icons.AutoMirrored.Rounded.Undo,
-                                        onClick = {
-                                            close()
-                                            onUndo()
-                                        }
-                                    )
-
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                    )
-                                }
-
                                 if (onShowRatingGuide != null) {
                                     NemoMorphMenuItem(
                                         text = "评分说明（新学/复习）",

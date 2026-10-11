@@ -351,10 +351,6 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.HideTypingPractice -> _uiState.update { it.copy(showTypingPractice = false) }
             is LearningEvent.Retry -> startLearning()
             is LearningEvent.Undo -> undo()
-            is LearningEvent.DismissUndo -> {
-                // 仅关闭提示，不清空撤销快照。
-                // 这样用户即使错过 Snackbar，也能从菜单继续撤销上一次评分。
-            }
             is LearningEvent.ResumeFromWaiting -> resumeFromWaiting()
             is LearningEvent.SuspendCurrent -> suspendCurrentItem()
             is LearningEvent.BuryCurrent -> buryCurrentItem()
@@ -1034,7 +1030,7 @@ class LearningViewModel @Inject constructor(
      */
     private fun syncUndoAvailability() {
         val canUndo = learningUndoHelper.canUndo()
-        _uiState.update { it.copy(canUndo = canUndo, undoEventTrigger = it.undoEventTrigger + 1) }
+        _uiState.update { it.copy(canUndo = canUndo) }
     }
 
     /**
@@ -1107,11 +1103,7 @@ class LearningViewModel @Inject constructor(
                 syncUndoAvailability()
 
                 // 保存会话状态
-                val ids = if (mode == LearningMode.Word)
-                    snapshot.wordList.map { it.id }
-                else
-                    snapshot.grammarList.map { it.id }
-                saveSessionState(ids, snapshot.currentIndex, _uiState.value.selectedLevel)
+                saveCurrentSessionState()
 
                 println("撤销成功: ${snapshot.item.displayName}")
 

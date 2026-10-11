@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
 import androidx.compose.material3.MaterialTheme
@@ -55,7 +54,6 @@ import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
-import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPracticeDialog
 import com.jian.nemo.feature.learning.presentation.components.cards.SRSLearningCard
@@ -107,7 +105,6 @@ fun LearningScreen(
     var showRatingGuide by rememberSaveable { mutableStateOf(false) }
     var showAnswerDelayHint by rememberSaveable { mutableStateOf(false) }
     var showAnswerDelayHintSec by rememberSaveable { mutableStateOf(1) }
-    var showUndoHint by rememberSaveable { mutableStateOf(false) }
     var showAutoRevealDurationDialog by rememberSaveable { mutableStateOf(false) }
     var showDelayDurationDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -117,12 +114,6 @@ fun LearningScreen(
         4000L -> "4s"
         5000L -> "5s"
         else -> "${uiState.showAnswerDelayMs / 1000}s"
-    }
-
-    LaunchedEffect(uiState.undoEventTrigger) {
-        if (uiState.canUndo) {
-            showUndoHint = true
-        }
     }
 
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -260,7 +251,6 @@ fun LearningScreen(
 
             // 动态构建通知列表（最新产生的通知插入在最上方）
             val notificationList = remember(
-                uiState.canUndo, showUndoHint,
                 uiState.successMessage,
                 uiState.error,
                 showAnswerDelayHint, showAnswerDelayHintSec
@@ -299,23 +289,6 @@ fun LearningScreen(
                                 icon = Icons.Rounded.CheckCircle,
                                 autoDismissMs = 4000L,
                                 onDismiss = { viewModel.onEvent(LearningEvent.ClearSuccessMessage) }
-                            )
-                        )
-                    }
-                    if (uiState.canUndo && showUndoHint) {
-                        add(
-                            com.jian.nemo.core.ui.component.common.NemoNotificationData(
-                                id = "undo_hint",
-                                message = "点击撤销上一次评分",
-                                type = NemoSnackbarType.INFO,
-                                icon = Icons.AutoMirrored.Filled.Undo,
-                                actionText = "撤销",
-                                autoDismissMs = 4000L,
-                                onDismiss = { showUndoHint = false },
-                                onClick = {
-                                    showUndoHint = false
-                                    viewModel.onEvent(LearningEvent.Undo)
-                                }
                             )
                         )
                     }

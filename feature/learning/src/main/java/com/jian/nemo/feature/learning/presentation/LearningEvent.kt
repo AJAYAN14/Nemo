@@ -100,10 +100,6 @@ sealed interface LearningEvent {
      */
     data object Undo : LearningEvent
 
-    /**
-     * 关闭撤销提示（自动消失或手动关闭）
-     */
-    data object DismissUndo : LearningEvent
 
     /**
      * 从等待状态恢复学习（Learn Ahead Limit 到期或用户点击继续）

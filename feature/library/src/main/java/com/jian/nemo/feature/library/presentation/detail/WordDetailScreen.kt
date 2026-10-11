@@ -393,6 +393,7 @@ private fun WordDetailContent(
 private fun PremiumDetailCard(
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    borderRadius: androidx.compose.ui.unit.Dp = 24.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
@@ -400,8 +401,8 @@ private fun PremiumDetailCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+            .softCardShadow(borderRadius = borderRadius, isDark = isDark),
+        shape = RoundedCornerShape(borderRadius),
         color = containerColor,
         content = { Column(content = content) }
     )
@@ -414,20 +415,23 @@ private fun PremiumDetailCard(
 private fun DetailTag(
     text: String,
     containerColor: Color,
-    contentColor: Color
+    contentColor: Color,
+    height: androidx.compose.ui.unit.Dp = 28.dp,
+    horizontalPadding: androidx.compose.ui.unit.Dp = 12.dp,
+    textStyle: androidx.compose.ui.text.TextStyle? = null
 ) {
     Surface(
         shape = RoundedCornerShape(50),
         color = containerColor,
-        modifier = Modifier.height(28.dp)
+        modifier = Modifier.height(height)
     ) {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier.padding(horizontal = horizontalPadding)
         ) {
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                style = (textStyle ?: MaterialTheme.typography.labelMedium).copy(fontWeight = FontWeight.Bold),
                 color = contentColor
             )
         }
@@ -509,9 +513,7 @@ private fun RelatedWordsSection(
     onWordClick: (Int) -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         // Section Title
         Text(
@@ -521,14 +523,17 @@ private fun RelatedWordsSection(
                 letterSpacing = 0.5.sp
             ),
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 4.dp, bottom = 16.dp)
+            modifier = Modifier.padding(start = 28.dp, bottom = 16.dp)
         )
 
-        // List of Related Words
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Horizontal Carousel of Related Words
+        androidx.compose.foundation.lazy.LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            relatedWords.forEach { item ->
+            items(relatedWords.size) { index ->
+                val item = relatedWords[index]
                 RelatedWordCard(
                     item = item,
                     isDark = isDark,
@@ -547,78 +552,69 @@ private fun RelatedWordCard(
 ) {
     PremiumDetailCard(
         isDark = isDark,
-        modifier = Modifier.clickable { onClick() }
+        borderRadius = 16.dp,
+        modifier = Modifier
+            .width(160.dp)
+            .clickable { onClick() }
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                // Relation Type Tag
-                DetailTag(
-                    text = item.relation.relationType,
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                )
+            // Relation Type Tag
+            DetailTag(
+                text = item.relation.relationType,
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                height = 20.dp,
+                horizontalPadding = 8.dp,
+                textStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
+            )
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                // Word Header (Kanji + Kana)
-                Row(
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = item.relatedWord.japanese,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = NotoSerifJP
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    
-                    if (item.relatedWord.hiragana.isNotEmpty() && item.relatedWord.hiragana != item.relatedWord.japanese) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = item.relatedWord.hiragana,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 2.dp)
-                        )
-                    }
-                }
+            // Japanese
+            Text(
+                text = item.relatedWord.japanese,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = NotoSerifJP
+                ),
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Meaning
+            Spacer(modifier = Modifier.height(2.dp))
+            
+            // Hiragana (or placeholder to maintain height)
+            if (item.relatedWord.hiragana.isNotEmpty() && item.relatedWord.hiragana != item.relatedWord.japanese) {
                 Text(
-                    text = item.relatedWord.chinese,
+                    text = item.relatedWord.hiragana,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
-
-                // Optional Note
-                val note = item.relation.note
-                if (!note.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = note,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                    )
-                }
+            } else {
+                Text(
+                    text = " ",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
 
-            // Arrow Icon
-            Spacer(modifier = Modifier.width(16.dp))
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Rounded.ChevronRight,
-                contentDescription = "Go to related word",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.size(24.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Meaning
+            Text(
+                text = item.relatedWord.chinese,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
     }
