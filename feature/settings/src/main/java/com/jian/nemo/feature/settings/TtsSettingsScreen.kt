@@ -29,6 +29,7 @@ import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
 import com.jian.nemo.feature.settings.components.ChineseVoiceSelectionBottomSheet
 import com.jian.nemo.feature.settings.components.VoiceSelectionBottomSheet
+import com.jian.nemo.core.ui.component.liquid.LiquidSlider
 import java.util.Locale
 
 /**
@@ -302,34 +303,33 @@ private fun FlatSliderSettingItem(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Flat UI Slider with Haptic Feedback
-        Slider(
-            value = value,
-            onValueChange = { newValue ->
-                // 计算步进值间隔
-                val stepSize = (valueRange.endInclusive - valueRange.start) / (steps + 1)
-                val currentStep = ((newValue - valueRange.start) / stepSize).toInt()
-                val lastStep = ((lastStepValue - valueRange.start) / stepSize).toInt()
+        // 液态玻璃滑动条 (LiquidSlider) 具备阻尼拖拽与光影折射
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp, horizontal = 4.dp)
+        ) {
+            LiquidSlider(
+                value = { value },
+                onValueChange = { newValue ->
+                    // 计算步进值间隔
+                    val stepSize = (valueRange.endInclusive - valueRange.start) / (steps + 1)
+                    val currentStep = ((newValue - valueRange.start) / stepSize).toInt()
+                    val lastStep = ((lastStepValue - valueRange.start) / stepSize).toInt()
 
-                // 当跨越步进点时触发轻微震动
-                if (currentStep != lastStep) {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    lastStepValue = newValue
-                }
+                    // 当跨越步进点时触发轻微震动
+                    if (currentStep != lastStep) {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        lastStepValue = newValue
+                    }
 
-                onValueChange(newValue)
-            },
-            valueRange = valueRange,
-            steps = steps,
-            modifier = Modifier.fillMaxWidth(),
-            colors = SliderDefaults.colors(
-                thumbColor = accentColor,
-                activeTrackColor = accentColor,
-                inactiveTrackColor = if (isDark) NemoNeutrals.Gray700 else NemoNeutrals.Gray200,
-                activeTickColor = Color.Transparent,
-                inactiveTickColor = Color.Transparent
+                    onValueChange(newValue)
+                },
+                valueRange = valueRange,
+                visibilityThreshold = 0.01f,
+                accentColor = accentColor
             )
-        )
+        }
 
         // Labels Row
         Row(

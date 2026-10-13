@@ -23,6 +23,7 @@ import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.UnsavedChangesDialog
 
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.LiquidSlider
 
 /**
  * 记忆算法配置二级页面 (SRS Memory Algorithm Configuration)
@@ -262,17 +263,19 @@ fun AdvancedLearningSettingsScreen(
                                 color = accentColor
                             )
                         }
-                        Slider(
-                            value = limitInput,
-                            onValueChange = { limitInput = it },
-                            valueRange = 0f..60f,
-                            steps = 59,
-                            colors = SliderDefaults.colors(
-                                thumbColor = accentColor,
-                                activeTrackColor = accentColor,
-                                inactiveTrackColor = accentColor.copy(alpha = 0.2f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp, horizontal = 4.dp)
+                        ) {
+                            LiquidSlider(
+                                value = { limitInput },
+                                onValueChange = { limitInput = it },
+                                valueRange = 0f..60f,
+                                visibilityThreshold = 0.5f,
+                                accentColor = accentColor
                             )
-                        )
+                        }
                         Text(
                             text = "冷却时间低于此值时，允许立即开始复习。",
                             style = MaterialTheme.typography.bodySmall,
