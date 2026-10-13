@@ -1,7 +1,7 @@
 package com.jian.nemo.core.ui.component.liquid
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -23,6 +23,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -31,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.lerp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -47,10 +51,12 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.abs
 
 /**
  * 1:1 完美还原 E:\Android\AndroidLiquidGlass 的液态玻璃开关 (LiquidToggle)
  * 采用原版 64dp × 28dp 底轨与 40dp × 24dp 饱满胶囊滑块规范，具备完整的光影折射与物理阻尼拖拽。
+ * 针对垂直滚动容器做了手势事件消费（change.consume）与防滑动冲突优化，确保滑动开关时屏幕不随之上下滚动。
  */
 @Composable
 fun LiquidToggle(
@@ -61,7 +67,7 @@ fun LiquidToggle(
     accentColor: Color? = null
 ) {
     val isLightTheme = !isSystemInDarkTheme()
-    val actualAccentColor = accentColor ?: if (isLightTheme) Color(0xFF34C759) else Color(0xFF30D158)
+    val actualAccentColor = accentColor ?: MaterialTheme.colorScheme.primary
     val trackColor =
         if (isLightTheme) Color(0xFF787878).copy(0.2f)
         else Color(0xFF787880).copy(0.36f)
@@ -71,7 +77,6 @@ fun LiquidToggle(
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val dragWidth = with(density) { 20f.dp.toPx() }
     val animationScope = rememberCoroutineScope()
-    var didDrag by remember { mutableStateOf(false) }
     var fraction by remember { mutableFloatStateOf(if (selected()) 1f else 0f) }
 
     val dampedDragAnimation = remember(animationScope) {
@@ -83,25 +88,8 @@ fun LiquidToggle(
             initialScale = 1f,
             pressedScale = 1.5f,
             onDragStarted = {},
-            onDragStopped = {
-                if (didDrag) {
-                    fraction = if (targetValue >= 0.5f) 1f else 0f
-                    onSelect(fraction == 1f)
-                    didDrag = false
-                } else {
-                    fraction = if (selected()) 0f else 1f
-                    onSelect(fraction == 1f)
-                }
-            },
-            onDrag = { _, dragAmount ->
-                if (!didDrag) {
-                    didDrag = dragAmount.x != 0f
-                }
-                val delta = dragAmount.x / dragWidth
-                fraction =
-                    if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
-                    else (fraction - delta).fastCoerceIn(0f, 1f)
-            }
+            onDragStopped = {},
+            onDrag = { _, _ -> }
         )
     }
 
@@ -123,18 +111,76 @@ fun LiquidToggle(
     val trackBackdrop = rememberLayerBackdrop()
     val effectiveBackdrop = backdrop ?: rememberCanvasBackdrop { drawRect(surfaceColor) }
 
-    // 组合容器：支持原版胶囊尺寸，同时整体响应全区域点击，杜绝手势盲区卡死
+    // 组合容器：支持原版胶囊尺寸，统一全区域手势（捕获按下、拖动与点击，并在拖拽时消费事件锁定外层滚动）
     Box(
         modifier = modifier
             .size(64f.dp, 28f.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                val nextState = !selected()
-                fraction = if (nextState) 1f else 0f
-                dampedDragAnimation.animateToValue(fraction)
-                onSelect(nextState)
+            .semantics {
+                role = Role.Switch
+            }
+            .pointerInput(dragWidth, isLtr) {
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    dampedDragAnimation.press()
+
+                    var isDragging = false
+                    val touchSlop = viewConfiguration.touchSlop
+                    var accumulatedDragX = 0f
+                    val pointerId = down.id
+
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.fastFirstOrNull { it.id == pointerId }
+
+                        if (change == null || change.changedToUpIgnoreConsumed()) {
+                            if (!isDragging) {
+                                // 点击 (Tap)：切换状态并触发弹簧弹性滑动
+                                val nextState = !selected()
+                                fraction = if (nextState) 1f else 0f
+                                dampedDragAnimation.animateToValue(fraction)
+                                onSelect(nextState)
+                            } else {
+                                // 拖拽结束：吸附到 0 或 1
+                                val finalSelected = fraction >= 0.5f
+                                fraction = if (finalSelected) 1f else 0f
+                                dampedDragAnimation.animateToValue(fraction)
+                                onSelect(finalSelected)
+                            }
+                            dampedDragAnimation.release()
+                            break
+                        }
+
+                        if (!change.pressed) {
+                            dampedDragAnimation.release()
+                            break
+                        }
+
+                        val dragDelta = change.positionChange()
+                        if (!isDragging) {
+                            accumulatedDragX += dragDelta.x
+                            if (abs(accumulatedDragX) > touchSlop || abs(dragDelta.x) > 1.5f) {
+                                isDragging = true
+                                change.consume()
+                                val delta = dragDelta.x / dragWidth
+                                fraction =
+                                    if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
+                                    else (fraction - delta).fastCoerceIn(0f, 1f)
+                                dampedDragAnimation.updateValue(fraction)
+                            } else if (abs(dragDelta.x) > 0.5f) {
+                                // 横向微动阶段消费事件，避免外层列表抢占
+                                change.consume()
+                            }
+                        } else {
+                            // 拖拽中持续消费事件，彻底锁定外层滚动
+                            change.consume()
+                            val delta = dragDelta.x / dragWidth
+                            fraction =
+                                if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
+                                else (fraction - delta).fastCoerceIn(0f, 1f)
+                            dampedDragAnimation.updateValue(fraction)
+                        }
+                    }
+                }
             },
         contentAlignment = Alignment.CenterStart
     ) {
@@ -160,10 +206,6 @@ fun LiquidToggle(
                         if (isLtr) lerp(padding, padding + dragWidth, currentFraction)
                         else lerp(-padding, -(padding + dragWidth), currentFraction)
                 }
-                .semantics {
-                    role = Role.Switch
-                }
-                .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
                     backdrop = rememberCombinedBackdrop(
                         effectiveBackdrop,

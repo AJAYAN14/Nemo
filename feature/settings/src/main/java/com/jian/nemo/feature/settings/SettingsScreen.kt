@@ -302,7 +302,8 @@ fun SettingsScreen(
                         trailing = {
                             LiquidToggle(
                                 checked = uiState.isRandomNewContentEnabled,
-                                onCheckedChange = { showRandomNewContentConfirmDialog = true }
+                                onCheckedChange = { showRandomNewContentConfirmDialog = true },
+                                accentColor = MaterialTheme.colorScheme.primary
                             )
                         }
                     )
