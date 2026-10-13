@@ -226,7 +226,8 @@ fun NemoBottomBar(
                     },
                     backdrop = backdrop,
                     tabsCount = tabsCount,
-                    accentColor = themePrimary
+                    accentColor = themePrimary,
+                    isDarkTheme = isDarkTheme
                 ) {
                     BottomNavItem.entries.forEachIndexed { index, item ->
                         val isSelected = activeTabIndex == index

@@ -1,8 +1,10 @@
 package com.jian.nemo
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.animateDpAsState
@@ -96,6 +98,9 @@ class MainActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         // 启动时请求通知权限 (Android 13+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             val permissionLauncher = registerForActivityResult(
@@ -352,6 +357,7 @@ fun NemoApp(
 fun SetupSystemBars(isSplashScreen: Boolean = false) {
     val view = LocalView.current
     val window = (view.context as? android.app.Activity)?.window
+    val activity = view.context as? ComponentActivity
 
     // 获取特定主题颜色用于亮度计算
     val surfaceColor = MaterialTheme.colorScheme.surface
@@ -367,10 +373,14 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
     }
 
     // 在主题、颜色或路由变化时更新系统栏
-    LaunchedEffect(surfaceColor, backgroundColor, isSplashScreen) {
+    LaunchedEffect(surfaceColor, backgroundColor, isSplashScreen, useDarkIcons) {
         window?.let {
             // 使用官方 EdgeToEdge API
             WindowCompat.setDecorFitsSystemWindows(it, false)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                it.isNavigationBarContrastEnforced = false
+            }
 
             val insetsController = WindowInsetsControllerCompat(it, view)
 
@@ -379,6 +389,23 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
 
             // 沉浸式：导航栏透明，控制图标外观
             insetsController.isAppearanceLightNavigationBars = useDarkIcons
+        }
+
+        activity?.let {
+            val statusBarStyle = if (useDarkIcons) {
+                SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+            } else {
+                SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            }
+            val navigationBarStyle = if (useDarkIcons) {
+                SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+            } else {
+                SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            }
+            it.enableEdgeToEdge(
+                statusBarStyle = statusBarStyle,
+                navigationBarStyle = navigationBarStyle
+            )
         }
     }
 }
