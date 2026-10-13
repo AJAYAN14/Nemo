@@ -8,6 +8,7 @@ import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.data.datastore.PreferencesKeys
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SessionData
+import com.jian.nemo.core.domain.repository.ToggleStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import com.jian.nemo.core.domain.model.AppSettings
@@ -1973,6 +1974,24 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences.remove(PreferencesKeys.PENDING_GOAL_SET_DATE)
         } else {
             Log.d(TAG, "📅 检测到跨天，但目标是在当前逻辑日内设置的，顺延至下一个重置点生效 (今日: $today, 设置日: $setDate)")
+        }
+    }
+
+    /** 开关控件风格 Flow (默认 LIQUID_GLASS) */
+    override val toggleStyleFlow: Flow<ToggleStyle> = dataStore.data.map { preferences ->
+        val styleStr = preferences[PreferencesKeys.TOGGLE_STYLE]
+        try {
+            if (styleStr != null) ToggleStyle.valueOf(styleStr) else ToggleStyle.LIQUID_GLASS
+        } catch (e: Exception) {
+            ToggleStyle.LIQUID_GLASS
+        }
+    }
+
+    /** 设置开关控件风格 */
+    override suspend fun setToggleStyle(style: ToggleStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.TOGGLE_STYLE] = style.name
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }
 

@@ -59,6 +59,9 @@ object PreferencesKeys {
     /** 学习日重置时间（小时,0-23）默认: 4 (凌晨4:00) */
     val LEARNING_DAY_RESET_HOUR = intPreferencesKey("learning_day_reset_hour")
 
+    /** 开关控件视觉风格 (LIQUID_GLASS, GOOEY) 默认: LIQUID_GLASS */
+    val TOGGLE_STYLE = stringPreferencesKey("toggle_style")
+
     /** 应用图标名称 默认: "Nemo" */
     val APP_ICON = stringPreferencesKey("app_icon")
 

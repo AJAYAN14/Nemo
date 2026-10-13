@@ -14,6 +14,7 @@ data class SettingsUiState(
     val darkModeEndTime: String = "19:00",
     val isDynamicColorEnabled: Boolean = true,
     val appIcon: String = "Nemo", // 当前应用图标名称
+    val toggleStyle: com.jian.nemo.core.domain.repository.ToggleStyle = com.jian.nemo.core.domain.repository.ToggleStyle.LIQUID_GLASS, // 开关控件风格
 
     // 学习设置
     val dailyGoal: Int = 20,
@@ -110,6 +111,7 @@ sealed interface SettingsEvent {
     data class SetDarkModeEndTime(val time: String) : SettingsEvent
     data class SetDynamicColor(val enabled: Boolean) : SettingsEvent
     data class SetThemeColor(val colorArgb: Long?) : SettingsEvent
+    data class SetToggleStyle(val style: com.jian.nemo.core.domain.repository.ToggleStyle) : SettingsEvent
 
     // 学习设置
     data class SetDailyGoal(val goal: Int) : SettingsEvent

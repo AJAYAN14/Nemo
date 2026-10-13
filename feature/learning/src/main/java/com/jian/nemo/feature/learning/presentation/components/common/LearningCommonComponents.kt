@@ -792,11 +792,10 @@ private fun MorphMenuToggleItem(
                 fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            com.jian.nemo.core.ui.component.common.NemoGooeyToggle(
+            com.jian.nemo.core.ui.component.liquid.LiquidToggle(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                activeColor = MaterialTheme.colorScheme.primary,
-                inactiveColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                accentColor = MaterialTheme.colorScheme.primary
             )
         }
     }

@@ -51,6 +51,8 @@ import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
 import androidx.compose.runtime.remember
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 import kotlin.time.Duration.Companion.minutes
 
 /**
@@ -220,6 +222,7 @@ fun NemoApp(
     )
 
     val hazeState = remember { HazeState() }
+    val backdrop = rememberLayerBackdrop()
 
     Scaffold(
         bottomBar = {
@@ -239,6 +242,7 @@ fun NemoApp(
                 },
                 visible = showBottomBar,
                 hazeState = hazeState,
+                backdrop = backdrop,
                 user = uiState.currentUser
             )
         },
@@ -267,7 +271,11 @@ fun NemoApp(
             // 标准：使用 MaterialTheme 背景色
             color = if (useEdgeToEdge) Color.Transparent else MaterialTheme.colorScheme.background
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+            ) {
                 NemoNavHost(
                     navController = navController,
                     onCheckUpdate = {

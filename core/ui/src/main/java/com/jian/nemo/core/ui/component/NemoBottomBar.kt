@@ -59,15 +59,18 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+import com.kyant.backdrop.Backdrop
+import com.jian.nemo.core.ui.component.liquid.LiquidBottomTabs
+import com.jian.nemo.core.ui.component.liquid.LiquidBottomTab
+
 // 定义颜色常量
 private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
 
 /**
- * Nemo应用底部导航栏 (悬浮纯色胶囊版)
+ * Nemo应用底部导航栏 (液态玻璃版 / 悬浮胶囊版)
  *
  * 包含4个主要Tab：学习、进度、测试、个人
- * 采用悬浮胶囊布局设计，背景纯色，深浅自适应。
- * 选中项的背景改为弹簧横向滑动的胶囊指示器，体验极其高级。
+ * 采用悬浮胶囊布局设计，支持透镜折射、彩虹色散与阻尼弹性动效。
  */
 @Composable
 fun NemoBottomBar(
@@ -76,6 +79,7 @@ fun NemoBottomBar(
     modifier: Modifier = Modifier,
     visible: Boolean = true,
     hazeState: HazeState? = null,
+    backdrop: Backdrop? = null,
     user: User? = null
 ) {
     // 根据主题判断深色/浅色模式
@@ -110,6 +114,12 @@ fun NemoBottomBar(
         } else {
             lastValidIndex
         }
+    }
+
+    var activeTabIndex by rememberSaveable { mutableIntStateOf(selectedIndex) }
+
+    LaunchedEffect(selectedIndex) {
+        activeTabIndex = selectedIndex
     }
 
     // 核心动画状态
@@ -198,12 +208,72 @@ fun NemoBottomBar(
         enter = slideInVertically { it } + fadeIn(animationSpec = tween(durationMillis = 300)),
         exit = slideOutVertically { it } + fadeOut(animationSpec = tween(durationMillis = 300))
     ) {
-        Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
+        if (backdrop != null) {
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                LiquidBottomTabs(
+                    selectedTabIndex = { activeTabIndex },
+                    onTabSelected = { index ->
+                        activeTabIndex = index
+                        val targetRoute = BottomNavItem.entries[index].route
+                        if (targetRoute != currentRouteState) {
+                            currentOnNavigateState(targetRoute)
+                        }
+                    },
+                    backdrop = backdrop,
+                    tabsCount = tabsCount,
+                    accentColor = themePrimary
+                ) {
+                    BottomNavItem.entries.forEachIndexed { index, item ->
+                        val isSelected = activeTabIndex == index
+
+                        LiquidBottomTab(
+                            onClick = {
+                                activeTabIndex = index
+                                if (item.route != currentRouteState) {
+                                    currentOnNavigateState(item.route)
+                                }
+                            }
+                        ) {
+                            if (item == BottomNavItem.SETTINGS && user != null) {
+                                AvatarImage(
+                                    username = user.username,
+                                    avatarPath = user.avatarUrl,
+                                    size = 24.dp,
+                                    borderWidth = if (isSelected) 1.5.dp else 0.dp,
+                                    borderColor = Color.White.copy(alpha = if (isSelected) 0.8f else 0f)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.title,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            Text(
+                                text = item.title,
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 11.sp
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Box(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
             // 外壳层：提供阴影和整体变换，不裁剪内容
             Box(
                 modifier = Modifier
@@ -469,6 +539,7 @@ fun NemoBottomBar(
                     }
                 }
             }
+        }
         }
     }
 }

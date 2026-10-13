@@ -695,6 +695,18 @@ interface SettingsRepository {
     /** AI 工坊最近已抽取语法点 ID 列表 Flow */
     val aiRecentGrammarIdsFlow: Flow<String>
     suspend fun setAiRecentGrammarIds(json: String)
+
+    /** 开关控件风格 Flow (默认 LIQUID_GLASS) */
+    val toggleStyleFlow: Flow<ToggleStyle>
+    suspend fun setToggleStyle(style: ToggleStyle)
+}
+
+/**
+ * 开关控件视觉风格
+ */
+enum class ToggleStyle {
+    LIQUID_GLASS, // 液态玻璃效果
+    GOOEY         // 液态拉伸果冻效果
 }
 
 /**

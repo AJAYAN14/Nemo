@@ -30,7 +30,7 @@ import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.NemoDialog
-import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
+import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.feature.settings.components.*
@@ -300,11 +300,9 @@ fun SettingsScreen(
                         onClick = { showRandomNewContentConfirmDialog = true },
                         showDivider = true,
                         trailing = {
-                            NemoGooeyToggle(
+                            LiquidToggle(
                                 checked = uiState.isRandomNewContentEnabled,
-                                onCheckedChange = { showRandomNewContentConfirmDialog = true },
-                                activeColor = MaterialTheme.colorScheme.primary,
-                                inactiveColor = MaterialTheme.colorScheme.surfaceVariant
+                                onCheckedChange = { showRandomNewContentConfirmDialog = true }
                             )
                         }
                     )

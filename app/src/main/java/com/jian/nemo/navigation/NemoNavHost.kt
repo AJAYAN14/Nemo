@@ -184,6 +184,37 @@ fun NemoNavHost(
         )
     }
 
+    val mainEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+        if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
+        else BottomNavTransition.enterTransition()
+    }
+
+    val mainExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
+        if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
+        else BottomNavTransition.exitTransition()
+    }
+
+    val mainPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+        if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
+        else BottomNavTransition.enterTransition()
+    }
+
+    val mainPopExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
+        BottomNavTransition.exitTransition()
+    }
+
     SharedTransitionLayout(modifier = modifier) {
         CompositionLocalProvider(
             LocalSharedTransitionScope provides this
@@ -231,7 +262,13 @@ fun NemoNavHost(
         }
 
         // 学习页（原首页） - 主界面 (重构为 HomeScreen)
-        composable(route = NavDestination.LEARNING) {
+        composable(
+            route = NavDestination.LEARNING,
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
+        ) {
             HomeScreen(
                 onNavigateToLearning = { mode ->
                     when (mode) {
@@ -304,7 +341,13 @@ fun NemoNavHost(
         }
 
         // 进度页 - 主界面
-        composable(route = NavDestination.PROGRESS) {
+        composable(
+            route = NavDestination.PROGRESS,
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
+        ) {
             com.jian.nemo.feature.statistics.presentation.dashboard.ProgressDashboardScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCategoryPractice = {
@@ -341,7 +384,13 @@ fun NemoNavHost(
         }
 
         // 测试页 - 主界面
-        composable(route = NavDestination.TEST) {
+        composable(
+            route = NavDestination.TEST,
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
+        ) {
             CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                 com.jian.nemo.feature.test.presentation.dashboard.TestDashboardScreen(
                     onNavigateBack = { navController.popBackStack() },
@@ -512,7 +561,13 @@ fun NemoNavHost(
         testScreen(navController)
 
         // 设置（底部导航栏"个人"tab） - 主界面
-        composable(route = NavDestination.SETTINGS) {
+        composable(
+            route = NavDestination.SETTINGS,
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
+        ) {
             SettingsScreen(
                 onNavigateToLogin = {
                     navController.navigate(NavDestination.PROFILE) // userGraph 处理登录/资料切换

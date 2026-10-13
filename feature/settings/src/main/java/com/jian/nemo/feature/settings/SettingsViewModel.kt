@@ -90,6 +90,12 @@ class SettingsViewModel @Inject constructor(
             }
         }
 
+        viewModelScope.launch {
+            settingsRepository.toggleStyleFlow.collect { style ->
+                _uiState.update { it.copy(toggleStyle = style) }
+            }
+        }
+
         // 加载可用语音列表
         viewModelScope.launch {
             val voices = audioRepository.getAvailableVoices()
@@ -206,6 +212,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetDarkModeEndTime -> setDarkModeEndTime(event.time)
             is SettingsEvent.SetDynamicColor -> setDynamicColor(event.enabled)
             is SettingsEvent.SetThemeColor -> setThemeColor(event.colorArgb)
+            is SettingsEvent.SetToggleStyle -> setToggleStyle(event.style)
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
             is SettingsEvent.SetAppIcon -> setAppIcon(event.iconName)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
@@ -495,6 +502,15 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.setDefaultBonusBatchSize(size)
             _uiState.update { it.copy(showBonusBatchSizeDialog = false) }
+        }
+    }
+
+    /**
+     * 设置开关控件风格
+     */
+    private fun setToggleStyle(style: com.jian.nemo.core.domain.repository.ToggleStyle) {
+        viewModelScope.launch {
+            settingsRepository.setToggleStyle(style)
         }
     }
 
