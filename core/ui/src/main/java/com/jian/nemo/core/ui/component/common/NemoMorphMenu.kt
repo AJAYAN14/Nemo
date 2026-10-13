@@ -116,6 +116,7 @@ fun NemoMorphMenu(
     contentDescription: String? = "更多选项",
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
+    elevation: Dp = 0.dp,
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -128,6 +129,7 @@ fun NemoMorphMenu(
         contentDescription = contentDescription,
         buttonSize = buttonSize,
         menuWidth = menuWidth,
+        elevation = elevation,
         content = content
     )
 }
@@ -144,6 +146,7 @@ fun NemoMorphMenu(
     contentDescription: String? = "更多选项",
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
+    elevation: Dp = 0.dp,
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -259,9 +262,15 @@ fun NemoMorphMenu(
                             alpha = panelAlpha
                             transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 0f)
                         }
-                        .shadow(
-                            elevation = 16.dp,
-                            shape = RoundedCornerShape(20.dp)
+                        .then(
+                            if (elevation > 0.dp) {
+                                Modifier.shadow(
+                                    elevation = elevation,
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                            } else {
+                                Modifier
+                            }
                         )
                         .clip(RoundedCornerShape(20.dp))
                         .background(containerColor)
