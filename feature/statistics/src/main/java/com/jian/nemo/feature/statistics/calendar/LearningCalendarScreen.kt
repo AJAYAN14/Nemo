@@ -96,15 +96,7 @@ fun LearningCalendarScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // 1. 今日概览 (Today Summary)
-            item {
-                CalendarSectionTitle("今日概览")
-                TodaySummaryCard(
-                    stats = todayStats
-                )
-            }
-
-            // 2. 动态日历卡片 (周模式 ↔ 月模式)
+            // 1. 核心活动三环卡片 (周模式 ↔ 月模式联动)
             item {
                 Row(
                     modifier = Modifier
@@ -113,23 +105,25 @@ fun LearningCalendarScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CalendarSectionTitle(if (isMonthMode) "月度学习日历" else "本周进度")
+                    CalendarSectionTitle(if (isMonthMode) "月度活动日历" else "周进度与目标")
                     SegmentedCalendarToggle(
                         isMonthMode = isMonthMode,
                         onToggle = { isMonthMode = it }
                     )
                 }
-                InteractiveCalendarCard(
+                ActivityRingsCard(
                     isMonthMode = isMonthMode,
                     selectedDate = selectedDate,
                     todayEpochDay = uiState.todayEpochDay,
-                    weekForecast = uiState.weekForecast,
-                    heatmapData = uiState.heatmapData,
-                    onDateSelected = viewModel::onDateSelected
+                    todayStats = uiState.todayStats,
+                    recordsMap = uiState.recordsMap,
+                    forecastMap = uiState.weekForecast,
+                    onDateSelected = viewModel::onDateSelected,
+                    onMonthChanged = viewModel::loadMonthRecords
                 )
             }
 
-            // 4. 详情面板 (Day Detail)
+            // 2. 详情面板 (Day Detail)
             item {
                 CalendarSectionTitle("详细记录")
                 DayDetailPanel(
@@ -826,9 +820,12 @@ fun DayDetailPanel(
     val selectedDate = uiState.selectedDate
     val todayEpoch = uiState.todayEpochDay
 
-    // Manually calculate local epoch day for API 24 compatibility
-    // Using simple offset calculation which matches DateTimeUtils logic implicitly (via desugaring) but is safer explicitly here
-    val selectedEpoch = (selectedDate.time + TimeZone.getDefault().getOffset(selectedDate.time)) / 86400000L
+    val cal = Calendar.getInstance().apply { time = selectedDate }
+    val selectedEpoch = java.time.LocalDate.of(
+        cal.get(Calendar.YEAR),
+        cal.get(Calendar.MONTH) + 1,
+        cal.get(Calendar.DAY_OF_MONTH)
+    ).toEpochDay()
 
     // 计算显示数据
     val isToday = selectedEpoch == todayEpoch

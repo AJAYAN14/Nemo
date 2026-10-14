@@ -43,8 +43,12 @@ class LearningCalendarViewModel @Inject constructor(
         viewModelScope.launch {
             val resetHour = settingsRepository.learningDayResetHourFlow.first()
             val todayEpoch = DateTimeUtils.getLearningDay(resetHour)
-            val todayDate = Date(todayEpoch * 86400000L)
-            _selectedDate.value = getDateWithZeroTime(todayDate)
+            val localDate = java.time.LocalDate.ofEpochDay(todayEpoch)
+            val cal = Calendar.getInstance().apply {
+                set(localDate.year, localDate.monthValue - 1, localDate.dayOfMonth, 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            _selectedDate.value = cal.time
         }
     }
 
@@ -80,6 +84,29 @@ class LearningCalendarViewModel @Inject constructor(
             settingsRepository.learningDayResetHourFlow.collect { resetHour ->
                 val today = DateTimeUtils.getLearningDay(resetHour)
                 _uiState.update { it.copy(todayEpochDay = today) }
+
+                // 加载最近 90 天记录，供周三环与月度三环日历直接展示
+                val startDay = today - 90
+                studyRecordRepository.getRecordsBetween(startDay, today).collect { records ->
+                    val map = records.associateBy { it.date }
+                    _uiState.update { state ->
+                        state.copy(recordsMap = state.recordsMap + map)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * 确保指定月份的记录已加载
+     */
+    fun loadMonthRecords(startEpoch: Long, endEpoch: Long) {
+        viewModelScope.launch {
+            studyRecordRepository.getRecordsBetween(startEpoch, endEpoch).collect { records ->
+                val map = records.associateBy { it.date }
+                _uiState.update { state ->
+                    state.copy(recordsMap = state.recordsMap + map)
+                }
             }
         }
     }
@@ -89,7 +116,12 @@ class LearningCalendarViewModel @Inject constructor(
         viewModelScope.launch {
             _selectedDate
                 .flatMapLatest { date ->
-                    val epochDay = DateTimeUtils.timestampToEpochDay(date.time)
+                    val cal = Calendar.getInstance().apply { time = date }
+                    val epochDay = java.time.LocalDate.of(
+                        cal.get(Calendar.YEAR),
+                        cal.get(Calendar.MONTH) + 1,
+                        cal.get(Calendar.DAY_OF_MONTH)
+                    ).toEpochDay()
 
                     val resetHour = settingsRepository.learningDayResetHourFlow.first()
                     val todayEpochDay = DateTimeUtils.getLearningDay(resetHour)
@@ -135,6 +167,7 @@ data class LearningCalendarUiState(
     val todayStats: LearningStats? = null,
     val weekForecast: Map<Long, ReviewForecast> = emptyMap(), // EpochDay -> ReviewForecast
     val heatmapData: List<HeatmapDay> = emptyList(), // Added
+    val recordsMap: Map<Long, StudyRecord> = emptyMap(), // EpochDay -> StudyRecord 供微型三环使用
     val selectedDateRecord: StudyRecord? = null,
     val todayEpochDay: Long = DateTimeUtils.getCurrentEpochDay(),
     val error: String? = null
