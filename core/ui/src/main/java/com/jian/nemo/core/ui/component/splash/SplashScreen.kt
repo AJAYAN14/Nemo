@@ -81,9 +81,6 @@ fun SplashScreen(
 
     var animationFinished by remember { mutableStateOf(false) }
 
-    // --- 启动屏整体退场转场动画 ---
-    val splashScale = remember { Animatable(1f) }
-    val splashAlpha = remember { Animatable(1f) }
 
     // --- 底部品牌锁（Lockup）动画状态 ---
     val tileScale = remember { Animatable(0f) }
@@ -246,17 +243,8 @@ fun SplashScreen(
             }
         }
 
-        // 5. 2400ms: 所有品牌与欢迎动效完整展现后，整体微缩放淡出
+        // 5. 2400ms: 所有品牌与欢迎动效完整展现就位后，触发跳转，交由 NavHost 统一执行交叉淡入淡出 (Crossfade)
         delay(2400)
-        launch {
-            splashScale.animateTo(1.05f, tween(400, easing = FastOutSlowInEasing))
-        }
-        launch {
-            splashAlpha.animateTo(0f, tween(400, easing = FastOutSlowInEasing))
-        }
-
-        // 6. 2800ms: 动画播放结束
-        delay(400)
         animationFinished = true
     }
 
@@ -272,11 +260,6 @@ fun SplashScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(bgColor)
-            .graphicsLayer {
-                scaleX = splashScale.value
-                scaleY = splashScale.value
-                alpha = splashAlpha.value
-            }
     ) {
         // ================= 中央舞台（Welcome! + 呼吸光晕 + 浮动几何图形） =================
         Box(

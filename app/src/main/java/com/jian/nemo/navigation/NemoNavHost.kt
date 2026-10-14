@@ -187,9 +187,13 @@ fun NemoNavHost(
     val mainEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
         val initialRoute = initialState.destination.route
         val targetRoute = targetState.destination.route
-        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-        if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-        else BottomNavTransition.enterTransition()
+        if (initialRoute == "splash") {
+            fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))
+        } else {
+            HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+            if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
+            else BottomNavTransition.enterTransition()
+        }
     }
 
     val mainExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
@@ -203,9 +207,13 @@ fun NemoNavHost(
     val mainPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
         val initialRoute = initialState.destination.route
         val targetRoute = targetState.destination.route
-        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
-        if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
-        else BottomNavTransition.enterTransition()
+        if (initialRoute == "splash") {
+            fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))
+        } else {
+            HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+            if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
+            else BottomNavTransition.enterTransition()
+        }
     }
 
     val mainPopExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
@@ -229,15 +237,11 @@ fun NemoNavHost(
                 popEnterTransition = { NemoNavigationAnimations.popEnterTransition() },
                 popExitTransition = { NemoNavigationAnimations.popExitTransition() }
             ) {
-        // 启动屏 (使用缩放并淡出动画)
+        // 启动屏 (使用纯净淡出动画衔接主界面)
         composable(
             route = "splash",
             exitTransition = {
-                fadeOut(animationSpec = tween(600)) +
-                scaleOut(
-                    targetScale = 1.2f,
-                    animationSpec = tween(600, easing = FastOutSlowInEasing)
-                )
+                fadeOut(animationSpec = tween(350, easing = FastOutSlowInEasing))
             }
         ) {
 
