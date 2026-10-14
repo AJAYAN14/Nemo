@@ -52,6 +52,7 @@ import com.jian.nemo.feature.settings.TtsSettingsScreen
 import com.jian.nemo.feature.settings.ThemeSettingsScreen
 import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
 import com.jian.nemo.feature.settings.AISettingsScreen
+import com.jian.nemo.feature.settings.LiquidGlassLabScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -591,11 +592,19 @@ fun NemoNavHost(
                 onNavigateToCloudBackupHistory = {
                     navController.navigate(NavDestination.cloudBackupHistory(isFromLogin = false))
                 },
+                onNavigateToLiquidLab = {
+                    navController.navigate(NavDestination.LIQUID_GLASS_LAB)
+                },
                 onCheckUpdate = onCheckUpdate
             )
         }
 
-
+        // 液态玻璃实验室
+        composable(NavDestination.LIQUID_GLASS_LAB) {
+            LiquidGlassLabScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
 
         // TTS设置
         composable(NavDestination.TTS_SETTINGS) {

@@ -28,6 +28,7 @@ object NavDestination {
     const val VERB_CONJUGATION_HANDBOOK = "verb_conjugation_handbook" // 动词活用手册/大全
     const val LISTENING_COMPREHENSION = "listening_comprehension" // 听力理解
     const val WORD_CLOZE = "word_cloze" // 单词挖空测试
+    const val LIQUID_GLASS_LAB = "liquid_glass_lab" // 液态玻璃实验室
 
 
 

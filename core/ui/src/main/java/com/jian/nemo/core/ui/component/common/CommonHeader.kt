@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
 /**
@@ -45,9 +45,6 @@ fun CommonHeader(
     centerContent: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null
 ) {
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,10 +63,10 @@ fun CommonHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
-                    LiquidButton(
+                    FrostedLiquidGlassButton(
                         onClick = onBack,
-                        backgroundColor = navGroupBg,
                         shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
                         modifier = Modifier.size(44.dp)
                     ) {

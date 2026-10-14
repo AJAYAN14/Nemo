@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.Capsule
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -93,7 +94,6 @@ fun CloudBackupHistoryScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
-            modifier = Modifier.layerBackdrop(backdrop),
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
             topBar = {
@@ -112,9 +112,6 @@ fun CloudBackupHistoryScreen(
                 } else {
                     remember { mutableStateOf(0f) }
                 }
-
-                val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-                val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
 
                 if (isFromLogin) {
                     // 首次启动 / 登录引导模式下的沉浸式向导顶栏 (Hero Header)
@@ -177,14 +174,14 @@ fun CloudBackupHistoryScreen(
 
                             Spacer(modifier = Modifier.width(12.dp))
 
-                            LiquidButton(
+                            FrostedLiquidGlassButton(
                                 onClick = {
                                     if (!isRefreshing) {
                                         viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
                                     }
                                 },
-                                backgroundColor = navGroupBg,
                                 shape = CircleShape,
+                                contentPadding = PaddingValues(0.dp),
                                 isInteractive = true,
                                 modifier = Modifier.size(44.dp)
                             ) {
@@ -203,14 +200,14 @@ fun CloudBackupHistoryScreen(
                         title = "云端备份历史",
                         onBack = onNavigateBack,
                         actions = {
-                            LiquidButton(
+                            FrostedLiquidGlassButton(
                                 onClick = {
                                     if (!isRefreshing) {
                                         viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
                                     }
                                 },
-                                backgroundColor = navGroupBg,
                                 shape = CircleShape,
+                                contentPadding = PaddingValues(0.dp),
                                 isInteractive = true,
                                 modifier = Modifier.size(44.dp)
                             ) {
@@ -228,6 +225,7 @@ fun CloudBackupHistoryScreen(
         ) { paddingValues ->
             Box(
                 modifier = Modifier
+                    .layerBackdrop(backdrop)
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {

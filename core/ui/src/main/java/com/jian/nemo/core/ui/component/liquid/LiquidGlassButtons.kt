@@ -38,6 +38,59 @@ import kotlin.math.sin
 import kotlin.math.tanh
 
 /**
+ * ============================================================================
+ * 通用液态玻璃按钮架构规范与避坑指南 (Liquid Glass Design & Pitfall Handbook)
+ * ============================================================================
+ *
+ * 核心设计对标官方 Demo 项目 `AndroidLiquidGlass`，封装 3 种开箱即用的标准液态玻璃按钮：
+ * 1. [ClearLiquidGlassButton]   : 全透明液态玻璃按钮（纯透镜折射 + 高斯模糊 + 物理弹簧高光，无染色）
+ * 2. [FrostedLiquidGlassButton] : 带底色磨砂液态玻璃按钮（默认叠加 30% 纯白轻磨砂底，文字与图标对比度极佳）
+ * 3. [ColoredLiquidGlassButton] : 彩色液态玻璃按钮（BlendMode.Hue 色相注入，晶莹宝石质感，严禁加白底）
+ *
+ * ----------------------------------------------------------------------------
+ * ⚠️【重大避坑准则】避免系统底层渲染死锁闪退 (RenderThread SIGSEGV 11)
+ * ----------------------------------------------------------------------------
+ *
+ * 1. 【严禁父子自包含图层采样】:
+ *    在小米设备 (MIUI / HyperOS) 等底层硬件加速流水线 (libhwui.so) 中，当父容器 (如 Scaffold)
+ *    挂载了 `Modifier.layerBackdrop(backdrop)` 录制图层，而其内部子节点 (如 topBar 里的按钮)
+ *    又调用了 `drawBackdrop(backdrop)` 去读取该未完成图层时，会造成 Skia RenderNode 的自循环死锁，
+ *    在 `MiBackgroundBlurBlend::preUpdateInfo` 阶段触发 SEGV_ACCERR 崩溃！
+ *
+ * 2. 【正确范式：同级兄弟节点原则 (Sibling Architecture)】:
+ *    被采样的内容层必须与悬浮读取层处于同一层级（即兄弟关系）。
+ *    - 正确做法：
+ *      ```kotlin
+ *      val backdrop = rememberLayerBackdrop()
+ *      Box(modifier = Modifier.fillMaxSize()) {
+ *          // 1. 被采样的底层内容（如滚动列表、图片、卡片）挂载 layerBackdrop
+ *          Box(modifier = Modifier.fillMaxSize().layerBackdrop(backdrop)) {
+ *              LazyColumn(...)
+ *          }
+ *          // 2. 悬浮液态玻璃按钮作为同级浮层置于上层，读取 backdrop
+ *          ColoredLiquidGlassButton(
+ *              backdrop = backdrop,
+ *              modifier = Modifier.align(Alignment.BottomCenter)...
+ *          )
+ *      }
+ *      ```
+ *
+ * 3. 【顶栏与纯色背景按钮选型铁律 (必须使用带底色磨砂款 Frosted)】:
+ *    - **光学原理与纯色失效**：
+ *      透镜物理折射 [lens] 的本质是对底层像素进行光学位移、弯曲与放大。当底层具有复杂色彩、渐变或
+ *      卡片文字时（如实验室背景或滚动列表上方），折射效果极其惊艳。但顶栏通常是纯白/单色背景，
+ *      纯色像素无论如何折射位移，显示出来的依旧是纯色，导致【全透明款 Clear】在顶栏几乎看不出任何透镜感，
+ *      反而显得空虚发灰、缺乏实体支撑。
+ *    - **带底色磨砂款的最佳实践**：
+ *      顶栏返回按钮、刷新按钮等独立圆形图标按钮，**必须使用 [FrostedLiquidGlassButton]**！
+ *      借助默认 30% 纯白磨砂底色（Color.White.copy(0.3f)）与漫反射高光，能在单色顶栏上瞬间凝聚出
+ *      温润剔透的悬浮玻璃圆盘实体感，图标对比度最高，视觉体验最为高级自然。
+ *    - **独立安全渲染**：
+ *      顶栏按钮请**始终保持 backdrop = null**，组件会自动使用安全独立渲染通道，绝不引发底层渲染死锁。
+ * ============================================================================
+ */
+
+/**
  * 通用液态玻璃按钮基础组件 (Core Liquid Glass Button)
  *
  * 移植并升级自 AndroidLiquidGlass 核心渲染引擎：

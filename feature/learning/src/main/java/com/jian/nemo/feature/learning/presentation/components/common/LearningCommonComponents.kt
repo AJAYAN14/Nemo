@@ -15,9 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -240,15 +243,12 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
                 ) {
-                    LiquidButton(
+                    FrostedLiquidGlassButton(
                         onClick = onClose,
-                        backgroundColor = navGroupBg,
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        elevation = 0.dp,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
-                        modifier = Modifier
-                            .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                            .size(44.dp)
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
@@ -277,15 +277,12 @@ fun LearnHeader(
                         enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
                         exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally()
                     ) {
-                        LiquidButton(
+                        FrostedLiquidGlassButton(
                             onClick = { onUndo?.invoke() },
-                            backgroundColor = navGroupBg,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            elevation = 0.dp,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
-                            modifier = Modifier
-                                .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                                .size(44.dp)
+                            modifier = Modifier.size(44.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.Undo,
@@ -302,15 +299,12 @@ fun LearnHeader(
                     val remainingCount = totalCount
 
                     if (remainingCount > 0) {
-                        LiquidButton(
+                        FrostedLiquidGlassButton(
                             onClick = {},
-                            backgroundColor = navGroupBg,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            elevation = 0.dp,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                             isInteractive = true,
-                            modifier = Modifier
-                                .softCardShadow(borderRadius = 22.dp, isDark = isDarkTheme)
-                                .height(44.dp)
+                            modifier = Modifier.height(44.dp)
                         ) {
                             val annotatedText = buildAnnotatedString {
                                 withStyle(
@@ -332,8 +326,7 @@ fun LearnHeader(
                             }
                             Text(
                                 text = annotatedText,
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                style = MaterialTheme.typography.labelMedium
                             )
                         }
                     }

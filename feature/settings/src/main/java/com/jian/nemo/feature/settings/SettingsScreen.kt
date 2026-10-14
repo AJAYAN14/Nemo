@@ -51,6 +51,7 @@ fun SettingsScreen(
     onNavigateToThemeSettings: () -> Unit,
     onNavigateToAiSettings: () -> Unit,
     onNavigateToCloudBackupHistory: () -> Unit,
+    onNavigateToLiquidLab: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -396,6 +397,22 @@ fun SettingsScreen(
                         showDivider = false
                     )
 
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // 实验室
+            item {
+                SettingsSectionTitle("实验室")
+                PremiumCard {
+                    SquircleSettingItem(
+                        icon = Icons.Rounded.Science,
+                        iconColor = NemoCyan,
+                        title = "液态玻璃实验室",
+                        subtitle = "体验透镜折射与动态物理流体按钮",
+                        onClick = onNavigateToLiquidLab,
+                        showDivider = false
+                    )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }

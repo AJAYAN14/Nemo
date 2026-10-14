@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -151,7 +151,6 @@ fun NemoMorphMenu(
 ) {
     val haptic = LocalHapticFeedback.current
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
     val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.06f)
 
@@ -213,18 +212,18 @@ fun NemoMorphMenu(
         }
     }
 
-    // 常态下的液态占位触发按钮（与 CommonHeader 返回按钮完全统一）
+    // 常态下的液态玻璃占位触发按钮（与 CommonHeader 返回按钮完全统一）
     Box(
         modifier = modifier.size(buttonSize),
         contentAlignment = Alignment.Center
     ) {
-        LiquidButton(
+        FrostedLiquidGlassButton(
             onClick = {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onExpandedChange(true)
             },
-            backgroundColor = navGroupBg,
             shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
             isInteractive = true,
             modifier = Modifier.size(buttonSize)
         ) {
