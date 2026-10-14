@@ -618,18 +618,6 @@ interface SettingsRepository {
     /** 添加已关闭的通知 ID */
     suspend fun addDismissedNotificationId(id: String)
 
-    // ========== 应用图标设置 ==========
-
-    /** 
-     * 应用图标名称 Flow 
-     * 可选值: "Nemo" (默认), "Gold", "Daruma", "Zen"
-     */
-    val appIconFlow: Flow<String>
-
-    /**
-     * 设置应用图标
-     */
-    suspend fun setAppIcon(iconName: String)
 
     // ========== AI 工坊配置 ==========
 

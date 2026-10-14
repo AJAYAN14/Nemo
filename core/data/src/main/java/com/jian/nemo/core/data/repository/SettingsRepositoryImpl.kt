@@ -1624,18 +1624,6 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    // ========== 应用图标实现 ==========
-
-    override val appIconFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[PreferencesKeys.APP_ICON] ?: "Nemo"
-    }
-
-    override suspend fun setAppIcon(iconName: String) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.APP_ICON] = iconName
-            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
-        }
-    }
 
     // ========== AI 工坊配置 ==========
 

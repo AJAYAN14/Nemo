@@ -116,9 +116,6 @@ class SettingsViewModel @Inject constructor(
                 ThemeSettings(darkMode, dynamicColor, strategy, startTime, endTime)
             }.combine(settingsRepository.themeColorFlow) { theme, themeColor ->
                 theme.copy(themeColor = themeColor)
-            }.combine(settingsRepository.appIconFlow) { theme, appIcon ->
-                 _uiState.update { it.copy(appIcon = appIcon) }
-                 theme // return theme for next combined
             }
 
             val goalsFlow = combine(
@@ -214,7 +211,6 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetThemeColor -> setThemeColor(event.colorArgb)
             is SettingsEvent.SetToggleStyle -> setToggleStyle(event.style)
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
-            is SettingsEvent.SetAppIcon -> setAppIcon(event.iconName)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
             is SettingsEvent.SetDefaultBonusBatchSize -> setDefaultBonusBatchSize(event.size)
             is SettingsEvent.SetLearningDayResetHour -> setLearningDayResetHour(event.hour)
@@ -514,47 +510,6 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 设置应用图标
-     */
-    private fun setAppIcon(iconName: String) {
-        viewModelScope.launch {
-            // 1. 保存到 DataStore
-            settingsRepository.setAppIcon(iconName)
-            
-            // 2. 执行物理切换 (PackageManager)
-            try {
-                val packageManager = application.packageManager
-                val packageName = application.packageName
-                
-                // 定义所有的图标组件别名 (必须与 AndroidManifest.xml 一致)
-                val icons = listOf("Nemo", "Gold", "Daruma", "Zen")
-                
-                icons.forEach { name ->
-                    val componentName = android.content.ComponentName(
-                        packageName,
-                        "$packageName.MainActivity$name"
-                    )
-                    
-                    val newState = if (name == iconName) {
-                        android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-                    } else {
-                        android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-                    }
-                    
-                    packageManager.setComponentEnabledSetting(
-                        componentName,
-                        newState,
-                        android.content.pm.PackageManager.DONT_KILL_APP
-                    )
-                }
-                
-                Log.i("SettingsViewModel", "App icon changed to: $iconName")
-            } catch (e: Exception) {
-                Log.e("SettingsViewModel", "Failed to change app icon", e)
-            }
-        }
-    }
 
     /**
      * 设置学习日重置时间

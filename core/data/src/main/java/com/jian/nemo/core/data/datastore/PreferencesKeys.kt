@@ -62,8 +62,6 @@ object PreferencesKeys {
     /** 开关控件视觉风格 (LIQUID_GLASS, GOOEY) 默认: LIQUID_GLASS */
     val TOGGLE_STYLE = stringPreferencesKey("toggle_style")
 
-    /** 应用图标名称 默认: "Nemo" */
-    val APP_ICON = stringPreferencesKey("app_icon")
 
     /** 通知开关 默认: true */
     val IS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_notification_enabled")

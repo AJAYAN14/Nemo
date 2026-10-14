@@ -54,9 +54,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.abs
 
 /**
- * 1:1 完美还原 E:\Android\AndroidLiquidGlass 的液态玻璃开关 (LiquidToggle)
- * 采用原版 64dp × 28dp 底轨与 40dp × 24dp 饱满胶囊滑块规范，具备完整的光影折射与物理阻尼拖拽。
- * 针对垂直滚动容器做了手势事件消费（change.consume）与防滑动冲突优化，确保滑动开关时屏幕不随之上下滚动。
+ * 液态玻璃开关组件 (LiquidToggle)
+ * 包含底轨与胶囊滑块，支持光影折射、物理弹性拖拽以及防手势冲突处理。
  */
 @Composable
 fun LiquidToggle(

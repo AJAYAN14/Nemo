@@ -54,9 +54,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlin.math.abs
 
 /**
- * 1:1 完美复刻 E:\Android\AndroidLiquidGlass 的原生液态滑动条 (LiquidSlider)
- * 具备 6dp 底轨、40dp × 24dp 液态玻璃胶囊滑块、物理阻尼拖拽与挤压形变、双层背景光影折射特效。
- * 针对垂直滚动容器做了完整的手势事件消费（change.consume）与防滑动冲突优化，确保拖动时不引起屏幕上下滚动。
+ * 液态玻璃滑动条组件 (LiquidSlider)
+ * 包含底轨与胶囊滑块，支持光影折射、速度流体形变、物理弹性拖拽以及防手势冲突处理。
  */
 @Composable
 fun LiquidSlider(

@@ -34,7 +34,6 @@ import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
-import com.jian.nemo.feature.settings.components.AppIconDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +48,6 @@ fun ThemeSettingsScreen(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showThemeColorDialog by remember { mutableStateOf(false) }
-    var showAppIconDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -158,14 +156,6 @@ fun ThemeSettingsScreen(
                     title = "主题色彩",
                     subtitle = "选择您喜欢的品牌配色",
                     onClick = { showThemeColorDialog = true },
-                    showDivider = true
-                )
-                SquircleSettingItem(
-                    icon = Icons.Rounded.AppShortcut,
-                    iconColor = Color(0xFF007AFF), // Blue
-                    title = "应用图标",
-                    subtitle = "当前: ${uiState.appIcon}",
-                    onClick = { showAppIconDialog = true },
                     showDivider = false
                 )
             }
@@ -184,17 +174,6 @@ fun ThemeSettingsScreen(
                 val colorArgb = if (color.value == defaultBlue) null else color.value.toLong()
                 viewModel.onEvent(SettingsEvent.SetThemeColor(colorArgb))
                 showThemeColorDialog = false
-            }
-        )
-    }
-
-    if (showAppIconDialog) {
-        AppIconDialog(
-            currentIcon = uiState.appIcon,
-            onDismiss = { showAppIconDialog = false },
-            onIconSelect = { name ->
-                viewModel.onEvent(SettingsEvent.SetAppIcon(name))
-                showAppIconDialog = false
             }
         )
     }
