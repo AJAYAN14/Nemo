@@ -812,7 +812,15 @@ fun WeekDayItem(
     }
 }
 
-// 详情面板卡片
+// 详情微指标数据模型
+data class MetricDetailItem(
+    val color: Color,
+    val label: String,
+    val count: Int,
+    val unit: String
+)
+
+// 详情面板卡片 (2x2 极简微卡面板，风格与 #099 活动三环统一)
 @Composable
 fun DayDetailPanel(
     uiState: LearningCalendarUiState
@@ -827,7 +835,6 @@ fun DayDetailPanel(
         cal.get(Calendar.DAY_OF_MONTH)
     ).toEpochDay()
 
-    // 计算显示数据
     val isToday = selectedEpoch == todayEpoch
     val isFuture = selectedEpoch > todayEpoch
 
@@ -868,101 +875,95 @@ fun DayDetailPanel(
         }
     }
 
-    val reviewLabelSuffix = if (isFuture) "预计复习" else if (isToday) "待复习" else "已复习"
-    val newLabelSuffix = if (isToday || isFuture) "新学" else "已学"
+    // 根据日期形态生成 2x2 对称微卡列表
+    val metricItems = remember(
+        selectedEpoch, isToday, isFuture,
+        reviewWordsValue, reviewGrammarValue, newWordsValue, newGrammarValue,
+        todayActualReviewWordsValue, todayActualReviewGrammarValue
+    ) {
+        val list = mutableListOf<MetricDetailItem>()
+        when {
+            isToday -> {
+                list.add(MetricDetailItem(ActivityRingColors.MovePink, "待复习单词", reviewWordsValue, "个"))
+                list.add(MetricDetailItem(ActivityRingColors.ExerciseGreen, "待复习语法", reviewGrammarValue, "条"))
+                list.add(MetricDetailItem(ActivityRingColors.StandCyan, "今日已复习单词", todayActualReviewWordsValue, "个"))
+                list.add(MetricDetailItem(ActivityRingColors.StandCyan, "今日已复习语法", todayActualReviewGrammarValue, "条"))
+                if (newWordsValue > 0 || newGrammarValue > 0) {
+                    list.add(MetricDetailItem(ActivityRingColors.MovePink, "今日新学单词", newWordsValue, "个"))
+                    list.add(MetricDetailItem(ActivityRingColors.ExerciseGreen, "今日新学语法", newGrammarValue, "条"))
+                }
+            }
+            isFuture -> {
+                list.add(MetricDetailItem(ActivityRingColors.MovePink, "预计复习单词", reviewWordsValue, "个"))
+                list.add(MetricDetailItem(ActivityRingColors.ExerciseGreen, "预计复习语法", reviewGrammarValue, "条"))
+            }
+            else -> {
+                list.add(MetricDetailItem(ActivityRingColors.MovePink, "已学单词", newWordsValue, "个"))
+                list.add(MetricDetailItem(ActivityRingColors.ExerciseGreen, "已学语法", newGrammarValue, "条"))
+                list.add(MetricDetailItem(ActivityRingColors.StandCyan, "已复习单词", reviewWordsValue, "个"))
+                list.add(MetricDetailItem(ActivityRingColors.StandCyan, "已复习语法", reviewGrammarValue, "条"))
+            }
+        }
+        list
+    }
 
-    // Check if empty
-    val hasData = reviewWordsValue > 0 || reviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0 || todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0
+    val hasData = metricItems.any { it.count > 0 }
 
     PremiumCard {
         AnimatedContent(
             targetState = selectedEpoch to hasData,
             transitionSpec = {
-                (fadeIn(animationSpec = tween(220, delayMillis = 90)) + 
-                 slideInVertically(initialOffsetY = { it / 4 })).togetherWith(
+                (fadeIn(animationSpec = tween(220, delayMillis = 60)) +
+                 slideInVertically(initialOffsetY = { it / 6 })).togetherWith(
                     fadeOut(animationSpec = tween(90))
                 )
             },
             label = "DayDetailAnimation"
-        ) { (epoch, data) ->
-            if (data) {
+        ) { (_, dataExists) ->
+            if (dataExists) {
+                // 2x2 极简双列网格布局
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    if (reviewWordsValue > 0) {
-                        DetailSquircleItem(
-                            icon = if (isFuture) Icons.Rounded.Update else Icons.Rounded.Refresh,
-                            color = if (isFuture) NemoIndigo else NemoOrange,
-                            label = "${reviewLabelSuffix}单词",
-                            value = "$reviewWordsValue 个",
-                            showDivider = (reviewGrammarValue > 0 || todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
-                        )
-                    }
-                    if (reviewGrammarValue > 0) {
-                        DetailSquircleItem(
-                            icon = if (isFuture) Icons.Rounded.Schedule else Icons.Rounded.MenuBook,
-                            color = if (isFuture) NemoPurple else NemoTeal,
-                            label = "${reviewLabelSuffix}语法",
-                            value = "$reviewGrammarValue 条",
-                            showDivider = (todayActualReviewWordsValue > 0 || todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
-                        )
-                    }
-                    if (todayActualReviewWordsValue > 0) {
-                        DetailSquircleItem(
-                            icon = Icons.Rounded.CheckCircle,
-                            color = NemoSecondary,
-                            label = "今日已复习单词",
-                            value = "$todayActualReviewWordsValue 个",
-                            showDivider = (todayActualReviewGrammarValue > 0 || newWordsValue > 0 || newGrammarValue > 0)
-                        )
-                    }
-                    if (todayActualReviewGrammarValue > 0) {
-                        DetailSquircleItem(
-                            icon = Icons.Rounded.TaskAlt,
-                            color = NemoIndigo,
-                            label = "今日已复习语法",
-                            value = "$todayActualReviewGrammarValue 条",
-                            showDivider = (newWordsValue > 0 || newGrammarValue > 0)
-                        )
-                    }
-                    if (newWordsValue > 0) {
-                        DetailSquircleItem(
-                            icon = Icons.Rounded.Translate,
-                            color = NemoPrimary,
-                            label = "${newLabelSuffix}单词",
-                            value = "$newWordsValue 个",
-                            showDivider = (newGrammarValue > 0)
-                        )
-                    }
-                    if (newGrammarValue > 0) {
-                        DetailSquircleItem(
-                            icon = Icons.Rounded.AutoAwesome,
-                            color = NemoSecondary,
-                            label = "${newLabelSuffix}语法",
-                            value = "$newGrammarValue 条",
-                            showDivider = false
-                        )
+                    val rows = metricItems.chunked(2)
+                    rows.forEach { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            rowItems.forEach { item ->
+                                DetailMiniMetricCard(
+                                    item = item,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            // 如果单行只有一个元素，用透明占位保持对称
+                            if (rowItems.size == 1) {
+                                Box(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
             } else {
-                 Box(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 32.dp),
+                        .padding(vertical = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.surfaceVariant,
-                            modifier = Modifier.size(48.dp)
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                            modifier = Modifier.size(36.dp)
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "该日无学习记录",
+                            text = "该日暂无详细记录",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
                     }
                 }
@@ -971,59 +972,71 @@ fun DayDetailPanel(
     }
 }
 
-// 详情项组件 (Squircle Style)
+/**
+ * 2x2 极简微指标卡片 (Modern Metric Chip)
+ */
 @Composable
-fun DetailSquircleItem(
-    icon: ImageVector,
-    color: Color,
-    label: String,
-    value: String,
-    showDivider: Boolean = true
+fun DetailMiniMetricCard(
+    item: MetricDetailItem,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Squircle Icon
-        Box(
-            modifier = Modifier
-                .size(42.dp)
-                .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val cardBg = if (isDark) {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+    } else {
+        Color(0xFFF6F4EF) // 与 #099 --ux-surface-2 统一
     }
 
-    if (showDivider) {
-        HorizontalDivider(
-            modifier = Modifier.padding(start = 58.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
-            thickness = 0.5.dp
-        )
+    Surface(
+        color = cardBg,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp)
+        ) {
+            // 顶部：彩色小圆点 + 标签名
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(7.dp)
+                        .clip(CircleShape)
+                        .background(item.color)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = item.label,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                    maxLines = 1
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // 底部：大字号数字 (Rubik Black) + 紧凑单位
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text(
+                    text = item.count.toString(),
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = Rubik,
+                        fontWeight = FontWeight.Black
+                    ),
+                    color = if (item.count > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    modifier = Modifier.alignByBaseline()
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = item.unit,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.55f),
+                    modifier = Modifier.alignByBaseline()
+                )
+            }
+        }
     }
 }

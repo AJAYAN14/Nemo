@@ -1,8 +1,9 @@
-# 实施笔记：学习日历 #099 活动三环与月度日历改造
+# 实施笔记：学习日历 #099 活动三环与详细记录微卡重构
 
 ## 目标与范围
 - 在 Nemo 学习日历中引入 Lucian UX/UI Prompt #099（Activity rings that lap）经典三环组件与动效。
 - 解决月度视图与详细记录的整合问题，实现周/月双模式下大三环与微型三环的优雅联动。
+- 重构底部详细记录面板，由传统粗笨纵向大列表全面升级为与活动三环风格统一的 2×2 极简微卡面板。
 
 ## 关键设计决策
 1. **三环业务定义（经典 3 环）**：
@@ -15,27 +16,21 @@
    - 月模式：顶部大三环 + 右侧指标卡 + 底部 7×5/6 整月日历网格，每个日期单元格均呈现 Apple Fitness 经典微型三环；
    - 无论周还是月，点击任意日期，大三环平滑旋转补间到所选日数据，支持超圈投影与合环发光动画；
    - 周期总结联动：周模式显示本周合环天数，月模式显示本月合环天数。
-3. **页面层级精简**：
-   - 移除原有重叠的旧版“今日概览”卡片，新学与复习核心数据均在大三环与指标卡完整展现；
-   - 核心活动卡片置顶；
-   - 底部保留轻量级“详细记录”面板。
+3. **底部详细记录：2×2 极简微卡面板（方案 A）**：
+   - 彻底废除旧版深色、大方块图标的竖直列表条目（DetailSquircleItem）；
+   - 采用 2×2 双列微卡片结构（DetailMiniMetricCard），圆角 16dp，底色与 #099 的 `--ux-surface-2`（#F6F4EF / 深色表面）完全统一；
+   - 严格遵循红（单词）、绿（语法）、蓝（复习）三色闭环体系；
+   - 采用 Rubik Black 大粗体数字，单位轻量化紧凑呈现，高度减少 50%，信息密度与科技美感完美兼备。
 
-## 实施详情
-- **新增文件**：
-  - `feature/statistics/src/main/java/com/jian/nemo/feature/statistics/calendar/ActivityRingsComponent.kt`
-    - `ActivityRingsCanvas`：实现同心三环、超圈尾部阴影投射（shadowed tip）、冲破合环微闪、单环高亮聚焦（其余环透明度降至 22%）。
-    - `MiniActivityRings`：轻量微型三环 Canvas，用于周胶囊与月历网格小单元格。
-    - `ActivityRingItemRow`：右侧交互式指标项与数字动画。
-    - `ActivityWeekPicker`：7 天胶囊周选择器。
-    - `ActivityMonthGrid`：月历网格与月份切换。
-    - `ActivityRingsCard`：整卡联动容器。
-- **修改文件**：
-  - `feature/statistics/src/main/java/com/jian/nemo/feature/statistics/calendar/LearningCalendarViewModel.kt`
-    - 增加 `recordsMap` 加载与 `loadMonthRecords`，支持月度全量三环数据。
-  - `feature/statistics/src/main/java/com/jian/nemo/feature/statistics/calendar/LearningCalendarScreen.kt`
-    - 接入 `ActivityRingsCard`，精简移除冗余的 `TodaySummaryCard`，保留底部的 `DayDetailPanel`。
-
-## 动效与无障碍支持
-- 采用 1100ms 立方缓动曲线（CubicBezierEasing 0.2, 0.8, 0.2, 1.0），三环分别延迟 0ms, 110ms, 220ms 错落展开。
-- 支持 `prefers-reduced-motion`（减弱动态效果）：自动检测系统动画缩放，当开启减弱动画时，动画时长降为 1ms，无缝呈现最终状态。
-- 深色与浅色模式适配：根据 `MaterialTheme` 自适应暗色与亮色表面、边框阴影。
+## 发现的边界情况与修复
+1. **时区与 EpochDay 计算偏差（导致周三看不了）**：
+   - 排查发现原代码直接用 `timeInMillis / 86400000L` 导致东八区计算出的日期减少了 1 天；
+   - 修复：全链路统一引入 `LocalDate.of(year, month, day).toEpochDay()`，彻底消除时区与除法误差。
+2. **零点保护（凌晨 4 点重置）适配**：
+   - `todayEpochDay` 与 ViewModel 初始化均基于 `DateTimeUtils.getLearningDay(resetHour)`，确保凌晨 0-4 点时逻辑今天与周视图焦点正确停留在前一天。
+3. **合环变白动效修复**：
+   - 修复前由于合环直接将 `arcColor` 改为 `Color.White`，导致转圈时变成纯白；
+   - 修复：主圆弧始终保持饱和原色，合环时在底层短促呈现同色柔光晕。
+4. **端帽小药丸残留（从 100% 缩回 0% 时的突兀现象）**：
+   - 发现由于 `StrokeCap.Round` 的物理几何特性，在进度缩减至 0 附近时，两个半圆端帽会卡在 12 点钟位置停留约 1 秒直到动画完毕才突兀消失；
+   - 修复：加入平滑消融算法（Fade-out），在进度小于 5% 时透明度与弧长同步渐隐消融至 0，如同晨露蒸发般丝滑自然。
