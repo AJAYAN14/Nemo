@@ -75,7 +75,9 @@ data class SettingsUiState(
     val showRestoreStrategyDialog: Boolean = false,
     val pendingRestoreFileName: String? = null,
     val pendingRestoreContent: String? = null,
-    val restorePreview: com.jian.nemo.core.data.manager.ImportPreview? = null
+    val restorePreview: com.jian.nemo.core.data.manager.ImportPreview? = null,
+    val isDictionaryReady: Boolean = true,
+    val isDictionarySyncing: Boolean = false
 )
 
 /**

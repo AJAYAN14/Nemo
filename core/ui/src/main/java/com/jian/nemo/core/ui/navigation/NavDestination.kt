@@ -15,6 +15,7 @@ object NavDestination {
     const val TTS_SETTINGS = "tts_settings" // TTS设置页
     const val SYNC_DIAGNOSTICS = "sync_diagnostics" // 同步故障诊断页
     const val CLOUD_BACKUP_HISTORY = "cloud_backup_history" // 云端备份历史页
+    const val CLOUD_BACKUP_HISTORY_ROUTE = "cloud_backup_history?isFromLogin={isFromLogin}"
     const val THEME_SETTINGS = "theme_settings" // 主题设置页
     const val ADVANCED_LEARNING = "advanced_learning" // 记忆算法配置页
     const val AI_WORKSHOP = "ai_workshop"       // AI 工坊
@@ -84,6 +85,7 @@ object NavDestination {
     fun categoryWords(category: String, categoryTitle: String) = "category_words/$category/$categoryTitle"
     fun wordDetail(wordId: Int) = "wordDetail/$wordId"
     fun grammarDetail(grammarId: Int) = "grammarDetail/$grammarId"
+    fun cloudBackupHistory(isFromLogin: Boolean = false) = "$CLOUD_BACKUP_HISTORY?isFromLogin=$isFromLogin"
 
     // Test Route Builders
     fun testSettings(testModeId: String? = null) = if (testModeId != null) "test/settings?testModeId=$testModeId" else "test/settings"

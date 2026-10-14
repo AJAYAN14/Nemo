@@ -29,6 +29,7 @@ class SettingsViewModel @Inject constructor(
     private val playTtsUseCase: com.jian.nemo.core.domain.usecase.audio.PlayTtsUseCase,
     private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
     private val cloudBackupManager: CloudBackupManager,
+    private val dictionarySyncManager: com.jian.nemo.core.domain.repository.DictionarySyncManager,
     private val application: android.app.Application
 ) : ViewModel() {
 
@@ -40,6 +41,20 @@ class SettingsViewModel @Inject constructor(
         loadSettings()
         observeUser()
         observeTtsEvents()
+        observeDictionarySync()
+    }
+
+    private fun observeDictionarySync() {
+        viewModelScope.launch {
+            dictionarySyncManager.isDictionaryReadyFlow.collect { isReady ->
+                _uiState.update { it.copy(isDictionaryReady = isReady) }
+            }
+        }
+        viewModelScope.launch {
+            dictionarySyncManager.isSyncingFlow.collect { isSyncing ->
+                _uiState.update { it.copy(isDictionarySyncing = isSyncing) }
+            }
+        }
     }
 
     private fun observeTtsEvents() {
@@ -255,7 +270,13 @@ class SettingsViewModel @Inject constructor(
             // 云端备份事件
             is SettingsEvent.BackupToCloud -> backupToCloud()
             is SettingsEvent.ShowCloudBackupList -> loadCloudBackups()
-            is SettingsEvent.SelectRestoreFile -> _uiState.update { it.copy(showRestoreStrategyDialog = true, pendingRestoreFileName = event.fileName) }
+            is SettingsEvent.SelectRestoreFile -> {
+                if (!_uiState.value.isDictionaryReady) {
+                    _uiState.update { it.copy(toastMessage = "基础词库正在准备中，请稍候恢复") }
+                } else {
+                    _uiState.update { it.copy(showRestoreStrategyDialog = true, pendingRestoreFileName = event.fileName) }
+                }
+            }
             is SettingsEvent.CancelRestore -> _uiState.update { it.copy(showRestoreStrategyDialog = false, pendingRestoreFileName = null) }
             is SettingsEvent.RestoreFromCloud -> restoreFromCloud(event.fileName, event.strategy)
             is SettingsEvent.ConfirmRestore -> confirmRestore()
@@ -375,6 +396,11 @@ class SettingsViewModel @Inject constructor(
         val content = _uiState.value.pendingRestoreContent
         val preview = _uiState.value.restorePreview
         if (content == null || preview == null) return
+
+        if (!_uiState.value.isDictionaryReady) {
+            _uiState.update { it.copy(toastMessage = "基础词库正在准备中，请稍候恢复") }
+            return
+        }
 
         viewModelScope.launch {
             _uiState.update { it.copy(restorePreview = null, isCloudSyncing = true) }

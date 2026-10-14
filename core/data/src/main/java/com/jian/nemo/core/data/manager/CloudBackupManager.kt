@@ -13,6 +13,8 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import com.jian.nemo.core.domain.repository.DictionarySyncManager
+
 /**
  * 云端备份信息
  */
@@ -31,6 +33,7 @@ data class BackupInfo(
 class CloudBackupManager @Inject constructor(
     private val supabase: SupabaseClient,
     private val dataExportManager: DataExportManager,
+    private val dictionarySyncManager: DictionarySyncManager,
     @ApplicationContext private val context: Context
 ) {
 
@@ -148,6 +151,10 @@ class CloudBackupManager @Inject constructor(
 
         Log.d(TAG, "下载完成: ${bytes.size} bytes，开始导入...")
 
+        if (!dictionarySyncManager.isDictionaryReady()) {
+            throw IllegalStateException("基础词库尚未准备就绪，请等待词库下载完成后再进行恢复")
+        }
+
         // 云端备份内容为 Base64(GZIP(JSON)) 文本，直接转为 String 传入导入引擎
         val content = bytes.toString(Charsets.UTF_8)
         val result = dataExportManager.importData(content, strategy)
@@ -190,6 +197,9 @@ class CloudBackupManager @Inject constructor(
      * 执行云端备份恢复
      */
     suspend fun executeRestore(content: String, strategy: ImportStrategy): String = withContext(Dispatchers.IO) {
+        if (!dictionarySyncManager.isDictionaryReady()) {
+            throw IllegalStateException("基础词库尚未准备就绪，请等待词库下载完成后再进行恢复")
+        }
         val result = dataExportManager.importData(content, strategy)
         result.message
     }

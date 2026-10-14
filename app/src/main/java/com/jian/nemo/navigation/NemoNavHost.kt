@@ -589,7 +589,7 @@ fun NemoNavHost(
                     navController.navigate(NavDestination.THEME_SETTINGS)
                 },
                 onNavigateToCloudBackupHistory = {
-                    navController.navigate(NavDestination.CLOUD_BACKUP_HISTORY)
+                    navController.navigate(NavDestination.cloudBackupHistory(isFromLogin = false))
                 },
                 onCheckUpdate = onCheckUpdate
             )
@@ -605,9 +605,29 @@ fun NemoNavHost(
         }
 
         // 云端备份历史
-        composable(NavDestination.CLOUD_BACKUP_HISTORY) {
+        composable(
+            route = NavDestination.CLOUD_BACKUP_HISTORY_ROUTE,
+            arguments = listOf(
+                navArgument("isFromLogin") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                }
+            )
+        ) { backStackEntry ->
+            val isFromLogin = backStackEntry.arguments?.getBoolean("isFromLogin") ?: false
             com.jian.nemo.feature.settings.CloudBackupHistoryScreen(
-                onNavigateBack = { navController.popBackStack() }
+                isFromLogin = isFromLogin,
+                onNavigateBack = { navController.popBackStack() },
+                onSkipRestore = {
+                    navController.navigate(NavDestination.LEARNING) {
+                        popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
+                    }
+                },
+                onRestoreSuccess = {
+                    navController.navigate(NavDestination.LEARNING) {
+                        popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -779,8 +799,8 @@ fun NemoNavHost(
                         popUpTo(ROUTE_LOGIN) { inclusive = true }
                     }
                 } else {
-                    // 老用户直接进主页
-                    navController.navigate(NavDestination.LEARNING) {
+                    // 老用户登录成功后引导至云端备份恢复界面，选择备份恢复数据；若跳过或恢复成功则进入主页
+                    navController.navigate(NavDestination.cloudBackupHistory(isFromLogin = true)) {
                         popUpTo(ROUTE_LOGIN) { inclusive = true }
                     }
                 }

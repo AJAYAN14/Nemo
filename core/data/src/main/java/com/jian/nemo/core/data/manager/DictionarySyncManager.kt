@@ -27,6 +27,12 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.sync.withLock
+
 import javax.inject.Inject
 import javax.inject.Singleton
 import androidx.room.withTransaction
@@ -61,6 +67,33 @@ class DictionarySyncManagerImpl @Inject constructor(
     private val contentUpdateApplier: ContentUpdateApplier
 ) : DictionarySyncManager {
     private val syncMutex = kotlinx.coroutines.sync.Mutex()
+
+    private val _isSyncing = MutableStateFlow(false)
+    override val isSyncingFlow: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
+    private val _readyCheckTrigger = MutableStateFlow(0L)
+
+    override suspend fun isDictionaryReady(): Boolean = withContext(Dispatchers.IO) {
+        if (_isSyncing.value) return@withContext false
+        val wordCount = wordDao.getWordCount()
+        val grammarCount = grammarDao.getGrammarCount()
+        wordCount >= 1000 && grammarCount >= 200
+    }
+
+    override val isDictionaryReadyFlow: Flow<Boolean> = combine(
+        _isSyncing,
+        _readyCheckTrigger,
+        settingsRepository.lastContentVersionFlow
+    ) { syncing, _, _ ->
+        if (syncing) {
+            false
+        } else {
+            val wordCount = wordDao.getWordCount()
+            val grammarCount = grammarDao.getGrammarCount()
+            wordCount >= 1000 && grammarCount >= 200
+        }
+    }
+
     override suspend fun performDictionarySync(
         force: Boolean,
         forceIncremental: Boolean
@@ -72,10 +105,12 @@ class DictionarySyncManagerImpl @Inject constructor(
         force: Boolean = false,
         forceIncremental: Boolean = false
     ): DictionarySyncResult = withContext(Dispatchers.IO) {
-        Log.d(TAG, "寮€濮嬫鏌ュ瓧鍏稿悓姝?..")
-        try {
-            val remoteVersion = contentRepository.getRemoteContentVersion()
-            val lastVersion = settingsRepository.getLastContentVersion()
+        syncMutex.withLock {
+            _isSyncing.value = true
+            try {
+                Log.d(TAG, "开始检查字典同步...")
+                val remoteVersion = contentRepository.getRemoteContentVersion()
+                val lastVersion = settingsRepository.getLastContentVersion()
             
             // [FIX] 閽堝 v23 鐨勫悓褰㈠紓涔夎瘝 Bug 淇锛屽己鍒剁幇鏈夌敤鎴疯繘琛屼竴娆″叏閲忎簯绔媺鍙?
             val hasAppliedV23Fix = settingsRepository.getHasAppliedV23Fix()
@@ -217,15 +252,19 @@ class DictionarySyncManagerImpl @Inject constructor(
                     remoteVersion = remoteVersion ?: lastVersion
                 )
             } else {
-                Log.i(TAG, "璇嶅簱妫€鏌ョ粨鏋? 鏃犻渶鏇存柊 (鏈湴 V$lastVersion, 杩滅▼ V$remoteVersion)")
+                Log.i(TAG, "词库检查结果: 无需更新 (本地 V$lastVersion, 远程 V$remoteVersion)")
                 return@withContext DictionarySyncResult(
                     localVersion = lastVersion,
                     remoteVersion = remoteVersion ?: lastVersion
                 )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "瀛楀吀鍚屾澶辫触: ${e.message}", e)
-            return@withContext DictionarySyncResult()
+            Log.e(TAG, "字典同步失败: ${e.message}", e)
+            DictionarySyncResult()
+        } finally {
+            _isSyncing.value = false
+            _readyCheckTrigger.value = System.currentTimeMillis()
+        }
         }
     }
 
