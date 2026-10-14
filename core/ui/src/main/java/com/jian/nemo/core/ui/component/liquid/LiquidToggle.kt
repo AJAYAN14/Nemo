@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -76,6 +77,7 @@ fun LiquidToggle(
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val dragWidth = with(density) { 20f.dp.toPx() }
     val animationScope = rememberCoroutineScope()
+    val currentSelected by rememberUpdatedState(selected)
     var fraction by remember { mutableFloatStateOf(if (selected()) 1f else 0f) }
 
     val dampedDragAnimation = remember(animationScope) {
@@ -134,7 +136,7 @@ fun LiquidToggle(
                         if (change == null || change.changedToUpIgnoreConsumed()) {
                             if (!isDragging) {
                                 // 点击 (Tap)：切换状态并触发弹簧弹性滑动
-                                val nextState = !selected()
+                                val nextState = !currentSelected()
                                 fraction = if (nextState) 1f else 0f
                                 dampedDragAnimation.animateToValue(fraction)
                                 onSelect(nextState)
