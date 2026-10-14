@@ -25,6 +25,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.Capsule
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,9 +89,11 @@ fun CloudBackupHistoryScreen(
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val isDictionaryPreparing = !uiState.isDictionaryReady || uiState.isDictionarySyncing
+    val backdrop = rememberLayerBackdrop()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
+            modifier = Modifier.layerBackdrop(backdrop),
             containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
             topBar = {
@@ -335,7 +341,7 @@ fun CloudBackupHistoryScreen(
             } // 闭合内层 Box
         } // 闭合 Scaffold
 
-        // ===== 悬浮跳过按钮 (Floating Overlay - 1:1 对标 TestSettingsScreen 规范，方案B清爽浅海蓝) =====
+        // ===== 悬浮跳过按钮 (Floating Overlay - 1:1 对标 Demo 项目标准规范) =====
         if (isFromLogin) {
             Box(
                 modifier = Modifier
@@ -344,16 +350,11 @@ fun CloudBackupHistoryScreen(
                     .navigationBarsPadding()
                     .padding(horizontal = 24.dp, vertical = 16.dp)
             ) {
-                LiquidButton(
+                ColoredLiquidGlassButton(
                     onClick = { onSkipRestore?.invoke() ?: onNavigateBack() },
-                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    shape = RoundedCornerShape(26.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-                    ),
-                    elevation = 6.dp,
-                    useSoftShadow = true,
+                    backdrop = backdrop,
+                    tint = Color(0xFF0088FF),
+                    shape = Capsule(),
                     isInteractive = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -362,7 +363,7 @@ fun CloudBackupHistoryScreen(
                     Text(
                         text = "跳过，稍后在设置中恢复",
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
+                        color = Color.White
                     )
                 }
             }
