@@ -13,9 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.kyant.backdrop.Backdrop
 
 /**
  * 通用带返回按钮的顶部栏组件
@@ -33,6 +35,8 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
  * @param onBack 返回按钮回调
  * @param backgroundColor 背景颜色，默认为透明
  * @param actions 可选的右侧操作按钮
+ * @param backdrop 背景采样源 (可选，用于透镜物理折射)
+ * @param backButtonSize 返回按钮尺寸
  */
 @Composable
 fun CommonHeader(
@@ -43,7 +47,9 @@ fun CommonHeader(
     username: String? = null,
     onAvatarClick: (() -> Unit)? = null,
     centerContent: @Composable (() -> Unit)? = null,
-    actions: @Composable (RowScope.() -> Unit)? = null
+    actions: @Composable (RowScope.() -> Unit)? = null,
+    backdrop: Backdrop? = null,
+    backButtonSize: Dp = 44.dp
 ) {
     Box(
         modifier = Modifier
@@ -65,10 +71,11 @@ fun CommonHeader(
                 ) {
                     FrostedLiquidGlassButton(
                         onClick = onBack,
+                        backdrop = backdrop,
                         shape = CircleShape,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
-                        modifier = Modifier.size(44.dp)
+                        modifier = Modifier.size(backButtonSize)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,

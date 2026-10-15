@@ -60,6 +60,8 @@ import com.jian.nemo.feature.learning.presentation.components.cards.SRSLearningC
 import com.jian.nemo.feature.learning.presentation.components.cards.SRSGrammarCard
 import com.jian.nemo.feature.learning.presentation.components.guide.RatingGuideScreen
 import com.jian.nemo.feature.learning.presentation.components.srs.SRSActionArea
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.dialog.DurationPickerDialog
 
@@ -430,11 +432,13 @@ fun WordLearningContent(
         Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
 
         if (uiState.currentWord != null) {
+            val cardBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.weight(1f)) {
                  // Card Content
                  Box(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .layerBackdrop(cardBackdrop),
                     contentAlignment = Alignment.TopCenter
                  ) {
                      // 使用 HorizontalPager 实现手势滑动切换
@@ -524,25 +528,9 @@ fun WordLearningContent(
                      }
                  }
 
-                 // 底部边缘自然消失渐变蒙层
-                 Box(
-                     modifier = Modifier
-                         .align(Alignment.BottomCenter)
-                         .fillMaxWidth()
-                         .height(160.dp) // 渐变高度 160.dp
-                         .background(
-                             brush = Brush.verticalGradient(
-                                 colors = listOf(
-                                     Color.Transparent,
-                                     backgroundColor.copy(alpha = 0.8f),
-                                     backgroundColor
-                                 )
-                             )
-                         )
-                 )
-
                  // SRS Action Area (Bottom)
                  SRSActionArea(
+                     backdrop = cardBackdrop,
                      isAnswerShown = uiState.isAnswerShown,
                      isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
                      showAnswerAvailableAt = uiState.showAnswerAvailableAt,
@@ -624,11 +612,13 @@ fun GrammarLearningContent(
         Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
 
         if (uiState.currentGrammar != null) {
+            val cardBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.weight(1f)) {
                  // Card Content
                  Box(
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .layerBackdrop(cardBackdrop),
                     contentAlignment = Alignment.TopCenter
                  ) {
                      // 使用 HorizontalPager 实现手势滑动切换
@@ -709,25 +699,11 @@ fun GrammarLearningContent(
                      }
                  }
             }
-                  // 底部边缘自然消失渐变蒙层
-                  Box(
-                      modifier = Modifier
-                          .align(Alignment.BottomCenter)
-                          .fillMaxWidth()
-                          .height(160.dp) // 渐变高度 160.dp
-                          .background(
-                              brush = Brush.verticalGradient(
-                                  colors = listOf(
-                                      Color.Transparent,
-                                      backgroundColor.copy(alpha = 0.8f),
-                                      backgroundColor
-                                  )
-                              )
-                          )
-                  )
+
 
                   // SRS Action Area (Bottom)
                   SRSActionArea(
+                      backdrop = cardBackdrop,
                       isAnswerShown = uiState.isAnswerShown,
                       isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
                       showAnswerAvailableAt = uiState.showAnswerAvailableAt,

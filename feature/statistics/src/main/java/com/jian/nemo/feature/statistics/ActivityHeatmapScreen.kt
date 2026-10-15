@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -35,9 +36,11 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.feature.statistics.presentation.components.HeatmapShareBottomSheet
 import com.jian.nemo.feature.statistics.presentation.components.LearningHeatmapCard
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,43 +59,25 @@ fun ActivityHeatmapScreen(
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var showShareSheet by remember { mutableStateOf(false) }
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "学习热力图",
-                onBack = onBack,
-                actions = {
-                    if (!uiState.isLoading) {
-                        LiquidButton(
-                            onClick = { showShareSheet = true },
-                            backgroundColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White,
-                            shape = CircleShape,
-                            isInteractive = true,
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_share_ios),
-                                contentDescription = "分享",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                }
-            )
-        },
-        containerColor = backgroundColor
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = innerPadding.calculateTopPadding() + 16.dp,
-                bottom = innerPadding.calculateBottomPadding() + 24.dp
+                top = statusBarTop + 60.dp + 16.dp,
+                bottom = navBarBottom + 24.dp
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -153,6 +138,50 @@ fun ActivityHeatmapScreen(
                     }
                 }
             }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "学习热力图",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    if (!uiState.isLoading) {
+                        FrostedLiquidGlassButton(
+                            onClick = { showShareSheet = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share_ios),
+                                contentDescription = "分享",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 

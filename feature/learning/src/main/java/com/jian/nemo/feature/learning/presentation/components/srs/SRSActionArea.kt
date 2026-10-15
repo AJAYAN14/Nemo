@@ -42,7 +42,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.core.ui.util.SoundEffectPlayer
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import androidx.compose.foundation.layout.PaddingValues
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.Backdrop
 import kotlinx.coroutines.delay
 
 /**
@@ -52,6 +54,7 @@ import kotlinx.coroutines.delay
  * @param ratingIntervals 评分对应的预估间隔文本 (Map<Int, String>)
  * @param onShowAnswer 点击显示答案
  * @param onRate 点击评分
+ * @param backdrop 背景采样源 (读取底层卡片像素以产生真实透镜折射)
  */
 @Composable
 fun SRSActionArea(
@@ -62,7 +65,8 @@ fun SRSActionArea(
     onShowAnswer: () -> Unit,
     onShowAnswerBlocked: ((Int) -> Unit)? = null,
     onRate: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null
 ) {
     val graceMs = 150L
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -143,7 +147,7 @@ fun SRSActionArea(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    LiquidButton(
+                    FrostedLiquidGlassButton(
                         onClick = {
                             if (canShowAnswer) {
                                 onShowAnswer()
@@ -152,9 +156,16 @@ fun SRSActionArea(
                                 onShowAnswerBlocked?.invoke(remainingSec)
                             }
                         },
-                        backgroundColor = if (canShowAnswer) Color(0xFF111827) else Color(0xFF6B7280),
+                        backdrop = backdrop,
+                        surfaceColor = if (canShowAnswer) {
+                            if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color(0xFF1E293B).copy(alpha = 0.85f)
+                        } else {
+                            if (isDarkTheme) Color.White.copy(alpha = 0.08f) else Color(0xFF64748B).copy(alpha = 0.85f)
+                        },
                         shape = RoundedCornerShape(16.dp),
-                        elevation = 0.dp,
+                        border = null,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp)
@@ -194,6 +205,7 @@ fun SRSActionArea(
                         time = ratingIntervals[1] ?: "-",
                         color = colorRose700,
                         containerColor = colorRose100,
+                        backdrop = backdrop,
                         onClick = { 
                             safeRate(1) {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
@@ -209,6 +221,7 @@ fun SRSActionArea(
                         time = ratingIntervals[3] ?: "-",
                         color = colorOrange600,
                         containerColor = colorOrange50,
+                        backdrop = backdrop,
                         onClick = { 
                             safeRate(3) {
                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -224,6 +237,7 @@ fun SRSActionArea(
                         time = ratingIntervals[4] ?: "-",
                         color = colorBlue600,
                         containerColor = colorBlue50,
+                        backdrop = backdrop,
                         onClick = { 
                             safeRate(4) {
                                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -239,6 +253,7 @@ fun SRSActionArea(
                         time = ratingIntervals[5] ?: "-",
                         color = colorEmerald600,
                         containerColor = colorEmerald50,
+                        backdrop = backdrop,
                         onClick = { 
                             safeRate(5) {
                                 view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)

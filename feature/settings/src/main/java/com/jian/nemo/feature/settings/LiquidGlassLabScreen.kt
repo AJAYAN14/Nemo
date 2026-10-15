@@ -11,14 +11,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.DragIndicator
 import androidx.compose.material.icons.rounded.Palette
@@ -68,37 +71,40 @@ fun LiquidGlassLabScreen(
 ) {
     val backdrop = rememberLayerBackdrop()
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "液态玻璃实验室",
-                onBack = onNavigateBack
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        // ==========================================
+        // 1. 底层视觉装饰背景层 (被 backdrop 采样源录制，全屏延伸至状态栏)
+        // ==========================================
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .layerBackdrop(backdrop)
         ) {
-            // ==========================================
-            // 1. 底层视觉装饰背景层 (被 backdrop 采样源录制)
-            // ==========================================
+            LabBackgroundDecorations()
+        }
+
+        // ==========================================
+        // 2. 悬浮顶栏与液态玻璃按钮层 (同级上层，读取 backdrop)
+        // ==========================================
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            CommonHeader(
+                title = "液态玻璃实验室",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
+
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(backdrop)
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                LabBackgroundDecorations()
-            }
-
-            // ==========================================
-            // 2. 悬浮液态玻璃按钮层 (同级上层，读取 backdrop)
-            // ==========================================
-            Box(
-                modifier = Modifier.fillMaxSize()
+                    .fillMaxWidth()
+                    .weight(1f)
             ) {
                 // 顶部操作提示条
                 Surface(
@@ -200,6 +206,27 @@ fun LiquidGlassLabScreen(
                         )
                     }
                 }
+
+                // 5. 圆形带底色液态玻璃返回图标按钮 (物理透镜折射演示，点击不触发返回)
+                DraggableLiquidButtonItem(
+                    initialOffset = Offset(0f, 215f),
+                    alignment = Alignment.Center
+                ) {
+                    FrostedLiquidGlassButton(
+                        onClick = {},
+                        backdrop = backdrop,
+                        surfaceColor = Color.White.copy(alpha = 0.3f),
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                            contentDescription = "返回",
+                            tint = Color.Black
+                        )
+                    }
+                }
             }
         }
     }
@@ -298,11 +325,12 @@ private fun LabBackgroundDecorations() {
                 .blur(35.dp)
         )
 
-        // 中间主内容排版（多层高对比卡片与大文字）
+        // 中间主内容排版（多层高对比卡片与大文字，避开顶栏与操作提示条，杜绝重叠）
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 60.dp),
+                .statusBarsPadding()
+                .padding(start = 24.dp, end = 24.dp, top = 90.dp, bottom = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
