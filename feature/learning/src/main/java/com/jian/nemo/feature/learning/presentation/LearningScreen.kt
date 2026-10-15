@@ -530,7 +530,6 @@ fun WordLearningContent(
 
                  // SRS Action Area (Bottom)
                  SRSActionArea(
-                     backdrop = cardBackdrop,
                      isAnswerShown = uiState.isAnswerShown,
                      isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
                      showAnswerAvailableAt = uiState.showAnswerAvailableAt,
@@ -703,7 +702,6 @@ fun GrammarLearningContent(
 
                   // SRS Action Area (Bottom)
                   SRSActionArea(
-                      backdrop = cardBackdrop,
                       isAnswerShown = uiState.isAnswerShown,
                       isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
                       showAnswerAvailableAt = uiState.showAnswerAvailableAt,

@@ -78,7 +78,7 @@ fun SpeakerButton(
  * 声纹波形动画 - 3条竖条交替跳动
  */
 @Composable
-private fun SoundWaveAnimation(
+fun SoundWaveAnimation(
     tint: Color,
     size: Dp
 ) {

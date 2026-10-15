@@ -47,6 +47,8 @@ import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPrac
 import com.jian.nemo.feature.learning.presentation.components.cards.WordCard
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.LiquidGlassButton
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,21 +94,18 @@ fun CategoryCardBrowseScreen(
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 actions = {
-                    val navBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-                    LiquidButton(
+                    FrostedLiquidGlassButton(
                         onClick = { showAnswerSheetDrawer = true },
-                        backgroundColor = navBtnBg,
                         shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
-                        elevation = 4.dp,
-                        useSoftShadow = true,
-                        modifier = Modifier.size(44.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
                             contentDescription = "答题卡",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }
@@ -339,42 +338,65 @@ fun CategoryCardBrowseActionButtons(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 向后翻页按钮
-        TintedSquircleIconButton(
-            icon = Icons.AutoMirrored.Filled.ArrowBack,
-            enabled = hasPrevious,
-            onClick = onPrevious,
-            themeColor = themeColor,
-            modifier = Modifier.size(56.dp)
-        )
+        val disabledColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        val prevTint = if (hasPrevious) themeColor else disabledColor
+        val nextTint = if (hasNext) themeColor else disabledColor
 
-        // 跟打练习按钮
-        LiquidButton(
-            onClick = onPractice,
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp),
-            backgroundColor = themeColor,
-            shape = RoundedCornerShape(28.dp),
-            elevation = 6.dp,
-            useSoftShadow = true
+        // 向后翻页按钮 (48dp 规格液态玻璃磨砂按钮，无折射)
+        FrostedLiquidGlassButton(
+            onClick = { if (hasPrevious) onPrevious() },
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
+            isInteractive = hasPrevious,
+            modifier = Modifier.size(48.dp)
         ) {
-            Text(
-                text = "跟打练习",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "上一个",
+                tint = prevTint,
+                modifier = Modifier.size(24.dp)
             )
         }
 
-        // 向前翻页按钮
-        TintedSquircleIconButton(
-            icon = Icons.AutoMirrored.Filled.ArrowForward,
-            enabled = hasNext,
-            onClick = onNext,
-            themeColor = themeColor,
-            modifier = Modifier.size(56.dp)
-        )
+        // 跟打练习按钮 (48dp 高度胶囊液态玻璃按钮，无折射)
+        LiquidGlassButton(
+            onClick = onPractice,
+            modifier = Modifier
+                .weight(1f)
+                .height(48.dp),
+            surfaceColor = themeColor.copy(alpha = 0.85f),
+            shape = CircleShape,
+            isInteractive = true,
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp)
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "跟打练习",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+        }
+
+        // 向前翻页按钮 (48dp 规格液态玻璃磨砂按钮，无折射)
+        FrostedLiquidGlassButton(
+            onClick = { if (hasNext) onNext() },
+            shape = CircleShape,
+            contentPadding = PaddingValues(0.dp),
+            isInteractive = hasNext,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "下一个",
+                tint = nextTint,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 

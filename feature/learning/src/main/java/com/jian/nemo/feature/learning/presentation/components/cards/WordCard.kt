@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.speaker.SoundWaveAnimation
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -190,14 +193,28 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // UI/UX PRO: 带有声纹律动动效的大朗读按钮
-            SpeakerButton(
-                isPlaying = isPlaying,
+            // 48dp 规格液态玻璃磨砂朗读按钮（无背景折射，杜绝闪退）
+            FrostedLiquidGlassButton(
                 onClick = onSpeak,
-                tint = themeColor,
-                size = 80.dp,
-                backgroundColor = themeColor.copy(alpha = 0.1f)
-            )
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp),
+                isInteractive = true,
+                modifier = Modifier.size(48.dp)
+            ) {
+                if (isPlaying) {
+                    SoundWaveAnimation(
+                        tint = themeColor,
+                        size = 24.dp
+                    )
+                } else {
+                    androidx.compose.material3.Icon(
+                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = "朗读",
+                        tint = themeColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         
         Text(

@@ -246,14 +246,16 @@ fun LearnHeader(
                     FrostedLiquidGlassButton(
                         onClick = onClose,
                         shape = CircleShape,
+                        hasLens = false,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
-                        modifier = Modifier.size(44.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
                             contentDescription = "返回",
-                            tint = contentColor
+                            tint = contentColor,
+                            modifier = Modifier.size(30.dp)
                         )
                     }
 
@@ -280,14 +282,16 @@ fun LearnHeader(
                         FrostedLiquidGlassButton(
                             onClick = { onUndo?.invoke() },
                             shape = CircleShape,
+                            hasLens = false,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.Undo,
                                 contentDescription = "撤销上一次评分",
-                                tint = contentColor
+                                tint = contentColor,
+                                modifier = Modifier.size(30.dp)
                             )
                         }
                     }
@@ -302,9 +306,10 @@ fun LearnHeader(
                         FrostedLiquidGlassButton(
                             onClick = {},
                             shape = CircleShape,
+                            hasLens = false,
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                             isInteractive = true,
-                            modifier = Modifier.height(44.dp)
+                            modifier = Modifier.height(48.dp)
                         ) {
                             val annotatedText = buildAnnotatedString {
                                 withStyle(
@@ -347,6 +352,7 @@ fun LearnHeader(
                             NemoMorphMenu(
                                 expanded = expanded,
                                 onExpandedChange = setExpanded,
+                                buttonSize = 48.dp,
                                 menuWidth = 240.dp,
                                 icon = Icons.Rounded.MoreVert,
                                 contentDescription = "更多选项"

@@ -212,6 +212,8 @@ fun NemoMorphMenu(
         }
     }
 
+    val effectiveIconSize = if (buttonSize >= 48.dp) 30.dp else 24.dp
+
     // 常态下的液态玻璃占位触发按钮（与 CommonHeader 返回按钮完全统一）
     Box(
         modifier = modifier.size(buttonSize),
@@ -223,6 +225,7 @@ fun NemoMorphMenu(
                 onExpandedChange(true)
             },
             shape = CircleShape,
+            hasLens = false,
             contentPadding = PaddingValues(0.dp),
             isInteractive = true,
             modifier = Modifier.size(buttonSize)
@@ -230,7 +233,8 @@ fun NemoMorphMenu(
             Icon(
                 imageVector = icon,
                 contentDescription = contentDescription,
-                tint = MaterialTheme.colorScheme.onSurface
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(effectiveIconSize)
             )
         }
 

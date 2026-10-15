@@ -1,39 +1,32 @@
 package com.jian.nemo.feature.learning.presentation.components.srs
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.kyant.backdrop.Backdrop
+import com.jian.nemo.core.ui.component.liquid.LiquidButton
 
 /**
- * SRS 评分按钮组件 (无描边磨砂液态玻璃规范)
+ * SRS 评分按钮组件
  *
  * @param label 评分标签 (如 "重来", "良好")
  * @param time 间隔时间 (如 "< 1m", "4d")
  * @param color 按钮文字主题色
  * @param containerColor 按钮容器底色
  * @param onClick 点击回调
- * @param backdrop 背景采样源 (读取底层卡片像素以产生真实透镜折射)
  */
 @Composable
 fun SRSRatingButton(
@@ -42,17 +35,14 @@ fun SRSRatingButton(
     color: Color,
     containerColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    backdrop: Backdrop? = null
+    modifier: Modifier = Modifier
 ) {
-    FrostedLiquidGlassButton(
+    LiquidButton(
         onClick = onClick,
-        backdrop = backdrop,
-        surfaceColor = containerColor.copy(alpha = 0.65f),
+        backgroundColor = containerColor,
         shape = RoundedCornerShape(16.dp),
-        border = null,
-        contentPadding = PaddingValues(0.dp),
-        isInteractive = true,
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
+        elevation = 0.dp,
         modifier = modifier.height(56.dp)
     ) {
         Column(
