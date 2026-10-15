@@ -26,9 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -88,25 +85,23 @@ fun CategoryClassificationScreen(
         else -> "专项分类"
     }
 
-    val backdrop = rememberLayerBackdrop()
-    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层页面滚动内容（挂载 backdrop，全屏贯穿至状态栏供顶栏液态玻璃折射）
+    Scaffold(
+        topBar = {
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = title,
+                onBack = onNavigateBack,
+                backgroundColor = backgroundColor // Header 背景与页面一致
+            )
+        },
+        containerColor = backgroundColor
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
-            Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
             // 1. 基础词性类
             SectionHeader(title = "基础词性类", delay = 0)
             Spacer(modifier = Modifier.height(16.dp))
@@ -264,33 +259,7 @@ fun CategoryClassificationScreen(
                 }
             )
 
-            // 底部安全留白
-            Spacer(modifier = Modifier.height(navBarBottom + 24.dp))
-        }
-
-        // 2. 悬浮顶栏与液态玻璃返回按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.98f),
-                            backgroundColor.copy(alpha = 0.88f),
-                            backgroundColor.copy(alpha = 0.55f),
-                            backgroundColor.copy(alpha = 0.20f),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(bottom = 16.dp)
-        ) {
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = title,
-                onBack = onNavigateBack,
-                backgroundColor = Color.Transparent,
-                backdrop = backdrop
-            )
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
