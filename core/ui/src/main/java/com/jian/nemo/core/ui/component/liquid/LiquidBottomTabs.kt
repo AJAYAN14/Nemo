@@ -98,9 +98,9 @@ fun LiquidBottomTabs(
 
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
-        val targetIndexState by androidx.compose.runtime.rememberUpdatedState(selectedTabIndex)
-        val onTabSelectedState by androidx.compose.runtime.rememberUpdatedState(onTabSelected)
-
+        var currentIndex by remember(selectedTabIndex) {
+            mutableIntStateOf(selectedTabIndex())
+        }
         val dampedDragAnimation = remember(animationScope) {
             DampedDragAnimation(
                 animationScope = animationScope,
@@ -112,15 +112,13 @@ fun LiquidBottomTabs(
                 onDragStarted = {},
                 onDragStopped = {
                     val targetIndex = targetValue.roundToInt().coerceIn(0, tabsCount - 1)
+                    currentIndex = targetIndex
                     animateToValue(targetIndex.toFloat())
                     animationScope.launch {
                         offsetAnimation.animateTo(
                             0f,
                             spring(1f, 300f, 0.5f)
                         )
-                    }
-                    if (targetIndex != targetIndexState()) {
-                        onTabSelectedState(targetIndex)
                     }
                 },
                 onDrag = { _, dragAmount ->
@@ -134,14 +132,19 @@ fun LiquidBottomTabs(
                 }
             )
         }
-
-        val targetIndex = selectedTabIndex()
-        LaunchedEffect(targetIndex) {
-            if (targetIndex in 0 until tabsCount) {
-                if (abs(dampedDragAnimation.targetValue - targetIndex.toFloat()) > 0.01f) {
-                    dampedDragAnimation.animateToValue(targetIndex.toFloat())
+        LaunchedEffect(selectedTabIndex) {
+            snapshotFlow { selectedTabIndex() }
+                .collectLatest { index ->
+                    currentIndex = index
                 }
-            }
+        }
+        LaunchedEffect(dampedDragAnimation) {
+            snapshotFlow { currentIndex }
+                .drop(1)
+                .collectLatest { index ->
+                    dampedDragAnimation.animateToValue(index.toFloat())
+                    onTabSelected(index)
+                }
         }
 
         val interactiveHighlight = remember(animationScope) {

@@ -189,6 +189,10 @@ fun NemoBottomBar(
                     stiffness = 300f
                 )
             )
+            offsetIndex.snapTo(selectedIndex.toFloat())
+            if (offsetAnimation.value != 0f) {
+                offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
+            }
             // 外部对齐时，高光也流淌到对应的 Tab 中心
             if (innerWidth > 0f) {
                 val tabWidth = innerWidth / tabsCount
