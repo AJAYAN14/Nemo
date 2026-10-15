@@ -46,8 +46,10 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
 import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPracticeDialog
 import com.jian.nemo.feature.learning.presentation.components.cards.WordCard
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
-
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,52 +87,30 @@ fun CategoryCardBrowseScreen(
         categoryTitle
     }
 
-    Scaffold(
-        topBar = {
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = titleWithCount,
-                onBack = onNavigateBack,
-                backgroundColor = Color.Transparent,
-                actions = {
-                    val navBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-                    LiquidButton(
-                        onClick = { showAnswerSheetDrawer = true },
-                        backgroundColor = navBtnBg,
-                        shape = CircleShape,
-                        isInteractive = true,
-                        elevation = 4.dp,
-                        useSoftShadow = true,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
-                            contentDescription = "答题卡",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val bgGradientColors = listOf(
+        if (isDarkTheme) Color(0xFF121212) else fixedThemeColor.copy(alpha = 0.05f),
+        if (isDarkTheme) Color(0xFF1E1E1E) else fixedThemeColor.copy(alpha = 0.15f)
+    )
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // 1. 底层穿透背景采样层（挂载 layerBackdrop，纯净背景无 3D 干扰，专供顶栏双按钮进行真实透镜折射）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            if (isDarkTheme) Color(0xFF121212) else fixedThemeColor.copy(alpha = 0.05f),
-                            if (isDarkTheme) Color(0xFF1E1E1E) else fixedThemeColor.copy(alpha = 0.15f)
-                        )
-                    )
-                )
+                .background(Brush.verticalGradient(bgGradientColors))
+                .layerBackdrop(backdrop)
+        )
+
+        // 2. 中层做题卡片与手势交互区域（纯原生渲染，3D 翻转丝滑流畅，绝不引发驱动冲突）
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
             when {
             uiState.isLoading -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     NemoChasingDotsLoader()
@@ -139,9 +119,7 @@ fun CategoryCardBrowseScreen(
             uiState.error != null -> {
                 val errorMessage = uiState.error
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -159,9 +137,7 @@ fun CategoryCardBrowseScreen(
             }
             uiState.words.isEmpty() -> {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -182,7 +158,6 @@ fun CategoryCardBrowseScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
                         // 实现横向滑动切换手势
                         .pointerInput(Unit) {
                             var totalDrag = 0f
@@ -286,6 +261,49 @@ fun CategoryCardBrowseScreen(
                     )
                 }
             }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        val maskTopColor = if (isDarkTheme) Color(0xFF121212) else fixedThemeColor.copy(alpha = 0.05f)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            maskTopColor.copy(alpha = 0.98f),
+                            maskTopColor.copy(alpha = 0.88f),
+                            maskTopColor.copy(alpha = 0.55f),
+                            maskTopColor.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = titleWithCount,
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = { showAnswerSheetDrawer = true },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
+                            contentDescription = "答题卡",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+            )
         }
     }
 
