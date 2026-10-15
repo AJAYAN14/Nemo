@@ -32,6 +32,11 @@ import com.jian.nemo.core.domain.model.ReadingQuestion
 import com.jian.nemo.core.domain.model.ReadingVocabulary
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.ui.graphics.Brush
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
@@ -76,54 +81,21 @@ fun AIReadingScreen(
     var snackbarMessage by remember { mutableStateOf("") }
     var snackbarType by remember { mutableStateOf(NemoSnackbarType.SUCCESS) }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "AI 日语阅读",
-                onBack = {
-                    if (uiState.currentArticle != null) {
-                        viewModel.onEvent(AIReadingEvent.ResetReader)
-                    } else {
-                        onNavigateBack()
-                    }
-                },
-                actions = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = "阅读历史",
-                            tint = colorScheme.onSurface
-                        )
-                    }
-                    IconButton(onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) }) {
-                        val platform = uiState.aiPlatform
-                        when (platform) {
-                            "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                            else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = colorScheme.onSurface)
-                        }
-                    }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = "AI设置",
-                            tint = colorScheme.onSurface
-                        )
-                    }
-                },
-                backgroundColor = if (isDark) colorScheme.background else BentoColors.BgBase
-            )
-        },
-        containerColor = if (isDark) colorScheme.background else BentoColors.BgBase
-    ) { paddingValues ->
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backdrop = rememberLayerBackdrop()
+    val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerBg)
+    ) {
+        // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .layerBackdrop(backdrop)
         ) {
             when {
                 uiState.isLoading -> {
@@ -155,88 +127,172 @@ fun AIReadingScreen(
                     )
                 }
             }
+        }
 
-            // 切换配置别名气泡提示（弹出后 2.5s 自动消失）
-            AnimatedVisibility(
-                visible = uiState.switchedConfigName != null,
-                enter = fadeIn(androidx.compose.animation.core.tween(200)) +
-                        slideInVertically(androidx.compose.animation.core.tween(200)) { -it },
-                exit  = fadeOut(androidx.compose.animation.core.tween(300)) +
-                        slideOutVertically(androidx.compose.animation.core.tween(300)) { -it },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp, end = 12.dp)
-            ) {
-                uiState.switchedConfigName?.let { name ->
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = colorScheme.inverseSurface,
-                        shadowElevation = 10.dp,
-                        tonalElevation = 0.dp
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerBg.copy(alpha = 0.98f),
+                            containerBg.copy(alpha = 0.88f),
+                            containerBg.copy(alpha = 0.55f),
+                            containerBg.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 日语阅读",
+                onBack = {
+                    if (uiState.currentArticle != null) {
+                        viewModel.onEvent(AIReadingEvent.ResetReader)
+                    } else {
+                        onNavigateBack()
+                    }
+                },
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = onNavigateToHistory,
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = null,
-                                tint = colorScheme.inverseOnSurface,
-                                modifier = Modifier.size(14.dp)
+                                imageVector = Icons.Rounded.History,
+                                contentDescription = "阅读历史",
+                                modifier = Modifier.size(30.dp),
+                                tint = colorScheme.onSurface
                             )
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = colorScheme.inverseOnSurface
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            val platform = uiState.aiPlatform
+                            when (platform) {
+                                "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = colorScheme.onSurface)
+                            }
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = onNavigateToSettings,
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = "AI设置",
+                                modifier = Modifier.size(30.dp),
+                                tint = colorScheme.onSurface
                             )
                         }
                     }
                 }
-            }
-
-            // 错误提示 Snackbar (只在非全屏错误状态下显示)
-            if (uiState.currentArticle != null && uiState.error != null) {
-                Snackbar(
-                    action = {
-                        TextButton(onClick = { viewModel.onEvent(AIReadingEvent.ClearError) }) {
-                            Text("确定", color = colorScheme.inversePrimary)
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(uiState.error ?: "")
-                }
-            }
-
-            // 划词/点词翻译底部面板
-            AIWordTranslationSheet(
-                showSheet = uiState.showTranslationSheet,
-                translatingText = uiState.translatingText,
-                isTranslating = uiState.isTranslating,
-                translationResult = uiState.translationResult,
-                translationError = uiState.translationError,
-                onDismiss = { viewModel.onEvent(AIReadingEvent.CloseTranslationSheet) },
-                onSpeakWord = { word ->
-                    viewModel.onEvent(AIReadingEvent.SpeakText(word, "translate_word"))
-                }
-            )
-
-            NemoSnackbar(
-                visible = snackbarVisible,
-                message = snackbarMessage,
-                type = snackbarType,
-                icon = Icons.Rounded.CheckCircle,
-                onDismiss = { snackbarVisible = false },
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 8.dp)
             )
         }
+
+        // 切换配置别名气泡提示（弹出后 2.5s 自动消失）
+        AnimatedVisibility(
+            visible = uiState.switchedConfigName != null,
+            enter = fadeIn(androidx.compose.animation.core.tween(200)) +
+                    slideInVertically(androidx.compose.animation.core.tween(200)) { -it },
+            exit  = fadeOut(androidx.compose.animation.core.tween(300)) +
+                    slideOutVertically(androidx.compose.animation.core.tween(300)) { -it },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = statusBarTop + 68.dp, end = 12.dp)
+        ) {
+            uiState.switchedConfigName?.let { name ->
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = colorScheme.inverseSurface,
+                    shadowElevation = 10.dp,
+                    tonalElevation = 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = colorScheme.inverseOnSurface,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = colorScheme.inverseOnSurface
+                        )
+                    }
+                }
+            }
+        }
+
+        // 错误提示 Snackbar (只在非全屏错误状态下显示)
+        if (uiState.currentArticle != null && uiState.error != null) {
+            Snackbar(
+                action = {
+                    TextButton(onClick = { viewModel.onEvent(AIReadingEvent.ClearError) }) {
+                        Text("确定", color = colorScheme.inversePrimary)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = navBarBottom + 16.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Text(uiState.error ?: "")
+            }
+        }
+
+        // 划词/点词翻译底部面板
+        AIWordTranslationSheet(
+            showSheet = uiState.showTranslationSheet,
+            translatingText = uiState.translatingText,
+            isTranslating = uiState.isTranslating,
+            translationResult = uiState.translationResult,
+            translationError = uiState.translationError,
+            onDismiss = { viewModel.onEvent(AIReadingEvent.CloseTranslationSheet) },
+            onSpeakWord = { word ->
+                viewModel.onEvent(AIReadingEvent.SpeakText(word, "translate_word"))
+            }
+        )
+
+        NemoSnackbar(
+            visible = snackbarVisible,
+            message = snackbarMessage,
+            type = snackbarType,
+            icon = Icons.Rounded.CheckCircle,
+            onDismiss = { snackbarVisible = false },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarTop + 8.dp)
+        )
     }
 }
 
@@ -277,13 +333,18 @@ private fun ConfigScreen(
         label = "pulseScale"
     )
 
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
+            .padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
+        Spacer(Modifier.height(statusBarTop + 60.dp + 12.dp))
         // 卡片 1: 级别选择
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -385,45 +446,39 @@ private fun ConfigScreen(
 
         Spacer(Modifier.height(10.dp))
 
-        // 智能生成主按钮 (带呼吸缩放)
-        Surface(
+        // 智能生成主按钮 (彩色液态玻璃 + 呼吸缩放)
+        ColoredLiquidGlassButton(
+            onClick = { onEvent(AIReadingEvent.GenerateArticle) },
+            tint = BentoColors.Primary,
+            shape = RoundedCornerShape(20.dp),
+            isInteractive = true,
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .height(56.dp)
                 .graphicsLayer {
                     scaleX = pulseScale
                     scaleY = pulseScale
                 }
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { onEvent(AIReadingEvent.GenerateArticle) }
-                ),
-            shape = RoundedCornerShape(20.dp),
-            color = BentoColors.Primary,
-            contentColor = Color.White,
-            shadowElevation = 4.dp
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(
-                    text = "开启智能阅读训练",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                )
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
+            Text(
+                text = "开启智能阅读训练",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                ),
+                color = Color.White
+            )
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = Color.White
+            )
         }
+
+        Spacer(Modifier.height(navBarBottom + 24.dp))
     }
 }
 
@@ -697,13 +752,18 @@ private fun ArticleContentScreen(
         )
     }
 
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
+        Spacer(Modifier.height(statusBarTop + 60.dp + 12.dp))
         // 短文面板
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -1039,7 +1099,7 @@ private fun ArticleContentScreen(
             }
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(navBarBottom + 24.dp))
     }
 }
 

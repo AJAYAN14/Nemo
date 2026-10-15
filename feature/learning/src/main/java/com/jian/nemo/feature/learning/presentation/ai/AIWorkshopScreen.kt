@@ -35,8 +35,12 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -106,82 +110,32 @@ fun AIWorkshopScreen(
         }
     }
 
-    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backdrop = rememberLayerBackdrop()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
-                CommonHeader(
-                    title = "AI 例文工坊",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            LiquidButton(
-                                onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                val platform = uiState.aiPlatform
-                                when (platform) {
-                                    "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(24.dp), tint = Color.Unspecified)
-                                    else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", tint = textPrimary)
-                                }
-                            }
-                            LiquidButton(
-                                onClick = onNavigateToHistory,
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textPrimary)
-                            }
-                            LiquidButton(
-                                onClick = { showHelp = true },
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                isInteractive = true,
-                                modifier = Modifier
-                                    .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-                                    .size(44.dp)
-                            ) {
-                                Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", tint = textPrimary)
-                            }
-                        }
-                    }
-                )
-            },
-            containerColor = backgroundColor
-        ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .layerBackdrop(backdrop)
                 .imePadding()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                    .padding(horizontal = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
+                Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
+
                 if (!uiState.isConfigured) {
                     ConfigRequiredView(onNavigateToSettings = onNavigateToSettings)
                 } else {
@@ -192,90 +146,157 @@ fun AIWorkshopScreen(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(navBarBottom + 32.dp))
             }
+        }
 
-            // 切换配置别名气泡提示（弹出后 2.5s 自动消失）
-            AnimatedVisibility(
-                visible = uiState.switchedConfigName != null,
-                enter = fadeIn(androidx.compose.animation.core.tween(200)) +
-                        slideInVertically(androidx.compose.animation.core.tween(200)) { -it },
-                exit  = fadeOut(androidx.compose.animation.core.tween(300)) +
-                        slideOutVertically(androidx.compose.animation.core.tween(300)) { -it },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 8.dp, end = 12.dp)
-            ) {
-                uiState.switchedConfigName?.let { name ->
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = colorScheme.inverseSurface,
-                        shadowElevation = 10.dp,
-                        tonalElevation = 0.dp
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.98f),
+                            backgroundColor.copy(alpha = 0.88f),
+                            backgroundColor.copy(alpha = 0.55f),
+                            backgroundColor.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 例文工坊",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.CheckCircle,
-                                contentDescription = null,
-                                tint = colorScheme.inverseOnSurface,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Text(
-                                text = name,
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = colorScheme.inverseOnSurface
-                            )
+                            val platform = uiState.aiPlatform
+                            when (platform) {
+                                "gemini" -> Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "deepseek" -> Icon(painterResource(DesignR.drawable.ic_deepseek), contentDescription = "DeepSeek", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "openai" -> Icon(painterResource(DesignR.drawable.ic_openai), contentDescription = "OpenAI", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            }
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = onNavigateToHistory,
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = { showHelp = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
                         }
                     }
                 }
-            }
+            )
+        }
 
-            // 加载层 - 采用全屏磨砂质感（Flat）并使用唯美的 Lottie 加载动效
-            if (uiState.isLoading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(colorScheme.background)
-                        .clickable(enabled = false) {},
-                    contentAlignment = Alignment.Center
+        // 切换配置别名气泡提示（弹出后 2.5s 自动消失）
+        AnimatedVisibility(
+            visible = uiState.switchedConfigName != null,
+            enter = fadeIn(androidx.compose.animation.core.tween(200)) +
+                    slideInVertically(androidx.compose.animation.core.tween(200)) { -it },
+            exit  = fadeOut(androidx.compose.animation.core.tween(300)) +
+                    slideOutVertically(androidx.compose.animation.core.tween(300)) { -it },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = statusBarTop + 68.dp, end = 12.dp)
+        ) {
+            uiState.switchedConfigName?.let { name ->
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = colorScheme.inverseSurface,
+                    shadowElevation = 10.dp,
+                    tonalElevation = 0.dp
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        if (composition != null) {
-                            LottieAnimation(
-                                composition = composition,
-                                progress = { lottieProgress },
-                                modifier = Modifier.size(240.dp)
-                            )
-                        } else {
-                            Box(
-                                modifier = Modifier.size(240.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                NemoChasingDotsLoader(size = 48.dp)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            tint = colorScheme.inverseOnSurface,
+                            modifier = Modifier.size(14.dp)
+                        )
                         Text(
-                            text = loadingTexts[loadingTextIndex],
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = colorScheme.primary,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            text = name,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = colorScheme.inverseOnSurface
                         )
                     }
                 }
             }
         }
-    }
+
+        // 加载层 - 采用全屏磨砂质感（Flat）并使用唯美的 Lottie 加载动效
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colorScheme.background)
+                    .clickable(enabled = false) {},
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                ) {
+                    if (composition != null) {
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { lottieProgress },
+                            modifier = Modifier.size(240.dp)
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier.size(240.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            NemoChasingDotsLoader(size = 48.dp)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = loadingTexts[loadingTextIndex],
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
 
     uiState.error?.let {
             NemoSnackbar(
@@ -286,7 +307,7 @@ fun AIWorkshopScreen(
                 onDismiss = { viewModel.onEvent(AIWorkshopEvent.ClearError) },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = statusBarHeight + 8.dp)
+                    .padding(top = statusBarTop + 8.dp)
             )
         }
 
@@ -1067,34 +1088,27 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        LiquidButton(
+        ColoredLiquidGlassButton(
             onClick = onNavigateToSettings,
-            backgroundColor = MaterialTheme.colorScheme.primary,
+            tint = MaterialTheme.colorScheme.primary,
             shape = CircleShape,
-            elevation = 0.dp,
             isInteractive = true,
-            modifier = Modifier
-                .softCardShadow(borderRadius = 24.dp, isDark = isDark)
-                .height(48.dp)
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+            modifier = Modifier.height(48.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Rounded.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.White
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "立即去配置",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = Color.White
-                )
-            }
+            Icon(
+                Icons.Rounded.Settings,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = Color.White
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                "立即去配置",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = Color.White
+            )
         }
     }
 }

@@ -38,6 +38,9 @@ import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.ui.graphics.Brush
 
 // 动词变形规则数据模型
 data class GrammarRule(
@@ -294,22 +297,25 @@ fun VerbConjugationHandbookScreen(
         List(grammarList.size) { BringIntoViewRequester() }
     }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "日语动词活用大全",
-                onBack = onNavigateBack
-            )
-        },
-        containerColor = containerColor
-    ) { padding ->
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
+        // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .layerBackdrop(backdrop)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp)
         ) {
+            // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
+            Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
             // 前置知识卡片：动词三大分类
             Card(
                 modifier = Modifier
@@ -668,7 +674,35 @@ fun VerbConjugationHandbookScreen(
                         }
                     }
                 }
+
+                // 底部安全留白
+                Spacer(modifier = Modifier.height(navBarBottom + 24.dp))
             }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.98f),
+                            containerColor.copy(alpha = 0.88f),
+                            containerColor.copy(alpha = 0.55f),
+                            containerColor.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = "日语动词活用大全",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop
+            )
         }
     }
 }
