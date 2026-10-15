@@ -54,6 +54,7 @@ import java.util.Date
 import java.util.Locale
 import com.jian.nemo.feature.settings.components.RestoreStrategyDialog
 import com.jian.nemo.feature.settings.components.RestorePreviewDialog
+import com.jian.nemo.feature.settings.components.RestoreSuccessDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -73,14 +74,14 @@ fun CloudBackupHistoryScreen(
     LaunchedEffect(uiState.toastMessage) {
         uiState.toastMessage?.let {
             val isSuccess = !it.contains("失败") && !it.contains("异常")
-            snackbarMessage = it
-            snackbarType = if (isSuccess) NemoSnackbarType.SUCCESS else NemoSnackbarType.ERROR
-            snackbarVisible = true
-            viewModel.onEvent(SettingsEvent.ClearToast)
-            if (isSuccess && it.contains("导入成功") && onRestoreSuccess != null) {
-                kotlinx.coroutines.delay(1200)
-                onRestoreSuccess()
+            val isRestoreSuccess = isSuccess && it.contains("导入成功")
+            // 若为恢复成功，由专用的沉浸式结算弹窗展示，无需重复弹出顶部轻量 Snackbar
+            if (!isRestoreSuccess) {
+                snackbarMessage = it
+                snackbarType = if (isSuccess) NemoSnackbarType.SUCCESS else NemoSnackbarType.ERROR
+                snackbarVisible = true
             }
+            viewModel.onEvent(SettingsEvent.ClearToast)
         }
     }
 
@@ -336,11 +337,28 @@ fun CloudBackupHistoryScreen(
                         onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
                     )
                 }
+
+                if (uiState.restoreSuccessMessage != null) {
+                    RestoreSuccessDialog(
+                        message = uiState.restoreSuccessMessage!!,
+                        isFromLogin = isFromLogin,
+                        onConfirm = {
+                            viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
+                            if (isFromLogin && onRestoreSuccess != null) {
+                                onRestoreSuccess()
+                            }
+                        },
+                        onDismiss = {
+                            viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
+                        }
+                    )
+                }
             } // 闭合内层 Box
         } // 闭合 Scaffold
 
         // ===== 悬浮跳过按钮 (Floating Overlay - 1:1 对标 Demo 项目标准规范) =====
-        if (isFromLogin) {
+        // 恢复进行中(isCloudSyncing)或已弹出成功弹窗(restoreSuccessMessage != null)时隐藏，避免语义冲突与并发误触
+        if (isFromLogin && !uiState.isCloudSyncing && uiState.restoreSuccessMessage == null) {
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

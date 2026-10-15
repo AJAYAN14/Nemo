@@ -281,6 +281,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.RestoreFromCloud -> restoreFromCloud(event.fileName, event.strategy)
             is SettingsEvent.ConfirmRestore -> confirmRestore()
             is SettingsEvent.CancelRestorePreview -> cancelRestorePreview()
+            is SettingsEvent.ClearRestoreSuccess -> _uiState.update { it.copy(restoreSuccessMessage = null) }
 
         }
     }
@@ -406,10 +407,16 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(restorePreview = null, isCloudSyncing = true) }
             try {
                 val message = cloudBackupManager.executeRestore(content, preview.strategy)
-                _uiState.update { it.copy(toastMessage = message) }
+                val isSuccess = !message.contains("失败") && !message.contains("异常")
+                _uiState.update { 
+                    it.copy(
+                        toastMessage = message,
+                        restoreSuccessMessage = if (isSuccess && message.contains("导入成功")) message else null
+                    ) 
+                }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Confirm restore failed", e)
-                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}") }
+                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}", restoreSuccessMessage = null) }
             } finally {
                 _uiState.update { 
                     it.copy(

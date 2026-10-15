@@ -76,6 +76,7 @@ data class SettingsUiState(
     val pendingRestoreFileName: String? = null,
     val pendingRestoreContent: String? = null,
     val restorePreview: com.jian.nemo.core.data.manager.ImportPreview? = null,
+    val restoreSuccessMessage: String? = null,
     val isDictionaryReady: Boolean = true,
     val isDictionarySyncing: Boolean = false
 )
@@ -179,4 +180,5 @@ sealed interface SettingsEvent {
     data class RestoreFromCloud(val fileName: String, val strategy: ImportStrategy) : SettingsEvent
     data object ConfirmRestore : SettingsEvent
     data object CancelRestorePreview : SettingsEvent
+    data object ClearRestoreSuccess : SettingsEvent
 }

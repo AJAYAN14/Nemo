@@ -633,8 +633,10 @@ fun NemoNavHost(
                     }
                 },
                 onRestoreSuccess = {
-                    navController.navigate(NavDestination.LEARNING) {
-                        popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
+                    if (isFromLogin) {
+                        navController.navigate(NavDestination.LEARNING) {
+                            popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
+                        }
                     }
                 }
             )
