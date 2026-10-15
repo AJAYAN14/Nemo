@@ -258,7 +258,7 @@ fun ClearLiquidGlassButton(
 /**
  * 2. 带底色磨砂液态玻璃按钮 (Frosted Surface Liquid Glass Button)
  *
- * 在透镜折射的基础上，叠加一层轻柔半透明底色 (默认随主题自适应为透亮奶白半透或高级深灰半透)。
+ * 在透镜折射的基础上，叠加一层轻柔半透明底色 (默认随主题自适应：浅色 30% 纯白磨砂，深色 15% 纯白微光)。
  * 无论背景多复杂都能保证极佳的文字可读性与温润触感。
  */
 @Composable
@@ -266,19 +266,26 @@ fun FrostedLiquidGlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
-    surfaceColor: Color = Color.White.copy(alpha = 0.3f),
+    surfaceColor: Color = Color.Unspecified,
     shape: Shape = Capsule(),
     border: BorderStroke? = null,
     isInteractive: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     content: @Composable RowScope.() -> Unit
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val effectiveSurfaceColor = if (surfaceColor.isSpecified) {
+        surfaceColor
+    } else {
+        Color.White.copy(alpha = if (isDark) 0.15f else 0.3f)
+    }
+
     LiquidGlassButton(
         onClick = onClick,
         modifier = modifier,
         backdrop = backdrop,
         tint = Color.Unspecified,
-        surfaceColor = surfaceColor,
+        surfaceColor = effectiveSurfaceColor,
         shape = shape,
         border = border,
         isInteractive = isInteractive,

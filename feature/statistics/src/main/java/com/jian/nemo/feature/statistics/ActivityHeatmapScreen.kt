@@ -176,7 +176,7 @@ fun ActivityHeatmapScreen(
                                 painter = painterResource(id = R.drawable.ic_share_ios),
                                 contentDescription = "分享",
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(30.dp)
                             )
                         }
                     }

@@ -4,7 +4,15 @@ import android.view.HapticFeedbackConstants
 import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.asPaddingValues
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -158,113 +166,22 @@ fun KanaChartScreen(
     val playingAudioId by viewModel.playingAudioId.collectAsState()
 
     val sectionOrder = remember { mapOf("seion" to 0, "dakuon" to 1, "yoon" to 2) }
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.kana_chart_title),
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor,
-                actions = {
-                    val toggleBg = if (currentType == 0) Color(0xFFEEF2FF) else Color(0xFFFDF2F8)
-                    val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
-                    LiquidButton(
-                        onClick = {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            currentType = if (currentType == 0) 1 else 0
-                        },
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .height(44.dp),
-                        backgroundColor = toggleBg,
-                        shape = RoundedCornerShape(22.dp),
-                        elevation = 0.dp
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .padding(horizontal = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = "Toggle Kana Type",
-                                modifier = Modifier.size(18.dp),
-                                tint = toggleFg
-                            )
-                            Text(
-                                text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = toggleFg
-                            )
-                        }
-                    }
-                }
-            )
-        },
-        containerColor = backgroundColor
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层页面内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .layerBackdrop(backdrop)
                 .background(backgroundColor)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(backgroundColor)
-                    .padding(start = 20.dp, top = 10.dp, end = 20.dp)
-            ) {
-
-                val quickNavScroll = rememberScrollState()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(quickNavScroll),
-                    horizontalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    QuickNavButton(
-                        label = stringResource(R.string.kana_quick_nav_seion),
-                        surfaceColor = quickNavBaseColor,
-                        selectedSurfaceColor = quickNavSelectedColor,
-                        textMain = textMain,
-                        selected = currentSection == "seion",
-                        accentColor = accentColor,
-                        isDark = isDark
-                    ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        currentSection = "seion"
-                    }
-                    QuickNavButton(
-                        label = stringResource(R.string.kana_quick_nav_dakuon),
-                        surfaceColor = quickNavBaseColor,
-                        selectedSurfaceColor = quickNavSelectedColor,
-                        textMain = textMain,
-                        selected = currentSection == "dakuon",
-                        accentColor = accentColor,
-                        isDark = isDark
-                    ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        currentSection = "dakuon"
-                    }
-                    QuickNavButton(
-                        label = stringResource(R.string.kana_quick_nav_yoon),
-                        surfaceColor = quickNavBaseColor,
-                        selectedSurfaceColor = quickNavSelectedColor,
-                        textMain = textMain,
-                        selected = currentSection == "yoon",
-                        accentColor = accentColor,
-                        isDark = isDark
-                    ) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        currentSection = "yoon"
-                    }
-                }
-            }
-
             AnimatedContent(
                 targetState = currentSection,
                 transitionSpec = {
@@ -282,9 +199,12 @@ fun KanaChartScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                        .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
+                    Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
+
                     when (section) {
                         "seion" -> {
                             SectionTitle(
@@ -352,7 +272,108 @@ fun KanaChartScreen(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(88.dp))
+                }
+            }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.98f),
+                            backgroundColor.copy(alpha = 0.88f),
+                            backgroundColor.copy(alpha = 0.55f),
+                            backgroundColor.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.kana_chart_title),
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                actions = {
+                    val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+                    FrostedLiquidGlassButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            currentType = if (currentType == 0) 1 else 0
+                        },
+                        backdrop = backdrop,
+                        contentPadding = PaddingValues(horizontal = 14.dp),
+                        isInteractive = true,
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SwapHoriz,
+                                contentDescription = "切换假名类型",
+                                modifier = Modifier.size(20.dp),
+                                tint = toggleFg
+                            )
+                            Text(
+                                text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = toggleFg
+                            )
+                        }
+                    }
+                }
+            )
+        }
+
+        // 3. 底部悬浮液态玻璃分段切换栏（单手操作舒适区，读取 backdrop 产生透镜折射）
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = navBarBottom + 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val sections = listOf(
+                "seion" to stringResource(R.string.kana_quick_nav_seion),
+                "dakuon" to stringResource(R.string.kana_quick_nav_dakuon),
+                "yoon" to stringResource(R.string.kana_quick_nav_yoon)
+            )
+            sections.forEach { (sectionKey, label) ->
+                val isSelected = currentSection == sectionKey
+                val selectedSurface = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.55f) else Color.White
+                val unselectedSurface = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.35f)
+                val textFg = if (isSelected) {
+                    if (isDark) Color.White else Color(0xFF4F46E5)
+                } else {
+                    if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF334155)
+                }
+
+                FrostedLiquidGlassButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        currentSection = sectionKey
+                    },
+                    backdrop = backdrop,
+                    surfaceColor = if (isSelected) selectedSurface else unselectedSurface,
+                    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
+                    isInteractive = true,
+                    modifier = Modifier.height(46.dp)
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        ),
+                        color = textFg
+                    )
                 }
             }
         }

@@ -49,7 +49,7 @@ fun CommonHeader(
     centerContent: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
     backdrop: Backdrop? = null,
-    backButtonSize: Dp = 44.dp
+    backButtonSize: Dp = 48.dp
 ) {
     Box(
         modifier = Modifier
@@ -80,7 +80,8 @@ fun CommonHeader(
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
                             contentDescription = "返回",
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(backButtonSize * (30f / 48f))
                         )
                     }
 
