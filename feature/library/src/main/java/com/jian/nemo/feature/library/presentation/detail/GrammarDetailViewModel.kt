@@ -15,6 +15,7 @@ import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
 import com.jian.nemo.core.domain.usecase.audio.PlayTtsUseCase
+import com.jian.nemo.core.ui.navigation.DetailContextHolder
 
 /**
  * 语法详情 ViewModel
@@ -64,9 +65,14 @@ class GrammarDetailViewModel @Inject constructor(
                 if (grammar != null) {
                     _currentGrammar.value = grammar
 
-                    if (_contextIds.value.isEmpty() && !grammar.grammarLevel.isNullOrBlank()) {
-                        // Assuming getGrammarsByLevels can handle a single level list
-                        loadContextGrammars(grammar.grammarLevel!!)
+                    if (_contextIds.value.isEmpty()) {
+                        val customContext = DetailContextHolder.consumeGrammarContext(startGrammarId)
+                        if (customContext != null) {
+                            _contextIds.value = customContext
+                        } else if (!grammar.grammarLevel.isNullOrBlank()) {
+                            // Assuming getGrammarsByLevels can handle a single level list
+                            loadContextGrammars(grammar.grammarLevel!!)
+                        }
                     }
                 }
             }

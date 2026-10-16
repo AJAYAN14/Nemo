@@ -533,19 +533,19 @@ fun DataAndResourcesSection(
                     subtitle = "词汇库管理",
                     onClick = onWordListClick
                 )
-                 SquircleListItem(
-                    icon = Icons.Rounded.Dataset,
-                    color = NemoPrimary,
-                    title = "专项词汇",
-                    subtitle = "按分类查看词汇",
-                    onClick = onCategoryClassificationClick
-                )
                 SquircleListItem(
                     icon = Icons.Rounded.Book,
                     color = NemoPrimary,
                     title = "语法列表",
                     subtitle = "语法知识库",
                     onClick = onGrammarListClick
+                )
+                SquircleListItem(
+                    icon = Icons.Rounded.Dataset,
+                    color = NemoPrimary,
+                    title = "专项词汇",
+                    subtitle = "按分类查看词汇",
+                    onClick = onCategoryClassificationClick
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoAwesome,

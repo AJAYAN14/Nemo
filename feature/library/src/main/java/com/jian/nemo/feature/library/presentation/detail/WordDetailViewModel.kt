@@ -23,6 +23,7 @@ import com.jian.nemo.core.domain.repository.WordRelationRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
+import com.jian.nemo.core.ui.navigation.DetailContextHolder
 
 /**
  * 单词详情 ViewModel
@@ -78,7 +79,12 @@ class WordDetailViewModel @Inject constructor(
                     // 2. Once we have the word/level, fetch the context list (siblings)
                     // Only fetch if we haven't already (to avoid infinite loops if words update)
                     if (_contextIds.value.isEmpty()) {
-                        loadContextWords(word.level)
+                        val customContext = DetailContextHolder.consumeWordContext(startWordId)
+                        if (customContext != null) {
+                            _contextIds.value = customContext
+                        } else {
+                            loadContextWords(word.level)
+                        }
                     }
                 }
             }

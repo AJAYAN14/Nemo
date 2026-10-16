@@ -41,6 +41,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.common.TwoStageScrollToTopButton
 import androidx.compose.foundation.lazy.rememberLazyListState
+import com.jian.nemo.core.ui.navigation.DetailContextHolder
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
 
@@ -109,7 +110,10 @@ fun StatisticsScreen(
                 item {
                     StatisticsListCard(
                         items = words,
-                        onItemClick = onNavigateToWordDetail,
+                        onItemClick = { wordId ->
+                            DetailContextHolder.setWordContext(words.map { it.id })
+                            onNavigateToWordDetail(wordId)
+                        },
                         isWord = true
                     )
                 }
@@ -128,7 +132,10 @@ fun StatisticsScreen(
                 item {
                     StatisticsListCard(
                         items = grammars,
-                        onItemClick = onNavigateToGrammarDetail,
+                        onItemClick = { grammarId ->
+                            DetailContextHolder.setGrammarContext(grammars.map { it.id })
+                            onNavigateToGrammarDetail(grammarId)
+                        },
                         isWord = false
                     )
                 }
