@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.Backdrop
+import androidx.compose.ui.graphics.painter.Painter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -89,6 +91,8 @@ interface NemoMorphMenuScope {
     fun nextItemIndex(): Int
     /** 菜单项总数 */
     val itemCount: Int
+    /** 是否开启触感振动 */
+    val enableHaptic: Boolean get() = true
 }
 
 /**
@@ -107,16 +111,22 @@ interface NemoMorphMenuScope {
  * @param contentDescription 无障碍描述
  * @param buttonSize 触发按钮尺寸（默认 44.dp）
  * @param menuWidth 展开后菜单面板宽度（默认 192.dp）
+ * @param backdrop 背景采样层，用于透镜物理折射（对齐 CommonHeader 与热力图）
+ * @param iconPainter 自定义图标绘制（若不为空则优先于 icon）
+ * @param enableHaptic 是否开启触觉振动反馈（默认 true）
  * @param content 菜单内容槽（在 [NemoMorphMenuScope] 内组装菜单项）
  */
 @Composable
 fun NemoMorphMenu(
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Default.MoreVert,
+    iconPainter: Painter? = null,
+    backdrop: Backdrop? = null,
     contentDescription: String? = "更多选项",
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
     elevation: Dp = 0.dp,
+    enableHaptic: Boolean = true,
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -126,10 +136,13 @@ fun NemoMorphMenu(
         onExpandedChange = { expanded = it },
         modifier = modifier,
         icon = icon,
+        iconPainter = iconPainter,
+        backdrop = backdrop,
         contentDescription = contentDescription,
         buttonSize = buttonSize,
         menuWidth = menuWidth,
         elevation = elevation,
+        enableHaptic = enableHaptic,
         content = content
     )
 }
@@ -143,10 +156,13 @@ fun NemoMorphMenu(
     onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector = Icons.Default.MoreVert,
+    iconPainter: Painter? = null,
+    backdrop: Backdrop? = null,
     contentDescription: String? = "更多选项",
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
     elevation: Dp = 0.dp,
+    enableHaptic: Boolean = true,
     content: @Composable NemoMorphMenuScope.() -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -202,40 +218,53 @@ fun NemoMorphMenu(
     }
     staggerInfo.expanded = expanded
 
-    val scope = remember(transition, onExpandedChange) {
+    val scope = remember(transition, onExpandedChange, enableHaptic) {
         object : NemoMorphMenuScope {
             override fun close() { onExpandedChange(false) }
             override val isExpanded: Boolean get() = staggerInfo.expanded
             override val transition: androidx.compose.animation.core.Transition<Boolean> get() = transition
             override fun nextItemIndex(): Int = staggerInfo.counter++
             override val itemCount: Int get() = staggerInfo.total
+            override val enableHaptic: Boolean get() = enableHaptic
         }
     }
 
     val effectiveIconSize = if (buttonSize >= 48.dp) 30.dp else 24.dp
 
-    // 常态下的液态玻璃占位触发按钮（与 CommonHeader 返回按钮完全统一）
+    // 常态下的液态玻璃占位触发按钮（与 CommonHeader 返回按钮完全统一，启用透镜物理折射）
     Box(
         modifier = modifier.size(buttonSize),
         contentAlignment = Alignment.Center
     ) {
         FrostedLiquidGlassButton(
             onClick = {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                if (enableHaptic) {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                }
                 onExpandedChange(true)
             },
             shape = CircleShape,
-            hasLens = false,
+            backdrop = backdrop,
+            hasLens = backdrop != null,
             contentPadding = PaddingValues(0.dp),
             isInteractive = true,
             modifier = Modifier.size(buttonSize)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(effectiveIconSize)
-            )
+            if (iconPainter != null) {
+                Icon(
+                    painter = iconPainter,
+                    contentDescription = contentDescription,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(effectiveIconSize)
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(effectiveIconSize)
+                )
+            }
         }
 
         // 当需要渲染（展开中或正在进行收起动画）时挂载局部精准锚定的 Popup
@@ -311,6 +340,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
+    leadingPainter: Painter? = null,
     trailingIcon: ImageVector? = null,
     enabled: Boolean = true,
     isDestructive: Boolean = false
@@ -401,7 +431,9 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
 
     Surface(
         onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            if (enableHaptic) {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            }
             onClick()
         },
         enabled = enabled,
@@ -424,7 +456,15 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            if (leadingIcon != null) {
+            if (leadingPainter != null) {
+                Icon(
+                    painter = leadingPainter,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = iconTint.copy(alpha = if (enabled) 1f else 0.38f)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            } else if (leadingIcon != null) {
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
