@@ -180,7 +180,7 @@ fun LoginScreen(
 
         // 顶部假名天幕随底部表单内容高度动态自适应延伸，彻底消除中间空白断层
         val targetWaveHeight = when (stage) {
-            AuthStage.WELCOME -> screenHeight * 0.62f
+            AuthStage.WELCOME -> screenHeight * 0.70f
             AuthStage.LOGIN -> (screenHeight - 310.dp).coerceAtLeast(360.dp)
             AuthStage.REGISTER -> (screenHeight - 390.dp).coerceAtLeast(300.dp)
         }
