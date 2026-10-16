@@ -47,6 +47,29 @@ import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.feature.statistics.presentation.curve.CurvePoint
 import com.jian.nemo.feature.statistics.presentation.curve.ForgettingCurveData
 import kotlin.math.abs
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 /**
  * 遗忘曲线对比折线图组件 (Pro Max 高级增强版)
@@ -59,7 +82,8 @@ import kotlin.math.abs
 @Composable
 fun ForgettingCurveChart(
     data: ForgettingCurveData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMeasurer = rememberTextMeasurer()
@@ -103,146 +127,169 @@ fun ForgettingCurveChart(
     }
 
     var touchX by remember { mutableStateOf<Float?>(null) }
+    val chartBackdrop = rememberLayerBackdrop()
 
-    Canvas(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .height(600.dp)
-            .pointerInput(data) {
-                detectDragGestures(
-                    onDragStart = { offset -> touchX = offset.x },
-                    onDrag = { change, _ -> touchX = change.position.x },
-                    onDragEnd = { touchX = null },
-                    onDragCancel = { touchX = null }
-                )
-            }
-            .pointerInput(data, "tap") {
-                detectTapGestures(
-                    onPress = { offset ->
-                        touchX = offset.x
-                        tryAwaitRelease()
-                        touchX = null
-                    }
-                )
-            }
     ) {
+        val totalWidth = constraints.maxWidth.toFloat()
+        val totalHeight = constraints.maxHeight.toFloat()
+
         val leftPadding = yLabelWidth + with(density) { 8.dp.toPx() }
         val rightPadding = with(density) { 16.dp.toPx() }
         val topPadding = with(density) { 24.dp.toPx() } // 给 Tooltip 留出空间
         val bottomPadding = with(density) { 40.dp.toPx() }
 
         val chartLeft = leftPadding
-        val chartRight = size.width - rightPadding
+        val chartRight = totalWidth - rightPadding
         val chartTop = topPadding
-        val chartBottom = size.height - bottomPadding
+        val chartBottom = totalHeight - bottomPadding
         val chartWidth = chartRight - chartLeft
         val chartHeight = chartBottom - chartTop
-
-        // ========== 绘制背景网格线 ==========
-        val ySteps = 10
-        for (i in 0..ySteps) {
-            val yRatio = i.toFloat() / ySteps
-            val y = chartBottom - yRatio * chartHeight
-            drawLine(
-                color = gridColor,
-                start = Offset(chartLeft, y),
-                end = Offset(chartRight, y),
-                strokeWidth = gridLineWidth
-            )
-            val labelText = "${(i * 10)}%"
-            val labelResult = textMeasurer.measure(labelText, axisTextStyle)
-            drawText(
-                textLayoutResult = labelResult,
-                topLeft = Offset(
-                    x = chartLeft - labelResult.size.width - with(density) { 4.dp.toPx() },
-                    y = y - labelResult.size.height / 2f
-                )
-            )
-        }
-
-        val xLabelStep = when {
-            maxDayIndex <= 7 -> 1
-            maxDayIndex <= 30 -> 5
-            maxDayIndex <= 90 -> 15
-            else -> 60
-        }
         val maxX = maxDayIndex.coerceAtLeast(1)
 
-        for (dayValue in 0..maxDayIndex step xLabelStep) {
-            val xRatio = dayValue.toFloat() / maxX
-            val x = chartLeft + xRatio * chartWidth
-            drawLine(
-                color = gridColor,
-                start = Offset(x, chartTop),
-                end = Offset(x, chartBottom),
-                strokeWidth = gridLineWidth
-            )
-            val dayLabel = formatDayLabel(dayValue, maxDayIndex)
-            val xLabelResult = textMeasurer.measure(dayLabel, axisTextStyle)
-            drawText(
-                textLayoutResult = xLabelResult,
-                topLeft = Offset(
-                    x = x - xLabelResult.size.width / 2f,
-                    y = chartBottom + with(density) { 4.dp.toPx() }
-                )
-            )
-        }
+        val activeTooltip = remember(touchX, data, totalWidth) {
+            val currentTouchX = touchX ?: return@remember null
+            if (data.userCurve.isEmpty() || data.standardCurve.isEmpty()) return@remember null
 
-        // ========== 绘制标准遗忘曲线 ==========
-        drawCurveLine(
-            points = data.standardCurve,
-            color = standardLineColor,
-            strokeWidth = standardLineWidth,
-            chartLeft = chartLeft,
-            chartRight = chartRight,
-            chartTop = chartTop,
-            chartBottom = chartBottom,
-            maxDayIndex = maxDayIndex,
-            drawDots = false,
-            dotRadius = 0f,
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f),
-            fillGradient = false,
-            progress = animationProgress.value
-        )
-
-        // ========== 绘制用户实际曲线 ==========
-        val showUserDots = maxDayIndex <= 7
-        drawCurveLine(
-            points = data.userCurve,
-            color = userLineColor,
-            strokeWidth = userLineWidth,
-            chartLeft = chartLeft,
-            chartRight = chartRight,
-            chartTop = chartTop,
-            chartBottom = chartBottom,
-            maxDayIndex = maxDayIndex,
-            drawDots = showUserDots,
-            dotRadius = userDotRadius,
-            fillGradient = true,
-            progress = animationProgress.value
-        )
-
-        // ========== 手势反馈 (Crosshair & Tooltip) ==========
-        if (touchX != null && data.userCurve.isNotEmpty() && data.standardCurve.isNotEmpty()) {
             var minDiff = Float.MAX_VALUE
             var bestDayIndex = 0
             for (day in 0..maxDayIndex) {
                 val cx = chartLeft + (day.toFloat() / maxX) * chartWidth
-                val diff = abs(cx - touchX!!)
+                val diff = abs(cx - currentTouchX)
                 if (diff < minDiff) {
                     minDiff = diff
                     bestDayIndex = day
                 }
             }
 
-            // 查找最近的数据点
-            val userPt = data.userCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) }
-            val stdPt = data.standardCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) }
+            val userPt = data.userCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) } ?: return@remember null
+            val stdPt = data.standardCurve.minByOrNull { abs(it.dayIndex - bestDayIndex) } ?: return@remember null
+            val targetX = chartLeft + (bestDayIndex.toFloat() / maxX) * chartWidth
 
-            if (userPt != null && stdPt != null) {
-                val targetX = chartLeft + (bestDayIndex.toFloat() / maxX) * chartWidth
-                val userY = chartBottom - userPt.retentionRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
-                val stdY = chartBottom - stdPt.retentionRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
+            TooltipInfo(
+                day = bestDayIndex,
+                userRate = userPt.retentionRate,
+                stdRate = stdPt.retentionRate,
+                targetX = targetX,
+                chartTop = chartTop,
+                chartLeft = chartLeft,
+                chartRight = chartRight
+            )
+        }
+
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(chartBackdrop)
+                .pointerInput(data) {
+                    detectDragGestures(
+                        onDragStart = { offset -> touchX = offset.x },
+                        onDrag = { change, _ -> touchX = change.position.x },
+                        onDragEnd = { touchX = null },
+                        onDragCancel = { touchX = null }
+                    )
+                }
+                .pointerInput(data, "tap") {
+                    detectTapGestures(
+                        onPress = { offset ->
+                            touchX = offset.x
+                            tryAwaitRelease()
+                            touchX = null
+                        }
+                    )
+                }
+        ) {
+            // ========== 绘制背景网格线 ==========
+            val ySteps = 10
+            for (i in 0..ySteps) {
+                val yRatio = i.toFloat() / ySteps
+                val y = chartBottom - yRatio * chartHeight
+                drawLine(
+                    color = gridColor,
+                    start = Offset(chartLeft, y),
+                    end = Offset(chartRight, y),
+                    strokeWidth = gridLineWidth
+                )
+                val labelText = "${(i * 10)}%"
+                val labelResult = textMeasurer.measure(labelText, axisTextStyle)
+                drawText(
+                    textLayoutResult = labelResult,
+                    topLeft = Offset(
+                        x = chartLeft - labelResult.size.width - with(density) { 4.dp.toPx() },
+                        y = y - labelResult.size.height / 2f
+                    )
+                )
+            }
+
+            val xLabelStep = when {
+                maxDayIndex <= 7 -> 1
+                maxDayIndex <= 30 -> 5
+                maxDayIndex <= 90 -> 15
+                else -> 60
+            }
+
+            for (dayValue in 0..maxDayIndex step xLabelStep) {
+                val xRatio = dayValue.toFloat() / maxX
+                val x = chartLeft + xRatio * chartWidth
+                drawLine(
+                    color = gridColor,
+                    start = Offset(x, chartTop),
+                    end = Offset(x, chartBottom),
+                    strokeWidth = gridLineWidth
+                )
+                val dayLabel = formatDayLabel(dayValue, maxDayIndex)
+                val xLabelResult = textMeasurer.measure(dayLabel, axisTextStyle)
+                drawText(
+                    textLayoutResult = xLabelResult,
+                    topLeft = Offset(
+                        x = x - xLabelResult.size.width / 2f,
+                        y = chartBottom + with(density) { 4.dp.toPx() }
+                    )
+                )
+            }
+
+            // ========== 绘制标准遗忘曲线 ==========
+            drawCurveLine(
+                points = data.standardCurve,
+                color = standardLineColor,
+                strokeWidth = standardLineWidth,
+                chartLeft = chartLeft,
+                chartRight = chartRight,
+                chartTop = chartTop,
+                chartBottom = chartBottom,
+                maxDayIndex = maxDayIndex,
+                drawDots = false,
+                dotRadius = 0f,
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f),
+                fillGradient = false,
+                progress = animationProgress.value
+            )
+
+            // ========== 绘制用户实际曲线 ==========
+            val showUserDots = maxDayIndex <= 7
+            drawCurveLine(
+                points = data.userCurve,
+                color = userLineColor,
+                strokeWidth = userLineWidth,
+                chartLeft = chartLeft,
+                chartRight = chartRight,
+                chartTop = chartTop,
+                chartBottom = chartBottom,
+                maxDayIndex = maxDayIndex,
+                drawDots = showUserDots,
+                dotRadius = userDotRadius,
+                fillGradient = true,
+                progress = animationProgress.value
+            )
+
+            // ========== 手势反馈 (Crosshair 虚线十字与焦点圆圈) ==========
+            if (activeTooltip != null) {
+                val targetX = activeTooltip.targetX
+                val userY = chartBottom - activeTooltip.userRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
+                val stdY = chartBottom - activeTooltip.stdRate.coerceIn(0f, 1f) * chartHeight * animationProgress.value
 
                 // 虚线十字
                 drawLine(
@@ -259,21 +306,16 @@ fun ForgettingCurveChart(
 
                 drawCircle(color = standardLineColor, radius = userDotRadius * 1.5f, center = Offset(targetX, stdY))
                 drawCircle(color = Color.White, radius = userDotRadius * 0.8f, center = Offset(targetX, stdY))
-
-                // Tooltip 卡片
-                drawTooltip(
-                    day = bestDayIndex,
-                    userRate = userPt.retentionRate,
-                    stdRate = stdPt.retentionRate,
-                    anchorX = targetX,
-                    chartTop = chartTop,
-                    chartLeft = chartLeft,
-                    chartRight = chartRight,
-                    textMeasurer = textMeasurer,
-                    density = density,
-                    isDark = isDark
-                )
             }
+        }
+
+        // ========== 悬浮 Tooltip (实验室同款带底色液态按钮) ==========
+        if (activeTooltip != null) {
+            CurveLiquidTooltip(
+                info = activeTooltip,
+                backdrop = chartBackdrop,
+                isDark = isDark
+            )
         }
     }
 }
@@ -354,73 +396,98 @@ private fun DrawScope.drawCurveLine(
     }
 }
 
-private fun DrawScope.drawTooltip(
-    day: Int,
-    userRate: Float,
-    stdRate: Float,
-    anchorX: Float,
-    chartTop: Float,
-    chartLeft: Float,
-    chartRight: Float,
-    textMeasurer: TextMeasurer,
-    density: Density,
+private data class TooltipInfo(
+    val day: Int,
+    val userRate: Float,
+    val stdRate: Float,
+    val targetX: Float,
+    val chartTop: Float,
+    val chartLeft: Float,
+    val chartRight: Float
+)
+
+@Composable
+private fun CurveLiquidTooltip(
+    info: TooltipInfo,
+    backdrop: Backdrop?,
     isDark: Boolean
 ) {
-    val bgColor = if (isDark) Color(0xFF1E293B) else Color(0xFFFFFFFF)
-    val titleColor = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val descColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF475569)
-    val shadowColor = Color.Black.copy(alpha = 0.15f)
+    var tooltipSize by remember { mutableStateOf(IntSize.Zero) }
+    val density = LocalDensity.current
 
-    val titleStyle = TextStyle(color = titleColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-    val descStyle = TextStyle(color = descColor, fontSize = 10.sp)
+    val tooltipWidth = tooltipSize.width.toFloat()
+    val tooltipHeight = tooltipSize.height.toFloat()
 
-    val titleResult = textMeasurer.measure("第 ${day} 天", titleStyle)
-    val userResult = textMeasurer.measure("你的留存: ${(userRate * 100).toInt()}%", descStyle)
-    val stdResult = textMeasurer.measure("标准参考: ${(stdRate * 100).toInt()}%", descStyle)
-
-    val padding = with(density) { 8.dp.toPx() }
-    val textWidth = maxOf(titleResult.size.width, userResult.size.width, stdResult.size.width).toFloat()
-    val boxWidth = textWidth + padding * 2
-    val boxHeight = titleResult.size.height + userResult.size.height + stdResult.size.height + padding * 2.5f
-
-    // 防止 Tooltip 越界
-    var boxLeft = anchorX - boxWidth / 2f
-    if (boxLeft < chartLeft) boxLeft = chartLeft
-    if (boxLeft + boxWidth > chartRight) boxLeft = chartRight - boxWidth
-
-    // 默认放在上方，如果超出顶边界，就放下面一点
-    var boxTop = chartTop - boxHeight - with(density) { 4.dp.toPx() }
-    if (boxTop < 0f) {
-        boxTop = chartTop + with(density) { 10.dp.toPx() }
+    var boxLeft = info.targetX - tooltipWidth / 2f
+    if (boxLeft < info.chartLeft) boxLeft = info.chartLeft
+    if (tooltipWidth > 0 && boxLeft + tooltipWidth > info.chartRight) {
+        boxLeft = info.chartRight - tooltipWidth
     }
 
-    // 阴影
-    drawRoundRect(
-        color = shadowColor,
-        topLeft = Offset(boxLeft + 4f, boxTop + 4f),
-        size = Size(boxWidth, boxHeight),
-        cornerRadius = CornerRadius(12f, 12f)
-    )
+    val offsetPx = with(density) { 8.dp.toPx() }
+    var boxTop = info.chartTop - tooltipHeight - offsetPx
+    if (boxTop < 0f) {
+        boxTop = info.chartTop + with(density) { 12.dp.toPx() }
+    }
 
-    // 背景
-    drawRoundRect(
-        color = bgColor,
-        topLeft = Offset(boxLeft, boxTop),
-        size = Size(boxWidth, boxHeight),
-        cornerRadius = CornerRadius(12f, 12f)
-    )
-
-    // 文字
-    var currentY = boxTop + padding
-    drawText(textLayoutResult = titleResult, topLeft = Offset(boxLeft + padding, currentY))
-    currentY += titleResult.size.height + padding * 0.5f
-
-    drawCircle(ChartColors.FreshOrange, radius = 6f, center = Offset(boxLeft + padding + 6f, currentY + userResult.size.height / 2f))
-    drawText(textLayoutResult = userResult, topLeft = Offset(boxLeft + padding + 18f, currentY))
-    currentY += userResult.size.height
-
-    drawCircle(ChartColors.FreshGreen, radius = 6f, center = Offset(boxLeft + padding + 6f, currentY + stdResult.size.height / 2f))
-    drawText(textLayoutResult = stdResult, topLeft = Offset(boxLeft + padding + 18f, currentY))
+    Box(
+        modifier = Modifier
+            .onSizeChanged { tooltipSize = it }
+            .graphicsLayer {
+                translationX = boxLeft
+                translationY = boxTop
+            }
+    ) {
+        FrostedLiquidGlassButton(
+            onClick = {},
+            backdrop = backdrop,
+            surfaceColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.3f),
+            shape = RoundedCornerShape(16.dp),
+            border = BorderStroke(
+                1.dp,
+                if (isDark) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.6f)
+            ),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+            isInteractive = false
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = "第 ${info.day} 天",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(ChartColors.FreshOrange, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "你的留存: ${(info.userRate * 100).toInt()}%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(ChartColors.FreshGreen, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "标准参考: ${(info.stdRate * 100).toInt()}%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                    )
+                }
+            }
+        }
+    }
 }
 
 fun formatDayLabel(dayIndex: Int, maxDays: Int): String {

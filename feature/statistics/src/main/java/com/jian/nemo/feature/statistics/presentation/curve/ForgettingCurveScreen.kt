@@ -41,6 +41,10 @@ import com.jian.nemo.core.ui.component.discoverybar.TapPulseWrapper
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.statistics.presentation.curve.components.ForgettingCurveChart
 
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+
 /**
  * 遗忘曲线独立子界面
  *
@@ -49,7 +53,7 @@ import com.jian.nemo.feature.statistics.presentation.curve.components.Forgetting
  * - 用户曲线：从所有已学习单词/语法的平均 stability 计算得出
  *
  * 页面结构（自上而下）：
- * 1. 顶部导航栏（CommonHeader）
+ * 1. 顶部悬浮液态玻璃导航栏（CommonHeader + 柔和渐变遮罩）
  * 2. Tab 栏（遗忘曲线 / 学习情况 / 记忆持久度）
  * 3. Canvas 折线图区域
  * 4. 图例区域（颜色标识 + 文本）
@@ -62,23 +66,23 @@ fun ForgettingCurveScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.background(backgroundColor)) {
-                CommonHeader(
-                    title = "遗忘曲线",
-                    onBack = onBack
-                )
-            }
-        },
-        containerColor = backgroundColor
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
         if (uiState.isLoading || uiState.curveData == null) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 NemoChasingDotsLoader()
@@ -87,8 +91,12 @@ fun ForgettingCurveScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .layerBackdrop(backdrop)
                     .verticalScroll(rememberScrollState())
+                    .padding(
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    )
             ) {
 
                 // ========== 时间范围选择器 ==========
@@ -122,6 +130,31 @@ fun ForgettingCurveScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "遗忘曲线",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }
