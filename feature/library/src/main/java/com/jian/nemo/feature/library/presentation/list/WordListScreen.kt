@@ -72,6 +72,10 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
+import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
+import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
+import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -264,39 +268,13 @@ fun WordListScreen(
         }
 
         // 1.5 页面全屏高斯模糊景深遮罩 (对齐学习界面：12% 柔光暗化 + 200ms 淡入淡出，点击外部收起菜单)
-        AnimatedVisibility(
+        LibraryMenuScrimOverlay(
             visible = isMenuExpanded,
-            enter = fadeIn(tween(200)),
-            exit = fadeOut(tween(200))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.12f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { isMenuExpanded = false }
-                    )
-            )
-        }
+            onDismiss = { isMenuExpanded = false }
+        )
 
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.95f),
-                            backgroundColor.copy(alpha = 0.75f),
-                            backgroundColor.copy(alpha = 0.35f),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(bottom = 8.dp)
-        ) {
+        FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
             val headerTitle = if (selectedLevel == "ALL") "单词列表" else "$selectedLevel 单词"
             CommonHeader(
                 title = headerTitle,
@@ -305,81 +283,30 @@ fun WordListScreen(
                 backdrop = backdrop,
                 backButtonSize = 48.dp,
                 actions = {
-                    NemoMorphMenu(
+                    LibraryLevelSelectionMenu(
                         expanded = isMenuExpanded,
                         onExpandedChange = { isMenuExpanded = it },
-                        buttonSize = 48.dp,
-                        menuWidth = 200.dp,
-                        enableHaptic = false,
+                        selectedLevel = selectedLevel,
+                        onLevelSelected = { selectedLevel = it },
+                        countsByLevel = remember(filteredWordsByLevel) {
+                            filteredWordsByLevel.mapValues { it.value.size }
+                        },
                         backdrop = backdrop,
-                        iconPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
-                        contentDescription = "选择等级"
-                    ) {
-                        val allCount = filteredWordsByLevel.values.sumOf { it.size }
-                        val isAllSelected = selectedLevel == "ALL"
-                        NemoMorphMenuItem(
-                            text = "全部等级 ($allCount)",
-                            leadingPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
-                            trailingIcon = if (isAllSelected) Icons.Rounded.Check else null,
-                            onClick = {
-                                selectedLevel = "ALL"
-                                close()
-                                coroutineScope.launch { lazyListState.scrollToItem(0) }
-                            }
-                        )
-
-                        androidx.compose.material3.HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                        )
-
-                        val levelsList = listOf("N5", "N4", "N3", "N2", "N1")
-                        levelsList.forEach { level ->
-                            val count = filteredWordsByLevel[level]?.size ?: 0
-                            val isSelected = selectedLevel.equals(level, ignoreCase = true)
-                            NemoMorphMenuItem(
-                                text = "$level 等级 ($count)",
-                                trailingIcon = if (isSelected) Icons.Rounded.Check else null,
-                                onClick = {
-                                    selectedLevel = level
-                                    close()
-                                    coroutineScope.launch { lazyListState.scrollToItem(0) }
-                                }
-                            )
+                        onScrollToTop = {
+                            coroutineScope.launch { lazyListState.scrollToItem(0) }
                         }
-                    }
+                    )
                 }
             )
         }
 
         // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏红）
-        val scrollToTopButtonSize = 56.dp
-        AnimatedVisibility(
-            visible = showScrollToTop && !isMenuExpanded,
-            enter = fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.8f, stiffness = 400f)),
-            exit = fadeOut(tween(150)) + scaleOut(tween(150)),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = navBarBottom + 20.dp)
-        ) {
-            FrostedLiquidGlassButton(
-                onClick = {
-                    coroutineScope.launch {
-                        lazyListState.animateScrollToItem(0)
-                    }
-                },
-                modifier = Modifier.size(scrollToTopButtonSize),
-                shape = CircleShape,
-                backdrop = backdrop,
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_scroll_to_top),
-                    contentDescription = "回到顶部",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(scrollToTopButtonSize * (30f / 48f))
-                )
-            }
-        }
+        LibraryScrollToTopButton(
+            lazyListState = lazyListState,
+            backdrop = backdrop,
+            isMenuExpanded = isMenuExpanded,
+            bottomPadding = navBarBottom + 20.dp
+        )
 
         // 3. 同步通知组件
         com.jian.nemo.core.ui.component.common.NemoSnackbar(

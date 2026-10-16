@@ -1,57 +1,57 @@
 package com.jian.nemo.feature.library.presentation.category
 
-import com.jian.nemo.core.designsystem.theme.screenBackground
-
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Inbox
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.ui.animation.animateListItem
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
-
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
+import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
+import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
+import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
+import kotlinx.coroutines.launch
 
 private enum class StudyFilter {
     ALL,      // 全部
@@ -59,16 +59,9 @@ private enum class StudyFilter {
     UNLEARNED // 未学
 }
 
-
 /**
- * 分类单词列表界面 (Refactored to match WordListScreen UI)
- *
- * 100% 还原 WordListScreen 的高级 UI 设计：
- * - Sticky Headers for Levels
- * - Premium Card Items
- * - Smooth Animations
+ * 分类单词列表界面 (接入 LibraryListComponents 通用组件)
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CategoryWordsScreen(
     category: String,
@@ -86,260 +79,234 @@ fun CategoryWordsScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    // Expanded State (Track which levels are OPEN)
-    // Default: Empty (All Closed). Logic copied from WordListScreen
-    val expandedLevels = rememberSaveable(
-        saver = androidx.compose.runtime.saveable.listSaver(
-            save = { it.toList() },
-            restore = { it.toMutableStateList() }
-        )
-    ) { mutableStateListOf<String>() }
+    val backdrop = rememberLayerBackdrop()
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
-    // Local Search State (If ViewModel doesn't have it, we handle locally or use VM if capable)
-    // Since CategoryWordsViewModel typically just loads, we'll add a local search query state for UI filtering
-    // effectively mirroring WordListScreen's behavior.
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
+    var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
+    var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
-    // Filter logic
-    val filteredWordsByLevel = remember(uiState.wordsByLevel, searchQuery, filterState) {
-        uiState.wordsByLevel.mapValues { (_, words) ->
-            words.filter { word ->
-                // 1. 过滤已学/未学/全部
-                val matchesFilter = when (filterState) {
-                    StudyFilter.ALL -> true
-                    StudyFilter.LEARNED -> word.isLearned
-                    StudyFilter.UNLEARNED -> !word.isLearned
-                }
-                if (!matchesFilter) return@filter false
+    val animatedBlurRadius by animateDpAsState(
+        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
+        animationSpec = tween(durationMillis = 200),
+        label = "category_blur"
+    )
 
-                // 2. 过滤搜索词
-                if (searchQuery.isBlank()) {
-                    true
-                } else {
-                    word.japanese.contains(searchQuery, ignoreCase = true) ||
-                    word.hiragana.contains(searchQuery, ignoreCase = true) ||
-                    word.chinese.contains(searchQuery, ignoreCase = true)
-                }
+    // 过滤词汇数据
+    val currentWords = remember(uiState.words, selectedLevel, searchQuery, filterState) {
+        uiState.words.filter { word ->
+            val matchesFilter = when (filterState) {
+                StudyFilter.ALL -> true
+                StudyFilter.LEARNED -> word.isLearned
+                StudyFilter.UNLEARNED -> !word.isLearned
             }
-        }.filterValues { it.isNotEmpty() }
-    }
+            if (!matchesFilter) return@filter false
 
-    // 当搜索词改变且不为空时，自动展开所有有结果的分类
-    LaunchedEffect(searchQuery) {
-        if (searchQuery.isNotEmpty()) {
-            filteredWordsByLevel.keys.forEach { level ->
-                if (!expandedLevels.contains(level)) {
-                    expandedLevels.add(level)
-                }
+            val matchesLevel = if (selectedLevel == "ALL") true else word.level.equals(selectedLevel, ignoreCase = true)
+            if (!matchesLevel) return@filter false
+
+            if (searchQuery.isBlank()) {
+                true
+            } else {
+                word.japanese.contains(searchQuery, ignoreCase = true) ||
+                word.hiragana.contains(searchQuery, ignoreCase = true) ||
+                word.chinese.contains(searchQuery, ignoreCase = true)
             }
         }
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            Column(modifier = Modifier.background(backgroundColor)) {
-                CommonHeader(
-                    title = if(uiState.isLoading) categoryTitle else "$categoryTitle (${uiState.words.size})",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-                val options = remember {
-                    listOf(
-                        DiscoveryOption(
-                            label = "全部",
-                            icon = Icons.Default.Book,
-                            activeColor = NemoIndigo,
+    // 计算各等级词汇数量
+    val countsByLevel = remember(uiState.words, searchQuery, filterState) {
+        val baseFiltered = uiState.words.filter { word ->
+            val matchesFilter = when (filterState) {
+                StudyFilter.ALL -> true
+                StudyFilter.LEARNED -> word.isLearned
+                StudyFilter.UNLEARNED -> !word.isLearned
+            }
+            if (!matchesFilter) return@filter false
+
+            if (searchQuery.isBlank()) {
+                true
+            } else {
+                word.japanese.contains(searchQuery, ignoreCase = true) ||
+                word.hiragana.contains(searchQuery, ignoreCase = true) ||
+                word.chinese.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+        listOf("ALL", "N1", "N2", "N3", "N4", "N5").associateWith { lvl ->
+            if (lvl == "ALL") baseFiltered.size
+            else baseFiltered.count { it.level.equals(lvl, ignoreCase = true) }
+        }
+    }
+
+    val options = remember {
+        listOf(
+            DiscoveryOption(
+                label = "全部",
+                icon = Icons.Default.Book,
+                activeColor = NemoIndigo,
+            ),
+            DiscoveryOption(
+                label = "已学",
+                icon = Icons.Default.CheckCircle,
+                activeColor = NemoSecondary,
+            ),
+            DiscoveryOption(
+                label = "未学",
+                icon = Icons.Default.Error,
+                activeColor = NemoOrange,
+            ),
+        )
+    }
+    val selectedIndex = when (filterState) {
+        StudyFilter.ALL -> 0
+        StudyFilter.LEARNED -> 1
+        StudyFilter.UNLEARNED -> 2
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                NemoChasingDotsLoader()
+            }
+        } else if (uiState.error != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = uiState.error ?: "加载失败", color = MaterialTheme.colorScheme.error)
+            }
+        } else {
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (animatedBlurRadius > 0.dp) Modifier.blur(animatedBlurRadius) else Modifier
+                    )
+                    .layerBackdrop(backdrop),
+                contentPadding = PaddingValues(
+                    top = statusBarTop + 60.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
+                item(key = "discovery_bar") {
+                    DiscoveryBar(
+                        options = options,
+                        selectedOptionIndex = selectedIndex,
+                        onOptionSelected = { index ->
+                            filterState = when (index) {
+                                0 -> StudyFilter.ALL
+                                1 -> StudyFilter.LEARNED
+                                2 -> StudyFilter.UNLEARNED
+                                else -> StudyFilter.ALL
+                            }
+                        },
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = { searchQuery = it },
+                        searchPlaceholder = "搜索：汉字 / 假名 / 释义",
+                        style = DiscoveryBarStyle(
+                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
+                            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
                         ),
-                        DiscoveryOption(
-                            label = "已学",
-                            icon = Icons.Default.CheckCircle,
-                            activeColor = NemoSecondary,
-                        ),
-                        DiscoveryOption(
-                            label = "未学",
-                            icon = Icons.Default.Error,
-                            activeColor = NemoOrange,
-                        ),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-                val selectedIndex = when (filterState) {
-                    StudyFilter.ALL -> 0
-                    StudyFilter.LEARNED -> 1
-                    StudyFilter.UNLEARNED -> 2
-                }
 
-                DiscoveryBar(
-                    options = options,
-                    selectedOptionIndex = selectedIndex,
-                    onOptionSelected = { index ->
-                        val newFilter = when (index) {
-                            0 -> StudyFilter.ALL
-                            1 -> StudyFilter.LEARNED
-                            2 -> StudyFilter.UNLEARNED
-                            else -> StudyFilter.ALL
-                        }
-                        filterState = newFilter
-                    },
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { searchQuery = it },
-                    searchPlaceholder = "搜索：汉字 / 假名 / 释义",
-                    style = DiscoveryBarStyle(
-                        backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-                        inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NemoChasingDotsLoader()
-                }
-            }
-            uiState.error != null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = uiState.error ?: "加载失败", color = MaterialTheme.colorScheme.error)
-                }
-            }
-            filteredWordsByLevel.isEmpty() && searchQuery.isNotEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                    EmptyState(message = "未找到相关单词")
-                }
-            }
-            filteredWordsByLevel.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                    EmptyState(message = "该分类下暂无词汇")
-                }
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = paddingValues.calculateTopPadding(),
-                        bottom = paddingValues.calculateBottomPadding() + 24.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    val sortedLevels = filteredWordsByLevel.keys.sorted()
-
-                    sortedLevels.forEach { level ->
-                        val words = filteredWordsByLevel[level] ?: emptyList()
-                        // Search active -> Always Expanded. Otherwise use manual state.
-                        val isExpanded = expandedLevels.contains(level)
-                        val levelColor = getLevelColor(level)
-
-                        stickyHeader {
-                            LevelHeader(
-                                level = level,
-                                count = words.size,
-                                isExpanded = isExpanded,
-                                color = levelColor,
-                                onToggle = {
-                                    if (expandedLevels.contains(level)) {
-                                        expandedLevels.remove(level)
-                                    } else {
-                                        expandedLevels.add(level)
-                                    }
-                                }
+                // 2. 单词平铺列表
+                if (currentWords.isEmpty()) {
+                    item(key = "empty_state") {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 80.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            EmptyState(
+                                if (searchQuery.isNotEmpty()) "未找到相关单词"
+                                else if (selectedLevel != "ALL") "当前等级暂无单词"
+                                else "该分类下暂无词汇"
                             )
                         }
-
-                        if (isExpanded) {
-                            items(words, key = { "category_word_${it.id}" }) { word ->
-                                Box(modifier = Modifier.animateListItem()) {
-                                    WordListItemPremium(
-                                        word = word,
-                                        onClick = { onNavigateToWordDetail(word.id) }
-                                    )
-                                }
-                            }
+                    }
+                } else {
+                    items(currentWords, key = { "category_word_${it.id}" }) { word ->
+                        Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
+                            WordListItemPremium(
+                                word = word,
+                                onClick = { onNavigateToWordDetail(word.id) }
+                            )
                         }
                     }
                 }
             }
         }
-    }
-}
 
-// --- Local Copies of Helper Components (To avoid modifying WordListScreen.kt) ---
+        // 1.5 页面全屏高斯模糊景深遮罩 (对齐学习界面：12% 柔光暗化 + 200ms 淡入淡出，点击外部收起菜单)
+        LibraryMenuScrimOverlay(
+            visible = isMenuExpanded,
+            onDismiss = { isMenuExpanded = false }
+        )
 
-@Composable
-private fun LevelHeader(
-    level: String,
-    count: Int,
-    isExpanded: Boolean,
-    color: Color,
-    onToggle: () -> Unit
-) {
-    val backgroundColor = MaterialTheme.colorScheme.screenBackground
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
+            val titleText = if (selectedLevel == "ALL") {
+                if (uiState.isLoading) categoryTitle else "$categoryTitle (${currentWords.size})"
+            } else {
+                "$categoryTitle · $selectedLevel (${currentWords.size})"
+            }
 
-    Surface(
-        color = backgroundColor.copy(alpha = 0.95f),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onToggle)
-            .padding(vertical = 8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(end = 16.dp) // Right padding for icon
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(width = 4.dp, height = 24.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(color)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = level,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Black,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "$count 词",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Toggle Icon
-            Icon(
-                imageVector = Icons.Rounded.KeyboardArrowDown,
-                contentDescription = if (isExpanded) "Collapse" else "Expand",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .size(24.dp)
-                    .graphicsLayer {
-                        rotationZ = if (isExpanded) 180f else 0f
-                    }
+            CommonHeader(
+                title = titleText,
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    LibraryLevelSelectionMenu(
+                        expanded = isMenuExpanded,
+                        onExpandedChange = { isMenuExpanded = it },
+                        selectedLevel = selectedLevel,
+                        onLevelSelected = { selectedLevel = it },
+                        countsByLevel = countsByLevel,
+                        backdrop = backdrop,
+                        onScrollToTop = {
+                            coroutineScope.launch { lazyListState.scrollToItem(0) }
+                        }
+                    )
+                }
             )
         }
+
+        // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色）
+        LibraryScrollToTopButton(
+            lazyListState = lazyListState,
+            backdrop = backdrop,
+            isMenuExpanded = isMenuExpanded,
+            bottomPadding = navBarBottom + 20.dp
+        )
     }
 }
 
@@ -348,7 +315,6 @@ private fun WordListItemPremium(
     word: Word,
     onClick: () -> Unit
 ) {
-    // Determine color based on ID hash
     val colorIndex = kotlin.math.abs(word.id.hashCode()) % AvatarColors.size
     val avatarColor = AvatarColors[colorIndex]
 
@@ -380,18 +346,15 @@ private fun WordListItemPremium(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = word.japanese,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontFamily = NotoSerifJP,
-                            localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                        ),
-                        fontWeight = FontWeight.W800,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                }
+                Text(
+                    text = word.japanese,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    fontWeight = FontWeight.W800,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -429,6 +392,26 @@ private fun WordListItemPremium(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
+
+            if (word.level.isNotBlank()) {
+                val levelColor = getLevelColor(word.level)
+                Spacer(modifier = Modifier.width(8.dp))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(levelColor.copy(alpha = 0.12f))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = word.level.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Black,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        color = levelColor
+                    )
+                }
+            }
         }
     }
 }
@@ -440,9 +423,9 @@ private fun PremiumCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val scale by if(onClick != null) {
+    val scale by if (onClick != null) {
         val isPressed by interactionSource.collectIsPressedAsState()
-         animateFloatAsState(
+        animateFloatAsState(
             targetValue = if (isPressed) 0.98f else 1f,
             label = "cardScale",
             animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
@@ -493,11 +476,11 @@ private fun EmptyState(message: String) {
 
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
-        "N5" -> NemoSecondary // Green (Easy)
-        "N4" -> NemoCyan      // Cyan
-        "N3" -> NemoPrimary   // Blue (Medium)
-        "N2" -> NemoOrange    // Orange
-        "N1" -> IosColors.Pink // Pink/Red (Hard)
+        "N5" -> NemoSecondary
+        "N4" -> NemoCyan
+        "N3" -> NemoPrimary
+        "N2" -> NemoOrange
+        "N1" -> IosColors.Pink
         else -> NemoPrimary
     }
 }
