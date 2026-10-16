@@ -1,10 +1,15 @@
 package com.jian.nemo.core.ui.component.common
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,12 +22,17 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.kyant.backdrop.Backdrop
 import kotlinx.coroutines.launch
 
 /**
@@ -160,3 +170,61 @@ fun ScrollToTopButton(
         }
     }
 }
+
+/**
+ * 单词列表同款液态玻璃回顶按钮 (FrostedLiquidGlass 风格)
+ *
+ * 严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏色，
+ * 读取 backdrop 实时毛玻璃采样，阻尼弹性动画平滑置顶。
+ */
+@Composable
+fun BoxScope.LiquidScrollToTopButton(
+    listState: LazyListState,
+    backdrop: Backdrop? = null,
+    bottomPadding: Dp = 20.dp,
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 56.dp,
+    onClick: (() -> Unit)? = null
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
+    val showScrollToTop by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 200
+        }
+    }
+
+    AnimatedVisibility(
+        visible = showScrollToTop,
+        enter = fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.8f, stiffness = 400f)),
+        exit = fadeOut(tween(150)) + scaleOut(tween(150)),
+        modifier = modifier
+            .align(Alignment.BottomEnd)
+            .padding(end = 20.dp, bottom = bottomPadding)
+    ) {
+        FrostedLiquidGlassButton(
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                if (onClick != null) {
+                    onClick()
+                } else {
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(0)
+                    }
+                }
+            },
+            modifier = Modifier.size(buttonSize),
+            shape = CircleShape,
+            backdrop = backdrop,
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_scroll_to_top),
+                contentDescription = "回到顶部",
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(buttonSize * (30f / 48f))
+            )
+        }
+    }
+}
+

@@ -39,8 +39,11 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-
-
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 
 /**
  * 错误单词列表界面
@@ -59,6 +62,10 @@ fun WrongWordsScreen(
 
     // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     // Custom Premium Colors
     val premiumRed = Color(0xFFFF3B30) // Apple-style System Red
@@ -92,78 +99,18 @@ fun WrongWordsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            if (isSelectionMode) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(56.dp),
-                    color = backgroundColor
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { selectedWordIds = emptySet() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "取消选择",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "已选择 ${selectedWordIds.size} 项",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        val allWordIds = uiState.words.map { it.id }.toSet()
-                        val isAllSelected = selectedWordIds.size == allWordIds.size
-                        TextButton(
-                            onClick = {
-                                selectedWordIds = if (isAllSelected) emptySet() else allWordIds
-                            }
-                        ) {
-                            Text(
-                                text = if (isAllSelected) "取消全选" else "全选",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = premiumBlue
-                            )
-                        }
-                        
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Delete,
-                                contentDescription = "批量删除",
-                                tint = premiumRed
-                            )
-                        }
-                    }
-                }
-            } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "错误的单词",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-            }
-        }
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
         when {
             uiState.isLoading -> {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
+                        .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
                     contentAlignment = Alignment.Center
                 ) {
                     NemoChasingDotsLoader()
@@ -174,7 +121,7 @@ fun WrongWordsScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues),
+                        .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -215,10 +162,14 @@ fun WrongWordsScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
+                        .layerBackdrop(backdrop),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(
                         items = uiState.words,
@@ -259,6 +210,98 @@ fun WrongWordsScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            if (isSelectionMode) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 20.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FrostedLiquidGlassButton(
+                        onClick = { selectedWordIds = emptySet() },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = "取消选择",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "已选择 ${selectedWordIds.size} 项",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    val allWordIds = uiState.words.map { it.id }.toSet()
+                    val isAllSelected = selectedWordIds.size == allWordIds.size
+                    TextButton(
+                        onClick = {
+                            selectedWordIds = if (isAllSelected) emptySet() else allWordIds
+                        }
+                    ) {
+                        Text(
+                            text = if (isAllSelected) "取消全选" else "全选",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = premiumBlue
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    FrostedLiquidGlassButton(
+                        onClick = { showDeleteDialog = true },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = "批量删除",
+                            tint = premiumRed,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+            } else {
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = "错误的单词",
+                    onBack = onNavigateBack,
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp
+                )
             }
         }
     }

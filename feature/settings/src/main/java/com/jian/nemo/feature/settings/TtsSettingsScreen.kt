@@ -32,6 +32,10 @@ import com.jian.nemo.feature.settings.components.VoiceSelectionBottomSheet
 import com.jian.nemo.core.ui.component.liquid.LiquidSlider
 import java.util.Locale
 
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+
 /**
  * TTS 语音设置界面 (Flat UI 风格)
  *
@@ -51,21 +55,28 @@ fun TtsSettingsScreen(
     val secondaryAccent = IosColors.Cyan // 次要强调色
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CommonHeader(
-                title = "语音设置",
-                onBack = onNavigateBack
-            )
-        }
-    ) { paddingValues ->
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .layerBackdrop(backdrop)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                )
         ) {
             // =====================
             // 语音来源
@@ -193,6 +204,31 @@ fun TtsSettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "语音设置",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
 
         // 日语语音选择 BottomSheet

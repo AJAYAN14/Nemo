@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +36,9 @@ import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
 
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
@@ -44,27 +48,33 @@ fun ThemeSettingsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
 
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backgroundColor = MaterialTheme.colorScheme.background
+
     // 弹窗状态
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showThemeColorDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = "主题外观",
-                onBack = onBack,
-                backgroundColor = MaterialTheme.colorScheme.background
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .layerBackdrop(backdrop)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                )
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -161,6 +171,31 @@ fun ThemeSettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "主题外观",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 
@@ -457,6 +492,11 @@ private fun TimePickerDialog(
         is24Hour = true
     )
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val neutralCardBg = if (isDark) Color(0xFF2C2C2E) else Color(0xFFF2F2F7)
+    val textPrimary = if (isDark) Color.White else Color(0xFF1C1C1E)
+
     NemoDialog(
         onDismissRequest = onDismiss,
         title = "选择时间",
@@ -467,7 +507,25 @@ private fun TimePickerDialog(
             onTimeSelected(formattedTime)
         },
         content = {
-            TimePicker(state = timePickerState)
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = neutralCardBg,
+                        clockDialSelectedContentColor = Color.White,
+                        clockDialUnselectedContentColor = textPrimary,
+                        selectorColor = primaryColor,
+                        timeSelectorSelectedContainerColor = primaryColor.copy(alpha = if (isDark) 0.22f else 0.12f),
+                        timeSelectorUnselectedContainerColor = neutralCardBg,
+                        timeSelectorSelectedContentColor = primaryColor,
+                        timeSelectorUnselectedContentColor = textPrimary,
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
         }
     )
 }

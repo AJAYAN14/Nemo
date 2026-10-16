@@ -39,11 +39,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.TwoStageScrollToTopButton
+import com.jian.nemo.core.ui.component.common.LiquidScrollToTopButton
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.jian.nemo.core.ui.navigation.DetailContextHolder
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
+
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 
 /**
  * 今日统计界面 (UI/UX Pro Max)
@@ -66,36 +70,29 @@ fun StatisticsScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val listState = rememberLazyListState()
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Scaffold(
-        topBar = {
-            Column(modifier = Modifier.background(backgroundColor)) {
-                CommonHeader(
-                    title = "今日统计",
-                    onBack = onBack
-                )
-            }
-        },
-        floatingActionButton = {
-            TwoStageScrollToTopButton(
-                listState = listState,
-                intermediateTargetIndex = 3
-            )
-        },
-        containerColor = backgroundColor
-    ) { innerPadding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
-                top = innerPadding.calculateTopPadding() + 16.dp,
-                bottom = innerPadding.calculateBottomPadding() + 24.dp
+                top = statusBarTop + 60.dp + 16.dp,
+                bottom = navBarBottom + 24.dp
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
             // 0. 顶部统计面板
             item {
                 OverallStatisticsDashboard(words = words, grammars = grammars)
@@ -144,6 +141,38 @@ fun StatisticsScreen(
                     EmptyStatisticsState("该日期没有学习任何语法")
                 }
             }
+        }
+
+        // 2. 悬浮回顶按钮（单词列表同款液态玻璃回顶）
+        LiquidScrollToTopButton(
+            listState = listState,
+            backdrop = backdrop,
+            bottomPadding = navBarBottom + 20.dp
+        )
+
+        // 3. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "今日统计",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }

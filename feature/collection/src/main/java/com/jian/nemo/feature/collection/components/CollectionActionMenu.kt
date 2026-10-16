@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.kyant.backdrop.Backdrop
 
 /**
  * 通用收藏/错题操作菜单组件 - UI/UX Pro Max
@@ -35,7 +36,8 @@ fun CollectionActionMenu(
     onClearWords: () -> Unit,
     onClearGrammars: () -> Unit,
     isExpanded: Boolean = false,
-    onToggleMenu: ((Boolean) -> Unit)? = null
+    onToggleMenu: ((Boolean) -> Unit)? = null,
+    backdrop: Backdrop? = null
 ) {
     if (wordCount <= 0 && grammarCount <= 0) return
 
@@ -54,7 +56,9 @@ fun CollectionActionMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
         icon = Icons.Default.MoreVert,
-        contentDescription = "更多选项"
+        contentDescription = "更多选项",
+        backdrop = backdrop,
+        buttonSize = 48.dp
     ) {
         NemoMorphMenuItem(
             text = "清除所有${titleSuffix}",

@@ -37,6 +37,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.ui.animation.containerTransform
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 
 // 临时本地定义 (对应 Color.kt 中的值)，解决模块间引用编译问题
 private val NemoSecondary = Color(0xFF4CAF50)
@@ -62,10 +65,12 @@ fun MistakesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-
-
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var isMenuExpanded by remember { mutableStateOf(false) }
+
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡)
     val animatedBlurRadius by animateDpAsState(
@@ -77,68 +82,86 @@ fun MistakesScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(backgroundColor)
             .containerTransform(
                 key = "container_mistakes",
                 shape = RoundedCornerShape(0.dp)
             )
     ) {
-        Scaffold(
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
                     if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
                     else Modifier
-                ),
-            topBar = {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "我的错题",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                            wordCount = uiState.wrongWordsCount,
-                            grammarCount = uiState.wrongGrammarsCount,
-                            titleSuffix = "错题",
-                            onClearAll = viewModel::clearAllWrongAnswers,
-                            onClearWords = viewModel::clearAllWordMistakes,
-                            onClearGrammars = viewModel::clearAllGrammarMistakes,
-                            isExpanded = isMenuExpanded,
-                            onToggleMenu = { isMenuExpanded = it }
-                        )
-                    }
                 )
-            },
-            containerColor = backgroundColor
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp)
-            ) {
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // 统计总览卡片
-                StatsOverviewCard(
-                    totalLearnedCount = uiState.totalLearnedCount,
-                    wrongWordsCount = uiState.wrongWordsCount,
-                    wrongGrammarsCount = uiState.wrongGrammarsCount
+                .layerBackdrop(backdrop)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = 20.dp,
+                    end = 20.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
                 )
+        ) {
+            // 统计总览卡片
+            StatsOverviewCard(
+                totalLearnedCount = uiState.totalLearnedCount,
+                wrongWordsCount = uiState.wrongWordsCount,
+                wrongGrammarsCount = uiState.wrongGrammarsCount
+            )
 
-                Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-                // 错题分类列表
-                WrongAnswersList(
-                    wrongWordsCount = uiState.wrongWordsCount,
-                    wrongGrammarsCount = uiState.wrongGrammarsCount,
-                    onWordMistakesClick = onNavigateToWordMistakes,
-                    onGrammarMistakesClick = onNavigateToGrammarMistakes
-                )
-            }
+            // 错题分类列表
+            WrongAnswersList(
+                wrongWordsCount = uiState.wrongWordsCount,
+                wrongGrammarsCount = uiState.wrongGrammarsCount,
+                onWordMistakesClick = onNavigateToWordMistakes,
+                onGrammarMistakesClick = onNavigateToGrammarMistakes
+            )
         }
 
-        // 页面全屏高斯模糊景深遮罩 (12% 柔光暗化 + 200ms 淡入淡出)
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            com.jian.nemo.core.ui.component.common.CommonHeader(
+                title = "我的错题",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    com.jian.nemo.feature.collection.components.CollectionActionMenu(
+                        wordCount = uiState.wrongWordsCount,
+                        grammarCount = uiState.wrongGrammarsCount,
+                        titleSuffix = "错题",
+                        onClearAll = viewModel::clearAllWrongAnswers,
+                        onClearWords = viewModel::clearAllWordMistakes,
+                        onClearGrammars = viewModel::clearAllGrammarMistakes,
+                        isExpanded = isMenuExpanded,
+                        onToggleMenu = { isMenuExpanded = it },
+                        backdrop = backdrop
+                    )
+                }
+            )
+        }
+
+        // 3. 页面全屏高斯模糊景深遮罩 (12% 柔光暗化 + 200ms 淡入淡出)
         androidx.compose.animation.AnimatedVisibility(
             visible = isMenuExpanded,
             enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),

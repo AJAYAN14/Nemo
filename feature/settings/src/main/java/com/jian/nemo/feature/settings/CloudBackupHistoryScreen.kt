@@ -56,6 +56,9 @@ import com.jian.nemo.feature.settings.components.RestoreStrategyDialog
 import com.jian.nemo.feature.settings.components.RestorePreviewDialog
 import com.jian.nemo.feature.settings.components.RestoreSuccessDialog
 
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun CloudBackupHistoryScreen(
@@ -90,271 +93,321 @@ fun CloudBackupHistoryScreen(
     }
 
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val isDictionaryPreparing = !uiState.isDictionaryReady || uiState.isDictionarySyncing
     val backdrop = rememberLayerBackdrop()
+    val backgroundColor = MaterialTheme.colorScheme.background
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            topBar = {
-                val isRefreshing = uiState.isLoading || uiState.isCloudSyncing
-                val infiniteTransition = rememberInfiniteTransition(label = "refresh_spin")
-                val rotation by if (isRefreshing) {
-                    infiniteTransition.animateFloat(
-                        initialValue = 0f,
-                        targetValue = 360f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(1000, easing = LinearEasing),
-                            repeatMode = RepeatMode.Restart
-                        ),
-                        label = "rotation"
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容（被 backdrop 采样源录制）
+        Box(
+            modifier = Modifier
+                .layerBackdrop(backdrop)
+                .fillMaxSize()
+        ) {
+            // 如果是从登录页面首次进入且词库仍在同步中，展示全屏准备状态
+            if (isFromLogin && isDictionaryPreparing && uiState.cloudBackupList.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = statusBarHeight + 110.dp,
+                            bottom = navBarBottom + 80.dp
+                        )
+                        .padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    NemoChasingDotsLoader()
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "正在准备基础词库...",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                } else {
-                    remember { mutableStateOf(0f) }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "请稍候，基础词库下载完成后将自动展示历史备份",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
                 }
-
-                if (isFromLogin) {
-                    // 首次启动 / 登录引导模式下的沉浸式向导顶栏 (Hero Header)
-                    // 彻底移除二级返回键，大标题从 24dp 边距完全左对齐起步，垂直方向自然紧贴状态栏
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding()
-                            .padding(start = 24.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f)
+            } else if (uiState.isLoading || uiState.isCloudSyncing) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = statusBarHeight + (if (isFromLogin) 110.dp else 60.dp), bottom = navBarBottom),
+                    contentAlignment = Alignment.Center
+                ) {
+                    NemoChasingDotsLoader()
+                }
+            } else if (uiState.cloudBackupList.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = statusBarHeight + (if (isFromLogin) 110.dp else 60.dp), bottom = navBarBottom)
+                ) {
+                    EmptyBackupState()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = if (isFromLogin) {
+                        PaddingValues(
+                            start = 24.dp,
+                            end = 24.dp,
+                            top = statusBarHeight + 110.dp,
+                            bottom = navBarBottom + 80.dp
+                        )
+                    } else {
+                        PaddingValues(
+                            start = 20.dp,
+                            end = 20.dp,
+                            top = statusBarHeight + 60.dp + 16.dp,
+                            bottom = navBarBottom + 24.dp
+                        )
+                    },
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // 词库准备中提示条
+                    if (isDictionaryPreparing) {
+                        item(key = "dictionary_syncing_banner") {
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                                    modifier = Modifier.padding(bottom = 6.dp)
+                                Row(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Cloud,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(13.dp)
-                                        )
-                                        Text(
-                                            text = "云端档案同步",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = "基础词库正在准备中，请稍候恢复...",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
                                 }
-
-                                Text(
-                                    text = "恢复你的学习档案",
-                                    style = MaterialTheme.typography.headlineMedium.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 24.sp
-                                    ),
-                                    color = MaterialTheme.colorScheme.onBackground
-                                )
-
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = "检测到云端历史记录，选择一份备份同步至本机",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            FrostedLiquidGlassButton(
-                                onClick = {
-                                    if (!isRefreshing) {
-                                        viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
-                                    }
-                                },
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(0.dp),
-                                isInteractive = true,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Refresh,
-                                    contentDescription = "刷新列表",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.graphicsLayer { rotationZ = rotation }
-                                )
                             }
                         }
                     }
-                } else {
-                    // 从设置页进入的二级管理模式：保留左侧返回键
-                    CommonHeader(
-                        title = "云端备份历史",
-                        onBack = onNavigateBack,
-                        actions = {
-                            FrostedLiquidGlassButton(
-                                onClick = {
-                                    if (!isRefreshing) {
-                                        viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
-                                    }
-                                },
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(0.dp),
-                                isInteractive = true,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Refresh,
-                                    contentDescription = "刷新列表",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.graphicsLayer { rotationZ = rotation }
-                                )
+
+                    itemsIndexed(uiState.cloudBackupList, key = { _, backup -> backup.fileName }) { index, backup ->
+                        BackupItemCard(
+                            backup = backup,
+                            isLatest = isFromLogin && index == 0,
+                            isRestoreEnabled = !isDictionaryPreparing,
+                            modifier = Modifier.animateItem(),
+                            onRestoreClicked = { 
+                                viewModel.onEvent(SettingsEvent.SelectRestoreFile(backup.fileName))
                             }
+                        )
+                    }
+
+                    if (isFromLogin) {
+                        item(key = "bottom_floating_spacer") {
+                            Spacer(modifier = Modifier.height(100.dp))
                         }
-                    )
+                    }
                 }
             }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .layerBackdrop(backdrop)
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                // 如果是从登录页面首次进入且词库仍在同步中，展示全屏准备状态
-                if (isFromLogin && isDictionaryPreparing && uiState.cloudBackupList.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        NemoChasingDotsLoader()
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "正在准备基础词库...",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "请稍候，基础词库下载完成后将自动展示历史备份",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
+            // 恢复策略选择弹窗留在这里处理
+            if (uiState.showRestoreStrategyDialog && uiState.pendingRestoreFileName != null) {
+                RestoreStrategyDialog(
+                    fileName = uiState.pendingRestoreFileName!!,
+                    onConfirm = { strategy ->
+                        viewModel.onEvent(SettingsEvent.RestoreFromCloud(uiState.pendingRestoreFileName!!, strategy))
+                    },
+                    onDismiss = {
+                        viewModel.onEvent(SettingsEvent.CancelRestore)
                     }
-                } else if (uiState.isLoading || uiState.isCloudSyncing) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        NemoChasingDotsLoader()
+                )
+            }
+            
+            if (uiState.restorePreview != null) {
+                RestorePreviewDialog(
+                    preview = uiState.restorePreview!!,
+                    onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmRestore) },
+                    onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
+                )
+            }
+
+            if (uiState.restoreSuccessMessage != null) {
+                RestoreSuccessDialog(
+                    message = uiState.restoreSuccessMessage!!,
+                    isFromLogin = isFromLogin,
+                    onConfirm = {
+                        viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
+                        if (isFromLogin && onRestoreSuccess != null) {
+                            onRestoreSuccess()
+                        }
+                    },
+                    onDismiss = {
+                        viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
                     }
-                } else if (uiState.cloudBackupList.isEmpty()) {
-                    EmptyBackupState()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = if (isFromLogin) {
-                            PaddingValues(start = 24.dp, end = 24.dp, top = 6.dp, bottom = 20.dp)
-                        } else {
-                            PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 24.dp)
-                        },
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                )
+            }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            val isRefreshing = uiState.isLoading || uiState.isCloudSyncing
+            val infiniteTransition = rememberInfiniteTransition(label = "refresh_spin")
+            val rotation by if (isRefreshing) {
+                infiniteTransition.animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    ),
+                    label = "rotation"
+                )
+            } else {
+                remember { mutableStateOf(0f) }
+            }
+
+            if (isFromLogin) {
+                // 首次启动 / 登录引导模式下的沉浸式向导顶栏 (Hero Header)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(start = 24.dp, end = 20.dp, top = 8.dp, bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // 词库准备中提示条
-                        if (isDictionaryPreparing) {
-                            item(key = "dictionary_syncing_banner") {
-                                Surface(
-                                    color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxWidth()
+                        Column(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(14.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(18.dp),
-                                            strokeWidth = 2.dp,
-                                            color = MaterialTheme.colorScheme.onErrorContainer
-                                        )
-                                        Spacer(modifier = Modifier.width(12.dp))
-                                        Text(
-                                            text = "基础词库正在准备中，请稍候恢复...",
-                                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                                            color = MaterialTheme.colorScheme.onErrorContainer
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Rounded.Cloud,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                    Text(
+                                        text = "云端档案同步",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
-                        }
 
-                        itemsIndexed(uiState.cloudBackupList, key = { _, backup -> backup.fileName }) { index, backup ->
-                            BackupItemCard(
-                                backup = backup,
-                                isLatest = isFromLogin && index == 0,
-                                isRestoreEnabled = !isDictionaryPreparing,
-                                modifier = Modifier.animateItem(),
-                                onRestoreClicked = { 
-                                    viewModel.onEvent(SettingsEvent.SelectRestoreFile(backup.fileName))
-                                }
+                            Text(
+                                text = "恢复你的学习档案",
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "检测到云端历史记录，选择一份备份同步至本机",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
-                        if (isFromLogin) {
-                            item(key = "bottom_floating_spacer") {
-                                Spacer(modifier = Modifier.height(100.dp))
-                            }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        FrostedLiquidGlassButton(
+                            onClick = {
+                                if (!isRefreshing) {
+                                    viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
+                                }
+                            },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "刷新列表",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .graphicsLayer { rotationZ = rotation }
+                            )
                         }
                     }
                 }
-                // 恢复策略选择弹窗留在这里处理
-                if (uiState.showRestoreStrategyDialog && uiState.pendingRestoreFileName != null) {
-                    RestoreStrategyDialog(
-                        fileName = uiState.pendingRestoreFileName!!,
-                        onConfirm = { strategy ->
-                            viewModel.onEvent(SettingsEvent.RestoreFromCloud(uiState.pendingRestoreFileName!!, strategy))
-                        },
-                        onDismiss = {
-                            viewModel.onEvent(SettingsEvent.CancelRestore)
+            } else {
+                // 从设置页进入的二级管理模式：保留左侧返回键
+                CommonHeader(
+                    title = "云端备份历史",
+                    onBack = onNavigateBack,
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp,
+                    actions = {
+                        FrostedLiquidGlassButton(
+                            onClick = {
+                                if (!isRefreshing) {
+                                    viewModel.onEvent(SettingsEvent.ShowCloudBackupList)
+                                }
+                            },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "刷新列表",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .graphicsLayer { rotationZ = rotation }
+                            )
                         }
-                    )
-                }
-                
-                if (uiState.restorePreview != null) {
-                    RestorePreviewDialog(
-                        preview = uiState.restorePreview!!,
-                        onConfirm = { viewModel.onEvent(SettingsEvent.ConfirmRestore) },
-                        onDismiss = { viewModel.onEvent(SettingsEvent.CancelRestorePreview) }
-                    )
-                }
-
-                if (uiState.restoreSuccessMessage != null) {
-                    RestoreSuccessDialog(
-                        message = uiState.restoreSuccessMessage!!,
-                        isFromLogin = isFromLogin,
-                        onConfirm = {
-                            viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
-                            if (isFromLogin && onRestoreSuccess != null) {
-                                onRestoreSuccess()
-                            }
-                        },
-                        onDismiss = {
-                            viewModel.onEvent(SettingsEvent.ClearRestoreSuccess)
-                        }
-                    )
-                }
-            } // 闭合内层 Box
-        } // 闭合 Scaffold
+                    }
+                )
+            }
+        }
 
         // ===== 悬浮跳过按钮 (Floating Overlay - 1:1 对标 Demo 项目标准规范) =====
         // 恢复进行中(isCloudSyncing)或已弹出成功弹窗(restoreSuccessMessage != null)时隐藏，避免语义冲突与并发误触
