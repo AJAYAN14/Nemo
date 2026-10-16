@@ -1,14 +1,19 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 package com.jian.nemo.feature.settings
 
+import kotlinx.coroutines.launch
 import androidx.compose.animation.*
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -24,6 +29,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.compose.ui.draw.clip
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
@@ -166,14 +174,19 @@ fun AISettingsScreen(
                         }
                         items(uiState.configs, key = { it.id }) { config ->
                             val isActive = uiState.activeConfigId == config.id
-                            AIConfigCard(
-                                config = config,
-                                isActive = isActive,
-                                isDark = isDark,
-                                onSelect = { viewModel.onEvent(AISettingsEvent.SelectActiveConfig(config.id)) },
-                                onEdit = { viewModel.onEvent(AISettingsEvent.OpenEditModal(config.id)) },
+                            SwipeableActionTile(
                                 onDelete = { configToDelete = config }
-                            )
+                            ) {
+                                AIConfigCard(
+                                    config = config,
+                                    isActive = isActive,
+                                    isDark = isDark,
+                                    onSelect = { viewModel.onEvent(AISettingsEvent.SelectActiveConfig(config.id)) },
+                                    onEdit = { viewModel.onEvent(AISettingsEvent.OpenEditModal(config.id)) },
+                                    onTest = { viewModel.onEvent(AISettingsEvent.TestConfig(config)) },
+                                    onLongClick = { configToDelete = config }
+                                )
+                            }
                         }
                     }
                 }
@@ -281,6 +294,121 @@ fun AISettingsScreen(
     }
 }
 
+/**
+ * 借鉴 portal_labs SwipeableActionTile 理念的物理弹性侧滑卡片：
+ * 1. 支持水平阻尼拖拽与弹簧弹性吸附；
+ * 2. 向左滑动平滑露出高质感珊瑚红删除胶囊按键；
+ * 3. 滑动过阈值触发震动感知；
+ * 4. 点击卡片或右滑自动平滑回弹复位。
+ */
+@Composable
+fun SwipeableActionTile(
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
+    val offsetX = remember { Animatable(0f) }
+    val maxDragOffset = with(LocalDensity.current) { (-84).dp.toPx() }
+    var hasHapticTicked by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+    ) {
+        // 底层操作层：右对齐的删除操作胶囊按键
+        Box(
+            modifier = Modifier.matchParentSize(),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            val progress = (-offsetX.value / -maxDragOffset).coerceIn(0f, 1.2f)
+            val buttonScale = (0.7f + 0.3f * progress.coerceAtMost(1f))
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    coroutineScope.launch { offsetX.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = 400f)) }
+                    onDelete()
+                },
+                shape = CircleShape,
+                color = Color(0xFFF43F5E),
+                shadowElevation = if (progress > 0.5f) 4.dp else 0.dp,
+                modifier = Modifier
+                    .padding(end = 4.dp)
+                    .size(46.dp)
+                    .graphicsLayer {
+                        scaleX = buttonScale
+                        scaleY = buttonScale
+                        alpha = progress.coerceIn(0f, 1f)
+                    }
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteOutline,
+                        contentDescription = "删除配置",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+        }
+
+        // 前层卡片内容：跟随手指阻尼滑动
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(offsetX.value.roundToInt(), 0) }
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragStart = {
+                            hasHapticTicked = false
+                        },
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                if (offsetX.value < maxDragOffset * 0.45f) {
+                                    // 弹性吸附滑开
+                                    offsetX.animateTo(maxDragOffset, spring(dampingRatio = 0.75f, stiffness = 400f))
+                                } else {
+                                    // 弹性关闭
+                                    offsetX.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = 400f))
+                                }
+                            }
+                        },
+                        onDragCancel = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(0f, spring(dampingRatio = 0.75f, stiffness = 400f))
+                            }
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            val newOffset = offsetX.value + dragAmount
+                            val clamped = if (newOffset > 0f) {
+                                newOffset * 0.15f
+                            } else if (newOffset < maxDragOffset) {
+                                val overscroll = maxDragOffset - newOffset
+                                maxDragOffset - overscroll * 0.25f
+                            } else {
+                                newOffset
+                            }
+                            coroutineScope.launch {
+                                offsetX.snapTo(clamped)
+                            }
+                            if (clamped <= maxDragOffset && !hasHapticTicked) {
+                                hasHapticTicked = true
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            } else if (clamped > maxDragOffset) {
+                                hasHapticTicked = false
+                            }
+                        }
+                    )
+                }
+        ) {
+            content()
+        }
+    }
+}
+
 @Composable
 fun AIConfigCard(
     config: AIConfig,
@@ -288,8 +416,10 @@ fun AIConfigCard(
     isDark: Boolean,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onTest: () -> Unit,
+    onLongClick: () -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
     val platformColor = when (config.platform) {
         "deepseek" -> Color(0xFF0E68FF)
         "doubao" -> Color(0xFF00B4D8)
@@ -340,18 +470,20 @@ fun AIConfigCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp)
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
             .clip(RoundedCornerShape(16.dp))
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
-                indication = null // 去除默认 ripple，改用 scale 微手感
-            ) {
-                onSelect()
-            },
+                indication = null,
+                onClick = onSelect,
+                onLongClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongClick()
+                }
+            ),
         shape = RoundedCornerShape(16.dp),
         color = containerColor,
         border = BorderStroke(
@@ -444,26 +576,49 @@ fun AIConfigCard(
                 )
             }
             
-            IconButton(
-                onClick = onEdit,
+            // 操作按键区：测试在前，编辑在后，均包裹精致微胶囊底座
+            // 1. 测试连通性按钮：品牌色微光圆环底座
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onTest()
+                },
+                shape = CircleShape,
+                color = platformColor.copy(alpha = if (isDark) 0.18f else 0.12f),
+                border = BorderStroke(0.5.dp, platformColor.copy(alpha = 0.45f)),
                 modifier = Modifier.size(36.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Edit,
-                    contentDescription = "编辑配置",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.Speed,
+                        contentDescription = "测试连通性",
+                        tint = platformColor,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
             }
-            Spacer(modifier = Modifier.width(4.dp))
-            IconButton(
-                onClick = onDelete,
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 2. 编辑按钮：浅冷灰微晶片底座
+            Surface(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onEdit()
+                },
+                shape = CircleShape,
+                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.65f) else Color(0xFFF1F5F9),
+                border = BorderStroke(0.5.dp, if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)),
                 modifier = Modifier.size(36.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.DeleteOutline,
-                    contentDescription = "删除配置",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.85f)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.Edit,
+                        contentDescription = "编辑配置",
+                        tint = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
     }

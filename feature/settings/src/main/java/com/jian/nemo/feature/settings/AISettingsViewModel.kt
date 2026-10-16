@@ -37,6 +37,7 @@ sealed interface AISettingsEvent {
     object SaveConfig : AISettingsEvent
     data class DeleteConfig(val id: String? = null) : AISettingsEvent
     object TestConnection : AISettingsEvent
+    data class TestConfig(val config: AIConfig) : AISettingsEvent
     object ClearTestResult : AISettingsEvent
     data class SetDifficulty(val difficulty: String) : AISettingsEvent
 }
@@ -272,6 +273,31 @@ class AISettingsViewModel @Inject constructor(
                         }
                         _uiState.update { it.copy(editingConfig = null) }
                     }
+                }
+                is AISettingsEvent.TestConfig -> {
+                    val config = event.config
+                    if (config.apiKey.isBlank()) {
+                        _uiState.update { it.copy(testResult = AITestResult(false, "API Key 为空，无法测试")) }
+                        return@launch
+                    }
+                    _uiState.update { it.copy(isTesting = true, testResult = null) }
+                    val result = aiClient.generateExercise(
+                        platform = config.platform,
+                        apiKey = config.apiKey,
+                        baseUrl = config.baseUrl.ifBlank { null },
+                        model = config.model,
+                        difficulty = "N5"
+                    )
+                    val testSuccess = result.isSuccess
+                    _uiState.update { it.copy(
+                        isTesting = false,
+                        testResult = if (testSuccess) {
+                            AITestResult(true, "「${config.name}」API 连接正常 · 测试通过")
+                        } else {
+                            val msg = result.exceptionOrNull()?.message ?: "连接失败"
+                            AITestResult(false, "「${config.name}」测试失败: $msg")
+                        }
+                    ) }
                 }
                 is AISettingsEvent.ClearTestResult -> {
                     _uiState.update { it.copy(testResult = null) }
