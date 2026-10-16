@@ -67,6 +67,9 @@ fun LoginScreen(
 
     var stage by remember { mutableStateOf(AuthStage.WELCOME) }
     var focusedField by remember { mutableStateOf<FocusedAuthField?>(null) }
+    var showRegisterCaptchaDialog by remember { mutableStateOf(false) }
+    var loginFailedAttempts by remember { mutableIntStateOf(0) }
+    var showLoginCaptchaDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(stage) {
         focusedField = null
@@ -123,6 +126,7 @@ fun LoginScreen(
     // 监听登录成功
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
+            loginFailedAttempts = 0
             onLoginSuccess(uiState.user?.isNewUser == true)
         }
     }
@@ -130,6 +134,9 @@ fun LoginScreen(
     // 错误与成功提示
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
+            if (stage == AuthStage.LOGIN) {
+                loginFailedAttempts++
+            }
             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
             viewModel.clearError()
         }
@@ -410,7 +417,13 @@ fun LoginScreen(
                                 onEmailChange = viewModel::onEmailChanged,
                                 onPasswordChange = viewModel::onPasswordChanged,
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
-                                onLogin = viewModel::onLoginClicked,
+                                onLogin = {
+                                    if (loginFailedAttempts >= 3) {
+                                        showLoginCaptchaDialog = true
+                                    } else {
+                                        viewModel.onLoginClicked()
+                                    }
+                                },
                                 isLoading = uiState.isLoading,
                                 emailFocusRequester = emailFocusRequester,
                                 passwordFocusRequester = passwordFocusRequester,
@@ -498,9 +511,19 @@ fun LoginScreen(
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
                                 onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                                 onRegister = {
-                                    viewModel.onRegisterClicked {
-                                        Toast.makeText(context, "两次输入的密码不一致", Toast.LENGTH_SHORT).show()
+                                    if (uiState.email.isBlank()) {
+                                        Toast.makeText(context, "请输入电子邮箱地址", Toast.LENGTH_SHORT).show()
+                                        return@AppRegisterForm
                                     }
+                                    if (uiState.password.length < 6) {
+                                        Toast.makeText(context, "密码长度不能少于 6 位", Toast.LENGTH_SHORT).show()
+                                        return@AppRegisterForm
+                                    }
+                                    if (uiState.password != uiState.confirmPassword) {
+                                        Toast.makeText(context, "两次输入的密码不一致", Toast.LENGTH_SHORT).show()
+                                        return@AppRegisterForm
+                                    }
+                                    showRegisterCaptchaDialog = true
                                 },
                                 isLoading = uiState.isLoading,
                                 usernameFocusRequester = registerUsernameRequester,
@@ -547,6 +570,37 @@ fun LoginScreen(
                     onError = onError
                 )
             }
+        )
+    }
+
+    // 注册安全验证码弹窗
+    if (showRegisterCaptchaDialog) {
+        RegisterCaptchaDialog(
+            onDismissRequest = { showRegisterCaptchaDialog = false },
+            onSuccess = {
+                showRegisterCaptchaDialog = false
+                val finalUsername = uiState.username.ifBlank { uiState.email.substringBefore('@') }
+                viewModel.register(finalUsername, uiState.email, uiState.password)
+            },
+            isDark = isDark,
+            title = "安全验证",
+            description = "请根据下方图片输入 6 位验证码，防止恶意注册：",
+            confirmText = "确认并注册"
+        )
+    }
+
+    // 登录输错 3 次安全验证码弹窗
+    if (showLoginCaptchaDialog) {
+        RegisterCaptchaDialog(
+            onDismissRequest = { showLoginCaptchaDialog = false },
+            onSuccess = {
+                showLoginCaptchaDialog = false
+                viewModel.onLoginClicked()
+            },
+            isDark = isDark,
+            title = "安全验证",
+            description = "密码错误次数过多，请输入 6 位验证码后继续登录：",
+            confirmText = "确认并登录"
         )
     }
 }
