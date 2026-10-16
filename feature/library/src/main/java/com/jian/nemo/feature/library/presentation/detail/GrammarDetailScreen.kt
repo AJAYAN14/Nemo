@@ -34,6 +34,13 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.platform.LocalDensity
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.srs.SrsStatusChip
 
 
 /**
@@ -175,115 +182,99 @@ private fun GrammarDetailContent(
     onBack: () -> Unit,
     onReportClick: () -> Unit
 ) {
-     val scrollState = rememberScrollState()
+    val backdrop = rememberLayerBackdrop()
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
 
-     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
+    // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
+    val transitionDistancePx = with(density) { 90.dp.toPx() }
+    val scrollProgress = (scrollState.value / transitionDistancePx).coerceIn(0f, 1f)
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        // === 1. Immersive Hero Section ===
-        Box(
+        // === 1. 可滚动主体内容层 (挂载 layerBackdrop 用于背景折射采样) ===
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (isDark) listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            MaterialTheme.colorScheme.background
-                        ) else listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .verticalScroll(scrollState)
         ) {
-            // Hero Content
-            Column(
+            // === 1.1 Immersive Hero Section ===
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(top = 64.dp, bottom = 32.dp, start = 24.dp, end = 24.dp), // Increased top/bottom padding
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Grammar Title
-                com.jian.nemo.core.ui.component.text.FuriganaText(
-                    text = grammar.grammar ?: "",
-                    baseTextStyle = MaterialTheme.typography.displaySmall.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp,
-                        fontFamily = NotoSerifJP
-                    ),
-                    baseTextColor = MaterialTheme.colorScheme.onBackground,
-                    furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                    furiganaTextSize = 12.sp,
-                    furiganaFontFamily = NotoSerifJP
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Level Tag (Enhanced)
-                grammar.grammarLevel?.let { level ->
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.primaryContainer, // Use Primary Container for consistency
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                         Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.padding(horizontal = 20.dp)
-                        ) {
-                            Text(
-                                text = level,
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = if (isDark) listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                MaterialTheme.colorScheme.background
+                            ) else listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                MaterialTheme.colorScheme.background
                             )
+                        )
+                    )
+            ) {
+                // Hero Content
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        // 预留顶部固定 AppBar 的高度与安全间距
+                        .padding(top = 76.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Grammar Title
+                    com.jian.nemo.core.ui.component.text.FuriganaText(
+                        text = grammar.grammar ?: "",
+                        baseTextStyle = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp,
+                            fontFamily = NotoSerifJP
+                        ),
+                        baseTextColor = MaterialTheme.colorScheme.onBackground,
+                        furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        furiganaTextSize = 12.sp,
+                        furiganaFontFamily = NotoSerifJP
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Level Tag (Enhanced)
+                    grammar.grammarLevel?.let { level ->
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.primaryContainer, // Use Primary Container for consistency
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                             Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.padding(horizontal = 20.dp)
+                            ) {
+                                Text(
+                                    text = level,
+                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Play Audio Button
-                val grammarAudioId = "grammar_${grammar.id}"
-                SpeakerButton(
-                    isPlaying = playingAudioId == grammarAudioId,
-                    onClick = { onPlayAudio(grammar.grammar ?: "", grammarAudioId) },
-                    size = 56.dp,
-                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
-            // Common Header
-            val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "",
-                onBack = onBack,
-                backgroundColor = Color.Transparent,
-                centerContent = {
-                    com.jian.nemo.core.ui.component.srs.SrsStatusChip(
-                        nextReviewDay = grammar.nextReviewDate,
-                        repetitionCount = grammar.repetitionCount
+                    // Play Audio Button
+                    val grammarAudioId = "grammar_${grammar.id}"
+                    SpeakerButton(
+                        isPlaying = playingAudioId == grammarAudioId,
+                        onClick = { onPlayAudio(grammar.grammar ?: "", grammarAudioId) },
+                        size = 56.dp,
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                },
-                actions = {
-                    com.jian.nemo.core.ui.component.liquid.LiquidButton(
-                        onClick = onReportClick,
-                        backgroundColor = navGroupBg,
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        isInteractive = true,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Report,
-                            contentDescription = "举报内容",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
                 }
-            )
-        }
+            }
 
         // === 2. Usages ===
         Column(
@@ -411,6 +402,56 @@ private fun GrammarDetailContent(
                 } // End of PremiumDetailCard
             }
              Spacer(modifier = Modifier.height(48.dp))
+        }
+    }
+
+        // === 2. 悬浮固定顶栏 (带柔和垂直渐变保护遮罩，读取 backdrop) ===
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f * scrollProgress),
+                            backgroundColor.copy(alpha = 0.75f * scrollProgress),
+                            backgroundColor.copy(alpha = 0.35f * scrollProgress),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "",
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                centerContent = {
+                    SrsStatusChip(
+                        nextReviewDay = grammar.nextReviewDate,
+                        repetitionCount = grammar.repetitionCount,
+                        backdrop = backdrop
+                    )
+                },
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = onReportClick,
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Report,
+                            contentDescription = "举报内容",
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            )
         }
     }
 }

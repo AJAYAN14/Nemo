@@ -33,7 +33,13 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Report
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
-
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.platform.LocalDensity
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.srs.SrsStatusChip
 
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
@@ -187,92 +193,226 @@ private fun WordDetailContent(
     relatedWords: List<com.jian.nemo.core.domain.model.RelatedWordItem> = emptyList(),
     onNavigateToWordDetail: (Int) -> Unit = {}
 ) {
+    val backdrop = rememberLayerBackdrop()
     val scrollState = rememberScrollState()
+    val density = LocalDensity.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
+    // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
+    val transitionDistancePx = with(density) { 90.dp.toPx() }
+    val scrollProgress = (scrollState.value / transitionDistancePx).coerceIn(0f, 1f)
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-    // === 1. Immersive Hero Section ===
-        Box(
+        // === 1. 可滚动主体内容层 (挂载 layerBackdrop 用于背景折射采样) ===
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (isDark) listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            MaterialTheme.colorScheme.background
-                        ) else listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.background
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .verticalScroll(scrollState)
+        ) {
+            // === 1.1 Immersive Hero Section ===
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = if (isDark) listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                MaterialTheme.colorScheme.background
+                            ) else listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                MaterialTheme.colorScheme.background
+                            )
                         )
                     )
-                )
-        ) {
-            // Hero Content (Centered)
+            ) {
+                // Hero Content (Centered)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        // 预留顶部固定 AppBar 的高度与安全间距
+                        .padding(top = 76.dp, bottom = 32.dp, start = 24.dp, end = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Word (Kanji)
+                    Text(
+                        text = word.japanese,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            fontFamily = NotoSerifJP
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Hiragana
+                    Text(
+                        text = word.hiragana,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = NotoSerifJP
+                        ),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Play Audio Button (Hero Style)
+                    val wordAudioId = "word_${word.id}"
+                    SpeakerButton(
+                        isPlaying = playingAudioId == wordAudioId,
+                        onClick = { onPlayAudio(word.japanese, wordAudioId) },
+                        size = 56.dp,
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            // === 1.2 Meaning & Tags ===
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding() // Add padding for content below status bar
-                    .padding(top = 56.dp, bottom = 32.dp, start = 24.dp, end = 24.dp), // Add top padding to clear header
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(horizontal = 20.dp)
             ) {
-                // Word (Kanji)
-                Text(
-                    text = word.japanese,
-                    style = MaterialTheme.typography.displayMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        fontFamily = NotoSerifJP
-                    ),
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                PremiumDetailCard(isDark = isDark) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        // Chinese Meaning
+                        Text(
+                            text = "中文释义",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = word.chinese,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
-                // Hiragana
-                Text(
-                    text = word.hiragana,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = NotoSerifJP
-                    ),
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                )
+                        // Tags Row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Level Tag
+                            DetailTag(
+                                text = word.level,
+                                containerColor = NemoPrimary,
+                                contentColor = Color.White
+                            )
+
+                            // POS Tag
+                            word.pos?.let { pos ->
+                                DetailTag(
+                                    text = pos,
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Play Audio Button (Hero Style)
-                val wordAudioId = "word_${word.id}"
-                SpeakerButton(
-                    isPlaying = playingAudioId == wordAudioId,
-                    onClick = { onPlayAudio(word.japanese, wordAudioId) },
-                    size = 56.dp,
-                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+                // === 1.3 Related Words ===
+                if (relatedWords.isNotEmpty()) {
+                    RelatedWordsSection(
+                        relatedWords = relatedWords,
+                        isDark = isDark,
+                        onWordClick = onNavigateToWordDetail
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
-            // Common Header (Overlaid)
-            val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "", // Empty title for hero section look
+                // === 1.4 Example Sentences ===
+                Text(
+                    text = "例句",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+                )
+
+                val examples = listOfNotNull(
+                    if (!word.example1.isNullOrBlank() && !word.gloss1.isNullOrBlank()) Triple(word.example1!!, word.gloss1!!, 1) else null,
+                    if (!word.example2.isNullOrBlank() && !word.gloss2.isNullOrBlank()) Triple(word.example2!!, word.gloss2!!, 2) else null,
+                    if (!word.example3.isNullOrBlank() && !word.gloss3.isNullOrBlank()) Triple(word.example3!!, word.gloss3!!, 3) else null
+                )
+
+                if (examples.isNotEmpty()) {
+                    examples.forEach { (sentence, translation, index) ->
+                        ExampleCard(
+                            sentence = sentence,
+                            translation = translation,
+                            isDark = isDark,
+                            index = index,
+                            playingAudioId = playingAudioId,
+                            onPlayAudio = onPlayAudio,
+                            wordId = word.id
+                        )
+                        if (index < examples.size) {
+                             Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                } else {
+                     Text(
+                        text = "暂无例句",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(48.dp))
+            }
+        }
+
+        // === 2. 悬浮固定顶栏 (带柔和垂直渐变保护遮罩，读取 backdrop) ===
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f * scrollProgress),
+                            backgroundColor.copy(alpha = 0.75f * scrollProgress),
+                            backgroundColor.copy(alpha = 0.35f * scrollProgress),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "",
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
                 centerContent = {
-                    com.jian.nemo.core.ui.component.srs.SrsStatusChip(
+                    SrsStatusChip(
                         nextReviewDay = word.nextReviewDate,
-                        repetitionCount = word.repetitionCount
+                        repetitionCount = word.repetitionCount,
+                        backdrop = backdrop
                     )
                 },
                 actions = {
-                    com.jian.nemo.core.ui.component.liquid.LiquidButton(
+                    FrostedLiquidGlassButton(
                         onClick = onReportClick,
-                        backgroundColor = navGroupBg,
-                        shape = androidx.compose.foundation.shape.CircleShape,
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
-                        modifier = Modifier.size(44.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Report,
@@ -282,106 +422,6 @@ private fun WordDetailContent(
                     }
                 }
             )
-        }
-
-        // === 2. Meaning & Tags ===
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-        ) {
-            PremiumDetailCard(isDark = isDark) {
-                Column(modifier = Modifier.padding(24.dp)) {
-                    // Chinese Meaning
-                    Text(
-                        text = "中文释义",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = word.chinese,
-                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // Tags Row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        // Level Tag
-                        DetailTag(
-                            text = word.level,
-                            containerColor = NemoPrimary,
-                            contentColor = Color.White
-                        )
-
-                        // POS Tag
-                        word.pos?.let { pos ->
-                            DetailTag(
-                                text = pos,
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // === 2.5. Related Words ===
-            if (relatedWords.isNotEmpty()) {
-                RelatedWordsSection(
-                    relatedWords = relatedWords,
-                    isDark = isDark,
-                    onWordClick = onNavigateToWordDetail
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // === 3. Example Sentences ===
-            Text(
-                text = "例句",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-            )
-
-            val examples = listOfNotNull(
-                if (!word.example1.isNullOrBlank() && !word.gloss1.isNullOrBlank()) Triple(word.example1!!, word.gloss1!!, 1) else null,
-                if (!word.example2.isNullOrBlank() && !word.gloss2.isNullOrBlank()) Triple(word.example2!!, word.gloss2!!, 2) else null,
-                if (!word.example3.isNullOrBlank() && !word.gloss3.isNullOrBlank()) Triple(word.example3!!, word.gloss3!!, 3) else null
-            )
-
-            if (examples.isNotEmpty()) {
-                examples.forEach { (sentence, translation, index) ->
-                    ExampleCard(
-                        sentence = sentence,
-                        translation = translation,
-                        isDark = isDark,
-                        index = index,
-                        playingAudioId = playingAudioId,
-                        onPlayAudio = onPlayAudio,
-                        wordId = word.id
-                    )
-                    if (index < examples.size) {
-                         Spacer(modifier = Modifier.height(12.dp))
-                    }
-                }
-            } else {
-                 Text(
-                    text = "暂无例句",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 }

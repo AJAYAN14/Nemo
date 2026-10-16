@@ -11,17 +11,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.util.SrsDateUtils
+import com.kyant.backdrop.Backdrop
 
 /**
- * SRS 记忆状态 Chip (液态紧凑型，适用于 AppBar)
+ * SRS 记忆状态 Chip (磨砂液态玻璃紧凑型，适用于 AppBar)
  */
 @Composable
 fun SrsStatusChip(
     nextReviewDay: Long,
     repetitionCount: Int,
     modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null,
     onClick: (() -> Unit)? = null
 ) {
     val isNew = repetitionCount == 0
@@ -43,17 +45,17 @@ fun SrsStatusChip(
 
     val icon = if (isNew) Icons.Rounded.RadioButtonUnchecked else Icons.Rounded.Schedule
 
-    LiquidButton(
+    FrostedLiquidGlassButton(
         onClick = { onClick?.invoke() },
-        backgroundColor = containerColor,
+        backdrop = backdrop,
+        surfaceColor = containerColor,
         shape = RoundedCornerShape(50),
-        elevation = 2.dp,
         isInteractive = true,
+        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
         modifier = modifier.height(30.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = icon,
