@@ -71,7 +71,9 @@ class AuthRepositoryImpl @Inject constructor(
                             username = cachedUser.username,
                             email = cachedUser.email,
                             avatarUrl = cachedUser.avatar,
-                            sessionToken = cachedUser.sessionToken
+                            sessionToken = cachedUser.sessionToken,
+                            hasGoogleLinked = cachedUser.hasGoogleLinked,
+                            isOnlyGoogleIdentity = cachedUser.isOnlyGoogleIdentity
                         )
                         android.util.Log.d("AuthRepository", "本地缓存用户恢复成功: ${cachedUser.username}")
                     }

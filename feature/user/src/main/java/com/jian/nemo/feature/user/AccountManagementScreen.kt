@@ -131,13 +131,15 @@ fun AccountManagementScreen(
                         title = "修改用户名",
                         onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.MailOutline,
-                        iconTint = Color(0xFF34C759), // Green
-                        title = "修改邮箱",
-                        onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
-                    )
+                    if (uiState.user?.isOnlyGoogleIdentity != true) {
+                        HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                        PremiumSettingsItem(
+                            icon = Icons.Rounded.MailOutline,
+                            iconTint = Color(0xFF34C759), // Green
+                            title = "修改邮箱",
+                            onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -326,21 +328,41 @@ fun ProfileHeaderSection(
          Column(
              modifier = Modifier.weight(1f)
          ) {
-             // Username
-             Text(
-                 text = uiState.user?.username ?: "未登录",
-                 style = MaterialTheme.typography.headlineSmall.copy(
-                     fontWeight = FontWeight.Bold
-                 ),
-                 color = MaterialTheme.colorScheme.onSurface
-             )
+             // Username & Google Icon
+             Row(
+                 verticalAlignment = Alignment.CenterVertically,
+                 modifier = Modifier.fillMaxWidth()
+             ) {
+                 Text(
+                     text = uiState.user?.username ?: "未登录",
+                     style = MaterialTheme.typography.headlineSmall.copy(
+                         fontWeight = FontWeight.Bold
+                     ),
+                     color = MaterialTheme.colorScheme.onSurface,
+                     maxLines = 1,
+                     modifier = Modifier
+                         .weight(1f, fill = false)
+                         .basicMarquee(iterations = Int.MAX_VALUE)
+                 )
+
+                 if (uiState.user?.isOnlyGoogleIdentity == true) {
+                     Spacer(modifier = Modifier.width(6.dp))
+                     Icon(
+                         imageVector = GoogleIcon,
+                         contentDescription = "Google 快捷登录账号",
+                         tint = Color.Unspecified,
+                         modifier = Modifier.size(20.dp)
+                     )
+                 }
+             }
 
              // Email
              Text(
                  text = uiState.user?.email ?: "未登录",
                  style = MaterialTheme.typography.bodyMedium,
                  color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                 modifier = Modifier.padding(top = 4.dp)
+                 modifier = Modifier.padding(top = 4.dp),
+                 maxLines = 1
              )
          }
     }
