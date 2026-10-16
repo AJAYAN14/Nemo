@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.test.presentation.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -18,7 +20,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.feature.test.presentation.settings.components.CustomQuestionCountDialog
 import com.jian.nemo.feature.test.presentation.settings.components.CustomTimeLimitDialog
 import com.jian.nemo.feature.test.domain.model.TestConfig
@@ -77,9 +81,12 @@ fun TestSettingsScreen(
     var lastClickTime by remember { mutableLongStateOf(0L) }
 
     // UI Host
+    val backdrop = rememberLayerBackdrop()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     // 监听错误信息 (Keep for compatibility if error is still used, but prefer messages)
     LaunchedEffect(uiState.error) {
@@ -287,24 +294,24 @@ fun TestSettingsScreen(
                 key = "container_test_${testModeId ?: "default"}",
                 shape = RoundedCornerShape(0.dp)
             ),
-        topBar = {
-            CommonHeader(
-                title = pageTitle,
-                onBack = { if (isGenerating) starterViewModel.cancelGeneration() else onBack() },
-                backgroundColor = backgroundColor
-            )
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = backgroundColor
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    ) { _ ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
+            // 1. 底层滚动内容（被 backdrop 采样源录制）
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .layerBackdrop(backdrop)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
-                Spacer(modifier = Modifier.height(24.dp))
+                // 顶部弹性占位：避开悬浮顶栏与状态栏，向上滚动时平滑穿入顶栏遮罩与液态玻璃下方
+                Spacer(modifier = Modifier.height(statusBarTop + 56.dp + 16.dp))
 
                 BasicSettingsSection(
                     config = config,
@@ -327,17 +334,53 @@ fun TestSettingsScreen(
                     onUpdateConfig = { viewModel.updateConfig(it) }
                 )
 
-                Spacer(modifier = Modifier.height(120.dp))
+                // 底部弹性占位：预留悬浮按钮与导航栏高度
+                Spacer(modifier = Modifier.height(navBarBottom + 96.dp))
             }
 
-            // ===== 悬浮开始测试按钮 (Floating Overlay) =====
+            // 2. 悬浮顶栏与液态玻璃按钮（带柔和多阶垂直渐变保护遮罩，读取 backdrop 物理透镜折射，对齐热力图）
             Box(
-                 modifier = Modifier
-                     .align(Alignment.BottomCenter)
-                     .fillMaxWidth()
-                     .navigationBarsPadding()
-                     .padding(horizontal = 24.dp, vertical = 16.dp)
-             ) {
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                CommonHeader(
+                    title = pageTitle,
+                    onBack = { if (isGenerating) starterViewModel.cancelGeneration() else onBack() },
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp
+                )
+            }
+
+            // 3. 悬浮开始测试按钮 (带底部渐变保护遮罩与 navigationBarsPadding)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                backgroundColor.copy(alpha = 0.6f),
+                                backgroundColor.copy(alpha = 0.95f)
+                            )
+                        )
+                    )
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
+            ) {
                  LaunchedEffect(Unit) {
                     starterViewModel.navigationEvent.collect { event -> onNavigate(event) }
                 }
@@ -348,7 +391,7 @@ fun TestSettingsScreen(
                     }
                 }
 
-                 LiquidButton(
+                 ColoredLiquidGlassButton(
                      onClick = {
                          val currentTime = System.currentTimeMillis()
                          if (currentTime - lastClickTime > 500) {
@@ -364,12 +407,13 @@ fun TestSettingsScreen(
                              }
                          }
                      },
+                     backdrop = backdrop,
+                     tint = MaterialTheme.colorScheme.primary,
                      isInteractive = !isGenerating,
+                     shape = RoundedCornerShape(28.dp),
                      modifier = Modifier
                          .fillMaxWidth()
-                         .height(56.dp),
-                     shape = RoundedCornerShape(28.dp),
-                     backgroundColor = MaterialTheme.colorScheme.primary
+                         .height(56.dp)
                  ) {
                      Row(
                          horizontalArrangement = Arrangement.Center,

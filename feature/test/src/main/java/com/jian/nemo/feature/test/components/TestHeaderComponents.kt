@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.test.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,13 +24,15 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.PaddingValues
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
-import com.jian.nemo.core.ui.component.common.NemoMenuItem
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.common.NemoMorphMenu
+import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.test.presentation.theme.TestDanger
+import com.kyant.backdrop.Backdrop
 
 import androidx.compose.ui.graphics.lerp
 
@@ -42,13 +45,15 @@ import androidx.compose.ui.graphics.lerp
 @Composable
 fun TestHeaderCenterContent(
     timeLimitSeconds: Int,
-    timeRemainingSeconds: Int
+    timeRemainingSeconds: Int,
+    backdrop: Backdrop? = null
 ) {
     if (timeLimitSeconds <= 0) return
 
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val defaultBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
+    val defaultBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.35f)
     val defaultTextColor = MaterialTheme.colorScheme.onBackground
+    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.6f)
 
     // 计算剩余时间比例 (0.0f ~ 1.0f)
     val remainingRatio = (timeRemainingSeconds.toFloat() / timeLimitSeconds.toFloat()).coerceIn(0f, 1f)
@@ -61,8 +66,8 @@ fun TestHeaderCenterContent(
         0f
     }
 
-    // 同色系目标颜色 (Red Tonal Scale：浅红背景 + 深红文字，深色模式适配)
-    val targetBg = if (isDarkTheme) Color(0xFF450A0A) else Color(0xFFFEE2E2)
+    // 同色系目标颜色 (Red Tonal Scale：浅红半透背景 + 深红文字，兼顾警报与宝石通透质感)
+    val targetBg = if (isDarkTheme) Color(0xFF450A0A).copy(alpha = 0.45f) else Color(0xFFFEE2E2).copy(alpha = 0.65f)
     val targetTextColor = if (isDarkTheme) Color(0xFFFCA5A5) else Color(0xFF991B1B)
 
     // 动态平滑插值
@@ -72,83 +77,81 @@ fun TestHeaderCenterContent(
     val minutes = timeRemainingSeconds / 60
     val seconds = timeRemainingSeconds % 60
 
-    LiquidButton(
+    FrostedLiquidGlassButton(
         onClick = { /* 倒计时按钮不触发操作 */ },
-        backgroundColor = animatedBgColor,
+        backdrop = backdrop,
+        surfaceColor = animatedBgColor,
         shape = CircleShape,
-        isInteractive = true
+        border = BorderStroke(0.5.dp, borderColor),
+        isInteractive = true,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = "%02d:%02d".format(minutes, seconds),
             color = animatedTextColor,
             fontWeight = FontWeight.Black,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            fontFamily = FontFamily.Monospace
         )
     }
 }
 
 /**
- * 测试头部右侧操作区：菜单按钮（液态按钮 + 下拉菜单）
+ * 测试头部右侧操作区：学习界面同款形变菜单按钮 (NemoMorphMenu)
  *
  * 供 CommonHeader 的 actions 插槽使用。
- * 包含收藏/取消收藏与暂停测试两个菜单项。
+ * 严格锁定 30/48 黄金比例 (48dp 按钮配 30dp 图标)，具备触觉反馈与窗口模糊背景遮罩联动。
  */
 @Composable
 fun TestHeaderActions(
     word: Word?,
     grammar: Grammar? = null,
     onToggleFavorite: (Int, Boolean) -> Unit,
-    onPause: () -> Unit
+    onPause: () -> Unit,
+    backdrop: Backdrop? = null
 ) {
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-
     val isFavorite = word?.isFavorite == true || grammar?.isFavorite == true
     val itemId = word?.id ?: grammar?.id ?: 0
 
-    Box {
-        var expanded by remember { mutableStateOf(false) }
-
-        LiquidButton(
-            onClick = { expanded = true },
-            backgroundColor = navGroupBg,
-            shape = CircleShape,
-            isInteractive = true,
-            modifier = Modifier.size(44.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.MoreVert,
-                contentDescription = "更多选项",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+    val menuExpandedState = LocalTestMenuExpanded.current
+    var internalExpanded by remember { mutableStateOf(false) }
+    val expanded = menuExpandedState?.value ?: internalExpanded
+    val setExpanded: (Boolean) -> Unit = { expandedValue ->
+        if (menuExpandedState != null) {
+            menuExpandedState.value = expandedValue
+        } else {
+            internalExpanded = expandedValue
         }
+    }
 
-        NemoDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            // 收藏选项 (保留业务逻辑)
-            if (itemId != 0) {
-                NemoMenuItem(
-                    text = if (isFavorite) "取消收藏" else "收藏",
-                    onClick = {
-                        expanded = false
-                        onToggleFavorite(itemId, !isFavorite)
-                    },
-                    leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
-                )
-            }
-
-            // 暂停测试选项
-            NemoMenuItem(
-                text = "暂停测试",
+    NemoMorphMenu(
+        expanded = expanded,
+        onExpandedChange = setExpanded,
+        buttonSize = 48.dp,
+        menuWidth = 192.dp,
+        backdrop = backdrop,
+        icon = Icons.Rounded.MoreVert,
+        contentDescription = "更多选项"
+    ) {
+        // 收藏/取消收藏选项
+        if (itemId != 0) {
+            NemoMorphMenuItem(
+                text = if (isFavorite) "取消收藏" else "收藏",
+                leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 onClick = {
-                    expanded = false
-                    onPause()
-                },
-                leadingIcon = Icons.Rounded.Pause
+                    close()
+                    onToggleFavorite(itemId, !isFavorite)
+                }
             )
         }
+
+        // 暂停测试选项
+        NemoMorphMenuItem(
+            text = "暂停测试",
+            leadingIcon = Icons.Rounded.Pause,
+            onClick = {
+                close()
+                onPause()
+            }
+        )
     }
 }
