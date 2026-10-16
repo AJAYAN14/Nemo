@@ -1,33 +1,76 @@
 package com.jian.nemo.feature.settings
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.activity.compose.BackHandler
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.feature.settings.components.PremiumCard
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.feature.settings.components.FloatingLiquidIsland
+import com.jian.nemo.feature.settings.components.LeechSentinelCard
+import com.jian.nemo.feature.settings.components.LiquidMemoryHud
+import com.jian.nemo.feature.settings.components.RetentionPrecisionRuler
+import com.jian.nemo.feature.settings.components.StepPipelineEditor
+import com.jian.nemo.feature.settings.components.TemporalHorizonSection
 import com.jian.nemo.feature.settings.components.UnsavedChangesDialog
-
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
-import com.jian.nemo.core.ui.component.liquid.LiquidSlider
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import kotlin.math.roundToInt
 
 /**
- * 记忆算法配置二级页面 (SRS Memory Algorithm Configuration)
- * 采用与设置主页一致的 Premium 设计风格
+ * 记忆算法调校视界 (SRS Memory Algorithm Studio)
+ *
+ * 全新重构版本：
+ * 1. 深度融合 Nemo 标志性的「底层贯穿录制 + 悬浮液态玻璃顶栏 + 柔和多阶垂直渐变遮罩 (Backdrop Lens + Gradient Mask)」；
+ * 2. 多维度语义色彩系统：赋予每个卡片模块贴合其物理隐喻的专属色系，告别单一紫色；
+ * 3. 顶部操作栏集成一键「恢复默认设置」功能（仅非默认状态下显示，采用 30/48 比例与 Replay 图标）；
+ * 4. 时间胶囊序号像素级绝对居中，阈值计数器与目标保留率均配备大号字号与机械翻牌物理动效；
+ * 5. 悬浮操作岛改用全透明无底色液态玻璃（ClearLiquidGlassButton），实时透镜折射。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +79,8 @@ fun AdvancedLearningSettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    // 同步本地状态进行即时编辑反馈
+
+    // 本地即时响应状态
     var stepsInput by remember(uiState.learningSteps) { mutableStateOf(uiState.learningSteps) }
     var relearningStepsInput by remember(uiState.relearningSteps) { mutableStateOf(uiState.relearningSteps) }
     var limitInput by remember(uiState.learnAheadLimit) { mutableFloatStateOf(uiState.learnAheadLimit.toFloat()) }
@@ -45,365 +88,276 @@ fun AdvancedLearningSettingsScreen(
     var leechActionInput by remember(uiState.leechAction) {
         mutableStateOf(if (uiState.leechAction == "bury_today") "bury_today" else "skip")
     }
-    var retentionInput by remember(uiState.targetRetention) { mutableStateOf(uiState.targetRetention.toString()) }
+    var retentionInput by remember(uiState.targetRetention) { mutableFloatStateOf(uiState.targetRetention) }
 
-    // 判断是否有未保存更改
-    val hasUnsavedChanges = remember(stepsInput, relearningStepsInput, limitInput, leechThresholdInput, leechActionInput, uiState) {
-        stepsInput != uiState.learningSteps ||
-        relearningStepsInput != uiState.relearningSteps ||
+    // 弹窗状态管理
+    var showExitConfirmation by remember { mutableStateOf(false) }
+    var showResetConfirmDialog by remember { mutableStateOf(false) }
+
+    // 判断当前配置是否为默认黄金推荐值（不是默认值才显示恢复按钮）
+    val isDefaultSettings = remember(
+        stepsInput,
+        relearningStepsInput,
+        limitInput,
+        leechThresholdInput,
+        leechActionInput,
+        retentionInput
+    ) {
+        stepsInput.trim() == "1 10" &&
+        relearningStepsInput.trim() == "1 10" &&
+        limitInput.toInt() == 20 &&
+        leechThresholdInput == 5 &&
+        leechActionInput == "skip" &&
+        (retentionInput * 100).roundToInt() == 90
+    }
+
+    // 判断是否有未保存的更改
+    val hasUnsavedChanges = remember(
+        stepsInput,
+        relearningStepsInput,
+        limitInput,
+        leechThresholdInput,
+        leechActionInput,
+        retentionInput,
+        uiState
+    ) {
+        stepsInput.trim() != uiState.learningSteps.trim() ||
+        relearningStepsInput.trim() != uiState.relearningSteps.trim() ||
         limitInput.toInt() != uiState.learnAheadLimit ||
         leechThresholdInput != uiState.leechThreshold ||
         leechActionInput != (if (uiState.leechAction == "bury_today") "bury_today" else "skip") ||
-        retentionInput != uiState.targetRetention.toString()
+        (retentionInput * 100).toInt() != (uiState.targetRetention * 100).toInt()
     }
 
-    var showExitConfirmation by remember { mutableStateOf(false) }
-
-    // 拦截系统返回键
+    // 拦截系统返回手势与按键
     BackHandler(enabled = hasUnsavedChanges) {
         showExitConfirmation = true
     }
 
-    val accentColor = Color(0xFFAF52DE) // NemoPurple
-    val density = LocalDensity.current
-    val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
-    val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    // 多维度语义色彩体系：拒绝全局单一紫色
+    val retentionColor = Color(0xFFAF52DE)      // 目标保留率核心：Nemo 品牌紫
+    val learningStepColor = Color(0xFF0E68FF)   // 新卡初学阶梯：深邃探索蓝
+    val relearningStepColor = Color(0xFFFF9F0A) // 遗忘重学阶梯：警醒暖琥珀橙
+    val leechColor = Color(0xFFF43F5E)          // 水蛭防爆哨兵：守护玫瑰红
+    val temporalColor = Color(0xFF00C4B5)       // 提前复习容差：极光薄荷青
+
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     // 保存逻辑封装
     val onSaveAndExit = {
         if (stepsInput.isNotBlank() && relearningStepsInput.isNotBlank()) {
-            viewModel.onEvent(SettingsEvent.SaveAdvancedLearningSettings(
-                learningSteps = stepsInput,
-                relearningSteps = relearningStepsInput,
-                learnAheadLimit = limitInput.toInt(),
-                leechThreshold = leechThresholdInput,
-                leechAction = leechActionInput,
-                targetRetention = retentionInput.toFloatOrNull() ?: uiState.targetRetention
-            ))
+            viewModel.onEvent(
+                SettingsEvent.SaveAdvancedLearningSettings(
+                    learningSteps = stepsInput.trim(),
+                    relearningSteps = relearningStepsInput.trim(),
+                    learnAheadLimit = limitInput.toInt(),
+                    leechThreshold = leechThresholdInput,
+                    leechAction = leechActionInput,
+                    targetRetention = retentionInput
+                )
+            )
             onNavigateBack()
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("记忆算法配置", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (hasUnsavedChanges) {
-                            showExitConfirmation = true
-                        } else {
-                            onNavigateBack()
-                        }
-                    }) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "返回")
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // 顶部弹性占位：未滑动时避开顶栏，向上滚动时平滑穿入顶栏遮罩与液态玻璃下方
+            Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
+
+            // 1. 流体记忆视界 HUD 仿真卡片 (动态衰减曲面 + SloshGauge 负荷蓄水池)
+            LiquidMemoryHud(
+                targetRetention = retentionInput,
+                accentColor = retentionColor
+            )
+
+            // 2. 目标保留率磁吸精密标尺 (Modern Fractional Picker - 锁定水平手势与微调按钮)
+            RetentionPrecisionRuler(
+                targetRetention = retentionInput,
+                onRetentionChange = { retentionInput = it },
+                accentColor = retentionColor
+            )
+
+            // 3. 初次学习阶梯时空管道 (Step Pipeline) — 探索蓝
+            StepPipelineEditor(
+                title = "新卡片初学阶梯 (Learning Steps)",
+                subtitle = "新知识首次记忆时的短时巩固序列 (单位: 分钟)",
+                stepsString = stepsInput,
+                onStepsChange = { stepsInput = it },
+                accentColor = learningStepColor
+            )
+
+            // 4. 遗忘重学阶梯时空管道 (Relearning Steps) — 暖琥珀橙
+            StepPipelineEditor(
+                title = "遗忘重学阶梯 (Relearning Steps)",
+                subtitle = "遗忘卡片重新激活时的强化复习序列 (单位: 分钟)",
+                stepsString = relearningStepsInput,
+                onStepsChange = { relearningStepsInput = it },
+                accentColor = relearningStepColor
+            )
+
+            // 5. 水蛭防爆哨兵 (机械翻牌大号步进器 + 橡胶果冻分段器) — 守护玫瑰红
+            LeechSentinelCard(
+                leechThreshold = leechThresholdInput,
+                onThresholdChange = { leechThresholdInput = it },
+                leechAction = leechActionInput,
+                onActionChange = { leechActionInput = it },
+                accentColor = leechColor
+            )
+
+            // 6. 提前复习时间视界 — 极光薄荷青
+            TemporalHorizonSection(
+                limitMinutes = limitInput,
+                onLimitChange = { limitInput = it },
+                accentColor = temporalColor
+            )
+
+            // 底部预留悬浮操作岛和手势区安全高度
+            Spacer(modifier = Modifier.height(navBarBottom + 84.dp))
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和多阶垂直渐变保护遮罩，读取 backdrop 物理透镜折射）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.98f),
+                            backgroundColor.copy(alpha = 0.88f),
+                            backgroundColor.copy(alpha = 0.55f),
+                            backgroundColor.copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = "记忆算法调校",
+                onBack = {
+                    if (hasUnsavedChanges) {
+                        showExitConfirmation = true
+                    } else {
+                        onNavigateBack()
                     }
                 },
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
                 actions = {
-                    Box(modifier = Modifier.padding(end = 12.dp)) {
-                        LiquidButton(
-                            onClick = {
-                                if (hasUnsavedChanges) {
-                                    onSaveAndExit()
-                                }
-                            },
-                            backgroundColor = if (hasUnsavedChanges) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                            shape = RoundedCornerShape(20.dp),
-                            elevation = 0.dp,
-                            isInteractive = hasUnsavedChanges
+                    // 右侧一键「恢复默认」流体玻璃按钮：仅当非默认配置时显示，严格采用 30/48 比例与环形 Replay 图标
+                    AnimatedVisibility(
+                        visible = !isDefaultSettings,
+                        enter = fadeIn() + scaleIn(),
+                        exit = fadeOut() + scaleOut()
+                    ) {
+                        FrostedLiquidGlassButton(
+                            onClick = { showResetConfirmDialog = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
                         ) {
-                            Text(
-                                text = "应用",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (hasUnsavedChanges) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                            Icon(
+                                imageVector = Icons.Rounded.Replay,
+                                contentDescription = "恢复默认设置",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                }
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+        }
+
+        // 3. 底部流体悬浮操作岛 (有修改时以果冻弹簧滑出，应用按钮为全透明无底色液态玻璃)
+        FloatingLiquidIsland(
+            visible = hasUnsavedChanges,
+            onApply = onSaveAndExit,
+            backdrop = backdrop,
+            accentColor = retentionColor,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = navBarBottom + 8.dp)
+        )
+
+        // 4. 恢复默认二次确认弹窗
+        if (showResetConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetConfirmDialog = false },
+                title = { Text("恢复默认算法配置", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(
+                            "确定要将记忆算法配置恢复为系统黄金推荐值吗？",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text("• 新卡初学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
+                                Text("• 遗忘重学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
+                                Text("• 提前复习容差: 20 分钟", style = MaterialTheme.typography.labelSmall)
+                                Text("• 水蛭判定阈值: 5 次", style = MaterialTheme.typography.labelSmall)
+                                Text("• 水蛭处置行为: 冻结卡片 (Skip)", style = MaterialTheme.typography.labelSmall)
+                                Text("• FSRS 目标保留率: 90%", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            stepsInput = "1 10"
+                            relearningStepsInput = "1 10"
+                            limitInput = 20f
+                            leechThresholdInput = 5
+                            leechActionInput = "skip"
+                            retentionInput = 0.90f
+                            showResetConfirmDialog = false
+                        }
+                    ) {
+                        Text("确认恢复", color = retentionColor, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetConfirmDialog = false }) {
+                        Text("取消")
+                    }
+                }
+            )
+        }
+
+        // 5. 未保存退出确认弹窗
         if (showExitConfirmation) {
             UnsavedChangesDialog(
                 onSaveAndExit = onSaveAndExit,
                 onDiscardChanges = onNavigateBack,
                 onDismiss = { showExitConfirmation = false },
-                accentColor = accentColor
+                accentColor = retentionColor
             )
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            // 1. 风险提示项
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column {
-                        Text(
-                            text = "参数说明",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "间隔重复算法（SRS）决定了您的复习频率。错误的设置可能导致不得不频繁进行无效复习，请谨慎修改。",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f),
-                            lineHeight = 20.sp
-                        )
-                    }
-                }
-            }
-
-            // 2. 学习复习步进
-            com.jian.nemo.feature.settings.components.SettingsSectionTitle(text = "复习步进 (Steps)")
-            PremiumCard {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
-                    // Learning Steps
-                    Column {
-                        Text(
-                            text = "新卡片学习阶段 (分钟)",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = stepsInput,
-                            onValueChange = { stepsInput = it },
-                            placeholder = { Text("1 10") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = accentColor,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
-                        )
-                        Text(
-                            text = "默认 '1 10'，表示1分钟后和10分钟后分别进行初次复习。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-
-                    // Relearning Steps
-                    Column {
-                        Text(
-                            text = "错误重学阶段 (分钟)",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = relearningStepsInput,
-                            onValueChange = { relearningStepsInput = it },
-                            placeholder = { Text("1 10") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = accentColor,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            )
-                        )
-                        Text(
-                            text = "默认 '1 10'，表示忘记已学会卡片后进行的重学步进。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            // 3. 算法高级策略
-            com.jian.nemo.feature.settings.components.SettingsSectionTitle(text = "高级复习策略")
-            PremiumCard {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                    // Learn Ahead Limit
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "提前复习阈值",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "${limitInput.toInt()} 分钟",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = accentColor
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 12.dp, horizontal = 4.dp)
-                        ) {
-                            LiquidSlider(
-                                value = { limitInput },
-                                onValueChange = { limitInput = it },
-                                valueRange = 0f..60f,
-                                visibilityThreshold = 0.5f,
-                                accentColor = accentColor
-                            )
-                        }
-                        Text(
-                            text = "冷却时间低于此值时，允许立即开始复习。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
-                    }
-
-                    // Leech Management
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Leech 阈值 (累计错误)",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(
-                                    onClick = { leechThresholdInput = (leechThresholdInput - 1).coerceAtLeast(1) },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Rounded.RemoveCircleOutline, contentDescription = null, tint = accentColor)
-                                }
-                                Text(
-                                    text = "$leechThresholdInput 次",
-                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                    color = accentColor,
-                                    modifier = Modifier.padding(horizontal = 12.dp)
-                                )
-                                IconButton(
-                                    onClick = { leechThresholdInput = (leechThresholdInput + 1).coerceAtMost(12) },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Rounded.AddCircleOutline, contentDescription = null, tint = accentColor)
-                                }
-                            }
-                        }
-                    }
-
-                    // Leech Action
-                    Column {
-                        Text(
-                            text = "Leech 处理行为",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        
-                        // Option 1: Skip
-                        Surface(
-                            onClick = { leechActionInput = "skip" },
-                            color = if (leechActionInput == "skip") accentColor.copy(alpha = 0.1f) else Color.Transparent,
-                            border = if (leechActionInput == "skip") null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(selected = leechActionInput == "skip", onClick = { leechActionInput = "skip" })
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text("冻结卡片 (Skip)", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                                    Text("命中后不再进入常规复习，移至复学清单管理", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Option 2: Bury
-                        Surface(
-                            onClick = { leechActionInput = "bury_today" },
-                            color = if (leechActionInput == "bury_today") accentColor.copy(alpha = 0.1f) else Color.Transparent,
-                            border = if (leechActionInput == "bury_today") null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                RadioButton(selected = leechActionInput == "bury_today", onClick = { leechActionInput = "bury_today" })
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text("仅埋藏今日 (Bury)", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                                    Text("今日复习中不再出现，明日自动回归队列", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-                    }
-
-                    // FSRS Target Retention
-                    Column {
-                        Text(
-                            text = "FSRS 目标保留率",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = retentionInput,
-                            onValueChange = { input ->
-                                if (input.isEmpty() || input.all { it.isDigit() || it == '.' }) {
-                                    retentionInput = input
-                                }
-                            },
-                            placeholder = { Text("0.90") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = accentColor,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                            ),
-                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal
-                            )
-                        )
-                        Text(
-                            text = "建议范围 0.70 - 0.99。较高的保留率会增加复习频率。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(navigationBarHeight + 16.dp))
         }
     }
 }
