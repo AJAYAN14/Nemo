@@ -136,7 +136,7 @@ class AuthViewModel @Inject constructor(
     fun onRegisterClicked(onPasswordMismatch: () -> Unit) {
         val state = _uiState.value
         _uiState.update { it.copy(isFormAttempted = true) }
-        val finalUsername = state.username.ifBlank { state.email.substringBefore('@') }
+        val finalUsername = state.username.trim().ifBlank { state.email.substringBefore('@') }.take(16)
         if (state.email.isNotBlank() && state.email.contains("@") && 
             state.password.length >= 8 && state.password == state.confirmPassword) {
             register(finalUsername, state.email, state.password)
@@ -345,11 +345,16 @@ class AuthViewModel @Inject constructor(
     }
 
     fun updateUsername(newUsername: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
+        val cleanUsername = newUsername.trim().take(16)
+        if (cleanUsername.isEmpty()) {
+            onError("用户名不能为空")
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
-            when (val result = updateUserProfileUseCase.updateUsername(newUsername)) {
+            when (val result = updateUserProfileUseCase.updateUsername(cleanUsername)) {
                 is Result.Success -> {
-                    val updatedUser = _uiState.value.user?.copy(username = newUsername)
+                    val updatedUser = _uiState.value.user?.copy(username = cleanUsername)
                     _uiState.update {
                         it.copy(isLoading = false, user = updatedUser, successMessage = "用户名更新成功")
                     }
@@ -381,9 +386,10 @@ class AuthViewModel @Inject constructor(
             }
 
             // 2. 更新昵称 (如果有修改)
+            val cleanNickname = nickname.trim().take(16)
             val currentUsername = _uiState.value.user?.username
-            if (nickname.isNotBlank() && nickname != currentUsername) {
-                val nameResult = updateUserProfileUseCase.updateUsername(nickname)
+            if (cleanNickname.isNotBlank() && cleanNickname != currentUsername) {
+                val nameResult = updateUserProfileUseCase.updateUsername(cleanNickname)
                 if (nameResult is Result.Error) {
                     val msg = nameResult.exception.message ?: "设置昵称失败"
                     _uiState.update { it.copy(isLoading = false, error = msg) }

@@ -218,15 +218,16 @@ fun AccountUpdateUsernameDialog(
         confirmText = "确认修改",
         dismissText = "取消",
         confirmButtonColor = if (useDarkTheme) Color(0xFF0A84FF) else Color(0xFF007AFF),
-        confirmEnabled = newUsername.isNotBlank() && newUsername != currentUsername,
+        confirmEnabled = newUsername.trim().isNotEmpty() && newUsername.trim().length <= 16 && newUsername.trim() != currentUsername,
         isLoading = isLoading,
         onConfirm = {
-            if (newUsername.isNotBlank() && newUsername.length >= 2) {
-                if (newUsername != currentUsername) {
+            val trimmed = newUsername.trim()
+            if (trimmed.isNotEmpty() && trimmed.length <= 16) {
+                if (trimmed != currentUsername) {
                     isLoading = true
                     errorMessage = null
                     onUpdateUsername(
-                        newUsername,
+                        trimmed,
                         {
                             isLoading = false
                             onDismiss()
@@ -240,7 +241,7 @@ fun AccountUpdateUsernameDialog(
                     errorMessage = "新用户名不能与当前用户名相同"
                 }
             } else {
-                errorMessage = "用户名长度至少为 2 位"
+                errorMessage = "用户名需在 1~16 个字符以内"
             }
         },
         content = {
@@ -255,8 +256,17 @@ fun AccountUpdateUsernameDialog(
 
                 OutlinedTextField(
                     value = newUsername,
-                    onValueChange = { newUsername = it },
-                    label = { Text("新用户名", fontSize = 14.sp) },
+                    onValueChange = { if (it.length <= 16) newUsername = it },
+                    label = { Text("新用户名（最多16字）", fontSize = 14.sp) },
+                    supportingText = {
+                        Text(
+                            text = "${newUsername.length}/16",
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                            color = bodyColor,
+                            fontSize = 12.sp
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,

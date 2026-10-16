@@ -69,11 +69,13 @@ fun ProfileSetupContent(
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
 
     // 校验逻辑
+    val trimmedNickname = nickname.trim()
+    val isNicknameValid = trimmedNickname.isNotEmpty() && trimmedNickname.length <= 16
     val hasPassword = password.isNotEmpty()
     val passwordMismatch = isGoogleOnlyUser && hasPassword && confirmPassword.isNotEmpty() && password != confirmPassword
     val passwordTooShort = isGoogleOnlyUser && hasPassword && password.length < 6
     val isPasswordValid = !isGoogleOnlyUser || !hasPassword || (password.length >= 6 && password == confirmPassword)
-    val canStart = !isLoading && nickname.isNotBlank() && isPasswordValid
+    val canStart = !isLoading && isNicknameValid && isPasswordValid
 
     // 配色定义
     val backgroundColor = if (isDark) Color(0xFF100F14) else MaterialTheme.colorScheme.background
@@ -227,18 +229,35 @@ fun ProfileSetupContent(
             ) {
                 // 用户名称字段
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "用户名称",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = labelTextColor,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 4.dp, end = 4.dp, bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "用户名称",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = labelTextColor
+                        )
+                        Text(
+                            text = "${nickname.length}/16",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = subtitleTextColor
+                        )
+                    }
 
                     AppStyleTextField(
                         value = nickname,
-                        onValueChange = onNicknameChange,
-                        placeholder = "设置您的专属昵称",
+                        onValueChange = {
+                            if (it.length <= 16) {
+                                onNicknameChange(it)
+                            }
+                        },
+                        placeholder = "设置您的专属昵称（最多16字）",
                         leadingIcon = Icons.Rounded.Person,
                         isDark = isDark,
                         enabled = !isLoading,

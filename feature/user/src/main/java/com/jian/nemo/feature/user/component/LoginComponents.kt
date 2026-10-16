@@ -387,11 +387,11 @@ fun AppRegisterForm(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // 1. 您的称呼（选填）
+        // 1. 您的称呼（选填，最多16字）
         AppStyleTextField(
             value = username,
-            onValueChange = onUsernameChange,
-            placeholder = "您的称呼（选填）",
+            onValueChange = { if (it.length <= 16) onUsernameChange(it) },
+            placeholder = "您的称呼（选填，最多16字）",
             leadingIcon = Icons.Rounded.Person,
             isDark = isDark,
             isError = usernameError,
