@@ -425,7 +425,7 @@ fun AppRegisterForm(
         AppStyleTextField(
             value = password,
             onValueChange = onPasswordChange,
-            placeholder = "设置密码（至少 6 位）",
+            placeholder = "设置密码（至少 8 位）",
             leadingIcon = Icons.Rounded.Lock,
             trailingIcon = if (isPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
             onTrailingIconClick = onTogglePasswordVisibility,

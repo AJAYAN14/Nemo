@@ -418,6 +418,10 @@ fun LoginScreen(
                                 onPasswordChange = viewModel::onPasswordChanged,
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
                                 onLogin = {
+                                    if (uiState.email.isBlank() || !uiState.email.contains("@")) {
+                                        Toast.makeText(context, "请输入有效的电子邮箱地址", Toast.LENGTH_SHORT).show()
+                                        return@AppLoginForm
+                                    }
                                     if (loginFailedAttempts >= 3) {
                                         showLoginCaptchaDialog = true
                                     } else {
@@ -511,12 +515,12 @@ fun LoginScreen(
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
                                 onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                                 onRegister = {
-                                    if (uiState.email.isBlank()) {
-                                        Toast.makeText(context, "请输入电子邮箱地址", Toast.LENGTH_SHORT).show()
+                                    if (uiState.email.isBlank() || !uiState.email.contains("@")) {
+                                        Toast.makeText(context, "请输入有效的电子邮箱地址", Toast.LENGTH_SHORT).show()
                                         return@AppRegisterForm
                                     }
-                                    if (uiState.password.length < 6) {
-                                        Toast.makeText(context, "密码长度不能少于 6 位", Toast.LENGTH_SHORT).show()
+                                    if (uiState.password.length < 8) {
+                                        Toast.makeText(context, "密码长度不能少于 8 位", Toast.LENGTH_SHORT).show()
                                         return@AppRegisterForm
                                     }
                                     if (uiState.password != uiState.confirmPassword) {

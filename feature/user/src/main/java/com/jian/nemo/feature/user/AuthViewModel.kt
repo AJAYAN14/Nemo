@@ -128,7 +128,7 @@ class AuthViewModel @Inject constructor(
     fun onLoginClicked() {
         val state = _uiState.value
         _uiState.update { it.copy(isFormAttempted = true) }
-        if (state.email.isNotBlank() && state.password.isNotBlank()) {
+        if (state.email.isNotBlank() && state.email.contains("@") && state.password.isNotBlank()) {
             login(state.email, state.password)
         }
     }
@@ -136,9 +136,10 @@ class AuthViewModel @Inject constructor(
     fun onRegisterClicked(onPasswordMismatch: () -> Unit) {
         val state = _uiState.value
         _uiState.update { it.copy(isFormAttempted = true) }
-        if (state.username.isNotBlank() && state.email.isNotBlank() && 
-            state.password.length >= 6 && state.password == state.confirmPassword) {
-            register(state.username, state.email, state.password)
+        val finalUsername = state.username.ifBlank { state.email.substringBefore('@') }
+        if (state.email.isNotBlank() && state.email.contains("@") && 
+            state.password.length >= 8 && state.password == state.confirmPassword) {
+            register(finalUsername, state.email, state.password)
         } else if (state.password != state.confirmPassword) {
             onPasswordMismatch()
         }
@@ -526,9 +527,9 @@ data class AuthUiState(
     // Dialog State
     val activeDialog: UserDialogType = UserDialogType.NONE
 ) {
-    val emailError: Boolean get() = isFormAttempted && email.isBlank()
-    val passwordError: Boolean get() = isFormAttempted && (if (isLoginMode) password.isBlank() else password.length < 6)
-    val usernameError: Boolean get() = isFormAttempted && !isLoginMode && username.isBlank()
+    val emailError: Boolean get() = isFormAttempted && (email.isBlank() || !email.contains("@"))
+    val passwordError: Boolean get() = isFormAttempted && (if (isLoginMode) password.isBlank() else password.length < 8)
+    val usernameError: Boolean get() = false
     val confirmPasswordError: Boolean get() = isFormAttempted && !isLoginMode && confirmPassword != password
 }
 
