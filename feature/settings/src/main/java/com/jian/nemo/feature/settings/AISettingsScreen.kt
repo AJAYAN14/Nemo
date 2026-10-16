@@ -3,6 +3,7 @@ package com.jian.nemo.feature.settings
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -42,6 +43,10 @@ import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import com.jian.nemo.feature.settings.components.PremiumCard
@@ -74,61 +79,42 @@ fun AISettingsScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val backdrop = rememberLayerBackdrop()
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层列表内容 (挂载 layerBackdrop，全屏向上贯穿至状态栏)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .haze(hazeState)
+                .layerBackdrop(backdrop)
         ) {
-            Scaffold(
-                topBar = {
-                    CommonHeader(
-                        title = "AI 模型配置",
-                        onBack = onNavigateBack,
-                        actions = {
-                            val navGroupBg = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White
-                            LiquidButton(
-                                onClick = { viewModel.onEvent(AISettingsEvent.OpenEditModal(null)) },
-                                backgroundColor = navGroupBg,
-                                shape = CircleShape,
-                                isInteractive = true,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Add,
-                                    contentDescription = "新建配置",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    NemoChasingDotsLoader(size = 40.dp)
+                }
+            } else if (uiState.configs.isEmpty()) {
+                EmptyAIConfigView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = statusBarTop + 60.dp)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = statusBarTop + 64.dp,
+                        bottom = navigationBarHeight + 32.dp
                     )
-                },
-                containerColor = MaterialTheme.colorScheme.background
-            ) { paddingValues ->
-                if (uiState.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        NemoChasingDotsLoader(size = 40.dp)
-                    }
-                } else if (uiState.configs.isEmpty()) {
-                    EmptyAIConfigView(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding() + 8.dp,
-                            bottom = navigationBarHeight + 32.dp
-                        )
-                    ) {
+                ) {
                         item {
                             PremiumCard(
                                 modifier = Modifier
@@ -192,223 +178,74 @@ fun AISettingsScreen(
                     }
                 }
             }
-        }
 
-        // 高保真底栏滑动弹窗
-        // 1. 全屏高斯毛玻璃遮罩
-        AnimatedVisibility(
-            visible = uiState.editingConfig != null,
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            val maskColor = if (isDark) {
-                Color.Black.copy(alpha = 0.55f)
-            } else {
-                Color.Black.copy(alpha = 0.35f)
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .hazeChild(state = hazeState)
-                    .background(maskColor)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        if (!uiState.isTesting) {
-                            viewModel.onEvent(AISettingsEvent.CloseEditModal)
-                        }
-                    }
-            )
-        }
-
-        // 2. 底部向上滑入的表单卡片
-        AnimatedVisibility(
-            visible = uiState.editingConfig != null,
-            enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
-            exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            val editingConfig = uiState.editingConfig
-            if (editingConfig != null) {
-                val isNew = uiState.configs.none { it.id == editingConfig.id }
-                
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.9f)
-                        .imePadding()
-                        .softCardShadow(borderRadius = 28.dp, isDark = isDark),
-                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.2f)
-                    ),
-                    tonalElevation = 0.dp
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .navigationBarsPadding()
-                    ) {
-                        // 1. 弹窗 Header：沉浸式左对齐大标题 + 右侧圆角关闭按钮
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 20.dp, vertical = 18.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = if (isNew) "新建 AI 配置" else "编辑 AI 配置",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        letterSpacing = (-0.5).sp
-                                    ),
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = "配置自定义大语言模型 API 凭证与端点",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
-                                )
-                            }
-                            
-                            IconButton(
-                                onClick = { viewModel.onEvent(AISettingsEvent.CloseEditModal) },
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .background(
-                                        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-                                        shape = CircleShape
-                                    ),
-                                enabled = !uiState.isTesting
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = "取消",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.12f else 0.18f)
+        // 2. 悬浮液态玻璃顶栏 (多阶垂直渐变遮罩 + 30/48 黄金比例返回键与加号按钮)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.98f),
+                            backgroundColor.copy(alpha = 0.88f),
+                            backgroundColor.copy(alpha = 0.55f),
+                            backgroundColor.copy(alpha = 0.20f),
+                            Color.Transparent
                         )
-
-                        // 2. 弹窗表单滚动主体
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .verticalScroll(rememberScrollState())
-                                .padding(horizontal = 16.dp, vertical = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // 分组 1：基础信息卡片
-                            FormSectionCard(
-                                title = "基础信息",
-                                isDark = isDark
-                            ) {
-                                AISettingTextField(
-                                    label = "配置别名",
-                                    value = editingConfig.name,
-                                    onValueChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(name = it))) },
-                                    placeholder = "例如: 我的工作号 / 主用 Gemini"
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Column {
-                                    Text(
-                                        text = "AI 服务平台",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    PlatformDropdownSelector(
-                                        selectedPlatform = editingConfig.platform,
-                                        onPlatformSelected = { 
-                                            val defaultModel = when(it) {
-                                                "gemini" -> "gemini-3.1-pro-preview"
-                                                "deepseek" -> "deepseek-v4-pro"
-                                                "openai" -> "gpt-5.5"
-                                                "claude" -> "claude-4.7-opus"
-                                                "doubao" -> "doubao-pro-256k"
-                                                "mimo" -> "mimo-v2.5-pro"
-                                                else -> ""
-                                            }
-                                            viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(
-                                                editingConfig.copy(platform = it, model = defaultModel)
-                                            )) 
-                                        }
-                                    )
-                                }
-                            }
-
-                            // 分组 2：模型与凭证卡片
-                            FormSectionCard(
-                                title = "模型与凭证",
-                                isDark = isDark
-                            ) {
-                                AISettingTextField(
-                                    label = "模型标识码 (Model ID)",
-                                    value = editingConfig.model,
-                                    onValueChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(model = it))) },
-                                    placeholder = "例如: gemini-3.1-pro-preview"
-                                )
-
-                                RecommendedModelChips(
-                                    platform = editingConfig.platform,
-                                    currentModel = editingConfig.model,
-                                    onModelSelected = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(model = it))) }
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                AISettingTextField(
-                                    label = "API Key 密钥",
-                                    value = editingConfig.apiKey,
-                                    onValueChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(apiKey = it))) },
-                                    placeholder = "输入 API 令牌密钥",
-                                    isPasswordField = true
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                AISettingTextField(
-                                    label = "自定义代理端点 (可选)",
-                                    value = editingConfig.baseUrl,
-                                    onValueChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(editingConfig.copy(baseUrl = it))) },
-                                    placeholder = "例如: https://api.openai-proxy.com"
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-
-                        // 3. 底部固定操作栏 (Sticky Action Bar)
-                        HorizontalDivider(
-                            thickness = 1.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.12f else 0.18f)
-                        )
-
-                        FormBottomActionBar(
-                            isTesting = uiState.isTesting,
-                            canTest = editingConfig.apiKey.isNotBlank(),
-                            canSave = editingConfig.apiKey.isNotBlank() && editingConfig.name.isNotBlank(),
-                            onTestClick = { viewModel.onEvent(AISettingsEvent.TestConnection) },
-                            onSaveClick = { viewModel.onEvent(AISettingsEvent.SaveConfig) },
-                            isDark = isDark
+                    )
+                )
+                .padding(bottom = 16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 模型配置",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = { viewModel.onEvent(AISettingsEvent.OpenEditModal(null)) },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = "新建配置",
+                            tint = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A),
+                            modifier = Modifier.size(30.dp)
                         )
                     }
                 }
+            )
+        }
+
+        // 全新 AI 神经算力核心独立全屏装配视界
+        AnimatedVisibility(
+            visible = uiState.editingConfig != null,
+            enter = fadeIn(animationSpec = tween(280)) + slideInVertically(
+                initialOffsetY = { it / 6 },
+                animationSpec = spring(stiffness = 350f, dampingRatio = 0.85f)
+            ),
+            exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(
+                targetOffsetY = { it / 6 },
+                animationSpec = spring(stiffness = 350f, dampingRatio = 0.85f)
+            )
+        ) {
+            val editingConfig = uiState.editingConfig
+            if (editingConfig != null) {
+                AIModelStudioScreen(
+                    config = editingConfig,
+                    isNew = uiState.configs.none { it.id == editingConfig.id },
+                    isTesting = uiState.isTesting,
+                    testResult = uiState.testResult,
+                    onConfigChange = { viewModel.onEvent(AISettingsEvent.UpdateEditingConfig(it)) },
+                    onTestConnection = { viewModel.onEvent(AISettingsEvent.TestConnection) },
+                    onSave = { viewModel.onEvent(AISettingsEvent.SaveConfig) },
+                    onClose = { viewModel.onEvent(AISettingsEvent.CloseEditModal) }
+                )
             }
         }
 
@@ -454,22 +291,28 @@ fun AIConfigCard(
     onDelete: () -> Unit
 ) {
     val platformColor = when (config.platform) {
-        "gemini" -> Color(0xFF6E56CF) // 高贵蓝紫
-        "deepseek" -> Color(0xFF1E88E5) // 科技蓝
-        "openai" -> Color(0xFF10A37F) // 薄荷绿
-        "claude" -> Color(0xFFE05C2B) // 橙红色
-        "doubao" -> Color(0xFF00B4D8) // 活力青绿
-        "mimo" -> Color(0xFFFF6700) // 小米橙
-        else -> Color(0xFF757575) // 自定义中性灰
+        "deepseek" -> Color(0xFF0E68FF)
+        "doubao" -> Color(0xFF00B4D8)
+        "glm" -> Color(0xFF3762FF)
+        "kimi" -> Color(0xFF007AFF)
+        "mimo" -> Color(0xFFFF6A00)
+        "qwen" -> Color(0xFF615CED)
+        "claude" -> Color(0xFFD97706)
+        "openai" -> Color(0xFF10A37F)
+        "gemini" -> Color(0xFFAF52DE)
+        else -> Color(0xFF8B5CF6)
     }
     
     val platformName = when (config.platform) {
-        "gemini" -> "Gemini"
         "deepseek" -> "DeepSeek"
-        "openai" -> "ChatGPT"
-        "claude" -> "Claude"
-        "doubao" -> "Doubao"
+        "doubao" -> "豆包"
+        "glm" -> "智谱 GLM"
+        "kimi" -> "Kimi"
         "mimo" -> "Mimo"
+        "qwen" -> "通义千问"
+        "claude" -> "Claude"
+        "openai" -> "OpenAI"
+        "gemini" -> "Gemini"
         else -> "自定义平台"
     }
 
@@ -521,39 +364,42 @@ fun AIConfigCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // platform-specific rounded icon container
+            // 原汁原味官方图标容器（完全无底色透明，保留原始矢量色彩）
             Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(platformColor.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
+                modifier = Modifier.size(44.dp),
                 contentAlignment = Alignment.Center
             ) {
                 val painterId = when (config.platform) {
-                    "gemini" -> DesignR.drawable.ic_gemini
                     "deepseek" -> DesignR.drawable.ic_deepseek
-                    "openai" -> DesignR.drawable.ic_openai
-                    "mimo" -> DesignR.drawable.ic_mimo
-                    "claude" -> DesignR.drawable.ic_claude
                     "doubao" -> DesignR.drawable.ic_doubao
+                    "glm" -> DesignR.drawable.ic_glm
+                    "kimi" -> DesignR.drawable.ic_kimi
+                    "mimo" -> DesignR.drawable.ic_mimo
+                    "qwen" -> DesignR.drawable.ic_qwen
+                    "claude" -> DesignR.drawable.ic_claude
+                    "openai" -> DesignR.drawable.ic_openai
+                    "gemini" -> DesignR.drawable.ic_gemini
                     else -> null
                 }
                 
                 if (painterId != null) {
+                    val iconSize = when (config.platform) {
+                        "gemini" -> 28.dp
+                        "qwen" -> 27.dp
+                        else -> 24.dp
+                    }
                     Icon(
                         painter = painterResource(id = painterId),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = platformColor
+                        modifier = Modifier.size(iconSize),
+                        tint = Color.Unspecified
                     )
                 } else {
-                    val initialChar = (config.platform.firstOrNull() ?: config.name.firstOrNull() ?: '?')
-                        .toString()
-                        .uppercase()
-                    Text(
-                        text = initialChar,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = platformColor
+                    Icon(
+                        imageVector = Icons.Rounded.Cable,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = platformColor
                     )
                 }
             }
