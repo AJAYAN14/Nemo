@@ -1014,26 +1014,261 @@ private fun SpecularCtaButton(
     }
 }
 
+private val ThinkingStepsLibrary = listOf(
+    "分析阅读偏好：明确选定主题与目标难度级别",
+    "检索主题语境：搜寻地道自然的日式生活场景",
+    "挑选核心词汇：筛选适合当前水平的重点假名与单词",
+    "构建文章脉络：规划段落层级与情节展开走向",
+    "组织日文段落：生成自然流畅、符合母语表达习惯的句子",
+    "优化语法表达：校验用词准确性与文段连贯度",
+    "对照中文翻译：生成忠实地道的中文译文与段落对照",
+    "设计阅读测验：围绕短文核心细节生成理解问答题",
+    "整理重点词条：提炼生词列表、假名读音与释义",
+    "完成排版校验：梳理段落布局，准备开启阅读训练"
+)
+
+private data class ThinkingStepItem(
+    val uniqueId: Int,
+    val text: String,
+    val isCompleted: Boolean = false
+)
+
 /**
- * 2. 智能阅读训练加载页面：采用 code_artifact.html 100% 原生 WebGL2 全屏极光引擎
- * 纯粹流光天幕，放弃 Lottie 思考动物与文字动效，全面兼容深浅色切换，顶部液态玻璃实时透镜折射
+ * 假名乱码硬解码文本组件 (Hard-Decoded Text)
+ */
+@Composable
+private fun HardDecodedText(
+    fullText: String,
+    isCompleted: Boolean,
+    isDark: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val kanaPool = remember {
+        listOf(
+            'あ','い','う','え','お',
+            'か','き','く','け','こ',
+            'さ','し','す','せ','そ',
+            'た','ち','つ','て','と',
+            'な','に','ぬ','ね','の',
+            'は','ひ','ふ','へ','ほ',
+            'ま','み','む','め','も',
+            'や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'
+        )
+    }
+
+    var textState by remember(fullText) { mutableStateOf(fullText) }
+
+    LaunchedEffect(isCompleted, fullText) {
+        if (!isCompleted) {
+            val totalSteps = 6
+            val stepDelay = 45L
+            for (step in 0 until totalSteps) {
+                val progress = (step + 1).toFloat() / totalSteps
+                val resolvedCount = (fullText.length * progress).toInt().coerceIn(0, fullText.length)
+                val sb = StringBuilder()
+                for (i in fullText.indices) {
+                    if (i < resolvedCount) {
+                        sb.append(fullText[i])
+                    } else if (fullText[i] == '：' || fullText[i] == ' ' || fullText[i] == '、') {
+                        sb.append(fullText[i])
+                    } else {
+                        sb.append(kanaPool.random())
+                    }
+                }
+                textState = sb.toString()
+                delay(stepDelay)
+            }
+        } else {
+            textState = fullText
+        }
+    }
+
+    Text(
+        text = if (isCompleted) fullText else textState,
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = if (isCompleted) FontWeight.SemiBold else FontWeight.Normal,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.2.sp
+        ),
+        color = if (isCompleted) {
+            if (isDark) Color.White.copy(alpha = 0.95f) else Color(0xFF0F172A)
+        } else {
+            if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+        },
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
+    )
+}
+
+/**
+ * 2. 智能阅读训练加载页面：
+ * 采用 code_artifact.html 原生 WebGL2 全屏极光引擎 + 浮动 AI 动态思维链硬解码卡片
+ * 固定 4 条容量滑动窗口淘汰，绿色对勾图标，深浅色自适应
  */
 @Composable
 private fun LoadingScreen() {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
+    val visibleSteps = remember { mutableStateListOf<ThinkingStepItem>() }
+    var currentLibIndex by remember { mutableIntStateOf(0) }
+    var stepCounter by remember { mutableIntStateOf(0) }
+    val maxVisibleCount = 4 // 固定最多显示 4 条，第 5 条出现时第 1 条平滑消失
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val stepText = ThinkingStepsLibrary[currentLibIndex % ThinkingStepsLibrary.size]
+            currentLibIndex++
+            val newItemId = ++stepCounter
+            val newItem = ThinkingStepItem(uniqueId = newItemId, text = stepText, isCompleted = false)
+
+            if (visibleSteps.size >= maxVisibleCount) {
+                visibleSteps.removeAt(0)
+            }
+            visibleSteps.add(newItem)
+
+            // 执行假名跳动硬解码
+            delay(380)
+
+            // 解码完成，标记完成，切换为绿色圆底打勾
+            val idx = visibleSteps.indexOfFirst { it.uniqueId == newItemId }
+            if (idx != -1) {
+                visibleSteps[idx] = visibleSteps[idx].copy(isCompleted = true)
+            }
+
+            // 保持当前步骤展示并间隔 950ms，再进入下一步
+            delay(950)
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(containerBg)
     ) {
+        // 1. 底层：全屏 WebGL2 极光引擎
         AIAuroraBackground(
             isDark = isDark,
             containerBg = containerBg,
             modifier = Modifier.fillMaxSize()
         )
+
+        // 2. 顶层：悬浮 AI 动态思维链硬解码卡片（不遮挡顶栏按钮，避开 statusBarTop + 64dp）
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = statusBarTop + 64.dp, start = 18.dp, end = 18.dp)
+                .align(Alignment.TopCenter)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = if (isDark) Color(0xFF0F172A).copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
+                border = BorderStroke(
+                    1.dp,
+                    if (isDark) Color.White.copy(alpha = 0.14f) else Color(0x18000000)
+                ),
+                shadowElevation = 0.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
+                ) {
+                    // 头部：AI 思考标识与呼吸微光
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.AutoAwesome,
+                                contentDescription = null,
+                                tint = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "AI 正在构建智能阅读训练",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                ),
+                                color = if (isDark) Color.White else Color(0xFF0F172A)
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+                    HorizontalDivider(
+                        color = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
+                    )
+                    Spacer(Modifier.height(12.dp))
+
+                    // 步骤列表：最大容量 4 条，按固定顺序循环推进
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateContentSize(animationSpec = tween(250))
+                    ) {
+                        visibleSteps.forEach { step ->
+                            key(step.uniqueId) {
+                                Row(
+                                    verticalAlignment = Alignment.Top,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    // 左侧图标：进行中为微型环形转圈，已完成为绿色圆底白勾
+                                    if (step.isCompleted) {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(top = 2.dp)
+                                                .size(18.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFF10B981)), // 祖母绿实心圆
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Check,
+                                                contentDescription = "已完成",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                        }
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(top = 2.dp)
+                                                .size(18.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(14.dp),
+                                                strokeWidth = 2.dp,
+                                                color = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(Modifier.width(10.dp))
+
+                                    // 右侧文字：假名乱码硬解码 -> 锁定真文
+                                    HardDecodedText(
+                                        fullText = step.text,
+                                        isCompleted = step.isCompleted,
+                                        isDark = isDark,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
