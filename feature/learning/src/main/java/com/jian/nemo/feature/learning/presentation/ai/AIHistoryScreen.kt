@@ -16,20 +16,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExerciseHistory
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.animation.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIHistoryScreen(
     onNavigateBack: () -> Unit,
@@ -40,65 +44,87 @@ fun AIHistoryScreen(
     var showClearConfirm by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<AIExerciseHistory?>(null) }
 
-
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val textPrimary = colorScheme.onSurface
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                CommonHeader(
-                    title = "练习历史",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor,
-                    actions = {
-                        if (historyList.isNotEmpty()) {
-                            IconButton(onClick = { showClearConfirm = true }) {
-                                Icon(Icons.Rounded.Delete, contentDescription = "清空历史", tint = textPrimary)
-                            }
-                        }
-                    }
-                )
-            },
-            containerColor = backgroundColor
-        ) { padding ->
-            if (historyList.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Rounded.History,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.outline
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "暂无练习历史",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(historyList) { history ->
-                        HistoryItemCard(history, onClick = { selectedItem = history })
-                    }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动内容 / 空状态（被 backdrop 采样源录制）
+        if (historyList.isEmpty()) {
+            EmptyHistoryView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+                    .padding(top = statusBarTop + 60.dp, bottom = navBarBottom)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(historyList) { history ->
+                    HistoryItemCard(history, onClick = { selectedItem = history })
                 }
             }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "练习历史",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    if (historyList.isNotEmpty()) {
+                        FrostedLiquidGlassButton(
+                            onClick = { showClearConfirm = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = "清空历史",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                }
+            )
         }
 
         // 全景详情覆盖层 (Edge-to-Edge)
@@ -118,7 +144,6 @@ fun AIHistoryScreen(
                     onSpeak = { text, id -> viewModel.speakText(text, id) },
                     onDismiss = { selectedItem = null }
                 )
-
             }
         }
 
@@ -134,6 +159,61 @@ fun AIHistoryScreen(
                     viewModel.clearAllHistory()
                     showClearConfirm = false
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyHistoryView(
+    modifier: Modifier = Modifier
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+
+    Box(
+        modifier = modifier
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.size(100.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "暂无练习历史",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "在这里记录并回顾您的 AI 翻译与语法练习表现",
+                style = MaterialTheme.typography.bodyLarge,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center
             )
         }
     }

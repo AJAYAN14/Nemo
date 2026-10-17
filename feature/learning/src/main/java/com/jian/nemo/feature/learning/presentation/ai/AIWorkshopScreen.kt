@@ -47,11 +47,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
-import com.jian.nemo.core.ui.component.speaker.SpeakerButton
-import com.jian.nemo.core.designsystem.R as DesignR
-import com.airbnb.lottie.compose.*
+import kotlinx.coroutines.delay
+import com.jian.nemo.feature.learning.presentation.ai.components.AIAuroraBackground
 import androidx.compose.foundation.text.selection.SelectionContainer
 import com.jian.nemo.feature.learning.R
+import com.jian.nemo.core.designsystem.R as DesignR
+import com.jian.nemo.core.ui.component.speaker.SpeakerButton
+import com.jian.nemo.core.ui.component.speaker.SoundWaveAnimation
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.ui.viewinterop.AndroidView
 import android.widget.TextView
 import androidx.core.text.HtmlCompat
@@ -69,33 +72,6 @@ fun AIWorkshopScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
     var showHelp by remember { mutableStateOf(false) }
-
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.anim_ai_thinking))
-    val lottieProgress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever
-    )
-
-    val loadingTexts = remember {
-        listOf(
-            "AI 正在呼唤音符，为您织就例文...",
-            "字里行间皆是心意，例文雕琢中...",
-            "正在检索地道表达，马上就好...",
-            "思维火花闪烁，正在准备偶遇...",
-            "手写樱花笺，AI 正在加紧出题...",
-            "正在铺展纸笔，绘制闪光的例文..."
-        )
-    }
-    var loadingTextIndex by remember { mutableIntStateOf((0..loadingTexts.lastIndex).random()) }
-
-    LaunchedEffect(uiState.isLoading) {
-        if (uiState.isLoading) {
-            while (true) {
-                kotlinx.coroutines.delay(2500)
-                loadingTextIndex = (loadingTextIndex + 1) % loadingTexts.size
-            }
-        }
-    }
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -299,41 +275,163 @@ fun AIWorkshopScreen(
             }
         }
 
-        // 加载层 - 采用全屏磨砂质感（Flat）并使用唯美的 Lottie 加载动效
+        // 加载层 - 采用 code_artifact.html WebGL2 全屏极光引擎 + 浮动 AI 动态思维链硬解码卡片
         if (uiState.isLoading) {
+            val visibleSteps = remember { mutableStateListOf<WorkshopThinkingStepItem>() }
+            var currentLibIndex by remember { mutableIntStateOf(0) }
+            var stepCounter by remember { mutableIntStateOf(0) }
+            val maxVisibleCount = 4 // 固定最多显示 4 条，第 5 条出现时第 1 条平滑消失
+
+            LaunchedEffect(Unit) {
+                while (true) {
+                    val stepText = WorkshopThinkingStepsLibrary[currentLibIndex % WorkshopThinkingStepsLibrary.size]
+                    currentLibIndex++
+                    val newItemId = ++stepCounter
+                    val newItem = WorkshopThinkingStepItem(uniqueId = newItemId, text = stepText, isCompleted = false)
+
+                    if (visibleSteps.size >= maxVisibleCount) {
+                        visibleSteps.removeAt(0)
+                    }
+                    visibleSteps.add(newItem)
+
+                    // 执行假名跳动硬解码
+                    delay(380)
+
+                    // 解码完成，标记完成，切换为绿色圆底打勾
+                    val idx = visibleSteps.indexOfFirst { it.uniqueId == newItemId }
+                    if (idx != -1) {
+                        visibleSteps[idx] = visibleSteps[idx].copy(isCompleted = true)
+                    }
+
+                    // 保持当前步骤展示并间隔 950ms，再进入下一步
+                    delay(950)
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colorScheme.background)
-                    .clickable(enabled = false) {},
-                contentAlignment = Alignment.Center
+                    .clickable(enabled = false) {}
             ) {
+                // 1. 底层：全屏 WebGL2 极光引擎
+                AIAuroraBackground(
+                    isDark = isDark,
+                    containerBg = colorScheme.background,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // 2. 顶层：悬浮 AI 动态思维链硬解码卡片（避开 statusBarTop + 64dp）
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 24.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = statusBarTop + 64.dp, start = 18.dp, end = 18.dp)
+                        .align(Alignment.TopCenter)
                 ) {
-                    if (composition != null) {
-                        LottieAnimation(
-                            composition = composition,
-                            progress = { lottieProgress },
-                            modifier = Modifier.size(240.dp)
-                        )
-                    } else {
-                        Box(
-                            modifier = Modifier.size(240.dp),
-                            contentAlignment = Alignment.Center
+                    Surface(
+                        shape = RoundedCornerShape(22.dp),
+                        color = if (isDark) Color(0xFF0F172A).copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isDark) Color.White.copy(alpha = 0.14f) else Color(0x18000000)
+                        ),
+                        shadowElevation = 0.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp)
                         ) {
-                            NemoChasingDotsLoader(size = 48.dp)
+                            // 头部：AI 思考标识与呼吸微光
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Text(
+                                        text = "AI 正在生成例文与场景运用",
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.5.sp
+                                        ),
+                                        color = if (isDark) Color.White else Color(0xFF0F172A)
+                                    )
+                                }
+                            }
+
+                            Spacer(Modifier.height(14.dp))
+                            HorizontalDivider(
+                                color = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
+                            )
+                            Spacer(Modifier.height(12.dp))
+
+                            // 步骤列表：最大容量 4 条，按固定顺序循环推进
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateContentSize(animationSpec = tween(250))
+                            ) {
+                                visibleSteps.forEach { step ->
+                                    key(step.uniqueId) {
+                                        Row(
+                                            verticalAlignment = Alignment.Top,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            // 左侧图标：进行中为微型环形转圈，已完成为绿色圆底白勾
+                                            if (step.isCompleted) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(top = 2.dp)
+                                                        .size(18.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(0xFF10B981)), // 祖母绿实心圆
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Check,
+                                                        contentDescription = "已完成",
+                                                        tint = Color.White,
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
+                                                }
+                                            } else {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .padding(top = 2.dp)
+                                                        .size(18.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    CircularProgressIndicator(
+                                                        modifier = Modifier.size(14.dp),
+                                                        strokeWidth = 2.dp,
+                                                        color = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+                                                    )
+                                                }
+                                            }
+
+                                            Spacer(Modifier.width(10.dp))
+
+                                            // 右侧文字：假名乱码硬解码 -> 锁定真文
+                                            WorkshopHardDecodedText(
+                                                fullText = step.text,
+                                                isCompleted = step.isCompleted,
+                                                isDark = isDark,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = loadingTexts[loadingTextIndex],
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = colorScheme.primary,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
                 }
             }
         }
@@ -768,21 +866,36 @@ private fun ExerciseContent(
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     if (exercise.type == "JP_TO_CN") {
-                        SpeakerButton(
-                            isPlaying = uiState.playingAudioId == "question",
+                        val isPlaying = uiState.playingAudioId == "question"
+                        FrostedLiquidGlassButton(
                             onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
-                            backgroundColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                            size = 40.dp
-                        )
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            if (isPlaying) {
+                                SoundWaveAnimation(
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    size = 20.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = "朗读",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Box(
-                        modifier = Modifier
-                            .requiredSize(40.dp)
-                            .clip(CircleShape)
-                            .background(if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100)
-                            .clickable { onEvent(AIWorkshopEvent.GenerateNewExercise) },
-                        contentAlignment = Alignment.Center
+                    FrostedLiquidGlassButton(
+                        onClick = { onEvent(AIWorkshopEvent.GenerateNewExercise) },
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Refresh,
@@ -1038,13 +1151,28 @@ private fun FeedbackSection(
 
                             if (exerciseType == "CN_TO_JP") {
                                 Spacer(modifier = Modifier.width(8.dp))
-                                SpeakerButton(
-                                    isPlaying = playingAudioId == "standard",
+                                val isPlaying = playingAudioId == "standard"
+                                FrostedLiquidGlassButton(
                                     onClick = { onSpeak(answer, "standard") },
-                                    tint = NemoSecondary,
-                                    backgroundColor = NemoSecondary.copy(alpha = 0.05f),
-                                    size = 36.dp
-                                )
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(0.dp),
+                                    isInteractive = true,
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    if (isPlaying) {
+                                        SoundWaveAnimation(
+                                            tint = NemoSecondary,
+                                            size = 18.dp
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = "朗读",
+                                            tint = NemoSecondary,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -1075,18 +1203,16 @@ private fun FeedbackSection(
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Button(
+        ColoredLiquidGlassButton(
             onClick = onNext,
+            tint = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(18.dp),
+            isInteractive = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp),
-            shape = RoundedCornerShape(18.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            elevation = null
+                .height(60.dp)
         ) {
-            Text("下一题", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
+            Text("下一题", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }
@@ -1211,3 +1337,92 @@ private fun HelpItem(index: String, title: String, content: String) {
         }
     }
 }
+
+private val WorkshopThinkingStepsLibrary = listOf(
+    "解析练习要求：明确目标日语等级与句型考察重点",
+    "检索例句语境：匹配地道贴切的日式生活表达场景",
+    "构建句子骨架：确立谓语动词时态与助词搭配网络",
+    "梳理接续规则：校验形容词、副词与动词连用变形",
+    "生成候选译句：兼顾敬体与简体的自然语感表达",
+    "优化语法表达：消除中式日语痕迹，提升文段地道度",
+    "构建对照译文：生成精准贴合语境的中文参考翻译",
+    "拟定重点解析：提炼关键语法条目、用法与辨析要点",
+    "准备评分模型：建立多维度语法准确度与流利度基准",
+    "完成题目装配：格式化题目与交互结构，准备呈现"
+)
+
+private data class WorkshopThinkingStepItem(
+    val uniqueId: Int,
+    val text: String,
+    val isCompleted: Boolean = false
+)
+
+/**
+ * 例文工坊假名乱码硬解码文本组件 (Hard-Decoded Text)
+ */
+@Composable
+private fun WorkshopHardDecodedText(
+    fullText: String,
+    isCompleted: Boolean,
+    isDark: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val kanaPool = remember {
+        listOf(
+            'あ','い','う','え','お',
+            'か','き','く','け','こ',
+            'さ','し','す','せ','そ',
+            'た','ち','つ','て','と',
+            'な','に','ぬ','ね','の',
+            'は','ひ','ふ','へ','ほ',
+            'ま','み','む','め','も',
+            'や','ゆ','よ','ら','り','る','れ','ろ','わ','を','ん'
+        )
+    }
+
+    var textState by remember(fullText) { mutableStateOf(fullText) }
+
+    LaunchedEffect(isCompleted, fullText) {
+        if (!isCompleted) {
+            val totalSteps = 6
+            val stepDelay = 45L
+            for (step in 0 until totalSteps) {
+                val progress = (step + 1).toFloat() / totalSteps
+                val resolvedCount = (fullText.length * progress).toInt().coerceIn(0, fullText.length)
+                val sb = StringBuilder()
+                for (i in fullText.indices) {
+                    if (i < resolvedCount) {
+                        sb.append(fullText[i])
+                    } else if (fullText[i] == '：' || fullText[i] == ' ' || fullText[i] == '、') {
+                        sb.append(fullText[i])
+                    } else {
+                        sb.append(kanaPool.random())
+                    }
+                }
+                textState = sb.toString()
+                delay(stepDelay)
+            }
+        } else {
+            textState = fullText
+        }
+    }
+
+    Text(
+        text = if (isCompleted) fullText else textState,
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontWeight = if (isCompleted) FontWeight.SemiBold else FontWeight.Normal,
+            fontSize = 13.sp,
+            lineHeight = 18.sp,
+            letterSpacing = 0.2.sp
+        ),
+        color = if (isCompleted) {
+            if (isDark) Color.White.copy(alpha = 0.95f) else Color(0xFF0F172A)
+        } else {
+            if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+        },
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
+    )
+}
+
