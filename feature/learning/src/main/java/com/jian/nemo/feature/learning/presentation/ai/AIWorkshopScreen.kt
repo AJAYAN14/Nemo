@@ -7,6 +7,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -146,11 +148,49 @@ fun AIWorkshopScreen(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(navBarBottom + 32.dp))
+                Spacer(modifier = Modifier.height(navBarBottom + if (uiState.currentExercise == null) 100.dp else 32.dp))
             }
         }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        // 2. 底部悬浮“开始练习”全宽大按钮（未开始答题时显示，带渐变防遮挡遮罩）
+        if (uiState.isConfigured && uiState.currentExercise == null && !(uiState.workshopMode == WorkshopMode.GRAMMAR && !uiState.hasGrammarData)) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                backgroundColor.copy(alpha = 0.85f),
+                                backgroundColor
+                            )
+                        )
+                    )
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 16.dp, bottom = navBarBottom + 16.dp)
+            ) {
+                Button(
+                    onClick = { viewModel.onEvent(AIWorkshopEvent.GenerateNewExercise) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                ) {
+                    Text("开始练习", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Icon(
+                        Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // 3. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -356,7 +396,6 @@ private fun WorkshopContent(
                     GrammarDataEmptyView()
                 } else {
                     HeroStartView(
-                        onStart = { onEvent(AIWorkshopEvent.GenerateNewExercise) },
                         isGrammarMode = uiState.workshopMode == WorkshopMode.GRAMMAR
                     )
                 }
@@ -371,7 +410,7 @@ private fun WorkshopContent(
 }
 
 /**
- * 模式切换：紧凑型 Apple Style 胶囊控件（无卡片外壳）
+ * 模式切换：流体高光胶囊控件
  */
 @Composable
 private fun ModeSection(
@@ -381,65 +420,79 @@ private fun ModeSection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
+    val haptic = LocalHapticFeedback.current
     val modes = listOf(WorkshopMode.FREE, WorkshopMode.GRAMMAR)
     val modeLabels = listOf("自由模式", "语法专项")
-    val selectedIndex = modes.indexOf(currentMode)
+    val selectedIndex = modes.indexOf(currentMode).coerceAtLeast(0)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .background(secondarySurface, RoundedCornerShape(12.dp))
-            .padding(3.dp)
+            .height(44.dp)
+            .background(trackBg, RoundedCornerShape(14.dp))
+            .border(
+                width = 1.dp,
+                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else Color(0xFFE2E8F0).copy(alpha = 0.8f),
+                shape = RoundedCornerShape(14.dp)
+            )
+            .padding(4.dp)
     ) {
-        // Sliding Capsule - 使用 weight 布局实现，无需 BoxWithConstraints
         val animatedIndex by animateFloatAsState(
             targetValue = selectedIndex.toFloat(),
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessMedium
+                dampingRatio = 0.78f,
+                stiffness = 420f
             ),
             label = "modeCapsuleIndex"
         )
 
         Row(modifier = Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.01f)))
+            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.001f)))
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
-                    .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
+                    .background(
+                        color = colorScheme.primary,
+                        shape = RoundedCornerShape(11.dp)
+                    )
             )
-            Spacer(modifier = Modifier.weight((modes.size - 1 - animatedIndex).coerceAtLeast(0.01f)))
+            Spacer(modifier = Modifier.weight((modes.size - 1 - animatedIndex).coerceAtLeast(0.001f)))
         }
 
-        // Interactive Labels
-
-        // Interactive Labels
         Row(modifier = Modifier.fillMaxSize()) {
             modes.forEachIndexed { index, mode ->
                 val isSelected = mode == currentMode
+                val textColor by animateColorAsState(
+                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)),
+                    animationSpec = tween(180),
+                    label = "modeTextColor"
+                )
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(11.dp))
                         .clickable(
                             enabled = enabled,
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            onModeChange(mode)
+                            if (!isSelected) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onModeChange(mode)
+                            }
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = modeLabels[index],
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                        color = if (isSelected) colorScheme.primary else NemoNeutrals.Gray500
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = textColor
                     )
                 }
             }
@@ -463,7 +516,7 @@ private fun GrammarDataEmptyView() {
         Surface(
             modifier = Modifier.size(100.dp),
             color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-            shape = CircleShape
+            shape = RoundedCornerShape(32.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
@@ -500,62 +553,78 @@ private fun DifficultySection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val secondarySurface = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
+    val haptic = LocalHapticFeedback.current
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
-    val selectedIndex = levels.indexOf(currentLevel)
+    val selectedIndex = levels.indexOf(currentLevel).coerceAtLeast(0)
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(40.dp)
-            .background(secondarySurface, RoundedCornerShape(12.dp))
-            .padding(3.dp)
+            .height(44.dp)
+            .background(trackBg, RoundedCornerShape(14.dp))
+            .border(
+                width = 1.dp,
+                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else Color(0xFFE2E8F0).copy(alpha = 0.8f),
+                shape = RoundedCornerShape(14.dp)
+            )
+            .padding(4.dp)
     ) {
-        // Sliding Capsule - 使用 weight 布局实现
         val animatedIndex by animateFloatAsState(
             targetValue = selectedIndex.toFloat(),
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioLowBouncy,
-                stiffness = Spring.StiffnessMedium
+                dampingRatio = 0.78f,
+                stiffness = 420f
             ),
             label = "difficultyCapsuleIndex"
         )
 
         Row(modifier = Modifier.fillMaxSize()) {
-            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.01f)))
+            Spacer(modifier = Modifier.weight(animatedIndex.coerceAtLeast(0.001f)))
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(if (isDark) colorScheme.surfaceContainerHighest else Color.White, RoundedCornerShape(10.dp))
-                    .border(0.5.dp, if (isDark) colorScheme.outlineVariant.copy(0.2f) else NemoNeutrals.Gray200.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
+                    .background(
+                        color = colorScheme.primary,
+                        shape = RoundedCornerShape(11.dp)
+                    )
             )
-            Spacer(modifier = Modifier.weight((levels.size - 1 - animatedIndex).coerceAtLeast(0.01f)))
+            Spacer(modifier = Modifier.weight((levels.size - 1 - animatedIndex).coerceAtLeast(0.001f)))
         }
-        
-        // Interactive Labels
+
         Row(modifier = Modifier.fillMaxSize()) {
             levels.forEach { level ->
                 val isSelected = level == currentLevel
+                val textColor by animateColorAsState(
+                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)),
+                    animationSpec = tween(180),
+                    label = "difficultyTextColor"
+                )
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(10.dp))
+                        .clip(RoundedCornerShape(11.dp))
                         .clickable(
                             enabled = enabled,
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            onLevelChange(level)
+                            if (!isSelected) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onLevelChange(level)
+                            }
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = level,
                         style = MaterialTheme.typography.labelLarge,
-                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                        color = if (isSelected) colorScheme.primary else NemoNeutrals.Gray500
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = textColor
                     )
                 }
             }
@@ -565,14 +634,12 @@ private fun DifficultySection(
 
 @Composable
 private fun HeroStartView(
-    onStart: () -> Unit,
-    isGrammarMode: Boolean = false
+    isGrammarMode: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val textPrimary = colorScheme.onSurface
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
     val icon = when {
         isGrammarMode -> Icons.AutoMirrored.Rounded.MenuBook
@@ -587,68 +654,46 @@ private fun HeroStartView(
         else -> "AI 将根据您的日语等级\n为您实时生成专属的翻译例文"
     }
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = surfaceColor,
-        shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, borderColor),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp, bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier.padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Surface(
+            modifier = Modifier.size(100.dp),
+            color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
+            shape = RoundedCornerShape(32.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                color = colorScheme.primary.copy(alpha = 0.05f),
-                shape = CircleShape
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = colorScheme.primary
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                title,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold,
-                color = textPrimary
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                desc,
-                style = MaterialTheme.typography.bodyMedium,
-                color = NemoNeutrals.Gray500,
-                textAlign = TextAlign.Center,
-                lineHeight = 22.sp
-            )
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Button(
-                onClick = onStart,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
-                elevation = null
-            ) {
-                Text("开始练习", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Rounded.ArrowForward, contentDescription = null)
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = colorScheme.primary
+                )
             }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = textPrimary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            desc,
+            style = MaterialTheme.typography.bodyLarge,
+            color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
+            lineHeight = 22.sp
+        )
     }
 }
 
