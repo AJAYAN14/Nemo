@@ -40,6 +40,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.content.FileProvider
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.ui.modifier.softShadow
 import com.jian.nemo.core.ui.util.AvatarResult
 import com.jian.nemo.core.ui.util.PresetAvatars
 import java.io.File
@@ -319,7 +320,14 @@ private fun AvatarActionCard(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(72.dp), // 略微降低高度，更显干练
+        modifier = modifier
+            .softShadow(
+                color = containerColor.copy(alpha = 0.28f),
+                borderRadius = 16.dp,
+                blurRadius = 14.dp,
+                offsetY = 6.dp
+            )
+            .height(72.dp),
         shape = RoundedCornerShape(16.dp),
         color = containerColor,
         tonalElevation = 0.dp,

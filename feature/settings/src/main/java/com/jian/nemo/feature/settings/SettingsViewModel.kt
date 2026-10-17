@@ -62,12 +62,12 @@ class SettingsViewModel @Inject constructor(
             audioRepository.ttsEvents.collect { event ->
                 val id = when (event) {
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> event.id
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnDone,
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnDone -> event.id
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnError -> event.id
                     com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> null
                 }
 
-                if (id?.startsWith("preview-") == true) {
+                if (id?.startsWith("preview-") == true || event is com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing) {
                     when (event) {
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> {
                             // 开始播放时，状态已由 onEvent 提前设置
@@ -76,7 +76,13 @@ class SettingsViewModel @Inject constructor(
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
                         com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
                             // 结束或错误时清除预览状态
-                            _uiState.update { it.copy(previewingVoiceName = null) }
+                            _uiState.update {
+                                it.copy(
+                                    previewingVoiceName = null,
+                                    previewingChineseVoiceName = null,
+                                    previewAudioType = PreviewAudioType.NONE
+                                )
+                            }
                         }
                     }
                 }
@@ -257,6 +263,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.PreviewTts -> previewTts(event.text)
             is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.JAPAN)
             is SettingsEvent.PreviewChineseVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.CHINA)
+            is SettingsEvent.StopPreviewTts -> stopPreviewTts()
 
 
             is SettingsEvent.RequestExport -> requestExport()
@@ -644,7 +651,15 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun previewTts(text: String) {
-        val id = System.currentTimeMillis().toString()
+        audioRepository.stop()
+        val id = "preview-tts-jp-${System.currentTimeMillis()}"
+        _uiState.update {
+            it.copy(
+                previewAudioType = PreviewAudioType.JAPANESE,
+                previewingVoiceName = null,
+                previewingChineseVoiceName = null
+            )
+        }
         playTtsUseCase(text, "ja-JP", id)
     }
 
@@ -652,14 +667,38 @@ class SettingsViewModel @Inject constructor(
      * 预览指定语音（不保存设置）
      */
     private fun previewVoiceWithName(voiceName: String, text: String, language: java.util.Locale = java.util.Locale.JAPAN) {
-        // Use audio repository to temporarily set voice and play
+        audioRepository.stop()
         viewModelScope.launch {
             if (language == java.util.Locale.CHINA) {
-                _uiState.update { it.copy(previewingChineseVoiceName = voiceName) }
+                _uiState.update {
+                    it.copy(
+                        previewingChineseVoiceName = voiceName,
+                        previewAudioType = PreviewAudioType.CHINESE
+                    )
+                }
             } else {
-                _uiState.update { it.copy(previewingVoiceName = voiceName) }
+                _uiState.update {
+                    it.copy(
+                        previewingVoiceName = voiceName,
+                        previewAudioType = PreviewAudioType.JAPANESE
+                    )
+                }
             }
             audioRepository.previewVoice(voiceName, text, language)
+        }
+    }
+
+    /**
+     * 停止试听 TTS 播放
+     */
+    private fun stopPreviewTts() {
+        audioRepository.stop()
+        _uiState.update {
+            it.copy(
+                previewingVoiceName = null,
+                previewingChineseVoiceName = null,
+                previewAudioType = PreviewAudioType.NONE
+            )
         }
     }
 

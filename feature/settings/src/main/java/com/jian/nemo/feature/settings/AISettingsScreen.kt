@@ -10,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -181,6 +182,7 @@ fun AISettingsScreen(
                                     config = config,
                                     isActive = isActive,
                                     isDark = isDark,
+                                    isTesting = uiState.testingConfigId == config.id,
                                     onSelect = { viewModel.onEvent(AISettingsEvent.SelectActiveConfig(config.id)) },
                                     onEdit = { viewModel.onEvent(AISettingsEvent.OpenEditModal(config.id)) },
                                     onTest = { viewModel.onEvent(AISettingsEvent.TestConfig(config)) },
@@ -236,18 +238,17 @@ fun AISettingsScreen(
         }
 
         // 全新 AI 神经算力核心独立全屏装配视界
+        var lastEditingConfig by remember { mutableStateOf<AIConfig?>(null) }
+        if (uiState.editingConfig != null) {
+            lastEditingConfig = uiState.editingConfig
+        }
+
         AnimatedVisibility(
             visible = uiState.editingConfig != null,
-            enter = fadeIn(animationSpec = tween(280)) + slideInVertically(
-                initialOffsetY = { it / 6 },
-                animationSpec = spring(stiffness = 350f, dampingRatio = 0.85f)
-            ),
-            exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(
-                targetOffsetY = { it / 6 },
-                animationSpec = spring(stiffness = 350f, dampingRatio = 0.85f)
-            )
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 }),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it / 2 })
         ) {
-            val editingConfig = uiState.editingConfig
+            val editingConfig = lastEditingConfig
             if (editingConfig != null) {
                 AIModelStudioScreen(
                     config = editingConfig,
@@ -414,6 +415,7 @@ fun AIConfigCard(
     config: AIConfig,
     isActive: Boolean,
     isDark: Boolean,
+    isTesting: Boolean = false,
     onSelect: () -> Unit,
     onEdit: () -> Unit,
     onTest: () -> Unit,
@@ -572,7 +574,9 @@ fun AIConfigCard(
                 Text(
                     text = "$platformName  ·  ${config.model}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
                 )
             }
             
@@ -580,21 +584,32 @@ fun AIConfigCard(
             // 1. 测试连通性按钮：品牌色微光圆环底座
             Surface(
                 onClick = {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                    onTest()
+                    if (!isTesting) {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        onTest()
+                    }
                 },
+                enabled = !isTesting,
                 shape = CircleShape,
                 color = platformColor.copy(alpha = if (isDark) 0.18f else 0.12f),
                 border = BorderStroke(0.5.dp, platformColor.copy(alpha = 0.45f)),
                 modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.Speed,
-                        contentDescription = "测试连通性",
-                        tint = platformColor,
-                        modifier = Modifier.size(17.dp)
-                    )
+                    if (isTesting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = platformColor,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Speed,
+                            contentDescription = "测试连通性",
+                            tint = platformColor,
+                            modifier = Modifier.size(17.dp)
+                        )
+                    }
                 }
             }
 

@@ -26,6 +26,7 @@ data class AISettingsUiState(
     val difficulty: String = "N5",
     val isLoading: Boolean = true,
     val isTesting: Boolean = false,
+    val testingConfigId: String? = null,
     val testResult: AITestResult? = null
 )
 
@@ -280,7 +281,7 @@ class AISettingsViewModel @Inject constructor(
                         _uiState.update { it.copy(testResult = AITestResult(false, "API Key 为空，无法测试")) }
                         return@launch
                     }
-                    _uiState.update { it.copy(isTesting = true, testResult = null) }
+                    _uiState.update { it.copy(isTesting = true, testingConfigId = config.id, testResult = null) }
                     val result = aiClient.generateExercise(
                         platform = config.platform,
                         apiKey = config.apiKey,
@@ -291,6 +292,7 @@ class AISettingsViewModel @Inject constructor(
                     val testSuccess = result.isSuccess
                     _uiState.update { it.copy(
                         isTesting = false,
+                        testingConfigId = null,
                         testResult = if (testSuccess) {
                             AITestResult(true, "「${config.name}」API 连接正常 · 测试通过")
                         } else {

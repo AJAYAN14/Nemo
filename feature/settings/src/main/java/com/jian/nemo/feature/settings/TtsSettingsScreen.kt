@@ -30,6 +30,7 @@ import com.jian.nemo.feature.settings.components.SquircleSettingItem
 import com.jian.nemo.feature.settings.components.ChineseVoiceSelectionBottomSheet
 import com.jian.nemo.feature.settings.components.VoiceSelectionBottomSheet
 import com.jian.nemo.core.ui.component.liquid.LiquidSlider
+import com.jian.nemo.core.ui.component.liquid.LiquidGlassButton
 import java.util.Locale
 
 import androidx.compose.ui.graphics.Brush
@@ -167,25 +168,38 @@ fun TtsSettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        val isPlayingJp = uiState.previewAudioType == PreviewAudioType.JAPANESE
+                        val isPlayingCn = uiState.previewAudioType == PreviewAudioType.CHINESE
+
                         Box(modifier = Modifier.weight(1f)) {
                             // 试听按钮 (日语)
-                            FlatPrimaryButton(
+                            LiquidPreviewButton(
                                 text = "试听 (日语)",
-                                icon = Icons.Rounded.PlayArrow,
+                                playingText = "停止 (日语)",
+                                isPlaying = isPlayingJp,
                                 color = accentColor,
                                 onClick = {
-                                    viewModel.onEvent(SettingsEvent.PreviewTts("これは音声テストです。"))
+                                    if (isPlayingJp) {
+                                        viewModel.onEvent(SettingsEvent.StopPreviewTts)
+                                    } else {
+                                        viewModel.onEvent(SettingsEvent.PreviewTts("这是日语语音测试。".let { "これは音声テストです。" }))
+                                    }
                                 }
                             )
                         }
                         Box(modifier = Modifier.weight(1f)) {
                             // 试听按钮 (中文)
-                            FlatPrimaryButton(
+                            LiquidPreviewButton(
                                 text = "试听 (中文)",
-                                icon = Icons.Rounded.PlayArrow,
+                                playingText = "停止 (中文)",
+                                isPlaying = isPlayingCn,
                                 color = IosColors.Orange,
                                 onClick = {
-                                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(uiState.ttsChineseVoiceName ?: "", "这是中文语音测试。"))
+                                    if (isPlayingCn) {
+                                        viewModel.onEvent(SettingsEvent.StopPreviewTts)
+                                    } else {
+                                        viewModel.onEvent(SettingsEvent.PreviewChineseVoice(uiState.ttsChineseVoiceName ?: "", "这是中文语音测试。"))
+                                    }
                                 }
                             )
                         }
@@ -196,6 +210,7 @@ fun TtsSettingsScreen(
                         text = "重置为默认值",
                         color = NemoNeutrals.Gray500,
                         onClick = {
+                            viewModel.onEvent(SettingsEvent.StopPreviewTts)
                             viewModel.onEvent(SettingsEvent.SetTtsSpeechRate(1.0f))
                             viewModel.onEvent(SettingsEvent.SetTtsPitch(1.0f))
                         }
@@ -290,9 +305,6 @@ private fun FlatSliderSettingItem(
     isDark: Boolean,
     labels: List<String>
 ) {
-    val haptic = LocalHapticFeedback.current
-    var lastStepValue by remember { mutableFloatStateOf(value) }
-
     Column(modifier = Modifier.padding(16.dp)) {
         // Header Row: Icon + Title + Value
         Row(
@@ -339,7 +351,7 @@ private fun FlatSliderSettingItem(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 液态玻璃滑动条 (LiquidSlider) 具备阻尼拖拽与光影折射
+        // 液态玻璃滑动条 (LiquidSlider) 具备阻尼拖拽与光影折射（无震动干扰）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -347,20 +359,7 @@ private fun FlatSliderSettingItem(
         ) {
             LiquidSlider(
                 value = { value },
-                onValueChange = { newValue ->
-                    // 计算步进值间隔
-                    val stepSize = (valueRange.endInclusive - valueRange.start) / (steps + 1)
-                    val currentStep = ((newValue - valueRange.start) / stepSize).toInt()
-                    val lastStep = ((lastStepValue - valueRange.start) / stepSize).toInt()
-
-                    // 当跨越步进点时触发轻微震动
-                    if (currentStep != lastStep) {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        lastStepValue = newValue
-                    }
-
-                    onValueChange(newValue)
-                },
+                onValueChange = onValueChange,
                 valueRange = valueRange,
                 visibilityThreshold = 0.01f,
                 accentColor = accentColor
@@ -384,37 +383,61 @@ private fun FlatSliderSettingItem(
 }
 
 /**
- * Flat UI 主按钮
+ * 液态玻璃试听按钮 (方案 A：播放/停止状态切换)
  */
 @Composable
-private fun FlatPrimaryButton(
+private fun LiquidPreviewButton(
     text: String,
-    icon: ImageVector,
+    playingText: String,
+    isPlaying: Boolean,
     color: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(color)
-            .clickable(onClick = onClick)
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    // 播放中采用高亮发光对比态，未播放时为通透温润的液态玻璃彩色微透底色
+    val buttonSurfaceColor = if (isPlaying) {
+        color.copy(alpha = if (isDark) 0.9f else 0.85f)
+    } else {
+        color.copy(alpha = if (isDark) 0.25f else 0.16f)
+    }
+
+    val contentColor = if (isPlaying) {
+        Color.White
+    } else {
+        if (isDark) color.copy(alpha = 0.95f) else color
+    }
+
+    LiquidGlassButton(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        surfaceColor = buttonSurfaceColor,
+        shape = RoundedCornerShape(16.dp),
+        border = null,
+        hasLens = true,
+        isInteractive = true,
+        contentPadding = PaddingValues(vertical = 14.dp, horizontal = 8.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = Color.White
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Rounded.Stop else Icons.Rounded.PlayArrow,
+                contentDescription = if (isPlaying) "停止" else "试听",
+                tint = contentColor,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = if (isPlaying) playingText else text,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = contentColor,
+                maxLines = 1
+            )
+        }
     }
 }
 

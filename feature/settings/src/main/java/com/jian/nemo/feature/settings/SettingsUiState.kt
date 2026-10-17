@@ -3,6 +3,15 @@ import com.jian.nemo.core.data.manager.BackupInfo
 import com.jian.nemo.core.data.manager.ImportStrategy
 
 /**
+ * 试听音频通道类型
+ */
+enum class PreviewAudioType {
+    NONE,
+    JAPANESE,
+    CHINESE
+}
+
+/**
  * 设置界面UI状态
  */
 data class SettingsUiState(
@@ -59,6 +68,7 @@ data class SettingsUiState(
     val availableChineseVoices: List<com.jian.nemo.core.domain.model.TtsVoice> = emptyList(),
     val showChineseVoiceSelectionDialog: Boolean = false,
     val previewingChineseVoiceName: String? = null,
+    val previewAudioType: PreviewAudioType = PreviewAudioType.NONE,
 
     // 加载状态
     val isLoading: Boolean = false,
@@ -149,6 +159,7 @@ sealed interface SettingsEvent {
     data class PreviewTts(val text: String) : SettingsEvent
     data class PreviewVoice(val voiceName: String, val text: String) : SettingsEvent
     data class PreviewChineseVoice(val voiceName: String, val text: String) : SettingsEvent
+    data object StopPreviewTts : SettingsEvent
 
     // 弹窗控制
     data class ShowDailyGoalDialog(val show: Boolean) : SettingsEvent

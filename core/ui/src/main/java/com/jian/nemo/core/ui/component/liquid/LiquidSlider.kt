@@ -117,13 +117,13 @@ fun LiquidSlider(
             )
         }
 
-        LaunchedEffect(dampedDragAnimation) {
-            snapshotFlow { value() }
-                .collectLatest { v ->
-                    if (dampedDragAnimation.targetValue != v) {
-                        dampedDragAnimation.updateValue(v)
-                    }
-                }
+        val currentValue = value()
+        var isInteracting by remember { mutableStateOf(false) }
+
+        LaunchedEffect(currentValue, isInteracting) {
+            if (!isInteracting && kotlin.math.abs(dampedDragAnimation.targetValue - currentValue) > visibilityThreshold) {
+                dampedDragAnimation.animateToValue(currentValue)
+            }
         }
 
         // 外层全区域交互手势：负责捕获按下、拖动与点击，消费 pointer 事件以彻底锁定外层 verticalScroll
@@ -133,11 +133,13 @@ fun LiquidSlider(
                 .pointerInput(trackWidth, valueRange, isLtr) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
-                        val downX = down.position.x
-                        val currentThumbX = trackWidth * dampedDragAnimation.progress
-                        val isHitThumb = abs(downX - currentThumbX) <= thumbTouchRadiusPx
+                        isInteracting = true
+                        try {
+                            val downX = down.position.x
+                            val currentThumbX = trackWidth * dampedDragAnimation.progress
+                            val isHitThumb = abs(downX - currentThumbX) <= thumbTouchRadiusPx
 
-                        dampedDragAnimation.press()
+                            dampedDragAnimation.press()
 
                         var isDragging = false
                         val touchSlop = viewConfiguration.touchSlop
@@ -212,8 +214,11 @@ fun LiquidSlider(
                                 onValueChange(targetValue)
                             }
                         }
+                    } finally {
+                        isInteracting = false
                     }
                 }
+            }
         )
 
         // 底轨与进度条 (垂直居中于 40dp 容器)
