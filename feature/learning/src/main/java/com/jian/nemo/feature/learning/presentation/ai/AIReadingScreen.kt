@@ -1,9 +1,11 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
 import androidx.compose.animation.*
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.modifier.softShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -45,9 +48,12 @@ import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.designsystem.R as DesignR
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.AnnotatedString
@@ -58,6 +64,7 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.feature.learning.presentation.ai.components.AIWordTranslationSheet
 import com.jian.nemo.feature.learning.presentation.ai.components.CustomTextToolbar
+import com.jian.nemo.feature.learning.presentation.ai.components.AIAuroraBackground
 import java.text.BreakIterator
 import java.util.Locale
 
@@ -297,7 +304,7 @@ fun AIReadingScreen(
 }
 
 /**
- * 1. 级别与主题选择配置页
+ * 1. 级别与主题选择配置页 (现代流体 Bento × 物理弹簧胶囊架构)
  */
 @Composable
 private fun ConfigScreen(
@@ -309,29 +316,55 @@ private fun ConfigScreen(
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
-    val levels = listOf("N5", "N4", "N3", "N2", "N1")
+    val levels = remember { listOf("N5", "N4", "N3", "N2", "N1") }
 
-    // 精选的 6 个日式主题，带渐变底色和精美图标
-    val themes = listOf(
-        ThemeCardInfo("日常生活", "贴近日本社会与暖心细节的琐碎日常", Icons.Rounded.Park, BentoColors.IconBgBlue, BentoColors.AccentBlue),
-        ThemeCardInfo("传统文化", "茶道、和风建筑、传统祭典的深度魅力", Icons.Rounded.Landscape, BentoColors.IconBgOrange, BentoColors.AccentOrange),
-        ThemeCardInfo("民间故事", "桃太郎、竹取物语等日本世代相传的物语", Icons.Rounded.AutoAwesome, BentoColors.IconBgPurple, BentoColors.AccentPurple),
-        ThemeCardInfo("美食料理", "寿司、拉面与日式便当背后的温暖物语", Icons.Rounded.Restaurant, BentoColors.IconBgGreen, BentoColors.AccentGreen),
-        ThemeCardInfo("名胜风光", "富士山、京都赏樱与温泉名所游记", Icons.Rounded.Explore, BentoColors.IconBgPurple, BentoColors.AccentPurple),
-        ThemeCardInfo("商务工作", "日本职场礼仪与严谨的敬语交流氛围", Icons.Rounded.BusinessCenter, BentoColors.IconBgBlue, BentoColors.AccentBlue)
-    )
-
-    // 呼吸动画 - 精致微呼吸 (Semi-Flat 2.0 规范)
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.99f,
-        targetValue = 1.01f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = EaseInOutQuad),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseScale"
-    )
+    // 精选的 6 个核心阅读主题 (Apple 风格：极度克制、纯粹意象副标、大留白)
+    val themes = remember {
+        listOf(
+            ThemeCardInfo(
+                name = "日常生活",
+                subtitle = "温暖生活琐事",
+                icon = Icons.Rounded.Park,
+                accent = BentoColors.AccentBlue,
+                iconBg = BentoColors.IconBgBlue
+            ),
+            ThemeCardInfo(
+                name = "传统文化",
+                subtitle = "和风传统美学",
+                icon = Icons.Rounded.Landscape,
+                accent = BentoColors.AccentOrange,
+                iconBg = BentoColors.IconBgOrange
+            ),
+            ThemeCardInfo(
+                name = "民间故事",
+                subtitle = "经典奇幻物语",
+                icon = Icons.Rounded.AutoAwesome,
+                accent = BentoColors.AccentPurple,
+                iconBg = BentoColors.IconBgPurple
+            ),
+            ThemeCardInfo(
+                name = "美食料理",
+                subtitle = "地道烟火风味",
+                icon = Icons.Rounded.Restaurant,
+                accent = BentoColors.GrammarPrimary,
+                iconBg = BentoColors.IconBgGreen
+            ),
+            ThemeCardInfo(
+                name = "名胜风光",
+                subtitle = "四季列岛巡礼",
+                icon = Icons.Rounded.Explore,
+                accent = Color(0xFFEC4899),
+                iconBg = Color(0xFFFCE7F3)
+            ),
+            ThemeCardInfo(
+                name = "商务工作",
+                subtitle = "职场严谨敬语",
+                icon = Icons.Rounded.BusinessCenter,
+                accent = Color(0xFF6366F1),
+                iconBg = Color(0xFFEEF2FF)
+            )
+        )
+    }
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -345,127 +378,626 @@ private fun ConfigScreen(
     ) {
         // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
         Spacer(Modifier.height(statusBarTop + 60.dp + 12.dp))
-        // 卡片 1: 级别选择
+
+        // 卡片 1: 级别选择 (现代化流体物理滑块 + 动态能力注解)
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .softShadow(
+                    color = if (isDark) Color(0x26000000) else Color(0x0C000000),
+                    borderRadius = 26.dp,
+                    blurRadius = 18.dp,
+                    offsetY = 4.dp
+                ),
             color = surfaceColor,
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(26.dp),
             border = BorderStroke(1.dp, borderColor)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Rounded.School,
-                        contentDescription = null,
-                        tint = colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "选择 JLPT 级别",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
-                    )
-                }
-                Spacer(Modifier.height(16.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    levels.forEach { level ->
-                        val isSelected = uiState.difficulty == level
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(46.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                    onClick = { onEvent(AIReadingEvent.UpdateDifficulty(level)) }
-                                ),
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) colorScheme.primary else (if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase),
-                            contentColor = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub)
+                            shape = RoundedCornerShape(10.dp),
+                            color = BentoColors.Primary.copy(alpha = 0.12f),
+                            modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = level,
-                                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.ExtraBold)
+                                Icon(
+                                    imageVector = Icons.Rounded.School,
+                                    contentDescription = null,
+                                    tint = BentoColors.Primary,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
+                        Spacer(Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "选择 JLPT 级别",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+                            )
+                            Text(
+                                text = "难度自适应匹配 AI 生成语料",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextMuted
+                            )
+                        }
+                    }
+
+                    // 当前选中的微胶囊标头
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = BentoColors.Primary.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = uiState.difficulty,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                            color = BentoColors.Primary
+                        )
                     }
                 }
+
+                Spacer(Modifier.height(18.dp))
+
+                // 物理流体胶囊滑块 (portal_labs Discrete Tabs 动效)
+                FluidLevelSegmentedPicker(
+                    levels = levels,
+                    selectedLevel = uiState.difficulty,
+                    onSelectLevel = { onEvent(AIReadingEvent.UpdateDifficulty(it)) },
+                    isDark = isDark
+                )
+
+                Spacer(Modifier.height(14.dp))
+
+                // 动态能力梯度注解条 (AnimatedContent)
+                LevelCapabilityCard(
+                    selectedLevel = uiState.difficulty,
+                    isDark = isDark
+                )
             }
         }
 
-        // 卡片 2: 主题选择
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = surfaceColor,
-            shape = RoundedCornerShape(24.dp),
-            border = BorderStroke(1.dp, borderColor)
+        // 主题选择标题行 (去框悬浮流)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 2.dp)
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                        contentDescription = null,
-                        tint = colorScheme.primary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = BentoColors.Primary.copy(alpha = 0.12f),
+                    modifier = Modifier.size(34.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                            contentDescription = null,
+                            tint = BentoColors.Primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(Modifier.width(10.dp))
+                Column {
                     Text(
                         text = "选择阅读主题",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
                     )
+                    Text(
+                        text = "沉浸式日式和风物语",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextMuted
+                    )
                 }
-                Spacer(Modifier.height(16.dp))
+            }
 
-                // 2列网格卡片
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    for (i in themes.indices step 2) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            ThemeGridItem(themes[i], uiState.readingTheme == themes[i].name, Modifier.weight(1f)) {
-                                onEvent(AIReadingEvent.UpdateTheme(themes[i].name))
-                            }
-                            if (i + 1 < themes.size) {
-                                ThemeGridItem(themes[i + 1], uiState.readingTheme == themes[i + 1].name, Modifier.weight(1f)) {
-                                    onEvent(AIReadingEvent.UpdateTheme(themes[i + 1].name))
-                                }
-                            }
-                        }
+            // 计数与提示微胶囊
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = if (isDark) colorScheme.surfaceContainerHigh else Color.White.copy(alpha = 0.85f),
+                border = BorderStroke(1.dp, borderColor)
+            ) {
+                Text(
+                    text = "6 个精选领域",
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                    color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
+                )
+            }
+        }
+
+        // 2列流光 Bento 网格 (直接悬浮在底色上，由各卡片独立的 softShadow 形成立体浮空感)
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            for (i in themes.indices step 2) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    ThemeBentoItem(
+                        info = themes[i],
+                        isSelected = uiState.readingTheme == themes[i].name,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onEvent(AIReadingEvent.UpdateTheme(themes[i].name)) }
+                    )
+                    if (i + 1 < themes.size) {
+                        ThemeBentoItem(
+                            info = themes[i + 1],
+                            isSelected = uiState.readingTheme == themes[i + 1].name,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onEvent(AIReadingEvent.UpdateTheme(themes[i + 1].name)) }
+                        )
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // 智能生成主按钮 (彩色液态玻璃 + 呼吸缩放)
-        ColoredLiquidGlassButton(
+        // 底部高光主按钮 (Specular Action Button)
+        SpecularCtaButton(
             onClick = { onEvent(AIReadingEvent.GenerateArticle) },
-            tint = BentoColors.Primary,
-            shape = RoundedCornerShape(20.dp),
-            isInteractive = true,
-            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+            text = "开启智能阅读训练"
+        )
+
+        Spacer(Modifier.height(navBarBottom + 24.dp))
+    }
+}
+
+/**
+ * 物理流体胶囊指示器 (借鉴 portal_labs Discrete Tabs)
+ */
+@Composable
+private fun FluidLevelSegmentedPicker(
+    levels: List<String>,
+    selectedLevel: String,
+    onSelectLevel: (String) -> Unit,
+    isDark: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val haptic = LocalHapticFeedback.current
+    val trackBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else BentoColors.BgBase
+    val selectedIndex = remember(selectedLevel, levels) {
+        val idx = levels.indexOf(selectedLevel)
+        if (idx >= 0) idx else 0
+    }
+
+    BoxWithConstraints(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(trackBg, RoundedCornerShape(16.dp))
+            .border(
+                width = 1.dp,
+                color = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .padding(4.dp)
+    ) {
+        val segmentWidth = maxWidth / levels.size.coerceAtLeast(1)
+
+        // 物理弹簧滑动位移
+        val indicatorOffset by animateDpAsState(
+            targetValue = segmentWidth * selectedIndex,
+            animationSpec = spring(
+                dampingRatio = 0.78f,
+                stiffness = 420f
+            ),
+            label = "fluidCapsuleOffset"
+        )
+
+        // 滑动的活动指示胶囊 (带高斯弥散光晕)
+        Box(
+            modifier = Modifier
+                .offset(x = indicatorOffset)
+                .width(segmentWidth)
+                .fillMaxHeight()
+                .softShadow(
+                    color = BentoColors.Primary.copy(alpha = 0.40f),
+                    borderRadius = 13.dp,
+                    blurRadius = 10.dp,
+                    offsetY = 3.dp
+                )
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFFB923C), // 珊瑚亮橙
+                            BentoColors.Primary // 元气橘
+                        )
+                    ),
+                    shape = RoundedCornerShape(13.dp)
+                )
+        )
+
+        // 等级选项标签 Row
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            levels.forEachIndexed { index, level ->
+                val isSelected = index == selectedIndex
+                val textColor by animateColorAsState(
+                    targetValue = if (isSelected) Color.White else (if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else BentoColors.TextSub),
+                    animationSpec = tween(180),
+                    label = "levelTextColor"
+                )
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {
+                                if (!isSelected) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    onSelectLevel(level)
+                                }
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = level,
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = if (isSelected) FontWeight.Black else FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = textColor
+                    )
+                }
+            }
+        }
+    }
+}
+
+private data class LevelDetail(val tag: String, val scope: String)
+
+/**
+ * 动态能力梯度注解条
+ */
+@Composable
+private fun LevelCapabilityCard(
+    selectedLevel: String,
+    isDark: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val detail = remember(selectedLevel) {
+        when (selectedLevel) {
+            "N5" -> LevelDetail("入门基石", "基础生活日常会话与简明短文")
+            "N4" -> LevelDetail("初级进阶", "日常情境叙述与基础复合句表达")
+            "N3" -> LevelDetail("中级跨越", "文化生活随笔与较完整话题阅读")
+            "N2" -> LevelDetail("高级突破", "报刊社论、深度观点与复杂议论文")
+            "N1" -> LevelDetail("学术精通", "文学原著、社科政经与地道深度论述")
+            else -> LevelDetail("自适应", "AI 智能语料匹配与动态训练")
+        }
+    }
+
+    AnimatedContent(
+        targetState = detail,
+        transitionSpec = {
+            (fadeIn(animationSpec = tween(220, delayMillis = 40)) +
+             slideInVertically(animationSpec = tween(220)) { it / 3 })
+            .togetherWith(
+                fadeOut(animationSpec = tween(150)) +
+                slideOutVertically(animationSpec = tween(150)) { -it / 3 }
+            )
+        },
+        label = "levelDetailContent",
+        modifier = modifier.fillMaxWidth()
+    ) { item ->
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .graphicsLayer {
-                    scaleX = pulseScale
-                    scaleY = pulseScale
-                }
+                .softShadow(
+                    color = BentoColors.Primary.copy(alpha = if (isDark) 0.16f else 0.08f),
+                    borderRadius = 14.dp,
+                    blurRadius = 10.dp,
+                    offsetY = 2.dp
+                ),
+            shape = RoundedCornerShape(14.dp),
+            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f) else BentoColors.PrimaryLight.copy(alpha = 0.35f),
+            border = BorderStroke(
+                width = 1.dp,
+                color = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f) else BentoColors.Primary.copy(alpha = 0.15f)
+            )
         ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = BentoColors.Primary.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        text = item.tag,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = BentoColors.Primary
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = item.scope,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.2.sp
+                    ),
+                    color = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+private data class ThemeCardInfo(
+    val name: String,
+    val subtitle: String,
+    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val accent: Color,
+    val iconBg: Color
+)
+
+/**
+ * Apple 风格主题卡片组件 (遵循 Apple Design 极度克制、充裕留白与信息降噪)
+ */
+@Composable
+private fun ThemeBentoItem(
+    info: ThemeCardInfo,
+    isSelected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val haptic = LocalHapticFeedback.current
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+
+    // 交互态按压弹性动画 (Apple 经典按压微缩放)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = when {
+            isPressed -> 0.965f
+            isSelected -> 1.015f
+            else -> 1.0f
+        },
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "appleCardScale"
+    )
+
+    val animOffsetY by animateDpAsState(
+        targetValue = if (isSelected) (-2.5).dp else 0.dp,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "appleCardOffset"
+    )
+
+    // 精准而柔和的高斯弥散阴影参数
+    val shadowAlpha by animateFloatAsState(
+        targetValue = if (isSelected) (if (isDark) 0.32f else 0.22f) else (if (isDark) 0.12f else 0.04f),
+        animationSpec = tween(180),
+        label = "appleShadowAlpha"
+    )
+    val shadowBlur by animateDpAsState(
+        targetValue = if (isSelected) 18.dp else 8.dp,
+        animationSpec = tween(180),
+        label = "appleShadowBlur"
+    )
+
+    // 边框质感：极细且克制 (Hairline 细微边框，避免视觉粗重)
+    val borderStroke = if (isSelected) {
+        BorderStroke(1.5.dp, info.accent)
+    } else {
+        BorderStroke(
+            0.8.dp,
+            if (isDark) colorScheme.outlineVariant.copy(alpha = 0.18f) else Color(0x0D000000)
+        )
+    }
+
+    // 表面底色：极其纯净，给文字与图标最透气的基底
+    val surfaceColor = if (isDark) {
+        if (isSelected) colorScheme.surfaceContainerHigh else colorScheme.surfaceContainer
+    } else {
+        if (isSelected) Color.White else Color(0xFFFAFAFB)
+    }
+
+    Surface(
+        modifier = modifier
+            .offset(y = animOffsetY)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .run {
+                if (isSelected) {
+                    this.softShadow(
+                        color = info.accent.copy(alpha = shadowAlpha),
+                        borderRadius = 22.dp,
+                        blurRadius = shadowBlur,
+                        offsetY = 5.dp
+                    )
+                } else {
+                    this.softShadow(
+                        color = if (isDark) Color(0x20000000) else Color(0x08000000),
+                        borderRadius = 22.dp,
+                        blurRadius = shadowBlur,
+                        offsetY = 2.dp
+                    )
+                }
+            }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                }
+            ),
+        shape = RoundedCornerShape(22.dp),
+        border = borderStroke,
+        color = surfaceColor
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 18.dp)
+        ) {
+            // 顶部：极简纯净的超椭圆图标基座
+            Surface(
+                shape = RoundedCornerShape(13.dp),
+                color = if (isSelected) info.iconBg else (if (isDark) colorScheme.surfaceContainerHigh else info.iconBg.copy(alpha = 0.75f)),
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = info.icon,
+                        contentDescription = null,
+                        tint = if (isSelected) info.accent else (if (isDark) colorScheme.onSurface else info.accent.copy(alpha = 0.9f)),
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            // 主标题：大字重、纯净醒目、紧凑字距 (SF Pro 风格)
             Text(
-                text = "开启智能阅读训练",
+                text = info.name,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
+                    fontSize = 16.5.sp,
+                    letterSpacing = (-0.3).sp
+                ),
+                color = if (isSelected && !isDark) info.accent else (if (isDark) colorScheme.onSurface else BentoColors.TextMain)
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            // 副标题：极简克制的意象短语，低对比度退后，绝不喧宾夺主
+            Text(
+                text = info.subtitle,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Normal,
+                    letterSpacing = (-0.1).sp
+                ),
+                color = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else BentoColors.TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/**
+ * 底部高光流体主按钮 (react-bits SpecularButton)
+ */
+@Composable
+private fun SpecularCtaButton(
+    onClick: () -> Unit,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    val haptic = LocalHapticFeedback.current
+
+    // 扫光位移动画 (Specular Light Sweep)
+    val infiniteTransition = rememberInfiniteTransition(label = "specularTransition")
+    val sweepProgress by infiniteTransition.animateFloat(
+        initialValue = -1.2f,
+        targetValue = 2.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2800, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "sweepProgress"
+    )
+
+    // 右箭头微弹律动
+    val arrowOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = EaseInOutQuad),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "arrowOffset"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .softShadow(
+                color = BentoColors.Primary.copy(alpha = 0.38f),
+                borderRadius = 22.dp,
+                blurRadius = 18.dp,
+                offsetY = 6.dp
+            )
+            .clip(RoundedCornerShape(22.dp))
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFFFB923C),
+                        BentoColors.Primary,
+                        Color(0xFFEA580C)
+                    )
+                )
+            )
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onClick()
+                }
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        // 扫光层 (Specular Light Sweep)
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val width = size.width
+            val height = size.height
+            val currentX = width * sweepProgress
+            val brush = Brush.linearGradient(
+                colors = listOf(
+                    Color.Transparent,
+                    Color.White.copy(alpha = 0.22f),
+                    Color.Transparent
+                ),
+                start = Offset(currentX - 80f, 0f),
+                end = Offset(currentX + 80f, height)
+            )
+            drawRect(brush = brush)
+        }
+
+        // 按钮文字与动效箭头
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.2.sp
                 ),
                 color = Color.White
             )
@@ -473,235 +1005,38 @@ private fun ConfigScreen(
             Icon(
                 imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(x = arrowOffset.dp),
                 tint = Color.White
             )
-        }
-
-        Spacer(Modifier.height(navBarBottom + 24.dp))
-    }
-}
-
-private data class ThemeCardInfo(
-    val name: String,
-    val desc: String,
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val bg: Color,
-    val accent: Color
-)
-
-@Composable
-private fun ThemeGridItem(
-    info: ThemeCardInfo,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val colorScheme = MaterialTheme.colorScheme
-    val isDark = colorScheme.background.luminance() < 0.5f
-
-    // 扁平配色体系 (和风 Semi-Flat 2.0 规范)
-    val baseSurfaceColor = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.Surface
-    val cardBgColor = if (isSelected) {
-        if (isDark) colorScheme.primaryContainer.copy(alpha = 0.12f) else BentoColors.PrimaryLight.copy(alpha = 0.7f)
-    } else {
-        baseSurfaceColor
-    }
-
-    val borderCol = if (isSelected) {
-        BentoColors.Primary
-    } else {
-        if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
-    }
-
-    // 选中时的垂直物理弹性微平移与微缩放 (Spring Animation)
-    val animOffset by animateDpAsState(
-        targetValue = if (isSelected) (-3).dp else 0.dp,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
-        label = "offsetY"
-    )
-    val scale by animateFloatAsState(
-        targetValue = if (isSelected) 1.01f else 1.0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "scale"
-    )
-
-    // 克制的环境空气感软阴影 (选中的时候轻微悬浮，整体依然为 Flat 风格)
-    val shadowElevation by animateDpAsState(
-        targetValue = if (isSelected) 3.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200, easing = EaseInOutQuad),
-        label = "shadowElevation"
-    )
-
-    // 图标水印不透明度平滑过渡
-    val iconAlpha by animateFloatAsState(
-        targetValue = if (isSelected) 0.14f else 0.06f,
-        animationSpec = tween(durationMillis = 300, easing = EaseInOutQuad),
-        label = "iconAlpha"
-    )
-
-    Surface(
-        modifier = modifier
-            .aspectRatio(1.25f)
-            .offset(y = animOffset)
-            .graphicsLayer {
-                this.scaleX = scale
-                this.scaleY = scale
-            }
-            .softCardShadow(borderRadius = 18.dp, isDark = isDark)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            ),
-        shape = RoundedCornerShape(18.dp),
-        border = BorderStroke(if (isSelected) 1.5.dp else 1.dp, borderCol),
-        color = cardBgColor
-    ) {
-        // 使用绝对定位重构的 Box 容器，开启裁剪以完美支持水印溢出美感
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(18.dp))
-        ) {
-            // 1. 右上角超大水印图标 (绝对定位)
-            Icon(
-                imageVector = info.icon,
-                contentDescription = null,
-                tint = if (isSelected) BentoColors.Primary else info.accent,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(76.dp)
-                    .offset(x = 12.dp, y = (-12).dp) // 微微向右上溢出，体现截断艺术感
-                    .graphicsLayer {
-                        alpha = iconAlpha
-                    }
-            )
-
-            // 2. 右上角极小高精致勾选状态 (位于水印之上，但十分协调)
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = BentoColors.Primary,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp)
-                        .size(18.dp)
-                )
-            }
-
-            // 3. 左下角排版：大标题 + 优雅扁平小正文
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(14.dp)
-                    .fillMaxWidth(0.85f), // 留出一点右侧呼吸空间，防止大字贴边
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = info.name,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.ExtraBold, // 升级为 ExtraBold，强化大字对比
-                        fontSize = 18.sp,
-                        letterSpacing = (-0.3).sp
-                    ),
-                    color = if (isSelected && !isDark) BentoColors.Primary else (if (isDark) colorScheme.onSurface else BentoColors.TextMain)
-                )
-                Text(
-                    text = info.desc,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontSize = 10.5.sp,
-                        lineHeight = 14.sp
-                    ),
-                    color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
         }
     }
 }
 
 /**
- * 2. 个性化 Lottie 加载动画页
+ * 2. 智能阅读训练加载页面：采用 code_artifact.html 100% 原生 WebGL2 全屏极光引擎
+ * 纯粹流光天幕，放弃 Lottie 思考动物与文字动效，全面兼容深浅色切换，顶部液态玻璃实时透镜折射
  */
 @Composable
 private fun LoadingScreen() {
-    val loadingTexts = listOf(
-        "正在为您精选最契合主题的词汇...",
-        "正在为您构建地道优雅的日式句子...",
-        "正在筹备富有挑战性的小测验...",
-        "即将开启一段美好的日语阅读之旅...",
-        "AI 正在忠实还原地道表达，马上就好..."
-    )
-
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.anim_ai_thinking)
-    )
-    val lottieProgress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever
-    )
-
-    var currentTextIndex by remember { mutableStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(2500)
-            currentTextIndex = (currentTextIndex + 1) % loadingTexts.size
-        }
-    }
+    val colorScheme = MaterialTheme.colorScheme
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
 
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerBg)
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(32.dp)
-        ) {
-            if (composition != null) {
-                LottieAnimation(
-                    composition = composition,
-                    progress = { lottieProgress },
-                    modifier = Modifier.size(240.dp)
-                )
-            } else {
-                NemoChasingDotsLoader(size = 64.dp)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AnimatedContent(
-                targetState = loadingTexts[currentTextIndex],
-                transitionSpec = {
-                    slideInVertically { height -> height } + fadeIn() togetherWith
-                    slideOutVertically { height -> -height } + fadeOut()
-                },
-                label = "loadingText"
-            ) { text ->
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    ),
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+        AIAuroraBackground(
+            isDark = isDark,
+            containerBg = containerBg,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
+
 
 /**
  * 3. 日语小短文阅读理解与测验主交互页

@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -26,10 +28,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.AIReadingHistory
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AIReadingHistoryScreen(
     viewModel: AIReadingViewModel,
@@ -41,69 +46,95 @@ fun AIReadingHistoryScreen(
     val isDark = colorScheme.background.luminance() < 0.5f
 
     var showDeleteAllDialog by remember { mutableStateOf(false) }
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        text = "阅读历史", 
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack, 
-                            contentDescription = "返回"
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+    ) {
+        // 1. 底层滚动内容 / 空状态（被 backdrop 采样源录制）
+        if (uiState.readingHistory.isEmpty()) {
+            EmptyState(
+                onBack = onNavigateBack,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+                    .padding(top = statusBarTop + 60.dp, bottom = navBarBottom)
+            )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+            ) {
+                items(uiState.readingHistory) { history ->
+                    HistoryItemCard(
+                        history = history,
+                        isDark = isDark,
+                        onClick = {
+                            viewModel.onEvent(AIReadingEvent.LoadHistoryArticle(history))
+                            onHistorySelected()
+                        },
+                        onDelete = {
+                            viewModel.onEvent(AIReadingEvent.DeleteHistory(history.id))
+                        }
+                    )
+                }
+            }
+        }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            colorScheme.background.copy(alpha = 0.95f),
+                            colorScheme.background.copy(alpha = 0.75f),
+                            colorScheme.background.copy(alpha = 0.35f),
+                            Color.Transparent
                         )
-                    }
-                },
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = "阅读历史",
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
                 actions = {
                     if (uiState.readingHistory.isNotEmpty()) {
-                        IconButton(onClick = { showDeleteAllDialog = true }) {
+                        FrostedLiquidGlassButton(
+                            onClick = { showDeleteAllDialog = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.Rounded.Delete, 
-                                contentDescription = "清空所有"
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = "清空所有",
+                                tint = colorScheme.onSurface,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colorScheme.background
-                )
-            )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (uiState.readingHistory.isEmpty()) {
-                EmptyState(onNavigateBack)
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(uiState.readingHistory) { history ->
-                        HistoryItemCard(
-                            history = history,
-                            isDark = isDark,
-                            onClick = {
-                                viewModel.onEvent(AIReadingEvent.LoadHistoryArticle(history))
-                                onHistorySelected()
-                            },
-                            onDelete = {
-                                viewModel.onEvent(AIReadingEvent.DeleteHistory(history.id))
-                            }
-                        )
-                    }
                 }
-            }
+            )
         }
     }
 
@@ -262,31 +293,33 @@ private fun HistoryItemCard(
 }
 
 @Composable
-private fun EmptyState(onBack: () -> Unit) {
+private fun EmptyState(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        contentAlignment = Alignment.Center
+        modifier = modifier
+            .padding(horizontal = 24.dp)
     ) {
         Column(
+            modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Surface(
-                shape = CircleShape,
-                color = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
+                shape = RoundedCornerShape(32.dp),
+                color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
                 modifier = Modifier.size(100.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.History,
                         contentDescription = null,
-                        tint = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.4f) else NemoNeutrals.Gray400,
-                        modifier = Modifier.size(50.dp)
+                        modifier = Modifier.size(48.dp),
+                        tint = colorScheme.primary
                     )
                 }
             }
@@ -295,27 +328,45 @@ private fun EmptyState(onBack: () -> Unit) {
 
             Text(
                 text = "暂无阅读历史",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurface,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "在这里记录并恢复您的 AI 日语阅读及答题表现",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else BentoColors.TextSub,
+                style = MaterialTheme.typography.bodyLarge,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                modifier = Modifier.padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center
             )
+        }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = onBack,
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Text("开始阅读", fontWeight = FontWeight.Bold)
-            }
+        Button(
+            onClick = onBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp)
+                .height(54.dp)
+                .align(Alignment.BottomCenter),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary
+            ),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+        ) {
+            Text(
+                text = "开始阅读",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            )
         }
     }
 }
