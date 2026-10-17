@@ -5,18 +5,24 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Powered%20by-AI-blueviolet?style=flat-square&logo=openai" alt="AI Powered">
-  <img src="https://img.shields.io/badge/Language-Japanese-red?style=flat-square" alt="Language">
-  <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin">
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-latest-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose">
-  <img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?logo=supabase&logoColor=white" alt="Supabase">
+  <a href="https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.1-release.apk"><img src="https://img.shields.io/badge/Release-v1.1-FFA000?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
+  <img src="https://img.shields.io/badge/Powered%20by-AI-blueviolet?style=for-the-badge&logo=openai" alt="AI Powered">
+  <img src="https://img.shields.io/badge/Language-Japanese-red?style=for-the-badge" alt="Language">
+  <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Jetpack%20Compose-latest-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Compose">
 </p>
+
+> [!IMPORTANT]
+> 🚀 **最新版本发布：v1.1**  
+> 现已开放官方 Release 安装包下载！全新融入**「液态玻璃（Liquid Glass）」**与**「同源弥散光晕」**交互美学：  
+> 👉 **[📥 点击直接下载 Nemo v1.1 安装包 (nemo-v1.1-release.apk)](https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.1-release.apk)**（大小约 13.8MB，已签名正式版）  
+> 亦可在 [GitHub Releases 页面](https://github.com/AJAYAN14/Nemo/releases) 查看所有发布历史与更新日志。
 
 ---
 
 ## 📖 目录
 - [✨ 项目简介](#-项目简介)
-- [🖼️ 预览展示](#-预览展示)
+- [🖼️ 界面预览](#-界面预览)
 - [🚀 核心特性](#-核心特性)
 - [🛠️ 技术栈](#-技术栈)
 - [📂 模块结构](#-模块结构)
@@ -32,28 +38,36 @@
 **Nemo** 是一款专为日语学习者设计的灵动词汇应用。它不仅提供了优雅的交互体验，更结合了日语学习的特点，通过沉浸式的设计和云端同步功能，助你高效攻克日语词汇难关。
 
 > [!TIP]
-> **灵动日语，即刻同步** —— Nemo 致力于在简洁与功能之间找到完美平衡。
+> **灵动日语，即刻同步** —— Nemo 致力于在现代设计、前沿技术与纯粹学习之间找到完美平衡。
 
-## 🖼️ 预览展示
+---
+
+## 🖼️ 界面预览
 
 > [!TIP]
-> **多维视角，灵动交互** —— 通过以下截图快速了解 Nemo 的核心交互界面。
+> **液态玻璃，灵动触感** —— 以下为真机实测 1080P 截屏展示：
 
-| | | |
+| 🏠 学习主页 Bento 概览 | 📖 记忆卡片与四态评分 | 📚 词库检索与字根卡片 |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/1.png" width="160"> | <img src="docs/screenshots/3.png" width="160"> | <img src="docs/screenshots/4.png" width="160"> |
-| <img src="docs/screenshots/5.png" width="160"> | <img src="docs/screenshots/6.png" width="160"> | <img src="docs/screenshots/7.png" width="160"> |
+| <img src="docs/screenshots/01_dashboard.jpg" width="220"> | <img src="docs/screenshots/02_word_learning.jpg" width="220"> | <img src="docs/screenshots/03_word_library.jpg" width="220"> |
+| **今日计划与掌握度总览** | **大字排版与发音评分** | **多维过滤与等级检索** |
+
+| 💡 即时详尽解析反馈 | 🤖 AI 智能例文工坊 |
+| :---: | :---: |
+| <img src="docs/screenshots/04_quiz_feedback.jpg" width="220"> | <img src="docs/screenshots/05_ai_workshop.jpg" width="220"> |
+| **词性汉字与释义解析** | **双模翻译造句与测评** |
 
 ---
 
 ## 🚀 核心特性
 
-- 🇯🇵 **日语专属优化**：针对平假名、片假名、汉字词汇学习深度定制，支持全方位的假名检索。
-- 📚 **灵动词库系统**：卡片式管理，支持多维度分类、关键词搜索与快速预览。
-- 🧠 **AI 算法助学**：内置针对日语记忆曲线设计的复习算法，动态调整复习重点。
-- 📊 **可视化统计**：多维图表展示学习进度，清晰观测掌握程度。
+- 🫧 **全新「液态玻璃」视觉系统**：采用多层半透明磨砂材质、同源高斯环境弥散光晕（Ambient Glow）与物理弹簧微动模型，无生硬边框，通透轻盈。
+- 🇯🇵 **日语专属优化**：针对平假名、片假名、汉字词汇学习深度定制，支持全方位的假名检索与假名拼词练习。
+- 📚 **灵动词库系统**：卡片式管理，支持多维度分类、JLPT 等级筛选、关键词搜索与快速预览。
+- 🧠 **AI 算法助学**：内置针对日语记忆曲线设计的复习算法，动态调整复习重点，智能识别 Leech 难点卡片。
+- 🤖 **AI 例文工坊**：支持自由模式与语法专项双模式，智能例句解析与实时翻译评分。
+- 📊 **可视化统计**：Bento 栅格卡片与环形图表展示学习进度，清晰观测掌握程度。
 - ☁️ **云端数据中心**：基于 Supabase 构建，全平台登录即同步，数据安全无忧。
-- 🎨 **前沿视觉交互**：全面采用 Jetpack Compose 的 Material 3 设计语言，交互灵动，支持原生深色模式。
 
 ---
 

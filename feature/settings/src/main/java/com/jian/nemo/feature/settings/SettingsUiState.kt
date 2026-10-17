@@ -51,7 +51,7 @@ data class SettingsUiState(
 
 
     // 应用信息
-    val appVersion: String = "1.0.0",
+    val appVersion: String = "1.1",
 
 
     // TTS 设置 (日语)
