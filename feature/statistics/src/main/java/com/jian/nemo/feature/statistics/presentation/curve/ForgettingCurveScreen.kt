@@ -7,9 +7,11 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -106,6 +108,16 @@ fun ForgettingCurveScreen(
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
+                // ========== 记忆分层阶段选择器 (多维分层胶囊) ==========
+                if (uiState.curveData?.stages?.isNotEmpty() == true) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    CurveStageSelector(
+                        stages = uiState.curveData!!.stages,
+                        selectedStage = uiState.selectedStage,
+                        onStageSelected = { viewModel.setStage(it) }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // ========== 折线图区域 ==========
@@ -118,13 +130,15 @@ fun ForgettingCurveScreen(
 
                 // ========== 图例区域 ==========
                 CurveLegend(
+                    selectedStage = uiState.selectedStage,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // ========== 底部提示框 ==========
-                CurveTipCard(
+                // ========== 记忆警戒推演卡片 ==========
+                CurveAlertCard(
+                    alertInsight = uiState.curveData?.alertInsight,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
@@ -159,25 +173,132 @@ fun ForgettingCurveScreen(
     }
 }
 
+/**
+ * 记忆分层阶段切换胶囊条
+ */
+@Composable
+private fun CurveStageSelector(
+    stages: List<StageStat>,
+    selectedStage: CurveStage,
+    onStageSelected: (CurveStage) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scrollState = rememberScrollState()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val view = LocalView.current
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(scrollState)
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        stages.forEach { stat ->
+            val stage = stat.stage
+            val isSelected = stage == selectedStage
+            val isAvailable = stat.isAvailable || stage == CurveStage.COMPOSITE
+            val stageColor = stage.themeColor
+
+            val backgroundColor by animateColorAsState(
+                targetValue = when {
+                    isSelected -> stageColor.copy(alpha = if (isDark) 0.22f else 0.14f)
+                    !isAvailable -> if (isDark) Color.White.copy(alpha = 0.03f) else Color.Black.copy(alpha = 0.02f)
+                    else -> if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+                },
+                animationSpec = tween(durationMillis = 250),
+                label = "stageBg_${stage.name}"
+            )
+
+            val borderColor by animateColorAsState(
+                targetValue = when {
+                    isSelected -> stageColor.copy(alpha = 0.6f)
+                    else -> Color.Transparent
+                },
+                animationSpec = tween(durationMillis = 250),
+                label = "stageBorder_${stage.name}"
+            )
+
+            val textColor by animateColorAsState(
+                targetValue = when {
+                    isSelected -> stageColor
+                    !isAvailable -> if (isDark) NemoNeutrals.Gray600 else NemoNeutrals.Gray400
+                    else -> if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
+                },
+                animationSpec = tween(durationMillis = 250),
+                label = "stageText_${stage.name}"
+            )
+
+            Surface(
+                onClick = {
+                    if (isAvailable && stage != selectedStage) {
+                        onStageSelected(stage)
+                        view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                    }
+                },
+                shape = RoundedCornerShape(18.dp),
+                color = backgroundColor,
+                border = BorderStroke(1.dp, borderColor),
+                enabled = isAvailable,
+                modifier = Modifier.height(34.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(if (isAvailable) stageColor else stageColor.copy(alpha = 0.3f))
+                    )
+                    Text(
+                        text = stage.label,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 12.sp
+                        ),
+                        color = textColor
+                    )
+                    if (stage != CurveStage.COMPOSITE) {
+                        Text(
+                            text = "${stat.count}",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            ),
+                            color = textColor.copy(alpha = 0.75f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 /**
  * 图例组件
  *
- * 以彩色圆点 + 文字说明展示两条曲线的含义
+ * 动态根据当前选中的分层阶段颜色和名称展示图例
  */
 @Composable
-private fun CurveLegend(modifier: Modifier = Modifier) {
+private fun CurveLegend(
+    selectedStage: CurveStage,
+    modifier: Modifier = Modifier
+) {
+    val stageColor = selectedStage.themeColor
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         LegendItem(
-            color = ChartColors.FreshOrange,
-            text = "你的学习遗忘曲线"
+            color = stageColor,
+            text = "${selectedStage.label}遗忘曲线"
         )
         LegendItem(
             color = ChartColors.FreshGreen,
-            text = "艾宾浩斯遗忘曲线",
+            text = "艾宾浩斯遗忘曲线 (标准参考)",
             isDashed = true
         )
     }
@@ -233,12 +354,13 @@ private fun LegendItem(
 }
 
 /**
- * 底部提示框
- *
- * 浅灰色圆角背景 + 提示文本
+ * 记忆警戒推演卡片
  */
 @Composable
-private fun CurveTipCard(modifier: Modifier = Modifier) {
+private fun CurveAlertCard(
+    alertInsight: AlertInsight?,
+    modifier: Modifier = Modifier
+) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val tipBgColor = if (isDark) {
         NemoNeutrals.Gray800
@@ -251,13 +373,56 @@ private fun CurveTipCard(modifier: Modifier = Modifier) {
         shape = RoundedCornerShape(16.dp),
         color = tipBgColor
     ) {
-        Text(
-            text = "学习的时间越久，你的遗忘曲线统计将越精准。",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(16.dp),
-            lineHeight = 18.sp
-        )
+        if (alertInsight != null) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(alertInsight.color)
+                    )
+                    Text(
+                        text = alertInsight.title,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = alertInsight.color
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    // 跌破 90% 临界天数徽标
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = alertInsight.color.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = "90%临界: ${alertInsight.criticalDays}天",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = alertInsight.color,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+                Text(
+                    text = alertInsight.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp
+                )
+            }
+        } else {
+            Text(
+                text = "学习的时间越久，你的遗忘曲线统计将越精准。",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(16.dp),
+                lineHeight = 18.sp
+            )
+        }
     }
 }
 

@@ -3,32 +3,44 @@ package com.jian.nemo.feature.statistics.presentation.curve
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.algorithm.FsrsAlgorithm
-import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.service.SrsCalculator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 /**
  * 时间范围选项
  */
 enum class CurveTimeRange(val days: Int, val label: String) {
-    SHORT(7, "短期 (7天)"),
-    MEDIUM(30, "中期 (30天)"),
-    LONG(90, "中长期 (90天)"),
-    EXTENDED(365, "长期 (365天)")
+    SHORT(7, "7天"),
+    MEDIUM(30, "30天"),
+    LONG(90, "90天"),
+    EXTENDED(365, "365天")
 }
+
+/**
+ * 遗忘曲线界面 UI 状态
+ */
+data class ForgettingCurveUiState(
+    val curveData: ForgettingCurveData? = null,
+    val isLoading: Boolean = false,
+    val selectedRange: CurveTimeRange = CurveTimeRange.MEDIUM,
+    val selectedStage: CurveStage = CurveStage.COMPOSITE
+)
 
 /**
  * 遗忘曲线界面 ViewModel
  *
- * 两条曲线都使用 SrsCalculator.forgettingCurve()（含个性化参数微调）：
- * - 标准曲线：S = FSRS 默认初始 stability（Good 评分 w[2] ≈ 2.3 天）— 代表未经优化的基准
- * - 用户曲线：S = 用户所有已学项目的平均 stability — 代表经过复习强化后的实际记忆保持
- *
- * 支持动态切换横坐标时间范围（7/30/90/365天）
+ * 支持：
+ * 1. 动态切换横坐标时间跨度（7/30/90/365天）
+ * 2. 四级 FSRS 互斥记忆分层切换（全库综合 / 初识新词 / 发展巩固 / 深度稳固 / 永久长效）
+ * 3. 90% 黄金记忆警戒线与临界天数智能推演
  */
 @HiltViewModel
 class ForgettingCurveViewModel @Inject constructor(
@@ -40,8 +52,8 @@ class ForgettingCurveViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ForgettingCurveUiState())
     val uiState: StateFlow<ForgettingCurveUiState> = _uiState.asStateFlow()
 
-    /** 缓存用户平均 stability，切换范围时复用 */
-    private var cachedUserStability: Float? = null
+    private var cachedStageStats: List<StageStat> = emptyList()
+    private var cachedStageMedians: Map<CurveStage, Float?> = emptyMap()
     private var dataLoaded = false
 
     init {
@@ -49,14 +61,41 @@ class ForgettingCurveViewModel @Inject constructor(
     }
 
     /**
-     * 切换时间范围
+     * 切换横坐标时间范围
      */
     fun setTimeRange(range: CurveTimeRange) {
         _uiState.update { it.copy(selectedRange = range) }
         if (dataLoaded) {
-            val curveData = generateCurveData(cachedUserStability, range.days)
-            _uiState.update { it.copy(curveData = curveData) }
+            refreshCurveData()
         }
+    }
+
+    /**
+     * 切换记忆分层阶段
+     */
+    fun setStage(stage: CurveStage) {
+        val stat = cachedStageStats.find { it.stage == stage }
+        if (stat != null && !stat.isAvailable && stage != CurveStage.COMPOSITE) {
+            // 当前阶段暂无词汇样本，安全忽略
+            return
+        }
+        _uiState.update { it.copy(selectedStage = stage) }
+        if (dataLoaded) {
+            refreshCurveData()
+        }
+    }
+
+    private fun refreshCurveData() {
+        val currentRange = _uiState.value.selectedRange
+        val currentStage = _uiState.value.selectedStage
+        val stageStability = cachedStageMedians[currentStage]
+        val curveData = generateCurveData(
+            userStability = stageStability,
+            maxDays = currentRange.days,
+            activeStage = currentStage,
+            stages = cachedStageStats
+        )
+        _uiState.update { it.copy(curveData = curveData) }
     }
 
     private fun loadCurveData() {
@@ -67,36 +106,55 @@ class ForgettingCurveViewModel @Inject constructor(
                 wordRepository.getAllLearnedWords(),
                 grammarRepository.getAllLearnedGrammars()
             ) { words, grammars ->
-                val allStabilities = mutableListOf<Float>()
+                withContext(Dispatchers.Default) {
+                    val allStabilities = mutableListOf<Float>()
 
-                words.forEach { word ->
-                    if (word.stability > 0f) {
-                        allStabilities.add(word.stability)
+                    words.forEach { word ->
+                        if (word.stability > 0f) allStabilities.add(word.stability)
                     }
-                }
-                grammars.forEach { grammar ->
-                    if (grammar.stability > 0f) {
-                        allStabilities.add(grammar.stability)
+                    grammars.forEach { grammar ->
+                        if (grammar.stability > 0f) allStabilities.add(grammar.stability)
                     }
-                }
 
-                if (allStabilities.isNotEmpty()) {
-                    allStabilities.sort()
-                    val size = allStabilities.size
-                    if (size % 2 == 0) {
-                        (allStabilities[size / 2 - 1] + allStabilities[size / 2]) / 2f
-                    } else {
-                        allStabilities[size / 2]
-                    }
-                } else {
-                    null
+                    // 与 ActivityHeatmap 严格保持一致的四级分桶
+                    val youngEarly = allStabilities.filter { it < 3.0f }
+                    val youngDev = allStabilities.filter { it in 3.0f..<21.0f }
+                    val mature = allStabilities.filter { it in 21.0f..<90.0f }
+                    val expert = allStabilities.filter { it >= 90.0f }
+
+                    val medians = mapOf(
+                        CurveStage.COMPOSITE to calculateMedian(allStabilities),
+                        CurveStage.YOUNG_EARLY to calculateMedian(youngEarly),
+                        CurveStage.YOUNG_DEVELOPING to calculateMedian(youngDev),
+                        CurveStage.MATURE to calculateMedian(mature),
+                        CurveStage.EXPERT to calculateMedian(expert)
+                    )
+
+                    val stats = listOf(
+                        StageStat(CurveStage.COMPOSITE, allStabilities.size, medians[CurveStage.COMPOSITE] ?: 0f, allStabilities.isNotEmpty()),
+                        StageStat(CurveStage.YOUNG_EARLY, youngEarly.size, medians[CurveStage.YOUNG_EARLY] ?: 0f, youngEarly.isNotEmpty()),
+                        StageStat(CurveStage.YOUNG_DEVELOPING, youngDev.size, medians[CurveStage.YOUNG_DEVELOPING] ?: 0f, youngDev.isNotEmpty()),
+                        StageStat(CurveStage.MATURE, mature.size, medians[CurveStage.MATURE] ?: 0f, mature.isNotEmpty()),
+                        StageStat(CurveStage.EXPERT, expert.size, medians[CurveStage.EXPERT] ?: 0f, expert.isNotEmpty())
+                    )
+
+                    medians to stats
                 }
-            }.collect { userStability ->
-                cachedUserStability = userStability
+            }.collect { (medians, stats) ->
+                cachedStageMedians = medians
+                cachedStageStats = stats
                 dataLoaded = true
 
                 val currentRange = _uiState.value.selectedRange
-                val curveData = generateCurveData(userStability, currentRange.days)
+                val currentStage = _uiState.value.selectedStage
+                val stageStability = medians[currentStage]
+
+                val curveData = generateCurveData(
+                    userStability = stageStability,
+                    maxDays = currentRange.days,
+                    activeStage = currentStage,
+                    stages = stats
+                )
 
                 _uiState.update {
                     it.copy(
@@ -108,14 +166,24 @@ class ForgettingCurveViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 生成遗忘曲线数据
-     *
-     * 使用 SrsCalculator.forgettingCurve()（含个性化参数）计算
-     */
-    private fun generateCurveData(userStability: Float?, maxDays: Int): ForgettingCurveData {
-        val standardStability = FsrsAlgorithm.DEFAULT_PARAMETERS[2] // ≈ 2.3065
+    private fun calculateMedian(list: List<Float>): Float? {
+        if (list.isEmpty()) return null
+        val sorted = list.sorted()
+        val size = sorted.size
+        return if (size % 2 == 0) {
+            (sorted[size / 2 - 1] + sorted[size / 2]) / 2f
+        } else {
+            sorted[size / 2]
+        }
+    }
 
+    private fun generateCurveData(
+        userStability: Float?,
+        maxDays: Int,
+        activeStage: CurveStage,
+        stages: List<StageStat>
+    ): ForgettingCurveData {
+        val standardStability = FsrsAlgorithm.DEFAULT_PARAMETERS[2] // ≈ 2.3065
         val standardCurve = generateCurvePoints(standardStability, maxDays)
 
         val userCurve = if (userStability != null && userStability > 0f) {
@@ -124,17 +192,60 @@ class ForgettingCurveViewModel @Inject constructor(
             emptyList()
         }
 
+        val alertInsight = generateAlertInsight(activeStage, userStability)
+
         return ForgettingCurveData(
             standardCurve = standardCurve,
-            userCurve = userCurve
+            userCurve = userCurve,
+            activeStage = activeStage,
+            stages = stages,
+            alertInsight = alertInsight
         )
     }
 
-    /**
-     * 根据给定 stability 和时间范围生成曲线数据点（每天一个点）
-     *
-     * 通过 SrsCalculator 代理调用，使用个性化后的 FSRS 参数
-     */
+    private fun generateAlertInsight(stage: CurveStage, stability: Float?): AlertInsight? {
+        if (stability == null || stability <= 0f) return null
+        val days = stability.roundToInt().coerceAtLeast(1)
+
+        return when (stage) {
+            CurveStage.YOUNG_EARLY -> AlertInsight(
+                level = AlertLevel.CRITICAL,
+                title = "极速遗忘预警 · 脆弱初识期",
+                message = "初识词群预计将在 ${days} 天后跌破 90% 记忆安全阈值。海马体印记脆弱，需重点及时复习。",
+                criticalDays = days,
+                color = CurveStage.YOUNG_EARLY.themeColor
+            )
+            CurveStage.YOUNG_DEVELOPING -> AlertInsight(
+                level = AlertLevel.WARNING,
+                title = "稳步爬坡期 · 黄金巩固窗口",
+                message = "发展期词汇约在 ${days} 天后进入遗忘加速区间。建议按时完成常规复习，避免知识回生。",
+                criticalDays = days,
+                color = CurveStage.YOUNG_DEVELOPING.themeColor
+            )
+            CurveStage.MATURE -> AlertInsight(
+                level = AlertLevel.SAFE,
+                title = "稳固长时记忆 · 坚实知识屏障",
+                message = "该群组词汇已进入长期突触储存，未来 ${days} 天内仍可稳定保持 90% 以上高回忆率。",
+                criticalDays = days,
+                color = CurveStage.MATURE.themeColor
+            )
+            CurveStage.EXPERT -> AlertInsight(
+                level = AlertLevel.SAFE,
+                title = "永久直觉印记 · 接近母语级",
+                message = "长效知识已高度固化，预计维持 90% 以上留存率长达 ${days} 天，无需频繁打扰。",
+                criticalDays = days,
+                color = CurveStage.EXPERT.themeColor
+            )
+            CurveStage.COMPOSITE -> AlertInsight(
+                level = if (days < 10) AlertLevel.WARNING else AlertLevel.SAFE,
+                title = "全库综合推演 · 整体记忆态",
+                message = "当前全库中位数记忆半衰窗口约为 ${days} 天，整体抗遗忘表现健康平稳。",
+                criticalDays = days,
+                color = CurveStage.COMPOSITE.themeColor
+            )
+        }
+    }
+
     private fun generateCurvePoints(stability: Float, maxDays: Int): List<CurvePoint> {
         return (0..maxDays).map { day ->
             CurvePoint(
@@ -145,12 +256,3 @@ class ForgettingCurveViewModel @Inject constructor(
         }
     }
 }
-
-/**
- * 遗忘曲线界面 UI 状态
- */
-data class ForgettingCurveUiState(
-    val curveData: ForgettingCurveData? = null,
-    val isLoading: Boolean = false,
-    val selectedRange: CurveTimeRange = CurveTimeRange.MEDIUM
-)
