@@ -16,13 +16,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.painterResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,7 +59,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
-import com.jian.nemo.feature.learning.presentation.components.common.DailyGoalMetContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
@@ -119,13 +128,20 @@ fun LearningScreen(
     }
 
     var isMenuExpanded by remember { mutableStateOf(false) }
+    var showSharePosterDialog by remember { mutableStateOf(false) }
+    val finishBackdrop = rememberLayerBackdrop()
 
-    // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡)
+    // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，菜单展开或展示分享海报时自动触发背景模糊遮罩)
     val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200),
+        targetValue = if (isMenuExpanded || showSharePosterDialog) 18.dp else 0.dp,
+        animationSpec = tween(durationMillis = 240),
         label = "learningBlur"
     )
+
+    val isFinished = uiState.status != LearningStatus.Loading &&
+            uiState.status != LearningStatus.Waiting &&
+            ((uiState.learningMode == LearningMode.Word && uiState.currentWord == null) ||
+             (uiState.learningMode == LearningMode.Grammar && uiState.currentGrammar == null))
 
     Scaffold(
         containerColor = backgroundColor
@@ -133,6 +149,23 @@ fun LearningScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+            // 当结算完成时，在最外层（不受 Scaffold padding 限制）绘制贯穿系统状态栏的顶部主题色渐变光晕
+            if (isFinished) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.22f else 0.14f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+            }
+
             // 1. 页面主体内容 (Z = 0，高斯模糊景深)
             Column(
                 modifier = Modifier
@@ -144,68 +177,119 @@ fun LearningScreen(
                     .padding(padding)
                     .padding(horizontal = 16.dp)
             ) {
-                // Header
-                LearnHeader(
-                    learningMode = uiState.learningMode,
-                    completedCount = uiState.completedToday,
-                    dailyGoal = uiState.dailyGoal,
-                    totalCount = if (uiState.learningMode == LearningMode.Word)
-                        uiState.wordList.size
-                    else
-                        uiState.grammarList.size,
-                    onClose = onNavigateBack,
-                    onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
-                    onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
-                    onShowRatingGuide = { showRatingGuide = true },
-                    isMenuExpanded = isMenuExpanded,
-                    onToggleMenu = { isMenuExpanded = it },
-                    isAutoAudioEnabled = uiState.isAutoAudioEnabled,
-                    onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
-                        { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
-                    } else null,
-                    isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
-                    onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
-                    showAnswerDelayDurationLabel = delayDurationLabel,
-                    onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
-                    onOpenShowAnswerDelayDialog = {
-                        isMenuExpanded = false
-                        showDelayDurationDialog = true
-                    },
-                    isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
-                    onToggleAutoRevealAnswer = {
-                        if (uiState.learningMode == LearningMode.Word) {
-                            viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
-                        } else {
-                            viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
+                if (isFinished) {
+                    // 结算状态下：极简轻量化顶部导航（接入真实液态凸透镜折射，去除残留进度条与 0 0 0 0）
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 左侧：返回按钮（液态凸透镜物理折射）
+                        FrostedLiquidGlassButton(
+                            onClick = onNavigateBack,
+                            backdrop = finishBackdrop,
+                            shape = CircleShape,
+                            hasLens = true,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                                contentDescription = "返回",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
+                            )
                         }
-                    },
-                    autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
-                    onCycleAutoRevealAnswerDuration = {
-                        if (uiState.learningMode == LearningMode.Word) {
-                            viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
-                        } else {
-                            viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
-                        }
-                    },
-                    onOpenAutoRevealAnswerDialog = {
-                        isMenuExpanded = false
-                        showAutoRevealDurationDialog = true
-                    },
-                    isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                    onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
-                    canUndo = uiState.canUndo,
-                    onUndo = { viewModel.onEvent(LearningEvent.Undo) },
-                    onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
-                    isDarkMode = uiState.isDarkMode,
-                    onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) },
-                    queueNewCount = uiState.queueNewCount,
-                    queueLearningCount = uiState.queueLearningCount,
-                    queueReviewCount = uiState.queueReviewCount,
-                    queueRelearnCount = uiState.queueRelearnCount
-                )
 
-                // Content
-                Box(modifier = Modifier.weight(1f)) {
+                        // 右侧：分享按钮（液态凸透镜物理折射，使用热力图同款 ic_share_ios）
+                        FrostedLiquidGlassButton(
+                            onClick = { showSharePosterDialog = true },
+                            backdrop = finishBackdrop,
+                            shape = CircleShape,
+                            hasLens = true,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share_ios),
+                                contentDescription = "分享",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                } else {
+                    // Header
+                    LearnHeader(
+                        learningMode = uiState.learningMode,
+                        completedCount = uiState.completedToday,
+                        dailyGoal = uiState.dailyGoal,
+                        totalCount = if (uiState.learningMode == LearningMode.Word)
+                            uiState.wordList.size
+                        else
+                            uiState.grammarList.size,
+                        onClose = onNavigateBack,
+                        onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
+                        onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
+                        onShowRatingGuide = { showRatingGuide = true },
+                        isMenuExpanded = isMenuExpanded,
+                        onToggleMenu = { isMenuExpanded = it },
+                        isAutoAudioEnabled = uiState.isAutoAudioEnabled,
+                        onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
+                            { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
+                        } else null,
+                        isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
+                        onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
+                        showAnswerDelayDurationLabel = delayDurationLabel,
+                        onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                        onOpenShowAnswerDelayDialog = {
+                            isMenuExpanded = false
+                            showDelayDurationDialog = true
+                        },
+                        isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
+                        onToggleAutoRevealAnswer = {
+                            if (uiState.learningMode == LearningMode.Word) {
+                                viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
+                            } else {
+                                viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
+                            }
+                        },
+                        autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
+                        onCycleAutoRevealAnswerDuration = {
+                            if (uiState.learningMode == LearningMode.Word) {
+                                viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
+                            } else {
+                                viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
+                            }
+                        },
+                        onOpenAutoRevealAnswerDialog = {
+                            isMenuExpanded = false
+                            showAutoRevealDurationDialog = true
+                        },
+                        isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                        onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
+                        canUndo = uiState.canUndo,
+                        onUndo = { viewModel.onEvent(LearningEvent.Undo) },
+                        onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
+                        isDarkMode = uiState.isDarkMode,
+                        onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) },
+                        queueNewCount = uiState.queueNewCount,
+                        queueLearningCount = uiState.queueLearningCount,
+                        queueReviewCount = uiState.queueReviewCount,
+                        queueRelearnCount = uiState.queueRelearnCount
+                    )
+                }
+
+                // Content（结算时作为 finishBackdrop 的光学采样源）
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .then(if (isFinished) Modifier.layerBackdrop(finishBackdrop) else Modifier)
+                ) {
                     when (uiState.status) {
                         LearningStatus.Loading -> {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -223,10 +307,13 @@ fun LearningScreen(
                                 uiState = uiState,
                                 onEvent = viewModel::onEvent,
                                 backgroundColor = backgroundColor, // 传递背景色
+                                showShareDialog = showSharePosterDialog,
+                                onDismissShareDialog = { showSharePosterDialog = false },
                                 onShowAnswerBlocked = { remainingSec ->
                                     showAnswerDelayHintSec = remainingSec
                                     showAnswerDelayHint = true
-                                }
+                                },
+                                onBackClick = onNavigateBack
                             )
                         }
                     }
@@ -365,21 +452,30 @@ fun LearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     backgroundColor: Color, // 显式指定 Color 类型
-    onShowAnswerBlocked: (Int) -> Unit
+    showShareDialog: Boolean = false,
+    onDismissShareDialog: () -> Unit = {},
+    onShowAnswerBlocked: (Int) -> Unit,
+    onBackClick: () -> Unit = {}
 ) {
     if (uiState.learningMode == LearningMode.Word) {
         WordLearningContent(
             uiState = uiState,
             onEvent = onEvent,
             backgroundColor = backgroundColor, // 新增
-            onShowAnswerBlocked = onShowAnswerBlocked
+            showShareDialog = showShareDialog,
+            onDismissShareDialog = onDismissShareDialog,
+            onShowAnswerBlocked = onShowAnswerBlocked,
+            onBackClick = onBackClick
         )
     } else {
         GrammarLearningContent(
             uiState = uiState,
             onEvent = onEvent,
             backgroundColor = backgroundColor, // 新增
-            onShowAnswerBlocked = onShowAnswerBlocked
+            showShareDialog = showShareDialog,
+            onDismissShareDialog = onDismissShareDialog,
+            onShowAnswerBlocked = onShowAnswerBlocked,
+            onBackClick = onBackClick
         )
     }
 }
@@ -389,7 +485,10 @@ fun WordLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     backgroundColor: Color, // 显式指定 Color 类型
-    onShowAnswerBlocked: (Int) -> Unit
+    showShareDialog: Boolean = false,
+    onDismissShareDialog: () -> Unit = {},
+    onShowAnswerBlocked: (Int) -> Unit,
+    onBackClick: () -> Unit = {}
 ) {
     // 跟打练习对话框状态
     var showTypingDialog by remember { mutableStateOf(false) }
@@ -546,15 +645,39 @@ fun WordLearningContent(
                 subtitle = "坚持就是胜利，明天继续加油",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,
                 sessionMaxCombo = uiState.sessionMaxCombo,
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                onConfirmBonus = { bonusCount ->
-                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Word))
-                }
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                },
+                onBackClick = onBackClick
+            )
+        } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+            LearningFinishedContent(
+                title = "本组微会话完成！",
+                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，可点击下方加餐继续出清积压",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                },
+                onBackClick = onBackClick
             )
         } else {
             LearningFinishedContent(
@@ -562,15 +685,19 @@ fun WordLearningContent(
                 subtitle = "目前没有需要学习或复习的单词",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,
                 sessionMaxCombo = uiState.sessionMaxCombo,
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                onConfirmBonus = { bonusCount ->
-                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Word))
-                }
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                },
+                onBackClick = onBackClick
             )
         }
     }
@@ -581,7 +708,10 @@ fun GrammarLearningContent(
     uiState: LearningUiState,
     onEvent: (LearningEvent) -> Unit,
     backgroundColor: Color, // 显式指定 Color 类型
-    onShowAnswerBlocked: (Int) -> Unit
+    showShareDialog: Boolean = false,
+    onDismissShareDialog: () -> Unit = {},
+    onShowAnswerBlocked: (Int) -> Unit,
+    onBackClick: () -> Unit = {}
 ) {
     val autoRevealAnim = remember { androidx.compose.animation.core.Animatable(1f) }
 
@@ -718,15 +848,39 @@ fun GrammarLearningContent(
                 subtitle = "坚持就是胜利，明天继续加油",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,
                 sessionMaxCombo = uiState.sessionMaxCombo,
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                onConfirmBonus = { bonusCount ->
-                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Grammar))
-                }
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                },
+                onBackClick = onBackClick
+            )
+        } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+            LearningFinishedContent(
+                title = "本组微会话完成！",
+                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，可点击下方加餐继续出清积压",
+                completedToday = uiState.completedToday,
+                dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
+                sessionDurationSeconds = uiState.sessionDurationSeconds,
+                sessionMaxCombo = uiState.sessionMaxCombo,
+                sessionNewCount = uiState.sessionNewCount,
+                sessionReviewCount = uiState.sessionReviewCount,
+                sessionRelearnCount = uiState.sessionRelearnCount,
+                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                },
+                onBackClick = onBackClick
             )
         } else {
             LearningFinishedContent(
@@ -734,15 +888,19 @@ fun GrammarLearningContent(
                 subtitle = "目前没有需要学习或复习的语法",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
+                dailyStreak = uiState.dailyStreak,
                 sessionDurationSeconds = uiState.sessionDurationSeconds,
                 sessionMaxCombo = uiState.sessionMaxCombo,
                 sessionNewCount = uiState.sessionNewCount,
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                onConfirmBonus = { bonusCount ->
-                    onEvent(LearningEvent.StartBonusLearning(bonusCount, LearningMode.Grammar))
-                }
+                showShareDialog = showShareDialog,
+                onDismissShareDialog = onDismissShareDialog,
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                },
+                onBackClick = onBackClick
             )
         }
     }

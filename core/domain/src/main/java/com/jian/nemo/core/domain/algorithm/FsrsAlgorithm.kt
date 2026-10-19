@@ -183,7 +183,8 @@ class FsrsAlgorithm(
      * 失败后的新稳定性
      *
      * S'_f(D, S, R) = w[11] * D^(-w[12]) * ((S+1)^w[13] - 1) * exp((1-R)*w[14])
-     * 下限: S / exp(w[17] * w[18])
+     * 官方上限截断: S / exp(w[17] * w[18])
+     * 确保遗忘后稳定性绝不高于该上限，产生真正的遗忘断崖惩罚
      */
     fun stabilityAfterFailure(
         stability: Float,
@@ -195,23 +196,24 @@ class FsrsAlgorithm(
             ((stability + 1f).pow(w[13]) - 1f) *
             exp(((1f - retrievability) * w[14]).toDouble()).toFloat()
 
-        // 最小值约束: 失败后的稳定性不能低于 S / exp(w[17]*w[18])
-        val minS = stability / exp((w[17] * w[18]).toDouble()).toFloat()
+        // 上限截断约束 (对齐 fsrs-rs: new_s.min(new_s_min)):
+        // 失败后的稳定性不能高于 S / exp(w[17]*w[18])
+        val maxS = stability / exp((w[17] * w[18]).toDouble()).toFloat()
 
-        return max(newS, minS).coerceIn(S_MIN, S_MAX)
+        return min(newS, maxS).coerceIn(S_MIN, S_MAX)
     }
 
     /**
-     * 短期稳定性 (用于 delta_t == 0 的情况，即同一天内的学习步骤)
+     * 短期稳定性 (用于 elapsedDays < 1 的情况，即同一天内的学习步骤)
      *
      * S'_st(S, G) = S * exp(w[17] * (G - 3 + w[18])) * S^(-w[19])
-     * clamp >= 1 if G >= 2
+     * 仅当评分 >= Good (G >= 3) 时才强制保底增长 sinc >= 1.0
      */
     fun stabilityShortTerm(stability: Float, rating: FsrsRating): Float {
         val sinc = exp((w[17] * (rating.value - 3f + w[18])).toDouble()).toFloat() *
             stability.pow(-w[19])
 
-        val clampedSinc = if (rating.value >= 2) max(sinc, 1f) else sinc
+        val clampedSinc = if (rating.value >= 3) max(sinc, 1f) else sinc
         return (stability * clampedSinc).coerceIn(S_MIN, S_MAX)
     }
 
@@ -240,7 +242,7 @@ class FsrsAlgorithm(
      *
      * @param currentState 当前记忆状态 (null 表示新卡)
      * @param rating 评分
-     * @param elapsedDays 距离上次复习的天数 (0 = 同一天/学习中)
+     * @param elapsedDays 距离上次复习的天数 (< 1 = 同一天/学习中)
      * @return 新的记忆状态
      */
     fun step(
@@ -260,8 +262,8 @@ class FsrsAlgorithm(
         val d = currentState.difficulty.coerceIn(D_MIN, D_MAX)
 
         val newS: Float
-        if (elapsedDays == 0f) {
-            // 同一天内: 使用短期稳定性
+        if (elapsedDays < 1f) {
+            // 同一天内 (经过天数 < 1): 使用短期稳定性
             newS = stabilityShortTerm(s, rating)
         } else {
             // 跨天: 计算 retrievability 然后更新

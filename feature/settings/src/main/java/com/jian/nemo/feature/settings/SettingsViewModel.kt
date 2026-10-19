@@ -156,7 +156,10 @@ class SettingsViewModel @Inject constructor(
                  settingsRepository.learnAheadLimitFlow,
                  settingsRepository.leechThresholdFlow,
                  settingsRepository.leechActionFlow,
-                 settingsRepository.targetRetentionFlow
+                 settingsRepository.targetRetentionFlow,
+                 settingsRepository.sessionBatchSizeFlow,
+                 settingsRepository.maxDailyReviewsFlow,
+                 settingsRepository.backlogNewItemStrategyFlow
             ) { args ->
                 AdvancedSettings(
                     learningSteps = args[0] as String,
@@ -164,7 +167,10 @@ class SettingsViewModel @Inject constructor(
                     learnAheadLimit = args[2] as Int,
                     leechThreshold = args[3] as Int,
                     leechAction = args[4] as String,
-                    targetRetention = args[5] as Float
+                    targetRetention = args[5] as Float,
+                    sessionBatchSize = args[6] as Int,
+                    maxDailyReviews = args[7] as Int,
+                    backlogNewItemStrategy = args[8] as String
                 )
             }
 
@@ -211,6 +217,9 @@ class SettingsViewModel @Inject constructor(
                         leechThreshold = advanced.leechThreshold,
                         leechAction = advanced.leechAction,
                         targetRetention = advanced.targetRetention,
+                        sessionBatchSize = advanced.sessionBatchSize,
+                        maxDailyReviews = advanced.maxDailyReviews,
+                        backlogNewItemStrategy = advanced.backlogNewItemStrategy,
                         ttsSpeechRate = tts.rate,
                         ttsPitch = tts.pitch,
                         ttsVoiceName = tts.voiceName,
@@ -251,7 +260,10 @@ class SettingsViewModel @Inject constructor(
                 event.learnAheadLimit,
                 event.leechThreshold,
                 event.leechAction,
-                event.targetRetention
+                event.targetRetention,
+                event.sessionBatchSize,
+                event.maxDailyReviews,
+                event.backlogNewItemStrategy
             )
 
             is SettingsEvent.SetTtsSpeechRate -> setTtsSpeechRate(event.rate)
@@ -608,7 +620,10 @@ class SettingsViewModel @Inject constructor(
         learnAheadLimit: Int,
         leechThreshold: Int,
         leechAction: String,
-        targetRetention: Float
+        targetRetention: Float,
+        sessionBatchSize: Int = 20,
+        maxDailyReviews: Int = 0,
+        backlogNewItemStrategy: String = "taste"
     ) {
         viewModelScope.launch {
             settingsRepository.saveAdvancedLearningSettings(
@@ -617,7 +632,10 @@ class SettingsViewModel @Inject constructor(
                 learnAheadLimit,
                 leechThreshold,
                 leechAction,
-                targetRetention
+                targetRetention,
+                sessionBatchSize,
+                maxDailyReviews,
+                backlogNewItemStrategy
             )
             // 可选：在保存成功后给出一个小提示
             // updateStatusMessage("高级学习设置已保存", 3000)
@@ -763,7 +781,10 @@ private data class AdvancedSettings(
     val learnAheadLimit: Int,
     val leechThreshold: Int,
     val leechAction: String,
-    val targetRetention: Float
+    val targetRetention: Float,
+    val sessionBatchSize: Int = 20,
+    val maxDailyReviews: Int = 0,
+    val backlogNewItemStrategy: String = "taste"
 )
 
 

@@ -1,18 +1,18 @@
 package com.jian.nemo.feature.learning.presentation.components.common
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -20,72 +20,68 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.NemoText
-import com.jian.nemo.core.designsystem.theme.NemoTextLight
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.dialog.BonusMode
+import com.jian.nemo.core.ui.component.dialog.BonusStudyDialog
+import com.jian.nemo.feature.learning.presentation.components.dialogs.DailyAchievementShareDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
+import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
-// 今日学习任务完成内容组件 (Premium Design)
+/**
+ * 学习微会话及每日目标达成结算页面组件。
+ *
+ * 呈现学习汇总数据、出清明细、连击与用时战报，并支持快速开启追加学习。
+ *
+ * @param title 结算主标题
+ * @param subtitle 结算副标题
+ * @param completedToday 今日累计完成数
+ * @param dailyGoal 每日目标数
+ * @param sessionDurationSeconds 学习总用时（秒）
+ * @param sessionMaxCombo 本次最高连击数
+ * @param sessionNewCount 新词学习数
+ * @param sessionReviewCount 复习单词数
+ * @param sessionRelearnCount 重学/反复攻克单词数
+ * @param tomorrowReviewForecastCount 明日自然到期复习预估数
+ * @param showShareDialog 是否展示打卡海报弹窗
+ * @param onDismissShareDialog 关闭打卡海报弹窗回调
+ * @param onConfirmBonus 追加学习确认回调
+ * @param onBackClick 返回事件回调
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LearningFinishedContent(
     title: String = "今日任务达成！",
@@ -98,422 +94,724 @@ fun LearningFinishedContent(
     sessionReviewCount: Int = 0,
     sessionRelearnCount: Int = 0,
     tomorrowReviewForecastCount: Int = 0,
-    onConfirmBonus: (Int) -> Unit = {},
+    dailyStreak: Int = 1,
+    showShareDialog: Boolean = false,
+    onDismissShareDialog: () -> Unit = {},
+    onConfirmBonus: (Int, BonusMode) -> Unit = { _, _ -> },
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val density = LocalDensity.current
-    
-    // 🆕 结算页专属多色循环渐变过渡动画（薄荷绿 -> 珊瑚橙 -> 海蓝 -> 紫罗兰）
-    val infiniteTransition = rememberInfiniteTransition(label = "morphColorTransition")
-    val morphColor by infiniteTransition.animateColor(
-        initialValue = Color(0xFF10B981),
-        targetValue = Color(0xFF10B981),
-        animationSpec = infiniteRepeatable(
-            animation = keyframes {
-                durationMillis = 6000
-                Color(0xFF10B981) at 0 with LinearEasing
-                Color(0xFFF97316) at 1500 with LinearEasing
-                Color(0xFF0EA5E9) at 3000 with LinearEasing
-                Color(0xFFA855F7) at 4500 with LinearEasing
-                Color(0xFF10B981) at 6000 with LinearEasing
-            },
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "morphColor"
-    )
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // 动画状态定义
-    val outerScale = remember { Animatable(0f) }
-    val innerScale = remember { Animatable(0f) }
-    val centerScale = remember { Animatable(0.5f) }
-    val centerAlpha = remember { Animatable(0f) }
-    
-    val titleAlpha = remember { Animatable(0f) }
-    val titleOffsetY = remember { Animatable(30f) }
-    
-    val subtitleAlpha = remember { Animatable(0f) }
-    val subtitleOffsetY = remember { Animatable(30f) }
+    // 动态跟随 App 主题色系统
+    val themePrimary = MaterialTheme.colorScheme.primary
+    val cardBg = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f) else MaterialTheme.colorScheme.surface
+    val cardBorder = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+    val shadowSpotColor = Color.Black.copy(alpha = if (isDark) 0.32f else 0.05f)
+    val shadowAmbientColor = Color.Black.copy(alpha = if (isDark) 0.18f else 0.02f)
 
-    // 🆕 4组扁平卡片各自独立的动效状态
-    val card1Alpha = remember { Animatable(0f) }
-    val card1OffsetY = remember { Animatable(30f) }
+    val textPrimary = MaterialTheme.colorScheme.onSurface
+    val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
 
-    val card2Alpha = remember { Animatable(0f) }
-    val card2OffsetY = remember { Animatable(30f) }
+    // 构成明细配色系统
+    val accentGreen = Color(0xFF10B981) // 旧词巩固（复习）
+    val accentBlue = Color(0xFF3B82F6)  // 新词拓展（新知）
+    val accentGold = Color(0xFFF59E0B)  // 反复攻克 / 最高连击金
+    val bonusOrange = Color(0xFFFF5500) // 原版加餐专属橙
 
-    val card3Alpha = remember { Animatable(0f) }
-    val card3OffsetY = remember { Animatable(30f) }
+    val sessionTotalCount = (sessionNewCount + sessionReviewCount + sessionRelearnCount).coerceAtLeast(1)
 
-    val card4Alpha = remember { Animatable(0f) }
-    val card4OffsetY = remember { Animatable(30f) }
-    
-    val quoteAlpha = remember { Animatable(0f) }
-    val quoteOffsetY = remember { Animatable(30f) }
-    
+    // 动效控制器
+    val countUpNumber = remember { Animatable(0f) }
+    val comboAnim = remember { Animatable(0f) }
+    val barProgressAnim = remember { Animatable(0f) }
+    var showBonusDialog by remember { mutableStateOf(false) }
     var showConfetti by remember { mutableStateOf(false) }
 
-    // 震动辅助函数 (分级强度)
-    @android.annotation.SuppressLint("MissingPermission")
-    fun triggerVibrate(duration: Long, amplitude: Int) {
+    // 原版 2.4 秒平滑呼吸的 45° 斜扫光流动着色器 (Shimmer Sweep)
+    val shimmerTransition = rememberInfiniteTransition(label = "ShimmerTransition")
+    val shimmerProgress by shimmerTransition.animateFloat(
+        initialValue = -1.5f,
+        targetValue = 2.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "ShimmerProgress"
+    )
+
+    // 触发结算仪式感动画与轻微触觉反馈
+    LaunchedEffect(sessionTotalCount, sessionMaxCombo) {
+        // 轻微触觉反馈
         try {
             val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             vibrator?.let {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val effect = VibrationEffect.createOneShot(duration, amplitude.coerceIn(1, 255))
-                    it.vibrate(effect)
+                    it.vibrate(VibrationEffect.createOneShot(35, VibrationEffect.DEFAULT_AMPLITUDE))
                 } else {
                     @Suppress("DEPRECATION")
-                    it.vibrate(duration)
+                    it.vibrate(35)
                 }
             }
-        } catch (e: Exception) {}
-    }
+        } catch (_: Exception) {}
 
-    LaunchedEffect(Unit) {
-        // T+100ms: 外环弹出 (Level 1)
         launch {
-            delay(100)
-            triggerVibrate(20, 50)
-            outerScale.animateTo(1f, tween(400))
+            countUpNumber.animateTo(
+                targetValue = sessionTotalCount.toFloat(),
+                animationSpec = tween(durationMillis = 750, easing = FastOutSlowInEasing)
+            )
         }
-
-        // T+200ms: 内环弹出 (Level 2)
+        launch {
+            delay(150)
+            comboAnim.animateTo(
+                targetValue = sessionMaxCombo.toFloat(),
+                animationSpec = spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessLow)
+            )
+        }
         launch {
             delay(200)
-            triggerVibrate(20, 100)
-            innerScale.animateTo(1f, tween(400))
+            barProgressAnim.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = 850, easing = FastOutSlowInEasing)
+            )
         }
-
-        // T+400ms: 中心图标回弹入场 (Level 3)
         launch {
-            delay(400)
-            triggerVibrate(40, 180)
-            launch { centerAlpha.animateTo(1f, tween(200)) }
-            centerScale.animateTo(1f, spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessLow))
-        }
-
-        // T+800ms: 文字滑入 (Level 4)
-        launch {
-            delay(800)
-            triggerVibrate(15, 255)
-            launch { titleAlpha.animateTo(1f, tween(600)) }
-            titleOffsetY.animateTo(0f, tween(600))
-        }
-
-        launch {
-            delay(900)
-            launch { subtitleAlpha.animateTo(1f, tween(600)) }
-            subtitleOffsetY.animateTo(0f, tween(600))
-        }
-
-        // 🆕 T+950ms: 卡片1滑入 (薄荷绿)
-        launch {
-            delay(950)
-            launch { card1Alpha.animateTo(1f, tween(500)) }
-            card1OffsetY.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
-        }
-
-        // 🆕 T+1050ms: 卡片2滑入 (珊瑚橙)
-        launch {
-            delay(1050)
-            launch { card2Alpha.animateTo(1f, tween(500)) }
-            card2OffsetY.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
-        }
-
-        // 🆕 T+1150ms: 卡片3滑入 (海蓝色)
-        launch {
-            delay(1150)
-            launch { card3Alpha.animateTo(1f, tween(500)) }
-            card3OffsetY.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
-        }
-
-        // 🆕 T+1250ms: 卡片4滑入 (紫罗兰)
-        launch {
-            delay(1250)
-            launch { card4Alpha.animateTo(1f, tween(500)) }
-            card4OffsetY.animateTo(0f, spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow))
-        }
-
-        // T+1400ms: 极简名言卡片滑入
-        launch {
-            delay(1400)
-            launch { quoteAlpha.animateTo(1f, tween(600)) }
-            quoteOffsetY.animateTo(0f, tween(600))
-        }
-
-        // T+1500ms: 启动彩花与终极震动
-        launch {
-            delay(1500)
-            triggerVibrate(50, 200)
+            delay(100)
             showConfetti = true
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-                .navigationBarsPadding(),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 1. Hero Icon with Animation (Morph Loading with Check)
-            Box(
-                modifier = Modifier
-                    .size(140.dp)
-                    .graphicsLayer {
-                        scaleX = outerScale.value
-                        scaleY = outerScale.value
-                        alpha = outerScale.value.coerceIn(0f, 1f)
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                // 播放平滑变色（多彩渐变）形变动画的加载器作为底座
-                NemoChasingDotsLoader(
-                    size = 120.dp,
-                    color = morphColor,
-                    modifier = Modifier.fillMaxSize()
-                )
-                
-                // 中间的打勾✓图标
-                Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = "完成",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .size(54.dp)
-                        .graphicsLayer {
-                            scaleX = centerScale.value
-                            scaleY = centerScale.value
-                            alpha = centerAlpha.value
-                        }
-                )
-            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // 2. Title & Subtitle with Animation
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier
-                    .graphicsLayer {
-                        alpha = titleAlpha.value
-                        translationY = with(density) { titleOffsetY.value.dp.toPx() }
-                    }
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = NemoTextLight,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier
-                    .graphicsLayer {
-                        alpha = subtitleAlpha.value
-                        translationY = with(density) { subtitleOffsetY.value.dp.toPx() }
-                    }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 🆕 3. 2x2 多彩色块扁平网格布局 (Flat Grid Card)
+            // ==========================================
+            // 1. 核心成就区 (Hero Area - 居中对齐，多巴胺反馈)
+            // ==========================================
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp)
             ) {
-                // 第一行卡片 (时长 & 连击)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                // 连续打卡已续期胶囊徽章（跟随主题色与微光）
+                Surface(
+                    shape = CircleShape,
+                    color = themePrimary.copy(alpha = if (isDark) 0.18f else 0.10f),
+                    border = BorderStroke(1.dp, themePrimary.copy(alpha = 0.30f))
                 ) {
-                    // 卡片 1：学习用时 (清新薄荷绿)
-                    FlatCard(
-                        backgroundColor = Color(0xFF10B981),
-                        alpha = card1Alpha.value,
-                        offsetY = with(density) { card1OffsetY.value.dp.toPx() },
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        CardHeaderIcon(icon = Icons.Rounded.AccessTime)
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(text = "🔥", fontSize = 13.sp)
                         Text(
-                            text = "学习用时", 
-                            fontSize = 12.sp, 
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
+                            text = "已连续打卡 ${dailyStreak} 天",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = themePrimary
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            val minutes = (sessionDurationSeconds / 60).coerceAtLeast(1)
-                            Text(
-                                text = "$minutes",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "分钟",
-                                fontSize = 13.sp,
-                                color = Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.padding(bottom = 3.dp),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-
-                    // 卡片 2：最高连击 (活力珊瑚橙)
-                    FlatCard(
-                        backgroundColor = Color(0xFFF97316),
-                        alpha = card2Alpha.value,
-                        offsetY = with(density) { card2OffsetY.value.dp.toPx() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        CardHeaderIcon(icon = Icons.Rounded.Star)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "最高连击", 
-                            fontSize = 12.sp, 
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                text = "$sessionMaxCombo",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "次",
-                                fontSize = 13.sp,
-                                color = Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.padding(bottom = 3.dp),
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
                     }
                 }
 
-                // 第二行卡片 (预测 & 详情)
+                // 居中大数字展示
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(top = 4.dp)
                 ) {
-                    // 卡片 3：明日复习 (明快海蓝色)
-                    FlatCard(
-                        backgroundColor = Color(0xFF0EA5E9),
-                        alpha = card3Alpha.value,
-                        offsetY = with(density) { card3OffsetY.value.dp.toPx() },
-                        modifier = Modifier.weight(1f)
+                    val displayedNumber = countUpNumber.value.roundToInt()
+                    Text(
+                        text = "$displayedNumber",
+                        fontSize = 58.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = (-2).sp,
+                        color = textPrimary,
+                        lineHeight = 58.sp
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.06f),
+                        modifier = Modifier
+                            .padding(start = 6.dp, bottom = 8.dp)
                     ) {
-                        CardHeaderIcon(icon = Icons.Rounded.CalendarToday)
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "明日复习", 
-                            fontSize = 12.sp, 
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
+                            text = "词",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textSecondary,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Row(verticalAlignment = Alignment.Bottom) {
+                    }
+                }
+
+                // 主标题
+                Text(
+                    text = title,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.3).sp,
+                    color = textPrimary
+                )
+
+                // 专注度或副标题动态激励反馈
+                val feedbackText = if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
+                    val avgSeconds = String.format(Locale.getDefault(), "%.1f", sessionDurationSeconds.toFloat() / sessionTotalCount)
+                    "⚡ 专注度拉满！平均每词仅耗时 ${avgSeconds} 秒"
+                } else {
+                    subtitle
+                }
+                Text(
+                    text = feedbackText,
+                    fontSize = 13.sp,
+                    color = textSecondary,
+                    lineHeight = 18.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // ==========================================
+            // 2. 今日词量明细卡片（去术语化 + 堆叠比例进度条）
+            // ==========================================
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = cardBg,
+                border = BorderStroke(1.dp, cardBorder),
+                shadowElevation = 0.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(22.dp),
+                        clip = false,
+                        spotColor = shadowSpotColor,
+                        ambientColor = shadowAmbientColor
+                    )
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    // 标头行
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "今日词量明细",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
+
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = accentGreen.copy(alpha = if (isDark) 0.18f else 0.12f)
+                        ) {
                             Text(
-                                text = "$tomorrowReviewForecastCount",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontSize = 26.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "个",
-                                fontSize = 13.sp,
-                                color = Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.padding(bottom = 3.dp),
-                                fontWeight = FontWeight.Medium
+                                text = "100% 掌握",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = accentGreen,
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                             )
                         }
                     }
 
-                    // 卡片 4：今日学习详情 (柔和紫罗兰)
-                    FlatCard(
-                        backgroundColor = Color(0xFFA855F7),
-                        alpha = card4Alpha.value,
-                        offsetY = with(density) { card4OffsetY.value.dp.toPx() },
-                        modifier = Modifier.weight(1f)
+                    // 双色/三色堆叠圆角进度条（交界处平滑柔和渐变过渡）
+                    val progressGradientBrush = remember(
+                        sessionReviewCount,
+                        sessionNewCount,
+                        sessionRelearnCount,
+                        accentGreen,
+                        accentBlue,
+                        accentGold
                     ) {
-                        CardHeaderIcon(icon = Icons.Rounded.List)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "今日学习详情", 
-                            fontSize = 12.sp, 
-                            color = Color.White.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
+                        val items = mutableListOf<Pair<Int, Color>>()
+                        if (sessionReviewCount > 0) items.add(sessionReviewCount to accentGreen)
+                        if (sessionNewCount > 0) items.add(sessionNewCount to accentBlue)
+                        if (sessionRelearnCount > 0) items.add(sessionRelearnCount to accentGold)
+
+                        if (items.isEmpty()) {
+                            Brush.horizontalGradient(listOf(accentGreen, accentGreen))
+                        } else if (items.size == 1) {
+                            Brush.horizontalGradient(listOf(items[0].second, items[0].second))
+                        } else {
+                            val total = items.sumOf { it.first }.toFloat()
+                            val stops = mutableListOf<Pair<Float, Color>>()
+                            var currentProgress = 0f
+                            val blendSpan = 0.035f // 3.5% 的平滑过渡带
+
+                            stops.add(0f to items[0].second)
+
+                            for (i in 0 until items.size - 1) {
+                                val segmentFraction = items[i].first / total
+                                val boundary = currentProgress + segmentFraction
+                                val colorA = items[i].second
+                                val colorB = items[i + 1].second
+
+                                val transitionStart = (boundary - blendSpan).coerceAtLeast(currentProgress)
+                                val transitionEnd = (boundary + blendSpan).coerceAtMost(1f)
+
+                                stops.add(transitionStart to colorA)
+                                stops.add(transitionEnd to colorB)
+
+                                currentProgress = boundary
+                            }
+
+                            stops.add(1f to items.last().second)
+                            Brush.horizontalGradient(colorStops = stops.toTypedArray())
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(10.dp)
+                            .clip(CircleShape)
+                            .background(if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f))
+                    ) {
+                        if (barProgressAnim.value > 0f) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(barProgressAnim.value)
+                                    .fillMaxHeight()
+                                    .clip(CircleShape)
+                                    .background(progressGradientBrush)
+                            )
+                        }
+                    }
+
+                    // 左右对照指标格（上下两行结构，完美规避三列并排挤压）
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // 旧词巩固卡片
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
+                            border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 9.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .clip(CircleShape)
+                                            .background(accentGreen)
+                                    )
+                                    Text(
+                                        text = "旧词巩固",
+                                        fontSize = 11.sp,
+                                        color = textSecondary,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Text(
+                                        text = "$sessionReviewCount 词",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = textPrimary,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                    val reviewPercent = ((sessionReviewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                    Surface(
+                                        shape = RoundedCornerShape(5.dp),
+                                        color = accentGreen.copy(alpha = if (isDark) 0.16f else 0.10f)
+                                    ) {
+                                        Text(
+                                            text = "$reviewPercent%",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = accentGreen,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // 新词拓展卡片
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
+                            border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 9.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(7.dp)
+                                            .clip(CircleShape)
+                                            .background(accentBlue)
+                                    )
+                                    Text(
+                                        text = "新词拓展",
+                                        fontSize = 11.sp,
+                                        color = textSecondary,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    Text(
+                                        text = "$sessionNewCount 词",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = textPrimary,
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                    val newPercent = ((sessionNewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                    Surface(
+                                        shape = RoundedCornerShape(5.dp),
+                                        color = accentBlue.copy(alpha = if (isDark) 0.16f else 0.10f)
+                                    ) {
+                                        Text(
+                                            text = "$newPercent%",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = accentBlue,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // 反复攻克（若有）
+                        if (sessionRelearnCount > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
+                                border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp, vertical = 9.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(7.dp)
+                                                .clip(CircleShape)
+                                                .background(accentGold)
+                                        )
+                                        Text(
+                                            text = "攻克",
+                                            fontSize = 11.sp,
+                                            color = textSecondary,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    ) {
+                                        Text(
+                                            text = "$sessionRelearnCount 词",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = textPrimary,
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                        val relearnPercent = ((sessionRelearnCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                        Surface(
+                                            shape = RoundedCornerShape(5.dp),
+                                            color = accentGold.copy(alpha = if (isDark) 0.16f else 0.10f)
+                                        ) {
+                                            Text(
+                                                text = "$relearnPercent%",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = accentGold,
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // ==========================================
+            // 3. 双栏高光指标卡片（最高连击 & 专注用时）
+            // ==========================================
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // 左子卡：最高连击
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = cardBg,
+                    border = BorderStroke(1.dp, cardBorder),
+                    shadowElevation = 0.dp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            clip = false,
+                            spotColor = shadowSpotColor,
+                            ambientColor = shadowAmbientColor
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DetailItem("新学", sessionNewCount)
-                            Box(modifier = Modifier.width(1.dp).height(16.dp).background(Color.White.copy(alpha = 0.3f)))
-                            DetailItem("复习", sessionReviewCount)
-                            Box(modifier = Modifier.width(1.dp).height(16.dp).background(Color.White.copy(alpha = 0.3f)))
-                            DetailItem("重学", sessionRelearnCount)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Star,
+                                    contentDescription = null,
+                                    tint = accentGold,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "最高连击",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = textSecondary
+                                )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = accentGold.copy(alpha = if (isDark) 0.18f else 0.12f)
+                            ) {
+                                Text(
+                                    text = "零失误",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = accentGold,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                )
+                            }
                         }
+                        val displayedCombo = comboAnim.value.roundToInt()
+                        Text(
+                            text = "$displayedCombo 次",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
+                    }
+                }
+
+                // 右子卡：专注用时
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = cardBg,
+                    border = BorderStroke(1.dp, cardBorder),
+                    shadowElevation = 0.dp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            clip = false,
+                            spotColor = shadowSpotColor,
+                            ambientColor = shadowAmbientColor
+                        )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AccessTime,
+                                    contentDescription = null,
+                                    tint = themePrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "专注用时",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = textSecondary
+                                )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = themePrimary.copy(alpha = if (isDark) 0.18f else 0.12f)
+                            ) {
+                                Text(
+                                    text = "极速",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = themePrimary,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                        val minutes = sessionDurationSeconds / 60
+                        val seconds = sessionDurationSeconds % 60
+                        val timeStr = if (minutes > 0) "${minutes}分${seconds}秒" else "${seconds}秒"
+                        Text(
+                            text = if (sessionDurationSeconds > 0) timeStr else "1 分钟",
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
+            // ==========================================
+            // 4. 明日复习预估卡片
+            // ==========================================
+            Surface(
+                shape = RoundedCornerShape(18.dp),
+                color = cardBg,
+                border = BorderStroke(1.dp, cardBorder),
+                shadowElevation = 0.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(18.dp),
+                        clip = false,
+                        spotColor = shadowSpotColor,
+                        ambientColor = shadowAmbientColor
+                    )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.CalendarToday,
+                            contentDescription = null,
+                            tint = textSecondary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "明日自然到期预估",
+                            fontSize = 13.sp,
+                            color = textSecondary
+                        )
+                    }
+                    Text(
+                        text = "${tomorrowReviewForecastCount.coerceAtLeast(0)} 词",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textPrimary
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            // 🚩 今日加餐配置按钮 (参照 portal_labs 源码接入 2.4s 45° Shimmer 流光扫过 + 遮挡修复 + 左右平衡排版)
-            var showBonusDialog by remember { mutableStateOf(false) }
-
-            // portal_labs 闪光流光 (Shimmer Sweep) 频率与轨迹控制 (2.4 秒平滑呼吸)
-            val shimmerTransition = rememberInfiniteTransition(label = "ShimmerTransition")
-            val shimmerProgress by shimmerTransition.animateFloat(
-                initialValue = -1.5f,
-                targetValue = 2.5f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 2400, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "ShimmerProgress"
-            )
-
+            // ==========================================
+            // 5. 今日加餐入口卡片（100% 保持原版效果 + 45° 斜扫光动效）
+            // ==========================================
             Surface(
                 onClick = { showBonusDialog = true },
                 shape = RoundedCornerShape(24.dp),
                 color = if (isDark) Color(0xFF2B1F17) else Color(0xFFFFF7ED),
                 border = BorderStroke(
                     width = 1.dp,
-                    color = Color(0xFFFF5500).copy(alpha = if (isDark) 0.35f else 0.20f)
+                    color = bonusOrange.copy(alpha = if (isDark) 0.35f else 0.20f)
                 ),
                 shadowElevation = 0.dp,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        clip = false,
+                        spotColor = shadowSpotColor,
+                        ambientColor = shadowAmbientColor
+                    )
                     .clip(RoundedCornerShape(24.dp))
                     .drawWithContent {
                         drawContent()
-                        // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                        // 原版 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
                         val width = size.width
                         val height = size.height
                         val xOffset = shimmerProgress * width
@@ -542,161 +840,145 @@ fun LearningFinishedContent(
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        // 纯净自然亮橙 Google 旗帜 Icon (无粗糙底块)
                         Icon(
                             imageVector = Icons.Rounded.Flag,
                             contentDescription = null,
-                            tint = Color(0xFFFF5500),
+                            tint = bonusOrange,
                             modifier = Modifier.size(26.dp)
                         )
 
-                        // 舒展文本排版 (彻底解决文字遮挡问题)
                         Column(
                             verticalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             Text(
                                 text = "今日加餐",
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 17.sp
-                                ),
-                                color = MaterialTheme.colorScheme.onSurface
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary
                             )
                             Text(
                                 text = "突破常规，设定追加练习目标",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    fontSize = 13.sp
-                                ),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f)
+                                fontSize = 13.sp,
+                                color = textSecondary
                             )
                         }
                     }
 
-                    // 右侧精致亮橙全胶囊标签 (平衡左右排版视效)
+                    // 右侧亮橙全胶囊标签
                     Surface(
                         shape = CircleShape,
-                        color = Color(0xFFFF5500),
+                        color = bonusOrange,
                         contentColor = Color.White
                     ) {
                         Text(
                             text = "去加餐",
-                            style = MaterialTheme.typography.labelMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp
-                            ),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                         )
                     }
                 }
             }
 
-            if (showBonusDialog) {
-                com.jian.nemo.core.ui.component.dialog.BonusStudyDialog(
-                    onDismissRequest = { showBonusDialog = false },
-                    onConfirmBonus = { bonusCount ->
-                        onConfirmBonus(bonusCount)
-                    }
-                )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ==========================================
+            // 6. 底部主操作区 (Primary CTA - 闭环完成今日学习)
+            // ==========================================
+            Button(
+                onClick = onBackClick,
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isDark) themePrimary else Color(0xFF1E293B),
+                    contentColor = Color.White
+                ),
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp,
+                    pressedElevation = 1.dp
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "完成今日学习",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(28.dp))
         }
 
-        // 彩花特效层
+        // ==========================================
+        // 7. 项目原版 KonfettiView 漫天五彩纸屑庆祝层
+        // ==========================================
         AnimatedVisibility(
             visible = showConfetti,
-            enter = fadeIn(animationSpec = tween(500)),
-            exit = fadeOut(animationSpec = tween(1500)),
+            enter = fadeIn(animationSpec = tween(400)),
+            exit = fadeOut(animationSpec = tween(1200)),
             modifier = Modifier.fillMaxSize()
         ) {
-            val primaryColorArgb = MaterialTheme.colorScheme.primary.toArgb()
-            val party = Party(
-                speed = 0f,
-                maxSpeed = 30f,
-                damping = 0.9f,
-                spread = 360,
-                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def, 0x10B981, primaryColorArgb),
-                emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
-                position = Position.Relative(0.5, 0.3)
-            )
+            val partyColors = remember(themePrimary) {
+                listOf(
+                    themePrimary.toArgb(),
+                    0xFF10B981.toInt(),
+                    0xFF3B82F6.toInt(),
+                    0xFFF59E0B.toInt(),
+                    0xFFEC4899.toInt(),
+                    0xFF6366F1.toInt()
+                )
+            }
+            val party = remember(partyColors) {
+                Party(
+                    speed = 8f,
+                    maxSpeed = 26f,
+                    damping = 0.9f,
+                    spread = 360,
+                    colors = partyColors,
+                    emitter = Emitter(duration = 150, TimeUnit.MILLISECONDS).max(80),
+                    position = Position.Relative(0.5, 0.15)
+                )
+            }
 
             KonfettiView(
                 modifier = Modifier.fillMaxSize(),
                 parties = listOf(party)
             )
         }
-    }
-}
 
-// 🆕 扁平色块战报网格辅助组件
-@Composable
-private fun FlatCard(
-    backgroundColor: Color,
-    alpha: Float,
-    offsetY: Float,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        shape = RoundedCornerShape(24.dp),
-        modifier = modifier
-            .height(152.dp)
-            .graphicsLayer {
-                this.alpha = alpha
-                translationY = offsetY
-            }
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            content()
+        // 今日加餐配置弹窗（居中挑战配置对话框，传递词数与加餐模式）
+        if (showBonusDialog) {
+            BonusStudyDialog(
+                onDismissRequest = { showBonusDialog = false },
+                onConfirmBonus = { bonusCount, bonusMode ->
+                    showBonusDialog = false
+                    onConfirmBonus(bonusCount, bonusMode)
+                }
+            )
+        }
+
+        // 今日打卡成就海报弹窗
+        if (showShareDialog) {
+            DailyAchievementShareDialog(
+                sessionTotalCount = sessionTotalCount,
+                sessionMaxCombo = sessionMaxCombo,
+                sessionDurationSeconds = sessionDurationSeconds,
+                dailyStreak = dailyStreak,
+                onDismissRequest = onDismissShareDialog
+            )
         }
     }
 }
 
-@Composable
-private fun CardHeaderIcon(icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .background(Color.White.copy(alpha = 0.2f), androidx.compose.foundation.shape.CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
 
-@Composable
-private fun RowScope.DetailItem(label: String, count: Int) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.weight(1f)
-    ) {
-        Text(
-            text = label, 
-            fontSize = 10.sp, 
-            color = Color.White.copy(alpha = 0.8f),
-            fontWeight = FontWeight.Medium
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = "$count", 
-            fontSize = 18.sp, 
-            fontWeight = FontWeight.Bold, 
-            color = Color.White
-        )
-    }
-}
-
-// 兼容旧调用
-@Composable
-fun DailyGoalMetContent() {
-    LearningFinishedContent()
-}

@@ -89,6 +89,9 @@ fun AdvancedLearningSettingsScreen(
         mutableStateOf(if (uiState.leechAction == "bury_today") "bury_today" else "skip")
     }
     var retentionInput by remember(uiState.targetRetention) { mutableFloatStateOf(uiState.targetRetention) }
+    var batchSizeInput by remember(uiState.sessionBatchSize) { mutableIntStateOf(uiState.sessionBatchSize) }
+    var maxReviewsInput by remember(uiState.maxDailyReviews) { mutableIntStateOf(uiState.maxDailyReviews) }
+    var strategyInput by remember(uiState.backlogNewItemStrategy) { mutableStateOf(uiState.backlogNewItemStrategy) }
 
     // 弹窗状态管理
     var showExitConfirmation by remember { mutableStateOf(false) }
@@ -101,14 +104,20 @@ fun AdvancedLearningSettingsScreen(
         limitInput,
         leechThresholdInput,
         leechActionInput,
-        retentionInput
+        retentionInput,
+        batchSizeInput,
+        maxReviewsInput,
+        strategyInput
     ) {
         stepsInput.trim() == "1 10" &&
         relearningStepsInput.trim() == "1 10" &&
         limitInput.toInt() == 20 &&
         leechThresholdInput == 5 &&
         leechActionInput == "skip" &&
-        (retentionInput * 100).roundToInt() == 90
+        (retentionInput * 100).roundToInt() == 90 &&
+        batchSizeInput == 20 &&
+        maxReviewsInput == 0 &&
+        strategyInput == "taste"
     }
 
     // 判断是否有未保存的更改
@@ -119,6 +128,9 @@ fun AdvancedLearningSettingsScreen(
         leechThresholdInput,
         leechActionInput,
         retentionInput,
+        batchSizeInput,
+        maxReviewsInput,
+        strategyInput,
         uiState
     ) {
         stepsInput.trim() != uiState.learningSteps.trim() ||
@@ -126,7 +138,10 @@ fun AdvancedLearningSettingsScreen(
         limitInput.toInt() != uiState.learnAheadLimit ||
         leechThresholdInput != uiState.leechThreshold ||
         leechActionInput != (if (uiState.leechAction == "bury_today") "bury_today" else "skip") ||
-        (retentionInput * 100).toInt() != (uiState.targetRetention * 100).toInt()
+        (retentionInput * 100).toInt() != (uiState.targetRetention * 100).toInt() ||
+        batchSizeInput != uiState.sessionBatchSize ||
+        maxReviewsInput != uiState.maxDailyReviews ||
+        strategyInput != uiState.backlogNewItemStrategy
     }
 
     // 拦截系统返回手势与按键
@@ -140,6 +155,7 @@ fun AdvancedLearningSettingsScreen(
     val relearningStepColor = Color(0xFFFF9F0A) // 遗忘重学阶梯：警醒暖琥珀橙
     val leechColor = Color(0xFFF43F5E)          // 水蛭防爆哨兵：守护玫瑰红
     val temporalColor = Color(0xFF00C4B5)       // 提前复习容差：极光薄荷青
+    val backlogColor = Color(0xFF34C759)        // 积压排产微会话：活力薄荷翠绿
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val backdrop = rememberLayerBackdrop()
@@ -156,7 +172,10 @@ fun AdvancedLearningSettingsScreen(
                     learnAheadLimit = limitInput.toInt(),
                     leechThreshold = leechThresholdInput,
                     leechAction = leechActionInput,
-                    targetRetention = retentionInput
+                    targetRetention = retentionInput,
+                    sessionBatchSize = batchSizeInput,
+                    maxDailyReviews = maxReviewsInput,
+                    backlogNewItemStrategy = strategyInput
                 )
             )
             onNavigateBack()
@@ -195,7 +214,7 @@ fun AdvancedLearningSettingsScreen(
 
             // 3. 初次学习阶梯时空管道 (Step Pipeline) — 探索蓝
             StepPipelineEditor(
-                title = "新卡片初学阶梯 (Learning Steps)",
+                title = "新卡片初学阶梯",
                 subtitle = "新知识首次记忆时的短时巩固序列 (单位: 分钟)",
                 stepsString = stepsInput,
                 onStepsChange = { stepsInput = it },
@@ -204,14 +223,25 @@ fun AdvancedLearningSettingsScreen(
 
             // 4. 遗忘重学阶梯时空管道 (Relearning Steps) — 暖琥珀橙
             StepPipelineEditor(
-                title = "遗忘重学阶梯 (Relearning Steps)",
+                title = "遗忘重学阶梯",
                 subtitle = "遗忘卡片重新激活时的强化复习序列 (单位: 分钟)",
                 stepsString = relearningStepsInput,
                 onStepsChange = { relearningStepsInput = it },
                 accentColor = relearningStepColor
             )
 
-            // 5. 水蛭防爆哨兵 (机械翻牌大号步进器 + 橡胶果冻分段器) — 守护玫瑰红
+            // 5. 积压排产与微会话控制 — 活力翠绿 (方案 2.4 核心落地)
+            com.jian.nemo.feature.settings.components.BacklogControllerCard(
+                sessionBatchSize = batchSizeInput,
+                onBatchSizeChange = { batchSizeInput = it },
+                maxDailyReviews = maxReviewsInput,
+                onMaxReviewsChange = { maxReviewsInput = it },
+                strategy = strategyInput,
+                onStrategyChange = { strategyInput = it },
+                accentColor = backlogColor
+            )
+
+            // 6. 水蛭防爆哨兵 (机械翻牌大号步进器 + 橡胶果冻分段器) — 守护玫瑰红
             LeechSentinelCard(
                 leechThreshold = leechThresholdInput,
                 onThresholdChange = { leechThresholdInput = it },
@@ -220,7 +250,7 @@ fun AdvancedLearningSettingsScreen(
                 accentColor = leechColor
             )
 
-            // 6. 提前复习时间视界 — 极光薄荷青
+            // 7. 提前复习时间视界 — 极光薄荷青
             TemporalHorizonSection(
                 limitMinutes = limitInput,
                 onLimitChange = { limitInput = it },
@@ -297,54 +327,56 @@ fun AdvancedLearningSettingsScreen(
                 .padding(bottom = navBarBottom + 8.dp)
         )
 
-        // 4. 恢复默认二次确认弹窗
+        // 4. 恢复默认二次确认弹窗 (采用项目通用统一弹窗 NemoDialog)
         if (showResetConfirmDialog) {
-            AlertDialog(
+            com.jian.nemo.core.ui.component.NemoDialog(
                 onDismissRequest = { showResetConfirmDialog = false },
-                title = { Text("恢复默认算法配置", fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                title = "恢复默认算法配置",
+                confirmText = "确认恢复",
+                dismissText = "取消",
+                confirmButtonColor = retentionColor,
+                onConfirm = {
+                    stepsInput = "1 10"
+                    relearningStepsInput = "1 10"
+                    limitInput = 20f
+                    leechThresholdInput = 5
+                    leechActionInput = "skip"
+                    retentionInput = 0.90f
+                    batchSizeInput = 20
+                    maxReviewsInput = 0
+                    strategyInput = "taste"
+                    showResetConfirmDialog = false
+                },
+                content = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         Text(
-                            "确定要将记忆算法配置恢复为系统黄金推荐值吗？",
-                            style = MaterialTheme.typography.bodyMedium
+                            text = "确定要将记忆算法配置恢复为系统黄金推荐值吗？",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(
-                                modifier = Modifier.padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                modifier = Modifier.padding(14.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text("• 新卡初学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
                                 Text("• 遗忘重学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
                                 Text("• 提前复习容差: 20 分钟", style = MaterialTheme.typography.labelSmall)
-                                Text("• 水蛭判定阈值: 5 次", style = MaterialTheme.typography.labelSmall)
-                                Text("• 水蛭处置行为: 冻结卡片 (Skip)", style = MaterialTheme.typography.labelSmall)
+                                Text("• 顽固卡片判定阈值: 5 次", style = MaterialTheme.typography.labelSmall)
+                                Text("• 顽固卡片处置行为: 冻结卡片", style = MaterialTheme.typography.labelSmall)
                                 Text("• FSRS 目标保留率: 90%", style = MaterialTheme.typography.labelSmall)
+                                Text("• 单组微会话容量: 20 词", style = MaterialTheme.typography.labelSmall)
+                                Text("• 每日复习上限: 不设限制", style = MaterialTheme.typography.labelSmall)
+                                Text("• 积压新词策略: 微量尝鲜", style = MaterialTheme.typography.labelSmall)
                             }
                         }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            stepsInput = "1 10"
-                            relearningStepsInput = "1 10"
-                            limitInput = 20f
-                            leechThresholdInput = 5
-                            leechActionInput = "skip"
-                            retentionInput = 0.90f
-                            showResetConfirmDialog = false
-                        }
-                    ) {
-                        Text("确认恢复", color = retentionColor, fontWeight = FontWeight.Bold)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showResetConfirmDialog = false }) {
-                        Text("取消")
                     }
                 }
             )

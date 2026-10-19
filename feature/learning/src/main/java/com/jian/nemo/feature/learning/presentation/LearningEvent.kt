@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.learning.presentation
 
+import com.jian.nemo.core.ui.component.dialog.BonusMode
+
 /**
  * 学习界面 UI 事件
  * 用户所有交互都封装为事件
@@ -14,12 +16,14 @@ sealed interface LearningEvent {
     ) : LearningEvent
 
     /**
-     * 追加学习/去加餐 (仅补充未学习的新词/新语法)
+     * 追加学习/今日加餐 (支持消化积压与学习新词双模式)
      * @param count 申请追加的条目数量
+     * @param bonusMode 加餐模式 (ReviewBacklog 消化积压 / NewItems 学习新词)
      * @param mode 学习模式
      */
     data class StartBonusLearning(
         val count: Int,
+        val bonusMode: BonusMode = BonusMode.ReviewBacklog,
         val mode: LearningMode = LearningMode.Word
     ) : LearningEvent
 

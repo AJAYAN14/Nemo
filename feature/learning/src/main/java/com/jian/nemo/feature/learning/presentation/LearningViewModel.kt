@@ -25,6 +25,7 @@ import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
 import com.jian.nemo.core.domain.repository.ContentReportRepository
 import com.jian.nemo.core.data.manager.CloudBackupManager
+import com.jian.nemo.core.ui.component.dialog.BonusMode
 import com.jian.nemo.feature.learning.domain.LearningSessionPolicy
 import com.jian.nemo.feature.learning.domain.LearningSessionStatsManager
 import com.jian.nemo.feature.learning.domain.LearningQueueManager
@@ -95,7 +96,8 @@ class LearningViewModel @Inject constructor(
     private val learningTtsManager: LearningTtsManager,
     private val contentReportRepository: ContentReportRepository,
     private val cloudBackupManager: CloudBackupManager,
-    private val reviewLogRepository: com.jian.nemo.core.domain.repository.ReviewLogRepository
+    private val reviewLogRepository: com.jian.nemo.core.domain.repository.ReviewLogRepository,
+    private val getLearningStatsUseCase: com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase
 ) : ViewModel() {
     companion object {
         /** 导航防抖延迟 (ms) */
@@ -154,6 +156,13 @@ class LearningViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.isDarkModeFlow.collect { isDark ->
                 _uiState.update { it.copy(isDarkMode = isDark) }
+            }
+        }
+
+        // 监听打卡统计数据以获取真实连续打卡天数 (Streak)
+        viewModelScope.launch {
+            getLearningStatsUseCase().collect { stats ->
+                _uiState.update { it.copy(dailyStreak = stats.dailyStreak) }
             }
         }
 
@@ -328,7 +337,7 @@ class LearningViewModel @Inject constructor(
             }
             is LearningEvent.StartBonusLearning -> {
                 _uiState.update { it.copy(learningMode = event.mode) }
-                startBonusLearning(event.count)
+                startBonusLearning(event.count, event.bonusMode)
             }
             is LearningEvent.ChangeLearningMode -> changeLearningMode(event.mode)
 
@@ -513,9 +522,9 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 启动加餐学习会话 (仅补充未学习的新词/新语法)
+     * 启动加餐学习会话 (支持消化积压与学习新词双模式)
      */
-    private fun startBonusLearning(count: Int) {
+    private fun startBonusLearning(count: Int, bonusMode: BonusMode = BonusMode.ReviewBacklog) {
         learningUndoHelper.clear()
         syncUndoAvailability()
 
@@ -551,33 +560,59 @@ class LearningViewModel @Inject constructor(
                     LearningMode.Grammar -> settingsRepository.grammarDailyGoalFlow.first()
                 }
 
-                val newItems: List<Any> = when (mode) {
-                    LearningMode.Word -> {
-                        val r = getNewWordsUseCase(isRandom).first { it !is Result.Loading }
-                        if (r is Result.Success) r.data else emptyList()
+                val unit = if (mode == LearningMode.Word) "词" else "语法"
+                val bonusItems: List<Any> = when (bonusMode) {
+                    BonusMode.ReviewBacklog -> {
+                        val today = java.time.LocalDate.now().toEpochDay()
+                        when (mode) {
+                            LearningMode.Word -> {
+                                val dueR = getDueWordsUseCase().first { it !is Result.Loading }
+                                val dueList = if (dueR is Result.Success) dueR.data else emptyList()
+                                val partition = learningSessionPolicy.partitionOverdueItems(dueList, today)
+                                partition.activeItems.take(count)
+                            }
+                            LearningMode.Grammar -> {
+                                val dueR = getDueGrammarsUseCase().first { it !is Result.Loading }
+                                val dueList = if (dueR is Result.Success) dueR.data else emptyList()
+                                val partition = learningSessionPolicy.partitionOverdueItems(dueList, today)
+                                partition.activeItems.take(count)
+                            }
+                        }
                     }
-                    LearningMode.Grammar -> {
-                        val r = getNewGrammarsUseCase(isRandom).first { it !is Result.Loading }
-                        if (r is Result.Success) r.data else emptyList()
+                    BonusMode.NewItems -> {
+                        when (mode) {
+                            LearningMode.Word -> {
+                                val r = getNewWordsUseCase(isRandom).first { it !is Result.Loading }
+                                val list = if (r is Result.Success) r.data else emptyList()
+                                list.take(count)
+                            }
+                            LearningMode.Grammar -> {
+                                val r = getNewGrammarsUseCase(isRandom).first { it !is Result.Loading }
+                                val list = if (r is Result.Success) r.data else emptyList()
+                                list.take(count)
+                            }
+                        }
                     }
                 }
 
-                val bonusItems = newItems.take(count)
-
                 if (bonusItems.isEmpty()) {
+                    val emptyMsg = when (bonusMode) {
+                        BonusMode.ReviewBacklog -> "太棒了！当前待复习积压已全部出清"
+                        BonusMode.NewItems -> "暂无更多未学新$unit"
+                    }
                     _uiState.update {
                         it.copy(
                             status = LearningStatus.SessionCompleted,
-                            error = "暂无更多未学新内容"
+                            error = emptyMsg
                         )
                     }
                     return@launch
                 }
 
                 if (bonusItems.size < count) {
-                    val unit = if (mode == LearningMode.Word) "词" else "语法"
+                    val modeLabel = if (bonusMode == BonusMode.ReviewBacklog) "待复习" else "新"
                     _uiState.update {
-                        it.copy(successMessage = "已为你加载剩余的 ${bonusItems.size} 个新$unit")
+                        it.copy(successMessage = "已为你加载剩余全部 ${bonusItems.size} 个$modeLabel$unit")
                     }
                 }
 
@@ -658,6 +693,16 @@ class LearningViewModel @Inject constructor(
         completedToday: Int,
         savedSession: SavedSession?
     ): SessionLoadResult<Word> {
+        val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        val sessionBatchSize = settingsRepository.sessionBatchSizeFlow.first()
+        val backlogStrategy = settingsRepository.backlogNewItemStrategyFlow.first()
+        val maxDailyReviews = settingsRepository.maxDailyReviewsFlow.first()
+        val todayReviewedCount = try {
+            wordRepository.getTodayReviewedWords(todayEpoch).first().size
+        } catch (e: Exception) {
+            0
+        }
+
         return sessionLoader.loadSession(
             level = "GLOBAL",
             dailyGoal = dailyGoal,
@@ -679,7 +724,12 @@ class LearningViewModel @Inject constructor(
             },
             getItemId = { it.id },
             filterByLevel = { true }, // 全局进阶不再按等级过滤
-            isItemNew = { it.repetitionCount == 0 }
+            isItemNew = { it.repetitionCount == 0 },
+            sessionBatchSize = sessionBatchSize,
+            backlogStrategy = backlogStrategy,
+            maxDailyReviews = maxDailyReviews,
+            todayReviewedCount = todayReviewedCount,
+            todayEpochDay = todayEpoch
         )
     }
 
@@ -688,6 +738,16 @@ class LearningViewModel @Inject constructor(
         completedToday: Int,
         savedSession: SavedSession?
     ): SessionLoadResult<Grammar> {
+        val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+        val sessionBatchSize = settingsRepository.sessionBatchSizeFlow.first()
+        val backlogStrategy = settingsRepository.backlogNewItemStrategyFlow.first()
+        val maxDailyReviews = settingsRepository.maxDailyReviewsFlow.first()
+        val todayReviewedCount = try {
+            grammarRepository.getTodayReviewedGrammars(todayEpoch).first().size
+        } catch (e: Exception) {
+            0
+        }
+
         return sessionLoader.loadSession(
             level = "GLOBAL",
             dailyGoal = dailyGoal,
@@ -709,7 +769,12 @@ class LearningViewModel @Inject constructor(
             },
             getItemId = { it.id },
             filterByLevel = { true }, // 全局进阶不再按等级过滤
-            isItemNew = { it.repetitionCount == 0 }
+            isItemNew = { it.repetitionCount == 0 },
+            sessionBatchSize = sessionBatchSize,
+            backlogStrategy = backlogStrategy,
+            maxDailyReviews = maxDailyReviews,
+            todayReviewedCount = todayReviewedCount,
+            todayEpochDay = todayEpoch
         )
     }
 
@@ -825,6 +890,7 @@ class LearningViewModel @Inject constructor(
                 viewModelScope.launch(Dispatchers.IO) {
                     cloudBackupManager.performImmediateAutoBackup()
                 }
+                syncTodayCounts()
                 _uiState.update {
                     it.copy(
                         status = LearningStatus.SessionCompleted,

@@ -35,22 +35,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.mutableStateOf
 import com.jian.nemo.core.designsystem.component.PremiumStepper
 
 /**
+ * 今日加餐模式
+ */
+enum class BonusMode {
+    ReviewBacklog, // 消化积压 (推荐)
+    NewItems       // 学习新词
+}
+
+/**
  * 今日加餐配置弹窗 (BonusStudyBottomSheet)
- * 放置在 core:ui 组件库中，供统计仪表盘与全局设置共享调用。
+ * 放置在 core:ui 组件库中，供统计仪表盘、结算页与全局设置共享调用。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BonusStudyBottomSheet(
     onDismissRequest: () -> Unit,
-    onConfirmBonus: (Int) -> Unit,
+    onConfirmBonus: (Int, BonusMode) -> Unit,
     modifier: Modifier = Modifier,
     initialQuantity: Int = 10,
+    initialMode: BonusMode = BonusMode.ReviewBacklog,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
     var selectedQuantity by remember { mutableIntStateOf(initialQuantity) }
+    var selectedMode by remember { mutableStateOf(initialMode) }
     val presetOptions = listOf(10, 20, 30)
 
     com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet(
@@ -70,7 +81,7 @@ fun BonusStudyBottomSheet(
         ) {
             // 标题与副标题
             Text(
-                text = "⚡ 今日加餐",
+                text = "今日加餐",
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -80,17 +91,85 @@ fun BonusStudyBottomSheet(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "不修改常规每日目标，仅针对今天额外学习组数",
+                text = "不修改常规每日目标，仅针对今天追加自选微会话",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 模式选择 Choice Chips 区域
+            Text(
+                text = "加餐目标模式",
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(bottom = 8.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                val modeList = listOf(
+                    BonusMode.ReviewBacklog to "消化积压 (推荐)",
+                    BonusMode.NewItems to "学习新词"
+                )
+                modeList.forEach { (mode, title) ->
+                    val isSelected = selectedMode == mode
+                    val chipBgColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                        label = "ModeChipBgColor"
+                    )
+                    val chipTextColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        label = "ModeChipTextColor"
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(46.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(chipBgColor)
+                            .border(
+                                border = BorderStroke(
+                                    width = if (isSelected) 1.5.dp else 0.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
+                                ),
+                                shape = RoundedCornerShape(14.dp)
+                            )
+                            .clickable {
+                                selectedMode = mode
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ),
+                            color = chipTextColor
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 快捷预设 Choice Chips 选项组
             Text(
-                text = "快捷预设",
+                text = "快捷预设数量",
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -150,7 +229,7 @@ fun BonusStudyBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // 自定义微调控件区域
             Text(
@@ -159,7 +238,7 @@ fun BonusStudyBottomSheet(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .align(Alignment.Start)
-                    .padding(bottom = 12.dp)
+                    .padding(bottom = 8.dp)
             )
 
             // 重写版动画 Stepper 控件
@@ -171,12 +250,17 @@ fun BonusStudyBottomSheet(
                 step = 1
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // 开始加餐提交按钮
+            val confirmButtonText = when (selectedMode) {
+                BonusMode.ReviewBacklog -> "开始消化积压 (+$selectedQuantity)"
+                BonusMode.NewItems -> "开始学习新词 (+$selectedQuantity)"
+            }
+
             Button(
                 onClick = {
-                    onConfirmBonus(selectedQuantity)
+                    onConfirmBonus(selectedQuantity, selectedMode)
                     onDismissRequest()
                 },
                 modifier = Modifier
@@ -189,11 +273,33 @@ fun BonusStudyBottomSheet(
                 )
             ) {
                 Text(
-                    text = "开始今日加餐 (+$selectedQuantity)",
+                    text = confirmButtonText,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
         }
     }
+}
+
+/**
+ * 兼容单参数回调的重载函数
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BonusStudyBottomSheet(
+    onDismissRequest: () -> Unit,
+    onConfirmBonus: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    initialQuantity: Int = 10,
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+) {
+    BonusStudyBottomSheet(
+        onDismissRequest = onDismissRequest,
+        onConfirmBonus = { count, _ -> onConfirmBonus(count) },
+        modifier = modifier,
+        initialQuantity = initialQuantity,
+        initialMode = BonusMode.ReviewBacklog,
+        sheetState = sheetState
+    )
 }

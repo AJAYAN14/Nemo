@@ -108,6 +108,26 @@ class SrsCalculatorImplTest {
         assertTrue("Stability should stay positive", result.stability > 0f)
     }
 
+    @Test
+    fun `高稳定性卡片忘记时稳定性应该发生断崖式跌落`() {
+        // Given: 已复习多次，稳定性高达 60 天的高熟练度卡片
+        val highStabilityItem = createItemWithRepetition(
+            repetitionCount = 5,
+            stability = 60.0f,
+            difficulty = 4.0f,
+            interval = 60,
+            nextReviewDate = 100,
+            lastReviewedDate = 40 // elapsed = 60 天
+        )
+
+        // When: 用户忘记 (Quality = 2 -> Again)
+        val result = calculator.calculate(highStabilityItem, quality = 2, today = 100)
+
+        // Then: 稳定性应受到明显截断惩罚（远低于原来的 60 天，通常跌落至 5 天以内）
+        assertTrue("Stability should drop significantly on Lapse", result.stability < 15.0f)
+        assertTrue("Interval should be reset to short period", result.interval <= 7)
+    }
+
     // ========== 延迟复习测试 ==========
 
     @Test

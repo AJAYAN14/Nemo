@@ -39,6 +39,9 @@ data class SettingsUiState(
     val leechThreshold: Int = 5, // Leech 判定阈值（累计失败次数）
     val leechAction: String = "skip", // Leech 行为: skip | bury_today
     val targetRetention: Float = 0.9f, // FSRS 目标保留率
+    val sessionBatchSize: Int = 20, // 单组微会话容量 (10..30)
+    val maxDailyReviews: Int = 0, // 每日复习上限 (0 表示不限制)
+    val backlogNewItemStrategy: String = "taste", // 积压期新词策略: taste | review_only
 
     // 弹窗状态
     val showDailyGoalDialog: Boolean = false,
@@ -146,7 +149,10 @@ sealed interface SettingsEvent {
         val learnAheadLimit: Int,
         val leechThreshold: Int,
         val leechAction: String,
-        val targetRetention: Float
+        val targetRetention: Float,
+        val sessionBatchSize: Int = 20,
+        val maxDailyReviews: Int = 0,
+        val backlogNewItemStrategy: String = "taste"
     ) : SettingsEvent
 
     // TTS 设置

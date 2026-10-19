@@ -361,7 +361,7 @@ fun RetentionPrecisionRuler(
             ) {
                 Column {
                     Text(
-                        text = "目标保留率 (Desired Retention)",
+                        text = "目标保留率",
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -789,35 +789,63 @@ private fun StepEditDialog(
     var textInput by remember { mutableStateOf(currentValue) }
     val quickPresets = listOf("1", "5", "10", "15", "30", "60", "1440")
 
-    AlertDialog(
+    com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title, fontWeight = FontWeight.Bold) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text("输入复习间隔时长（单位：分钟）：", style = MaterialTheme.typography.bodySmall)
+        title = title,
+        confirmText = "确定",
+        dismissText = "取消",
+        confirmButtonColor = accentColor,
+        confirmEnabled = textInput.isNotBlank() && textInput.toIntOrNull() != null,
+        onConfirm = {
+            if (textInput.isNotBlank() && textInput.toIntOrNull() != null) {
+                onConfirm(textInput)
+            }
+        },
+        content = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "输入复习间隔时长（单位：分钟）：",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 OutlinedTextField(
                     value = textInput,
                     onValueChange = { input ->
                         if (input.all { it.isDigit() }) textInput = input
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = accentColor,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 // 常用快捷预设
-                Text("推荐预设：", style = MaterialTheme.typography.labelSmall)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = "推荐预设：",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     quickPresets.forEach { preset ->
                         Surface(
                             onClick = { textInput = preset },
                             shape = RoundedCornerShape(10.dp),
-                            color = if (textInput == preset) accentColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            border = BorderStroke(1.dp, if (textInput == preset) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                            color = if (textInput == preset) accentColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+                            border = BorderStroke(
+                                1.dp,
+                                if (textInput == preset) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
                         ) {
                             Text(
                                 text = formatStepDuration(preset),
@@ -829,22 +857,6 @@ private fun StepEditDialog(
                         }
                     }
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (textInput.isNotBlank() && textInput.toIntOrNull() != null) {
-                        onConfirm(textInput)
-                    }
-                }
-            ) {
-                Text("确定", color = accentColor, fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
             }
         }
     )
@@ -893,9 +905,10 @@ fun LeechSentinelCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "顽固卡片 (Leech) 判定阈值",
+                        text = "顽固卡片判定阈值",
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
                     )
                     Text(
                         text = "某张卡片累计遗忘此次数后自动触发防爆防护",
@@ -904,22 +917,22 @@ fun LeechSentinelCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
-                // 机械翻牌步进器
+                // 机械翻牌步进器 (紧凑横向排版，为左侧标题预留充分空间)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(14.dp))
                         .background(
                             if (isDark) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                         )
-                        .padding(4.dp)
+                        .padding(2.dp)
                 ) {
                     IconButton(
                         onClick = { onThresholdChange((leechThreshold - 1).coerceAtLeast(1)) },
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(30.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Remove,
@@ -929,11 +942,11 @@ fun LeechSentinelCard(
                         )
                     }
 
-                    // 机械翻牌数字框 (大号黑体 + 向上/向下翻滚动画)
+                    // 机械翻牌数字框 (大号黑体 + 向上/向下翻滚动画，紧凑化内边距杜绝挤压换行)
                     Box(
                         modifier = Modifier
-                            .padding(horizontal = 6.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .padding(horizontal = 2.dp)
+                            .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isDark) Color(0xFF1E2028)
                                 else Color.White
@@ -944,9 +957,9 @@ fun LeechSentinelCard(
                                     if (isDark) Color.White.copy(alpha = 0.08f)
                                     else Color.Black.copy(alpha = 0.05f)
                                 ),
-                                RoundedCornerShape(10.dp)
+                                RoundedCornerShape(8.dp)
                             )
-                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                            .padding(horizontal = 8.dp, vertical = 5.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         AnimatedContent(
@@ -1000,8 +1013,8 @@ fun LeechSentinelCard(
                 // 橡胶果冻分段器
                 RubberSegmentToggle(
                     options = listOf(
-                        "skip" to ("冻结卡片 (Skip)" to "彻底移出复习，沉淀至复学清单"),
-                        "bury_today" to ("埋藏今日 (Bury)" to "今日不再提示，明日自动回归")
+                        "skip" to ("冻结卡片" to "彻底移出复习，沉淀至复学清单"),
+                        "bury_today" to ("埋藏今日" to "今日不再提示，明日自动回归")
                     ),
                     selectedKey = leechAction,
                     onSelectedChange = onActionChange,

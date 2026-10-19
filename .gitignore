@@ -61,3 +61,7 @@ app/release/
 mcp/
 
 AndroidLiquidGlass/
+
+# Reference repositories and temp artifacts
+reference/
+code_artifact*.html

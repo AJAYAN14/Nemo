@@ -29,6 +29,15 @@ object PreferencesKeys {
     /** 默认加餐单组数量 默认: 10 */
     val DEFAULT_BONUS_BATCH_SIZE = intPreferencesKey("default_bonus_batch_size")
 
+    /** 单组微会话容量 默认: 20 (范围 10..30) */
+    val SESSION_BATCH_SIZE = intPreferencesKey("session_batch_size")
+
+    /** 每日复习上限 默认: 0 (0 表示不限制) */
+    val MAX_DAILY_REVIEWS = intPreferencesKey("max_daily_reviews")
+
+    /** 积压期间新词策略 默认: "taste" (微量尝鲜), 可选 "review_only" (纯复习优先) */
+    val BACKLOG_NEW_ITEM_STRATEGY = stringPreferencesKey("backlog_new_item_strategy")
+
     /** 待定每日学习目标（单词数）- 次日生效 */
     val PENDING_DAILY_GOAL = intPreferencesKey("pending_daily_goal")
 

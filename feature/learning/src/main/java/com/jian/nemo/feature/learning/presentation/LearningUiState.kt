@@ -111,7 +111,8 @@ data class LearningUiState(
     val sessionNewCount: Int = 0,
     val sessionReviewCount: Int = 0,
     val sessionRelearnCount: Int = 0,
-    val tomorrowReviewForecastCount: Int = 0
+    val tomorrowReviewForecastCount: Int = 0,
+    val dailyStreak: Int = 1
 ) {
     val hasPendingItems: Boolean
         get() = when (learningMode) {

@@ -70,6 +70,39 @@ interface SettingsRepository {
     suspend fun setDefaultBonusBatchSize(size: Int)
 
     /**
+     * 单组微会话容量 Flow
+     * 默认值: 20 (范围 10..30)
+     */
+    val sessionBatchSizeFlow: Flow<Int>
+
+    /**
+     * 设置单组微会话容量
+     */
+    suspend fun setSessionBatchSize(size: Int)
+
+    /**
+     * 每日复习上限 Flow
+     * 默认值: 0 (0 表示不限制)
+     */
+    val maxDailyReviewsFlow: Flow<Int>
+
+    /**
+     * 设置每日复习上限
+     */
+    suspend fun setMaxDailyReviews(limit: Int)
+
+    /**
+     * 积压期间新词策略 Flow
+     * 默认值: "taste" (微量尝鲜), 可选 "review_only" (纯复习优先)
+     */
+    val backlogNewItemStrategyFlow: Flow<String>
+
+    /**
+     * 设置积压期间新词策略
+     */
+    suspend fun setBacklogNewItemStrategy(strategy: String)
+
+    /**
      * 主题色 Flow (ARGB Long, null = 默认品牌蓝)
      */
     val themeColorFlow: Flow<Long?>
@@ -510,7 +543,10 @@ interface SettingsRepository {
         learnAheadLimit: Int,
         leechThreshold: Int,
         leechAction: String,
-        targetRetention: Float
+        targetRetention: Float,
+        sessionBatchSize: Int = 20,
+        maxDailyReviews: Int = 0,
+        backlogNewItemStrategy: String = "taste"
     )
 
     // ========== TTS 设置 ==========

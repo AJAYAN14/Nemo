@@ -112,6 +112,51 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
+    /** 单组微会话容量 Flow (默认 20, 范围 10..30) */
+    override val sessionBatchSizeFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.SESSION_BATCH_SIZE] ?: 20
+    }
+
+    /** 设置单组微会话容量 */
+    override suspend fun setSessionBatchSize(size: Int) {
+        val validSize = size.coerceIn(10, 30)
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SESSION_BATCH_SIZE] = validSize
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+        Log.d(TAG, "单组微会话容量已更新: $validSize")
+    }
+
+    /** 每日复习上限 Flow (默认 0 表示不限制) */
+    override val maxDailyReviewsFlow: Flow<Int> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.MAX_DAILY_REVIEWS] ?: 0
+    }
+
+    /** 设置每日复习上限 */
+    override suspend fun setMaxDailyReviews(limit: Int) {
+        val validLimit = limit.coerceAtLeast(0)
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.MAX_DAILY_REVIEWS] = validLimit
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+        Log.d(TAG, "每日复习上限已更新: $validLimit")
+    }
+
+    /** 积压期间新词策略 Flow (默认 taste 微量尝鲜, 可选 review_only 纯复习) */
+    override val backlogNewItemStrategyFlow: Flow<String> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.BACKLOG_NEW_ITEM_STRATEGY] ?: "taste"
+    }
+
+    /** 设置积压期间新词策略 */
+    override suspend fun setBacklogNewItemStrategy(strategy: String) {
+        val validStrategy = if (strategy == "review_only") "review_only" else "taste"
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BACKLOG_NEW_ITEM_STRATEGY] = validStrategy
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+        Log.d(TAG, "积压期新词策略已更新: $validStrategy")
+    }
+
     /**
      * 设置每日语法目标 (立即生效)
      * @param goal 每日学习语法条数
@@ -1203,7 +1248,10 @@ class SettingsRepositoryImpl @Inject constructor(
         learnAheadLimit: Int,
         leechThreshold: Int,
         leechAction: String,
-        targetRetention: Float
+        targetRetention: Float,
+        sessionBatchSize: Int,
+        maxDailyReviews: Int,
+        backlogNewItemStrategy: String
     ) {
         // 使用 NonCancellable 确保在页面关闭/ViewModel 销毁时，写入操作不会被取消
         withContext(NonCancellable) {
@@ -1214,6 +1262,9 @@ class SettingsRepositoryImpl @Inject constructor(
                 preferences[PreferencesKeys.LEECH_THRESHOLD] = leechThreshold.coerceAtLeast(1)
                 preferences[PreferencesKeys.LEECH_ACTION] = leechAction
                 preferences[PreferencesKeys.TARGET_RETENTION] = targetRetention
+                preferences[PreferencesKeys.SESSION_BATCH_SIZE] = sessionBatchSize.coerceIn(10, 30)
+                preferences[PreferencesKeys.MAX_DAILY_REVIEWS] = maxDailyReviews.coerceAtLeast(0)
+                preferences[PreferencesKeys.BACKLOG_NEW_ITEM_STRATEGY] = if (backlogNewItemStrategy == "review_only") "review_only" else "taste"
                 
                 // 更新修改时间戳，以便触发云端同步
                 preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()

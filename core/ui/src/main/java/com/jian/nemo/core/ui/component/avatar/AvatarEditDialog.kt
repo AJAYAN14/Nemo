@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -134,16 +135,30 @@ fun AvatarEditDialog(
             }
         }
 
+        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+        val containerColor = if (isDark) Color(0xFF1E1E1E) else Color.White
+        val borderColor = if (isDark) Color.White.copy(alpha = 0.12f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        val titleColor = MaterialTheme.colorScheme.onSurface
+        val closeBtnBg = if (isDark) Color.White.copy(alpha = 0.10f) else Color.Black.copy(alpha = 0.06f)
+        val closeBtnTint = if (isDark) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.6f)
+        val avatarInnerBorder = if (isDark) Color(0xFF2C2C2E) else Color.White
+        val avatarOuterBorder = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+
+        val blueColor = if (isDark) Color(0xFF0A84FF) else Color(0xFF007AFF)
+        val greenColor = if (isDark) Color(0xFF30D158) else Color(0xFF34C759)
+        val purpleColor = if (isDark) Color(0xFFBF5AF2) else Color(0xFFAF52DE)
+        val redColor = if (isDark) Color(0xFFFF453A) else Color(0xFFFF3B30)
+
         Surface(
             modifier = Modifier
                 .padding(24.dp)
                 .widthIn(max = 400.dp)
                 .fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp), // 略微减小圆角以匹配扁平感
-            color = Color.White,
+            shape = RoundedCornerShape(24.dp),
+            color = containerColor,
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            border = BorderStroke(1.dp, borderColor)
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
@@ -161,20 +176,20 @@ fun AvatarEditDialog(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.5.sp
                             ),
-                            color = Color.Black // 纯白背景下使用黑字
+                            color = titleColor
                         )
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(CircleShape)
-                                .background(Color.Black.copy(alpha = 0.06f))
+                                .background(closeBtnBg)
                                 .clickable { onDismiss() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "关闭",
-                                tint = Color.Black.copy(alpha = 0.6f),
+                                tint = closeBtnTint,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -191,14 +206,14 @@ fun AvatarEditDialog(
                         Surface(
                             shape = CircleShape,
                             color = Color.Transparent,
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+                            border = BorderStroke(1.dp, avatarOuterBorder),
                             modifier = Modifier.fillMaxSize()
                         ) {}
                         
                         // 头像图
                         Surface(
                             shape = CircleShape,
-                            border = BorderStroke(2.dp, Color.White),
+                            border = BorderStroke(2.dp, avatarInnerBorder),
                             shadowElevation = 0.dp,
                             modifier = Modifier.size(112.dp)
                         ) {
@@ -215,7 +230,7 @@ fun AvatarEditDialog(
                     Text(
                         text = if (currentAvatarPath.isNullOrEmpty()) "尚未设置个性头像" else "当前的视觉识别符号",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.height(40.dp))
@@ -230,16 +245,16 @@ fun AvatarEditDialog(
                         AvatarActionCard(
                             icon = Icons.Default.PhotoLibrary,
                             label = "相册",
-                            containerColor = Color(0xFF007AFF), // 经典亮蓝
-                            contentColor = Color(0xFF007AFF),
+                            containerColor = blueColor,
+                            contentColor = blueColor,
                             modifier = itemModifier,
                             onClick = { galleryLauncher.launch("image/*") }
                         )
                         AvatarActionCard(
                             icon = Icons.Default.CameraAlt,
                             label = "拍照",
-                            containerColor = Color(0xFF34C759), // 鲜活绿色
-                            contentColor = Color(0xFF34C759),
+                            containerColor = greenColor,
+                            contentColor = greenColor,
                             modifier = itemModifier,
                             onClick = {
                                 tempImageFile?.let { file ->
@@ -263,8 +278,8 @@ fun AvatarEditDialog(
                         AvatarActionCard(
                             icon = Icons.Default.Palette,
                             label = "预设",
-                            containerColor = Color(0xFFAF52DE), // 高级紫色
-                            contentColor = Color(0xFFAF52DE),
+                            containerColor = purpleColor,
+                            contentColor = purpleColor,
                             modifier = itemModifier,
                             onClick = { showPresetSelector = true }
                         )
@@ -273,8 +288,8 @@ fun AvatarEditDialog(
                             AvatarActionCard(
                                 icon = Icons.Default.DeleteOutline,
                                 label = "移除",
-                                containerColor = Color(0xFFFF3B30), // 系统红
-                                contentColor = Color(0xFFFF3B30),
+                                containerColor = redColor,
+                                contentColor = redColor,
                                 modifier = itemModifier,
                                 onClick = {
                                     onAvatarChanged(null)
