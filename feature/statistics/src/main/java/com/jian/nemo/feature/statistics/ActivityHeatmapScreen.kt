@@ -46,7 +46,15 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.text.TextStyle
 
 /**
  * 学习热力图与数据高光专属界面 (Activity Heatmap Pro Max)
@@ -338,14 +346,26 @@ private fun RichStatItem(
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    Text(
-                        text = value,
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontFamily = Rubik,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    val intValue = value.toIntOrNull()
+                    if (intValue != null) {
+                        EntranceCountUpText(
+                            targetValue = intValue,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontFamily = Rubik,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontFamily = Rubik,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     Text(
                         text = unit,
                         style = MaterialTheme.typography.labelMedium,
@@ -405,11 +425,14 @@ private fun MemoryPanoramaCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    val emeraldTint = if (isDarkTheme) Color(0xFF34D399) else Color(0xFF059669)
+                    val emeraldBackground = if (isDarkTheme) Color(0xFF10B981).copy(alpha = 0.20f) else Color(0xFFECFDF5)
+
                     Box(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                color = if (isDarkTheme) NemoPrimary.copy(alpha = 0.2f) else Color(0xFFF0F0FF),
+                                color = emeraldBackground,
                                 shape = RoundedCornerShape(12.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -417,7 +440,7 @@ private fun MemoryPanoramaCard(
                         Icon(
                             imageVector = Icons.Rounded.EmojiEvents, // Replace with appropriate star-like icon if available
                             contentDescription = null,
-                            tint = NemoPrimary,
+                            tint = emeraldTint,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -433,19 +456,77 @@ private fun MemoryPanoramaCard(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = "${data.totalCount} 项",
+                    EntranceCountUpText(
+                        targetValue = data.totalCount,
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        suffix = " 项",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Stacked Progress Bar
+            // Stacked Progress Bar with Smooth Gradient Transition
+            val validBuckets = remember(data.buckets) { data.buckets.filter { it.ratio > 0f } }
+            val barBrush = remember(validBuckets) {
+                if (validBuckets.isEmpty()) {
+                    null
+                } else if (validBuckets.size == 1) {
+                    val color = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
+                        .getOrDefault(Color(0xFF10B981))
+                    Brush.horizontalGradient(listOf(color, color))
+                } else {
+                    val totalRatio = validBuckets.sumOf { it.ratio.toDouble() }.toFloat().coerceAtLeast(0.001f)
+                    val rawStops = mutableListOf<Pair<Float, Color>>()
+                    var currentProgress = 0f
+
+                    for (i in validBuckets.indices) {
+                        val bucket = validBuckets[i]
+                        val bucketColor = runCatching { Color(android.graphics.Color.parseColor(bucket.color)) }
+                            .getOrDefault(Color(0xFF3B82F6))
+                        val span = (bucket.ratio / totalRatio).coerceIn(0f, 1f)
+                        val startPos = currentProgress
+                        val endPos = (currentProgress + span).coerceAtMost(1f)
+                        val blendMargin = minOf(0.04f, span * 0.25f)
+
+                        if (i == 0) {
+                            rawStops.add(0f to bucketColor)
+                        } else {
+                            rawStops.add((startPos - blendMargin).coerceAtLeast(0f) to rawStops.last().second)
+                            rawStops.add((startPos + blendMargin).coerceAtMost(1f) to bucketColor)
+                        }
+
+                        if (i == validBuckets.lastIndex) {
+                            rawStops.add(1f to bucketColor)
+                        } else {
+                            rawStops.add((endPos - blendMargin).coerceAtLeast(0f) to bucketColor)
+                        }
+
+                        currentProgress = endPos
+                    }
+
+                    val sanitizedStops = mutableListOf<Pair<Float, Color>>()
+                    var lastPos = -1f
+                    rawStops.sortedBy { it.first }.forEach { (pos, color) ->
+                        val safePos = pos.coerceIn(0f, 1f)
+                        if (safePos > lastPos) {
+                            sanitizedStops.add(safePos to color)
+                            lastPos = safePos
+                        }
+                    }
+
+                    if (sanitizedStops.size >= 2) {
+                        Brush.horizontalGradient(colorStops = sanitizedStops.toTypedArray())
+                    } else {
+                        val fallbackColor = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
+                            .getOrDefault(Color(0xFF10B981))
+                        Brush.horizontalGradient(listOf(fallbackColor, fallbackColor))
+                    }
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -453,17 +534,12 @@ private fun MemoryPanoramaCard(
                     .clip(RoundedCornerShape(7.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             ) {
-                Row(modifier = Modifier.fillMaxSize()) {
-                    data.buckets.forEach { bucket ->
-                        if (bucket.ratio > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxHeight()
-                                    .weight(bucket.ratio)
-                                    .background(Color(android.graphics.Color.parseColor(bucket.color)))
-                            )
-                        }
-                    }
+                if (barBrush != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(barBrush)
+                    )
                 }
             }
 
@@ -500,8 +576,8 @@ private fun MemoryPanoramaCard(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = bucket.count.toString(),
+                        EntranceCountUpText(
+                            targetValue = bucket.count,
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = Rubik,
                                 fontWeight = FontWeight.Bold
@@ -551,3 +627,64 @@ private fun LegendItem(bucket: PanoramaBucket) {
         )
     }
 }
+
+/**
+ * 带有优雅入场数流攀升效果的数字组件 (Entrance Spring CountUp)
+ * 仅在页面进入或目标值首次加载时播放一次平滑入场动效，快起缓停，带轻微落盘弹簧反馈
+ */
+@Composable
+private fun EntranceCountUpText(
+    targetValue: Int,
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current,
+    color: Color = Color.Unspecified,
+    durationMillis: Int = 850,
+    prefix: String = "",
+    suffix: String = "",
+    useGrouping: Boolean = true
+) {
+    val animatedProgress = remember { Animatable(0f) }
+    val arrivalScale = remember { Animatable(1f) }
+
+    LaunchedEffect(targetValue) {
+        if (targetValue > 0) {
+            animatedProgress.snapTo(0f)
+            arrivalScale.snapTo(1f)
+            animatedProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = durationMillis,
+                    easing = FastOutSlowInEasing
+                )
+            )
+            arrivalScale.animateTo(
+                targetValue = 1.05f,
+                animationSpec = tween(90, easing = LinearOutSlowInEasing)
+            )
+            arrivalScale.animateTo(
+                targetValue = 1.0f,
+                animationSpec = spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMedium)
+            )
+        } else {
+            animatedProgress.snapTo(1f)
+            arrivalScale.snapTo(1f)
+        }
+    }
+
+    val currentValue = (targetValue * animatedProgress.value).toInt()
+    val formattedNumber = if (useGrouping && targetValue >= 1000) {
+        String.format(Locale.US, "%,d", currentValue)
+    } else {
+        currentValue.toString()
+    }
+
+    Text(
+        text = "$prefix$formattedNumber$suffix",
+        style = style.copy(
+            fontFeatureSettings = "tnum"
+        ),
+        color = color,
+        modifier = modifier.scale(arrivalScale.value)
+    )
+}
+
