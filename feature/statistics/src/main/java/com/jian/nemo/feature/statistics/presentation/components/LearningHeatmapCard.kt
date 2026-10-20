@@ -258,6 +258,15 @@ private fun HeatmapContent(
         labels
     }
 
+    // --- 对角线波前扩散入场动效驱动 (从左下角到右上角，微晶弹泡弹性生长) ---
+    val entranceProgress = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        entranceProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 900, easing = FastOutSlowInEasing)
+        )
+    }
+
     // --- 方案一：Amicro 风格点阵正弦波呼吸驱动 ---
     val infiniteTransition = rememberInfiniteTransition(label = "HeatmapPulse")
     val pulseAlpha by infiniteTransition.animateFloat(
@@ -425,67 +434,93 @@ private fun HeatmapContent(
                     )
                 }
 
-                // 绘制热力图单元格（集成 Dither 点阵粒子与动态波浪微光）
+                // 绘制热力图单元格（集成对角线波前扩散入场 + Dither 点阵粒子与动态波浪微光）
+                val isEntering = entranceProgress.value < 1f
+                val currentProg = entranceProgress.value
+                val maxCol = (weeks - 1).coerceAtLeast(1)
+
                 paddedData.forEachIndexed { index, day ->
                     if (day != null) {
                         val col = index / 7
                         val row = index % 7
 
-                        val x = col * stepPx
-                        val y = headerHeightPx + row * stepPx
+                        // 计算对角线入场比例 (从左下角 col=0, row=6 沿对角线扩散至右上角 col=weeks-1, row=0)
+                        var cellScale = 1.0f
+                        var cellEntranceAlpha = 1.0f
+                        if (isEntering) {
+                            val diagDist = (col.toFloat() / maxCol) * 0.82f + ((6 - row).toFloat() / 6f) * 0.18f
+                            val startTime = diagDist * 0.62f
+                            val window = 0.38f
+                            val localT = ((currentProg - startTime) / window).coerceIn(0f, 1f)
+
+                            if (localT <= 0f) {
+                                return@forEachIndexed // 尚未被波前扫到，暂不绘制
+                            }
+
+                            // 弹性微晶弹泡 (0 -> 1.15 -> 1.0)
+                            cellScale = if (localT < 0.5f) {
+                                (localT / 0.5f) * 1.15f
+                            } else {
+                                val settle = (localT - 0.5f) / 0.5f
+                                1.15f - settle * 0.15f
+                            }
+                            cellEntranceAlpha = (localT * 2.5f).coerceIn(0f, 1f)
+                        }
 
                         val baseColor = getHeatmapColor(day.level, isDarkTheme)
-                        val cornerRadius = CornerRadius(with(density) { 3.5.dp.toPx() })
+                        val centerX = col * stepPx + blockSizePx / 2f
+                        val centerY = headerHeightPx + row * stepPx + blockSizePx / 2f
+                        val drawBlockSize = blockSizePx * cellScale
+                        val drawTopLeft = Offset(centerX - drawBlockSize / 2f, centerY - drawBlockSize / 2f)
+                        val drawCornerRadius = CornerRadius(with(density) { (3.5 * cellScale).dp.toPx() })
 
                         if (day.level == 0) {
                             // 未打卡单元格：平滑微圆角纯净基底
                             drawRoundRect(
-                                color = baseColor,
-                                topLeft = Offset(x, y),
-                                size = Size(blockSizePx, blockSizePx),
-                                cornerRadius = cornerRadius
+                                color = baseColor.copy(alpha = cellEntranceAlpha),
+                                topLeft = drawTopLeft,
+                                size = Size(drawBlockSize, drawBlockSize),
+                                cornerRadius = drawCornerRadius
                             )
                         } else {
-                            // 活跃单元格：微波呼吸计算（沿时间线微波荡漾）
+                            // 活跃单元格：微波呼吸与入场透明度合成
                             val wave = sin(col * 0.35f + row * 0.2f + waveOffset)
-                            val dynamicAlpha = (pulseAlpha + wave * 0.08f).coerceIn(0.7f, 1.0f)
+                            val dynamicAlpha = ((pulseAlpha + wave * 0.08f).coerceIn(0.7f, 1.0f)) * cellEntranceAlpha
                             val renderColor = baseColor.copy(alpha = dynamicAlpha)
 
                             // 1. 底层饱满色块
                             drawRoundRect(
                                 color = renderColor,
-                                topLeft = Offset(x, y),
-                                size = Size(blockSizePx, blockSizePx),
-                                cornerRadius = cornerRadius
+                                topLeft = drawTopLeft,
+                                size = Size(drawBlockSize, drawBlockSize),
+                                cornerRadius = drawCornerRadius
                             )
 
-                            // 2. Dither 微型粒子点阵渲染（根据 level 绘制内部发光点阵）
+                            // 2. Dither 微型粒子点阵渲染（等比缩放）
                             val glowColor = if (isDarkTheme) DotGlowDark else DotGlowLight
-                            val centerX = x + blockSizePx / 2f
-                            val centerY = y + blockSizePx / 2f
 
                             when (day.level) {
                                 1 -> {
                                     // Level 1: 中心单点微光核
                                     drawCircle(
                                         color = glowColor.copy(alpha = 0.45f * dynamicAlpha),
-                                        radius = with(density) { 1.2.dp.toPx() },
+                                        radius = with(density) { (1.2 * cellScale).dp.toPx() },
                                         center = Offset(centerX, centerY)
                                     )
                                 }
                                 2 -> {
                                     // Level 2: 2x2 微型对角点阵
-                                    val offset2 = with(density) { 2.4.dp.toPx() }
-                                    val dotRadius = with(density) { 1.1.dp.toPx() }
+                                    val offset2 = with(density) { (2.4 * cellScale).dp.toPx() }
+                                    val dotRadius = with(density) { (1.1 * cellScale).dp.toPx() }
                                     val alpha2 = 0.55f * dynamicAlpha
                                     drawCircle(glowColor.copy(alpha = alpha2), dotRadius, Offset(centerX - offset2, centerY - offset2))
                                     drawCircle(glowColor.copy(alpha = alpha2), dotRadius, Offset(centerX + offset2, centerY + offset2))
                                 }
                                 3 -> {
                                     // Level 3: 四角对称发光核 + 中心主光点
-                                    val offset3 = with(density) { 3.0.dp.toPx() }
-                                    val dotRadius = with(density) { 1.1.dp.toPx() }
-                                    val centerRadius = with(density) { 1.6.dp.toPx() }
+                                    val offset3 = with(density) { (3.0 * cellScale).dp.toPx() }
+                                    val dotRadius = with(density) { (1.1 * cellScale).dp.toPx() }
+                                    val centerRadius = with(density) { (1.6 * cellScale).dp.toPx() }
                                     val alpha3 = 0.7f * dynamicAlpha
                                     drawCircle(glowColor.copy(alpha = alpha3), dotRadius, Offset(centerX - offset3, centerY - offset3))
                                     drawCircle(glowColor.copy(alpha = alpha3), dotRadius, Offset(centerX + offset3, centerY - offset3))
@@ -495,15 +530,15 @@ private fun HeatmapContent(
                                 }
                                 4 -> {
                                     // Level 4: 炽热高能态（3x3 紧凑矩阵 + 中心光晕扩散）
-                                    val offset4 = with(density) { 3.2.dp.toPx() }
-                                    val dotRadius = with(density) { 1.2.dp.toPx() }
-                                    val centerRadius = with(density) { 2.0.dp.toPx() }
+                                    val offset4 = with(density) { (3.2 * cellScale).dp.toPx() }
+                                    val dotRadius = with(density) { (1.2 * cellScale).dp.toPx() }
+                                    val centerRadius = with(density) { (2.0 * cellScale).dp.toPx() }
                                     val alpha4 = 0.85f * dynamicAlpha
 
                                     // 中心光晕外圈
                                     drawCircle(
                                         color = glowColor.copy(alpha = 0.25f * dynamicAlpha),
-                                        radius = with(density) { 4.5.dp.toPx() },
+                                        radius = with(density) { (4.5 * cellScale).dp.toPx() },
                                         center = Offset(centerX, centerY)
                                     )
                                     // 点阵分布
