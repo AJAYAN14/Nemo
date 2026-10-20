@@ -26,9 +26,11 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
 import androidx.compose.material.icons.rounded.Share
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.painterResource
@@ -53,6 +55,8 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
 import androidx.compose.animation.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -202,6 +206,27 @@ fun LearningScreen(
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
+                        }
+
+                        // 中间：已连续打卡胶囊徽章（HTML 同款设计，橙底暖色）
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isDarkTheme) Color(0xFF2E1F14) else Color(0xFFFFF7ED),
+                            border = BorderStroke(1.dp, if (isDarkTheme) Color(0xFF6B3A1E) else Color(0xFFFFEDD5))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(text = "🔥", fontSize = 13.sp)
+                                Text(
+                                    text = "已连续打卡 ${uiState.dailyStreak} 天",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isDarkTheme) Color(0xFFFF8A50) else Color(0xFFEA580C)
+                                )
+                            }
                         }
 
                         // 右侧：分享按钮（液态凸透镜物理折射，使用热力图同款 ic_share_ios）
@@ -652,6 +677,7 @@ fun WordLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->
@@ -672,6 +698,7 @@ fun WordLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->
@@ -692,6 +719,7 @@ fun WordLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->
@@ -855,6 +883,7 @@ fun GrammarLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->
@@ -875,6 +904,7 @@ fun GrammarLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->
@@ -895,6 +925,7 @@ fun GrammarLearningContent(
                 sessionReviewCount = uiState.sessionReviewCount,
                 sessionRelearnCount = uiState.sessionRelearnCount,
                 tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                todayDueReviewCount = uiState.todayDueReviewCount,
                 showShareDialog = showShareDialog,
                 onDismissShareDialog = onDismissShareDialog,
                 onConfirmBonus = { bonusCount, bonusMode ->

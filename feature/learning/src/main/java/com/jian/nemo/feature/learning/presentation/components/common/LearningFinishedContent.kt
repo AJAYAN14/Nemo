@@ -27,11 +27,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Flag
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.dialog.BonusMode
 import com.jian.nemo.core.ui.component.dialog.BonusStudyDialog
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.feature.learning.presentation.components.dialogs.DailyAchievementShareDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -94,6 +96,7 @@ fun LearningFinishedContent(
     sessionReviewCount: Int = 0,
     sessionRelearnCount: Int = 0,
     tomorrowReviewForecastCount: Int = 0,
+    todayDueReviewCount: Int = 0,
     dailyStreak: Int = 1,
     showShareDialog: Boolean = false,
     onDismissShareDialog: () -> Unit = {},
@@ -195,88 +198,60 @@ fun LearningFinishedContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
-            // 1. 核心成就区 (Hero Area - 居中对齐，多巴胺反馈)
+            // 1. 核心成就区 (Hero Area - 居中基线对齐，现代通透视觉)
             // ==========================================
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp)
+                    .padding(top = 4.dp, bottom = 12.dp)
             ) {
-                // 连续打卡已续期胶囊徽章（跟随主题色与微光）
-                Surface(
-                    shape = CircleShape,
-                    color = themePrimary.copy(alpha = if (isDark) 0.18f else 0.10f),
-                    border = BorderStroke(1.dp, themePrimary.copy(alpha = 0.30f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        Text(text = "🔥", fontSize = 13.sp)
-                        Text(
-                            text = "已连续打卡 ${dailyStreak} 天",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = themePrimary
-                        )
-                    }
-                }
-
-                // 居中大数字展示
+                // 居中大数字与单位（基线自然对齐，去除沉重方块背景）
                 Row(
                     verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(top = 4.dp)
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     val displayedNumber = countUpNumber.value.roundToInt()
                     Text(
                         text = "$displayedNumber",
-                        fontSize = 58.sp,
+                        fontSize = 64.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = (-2).sp,
                         color = textPrimary,
-                        lineHeight = 58.sp
+                        lineHeight = 64.sp
                     )
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.06f),
-                        modifier = Modifier
-                            .padding(start = 6.dp, bottom = 8.dp)
-                    ) {
-                        Text(
-                            text = "词",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textSecondary,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
+                    Text(
+                        text = "词",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = textSecondary,
+                        modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                    )
                 }
 
                 // 主标题
                 Text(
                     text = title,
                     fontSize = 21.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Black,
                     letterSpacing = (-0.3).sp,
                     color = textPrimary
                 )
 
-                // 专注度或副标题动态激励反馈
+                // 专注度或副标题动态激励反馈（HTML 同款极简耗时文案）
                 val feedbackText = if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
                     val avgSeconds = String.format(Locale.getDefault(), "%.1f", sessionDurationSeconds.toFloat() / sessionTotalCount)
-                    "⚡ 专注度拉满！平均每词仅耗时 ${avgSeconds} 秒"
+                    "平均每词 $avgSeconds 秒"
                 } else {
                     subtitle
                 }
                 Text(
                     text = feedbackText,
-                    fontSize = 13.sp,
-                    color = textSecondary,
-                    lineHeight = 18.sp
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = textSecondary.copy(alpha = 0.85f),
+                    lineHeight = 16.sp
                 )
             }
 
@@ -286,22 +261,22 @@ fun LearningFinishedContent(
             // 2. 今日词量明细卡片（去术语化 + 堆叠比例进度条）
             // ==========================================
             Surface(
-                shape = RoundedCornerShape(22.dp),
+                shape = RoundedCornerShape(20.dp),
                 color = cardBg,
                 border = BorderStroke(1.dp, cardBorder),
                 shadowElevation = 0.dp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .shadow(
-                        elevation = 10.dp,
-                        shape = RoundedCornerShape(22.dp),
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(20.dp),
                         clip = false,
                         spotColor = shadowSpotColor,
                         ambientColor = shadowAmbientColor
                     )
             ) {
                 Column(
-                    modifier = Modifier.padding(18.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     // 标头行
@@ -311,27 +286,27 @@ fun LearningFinishedContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "今日词量明细",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
+                            text = "今日词量",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
                             color = textPrimary
                         )
 
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = accentGreen.copy(alpha = if (isDark) 0.18f else 0.12f)
+                            shape = CircleShape,
+                            color = Color(0xFFECFDF5).copy(alpha = if (isDark) 0.22f else 1f)
                         ) {
                             Text(
                                 text = "100% 掌握",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = accentGreen,
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
                         }
                     }
 
-                    // 双色/三色堆叠圆角进度条（交界处平滑柔和渐变过渡）
+                    // 双色/三色堆叠圆角进度条（严格保持原版：交界处平滑柔和渐变过渡与流动动画）
                     val progressGradientBrush = remember(
                         sessionReviewCount,
                         sessionNewCount,
@@ -395,195 +370,187 @@ fun LearningFinishedContent(
                         }
                     }
 
-                    // 左右对照指标格（上下两行结构，完美规避三列并排挤压）
+                    // 三等分居中结构：与 HTML 设计 1:1 对齐，极简细分割线
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 旧词巩固卡片
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
-                            border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
-                            modifier = Modifier.weight(1f)
+                        // 第 1 等份: 旧词巩固
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 9.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(bottom = 6.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(7.dp)
-                                            .clip(CircleShape)
-                                            .background(accentGreen)
-                                    )
-                                    Text(
-                                        text = "旧词巩固",
-                                        fontSize = 11.sp,
-                                        color = textSecondary,
-                                        maxLines = 1,
-                                        softWrap = false
-                                    )
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Text(
-                                        text = "$sessionReviewCount 词",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = textPrimary,
-                                        maxLines = 1,
-                                        softWrap = false
-                                    )
-                                    val reviewPercent = ((sessionReviewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
-                                    Surface(
-                                        shape = RoundedCornerShape(5.dp),
-                                        color = accentGreen.copy(alpha = if (isDark) 0.16f else 0.10f)
-                                    ) {
-                                        Text(
-                                            text = "$reviewPercent%",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = accentGreen,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // 新词拓展卡片
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
-                            border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 9.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(7.dp)
-                                            .clip(CircleShape)
-                                            .background(accentBlue)
-                                    )
-                                    Text(
-                                        text = "新词拓展",
-                                        fontSize = 11.sp,
-                                        color = textSecondary,
-                                        maxLines = 1,
-                                        softWrap = false
-                                    )
-                                }
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Text(
-                                        text = "$sessionNewCount 词",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = textPrimary,
-                                        maxLines = 1,
-                                        softWrap = false
-                                    )
-                                    val newPercent = ((sessionNewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
-                                    Surface(
-                                        shape = RoundedCornerShape(5.dp),
-                                        color = accentBlue.copy(alpha = if (isDark) 0.16f else 0.10f)
-                                    ) {
-                                        Text(
-                                            text = "$newPercent%",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = accentBlue,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // 反复攻克（若有）
-                        if (sessionRelearnCount > 0) {
-                            Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (isDark) Color.White.copy(alpha = 0.05f) else Color.Black.copy(alpha = 0.025f),
-                                border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.35f)),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Column(
+                                Box(
                                     modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 10.dp, vertical = 9.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(accentGreen)
+                                )
+                                Text(
+                                    text = "旧词巩固",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textSecondary
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.Bottom,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "$sessionReviewCount",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = textPrimary,
+                                    lineHeight = 22.sp
+                                )
+                                Text(
+                                    text = "词",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textPrimary,
+                                    modifier = Modifier.padding(start = 2.dp, end = 6.dp, bottom = 2.dp)
+                                )
+                                val reviewPercent = ((sessionReviewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                Text(
+                                    text = "$reviewPercent%",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF94A3B8),
+                                    modifier = Modifier.padding(bottom = 2.dp)
+                                )
+                            }
+                        }
+
+                        // 垂直细分割线 1
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(28.dp)
+                                .background(cardBorder.copy(alpha = 0.6f))
+                        )
+
+                        // 第 2 等份: 新词拓展
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(accentBlue)
+                                )
+                                Text(
+                                    text = "新词拓展",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textSecondary
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.Bottom,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = "$sessionNewCount",
+                                    fontSize = 22.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = textPrimary,
+                                    lineHeight = 22.sp
+                                )
+                                Text(
+                                    text = "词",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textPrimary,
+                                    modifier = Modifier.padding(start = 2.dp, end = 6.dp, bottom = 2.dp)
+                                )
+                                val newPercent = ((sessionNewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                Text(
+                                    text = "$newPercent%",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF94A3B8),
+                                    modifier = Modifier.padding(bottom = 2.dp)
+                                )
+                            }
+                        }
+
+                        // 第 3 等份: 攻克 (如果有反复攻克词数)
+                        if (sessionRelearnCount > 0) {
+                            // 垂直细分割线 2
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(28.dp)
+                                    .background(cardBorder.copy(alpha = 0.6f))
+                            )
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.padding(bottom = 6.dp)
                                 ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(7.dp)
-                                                .clip(CircleShape)
-                                                .background(accentGold)
-                                        )
-                                        Text(
-                                            text = "攻克",
-                                            fontSize = 11.sp,
-                                            color = textSecondary,
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
-                                    }
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                    ) {
-                                        Text(
-                                            text = "$sessionRelearnCount 词",
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = textPrimary,
-                                            maxLines = 1,
-                                            softWrap = false
-                                        )
-                                        val relearnPercent = ((sessionRelearnCount.toFloat() / sessionTotalCount) * 100).roundToInt()
-                                        Surface(
-                                            shape = RoundedCornerShape(5.dp),
-                                            color = accentGold.copy(alpha = if (isDark) 0.16f else 0.10f)
-                                        ) {
-                                            Text(
-                                                text = "$relearnPercent%",
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = accentGold,
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.5.dp),
-                                                maxLines = 1,
-                                                softWrap = false
-                                            )
-                                        }
-                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(accentGold)
+                                    )
+                                    Text(
+                                        text = "攻克",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = textSecondary
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.Bottom,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "$sessionRelearnCount",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = textPrimary,
+                                        lineHeight = 22.sp
+                                    )
+                                    Text(
+                                        text = "词",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = textPrimary,
+                                        modifier = Modifier.padding(start = 2.dp, end = 6.dp, bottom = 2.dp)
+                                    )
+                                    val relearnPercent = ((sessionRelearnCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                    Text(
+                                        text = "$relearnPercent%",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF94A3B8),
+                                        modifier = Modifier.padding(bottom = 2.dp)
+                                    )
                                 }
                             }
                         }
@@ -594,141 +561,144 @@ fun LearningFinishedContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
-            // 3. 双栏高光指标卡片（最高连击 & 专注用时）
+            // 3. 最高连击与专注用时（双等分居中排版 + 细分割线）
             // ==========================================
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = cardBg,
+                border = BorderStroke(1.dp, cardBorder),
+                shadowElevation = 0.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        clip = false,
+                        spotColor = shadowSpotColor,
+                        ambientColor = shadowAmbientColor
+                    )
             ) {
-                // 左子卡：最高连击
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = cardBg,
-                    border = BorderStroke(1.dp, cardBorder),
-                    shadowElevation = 0.dp,
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            clip = false,
-                            spotColor = shadowSpotColor,
-                            ambientColor = shadowAmbientColor
-                        )
+                        .fillMaxWidth()
+                        .padding(vertical = 14.dp, horizontal = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // 左半部：最高连击
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(bottom = 4.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Star,
-                                    contentDescription = null,
-                                    tint = accentGold,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "最高连击",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = textSecondary
-                                )
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = accentGold.copy(alpha = if (isDark) 0.18f else 0.12f)
-                            ) {
-                                Text(
-                                    text = "零失误",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = accentGold,
-                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Whatshot,
+                                contentDescription = null,
+                                tint = Color(0xFFFF5722),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "最高连击",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textSecondary
+                            )
                         }
                         val displayedCombo = comboAnim.value.roundToInt()
-                        Text(
-                            text = "$displayedCombo 次",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textPrimary
-                        )
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "$displayedCombo",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textPrimary,
+                                lineHeight = 24.sp
+                            )
+                            Text(
+                                text = "次",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary,
+                                modifier = Modifier.padding(start = 3.dp, bottom = 2.dp)
+                            )
+                        }
                     }
-                }
 
-                // 右子卡：专注用时
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = cardBg,
-                    border = BorderStroke(1.dp, cardBorder),
-                    shadowElevation = 0.dp,
-                    modifier = Modifier
-                        .weight(1f)
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            clip = false,
-                            spotColor = shadowSpotColor,
-                            ambientColor = shadowAmbientColor
-                        )
-                ) {
+                    // 中间极简垂直分割线
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(32.dp)
+                            .background(cardBorder.copy(alpha = 0.6f))
+                    )
+
+                    // 右半部：专注用时
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.padding(bottom = 4.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.AccessTime,
-                                    contentDescription = null,
-                                    tint = themePrimary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = "专注用时",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = textSecondary
-                                )
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = themePrimary.copy(alpha = if (isDark) 0.18f else 0.12f)
-                            ) {
-                                Text(
-                                    text = "极速",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = themePrimary,
-                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.AccessTime,
+                                contentDescription = null,
+                                tint = Color(0xFF2563EB),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "专注用时",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textSecondary
+                            )
                         }
                         val minutes = sessionDurationSeconds / 60
                         val seconds = sessionDurationSeconds % 60
-                        val timeStr = if (minutes > 0) "${minutes}分${seconds}秒" else "${seconds}秒"
-                        Text(
-                            text = if (sessionDurationSeconds > 0) timeStr else "1 分钟",
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = textPrimary
-                        )
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            if (minutes > 0) {
+                                Text(
+                                    text = "$minutes",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = textPrimary,
+                                    lineHeight = 24.sp
+                                )
+                                Text(
+                                    text = "分",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textPrimary,
+                                    modifier = Modifier.padding(start = 2.dp, end = 2.dp, bottom = 2.dp)
+                                )
+                            }
+                            Text(
+                                text = if (sessionDurationSeconds > 0) "$seconds" else "1",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textPrimary,
+                                lineHeight = 24.sp
+                            )
+                            Text(
+                                text = if (sessionDurationSeconds > 0) "秒" else "分",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary,
+                                modifier = Modifier.padding(start = 2.dp, bottom = 2.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -736,7 +706,7 @@ fun LearningFinishedContent(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
-            // 4. 明日复习预估卡片
+            // 4. 复习与预估卡片（今日待复习与明日自然到期预估）
             // ==========================================
             Surface(
                 shape = RoundedCornerShape(18.dp),
@@ -753,35 +723,107 @@ fun LearningFinishedContent(
                         ambientColor = shadowAmbientColor
                     )
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
                 ) {
+                    // 今日待复习词量
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 11.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.CalendarToday,
-                            contentDescription = null,
-                            tint = textSecondary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = "明日自然到期预估",
-                            fontSize = 13.sp,
-                            color = textSecondary
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Autorenew,
+                                contentDescription = null,
+                                tint = Color(0xFFF97316),
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Text(
+                                text = "今日待复习词量",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textSecondary
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                text = "${todayDueReviewCount.coerceAtLeast(0)}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textPrimary
+                            )
+                            Text(
+                                text = "词",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary,
+                                modifier = Modifier.padding(bottom = 1.dp)
+                            )
+                        }
                     }
-                    Text(
-                        text = "${tomorrowReviewForecastCount.coerceAtLeast(0)} 词",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = textPrimary
+
+                    // 极简水平分割线
+                    HorizontalDivider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 1.dp,
+                        color = cardBorder.copy(alpha = 0.5f)
                     )
+
+                    // 明日自然到期预估
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 11.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.CalendarToday,
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(17.dp)
+                            )
+                            Text(
+                                text = "明日自然到期预估",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textSecondary
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                text = "${tomorrowReviewForecastCount.coerceAtLeast(0)}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = textPrimary
+                            )
+                            Text(
+                                text = "词",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = textPrimary,
+                                modifier = Modifier.padding(bottom = 1.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -885,36 +927,30 @@ fun LearningFinishedContent(
             // ==========================================
             // 6. 底部主操作区 (Primary CTA - 闭环完成今日学习)
             // ==========================================
-            Button(
+            FrostedLiquidGlassButton(
                 onClick = onBackClick,
                 shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isDark) themePrimary else Color(0xFF1E293B),
-                    contentColor = Color.White
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isDark) Color.White.copy(alpha = 0.16f) else Color.Black.copy(alpha = 0.08f)
                 ),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 4.dp,
-                    pressedElevation = 1.dp
-                ),
+                surfaceColor = if (isDark) themePrimary.copy(alpha = 0.22f) else Color(0xFF1E293B).copy(alpha = 0.06f),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "完成今日学习",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.Rounded.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                Text(
+                    text = "完成今日学习",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textPrimary
+                )
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = textPrimary,
+                    modifier = Modifier.size(18.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(28.dp))

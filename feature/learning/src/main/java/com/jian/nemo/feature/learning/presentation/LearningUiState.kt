@@ -112,6 +112,7 @@ data class LearningUiState(
     val sessionReviewCount: Int = 0,
     val sessionRelearnCount: Int = 0,
     val tomorrowReviewForecastCount: Int = 0,
+    val todayDueReviewCount: Int = 0,
     val dailyStreak: Int = 1
 ) {
     val hasPendingItems: Boolean

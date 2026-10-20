@@ -915,17 +915,31 @@ class LearningViewModel @Inject constructor(
             }
         }
 
-        // 异步加载明日到期复习卡片预测
+        // 异步加载今日待复习与明日到期复习卡片预测
         val todayEpoch = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
         val tomorrowEpoch = todayEpoch + 1
         viewModelScope.launch {
             if (mode == LearningMode.Word) {
-                wordRepository.getDueWordsCount(tomorrowEpoch).collect { count ->
-                    _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                launch {
+                    wordRepository.getDueWordsCount(todayEpoch).collect { count ->
+                        _uiState.update { it.copy(todayDueReviewCount = count) }
+                    }
+                }
+                launch {
+                    wordRepository.getDueWordsCount(tomorrowEpoch).collect { count ->
+                        _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                    }
                 }
             } else {
-                grammarRepository.getDueGrammarsCount(tomorrowEpoch).collect { count ->
-                    _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                launch {
+                    grammarRepository.getDueGrammarsCount(todayEpoch).collect { count ->
+                        _uiState.update { it.copy(todayDueReviewCount = count) }
+                    }
+                }
+                launch {
+                    grammarRepository.getDueGrammarsCount(tomorrowEpoch).collect { count ->
+                        _uiState.update { it.copy(tomorrowReviewForecastCount = count) }
+                    }
                 }
             }
         }

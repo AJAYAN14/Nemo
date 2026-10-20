@@ -5,6 +5,7 @@ import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -641,7 +642,8 @@ private fun EntranceCountUpText(
     durationMillis: Int = 850,
     prefix: String = "",
     suffix: String = "",
-    useGrouping: Boolean = true
+    useGrouping: Boolean = true,
+    marqueeMinLength: Int = 5
 ) {
     val animatedProgress = remember { Animatable(0f) }
     val arrivalScale = remember { Animatable(1f) }
@@ -678,13 +680,30 @@ private fun EntranceCountUpText(
         currentValue.toString()
     }
 
+    val fullText = "$prefix$formattedNumber$suffix"
+    val shouldMarquee = fullText.length >= marqueeMinLength
+
     Text(
-        text = "$prefix$formattedNumber$suffix",
+        text = fullText,
         style = style.copy(
             fontFeatureSettings = "tnum"
         ),
         color = color,
-        modifier = modifier.scale(arrivalScale.value)
+        maxLines = 1,
+        softWrap = false,
+        modifier = modifier
+            .scale(arrivalScale.value)
+            .then(
+                if (shouldMarquee) {
+                    Modifier.basicMarquee(
+                        iterations = Int.MAX_VALUE,
+                        initialDelayMillis = 1200,
+                        repeatDelayMillis = 1200
+                    )
+                } else {
+                    Modifier
+                }
+            )
     )
 }
 
