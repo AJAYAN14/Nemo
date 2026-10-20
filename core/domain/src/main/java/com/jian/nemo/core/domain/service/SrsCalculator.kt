@@ -40,6 +40,15 @@ interface SrsCalculator {
     fun forgettingCurve(elapsedDays: Float, stability: Float): Float
 
     /**
+     * 计算指定留存率下的最优间隔（天）
+     *
+     * @param stability 当前稳定性
+     * @param retention 目标留存率
+     * @return 最优间隔天数
+     */
+    fun nextInterval(stability: Float, retention: Float = 0.9f): Float = stability
+
+    /**
      * 通知一次复习完成
      *
      * 实现类可利用此信号进行增量参数优化。

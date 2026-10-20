@@ -191,5 +191,9 @@ class SrsCalculatorImpl @Inject constructor(
     override fun forgettingCurve(elapsedDays: Float, stability: Float): Float {
         return fsrs.forgettingCurve(elapsedDays, stability)
     }
+
+    override fun nextInterval(stability: Float, retention: Float): Float {
+        return fsrs.nextInterval(stability, retention)
+    }
 }
 

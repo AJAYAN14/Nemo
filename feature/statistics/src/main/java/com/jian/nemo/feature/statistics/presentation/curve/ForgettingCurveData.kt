@@ -44,7 +44,10 @@ data class AlertInsight(
     val title: String,
     val message: String,
     val criticalDays: Int,
-    val color: Color
+    val color: Color,
+    val alertThreshold: Float = 0.90f,
+    val actualRetention: Float? = null,
+    val targetRetention: Float = 0.90f
 )
 
 /**
@@ -66,11 +69,17 @@ data class CurvePoint(
  * @param activeStage 当前激活的分层阶段
  * @param stages 各阶段聚合统计信息
  * @param alertInsight 记忆警戒推演卡片内容
+ * @param alertThreshold 当前动态警戒线阈值
+ * @param actualRetention 当前实际回忆率（null为样本不足冷启动）
+ * @param targetRetention 用户设定的目标保留率
  */
 data class ForgettingCurveData(
     val standardCurve: List<CurvePoint>,
     val userCurve: List<CurvePoint>,
     val activeStage: CurveStage = CurveStage.COMPOSITE,
     val stages: List<StageStat> = emptyList(),
-    val alertInsight: AlertInsight? = null
+    val alertInsight: AlertInsight? = null,
+    val alertThreshold: Float = 0.90f,
+    val actualRetention: Float? = null,
+    val targetRetention: Float = 0.90f
 )

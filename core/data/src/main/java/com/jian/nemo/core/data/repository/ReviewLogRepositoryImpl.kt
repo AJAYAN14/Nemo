@@ -18,4 +18,8 @@ class ReviewLogRepositoryImpl @Inject constructor(
     override suspend fun getRecentLogs(limit: Int): List<ReviewLog> {
         return reviewLogDao.getRecentLogs(limit).map { it.toDomain() }
     }
+
+    override suspend fun getRecentSuccessRate(limit: Int): Float? {
+        return reviewLogDao.getRecentSuccessRate(limit)
+    }
 }

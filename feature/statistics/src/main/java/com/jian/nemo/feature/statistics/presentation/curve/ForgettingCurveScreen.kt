@@ -42,6 +42,8 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.discoverybar.TapPulseWrapper
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.statistics.presentation.curve.components.ForgettingCurveChart
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -131,6 +133,7 @@ fun ForgettingCurveScreen(
                 // ========== 图例区域 ==========
                 CurveLegend(
                     selectedStage = uiState.selectedStage,
+                    alertThreshold = uiState.curveData?.alertThreshold ?: 0.90f,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
 
@@ -285,9 +288,11 @@ private fun CurveStageSelector(
 @Composable
 private fun CurveLegend(
     selectedStage: CurveStage,
+    alertThreshold: Float = 0.90f,
     modifier: Modifier = Modifier
 ) {
     val stageColor = selectedStage.themeColor
+    val thresholdPercent = (alertThreshold * 100).roundToInt()
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -299,6 +304,11 @@ private fun CurveLegend(
         LegendItem(
             color = ChartColors.FreshGreen,
             text = "艾宾浩斯遗忘曲线 (标准参考)",
+            isDashed = true
+        )
+        LegendItem(
+            color = Color(0xFFFFD60A),
+            text = "自适应警戒线 (${thresholdPercent}%)",
             isDashed = true
         )
     }
@@ -394,13 +404,14 @@ private fun CurveAlertCard(
                         color = alertInsight.color
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    // 跌破 90% 临界天数徽标
+                    // 跌破动态临界天数徽标
+                    val thresholdPercent = (alertInsight.alertThreshold * 100).roundToInt()
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = alertInsight.color.copy(alpha = 0.12f)
                     ) {
                         Text(
-                            text = "90%临界: ${alertInsight.criticalDays}天",
+                            text = "${thresholdPercent}%临界: ${alertInsight.criticalDays}天",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = alertInsight.color,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -413,6 +424,60 @@ private fun CurveAlertCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 )
+
+                // 三元联动自适应状态诊断条（常驻展示，支持冷启动提示）
+                val actual = alertInsight.actualRetention
+                val target = alertInsight.targetRetention
+                val targetPercent = (target * 100).roundToInt()
+
+                val (displayText, statusLabel, statusColor) = if (actual != null) {
+                    val delta = target - actual
+                    val actualPercent = (actual * 100).roundToInt()
+                    val (label, color) = when {
+                        abs(delta) <= 0.02f -> "表现平稳" to ChartColors.FreshGreen
+                        delta > 0.02f && target <= 0.90f -> "负荷偏高" to Color(0xFFFF9800)
+                        target >= 0.92f && actual < target -> "强化监控" to Color(0xFFEF4444)
+                        actual - target > 0.02f -> "掌握扎实" to ChartColors.FreshGreen
+                        target <= 0.85f -> "轻量维护" to Color(0xFF3B82F6)
+                        else -> "自适应微调" to MaterialTheme.colorScheme.primary
+                    }
+                    Triple("目标保留率: ${targetPercent}%  |  实际回忆率: ${actualPercent}%", label, color)
+                } else {
+                    Triple("目标保留率: ${targetPercent}%  |  实际回忆率: 采集中", "样本不足(需≥10条)", MaterialTheme.colorScheme.primary)
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = if (isDark) Color.White.copy(alpha = 0.06f) else Color.Black.copy(alpha = 0.04f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = displayText,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = statusColor.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                text = statusLabel,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = statusColor,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                            )
+                        }
+                    }
+                }
             }
         } else {
             Text(

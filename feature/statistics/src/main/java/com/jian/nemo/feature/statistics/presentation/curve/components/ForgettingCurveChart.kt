@@ -3,6 +3,7 @@ package com.jian.nemo.feature.statistics.presentation.curve.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.ChartColors
+import kotlin.math.roundToInt
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.feature.statistics.presentation.curve.CurvePoint
@@ -134,6 +136,12 @@ fun ForgettingCurveChart(
         )
     }
 
+    val animatedThreshold by animateFloatAsState(
+        targetValue = data.alertThreshold,
+        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
+        label = "alertThresholdAnim"
+    )
+
     var touchX by remember { mutableStateOf<Float?>(null) }
     val chartBackdrop = rememberLayerBackdrop()
 
@@ -181,6 +189,7 @@ fun ForgettingCurveChart(
                 day = bestDayIndex,
                 userRate = userPt.retentionRate,
                 stdRate = stdPt.retentionRate,
+                alertThreshold = data.alertThreshold,
                 targetX = targetX,
                 chartTop = chartTop,
                 chartLeft = chartLeft,
@@ -259,29 +268,30 @@ fun ForgettingCurveChart(
                 )
             }
 
-            // ========== 绘制 90% 黄金记忆警戒线 ==========
-            val y90Ratio = 0.90f
-            val y90 = chartBottom - y90Ratio * chartHeight
+            // ========== 绘制三元自适应记忆警戒线 ==========
+            val yThresholdRatio = animatedThreshold.coerceIn(0f, 1f)
+            val yThreshold = chartBottom - yThresholdRatio * chartHeight
             drawLine(
-                color = Color(0xFFFFD60A).copy(alpha = 0.65f),
-                start = Offset(chartLeft, y90),
-                end = Offset(chartRight, y90),
+                color = Color(0xFFFFD60A).copy(alpha = 0.75f),
+                start = Offset(chartLeft, yThreshold),
+                end = Offset(chartRight, yThreshold),
                 strokeWidth = with(density) { 1.dp.toPx() },
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f), 0f)
             )
 
-            val thresholdText = "90% 警戒线"
+            val thresholdPercent = (animatedThreshold * 100).roundToInt()
+            val thresholdText = "${thresholdPercent}% 警戒线"
             val thresholdStyle = TextStyle(
-                color = Color(0xFFFFD60A).copy(alpha = 0.85f),
+                color = Color(0xFFFFD60A).copy(alpha = 0.9f),
                 fontSize = 9.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.SemiBold
             )
             val thresholdLayout = textMeasurer.measure(thresholdText, thresholdStyle)
             drawText(
                 textLayoutResult = thresholdLayout,
                 topLeft = Offset(
                     x = chartRight - thresholdLayout.size.width - with(density) { 4.dp.toPx() },
-                    y = y90 - thresholdLayout.size.height - with(density) { 2.dp.toPx() }
+                    y = yThreshold - thresholdLayout.size.height - with(density) { 2.dp.toPx() }
                 )
             )
 
@@ -436,6 +446,7 @@ private data class TooltipInfo(
     val day: Int,
     val userRate: Float,
     val stdRate: Float,
+    val alertThreshold: Float,
     val targetX: Float,
     val chartTop: Float,
     val chartLeft: Float,
@@ -519,6 +530,19 @@ private fun CurveLiquidTooltip(
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "标准参考: ${(info.stdRate * 100).toInt()}%",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                    )
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(Color(0xFFFFD60A), CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "动态警戒: ${(info.alertThreshold * 100).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
                     )
