@@ -121,61 +121,14 @@ class SessionLoader @Inject constructor(
             val itemMap = allItems.associateBy { getItemId(it) }
             val restoredItems = ids.mapNotNull { itemMap[it] }
 
-            // 恢复已保存的会话队列：全量保留已保存的卡片，不受中途目标修改干扰
+            // 恢复已保存的会话队列：全量保留已保存的卡片，不受中途目标修改与微会话容量切片干扰
             val prunedItems = restoredItems.toMutableList()
 
             // 确保恢复后的列表不为空，且索引有效
             if (prunedItems.isNotEmpty() && index < prunedItems.size) {
-                // 计算今日剩余复习额度与新学额度
-                val remainingReviewQuota = if (maxDailyReviews > 0) {
-                    (maxDailyReviews - todayReviewedCount).coerceAtLeast(0)
-                } else {
-                    Int.MAX_VALUE
-                }
-                val rawRemainingQuota = (dailyGoal - completedToday).coerceAtLeast(0)
-                val effectiveBatchSize = sessionBatchSize.coerceIn(10, 30)
-
-                val remainingItemsInSession = prunedItems.subList(index, prunedItems.size)
-
-                // 依据复习上限配额与微会话单组容量（Session Batch Size）对残留卡片进行智能切片
-                var reviewQuotaLeft = remainingReviewQuota
-                var newQuotaLeft = rawRemainingQuota
-                val curatedRemainingItems = mutableListOf<T>()
-
-                for (item in remainingItemsInSession) {
-                    if (curatedRemainingItems.size >= effectiveBatchSize) {
-                        break
-                    }
-                    val isNew = isItemNew(item)
-                    if (isNew) {
-                        if (newQuotaLeft > 0) {
-                            curatedRemainingItems.add(item)
-                            newQuotaLeft--
-                        }
-                    } else {
-                        if (reviewQuotaLeft > 0) {
-                            curatedRemainingItems.add(item)
-                            reviewQuotaLeft--
-                        }
-                    }
-                }
-
-                // 检查：如果清洗截断后没有可学习项目（例如今日复习已达上限且今日新词已达成/无新词配额），
-                // 说明超额复习项已达上限，应当尊重配额直接呈现结算
-                if (curatedRemainingItems.isEmpty()) {
-                    println("🛑 [Quota & Micro-Session] 今日复习已达上限且新词已达成（或无剩余配额），废止残留超额微会话，直接结算")
-                    return SessionLoadResult.Completed(
-                        dailyGoal = dailyGoal,
-                        completedToday = completedToday
-                    )
-                }
-
-                val learnedItems = prunedItems.subList(0, index)
-                val finalItems = learnedItems + curatedRemainingItems
-
-                println("✅ 恢复微会话: Index $index / ${finalItems.size} (本组待学 ${curatedRemainingItems.size} 词, 历史总计 ${prunedItems.size} 词, 单组容量 $effectiveBatchSize)")
+                println("✅ 恢复学习会话: Index $index / ${prunedItems.size} (会话卡片数: ${prunedItems.size})")
                 return SessionLoadResult.Restored(
-                    items = finalItems,
+                    items = prunedItems,
                     index = index,
                     steps = steps,
                     dailyGoal = dailyGoal,
@@ -208,8 +161,8 @@ class SessionLoader @Inject constructor(
         val activeDueItems = learningItems + prioritizedDueItems
         val activeDueCount = activeDueItems.size
 
-        // 4. 微会话容量（Session Batch Size）与每日复习上限配额调度
-        val effectiveBatchSize = sessionBatchSize.coerceIn(10, 30)
+        // 4. 微会话容量（Session Batch Size）与每日复习上限配额调度 (支持用户自定义 5..100 词)
+        val effectiveBatchSize = sessionBatchSize.coerceIn(5, 100)
         val rawRemainingQuota = (dailyGoal - completedToday).coerceAtLeast(0)
 
         // 计算今日剩余复习额度上限约束 (0 表示不设限制)

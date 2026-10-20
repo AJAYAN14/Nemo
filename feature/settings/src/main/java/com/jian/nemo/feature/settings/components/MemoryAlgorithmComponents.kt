@@ -64,8 +64,10 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.HourglassBottom
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Waves
+import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -775,90 +777,35 @@ private fun StepCapsuleItem(
 }
 
 /**
- * 步长微调对话框
+ * 步长微调与新增对话框 (采用加餐同款高质感居中 CommonConfigDialog)
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StepEditDialog(
     currentValue: String,
     accentColor: Color,
-    title: String = "调整复习间隔",
+    title: String = "调整复习阶段时长",
+    subtitle: String = "设定记忆间隔时长（支持分位加减与手写输入）",
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var textInput by remember { mutableStateOf(currentValue) }
-    val quickPresets = listOf("1", "5", "10", "15", "30", "60", "1440")
+    val initialVal = currentValue.toIntOrNull()?.coerceAtLeast(1) ?: 10
+    val presets = listOf(1, 5, 10, 15, 30, 60)
 
-    com.jian.nemo.core.ui.component.NemoDialog(
-        onDismissRequest = onDismiss,
+    CommonConfigDialog(
+        headerIcon = Icons.Rounded.Schedule,
+        headerIconTint = accentColor,
         title = title,
-        confirmText = "确定",
-        dismissText = "取消",
+        subtitle = subtitle,
+        initialValue = initialVal,
+        min = 1,
+        max = 1440,
+        step = 1,
+        presets = presets,
+        presetLabelFormatter = { formatStepDuration(it.toString()) },
+        confirmText = "确认保存",
         confirmButtonColor = accentColor,
-        confirmEnabled = textInput.isNotBlank() && textInput.toIntOrNull() != null,
-        onConfirm = {
-            if (textInput.isNotBlank() && textInput.toIntOrNull() != null) {
-                onConfirm(textInput)
-            }
-        },
-        content = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "输入复习间隔时长（单位：分钟）：",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                OutlinedTextField(
-                    value = textInput,
-                    onValueChange = { input ->
-                        if (input.all { it.isDigit() }) textInput = input
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = accentColor,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // 常用快捷预设
-                Text(
-                    text = "推荐预设：",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    quickPresets.forEach { preset ->
-                        Surface(
-                            onClick = { textInput = preset },
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (textInput == preset) accentColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                            border = BorderStroke(
-                                1.dp,
-                                if (textInput == preset) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                            )
-                        ) {
-                            Text(
-                                text = formatStepDuration(preset),
-                                fontSize = 12.sp,
-                                fontWeight = if (textInput == preset) FontWeight.Bold else FontWeight.Normal,
-                                color = if (textInput == preset) accentColor else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        onDismissRequest = onDismiss,
+        onConfirm = { onConfirm(it.toString()) }
     )
 }
 

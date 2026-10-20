@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.dialog.BonusMode
 import com.jian.nemo.core.ui.component.dialog.BonusStudyDialog
-import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.feature.learning.presentation.components.dialogs.DailyAchievementShareDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -927,14 +927,11 @@ fun LearningFinishedContent(
             // ==========================================
             // 6. 底部主操作区 (Primary CTA - 闭环完成今日学习)
             // ==========================================
-            FrostedLiquidGlassButton(
+            ColoredLiquidGlassButton(
                 onClick = onBackClick,
+                tint = themePrimary,
                 shape = RoundedCornerShape(18.dp),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = if (isDark) Color.White.copy(alpha = 0.16f) else Color.Black.copy(alpha = 0.08f)
-                ),
-                surfaceColor = if (isDark) themePrimary.copy(alpha = 0.22f) else Color(0xFF1E293B).copy(alpha = 0.06f),
+                border = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -943,12 +940,12 @@ fun LearningFinishedContent(
                     text = "完成今日学习",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = textPrimary
+                    color = Color.White
                 )
                 Icon(
                     imageVector = Icons.Rounded.Check,
                     contentDescription = null,
-                    tint = textPrimary,
+                    tint = Color.White,
                     modifier = Modifier.size(18.dp)
                 )
             }

@@ -16,9 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
 
 /**
  * 积压排产与微会话控制卡片 (Backlog & Micro-Session Controller Card)
@@ -36,6 +43,8 @@ fun BacklogControllerCard(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    var showBatchDialog by remember { mutableStateOf(false) }
+    var showReviewLimitDialog by remember { mutableStateOf(false) }
 
     PremiumCard(modifier = modifier) {
         Column(
@@ -123,6 +132,40 @@ fun BacklogControllerCard(
                             }
                         }
                     }
+
+                    // 自定义单组微会话容量
+                    val isCustomBatch = sessionBatchSize !in batchOptions
+                    val customBg by animateColorAsState(
+                        if (isCustomBatch) accentColor.copy(alpha = if (isDark) 0.22f else 0.15f)
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        label = "customBatchBg"
+                    )
+                    val customTextColor by animateColorAsState(
+                        if (isCustomBatch) accentColor else MaterialTheme.colorScheme.onSurface,
+                        label = "customBatchText"
+                    )
+
+                    Surface(
+                        onClick = { showBatchDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = customBg,
+                        border = BorderStroke(
+                            1.dp,
+                            if (isCustomBatch) accentColor else Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .weight(1.3f)
+                            .height(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = if (isCustomBatch) "$sessionBatchSize" else "自定义",
+                                fontSize = 12.sp,
+                                fontWeight = if (isCustomBatch) FontWeight.Bold else FontWeight.Medium,
+                                color = customTextColor
+                            )
+                        }
+                    }
                 }
             }
 
@@ -189,6 +232,40 @@ fun BacklogControllerCard(
                             }
                         }
                     }
+
+                    // 自定义每日复习上限
+                    val isCustomReviewLimit = maxDailyReviews !in listOf(0, 40, 60, 80)
+                    val customReviewBg by animateColorAsState(
+                        if (isCustomReviewLimit) accentColor.copy(alpha = if (isDark) 0.22f else 0.15f)
+                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                        label = "customLimitBg"
+                    )
+                    val customReviewTextColor by animateColorAsState(
+                        if (isCustomReviewLimit) accentColor else MaterialTheme.colorScheme.onSurface,
+                        label = "customLimitText"
+                    )
+
+                    Surface(
+                        onClick = { showReviewLimitDialog = true },
+                        shape = RoundedCornerShape(12.dp),
+                        color = customReviewBg,
+                        border = BorderStroke(
+                            1.dp,
+                            if (isCustomReviewLimit) accentColor else Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .weight(1.1f)
+                            .height(38.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                text = if (isCustomReviewLimit) "$maxDailyReviews 词" else "自定义",
+                                fontSize = 12.sp,
+                                fontWeight = if (isCustomReviewLimit) FontWeight.Bold else FontWeight.Medium,
+                                color = customReviewTextColor
+                            )
+                        }
+                    }
                 }
             }
 
@@ -233,6 +310,52 @@ fun BacklogControllerCard(
                 }
             }
         }
+    }
+
+    // 自定义单组微会话容量弹窗 (加餐同款通用配置弹窗 - 统一绿色调)
+    if (showBatchDialog) {
+        CommonConfigDialog(
+            headerIcon = Icons.Rounded.Layers,
+            headerIconTint = accentColor,
+            title = "单组微会话容量",
+            subtitle = "自定义每组排产词数，极速完成即点亮连续打卡",
+            initialValue = sessionBatchSize,
+            min = 5,
+            max = 100,
+            step = 1,
+            presets = listOf(10, 15, 20, 25, 30, 50),
+            presetLabelFormatter = { "$it 词" },
+            confirmText = "确认保存",
+            confirmButtonColor = accentColor,
+            onDismissRequest = { showBatchDialog = false },
+            onConfirm = { newVal ->
+                onBatchSizeChange(newVal)
+                showBatchDialog = false
+            }
+        )
+    }
+
+    // 自定义每日复习上限弹窗 (加餐同款通用配置弹窗 - 统一绿色调)
+    if (showReviewLimitDialog) {
+        CommonConfigDialog(
+            headerIcon = Icons.Rounded.Shield,
+            headerIconTint = accentColor,
+            title = "每日复习上限",
+            subtitle = "设定单日最大安全负荷（输入 0 表示不设限制）",
+            initialValue = maxDailyReviews,
+            min = 0,
+            max = 500,
+            step = 5,
+            presets = listOf(0, 30, 50, 80, 100, 150),
+            presetLabelFormatter = { if (it == 0) "不限" else "$it 词" },
+            confirmText = "确认保存",
+            confirmButtonColor = accentColor,
+            onDismissRequest = { showReviewLimitDialog = false },
+            onConfirm = { newVal ->
+                onMaxReviewsChange(newVal)
+                showReviewLimitDialog = false
+            }
+        )
     }
 }
 

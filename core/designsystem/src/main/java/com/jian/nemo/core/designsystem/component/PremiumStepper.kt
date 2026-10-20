@@ -92,7 +92,8 @@ fun PremiumStepper(
     min: Int = 1,
     max: Int = 999,
     step: Int = 1,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    accentColor: Color = Color(0xFFFF5500)
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -218,7 +219,7 @@ fun PremiumStepper(
                 .clip(RoundedCornerShape(16.dp))
                 .background(
                     if (isEditing) {
-                        if (isDark) Color(0xFF332014) else Color(0xFFFFF1E6)
+                        if (isDark) accentColor.copy(alpha = 0.16f) else accentColor.copy(alpha = 0.08f)
                     } else {
                         Color.Transparent
                     }
@@ -226,7 +227,7 @@ fun PremiumStepper(
                 .then(
                     if (isEditing) {
                         Modifier.border(
-                            BorderStroke(1.5.dp, Color(0xFFFF5500)),
+                            BorderStroke(1.5.dp, accentColor),
                             RoundedCornerShape(16.dp)
                         )
                     } else {
@@ -246,8 +247,8 @@ fun PremiumStepper(
             if (isEditing) {
                 // 自定义选中颜色，配合 16.dp 软圆角外框
                 val customSelectionColors = TextSelectionColors(
-                    handleColor = Color(0xFFFF5500),
-                    backgroundColor = Color(0x33FF5500)
+                    handleColor = accentColor,
+                    backgroundColor = accentColor.copy(alpha = 0.20f)
                 )
 
                 CompositionLocalProvider(LocalTextSelectionColors provides customSelectionColors) {
@@ -261,11 +262,11 @@ fun PremiumStepper(
                         textStyle = TextStyle(
                             fontSize = 42.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFFFF5500),
+                            color = accentColor,
                             textAlign = TextAlign.Center
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(Color(0xFFFF5500)),
+                        cursorBrush = SolidColor(accentColor),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done

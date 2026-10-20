@@ -62,8 +62,8 @@ import com.jian.nemo.core.designsystem.component.PremiumStepper
 fun CommonConfigDialog(
     headerIcon: ImageVector,
     headerIconTint: Color,
-    headerIconBgColor: Color,
-    headerIconBgColorDark: Color,
+    headerIconBgColor: Color = headerIconTint.copy(alpha = 0.12f),
+    headerIconBgColorDark: Color = headerIconTint.copy(alpha = 0.22f),
     title: String,
     subtitle: String,
     initialValue: Int,
@@ -73,7 +73,7 @@ fun CommonConfigDialog(
     presets: List<Int>,
     presetLabelFormatter: (Int) -> String = { "$it" },
     confirmText: String = "确定",
-    confirmButtonColor: Color = Color(0xFF4F46E5),
+    confirmButtonColor: Color = headerIconTint,
     onDismissRequest: () -> Unit,
     onConfirm: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -228,7 +228,8 @@ fun CommonConfigDialog(
                         onValueChange = { selectedValue = it },
                         min = min,
                         max = max,
-                        step = step
+                        step = step,
+                        accentColor = headerIconTint
                     )
 
                     Spacer(modifier = Modifier.height(28.dp))
