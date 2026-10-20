@@ -1,6 +1,5 @@
 package com.jian.nemo.feature.user
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -8,6 +7,8 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -71,6 +72,10 @@ fun LoginScreen(
     var loginFailedAttempts by remember { mutableIntStateOf(0) }
     var showLoginCaptchaDialog by remember { mutableStateOf(false) }
 
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
+
     LaunchedEffect(stage) {
         focusedField = null
     }
@@ -104,22 +109,32 @@ fun LoginScreen(
         onResult = { result ->
             when (result) {
                 is NativeSignInResult.Success -> {
-                    Toast.makeText(context, "Google授权成功，正在同步登录状态...", Toast.LENGTH_SHORT).show()
+                    snackbarMessage = "Google授权成功，正在同步登录状态..."
+                    snackbarType = NemoSnackbarType.INFO
+                    snackbarVisible = true
                 }
                 is NativeSignInResult.Error -> {
-                    Toast.makeText(context, "Google登录失败: ${result.message}", Toast.LENGTH_LONG).show()
+                    snackbarMessage = "Google登录失败: ${result.message}"
+                    snackbarType = NemoSnackbarType.ERROR
+                    snackbarVisible = true
                 }
                 is NativeSignInResult.NetworkError -> {
-                    Toast.makeText(context, "网络错误: ${result.message}", Toast.LENGTH_LONG).show()
+                    snackbarMessage = "网络错误: ${result.message}"
+                    snackbarType = NemoSnackbarType.ERROR
+                    snackbarVisible = true
                 }
                 is NativeSignInResult.ClosedByUser -> {
-                    Toast.makeText(context, "用户取消登录", Toast.LENGTH_SHORT).show()
+                    snackbarMessage = "用户取消登录"
+                    snackbarType = NemoSnackbarType.INFO
+                    snackbarVisible = true
                 }
                 else -> Unit
             }
         },
         fallback = {
-            Toast.makeText(context, "当前设备不支持原生 Google 登录", Toast.LENGTH_LONG).show()
+            snackbarMessage = "当前设备不支持原生 Google 登录"
+            snackbarType = NemoSnackbarType.WARNING
+            snackbarVisible = true
         }
     )
 
@@ -137,14 +152,18 @@ fun LoginScreen(
             if (stage == AuthStage.LOGIN) {
                 loginFailedAttempts++
             }
-            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+            snackbarMessage = error
+            snackbarType = NemoSnackbarType.ERROR
+            snackbarVisible = true
             viewModel.clearError()
         }
     }
 
     LaunchedEffect(uiState.successMessage) {
         uiState.successMessage?.let { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            snackbarMessage = message
+            snackbarType = NemoSnackbarType.SUCCESS
+            snackbarVisible = true
             viewModel.clearSuccessMessage()
         }
     }
@@ -419,7 +438,9 @@ fun LoginScreen(
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
                                 onLogin = {
                                     if (uiState.email.isBlank() || !uiState.email.contains("@")) {
-                                        Toast.makeText(context, "请输入有效的电子邮箱地址", Toast.LENGTH_SHORT).show()
+                                        snackbarMessage = "请输入有效的电子邮箱地址"
+                                        snackbarType = NemoSnackbarType.WARNING
+                                        snackbarVisible = true
                                         return@AppLoginForm
                                     }
                                     if (loginFailedAttempts >= 3) {
@@ -516,15 +537,21 @@ fun LoginScreen(
                                 onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                                 onRegister = {
                                     if (uiState.email.isBlank() || !uiState.email.contains("@")) {
-                                        Toast.makeText(context, "请输入有效的电子邮箱地址", Toast.LENGTH_SHORT).show()
+                                        snackbarMessage = "请输入有效的电子邮箱地址"
+                                        snackbarType = NemoSnackbarType.WARNING
+                                        snackbarVisible = true
                                         return@AppRegisterForm
                                     }
                                     if (uiState.password.length < 8) {
-                                        Toast.makeText(context, "密码长度不能少于 8 位", Toast.LENGTH_SHORT).show()
+                                        snackbarMessage = "密码长度不能少于 8 位"
+                                        snackbarType = NemoSnackbarType.WARNING
+                                        snackbarVisible = true
                                         return@AppRegisterForm
                                     }
                                     if (uiState.password != uiState.confirmPassword) {
-                                        Toast.makeText(context, "两次输入的密码不一致", Toast.LENGTH_SHORT).show()
+                                        snackbarMessage = "两次输入的密码不一致"
+                                        snackbarType = NemoSnackbarType.WARNING
+                                        snackbarVisible = true
                                         return@AppRegisterForm
                                     }
                                     showRegisterCaptchaDialog = true
@@ -551,6 +578,20 @@ fun LoginScreen(
             // 底部平滑自适应安全抬升 Spacer（保证当前选中输入框在键盘上方，而绝不顶起整块区域）
             Spacer(modifier = Modifier.height(animatedLift))
         }
+
+        val statusBarHeight = with(LocalDensity.current) {
+            WindowInsets.statusBars.getTop(this).toDp()
+        }
+        NemoSnackbar(
+            visible = snackbarVisible,
+            message = snackbarMessage,
+            type = snackbarType,
+            autoDismissMs = 2500L,
+            onDismiss = { snackbarVisible = false },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarHeight + 8.dp)
+        )
     }
 
     // 找回密码重置弹窗
@@ -588,7 +629,7 @@ fun LoginScreen(
             },
             isDark = isDark,
             title = "安全验证",
-            description = "请根据下方图片输入 6 位验证码，防止恶意注册：",
+            description = "请计算图中算术式的结果，输入答案完成注册：",
             confirmText = "确认并注册"
         )
     }
@@ -603,7 +644,7 @@ fun LoginScreen(
             },
             isDark = isDark,
             title = "安全验证",
-            description = "密码错误次数过多，请输入 6 位验证码后继续登录：",
+            description = "密码错误次数过多，请计算图中算术式的结果后继续登录：",
             confirmText = "确认并登录"
         )
     }

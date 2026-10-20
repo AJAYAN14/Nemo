@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,36 +66,57 @@ data class CaptchaDot(
 )
 
 /**
- * 验证码完整生成数据
+ * 算术验证码完整生成数据
  */
 data class CaptchaData(
-    val text: String,
+    val equationText: String,
+    val answer: String,
     val chars: List<CaptchaChar>,
     val lines: List<CaptchaLine>,
     val dots: List<CaptchaDot>
 )
 
+private data class MathProblem(val num1: Int, val op: Char, val num2: Int, val answer: Int)
+
 /**
- * 生成 6 位随机验证码数据（数字与字母强制组合，排除易混淆字符 0/O, 1/I/L）
+ * 生成算术运算验证码数据（加、减、乘、除）
  */
 fun generateCaptchaData(isDark: Boolean): CaptchaData {
-    val digits = "23456789"
-    val letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"
-    val allCandidates = digits + letters
-    val totalLength = 6
+    val operatorType = Random.nextInt(4)
+    val problem = when (operatorType) {
+        0 -> { // 加法：两数在 2..25 之间，避开加0
+            val a = Random.nextInt(2, 26)
+            val b = Random.nextInt(2, 26)
+            MathProblem(a, '+', b, a + b)
+        }
+        1 -> { // 减法：大数减小数，差为正整数（避开减0和两数相等）
+            val a = Random.nextInt(6, 31)
+            val b = Random.nextInt(2, a)
+            MathProblem(a, '-', b, a - b)
+        }
+        2 -> { // 乘法：严禁两位数乘两位数，避开 0 与 1
+            if (Random.nextBoolean()) {
+                // 模式 A：一位数 × 一位数 (2..9 × 2..9)
+                val a = Random.nextInt(2, 10)
+                val b = Random.nextInt(2, 10)
+                MathProblem(a, '×', b, a * b)
+            } else {
+                // 模式 B：较小两位数 × 较小一位数 (11..19 × 2..5)
+                val a = Random.nextInt(11, 20)
+                val b = Random.nextInt(2, 6)
+                MathProblem(a, '×', b, a * b)
+            }
+        }
+        else -> { // 除法：严禁除以零，除数严格为一位数 (2..9)，被除数支持两位数除以一位数，严格整除
+            val b = Random.nextInt(2, 10) // 除数 2..9，绝对不为 0
+            val ans = Random.nextInt(2, 13) // 商 2..12
+            val a = b * ans // 被除数，保证整除，且不出现两位数除以两位数
+            MathProblem(a, '÷', b, ans)
+        }
+    }
 
-    // 确保包含数字加字母组合：至少 2 位数字，至少 2 位字母，剩余 2 位从混合池随机抽取
-    val selectedChars = mutableListOf<Char>()
-    repeat(2) {
-        selectedChars.add(digits[Random.nextInt(digits.length)])
-    }
-    repeat(2) {
-        selectedChars.add(letters[Random.nextInt(letters.length)])
-    }
-    repeat(totalLength - 4) {
-        selectedChars.add(allCandidates[Random.nextInt(allCandidates.length)])
-    }
-    selectedChars.shuffle()
+    val equationStr = "${problem.num1} ${problem.op} ${problem.num2} = ?"
+    val answerStr = problem.answer.toString()
 
     val darkColors = listOf(
         Color(0xFF60A5FA),
@@ -119,37 +140,43 @@ fun generateCaptchaData(isDark: Boolean): CaptchaData {
 
     val colorPalette = if (isDark) darkColors else lightColors
 
-    val chars = selectedChars.map { char ->
+    val chars = equationStr.map { char ->
         CaptchaChar(
             char = char,
-            color = colorPalette[Random.nextInt(colorPalette.size)],
-            rotation = Random.nextFloat() * 32f - 16f, // -16° ~ +16°，排布更整齐
-            scale = 0.92f + Random.nextFloat() * 0.16f
+            color = when (char) {
+                '?' -> if (isDark) Color(0xFFF87171) else Color(0xFFDC2626)
+                '=' -> if (isDark) Color(0xFFFBBF24) else Color(0xFFD97706)
+                '+', '-', '×', '÷' -> if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
+                else -> colorPalette[Random.nextInt(colorPalette.size)]
+            },
+            rotation = if (char == ' ' || char == '=') 0f else (Random.nextFloat() * 12f - 6f),
+            scale = if (char == ' ') 0.5f else (0.95f + Random.nextFloat() * 0.10f)
         )
     }
 
-    val lines = (0..3).map {
+    val lines = (0..2).map {
         CaptchaLine(
             startXRatio = Random.nextFloat() * 0.25f,
             startYRatio = Random.nextFloat(),
             endXRatio = 0.75f + Random.nextFloat() * 0.25f,
             endYRatio = Random.nextFloat(),
-            strokeWidth = 2.2f + Random.nextFloat() * 1.8f,
-            color = colorPalette[Random.nextInt(colorPalette.size)].copy(alpha = if (isDark) 0.5f else 0.38f)
+            strokeWidth = 1.8f + Random.nextFloat() * 1.0f,
+            color = colorPalette[Random.nextInt(colorPalette.size)].copy(alpha = if (isDark) 0.30f else 0.20f)
         )
     }
 
-    val dots = (0..45).map {
+    val dots = (0..20).map {
         CaptchaDot(
             xRatio = Random.nextFloat(),
             yRatio = Random.nextFloat(),
-            radius = 1.2f + Random.nextFloat() * 2.2f,
-            color = colorPalette[Random.nextInt(colorPalette.size)].copy(alpha = if (isDark) 0.45f else 0.35f)
+            radius = 1.0f + Random.nextFloat() * 1.5f,
+            color = colorPalette[Random.nextInt(colorPalette.size)].copy(alpha = if (isDark) 0.30f else 0.20f)
         )
     }
 
     return CaptchaData(
-        text = selectedChars.joinToString(""),
+        equationText = equationStr,
+        answer = answerStr,
         chars = chars,
         lines = lines,
         dots = dots
@@ -157,7 +184,7 @@ fun generateCaptchaData(isDark: Boolean): CaptchaData {
 }
 
 /**
- * 使用 Jetpack Compose Canvas 原生绘制 6 位图形验证码
+ * 使用 Jetpack Compose Canvas 原生绘制算术运算图形验证码
  */
 @Composable
 fun CaptchaCanvas(
@@ -196,7 +223,7 @@ fun CaptchaCanvas(
             )
         }
 
-        // 3. 绘制 6 位文字（每个字符独立旋转、倾斜与着色）
+        // 3. 绘制算式字符（支持大字号居中渲染）
         val charCount = captchaData.chars.size
         if (charCount > 0) {
             val cellWidth = width / (charCount + 1)
@@ -209,18 +236,20 @@ fun CaptchaCanvas(
                 }
 
                 captchaData.chars.forEachIndexed { index, captchaChar ->
-                    paint.textSize = (height * 0.46f) * captchaChar.scale
-                    paint.color = captchaChar.color.toArgb()
-                    val fontMetrics = paint.fontMetrics
-                    val x = cellWidth * (index + 0.90f)
-                    val y = (height - fontMetrics.bottom - fontMetrics.top) / 2
+                    if (captchaChar.char != ' ') {
+                        paint.textSize = (height * 0.52f) * captchaChar.scale
+                        paint.color = captchaChar.color.toArgb()
+                        val fontMetrics = paint.fontMetrics
+                        val x = cellWidth * (index + 0.90f)
+                        val y = (height - fontMetrics.bottom - fontMetrics.top) / 2
 
-                    nativeCanvas.save()
-                    nativeCanvas.rotate(captchaChar.rotation, x, y)
-                    val charStr = captchaChar.char.toString()
-                    val textWidth = paint.measureText(charStr)
-                    nativeCanvas.drawText(charStr, x - (textWidth / 2f), y, paint)
-                    nativeCanvas.restore()
+                        nativeCanvas.save()
+                        nativeCanvas.rotate(captchaChar.rotation, x, y)
+                        val charStr = captchaChar.char.toString()
+                        val textWidth = paint.measureText(charStr)
+                        nativeCanvas.drawText(charStr, x - (textWidth / 2f), y, paint)
+                        nativeCanvas.restore()
+                    }
                 }
             }
         }
@@ -228,7 +257,7 @@ fun CaptchaCanvas(
 }
 
 /**
- * 通用防刷图形验证码弹窗（同时支持注册与登录连续输错拦截）
+ * 通用防刷算术运算验证码弹窗（同时支持注册与登录连续输错拦截）
  */
 @Composable
 fun RegisterCaptchaDialog(
@@ -236,7 +265,7 @@ fun RegisterCaptchaDialog(
     onSuccess: () -> Unit,
     isDark: Boolean,
     title: String = "安全验证",
-    description: String = "请根据下方图片输入 6 位验证码，防止恶意操作：",
+    description: String = "请计算图中算术式的结果，输入答案完成验证：",
     confirmText: String = "确认"
 ) {
     var captchaData by remember { mutableStateOf(generateCaptchaData(isDark)) }
@@ -256,14 +285,14 @@ fun RegisterCaptchaDialog(
 
     fun submitVerification() {
         if (inputCode.isBlank()) {
-            errorMessage = "请输入图形验证码"
+            errorMessage = "请输入计算结果"
             return
         }
-        if (inputCode.trim().equals(captchaData.text, ignoreCase = true)) {
+        if (inputCode.trim() == captchaData.answer) {
             errorMessage = null
             onSuccess()
         } else {
-            errorMessage = "验证码错误，请重新输入"
+            errorMessage = "计算结果不正确，请重新计算"
             refreshCaptcha()
         }
     }
@@ -293,7 +322,7 @@ fun RegisterCaptchaDialog(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // 图形验证码 + 换一张操作栏
+            // 图形验证码 + 换一题操作栏
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -319,30 +348,30 @@ fun RegisterCaptchaDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Refresh,
-                        contentDescription = "换一张",
+                        contentDescription = "换一题",
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "换一张",
+                        text = "换一题",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            // 6 位验证码输入框
+            // 数字计算结果输入框
             OutlinedTextField(
                 value = inputCode,
                 onValueChange = { newValue ->
-                    if (newValue.length <= 6) {
-                        inputCode = newValue.uppercase()
+                    if (newValue.length <= 5 && (newValue.isEmpty() || newValue.all { it.isDigit() })) {
+                        inputCode = newValue
                         if (errorMessage != null) errorMessage = null
                     }
                 },
                 placeholder = {
                     Text(
-                        text = "请输入 6 位验证码",
+                        text = "请输入运算结果",
                         fontSize = 14.sp,
                         color = descTextColor.copy(alpha = 0.6f)
                     )
@@ -360,7 +389,7 @@ fun RegisterCaptchaDialog(
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Characters,
+                    keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
                 keyboardActions = KeyboardActions(

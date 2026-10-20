@@ -401,20 +401,23 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 实验室
-            item {
-                SettingsSectionTitle("实验室")
-                PremiumCard {
-                    SquircleSettingItem(
-                        icon = Icons.Rounded.Science,
-                        iconColor = NemoCyan,
-                        title = "液态玻璃实验室",
-                        subtitle = "体验透镜折射与动态物理流体按钮",
-                        onClick = onNavigateToLiquidLab,
-                        showDivider = false
-                    )
+            // 实验室 (仅对专属开发者账号开放)
+            val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
+            if (isLabAccessible) {
+                item {
+                    SettingsSectionTitle("实验室")
+                    PremiumCard {
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Science,
+                            iconColor = NemoCyan,
+                            title = "液态玻璃实验室",
+                            subtitle = "体验透镜折射与动态物理流体按钮",
+                            onClick = onNavigateToLiquidLab,
+                            showDivider = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // 关于
@@ -423,7 +426,65 @@ fun SettingsScreen(
                 PremiumCard {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
-                    
+
+                    SquircleSettingItem(
+                        icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
+                        iconColor = NemoPrimary,
+                        title = "GitHub 项目",
+                        subtitle = "访问开源代码仓库",
+                        onClick = {
+                            val githubUrl = "https://github.com/AJAYAN14/Nemo"
+                            // 1. 复制项目地址到系统剪贴板
+                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                            val clip = android.content.ClipData.newPlainText("GitHub URL", githubUrl)
+                            clipboard?.setPrimaryClip(clip)
+
+                            // 2. 解析系统默认浏览器（避免被 GitHub 客户端拦截）
+                            try {
+                                val browserProbeIntent = android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse("https://")
+                                )
+                                val resolveInfo = context.packageManager.resolveActivity(
+                                    browserProbeIntent,
+                                    android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
+                                )
+                                val defaultBrowserPackage = resolveInfo?.activityInfo?.packageName
+
+                                val targetIntent = android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse(githubUrl)
+                                ).apply {
+                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    if (!defaultBrowserPackage.isNullOrBlank() && defaultBrowserPackage != "android") {
+                                        setPackage(defaultBrowserPackage)
+                                    }
+                                }
+                                context.startActivity(targetIntent)
+                                snackbarMessage = "已复制项目地址并打开浏览器"
+                                snackbarType = NemoSnackbarType.SUCCESS
+                                snackbarVisible = true
+                            } catch (_: Exception) {
+                                try {
+                                    val fallbackIntent = android.content.Intent(
+                                        android.content.Intent.ACTION_VIEW,
+                                        android.net.Uri.parse(githubUrl)
+                                    ).apply {
+                                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    }
+                                    context.startActivity(fallbackIntent)
+                                    snackbarMessage = "已复制项目地址并打开浏览器"
+                                    snackbarType = NemoSnackbarType.SUCCESS
+                                    snackbarVisible = true
+                                } catch (_: Exception) {
+                                    snackbarMessage = "已复制项目地址，无法打开系统浏览器"
+                                    snackbarType = NemoSnackbarType.ERROR
+                                    snackbarVisible = true
+                                }
+                            }
+                        },
+                        showDivider = true
+                    )
 
                     SquircleSettingItem(
                         icon = Icons.Rounded.SystemUpdate,

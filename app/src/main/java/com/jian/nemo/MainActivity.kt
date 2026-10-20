@@ -13,6 +13,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +24,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.Alignment
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -181,6 +187,10 @@ fun NemoApp(
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
+    var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
+
     val currentVersionCode = try {
         val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
@@ -288,6 +298,19 @@ fun NemoApp(
                     }
                 )
 
+                val statusBarHeight = with(LocalDensity.current) {
+                    WindowInsets.statusBars.getTop(this).toDp()
+                }
+                NemoSnackbar(
+                    visible = snackbarVisible,
+                    message = snackbarMessage,
+                    type = snackbarType,
+                    autoDismissMs = 2500L,
+                    onDismiss = { snackbarVisible = false },
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = statusBarHeight + 8.dp)
+                )
             }
         }
     }
@@ -297,10 +320,14 @@ fun NemoApp(
         viewModel.updateCheckEvents.collect { event ->
             when (event) {
                 is UpdateCheckEvent.NoUpdateAvailable -> {
-                    android.widget.Toast.makeText(context, "已是最新版本", android.widget.Toast.LENGTH_SHORT).show()
+                    snackbarMessage = "已是最新版本"
+                    snackbarType = NemoSnackbarType.SUCCESS
+                    snackbarVisible = true
                 }
                 is UpdateCheckEvent.Error -> {
-                    android.widget.Toast.makeText(context, event.message, android.widget.Toast.LENGTH_SHORT).show()
+                    snackbarMessage = event.message
+                    snackbarType = NemoSnackbarType.ERROR
+                    snackbarVisible = true
                 }
             }
         }
