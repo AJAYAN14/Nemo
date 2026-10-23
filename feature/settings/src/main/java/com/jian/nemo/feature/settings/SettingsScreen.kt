@@ -52,6 +52,7 @@ fun SettingsScreen(
     onNavigateToAiSettings: () -> Unit,
     onNavigateToCloudBackupHistory: () -> Unit,
     onNavigateToLiquidLab: () -> Unit,
+    onNavigateToIconLab: () -> Unit = {},
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -401,12 +402,20 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-            // 实验室 (仅对专属开发者账号开放)
+            // 实验室
             val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
-            if (isLabAccessible) {
-                item {
-                    SettingsSectionTitle("实验室")
-                    PremiumCard {
+            item {
+                SettingsSectionTitle("实验室")
+                PremiumCard {
+                    SquircleSettingItem(
+                        icon = Icons.Rounded.Palette,
+                        iconColor = NemoPrimary,
+                        title = "图标设计实验室",
+                        subtitle = "4列方格对比与真实列表项渲染",
+                        onClick = onNavigateToIconLab,
+                        showDivider = isLabAccessible
+                    )
+                    if (isLabAccessible) {
                         SquircleSettingItem(
                             icon = Icons.Rounded.Science,
                             iconColor = NemoCyan,
@@ -416,8 +425,8 @@ fun SettingsScreen(
                             showDivider = false
                         )
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // 关于
