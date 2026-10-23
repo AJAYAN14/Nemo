@@ -90,12 +90,37 @@ fun PremiumCard(
 }
 
 /**
- * Setting Item with Squircle Icon (V2)
- * 支持 trailing lambda 用于放置 Switch 或其他自定义控件
+ * 设置列表项组件 (支持 Plump Duo 双色丰满图标，取消纯色背景框)
  */
 @Composable
 fun SquircleSettingItem(
-    icon: ImageVector,
+    plumpIcon: PlumpIcon,
+    iconColor: Color,
+    title: String,
+    subtitle: String? = null,
+    onClick: () -> Unit,
+    showDivider: Boolean = true,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    SquircleSettingItem(
+        icon = null,
+        plumpIcon = plumpIcon,
+        iconColor = iconColor,
+        title = title,
+        subtitle = subtitle,
+        onClick = onClick,
+        showDivider = showDivider,
+        trailing = trailing
+    )
+}
+
+/**
+ * 设置列表项底层实现 (同时兼容传统 ImageVector 与新 PlumpIcon)
+ */
+@Composable
+fun SquircleSettingItem(
+    icon: ImageVector? = null,
+    plumpIcon: PlumpIcon? = null,
     iconColor: Color,
     title: String,
     subtitle: String? = null,
@@ -127,19 +152,25 @@ fun SquircleSettingItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Squircle Icon
+            // 图标渲染：取消纯色方块背景，呈现通透精致的 Plump Duo 双色层次
             Box(
-                modifier = Modifier
-                    .size(42.dp) // Standard standard size
-                    .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                modifier = Modifier.size(42.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(22.dp)
-                )
+                if (plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = iconColor,
+                        size = 30.dp
+                    )
+                } else if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

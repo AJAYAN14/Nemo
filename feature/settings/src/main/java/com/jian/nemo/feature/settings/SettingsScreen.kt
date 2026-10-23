@@ -163,8 +163,8 @@ fun SettingsScreen(
                     } else {
                         // 未登录
                         SquircleSettingItem(
-                            icon = Icons.Rounded.Person,
-                            iconColor = NemoIndigo,
+                            plumpIcon = PlumpIcon.User,
+                            iconColor = IsoluminantPalette.SkyIndigo,
                             title = "登录/注册",
                             subtitle = "登录以体验完整功能",
                             onClick = onNavigateToLogin,
@@ -173,16 +173,16 @@ fun SettingsScreen(
                     }
 
                      SquircleSettingItem(
-                        icon = Icons.Rounded.CloudUpload,
-                        iconColor = NemoCyan,
+                        plumpIcon = PlumpIcon.CloudUpload,
+                        iconColor = IsoluminantPalette.LakesideCyan,
                         title = "备份到云端",
                         subtitle = "将当前进度安全保存在云端",
                         onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
                         showDivider = true
                     )
                      SquircleSettingItem(
-                        icon = Icons.Rounded.CloudSync,
-                        iconColor = NemoPurple,
+                        plumpIcon = PlumpIcon.CloudBackup,
+                        iconColor = IsoluminantPalette.LilacViolet,
                         title = "云端备份历史",
                         subtitle = "查看或从云端恢复历史备份",
                         onClick = onNavigateToCloudBackupHistory,
@@ -198,8 +198,8 @@ fun SettingsScreen(
                 PremiumCard {
                     // 主题外观
                     SquircleSettingItem(
-                        icon = Icons.Rounded.Contrast,
-                        iconColor = NemoPurple,
+                        plumpIcon = PlumpIcon.ThemePalette,
+                        iconColor = IsoluminantPalette.LilacViolet,
                         title = "主题外观",
                         subtitle = when (uiState.darkMode) {
                             DarkModeOption.LIGHT -> "浅色"
@@ -218,8 +218,8 @@ fun SettingsScreen(
                 SettingsSectionTitle("学习")
                 PremiumCard {
                     SquircleSettingItem(
-                        icon = Icons.Rounded.TrackChanges,
-                        iconColor = NemoOrange,
+                        plumpIcon = PlumpIcon.DailyGoalTarget,
+                        iconColor = IsoluminantPalette.WarmAmber,
                         title = "每日单词目标",
                         subtitle = "设置每天要学习的单词数量",
                         onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(true)) },
@@ -243,8 +243,8 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.JoinLeft,
-                        iconColor = NemoSecondary,
+                        plumpIcon = PlumpIcon.GrammarLayers,
+                        iconColor = IsoluminantPalette.EmeraldGreen,
                         title = "每日语法目标",
                         subtitle = "设置每天要学习的语法数量",
                         onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
@@ -270,8 +270,8 @@ fun SettingsScreen(
 
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.Schedule,
-                        iconColor = NemoIndigo,
+                        plumpIcon = PlumpIcon.StudyClock,
+                        iconColor = IsoluminantPalette.SkyIndigo,
                         title = "学习日重置时间",
                         subtitle = "零点跨天保护，过了此时间才算新的一天",
                         onClick = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(true)) },
@@ -295,8 +295,8 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.Shuffle,
-                        iconColor = NemoPrimary,
+                        plumpIcon = PlumpIcon.RandomShuffle,
+                        iconColor = IsoluminantPalette.EmeraldGreen,
                         title = "新内容乱序抽取",
                         subtitle = if (uiState.isRandomNewContentEnabled) "随机抽取新内容" else "按顺序抽取新内容",
                         onClick = { showRandomNewContentConfirmDialog = true },
@@ -311,8 +311,8 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = ImageVector.vectorResource(DesignR.drawable.ic_neurology),
-                        iconColor = NemoPurple,
+                        plumpIcon = PlumpIcon.MemoryBrain,
+                        iconColor = IsoluminantPalette.LilacViolet,
                         title = "记忆算法配置",
                         subtitle = "步进、提前复习与 Leech 策略",
                         onClick = onNavigateToAdvancedLearning,
@@ -328,8 +328,8 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.AutoAwesome,
-                        iconColor = NemoCyan,
+                        plumpIcon = PlumpIcon.AiBot,
+                        iconColor = IsoluminantPalette.LakesideCyan,
                         title = "AI 工坊配置",
                         subtitle = "设置 API Key 与 AI 模型",
                         onClick = onNavigateToAiSettings,
@@ -352,8 +352,8 @@ fun SettingsScreen(
                 SettingsSectionTitle("语音")
                 PremiumCard {
                     SquircleSettingItem(
-                        icon = Icons.AutoMirrored.Rounded.VolumeUp,
-                        iconColor = Color(0xFFFF2D55), // NemoRed/Pink
+                        plumpIcon = PlumpIcon.AudioVolume,
+                        iconColor = IsoluminantPalette.RoseRuby,
                         title = "语音参数",
                         subtitle = "调节语速和音调",
                         onClick = onNavigateToTtsSettings,
@@ -368,8 +368,8 @@ fun SettingsScreen(
                 SettingsSectionTitle("数据")
                 PremiumCard {
                     SquircleSettingItem(
-                        icon = Icons.Rounded.FileDownload,
-                        iconColor = NemoSecondary,
+                        plumpIcon = PlumpIcon.ExportDownload,
+                        iconColor = IsoluminantPalette.SeaMarine,
                         title = "导出数据",
                         subtitle = "导出本地数据文件",
                         onClick = {
@@ -378,8 +378,8 @@ fun SettingsScreen(
                         showDivider = true
                     )
                      SquircleSettingItem(
-                        icon = Icons.Rounded.FileUpload,
-                        iconColor = NemoPrimary,
+                        plumpIcon = PlumpIcon.ImportUpload,
+                        iconColor = IsoluminantPalette.SeaMarine,
                         title = "导入本地数据",
                         subtitle = "从文件恢复进度",
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
@@ -387,8 +387,8 @@ fun SettingsScreen(
                     )
 
                      SquircleSettingItem(
-                        icon = Icons.Rounded.Delete,
-                        iconColor = NemoDanger, // NemoRed/Danger
+                        plumpIcon = PlumpIcon.ResetTrash,
+                        iconColor = IsoluminantPalette.CoralFlame, // NemoRed/Danger
                          title = "重置学习进度",
                         subtitle = "清空所有数据 (慎用)",
                         onClick = {
@@ -408,8 +408,8 @@ fun SettingsScreen(
                 SettingsSectionTitle("实验室")
                 PremiumCard {
                     SquircleSettingItem(
-                        icon = Icons.Rounded.Palette,
-                        iconColor = NemoPrimary,
+                        plumpIcon = PlumpIcon.IconLab,
+                        iconColor = IsoluminantPalette.GlazeMint,
                         title = "图标设计实验室",
                         subtitle = "4列方格对比与真实列表项渲染",
                         onClick = onNavigateToIconLab,
@@ -417,8 +417,8 @@ fun SettingsScreen(
                     )
                     if (isLabAccessible) {
                         SquircleSettingItem(
-                            icon = Icons.Rounded.Science,
-                            iconColor = NemoCyan,
+                            plumpIcon = PlumpIcon.LiquidLab,
+                            iconColor = IsoluminantPalette.LakesideCyan,
                             title = "液态玻璃实验室",
                             subtitle = "体验透镜折射与动态物理流体按钮",
                             onClick = onNavigateToLiquidLab,
@@ -437,8 +437,8 @@ fun SettingsScreen(
                     val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
 
                     SquircleSettingItem(
-                        icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
-                        iconColor = NemoPrimary,
+                        plumpIcon = PlumpIcon.GitHub,
+                        iconColor = IsoluminantPalette.OceanBlue,
                         title = "GitHub 项目",
                         subtitle = "访问开源代码仓库",
                         onClick = {
@@ -496,8 +496,8 @@ fun SettingsScreen(
                     )
 
                     SquircleSettingItem(
-                        icon = Icons.Rounded.SystemUpdate,
-                        iconColor = NemoSecondary,
+                        plumpIcon = PlumpIcon.CheckUpdate,
+                        iconColor = IsoluminantPalette.OceanBlue,
                         title = "检查更新",
                         subtitle = "获取最新版本",
                         onClick = onCheckUpdate,
