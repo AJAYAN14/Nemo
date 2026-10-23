@@ -37,6 +37,11 @@ import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.ChartColors
 import com.jian.nemo.core.designsystem.theme.Rubik
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import kotlinx.coroutines.delay
 
 // 定义常量
@@ -496,63 +501,81 @@ fun DataAndResourcesSection(
                     color = NemoSecondary,
                     title = "专项训练",
                     subtitle = "针对性强化练习",
-                    onClick = onCategoryPracticeClick
+                    onClick = onCategoryPracticeClick,
+                    plumpIcon = PlumpIcon.Gamepad,
+                    paletteColor = IsoluminantPalette.SeaMarine
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.BubbleChart,
                     color = NemoPrimary,
                     title = "学习日历",
                     subtitle = "查看学习计划与记录",
-                    onClick = onLearningCalendarClick
+                    onClick = onLearningCalendarClick,
+                    plumpIcon = PlumpIcon.Calendar,
+                    paletteColor = IsoluminantPalette.SkyIndigo
                 )
                  SquircleListItem(
                     icon = Icons.Rounded.QueryStats,
                     color = NemoDanger,
                     title = "今日统计",
                     subtitle = "查看今日详细的学习统计",
-                    onClick = onStatisticsClick
+                    onClick = onStatisticsClick,
+                    plumpIcon = PlumpIcon.ChartPie,
+                    paletteColor = IsoluminantPalette.RoseRuby
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Insights,
                     color = Color(0xFFAF52DE), // Purple
                     title = "历史统计",
                     subtitle = "查看所有详细的学习统计",
-                    onClick = onHistoricalStatisticsClick
+                    onClick = onHistoricalStatisticsClick,
+                    plumpIcon = PlumpIcon.History,
+                    paletteColor = IsoluminantPalette.LilacViolet
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.ShowChart,
                     color = ChartColors.FreshGreen,
                     title = "遗忘曲线",
                     subtitle = "记忆衰减可视化分析",
-                    onClick = onForgettingCurveClick
+                    onClick = onForgettingCurveClick,
+                    plumpIcon = PlumpIcon.TrendingDown,
+                    paletteColor = IsoluminantPalette.EmeraldGreen
                 )
                  SquircleListItem(
                     icon = Icons.Rounded.SortByAlpha,
                     color = NemoSecondary,
                     title = "单词列表",
                     subtitle = "词汇库管理",
-                    onClick = onWordListClick
+                    onClick = onWordListClick,
+                    plumpIcon = PlumpIcon.SpellCheck,
+                    paletteColor = IsoluminantPalette.WarmAmber
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Book,
                     color = NemoPrimary,
                     title = "语法列表",
                     subtitle = "语法知识库",
-                    onClick = onGrammarListClick
+                    onClick = onGrammarListClick,
+                    plumpIcon = PlumpIcon.GrammarLayers,
+                    paletteColor = IsoluminantPalette.SkyIndigo
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Dataset,
                     color = NemoPrimary,
                     title = "专项词汇",
                     subtitle = "按分类查看词汇",
-                    onClick = onCategoryClassificationClick
+                    onClick = onCategoryClassificationClick,
+                    plumpIcon = PlumpIcon.LayoutGrid,
+                    paletteColor = IsoluminantPalette.LakesideCyan
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoAwesome,
                     color = NemoSecondary,
                     title = "地道表达",
                     subtitle = "日语惯用句与常用搭配库",
-                    onClick = onLibraryClick
+                    onClick = onLibraryClick,
+                    plumpIcon = PlumpIcon.Sparkles,
+                    paletteColor = IsoluminantPalette.GlazeMint
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoFixHigh,
@@ -560,7 +583,9 @@ fun DataAndResourcesSection(
                     title = "复学清单",
                     subtitle = "难点项召回与复习",
                     onClick = onLeechManagementClick,
-                    showDivider = false
+                    showDivider = false,
+                    plumpIcon = PlumpIcon.Flame,
+                    paletteColor = IsoluminantPalette.CoralFlame
                 )
              }
         }
@@ -579,6 +604,7 @@ fun SectionTitle(text: String) {
 
 /**
  * ListItem with "Squircle" Icon (Apple Settings Style)
+ * 支持 MD3 与 Plump Duo 双图标风格自适应切换
  */
 @Composable
 fun SquircleListItem(
@@ -587,8 +613,14 @@ fun SquircleListItem(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
-    showDivider: Boolean = true
+    showDivider: Boolean = true,
+    plumpIcon: PlumpIcon? = null,
+    paletteColor: Color? = null
 ) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
+    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else color
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -596,19 +628,33 @@ fun SquircleListItem(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Squircle Icon
+        // 图标容器：尺寸保持 42dp，保证右侧文字对齐基准线 100% 稳定，绝不抖动
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .background(color.copy(alpha = 0.15f), RoundedCornerShape(12.dp)), // Squircle approx
+                .then(
+                    if (!isPlumpDuo) {
+                        Modifier.background(effectiveColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                    } else {
+                        Modifier
+                    }
+                ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(22.dp)
-            )
+            if (isPlumpDuo && plumpIcon != null) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = effectiveColor,
+                    size = 28.dp
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = effectiveColor,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))

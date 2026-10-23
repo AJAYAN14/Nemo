@@ -12,9 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
 
@@ -56,11 +58,12 @@ fun ProgressDashboardScreen(
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor) // 背景延伸到全屏（edge-to-edge）
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor) // 背景延伸到全屏（edge-to-edge）
+        ) {
         if (stats != null) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -116,6 +119,7 @@ fun ProgressDashboardScreen(
             NemoChasingDotsLoader(modifier = Modifier.align(Alignment.Center))
         }
     }
+}
 }
 private val Color.luminance: Float
     get() = (0.299f * red + 0.587f * green + 0.114f * blue)

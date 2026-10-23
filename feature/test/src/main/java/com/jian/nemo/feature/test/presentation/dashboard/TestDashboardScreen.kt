@@ -17,9 +17,15 @@ import androidx.compose.material.icons.automirrored.rounded.Assignment
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,11 +79,12 @@ fun TestDashboardScreen(
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -113,7 +120,9 @@ fun TestDashboardScreen(
                     subtitle = "${uiState.wrongWordsCount} 个",
                     icon = Icons.Rounded.Cancel,
                     color = NemoDanger,
-                    onClick = onNavigateToMistakes
+                    onClick = onNavigateToMistakes,
+                    plumpIcon = PlumpIcon.CircleX,
+                    paletteColor = IsoluminantPalette.CoralFlame
                 )
                 DashboardTile(
                     modifier = Modifier
@@ -126,7 +135,9 @@ fun TestDashboardScreen(
                     subtitle = "${uiState.favoriteWordsCount} 个",
                     icon = Icons.Rounded.Star,
                     color = NemoOrange,
-                    onClick = onNavigateToFavorites
+                    onClick = onNavigateToFavorites,
+                    plumpIcon = PlumpIcon.Star,
+                    paletteColor = IsoluminantPalette.WarmAmber
                 )
             }
 
@@ -149,7 +160,9 @@ fun TestDashboardScreen(
                         subtitle = "快速认知",
                         icon = Icons.AutoMirrored.Rounded.Assignment,
                         color = NemoSecondary,
-                        onClick = { onNavigateToTestSettings("multiple_choice") }
+                        onClick = { onNavigateToTestSettings("multiple_choice") },
+                        plumpIcon = PlumpIcon.ListChecks,
+                        paletteColor = IsoluminantPalette.EmeraldGreen
                     )
                     DashboardTile(
                         modifier = Modifier
@@ -162,7 +175,9 @@ fun TestDashboardScreen(
                         subtitle = "拼写强化",
                         icon = Icons.Rounded.TextFields,
                         color = NemoIndigo,
-                        onClick = { onNavigateToTestSettings("typing") }
+                        onClick = { onNavigateToTestSettings("typing") },
+                        plumpIcon = PlumpIcon.Keyboard,
+                        paletteColor = IsoluminantPalette.SkyIndigo
                     )
                 }
                 Row(
@@ -180,7 +195,9 @@ fun TestDashboardScreen(
                         subtitle = "翻牌记忆",
                         icon = Icons.Rounded.ViewModule,
                         color = NemoTeal,
-                        onClick = { onNavigateToTestSettings("card_matching") }
+                        onClick = { onNavigateToTestSettings("card_matching") },
+                        plumpIcon = PlumpIcon.GalleryVerticalEnd,
+                        paletteColor = IsoluminantPalette.LakesideCyan
                     )
                     DashboardTile(
                         modifier = Modifier
@@ -193,7 +210,9 @@ fun TestDashboardScreen(
                         subtitle = "逻辑构建",
                         icon = Icons.Rounded.Extension,
                         color = NemoPurple,
-                        onClick = { onNavigateToTestSettings("sorting") }
+                        onClick = { onNavigateToTestSettings("sorting") },
+                        plumpIcon = PlumpIcon.ArrowDownUp,
+                        paletteColor = IsoluminantPalette.LilacViolet
                     )
                 }
             }
@@ -218,6 +237,7 @@ fun TestDashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -512,8 +532,14 @@ private fun DashboardTile(
     subtitle: String,
     icon: ImageVector,
     color: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    plumpIcon: PlumpIcon? = null,
+    paletteColor: Color? = null
 ) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
+    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else color
+
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else BentoColors.Surface
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain
@@ -537,16 +563,31 @@ private fun DashboardTile(
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(color.copy(alpha = 0.15f)),
+                    .then(
+                        if (!isPlumpDuo) {
+                            Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(effectiveColor.copy(alpha = 0.15f))
+                        } else {
+                            Modifier
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(24.dp)
-                )
+                if (isPlumpDuo && plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = effectiveColor,
+                        size = 28.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = effectiveColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))

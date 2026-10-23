@@ -59,7 +59,27 @@ enum class PlumpIcon {
     UserPen,          // 修改用户名 / 用户资料编辑
     Mail,             // 修改邮箱 / 电子信件
     KeyRound,         // 重置密码 / 安全密钥
-    UserX             // 注销账户 / 移除用户
+    UserX,            // 注销账户 / 移除用户
+
+    // --- 4. 进度与统计分支 (PlumpIconsProgress.kt) ---
+    Gamepad,          // 专项训练 / 游戏手柄
+    Calendar,         // 学习日历 / 日历看板
+    ChartPie,         // 今日统计 / 饼图概览
+    History,          // 历史统计 / 历史时钟
+    TrendingDown,     // 遗忘曲线 / 记忆衰减趋势
+    SpellCheck,       // 单词列表 / 拼写检查
+    LayoutGrid,       // 专项词汇 / 布局网格
+    Sparkles,         // 地道表达 / 闪耀光芒
+    Flame,            // 复学清单 / 火焰难点
+
+    // --- 5. 测试与练习分支 (PlumpIconsTest.kt) ---
+    CircleX,          // 我的错题 / 圆形叉号
+    Star,             // 我的收藏 / 收藏星标
+    ListChecks,       // 选择题 / 多项清单
+    Keyboard,         // 手打题 / 打字键盘
+    GalleryVerticalEnd, // 卡片题 / 纵向层叠卡片
+    ArrowDownUp,      // 排序题 / 上下双向排序
+    Infinity          // 能力工坊 / 无穷进阶
 }
 
 /**
@@ -144,7 +164,11 @@ internal data class PlumpIconPathDefinition(
  * 全局图标聚合注册表（按业务域由各分片注册表自动合并，杜绝单文件臃肿）
  */
 private val PlumpIconRegistry: Map<PlumpIcon, PlumpIconPathDefinition> by lazy {
-    PlumpIconsSettingsRegistry + PlumpIconsMediaRegistry + PlumpIconsUserRegistry
+    PlumpIconsSettingsRegistry +
+        PlumpIconsMediaRegistry +
+        PlumpIconsUserRegistry +
+        PlumpIconsProgressRegistry +
+        PlumpIconsTestRegistry
 }
 
 /**

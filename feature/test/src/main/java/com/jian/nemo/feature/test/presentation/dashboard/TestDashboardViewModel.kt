@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.jian.nemo.core.common.util.DateTimeUtils
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
@@ -22,7 +23,8 @@ data class TestDashboardUiState(
     val overallAccuracy: Float = 0f,
     val maxTestStreak: Int = 0,
     val wrongWordsCount: Int = 0,
-    val favoriteWordsCount: Int = 0
+    val favoriteWordsCount: Int = 0,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
 )
 
 @HiltViewModel
@@ -36,6 +38,15 @@ class TestDashboardViewModel @Inject constructor(
 
     init {
         loadStatistics()
+        observeSettings()
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     private fun loadStatistics() {
