@@ -55,6 +55,9 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import java.util.Calendar
 import java.util.Date
@@ -76,18 +79,57 @@ fun LearningCalendarScreen(
     var isMonthMode by remember { mutableStateOf(false) }
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val backdrop = rememberLayerBackdrop()
+    val view = LocalView.current
 
     Scaffold(
         topBar = {
             CommonHeader(
                 title = "学习日历",
-                onBack = onNavigateBack
+                onBack = onNavigateBack,
+                backdrop = backdrop,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            isMonthMode = !isMonthMode
+                        },
+                        backdrop = backdrop,
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        AnimatedContent(
+                            targetState = isMonthMode,
+                            transitionSpec = {
+                                if (targetState) {
+                                    (slideInVertically { height -> height } + fadeIn()) togetherWith
+                                            (slideOutVertically { height -> -height } + fadeOut())
+                                } else {
+                                    (slideInVertically { height -> -height } + fadeIn()) togetherWith
+                                            (slideOutVertically { height -> height } + fadeOut())
+                                }.using(SizeTransform(clip = false))
+                            },
+                            label = "calendarViewToggleText"
+                        ) { monthMode ->
+                            Text(
+                                text = if (monthMode) "月视图" else "周视图",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                ),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
             )
         },
         containerColor = backgroundColor
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -98,18 +140,20 @@ fun LearningCalendarScreen(
         ) {
             // 1. 核心活动三环卡片 (周模式 ↔ 月模式联动)
             item {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 4.dp, vertical = 2.dp)
                 ) {
-                    CalendarSectionTitle(if (isMonthMode) "月度活动日历" else "周进度与目标")
-                    SegmentedCalendarToggle(
-                        isMonthMode = isMonthMode,
-                        onToggle = { isMonthMode = it }
-                    )
+                    AnimatedContent(
+                        targetState = isMonthMode,
+                        transitionSpec = {
+                            fadeIn(tween(250)) togetherWith fadeOut(tween(200))
+                        },
+                        label = "calendarSectionTitle"
+                    ) { monthMode ->
+                        CalendarSectionTitle(if (monthMode) "月度活动日历" else "周进度与目标")
+                    }
                 }
                 ActivityRingsCard(
                     isMonthMode = isMonthMode,
@@ -182,15 +226,32 @@ fun PremiumCard(
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
         border = BorderStroke(0.5.dp, borderColor),
+        shadowElevation = 0.dp,
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 26.dp, isDark = isDark)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            },
+            .then(
+                if (onClick != null) {
+                    Modifier.graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                    }
+                } else Modifier
+            ),
         interactionSource = interactionSource,
-        content = { Column(modifier = Modifier.padding(20.dp), content = content) }
+        content = {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioLowBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    ),
+                content = content
+            )
+        }
     )
 }
 
@@ -282,78 +343,6 @@ fun StatItem(
     }
 }
 
-// 分段切换器 [ 周 | 月 ] (淡蓝色主调底色 + 规范阴影)
-@Composable
-fun SegmentedCalendarToggle(
-    isMonthMode: Boolean,
-    onToggle: (Boolean) -> Unit
-) {
-    val view = LocalView.current
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-    } else {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
-    }
-    val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-    val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.06f)
-
-    Surface(
-        color = containerColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, borderColor)
-    ) {
-        Row(modifier = Modifier.padding(4.dp)) {
-            val isWeekSelected = !isMonthMode
-            // "周" 按钮
-            Box(
-                modifier = Modifier
-                    .softCardShadow(borderRadius = 12.dp, isDark = isDark)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isWeekSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .clickable {
-                        if (isMonthMode) {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            onToggle(false)
-                        }
-                    }
-                    .padding(horizontal = 16.dp, vertical = 7.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "周",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (isWeekSelected) Color.White else MaterialTheme.colorScheme.primary
-                )
-            }
-
-            val isMonthSelected = isMonthMode
-            // "月" 按钮
-            Box(
-                modifier = Modifier
-                    .softCardShadow(borderRadius = 12.dp, isDark = isDark)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (isMonthSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .clickable {
-                        if (!isMonthMode) {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                            onToggle(true)
-                        }
-                    }
-                    .padding(horizontal = 16.dp, vertical = 7.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "月",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (isMonthSelected) Color.White else MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
 
 // 可交互日历卡片 (支持周/月模式动画切换)
 @Composable

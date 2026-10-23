@@ -12,7 +12,7 @@
     <string name="label_current_progress">当前进度</string>
     <string name="label_daily_goal">目标 %d</string>
     <string name="label_items_due">待复习项目</string>
-    <string name="label_completion_rate">学习达成率</string>
+    <string name="label_completion_rate">新学达成率</string>
     <string name="btn_continue_learning">继续上次会话</string>
     <string name="btn_start_learning">开始学习</string>
     <string name="btn_continue_home">继续学习</string>

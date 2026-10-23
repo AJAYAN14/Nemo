@@ -178,7 +178,7 @@ data class HomeUiState(
         get() = if (learningMode == LearningMode.Word) stats.reviewedWords else stats.reviewedGrammars
 
     val dailyCompletionRate: Int
-        get() = if (dailyGoal > 0) ((currentProgress.toFloat() / dailyGoal) * 100).toInt().coerceIn(0, 100) else 0
+        get() = if (dailyGoal > 0) ((currentProgress.toFloat() / dailyGoal) * 100).toInt().coerceAtLeast(0) else 0
 }
 
 /**

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Inbox
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Warning
@@ -243,13 +244,26 @@ fun WordListScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 80.dp),
+                                    .padding(top = 56.dp, bottom = 40.dp),
                                 contentAlignment = Alignment.Center
                             ) {
+                                val (emptyTitle, emptySubtitle) = when {
+                                    searchQuery.isNotEmpty() ->
+                                        "未找到相关单词" to "请尝试更换搜索关键词或假名拼写"
+                                    uiState.filterState == StudyFilter.UNLEARNED ->
+                                        (if (selectedLevel != "ALL") "当前等级暂无未学单词" else "暂无未学单词") to "太棒了，所有单词均已学习完毕！"
+                                    uiState.filterState == StudyFilter.LEARNED ->
+                                        (if (selectedLevel != "ALL") "当前等级暂无已学单词" else "暂无已学单词") to "去开始背词，积累更多词汇量吧"
+                                    selectedLevel != "ALL" ->
+                                        "当前等级暂无单词" to "可以切换上方的等级菜单查看其他内容"
+                                    else ->
+                                        "暂无单词数据" to "暂时没有收录相关单词条目"
+                                }
+                                val emptyIcon = if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Translate
                                 EmptyState(
-                                    if (searchQuery.isNotEmpty()) "未找到相关单词"
-                                    else if (selectedLevel != "ALL") "当前等级暂无单词"
-                                    else "暂无单词数据"
+                                    title = emptyTitle,
+                                    subtitle = emptySubtitle,
+                                    icon = emptyIcon
                                 )
                             }
                         }
@@ -432,11 +446,52 @@ private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyState(message: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Icon(Icons.Rounded.Inbox, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.surfaceVariant)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun EmptyState(
+    title: String,
+    subtitle: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Translate
+) {
+    val accentColor = NemoSecondary
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+    ) {
+        Surface(
+            shape = RoundedCornerShape(32.dp),
+            color = accentColor.copy(alpha = 0.1f),
+            modifier = Modifier.size(100.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = accentColor.copy(alpha = 0.8f)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        if (!subtitle.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
     }
 }
 

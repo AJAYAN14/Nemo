@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -133,7 +135,12 @@ fun HistoricalStatisticsScreen(
                 }
             } else {
                 item {
-                    EmptyStatisticsState("暂无单词学习记录")
+                    EmptyStatisticsState(
+                        message = "暂无单词学习记录",
+                        subtitle = "去学习词汇，积累你的专属词库吧",
+                        icon = Icons.Rounded.Translate,
+                        accentColor = NemoSecondary
+                    )
                 }
             }
 
@@ -156,7 +163,12 @@ fun HistoricalStatisticsScreen(
                 }
             } else {
                 item {
-                    EmptyStatisticsState("暂无语法学习记录")
+                    EmptyStatisticsState(
+                        message = "暂无语法学习记录",
+                        subtitle = "去学习语法，掌握核心句型表达吧",
+                        icon = Icons.Rounded.Checklist,
+                        accentColor = NemoSecondary
+                    )
                 }
             }
         }

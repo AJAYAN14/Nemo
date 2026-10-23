@@ -2,8 +2,11 @@
 package com.jian.nemo.feature.statistics.calendar
 
 import android.view.HapticFeedbackConstants
+import androidx.compose.animation.*
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -866,7 +869,9 @@ fun ActivityRingsCard(
         if (isToday) "今天 · ${m}月${d}日" else "${m}月${d}日"
     }
 
-    PremiumCard(modifier = modifier) {
+    PremiumCard(
+        modifier = modifier
+    ) {
         // 顶部标题与所选日期
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -934,47 +939,64 @@ fun ActivityRingsCard(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 下半部分: 周视图 7 天胶囊 或 月视图微型三环网格
-        if (!isMonthMode) {
-            val selectedWeekIndex = weekDays.indexOfFirst { it.epochDay == selectedEpochDay }.coerceAtLeast(0)
-            ActivityWeekPicker(
-                daysData = weekDays,
-                selectedIndex = selectedWeekIndex,
-                onSelectDay = { idx ->
-                    onDateSelected(weekDays[idx].fullDate)
-                }
-            )
-        } else {
-            ActivityMonthGrid(
-                displayedCal = displayedCal,
-                selectedEpochDay = selectedEpochDay,
-                todayEpochDay = todayEpochDay,
-                recordsMap = recordsMap,
-                forecastMap = forecastMap,
-                todayStats = todayStats,
-                onPrevMonth = {
-                    displayedCal = (displayedCal.clone() as Calendar).apply { add(Calendar.MONTH, -1) }
-                },
-                onNextMonth = {
-                    displayedCal = (displayedCal.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
-                },
-                onSelectDate = { date ->
-                    onDateSelected(date)
-                }
-            )
+        // 下半部分: 周视图 7 天胶囊 或 月视图微型三环网格 (带 AnimatedContent 丝滑平滑过渡)
+        AnimatedContent(
+            targetState = isMonthMode,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(200))
+            },
+            label = "calendarPickerTransition"
+        ) { monthMode ->
+            if (!monthMode) {
+                val selectedWeekIndex = weekDays.indexOfFirst { it.epochDay == selectedEpochDay }.coerceAtLeast(0)
+                ActivityWeekPicker(
+                    daysData = weekDays,
+                    selectedIndex = selectedWeekIndex,
+                    onSelectDay = { idx ->
+                        onDateSelected(weekDays[idx].fullDate)
+                    }
+                )
+            } else {
+                ActivityMonthGrid(
+                    displayedCal = displayedCal,
+                    selectedEpochDay = selectedEpochDay,
+                    todayEpochDay = todayEpochDay,
+                    recordsMap = recordsMap,
+                    forecastMap = forecastMap,
+                    todayStats = todayStats,
+                    onPrevMonth = {
+                        displayedCal = (displayedCal.clone() as Calendar).apply { add(Calendar.MONTH, -1) }
+                    },
+                    onNextMonth = {
+                        displayedCal = (displayedCal.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
+                    },
+                    onSelectDate = { date ->
+                        onDateSelected(date)
+                    }
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
 
         // 底部总结信息 (本周/本月合环天数)
-        val periodText = if (!isMonthMode) "本周" else "本月"
-        Text(
-            text = "${periodText}三环全合上天数：${closedDaysCount} 天",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
+        AnimatedContent(
+            targetState = isMonthMode,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(150))
+            },
+            label = "periodClosedDaysSummary"
+        ) { monthMode ->
+            val periodText = if (!monthMode) "本周" else "本月"
+            Text(
+                text = "${periodText}三环全合上天数：${closedDaysCount} 天",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }

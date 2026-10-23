@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Inbox
+import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.DoneAll
@@ -116,7 +118,12 @@ fun StatisticsScreen(
                 }
             } else {
                 item {
-                    EmptyStatisticsState("该日期没有学习任何单词")
+                    EmptyStatisticsState(
+                        message = "该日期没有学习任何单词",
+                        subtitle = "完成新学或复习后会在此展示",
+                        icon = Icons.Rounded.Translate,
+                        accentColor = NemoSecondary
+                    )
                 }
             }
 
@@ -138,7 +145,12 @@ fun StatisticsScreen(
                 }
             } else {
                 item {
-                    EmptyStatisticsState("该日期没有学习任何语法")
+                    EmptyStatisticsState(
+                        message = "该日期没有学习任何语法",
+                        subtitle = "完成语法学习后会在此展示",
+                        icon = Icons.Rounded.Checklist,
+                        accentColor = NemoSecondary
+                    )
                 }
             }
         }
@@ -287,27 +299,54 @@ fun StatisticsListCard(
 }
 
 @Composable
-fun EmptyStatisticsState(message: String) {
+fun EmptyStatisticsState(
+    message: String,
+    subtitle: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox,
+    accentColor: Color = NemoSecondary
+) {
     PremiumCard {
-         Box(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 32.dp),
+                .padding(vertical = 28.dp, horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
-                    imageVector = Icons.Rounded.Inbox,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = accentColor.copy(alpha = 0.1f),
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = accentColor.copy(alpha = 0.8f),
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
         }
     }
