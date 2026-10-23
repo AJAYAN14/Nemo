@@ -117,6 +117,12 @@ class SettingsViewModel @Inject constructor(
             }
         }
 
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
+
         // 加载可用语音列表
         viewModelScope.launch {
             val voices = audioRepository.getAvailableVoices()
@@ -240,6 +246,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetDynamicColor -> setDynamicColor(event.enabled)
             is SettingsEvent.SetThemeColor -> setThemeColor(event.colorArgb)
             is SettingsEvent.SetToggleStyle -> setToggleStyle(event.style)
+            is SettingsEvent.SetSettingIconStyle -> setSettingIconStyle(event.style)
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
             is SettingsEvent.SetDefaultBonusBatchSize -> setDefaultBonusBatchSize(event.size)
@@ -559,6 +566,15 @@ class SettingsViewModel @Inject constructor(
     private fun setToggleStyle(style: com.jian.nemo.core.domain.repository.ToggleStyle) {
         viewModelScope.launch {
             settingsRepository.setToggleStyle(style)
+        }
+    }
+
+    /**
+     * 设置图标视觉风格
+     */
+    private fun setSettingIconStyle(style: com.jian.nemo.core.domain.repository.SettingIconStyle) {
+        viewModelScope.launch {
+            settingsRepository.setSettingIconStyle(style)
         }
     }
 

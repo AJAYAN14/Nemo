@@ -723,6 +723,10 @@ interface SettingsRepository {
     /** 开关控件风格 Flow (默认 LIQUID_GLASS) */
     val toggleStyleFlow: Flow<ToggleStyle>
     suspend fun setToggleStyle(style: ToggleStyle)
+
+    /** 设置项图标风格 Flow (默认 MD3) */
+    val settingIconStyleFlow: Flow<SettingIconStyle>
+    suspend fun setSettingIconStyle(style: SettingIconStyle)
 }
 
 /**
@@ -731,6 +735,14 @@ interface SettingsRepository {
 enum class ToggleStyle {
     LIQUID_GLASS, // 液态玻璃效果
     GOOEY         // 液态拉伸果冻效果
+}
+
+/**
+ * 设置项图标视觉风格
+ */
+enum class SettingIconStyle {
+    MD3,       // Material Design 3 风格（带圆角彩色卡片底框）
+    PLUMP_DUO  // Plump Duo 风格（无背景框双色线面与等亮度调色板）
 }
 
 /**

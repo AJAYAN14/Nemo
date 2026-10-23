@@ -71,6 +71,9 @@ object PreferencesKeys {
     /** 开关控件视觉风格 (LIQUID_GLASS, GOOEY) 默认: LIQUID_GLASS */
     val TOGGLE_STYLE = stringPreferencesKey("toggle_style")
 
+    /** 设置项图标视觉风格 (MD3, PLUMP_DUO) 默认: MD3 */
+    val SETTING_ICON_STYLE = stringPreferencesKey("setting_icon_style")
+
 
     /** 通知开关 默认: true */
     val IS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_notification_enabled")

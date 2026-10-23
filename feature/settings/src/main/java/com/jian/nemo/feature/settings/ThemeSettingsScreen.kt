@@ -32,6 +32,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.designsystem.theme.NemoIndigo
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.feature.settings.components.IsoluminantPalette
+import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
+import com.jian.nemo.feature.settings.components.PlumpIcon
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
@@ -57,121 +62,142 @@ fun ThemeSettingsScreen(
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showThemeColorDialog by remember { mutableStateOf(false) }
+    var showIconStyleDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
-        Column(
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
-                .verticalScroll(scrollState)
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
-                )
+                .background(backgroundColor)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SettingsSectionTitle(text = "显示模式")
-            PremiumCard {
-                ThemeSelectionGrid(
-                    selectedMode = uiState.darkMode,
-                    onModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) }
-                )
-            }
-
-            AnimatedVisibility(
-                visible = uiState.darkMode == DarkModeOption.AUTO,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
+            // 1. 底层滚动内容（被 backdrop 采样源录制）
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+                    .verticalScroll(scrollState)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    )
             ) {
-                Column {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    SettingsSectionTitle(text = "自动切换模式")
-                    PremiumCard {
-                        StrategyOptionItem(
-                            title = "跟随系统",
-                            subtitle = "根据系统设置自动切换深浅色主题",
-                            isSelected = uiState.darkModeStrategy == DarkModeStrategy.FOLLOW_SYSTEM,
-                            onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.FOLLOW_SYSTEM)) }
-                        )
-                        StrategyOptionItem(
-                            title = "定时深色模式",
-                            subtitle = "在指定时间段开启深色模式",
-                            isSelected = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
-                            showDivider = false,
-                            onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.SCHEDULED)) }
-                        )
-                    }
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    AnimatedVisibility(
-                        visible = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
-                        enter = fadeIn() + expandVertically(),
-                        exit = fadeOut() + shrinkVertically()
-                    ) {
-                        Column {
-                            Spacer(modifier = Modifier.height(20.dp))
-                            SettingsSectionTitle(text = "深色模式定时")
-                            PremiumCard {
-                                SquircleSettingItem(
-                                    icon = Icons.Rounded.DarkMode,
-                                    iconColor = Color(0xFF5856D6),
-                                    title = "开启深色模式",
-                                    subtitle = uiState.darkModeStartTime,
-                                    onClick = { showStartTimePicker = true },
-                                    trailing = {
-                                        Text(
-                                            text = uiState.darkModeStartTime,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                )
-                                SquircleSettingItem(
-                                    icon = Icons.Rounded.LightMode,
-                                    iconColor = Color(0xFFFF9500),
-                                    title = "结束深色模式",
-                                    subtitle = uiState.darkModeEndTime,
-                                    showDivider = false,
-                                    onClick = { showEndTimePicker = true },
-                                    trailing = {
-                                        Text(
-                                            text = uiState.darkModeEndTime,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                )
+                SettingsSectionTitle(text = "显示模式")
+                PremiumCard {
+                    ThemeSelectionGrid(
+                        selectedMode = uiState.darkMode,
+                        onModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) }
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = uiState.darkMode == DarkModeOption.AUTO,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        SettingsSectionTitle(text = "自动切换模式")
+                        PremiumCard {
+                            StrategyOptionItem(
+                                title = "跟随系统",
+                                subtitle = "根据系统设置自动切换深浅色主题",
+                                isSelected = uiState.darkModeStrategy == DarkModeStrategy.FOLLOW_SYSTEM,
+                                onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.FOLLOW_SYSTEM)) }
+                            )
+                            StrategyOptionItem(
+                                title = "定时深色模式",
+                                subtitle = "在指定时间段开启深色模式",
+                                isSelected = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
+                                showDivider = false,
+                                onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.SCHEDULED)) }
+                            )
+                        }
+
+                        AnimatedVisibility(
+                            visible = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
+                            enter = fadeIn() + expandVertically(),
+                            exit = fadeOut() + shrinkVertically()
+                        ) {
+                            Column {
+                                Spacer(modifier = Modifier.height(20.dp))
+                                SettingsSectionTitle(text = "深色模式定时")
+                                PremiumCard {
+                                    SquircleSettingItem(
+                                        icon = Icons.Rounded.DarkMode,
+                                        plumpIcon = PlumpIcon.Moon,
+                                        iconColor = Color(0xFF5856D6),
+                                        plumpColor = IsoluminantPalette.LilacViolet,
+                                        title = "开启深色模式",
+                                        subtitle = uiState.darkModeStartTime,
+                                        onClick = { showStartTimePicker = true },
+                                        trailing = {
+                                            Text(
+                                                text = uiState.darkModeStartTime,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    )
+                                    SquircleSettingItem(
+                                        icon = Icons.Rounded.LightMode,
+                                        plumpIcon = PlumpIcon.Sun,
+                                        iconColor = Color(0xFFFF9500),
+                                        plumpColor = IsoluminantPalette.WarmAmber,
+                                        title = "结束深色模式",
+                                        subtitle = uiState.darkModeEndTime,
+                                        showDivider = false,
+                                        onClick = { showEndTimePicker = true },
+                                        trailing = {
+                                            Text(
+                                                text = uiState.darkModeEndTime,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                SettingsSectionTitle(text = "个性化")
+                PremiumCard {
+                    SquircleSettingItem(
+                        icon = Icons.Rounded.Palette,
+                        plumpIcon = PlumpIcon.ThemePalette,
+                        iconColor = Color(0xFFFF2D55), // MD3 原版粉红
+                        plumpColor = IsoluminantPalette.RoseRuby, // Plump 规范等亮度蔷薇绯红
+                        title = "主题色彩",
+                        subtitle = "选择您喜欢的品牌配色",
+                        onClick = { showThemeColorDialog = true },
+                        showDivider = true
+                    )
+                    SquircleSettingItem(
+                        icon = Icons.Rounded.Category,
+                        plumpIcon = PlumpIcon.IconStyle,
+                        iconColor = NemoIndigo,
+                        plumpColor = IsoluminantPalette.SkyIndigo,
+                        title = "图标风格",
+                        subtitle = when (uiState.settingIconStyle) {
+                            SettingIconStyle.MD3 -> "Material Design 3 (圆角卡片)"
+                            SettingIconStyle.PLUMP_DUO -> "Plump Duo (双色通透)"
+                        },
+                        onClick = { showIconStyleDialog = true },
+                        showDivider = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            SettingsSectionTitle(text = "个性化")
-            PremiumCard {
-                SquircleSettingItem(
-                    icon = Icons.Rounded.Palette,
-                    iconColor = Color(0xFFFF2D55), // Pink/Red
-                    title = "主题色彩",
-                    subtitle = "选择您喜欢的品牌配色",
-                    onClick = { showThemeColorDialog = true },
-                    showDivider = false
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-        }
 
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         Box(
@@ -197,6 +223,18 @@ fun ThemeSettingsScreen(
                 backButtonSize = 48.dp
             )
         }
+    }
+}
+
+    if (showIconStyleDialog) {
+        IconStyleSelectionDialog(
+            currentStyle = uiState.settingIconStyle,
+            onDismiss = { showIconStyleDialog = false },
+            onStyleSelect = { style ->
+                viewModel.onEvent(SettingsEvent.SetSettingIconStyle(style))
+                showIconStyleDialog = false
+            }
+        )
     }
 
     if (showThemeColorDialog) {
@@ -529,3 +567,79 @@ private fun TimePickerDialog(
         }
     )
 }
+
+@Composable
+private fun IconStyleSelectionDialog(
+    currentStyle: SettingIconStyle,
+    onDismiss: () -> Unit,
+    onStyleSelect: (SettingIconStyle) -> Unit
+) {
+    var selectedStyle by remember { mutableStateOf(currentStyle) }
+
+    NemoDialog(
+        onDismissRequest = onDismiss,
+        title = "选择图标风格",
+        confirmText = "确定",
+        dismissText = "取消",
+        onConfirm = { onStyleSelect(selectedStyle) },
+        content = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconStyleOptionRow(
+                    title = "Material Design 3",
+                    description = "经典圆角彩色背景底框，单色聚焦图标",
+                    isSelected = selectedStyle == SettingIconStyle.MD3,
+                    onClick = { selectedStyle = SettingIconStyle.MD3 }
+                )
+                IconStyleOptionRow(
+                    title = "Plump Duo",
+                    description = "现代无背景通透设计，双色线面与等亮度调色板",
+                    isSelected = selectedStyle == SettingIconStyle.PLUMP_DUO,
+                    onClick = { selectedStyle = SettingIconStyle.PLUMP_DUO }
+                )
+            }
+        }
+    )
+}
+
+@Composable
+private fun IconStyleOptionRow(
+    title: String,
+    description: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        RadioButton(
+            selected = isSelected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary
+            )
+        )
+    }
+}
+

@@ -9,6 +9,7 @@ import com.jian.nemo.core.data.datastore.PreferencesKeys
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SessionData
 import com.jian.nemo.core.domain.repository.ToggleStyle
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import com.jian.nemo.core.domain.model.AppSettings
@@ -2030,6 +2031,24 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setToggleStyle(style: ToggleStyle) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.TOGGLE_STYLE] = style.name
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /** 设置项图标视觉风格 Flow (默认 MD3) */
+    override val settingIconStyleFlow: Flow<SettingIconStyle> = dataStore.data.map { preferences ->
+        val styleStr = preferences[PreferencesKeys.SETTING_ICON_STYLE]
+        try {
+            if (styleStr != null) SettingIconStyle.valueOf(styleStr) else SettingIconStyle.MD3
+        } catch (e: Exception) {
+            SettingIconStyle.MD3
+        }
+    }
+
+    /** 设置图标视觉风格 */
+    override suspend fun setSettingIconStyle(style: SettingIconStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SETTING_ICON_STYLE] = style.name
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

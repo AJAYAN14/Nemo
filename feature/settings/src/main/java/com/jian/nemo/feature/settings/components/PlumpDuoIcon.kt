@@ -44,7 +44,10 @@ enum class PlumpIcon {
     IconLab,          // 图标实验室
     LiquidLab,        // 液态玻璃实验室
     GitHub,           // GitHub 项目
-    CheckUpdate       // 检查更新
+    CheckUpdate,      // 检查更新
+    Moon,             // 开启深色模式 / 月亮
+    Sun,              // 结束深色模式 / 太阳
+    IconStyle         // 图标风格选择 / 几何图形
 }
 
 /**
@@ -250,6 +253,27 @@ private val PlumpIconRegistry: Map<PlumpIcon, PlumpIconPathDefinition> = mapOf(
         fillPathData = "M12 21a9 9 0 1 1 9-9 9 9 0 0 1-9 9 Z",
         strokePathData = "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8 M21 3v5h-5 M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16 M8 16H3v5",
         fillAlpha = 0.16f
+    ),
+
+    // 19. Moon (开启深色模式)
+    PlumpIcon.Moon to PlumpIconPathDefinition(
+        fillPathData = "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401 Z",
+        strokePathData = "M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401",
+        fillAlpha = 0.22f
+    ),
+
+    // 20. Sun (结束深色模式)
+    PlumpIcon.Sun to PlumpIconPathDefinition(
+        fillPathData = "M 16 12 a 4 4 0 1 0 -8 0 a 4 4 0 1 0 8 0 Z",
+        strokePathData = "M 16 12 a 4 4 0 1 0 -8 0 a 4 4 0 1 0 8 0 Z M 12 2 v 2 M 12 20 v 2 M 4.93 4.93 l 1.41 1.41 M 17.66 17.66 l 1.41 1.41 M 2 12 h 2 M 20 12 h 2 M 6.34 17.66 l -1.41 1.41 M 19.07 4.93 l -1.41 1.41",
+        fillAlpha = 0.24f
+    ),
+
+    // 21. IconStyle (图标风格选择 - shapes)
+    PlumpIcon.IconStyle to PlumpIconPathDefinition(
+        fillPathData = "M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z M4 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z M 21 17.5 a 3.5 3.5 0 1 0 -7 0 a 3.5 3.5 0 1 0 7 0 Z",
+        strokePathData = "M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z M4 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z M 21 17.5 a 3.5 3.5 0 1 0 -7 0 a 3.5 3.5 0 1 0 7 0 Z",
+        fillAlpha = 0.22f
     )
 )
 

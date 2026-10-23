@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,7 +91,38 @@ fun PremiumCard(
 }
 
 /**
- * 设置列表项组件 (支持 Plump Duo 双色丰满图标，取消纯色背景框)
+ * 当前设置界面全局图标视觉风格 CompositionLocal (默认 MD3)
+ */
+val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
+
+/**
+ * 设置列表项组件 (支持传统单 ImageVector)
+ */
+@Composable
+fun SquircleSettingItem(
+    icon: ImageVector,
+    iconColor: Color,
+    title: String,
+    subtitle: String? = null,
+    onClick: () -> Unit,
+    showDivider: Boolean = true,
+    trailing: (@Composable () -> Unit)? = null
+) {
+    SquircleSettingItem(
+        icon = icon,
+        plumpIcon = null,
+        iconColor = iconColor,
+        plumpColor = iconColor,
+        title = title,
+        subtitle = subtitle,
+        onClick = onClick,
+        showDivider = showDivider,
+        trailing = trailing
+    )
+}
+
+/**
+ * 设置列表项组件 (支持单独指定 Plump Duo 图标)
  */
 @Composable
 fun SquircleSettingItem(
@@ -106,6 +138,7 @@ fun SquircleSettingItem(
         icon = null,
         plumpIcon = plumpIcon,
         iconColor = iconColor,
+        plumpColor = iconColor,
         title = title,
         subtitle = subtitle,
         onClick = onClick,
@@ -115,13 +148,15 @@ fun SquircleSettingItem(
 }
 
 /**
- * 设置列表项底层实现 (同时兼容传统 ImageVector 与新 PlumpIcon)
+ * 设置列表项底层实现 (同时支持 MD3 与 Plump Duo 双模式，自适应渲染)
  */
 @Composable
 fun SquircleSettingItem(
     icon: ImageVector? = null,
     plumpIcon: PlumpIcon? = null,
     iconColor: Color,
+    plumpColor: Color = iconColor,
+    iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     title: String,
     subtitle: String? = null,
     onClick: () -> Unit,
@@ -152,24 +187,49 @@ fun SquircleSettingItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标渲染：取消纯色方块背景，呈现通透精致的 Plump Duo 双色层次
-            Box(
-                modifier = Modifier.size(42.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = iconColor,
-                        size = 30.dp
-                    )
-                } else if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconColor,
-                        modifier = Modifier.size(24.dp)
-                    )
+            // 图标渲染：根据当前风格渲染 MD3（带 42dp 圆角背景卡片与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
+            if (iconStyle == SettingIconStyle.MD3) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    } else if (plumpIcon != null) {
+                        PlumpDuoIcon(
+                            icon = plumpIcon,
+                            color = plumpColor,
+                            size = 28.dp
+                        )
+                    }
+                }
+            } else {
+                // Plump Duo 模式：无背景框通透呈现
+                Box(
+                    modifier = Modifier.size(42.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (plumpIcon != null) {
+                        PlumpDuoIcon(
+                            icon = plumpIcon,
+                            color = plumpColor,
+                            size = 30.dp
+                        )
+                    } else if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
 

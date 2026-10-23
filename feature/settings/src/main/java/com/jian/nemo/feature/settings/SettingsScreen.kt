@@ -125,400 +125,435 @@ fun SettingsScreen(
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = statusBarHeight + 16.dp,
-                bottom = navigationBarHeight + 104.dp
-            )
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
         ) {
-            // 大标题
-            item {
-                ImmersiveSettingsHeader(title = "设置")
-            }
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarHeight + 16.dp,
+                    bottom = navigationBarHeight + 104.dp
+                )
+            ) {
+                // 大标题
+                item {
+                    ImmersiveSettingsHeader(title = "设置")
+                }
 
-            // 账号与同步
-            item {
-                SettingsSectionTitle("账号")
-                PremiumCard {
-                    if (isLoggedIn && currentUser != null) {
-                        // 用户信息 (Custom Squircle Implementation for Avatar)
-                        UserProfileRow(
-                            username = currentUser.username,
-                            email = currentUser.email,
-                            avatarPath = avatarPath,
-                            onClick = onNavigateToLogin
-                        )
-                        HorizontalDivider(
-                            modifier = Modifier.padding(start = 72.dp, end = 16.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                        )
-                    } else {
-                        // 未登录
+                // 账号与同步
+                item {
+                    SettingsSectionTitle("账号")
+                    PremiumCard {
+                        if (isLoggedIn && currentUser != null) {
+                            // 用户信息 (Custom Squircle Implementation for Avatar)
+                            UserProfileRow(
+                                username = currentUser.username,
+                                email = currentUser.email,
+                                avatarPath = avatarPath,
+                                onClick = onNavigateToLogin
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 72.dp, end = 16.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            )
+                        } else {
+                            // 未登录
+                            SquircleSettingItem(
+                                icon = Icons.Rounded.Person,
+                                plumpIcon = PlumpIcon.User,
+                                iconColor = NemoIndigo,
+                                plumpColor = IsoluminantPalette.SkyIndigo,
+                                title = "登录/注册",
+                                subtitle = "登录以体验完整功能",
+                                onClick = onNavigateToLogin,
+                                showDivider = true
+                            )
+                        }
+
                         SquircleSettingItem(
-                            plumpIcon = PlumpIcon.User,
-                            iconColor = IsoluminantPalette.SkyIndigo,
-                            title = "登录/注册",
-                            subtitle = "登录以体验完整功能",
-                            onClick = onNavigateToLogin,
+                            icon = Icons.Rounded.CloudUpload,
+                            plumpIcon = PlumpIcon.CloudUpload,
+                            iconColor = NemoCyan,
+                            plumpColor = IsoluminantPalette.LakesideCyan,
+                            title = "备份到云端",
+                            subtitle = "将当前进度安全保存在云端",
+                            onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
                             showDivider = true
                         )
-                    }
-
-                     SquircleSettingItem(
-                        plumpIcon = PlumpIcon.CloudUpload,
-                        iconColor = IsoluminantPalette.LakesideCyan,
-                        title = "备份到云端",
-                        subtitle = "将当前进度安全保存在云端",
-                        onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
-                        showDivider = true
-                    )
-                     SquircleSettingItem(
-                        plumpIcon = PlumpIcon.CloudBackup,
-                        iconColor = IsoluminantPalette.LilacViolet,
-                        title = "云端备份历史",
-                        subtitle = "查看或从云端恢复历史备份",
-                        onClick = onNavigateToCloudBackupHistory,
-                        showDivider = false
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // 外观
-            item {
-                SettingsSectionTitle("外观") // 使用分组标题
-                PremiumCard {
-                    // 主题外观
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.ThemePalette,
-                        iconColor = IsoluminantPalette.LilacViolet,
-                        title = "主题外观",
-                        subtitle = when (uiState.darkMode) {
-                            DarkModeOption.LIGHT -> "浅色"
-                            DarkModeOption.DARK -> "深色"
-                            DarkModeOption.AUTO -> "自动"
-                        },
-                        onClick = onNavigateToThemeSettings,
-                        showDivider = false
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // 学习
-            item {
-                SettingsSectionTitle("学习")
-                PremiumCard {
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.DailyGoalTarget,
-                        iconColor = IsoluminantPalette.WarmAmber,
-                        title = "每日单词目标",
-                        subtitle = "设置每天要学习的单词数量",
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(true)) },
-                        showDivider = true,
-                        trailing = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${uiState.dailyGoal}个",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 15.sp
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-                    )
-
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.GrammarLayers,
-                        iconColor = IsoluminantPalette.EmeraldGreen,
-                        title = "每日语法目标",
-                        subtitle = "设置每天要学习的语法数量",
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
-                        showDivider = true,
-                         trailing = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${uiState.grammarDailyGoal}条",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 15.sp
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-                    )
-
-
-
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.StudyClock,
-                        iconColor = IsoluminantPalette.SkyIndigo,
-                        title = "学习日重置时间",
-                        subtitle = "零点跨天保护，过了此时间才算新的一天",
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(true)) },
-                        showDivider = true,
-                        trailing = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${uiState.learningDayResetHour}:00",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 15.sp
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(14.dp)
-                                )
-                            }
-                        }
-                    )
-
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.RandomShuffle,
-                        iconColor = IsoluminantPalette.EmeraldGreen,
-                        title = "新内容乱序抽取",
-                        subtitle = if (uiState.isRandomNewContentEnabled) "随机抽取新内容" else "按顺序抽取新内容",
-                        onClick = { showRandomNewContentConfirmDialog = true },
-                        showDivider = true,
-                        trailing = {
-                            LiquidToggle(
-                                checked = uiState.isRandomNewContentEnabled,
-                                onCheckedChange = { showRandomNewContentConfirmDialog = true },
-                                accentColor = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    )
-
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.MemoryBrain,
-                        iconColor = IsoluminantPalette.LilacViolet,
-                        title = "记忆算法配置",
-                        subtitle = "步进、提前复习与 Leech 策略",
-                        onClick = onNavigateToAdvancedLearning,
-                        showDivider = false,
-                        trailing = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    )
-
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.AiBot,
-                        iconColor = IsoluminantPalette.LakesideCyan,
-                        title = "AI 工坊配置",
-                        subtitle = "设置 API Key 与 AI 模型",
-                        onClick = onNavigateToAiSettings,
-                        showDivider = false,
-                        trailing = {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.size(14.dp)
-                            )
-                        }
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // 语音
-            item {
-                SettingsSectionTitle("语音")
-                PremiumCard {
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.AudioVolume,
-                        iconColor = IsoluminantPalette.RoseRuby,
-                        title = "语音参数",
-                        subtitle = "调节语速和音调",
-                        onClick = onNavigateToTtsSettings,
-                        showDivider = false
-                    )
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // 数据
-            item {
-                SettingsSectionTitle("数据")
-                PremiumCard {
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.ExportDownload,
-                        iconColor = IsoluminantPalette.SeaMarine,
-                        title = "导出数据",
-                        subtitle = "导出本地数据文件",
-                        onClick = {
-                            viewModel.onEvent(SettingsEvent.RequestExport)
-                        },
-                        showDivider = true
-                    )
-                     SquircleSettingItem(
-                        plumpIcon = PlumpIcon.ImportUpload,
-                        iconColor = IsoluminantPalette.SeaMarine,
-                        title = "导入本地数据",
-                        subtitle = "从文件恢复进度",
-                        onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
-                        showDivider = true
-                    )
-
-                     SquircleSettingItem(
-                        plumpIcon = PlumpIcon.ResetTrash,
-                        iconColor = IsoluminantPalette.CoralFlame, // NemoRed/Danger
-                         title = "重置学习进度",
-                        subtitle = "清空所有数据 (慎用)",
-                        onClick = {
-                            isResetting = false
-                            showConfirmDialog = true
-                        },
-                        showDivider = false
-                    )
-
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // 实验室
-            val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
-            item {
-                SettingsSectionTitle("实验室")
-                PremiumCard {
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.IconLab,
-                        iconColor = IsoluminantPalette.GlazeMint,
-                        title = "图标设计实验室",
-                        subtitle = "4列方格对比与真实列表项渲染",
-                        onClick = onNavigateToIconLab,
-                        showDivider = isLabAccessible
-                    )
-                    if (isLabAccessible) {
                         SquircleSettingItem(
-                            plumpIcon = PlumpIcon.LiquidLab,
-                            iconColor = IsoluminantPalette.LakesideCyan,
-                            title = "液态玻璃实验室",
-                            subtitle = "体验透镜折射与动态物理流体按钮",
-                            onClick = onNavigateToLiquidLab,
+                            icon = Icons.Rounded.CloudSync,
+                            plumpIcon = PlumpIcon.CloudBackup,
+                            iconColor = NemoPurple,
+                            plumpColor = IsoluminantPalette.LilacViolet,
+                            title = "云端备份历史",
+                            subtitle = "查看或从云端恢复历史备份",
+                            onClick = onNavigateToCloudBackupHistory,
                             showDivider = false
                         )
                     }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            // 关于
-            item {
-                SettingsSectionTitle("关于")
-                PremiumCard {
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
+                // 外观
+                item {
+                    SettingsSectionTitle("外观") // 使用分组标题
+                    PremiumCard {
+                        // 主题外观
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Contrast,
+                            plumpIcon = PlumpIcon.ThemePalette,
+                            iconColor = NemoPurple,
+                            plumpColor = IsoluminantPalette.LilacViolet,
+                            title = "主题外观",
+                            subtitle = when (uiState.darkMode) {
+                                DarkModeOption.LIGHT -> "浅色"
+                                DarkModeOption.DARK -> "深色"
+                                DarkModeOption.AUTO -> "自动"
+                            },
+                            onClick = onNavigateToThemeSettings,
+                            showDivider = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.GitHub,
-                        iconColor = IsoluminantPalette.OceanBlue,
-                        title = "GitHub 项目",
-                        subtitle = "访问开源代码仓库",
-                        onClick = {
-                            val githubUrl = "https://github.com/AJAYAN14/Nemo"
-                            // 1. 复制项目地址到系统剪贴板
-                            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
-                            val clip = android.content.ClipData.newPlainText("GitHub URL", githubUrl)
-                            clipboard?.setPrimaryClip(clip)
-
-                            // 2. 解析系统默认浏览器（避免被 GitHub 客户端拦截）
-                            try {
-                                val browserProbeIntent = android.content.Intent(
-                                    android.content.Intent.ACTION_VIEW,
-                                    android.net.Uri.parse("https://")
-                                )
-                                val resolveInfo = context.packageManager.resolveActivity(
-                                    browserProbeIntent,
-                                    android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
-                                )
-                                val defaultBrowserPackage = resolveInfo?.activityInfo?.packageName
-
-                                val targetIntent = android.content.Intent(
-                                    android.content.Intent.ACTION_VIEW,
-                                    android.net.Uri.parse(githubUrl)
-                                ).apply {
-                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    if (!defaultBrowserPackage.isNullOrBlank() && defaultBrowserPackage != "android") {
-                                        setPackage(defaultBrowserPackage)
-                                    }
+                // 学习
+                item {
+                    SettingsSectionTitle("学习")
+                    PremiumCard {
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.TrackChanges,
+                            plumpIcon = PlumpIcon.DailyGoalTarget,
+                            iconColor = NemoOrange,
+                            plumpColor = IsoluminantPalette.WarmAmber,
+                            title = "每日单词目标",
+                            subtitle = "设置每天要学习的单词数量",
+                            onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(true)) },
+                            showDivider = true,
+                            trailing = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${uiState.dailyGoal}个",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 15.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
                                 }
-                                context.startActivity(targetIntent)
-                                snackbarMessage = "已复制项目地址并打开浏览器"
-                                snackbarType = NemoSnackbarType.SUCCESS
-                                snackbarVisible = true
-                            } catch (_: Exception) {
+                            }
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.JoinLeft,
+                            plumpIcon = PlumpIcon.GrammarLayers,
+                            iconColor = NemoSecondary,
+                            plumpColor = IsoluminantPalette.EmeraldGreen,
+                            title = "每日语法目标",
+                            subtitle = "设置每天要学习的语法数量",
+                            onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
+                            showDivider = true,
+                            trailing = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${uiState.grammarDailyGoal}条",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 15.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Schedule,
+                            plumpIcon = PlumpIcon.StudyClock,
+                            iconColor = NemoIndigo,
+                            plumpColor = IsoluminantPalette.SkyIndigo,
+                            title = "学习日重置时间",
+                            subtitle = "零点跨天保护，过了此时间才算新的一天",
+                            onClick = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(true)) },
+                            showDivider = true,
+                            trailing = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${uiState.learningDayResetHour}:00",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 15.sp
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                }
+                            }
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Shuffle,
+                            plumpIcon = PlumpIcon.RandomShuffle,
+                            iconColor = NemoPrimary,
+                            plumpColor = IsoluminantPalette.EmeraldGreen,
+                            title = "新内容乱序抽取",
+                            subtitle = if (uiState.isRandomNewContentEnabled) "随机抽取新内容" else "按顺序抽取新内容",
+                            onClick = { showRandomNewContentConfirmDialog = true },
+                            showDivider = true,
+                            trailing = {
+                                LiquidToggle(
+                                    checked = uiState.isRandomNewContentEnabled,
+                                    onCheckedChange = { showRandomNewContentConfirmDialog = true },
+                                    accentColor = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        )
+
+                        SquircleSettingItem(
+                            icon = ImageVector.vectorResource(DesignR.drawable.ic_neurology),
+                            plumpIcon = PlumpIcon.MemoryBrain,
+                            iconColor = NemoPurple,
+                            plumpColor = IsoluminantPalette.LilacViolet,
+                            title = "记忆算法配置",
+                            subtitle = "步进、提前复习与 Leech 策略",
+                            onClick = onNavigateToAdvancedLearning,
+                            showDivider = false,
+                            trailing = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.AutoAwesome,
+                            plumpIcon = PlumpIcon.AiBot,
+                            iconColor = NemoCyan,
+                            plumpColor = IsoluminantPalette.LakesideCyan,
+                            title = "AI 工坊配置",
+                            subtitle = "设置 API Key 与 AI 模型",
+                            onClick = onNavigateToAiSettings,
+                            showDivider = false,
+                            trailing = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // 语音
+                item {
+                    SettingsSectionTitle("语音")
+                    PremiumCard {
+                        SquircleSettingItem(
+                            icon = Icons.AutoMirrored.Rounded.VolumeUp,
+                            plumpIcon = PlumpIcon.AudioVolume,
+                            iconColor = Color(0xFFFF2D55), // NemoRed/Pink
+                            plumpColor = IsoluminantPalette.RoseRuby,
+                            title = "语音参数",
+                            subtitle = "调节语速和音调",
+                            onClick = onNavigateToTtsSettings,
+                            showDivider = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // 数据
+                item {
+                    SettingsSectionTitle("数据")
+                    PremiumCard {
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.FileDownload,
+                            plumpIcon = PlumpIcon.ExportDownload,
+                            iconColor = NemoSecondary,
+                            plumpColor = IsoluminantPalette.SeaMarine,
+                            title = "导出数据",
+                            subtitle = "导出本地数据文件",
+                            onClick = {
+                                viewModel.onEvent(SettingsEvent.RequestExport)
+                            },
+                            showDivider = true
+                        )
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.FileUpload,
+                            plumpIcon = PlumpIcon.ImportUpload,
+                            iconColor = NemoPrimary,
+                            plumpColor = IsoluminantPalette.SeaMarine,
+                            title = "导入本地数据",
+                            subtitle = "从文件恢复进度",
+                            onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
+                            showDivider = true
+                        )
+
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Delete,
+                            plumpIcon = PlumpIcon.ResetTrash,
+                            iconColor = NemoDanger,
+                            plumpColor = IsoluminantPalette.CoralFlame,
+                            title = "重置学习进度",
+                            subtitle = "清空所有数据 (慎用)",
+                            onClick = {
+                                isResetting = false
+                                showConfirmDialog = true
+                            },
+                            showDivider = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // 实验室
+                val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
+                item {
+                    SettingsSectionTitle("实验室")
+                    PremiumCard {
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Palette,
+                            plumpIcon = PlumpIcon.IconLab,
+                            iconColor = NemoPrimary,
+                            plumpColor = IsoluminantPalette.GlazeMint,
+                            title = "图标设计实验室",
+                            subtitle = "4列方格对比与真实列表项渲染",
+                            onClick = onNavigateToIconLab,
+                            showDivider = isLabAccessible
+                        )
+                        if (isLabAccessible) {
+                            SquircleSettingItem(
+                                icon = Icons.Rounded.Science,
+                                plumpIcon = PlumpIcon.LiquidLab,
+                                iconColor = NemoCyan,
+                                plumpColor = IsoluminantPalette.LakesideCyan,
+                                title = "液态玻璃实验室",
+                                subtitle = "体验透镜折射与动态物理流体按钮",
+                                onClick = onNavigateToLiquidLab,
+                                showDivider = false
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // 关于
+                item {
+                    SettingsSectionTitle("关于")
+                    PremiumCard {
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
+
+                        SquircleSettingItem(
+                            icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
+                            plumpIcon = PlumpIcon.GitHub,
+                            iconColor = NemoPrimary,
+                            plumpColor = IsoluminantPalette.OceanBlue,
+                            title = "GitHub 项目",
+                            subtitle = "访问开源代码仓库",
+                            onClick = {
+                                val githubUrl = "https://github.com/AJAYAN14/Nemo"
+                                // 1. 复制项目地址到系统剪贴板
+                                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
+                                val clip = android.content.ClipData.newPlainText("GitHub URL", githubUrl)
+                                clipboard?.setPrimaryClip(clip)
+
+                                // 2. 解析系统默认浏览器（避免被 GitHub 客户端拦截）
                                 try {
-                                    val fallbackIntent = android.content.Intent(
+                                    val browserProbeIntent = android.content.Intent(
+                                        android.content.Intent.ACTION_VIEW,
+                                        android.net.Uri.parse("https://")
+                                    )
+                                    val resolveInfo = context.packageManager.resolveActivity(
+                                        browserProbeIntent,
+                                        android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
+                                    )
+                                    val defaultBrowserPackage = resolveInfo?.activityInfo?.packageName
+
+                                    val targetIntent = android.content.Intent(
                                         android.content.Intent.ACTION_VIEW,
                                         android.net.Uri.parse(githubUrl)
                                     ).apply {
                                         addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        if (!defaultBrowserPackage.isNullOrBlank() && defaultBrowserPackage != "android") {
+                                            setPackage(defaultBrowserPackage)
+                                        }
                                     }
-                                    context.startActivity(fallbackIntent)
+                                    context.startActivity(targetIntent)
                                     snackbarMessage = "已复制项目地址并打开浏览器"
                                     snackbarType = NemoSnackbarType.SUCCESS
                                     snackbarVisible = true
                                 } catch (_: Exception) {
-                                    snackbarMessage = "已复制项目地址，无法打开系统浏览器"
-                                    snackbarType = NemoSnackbarType.ERROR
-                                    snackbarVisible = true
+                                    try {
+                                        val fallbackIntent = android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            android.net.Uri.parse(githubUrl)
+                                        ).apply {
+                                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        }
+                                        context.startActivity(fallbackIntent)
+                                        snackbarMessage = "已复制项目地址并打开浏览器"
+                                        snackbarType = NemoSnackbarType.SUCCESS
+                                        snackbarVisible = true
+                                    } catch (_: Exception) {
+                                        snackbarMessage = "已复制项目地址，无法打开系统浏览器"
+                                        snackbarType = NemoSnackbarType.ERROR
+                                        snackbarVisible = true
+                                    }
                                 }
-                            }
-                        },
-                        showDivider = true
-                    )
+                            },
+                            showDivider = true
+                        )
 
-                    SquircleSettingItem(
-                        plumpIcon = PlumpIcon.CheckUpdate,
-                        iconColor = IsoluminantPalette.OceanBlue,
-                        title = "检查更新",
-                        subtitle = "获取最新版本",
-                        onClick = onCheckUpdate,
-                        showDivider = false
-                    )
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.SystemUpdate,
+                            plumpIcon = PlumpIcon.CheckUpdate,
+                            iconColor = NemoSecondary,
+                            plumpColor = IsoluminantPalette.OceanBlue,
+                            title = "检查更新",
+                            subtitle = "获取最新版本",
+                            onClick = onCheckUpdate,
+                            showDivider = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-                Spacer(modifier = Modifier.height(24.dp))
             }
+
+
+            NemoSnackbar(
+                visible = snackbarVisible,
+                message = snackbarMessage,
+                type = snackbarType,
+                autoDismissMs = 2000L,
+                onDismiss = { snackbarVisible = false },
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = statusBarHeight + 8.dp)
+            )
         }
-
-
-        NemoSnackbar(
-            visible = snackbarVisible,
-            message = snackbarMessage,
-            type = snackbarType,
-            autoDismissMs = 2000L,
-            onDismiss = { snackbarVisible = false },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = statusBarHeight + 8.dp)
-        )
     }
 
     // 对话框和 Bottom Sheet 保持不变
