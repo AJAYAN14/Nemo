@@ -31,6 +31,11 @@ import com.jian.nemo.feature.settings.components.ChineseVoiceSelectionBottomShee
 import com.jian.nemo.feature.settings.components.VoiceSelectionBottomSheet
 import com.jian.nemo.core.ui.component.liquid.LiquidSlider
 import com.jian.nemo.core.ui.component.liquid.LiquidGlassButton
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
+import com.jian.nemo.feature.settings.components.PlumpIcon
+import com.jian.nemo.feature.settings.components.PlumpDuoIcon
+import com.jian.nemo.feature.settings.components.IsoluminantPalette
 import java.util.Locale
 
 import androidx.compose.ui.graphics.Brush
@@ -61,97 +66,106 @@ fun TtsSettingsScreen(
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
-        Column(
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
-                .verticalScroll(scrollState)
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
-                )
+                .background(backgroundColor)
         ) {
-            // =====================
-            // 语音来源
-            // =====================
-            SettingsSectionTitle("语音来源")
-
-            PremiumCard {
-                Column {
-                    SquircleSettingItem(
-                        title = "选择日语语音",
-                        subtitle = uiState.ttsVoiceName ?: "系统默认",
-                        icon = Icons.Rounded.RecordVoiceOver,
-                        iconColor = IosColors.Red,
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
-                        showDivider = true
+            // 1. 底层滚动内容（被 backdrop 采样源录制）
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+                    .verticalScroll(scrollState)
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
                     )
-                    SquircleSettingItem(
-                        title = "选择中文语音",
-                        subtitle = uiState.ttsChineseVoiceName ?: "系统默认",
-                        icon = Icons.Rounded.RecordVoiceOver,
-                        iconColor = IosColors.Orange,
-                        onClick = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(true)) },
-                        showDivider = false
+            ) {
+                // =====================
+                // 语音来源
+                // =====================
+                SettingsSectionTitle("语音来源")
+
+                PremiumCard {
+                    Column {
+                        SquircleSettingItem(
+                            title = "选择日语语音",
+                            subtitle = uiState.ttsVoiceName ?: "系统默认",
+                            icon = Icons.Rounded.RecordVoiceOver,
+                            iconColor = IosColors.Red,
+                            plumpIcon = PlumpIcon.Mic,
+                            plumpColor = IsoluminantPalette.RoseRuby,
+                            onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
+                            showDivider = true
+                        )
+                        SquircleSettingItem(
+                            title = "选择中文语音",
+                            subtitle = uiState.ttsChineseVoiceName ?: "系统默认",
+                            icon = Icons.Rounded.RecordVoiceOver,
+                            iconColor = IosColors.Orange,
+                            plumpIcon = PlumpIcon.Languages,
+                            plumpColor = IsoluminantPalette.WarmAmber,
+                            onClick = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(true)) },
+                            showDivider = false
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // =====================
+                // 语速调节
+                // =====================
+                SettingsSectionTitle("语速调节")
+
+                PremiumCard {
+                    FlatSliderSettingItem(
+                        icon = Icons.Rounded.Speed,
+                        iconColor = accentColor,
+                        plumpIcon = PlumpIcon.Gauge,
+                        plumpColor = IsoluminantPalette.LilacViolet,
+                        title = "语速 (Speed)",
+                        value = uiState.ttsSpeechRate,
+                        valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsSpeechRate)}x",
+                        onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsSpeechRate(it)) },
+                        valueRange = 0.5f..2.0f,
+                        steps = 14,
+                        accentColor = accentColor,
+                        isDark = isDark,
+                        labels = listOf("0.5x", "1.0x", "2.0x")
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // =====================
-            // 语速调节
-            // =====================
-            SettingsSectionTitle("语速调节")
+                // =====================
+                // 音调调节
+                // =====================
+                SettingsSectionTitle("音调调节")
 
-            PremiumCard {
-                FlatSliderSettingItem(
-                    icon = Icons.Rounded.Speed,
-                    iconColor = accentColor,
-                    title = "语速 (Speed)",
-                    value = uiState.ttsSpeechRate,
-                    valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsSpeechRate)}x",
-                    onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsSpeechRate(it)) },
-                    valueRange = 0.5f..2.0f,
-                    steps = 14,
-                    accentColor = accentColor,
-                    isDark = isDark,
-                    labels = listOf("0.5x", "1.0x", "2.0x")
-                )
-            }
+                PremiumCard {
+                    FlatSliderSettingItem(
+                        icon = Icons.Rounded.MusicNote,
+                        iconColor = secondaryAccent,
+                        plumpIcon = PlumpIcon.MusicNote,
+                        plumpColor = IsoluminantPalette.LakesideCyan,
+                        title = "音调 (Pitch)",
+                        value = uiState.ttsPitch,
+                        valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsPitch)}x",
+                        onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsPitch(it)) },
+                        valueRange = 0.5f..2.0f,
+                        steps = 14,
+                        accentColor = secondaryAccent,
+                        isDark = isDark,
+                        labels = listOf("0.5x", "1.0x", "2.0x")
+                    )
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // =====================
-            // 音调调节
-            // =====================
-            SettingsSectionTitle("音调调节")
-
-            PremiumCard {
-                FlatSliderSettingItem(
-                    icon = Icons.Rounded.MusicNote,
-                    iconColor = secondaryAccent,
-                    title = "音调 (Pitch)",
-                    value = uiState.ttsPitch,
-                    valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsPitch)}x",
-                    onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsPitch(it)) },
-                    valueRange = 0.5f..2.0f,
-                    steps = 14,
-                    accentColor = secondaryAccent,
-                    isDark = isDark,
-                    labels = listOf("0.5x", "1.0x", "2.0x")
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
             // =====================
             // 试听 & 重置
@@ -283,6 +297,7 @@ fun TtsSettingsScreen(
         }
     }
 }
+}
 
 // =============================================================================
 // Flat UI 组件
@@ -293,8 +308,11 @@ fun TtsSettingsScreen(
  */
 @Composable
 private fun FlatSliderSettingItem(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    plumpIcon: PlumpIcon? = null,
     iconColor: Color,
+    plumpColor: Color = iconColor,
+    iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     title: String,
     value: Float,
     valueDisplay: String,
@@ -311,19 +329,50 @@ private fun FlatSliderSettingItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Squircle Icon
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(22.dp)
-                )
+            // 图标渲染：根据当前风格渲染 MD3（带 42dp 圆角背景卡片与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
+            if (iconStyle == SettingIconStyle.MD3) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    } else if (plumpIcon != null) {
+                        PlumpDuoIcon(
+                            icon = plumpIcon,
+                            color = plumpColor,
+                            size = 28.dp
+                        )
+                    }
+                }
+            } else {
+                // Plump Duo 模式：无背景框通透呈现
+                Box(
+                    modifier = Modifier.size(42.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (plumpIcon != null) {
+                        PlumpDuoIcon(
+                            icon = plumpIcon,
+                            color = plumpColor,
+                            size = 30.dp
+                        )
+                    } else if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

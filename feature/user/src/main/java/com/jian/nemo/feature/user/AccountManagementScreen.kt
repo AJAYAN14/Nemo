@@ -19,6 +19,10 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.AvatarImage
@@ -88,11 +92,12 @@ fun AccountManagementScreen(
     // Premium Card Colors
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -128,6 +133,8 @@ fun AccountManagementScreen(
                     PremiumSettingsItem(
                         icon = Icons.Rounded.Badge,
                         iconTint = Color(0xFF007AFF), // Blue
+                        plumpIcon = PlumpIcon.UserPen,
+                        plumpColor = IsoluminantPalette.SkyIndigo,
                         title = "修改用户名",
                         onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
                     )
@@ -136,6 +143,8 @@ fun AccountManagementScreen(
                         PremiumSettingsItem(
                             icon = Icons.Rounded.MailOutline,
                             iconTint = Color(0xFF34C759), // Green
+                            plumpIcon = PlumpIcon.Mail,
+                            plumpColor = IsoluminantPalette.EmeraldGreen,
                             title = "修改邮箱",
                             onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
                         )
@@ -149,6 +158,8 @@ fun AccountManagementScreen(
                      PremiumSettingsItem(
                         icon = Icons.Rounded.LockReset,
                         iconTint = Color(0xFFFF9500), // Orange
+                        plumpIcon = PlumpIcon.KeyRound,
+                        plumpColor = IsoluminantPalette.WarmAmber,
                         title = "重置密码",
                         onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
                     )
@@ -156,17 +167,15 @@ fun AccountManagementScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-
-
-
-
                 // Group 4: Danger Zone
                 PremiumSettingsGroup(title = "危险区域", cardBg = cardBg) {
                     PremiumSettingsItem(
                         icon = Icons.Rounded.DeleteForever,
                         iconTint = MaterialTheme.colorScheme.error,
+                        plumpIcon = PlumpIcon.UserX,
+                        plumpColor = IsoluminantPalette.CoralFlame,
                         title = "注销账户",
-                         titleColor = MaterialTheme.colorScheme.error,
+                        titleColor = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
                     )
                 }
@@ -194,6 +203,7 @@ fun AccountManagementScreen(
             }
 
         }
+    }
     }
     }
 
@@ -402,10 +412,15 @@ fun PremiumSettingsGroup(
     }
 }
 
+val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
+
 @Composable
 fun PremiumSettingsItem(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    plumpIcon: PlumpIcon? = null,
     iconTint: Color,
+    plumpColor: Color = iconTint,
+    iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     title: String,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitle: String? = null,
@@ -419,19 +434,50 @@ fun PremiumSettingsItem(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Container
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = iconTint.copy(alpha = 0.1f),
-            modifier = Modifier.size(40.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(22.dp)
-                )
+        // Icon Container: 根据当前风格渲染 MD3（带 40dp 圆角背景底框与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
+        if (iconStyle == SettingIconStyle.MD3) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = iconTint.copy(alpha = 0.12f),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    } else if (plumpIcon != null) {
+                        PlumpDuoIcon(
+                            icon = plumpIcon,
+                            color = plumpColor,
+                            size = 26.dp
+                        )
+                    }
+                }
+            }
+        } else {
+            // Plump Duo 模式：无背景框通透呈现
+            Box(
+                modifier = Modifier.size(40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = plumpColor,
+                        size = 28.dp
+                    )
+                } else if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
         }
 
@@ -466,4 +512,26 @@ fun PremiumSettingsItem(
         }
     }
 }
+
+@Composable
+fun PremiumSettingsItem(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
+    subtitle: String? = null,
+    trailingContent: @Composable (() -> Unit)? = null,
+    onClick: () -> Unit
+) = PremiumSettingsItem(
+    icon = icon,
+    plumpIcon = null,
+    iconTint = iconTint,
+    plumpColor = iconTint,
+    title = title,
+    titleColor = titleColor,
+    subtitle = subtitle,
+    trailingContent = trailingContent,
+    onClick = onClick
+)
+
 

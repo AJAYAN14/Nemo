@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +48,12 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             getUserAvatarPathUseCase().collect { path ->
                 _uiState.update { it.copy(avatarPath = path) }
+            }
+        }
+
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
             }
         }
 
@@ -519,6 +526,7 @@ data class AuthUiState(
     val successMessage: String? = null,
     val avatarPath: String = "",
     val isAuthChecked: Boolean = false,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3,
 
     // Form States
     val email: String = "",
