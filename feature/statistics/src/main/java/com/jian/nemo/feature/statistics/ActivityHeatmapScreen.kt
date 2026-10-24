@@ -22,6 +22,12 @@ import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -72,11 +78,12 @@ fun ActivityHeatmapScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             modifier = Modifier
@@ -193,6 +200,7 @@ fun ActivityHeatmapScreen(
             )
         }
     }
+    }
 
     // 分享底板
     if (showShareSheet) {
@@ -222,6 +230,8 @@ private fun RichStatsGrid(
             // Streak
             RichStatItem(
                 icon = Icons.Rounded.LocalFireDepartment,
+                plumpIcon = PlumpIcon.Flame,
+                isoluminantColor = IsoluminantPalette.WarmAmber,
                 label = "当前坚持",
                 value = streak.toString(),
                 unit = "天",
@@ -233,6 +243,8 @@ private fun RichStatsGrid(
             // Total Days
             RichStatItem(
                 icon = Icons.Rounded.Bolt,
+                plumpIcon = PlumpIcon.Zap,
+                isoluminantColor = IsoluminantPalette.SkyIndigo,
                 label = "累计活跃",
                 value = totalActiveDays.toString(),
                 unit = "天",
@@ -254,6 +266,8 @@ private fun RichStatsGrid(
 
             RichStatItem(
                 icon = Icons.Rounded.EmojiEvents,
+                plumpIcon = PlumpIcon.Trophy,
+                isoluminantColor = IsoluminantPalette.EmeraldGreen,
                 label = "单日最佳",
                 value = bestDayCount.toString(),
                 unit = "项",
@@ -265,6 +279,8 @@ private fun RichStatsGrid(
              // Daily Average
              RichStatItem(
                 icon = Icons.AutoMirrored.Rounded.TrendingUp,
+                plumpIcon = PlumpIcon.TrendingUp,
+                isoluminantColor = IsoluminantPalette.LilacViolet,
                 label = "日均学习",
                 value = dailyAverage.toString(),
                 unit = "项",
@@ -279,6 +295,8 @@ private fun RichStatsGrid(
 @Composable
 private fun RichStatItem(
     icon: ImageVector,
+    plumpIcon: PlumpIcon? = null,
+    isoluminantColor: Color? = null,
     label: String,
     value: String,
     unit: String,
@@ -308,21 +326,29 @@ private fun RichStatItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(
-                            color = color.copy(alpha = if (isDark) 0.2f else 0.12f),
-                            shape = RoundedCornerShape(10.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = color,
-                        modifier = Modifier.size(20.dp)
+                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null && isoluminantColor != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = isoluminantColor,
+                        size = 28.dp
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                color = color.copy(alpha = if (isDark) 0.2f else 0.12f),
+                                shape = RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
 
                 if (subLabel.isNotBlank()) {
@@ -426,24 +452,32 @@ private fun MemoryPanoramaCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    val emeraldTint = if (isDarkTheme) Color(0xFF34D399) else Color(0xFF059669)
-                    val emeraldBackground = if (isDarkTheme) Color(0xFF10B981).copy(alpha = 0.20f) else Color(0xFFECFDF5)
-
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                color = emeraldBackground,
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.EmojiEvents, // Replace with appropriate star-like icon if available
-                            contentDescription = null,
-                            tint = emeraldTint,
-                            modifier = Modifier.size(20.dp)
+                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.BrainCircuit,
+                            color = IsoluminantPalette.EmeraldGreen,
+                            size = 28.dp
                         )
+                    } else {
+                        val emeraldTint = if (isDarkTheme) Color(0xFF34D399) else Color(0xFF059669)
+                        val emeraldBackground = if (isDarkTheme) Color(0xFF10B981).copy(alpha = 0.20f) else Color(0xFFECFDF5)
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    color = emeraldBackground,
+                                    shape = RoundedCornerShape(12.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.EmojiEvents,
+                                contentDescription = null,
+                                tint = emeraldTint,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                     Text(
                         text = "全库记忆全景",

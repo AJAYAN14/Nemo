@@ -7,6 +7,8 @@ import com.jian.nemo.core.domain.usecase.statistics.GetHeatmapDataUseCase
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.WordRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.model.SrsItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,7 +29,8 @@ data class ActivityHeatmapUiState(
     val bestDayDate: Long = 0,
     val dailyAverage: Int = 0,
     val todayCount: Int = 0,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
 )
 
 data class MemoryPanoramaData(
@@ -47,7 +50,8 @@ data class PanoramaBucket(
 class ActivityHeatmapViewModel @Inject constructor(
     private val getHeatmapDataUseCase: GetHeatmapDataUseCase,
     private val wordRepository: WordRepository,
-    private val grammarRepository: GrammarRepository
+    private val grammarRepository: GrammarRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ActivityHeatmapUiState())
@@ -55,6 +59,15 @@ class ActivityHeatmapViewModel @Inject constructor(
 
     init {
         loadData()
+        observeSettings()
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     private fun loadData() {

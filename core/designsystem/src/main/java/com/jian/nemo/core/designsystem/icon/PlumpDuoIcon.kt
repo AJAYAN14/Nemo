@@ -82,7 +82,20 @@ enum class PlumpIcon {
     Infinity,         // 能力工坊 / 无穷进阶
 
     // --- 6. 首页与概览分支 (PlumpIconsHome.kt) ---
-    BadgeCheck        // 新学达成 / 成就解锁徽章
+    BadgeCheck,       // 新学达成 / 成就解锁徽章
+    Trophy,           // 热力图 / 单日最佳 / 荣誉奖杯
+    BookOpen,         // AI 阅读 / 主题选择 / 展开书本
+    Play,             // 开始学习 / 播放三角形
+    ChevronsRight,    // 继续学习 / 推进双前锋
+    Trees,            // 日常生活 / 双生森林
+    Landmark,         // 传统文化 / 历史地标神殿
+    Utensils,         // 美食料理 / 刀叉餐具
+    Compass,          // 名胜风光 / 罗盘指针
+    Briefcase,        // 商务工作 / 公文包
+    GraduationCap,    // JLPT 级别 / 学士帽
+    TrendingUp,       // 日均学习 / 上升趋势
+    BrainCircuit,     // 全库记忆全景 / 脑回路神经元
+    Zap               // 累计活跃 / 能量闪电
 }
 
 /**

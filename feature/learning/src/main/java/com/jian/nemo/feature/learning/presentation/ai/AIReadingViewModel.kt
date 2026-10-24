@@ -7,6 +7,7 @@ import com.jian.nemo.core.domain.model.AIReadingArticle
 import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.domain.model.AIReadingHistory
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -38,7 +39,8 @@ data class AIReadingUiState(
     val translatingText: String = "",
     val translationResult: AIWordTranslation? = null,
     val isTranslating: Boolean = false,
-    val translationError: String? = null
+    val translationError: String? = null,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
 )
 
 sealed interface AIReadingEvent {
@@ -164,6 +166,13 @@ class AIReadingViewModel @Inject constructor(
                         readingTheme = theme
                     )
                 }
+            }
+        }
+
+        // 协程4：监听图标风格设置
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
             }
         }
     }

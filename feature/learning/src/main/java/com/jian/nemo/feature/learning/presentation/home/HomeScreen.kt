@@ -600,16 +600,28 @@ fun HomeScreen(
                             )
                             // 基于学习进度切换图标及应用闪烁动效
                             val isLearned = uiState.currentProgress > 0
-                            Icon(
-                                imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .graphicsLayer {
-                                        alpha = pulseAlpha
-                                    },
-                                tint = Color.White
-                            )
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = if (isLearned) PlumpIcon.ChevronsRight else PlumpIcon.Play,
+                                    color = Color.White,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .graphicsLayer {
+                                            alpha = pulseAlpha
+                                        }
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .graphicsLayer {
+                                            alpha = pulseAlpha
+                                        },
+                                    tint = Color.White
+                                )
+                            }
                         }
                         // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，放在 content 内部以跟随按钮拖拽位移
                         Box(
@@ -685,16 +697,24 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = iconBgPurple
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.EmojiEvents,
-                                            contentDescription = null,
-                                            tint = BentoColors.AccentPurple,
-                                            modifier = Modifier.padding(12.dp).size(24.dp)
+                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.Trophy,
+                                            color = IsoluminantPalette.LilacViolet,
+                                            size = 28.dp
                                         )
+                                    } else {
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = iconBgPurple
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.EmojiEvents,
+                                                contentDescription = null,
+                                                tint = BentoColors.AccentPurple,
+                                                modifier = Modifier.padding(12.dp).size(24.dp)
+                                            )
+                                        }
                                     }
                                     Spacer(Modifier.width(16.dp))
                                     Column {
@@ -758,16 +778,24 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = iconBgBlue
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Language,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentBlue,
-                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.Languages,
+                                                color = IsoluminantPalette.SkyIndigo,
+                                                size = 28.dp
                                             )
+                                        } else {
+                                            Surface(
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = iconBgBlue
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Language,
+                                                    contentDescription = null,
+                                                    tint = BentoColors.AccentBlue,
+                                                    modifier = Modifier.padding(10.dp).size(20.dp)
+                                                )
+                                            }
                                         }
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
@@ -818,16 +846,24 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Transform,
-                                                contentDescription = null,
-                                                tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
-                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.GrammarLayers,
+                                                color = IsoluminantPalette.LakesideCyan,
+                                                size = 28.dp
                                             )
+                                        } else {
+                                            Surface(
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.Transform,
+                                                    contentDescription = null,
+                                                    tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                                                    modifier = Modifier.padding(10.dp).size(20.dp)
+                                                )
+                                            }
                                         }
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
@@ -886,16 +922,24 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = iconBgPurple
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.AutoAwesome,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentPurple,
-                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.Sparkles,
+                                                color = IsoluminantPalette.RoseRuby,
+                                                size = 28.dp
                                             )
+                                        } else {
+                                            Surface(
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = iconBgPurple
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.AutoAwesome,
+                                                    contentDescription = null,
+                                                    tint = BentoColors.AccentPurple,
+                                                    modifier = Modifier.padding(10.dp).size(20.dp)
+                                                )
+                                            }
                                         }
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
@@ -946,16 +990,24 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = iconBgGreen
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.ChromeReaderMode,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentGreen,
-                                                modifier = Modifier.padding(10.dp).size(20.dp)
+                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.BookOpen,
+                                                color = IsoluminantPalette.WarmAmber,
+                                                size = 28.dp
                                             )
+                                        } else {
+                                            Surface(
+                                                shape = RoundedCornerShape(12.dp),
+                                                color = iconBgGreen
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Rounded.ChromeReaderMode,
+                                                    contentDescription = null,
+                                                    tint = BentoColors.AccentGreen,
+                                                    modifier = Modifier.padding(10.dp).size(20.dp)
+                                                )
+                                            }
                                         }
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,

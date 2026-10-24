@@ -23,6 +23,11 @@ import com.jian.nemo.core.ui.modifier.softShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -93,11 +98,12 @@ fun AIReadingScreen(
     val backdrop = rememberLayerBackdrop()
     val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(containerBg)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(containerBg)
+        ) {
         // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Box(
             modifier = Modifier
@@ -301,6 +307,7 @@ fun AIReadingScreen(
                 .padding(top = statusBarTop + 8.dp)
         )
     }
+    }
 }
 
 /**
@@ -325,6 +332,8 @@ private fun ConfigScreen(
                 name = "日常生活",
                 subtitle = "温暖生活琐事",
                 icon = Icons.Rounded.Park,
+                plumpIcon = PlumpIcon.Trees,
+                isoluminantColor = IsoluminantPalette.EmeraldGreen,
                 accent = BentoColors.AccentBlue,
                 iconBg = BentoColors.IconBgBlue
             ),
@@ -332,6 +341,8 @@ private fun ConfigScreen(
                 name = "传统文化",
                 subtitle = "和风传统美学",
                 icon = Icons.Rounded.Landscape,
+                plumpIcon = PlumpIcon.Landmark,
+                isoluminantColor = IsoluminantPalette.WarmAmber,
                 accent = BentoColors.AccentOrange,
                 iconBg = BentoColors.IconBgOrange
             ),
@@ -339,6 +350,8 @@ private fun ConfigScreen(
                 name = "民间故事",
                 subtitle = "经典奇幻物语",
                 icon = Icons.Rounded.AutoAwesome,
+                plumpIcon = PlumpIcon.Sparkles,
+                isoluminantColor = IsoluminantPalette.LilacViolet,
                 accent = BentoColors.AccentPurple,
                 iconBg = BentoColors.IconBgPurple
             ),
@@ -346,6 +359,8 @@ private fun ConfigScreen(
                 name = "美食料理",
                 subtitle = "地道烟火风味",
                 icon = Icons.Rounded.Restaurant,
+                plumpIcon = PlumpIcon.Utensils,
+                isoluminantColor = IsoluminantPalette.LakesideCyan,
                 accent = BentoColors.GrammarPrimary,
                 iconBg = BentoColors.IconBgGreen
             ),
@@ -353,6 +368,8 @@ private fun ConfigScreen(
                 name = "名胜风光",
                 subtitle = "四季列岛巡礼",
                 icon = Icons.Rounded.Explore,
+                plumpIcon = PlumpIcon.Compass,
+                isoluminantColor = IsoluminantPalette.RoseRuby,
                 accent = Color(0xFFEC4899),
                 iconBg = Color(0xFFFCE7F3)
             ),
@@ -360,6 +377,8 @@ private fun ConfigScreen(
                 name = "商务工作",
                 subtitle = "职场严谨敬语",
                 icon = Icons.Rounded.BusinessCenter,
+                plumpIcon = PlumpIcon.Briefcase,
+                isoluminantColor = IsoluminantPalette.SkyIndigo,
                 accent = Color(0xFF6366F1),
                 iconBg = Color(0xFFEEF2FF)
             )
@@ -400,18 +419,26 @@ private fun ConfigScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = BentoColors.Primary.copy(alpha = 0.12f),
-                            modifier = Modifier.size(34.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.School,
-                                    contentDescription = null,
-                                    tint = BentoColors.Primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.GraduationCap,
+                                color = IsoluminantPalette.WarmAmber,
+                                size = 28.dp
+                            )
+                        } else {
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = BentoColors.Primary.copy(alpha = 0.12f),
+                                modifier = Modifier.size(34.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.School,
+                                        contentDescription = null,
+                                        tint = BentoColors.Primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                         Spacer(Modifier.width(10.dp))
@@ -472,18 +499,26 @@ private fun ConfigScreen(
                 .padding(horizontal = 4.dp, vertical = 2.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = BentoColors.Primary.copy(alpha = 0.12f),
-                    modifier = Modifier.size(34.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                            contentDescription = null,
-                            tint = BentoColors.Primary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                    PlumpDuoIcon(
+                        icon = PlumpIcon.BookOpen,
+                        color = IsoluminantPalette.WarmAmber,
+                        size = 28.dp
+                    )
+                } else {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = BentoColors.Primary.copy(alpha = 0.12f),
+                        modifier = Modifier.size(34.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                                contentDescription = null,
+                                tint = BentoColors.Primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.width(10.dp))
@@ -746,6 +781,8 @@ private data class ThemeCardInfo(
     val name: String,
     val subtitle: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val plumpIcon: PlumpIcon,
+    val isoluminantColor: Color,
     val accent: Color,
     val iconBg: Color
 )
@@ -860,19 +897,32 @@ private fun ThemeBentoItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 18.dp)
         ) {
-            // 顶部：极简纯净的超椭圆图标基座
-            Surface(
-                shape = RoundedCornerShape(13.dp),
-                color = if (isSelected) info.iconBg else (if (isDark) colorScheme.surfaceContainerHigh else info.iconBg.copy(alpha = 0.75f)),
-                modifier = Modifier.size(42.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = info.icon,
-                        contentDescription = null,
-                        tint = if (isSelected) info.accent else (if (isDark) colorScheme.onSurface else info.accent.copy(alpha = 0.9f)),
-                        modifier = Modifier.size(22.dp)
+            // 顶部：图标基座
+            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                Box(
+                    modifier = Modifier.size(42.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    PlumpDuoIcon(
+                        icon = info.plumpIcon,
+                        color = info.isoluminantColor,
+                        size = 28.dp
                     )
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(13.dp),
+                    color = if (isSelected) info.iconBg else (if (isDark) colorScheme.surfaceContainerHigh else info.iconBg.copy(alpha = 0.75f)),
+                    modifier = Modifier.size(42.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = info.icon,
+                            contentDescription = null,
+                            tint = if (isSelected) info.accent else (if (isDark) colorScheme.onSurface else info.accent.copy(alpha = 0.9f)),
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             }
 
@@ -1002,14 +1052,24 @@ private fun SpecularCtaButton(
                 color = Color.White
             )
             Spacer(Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(24.dp)
-                    .offset(x = arrowOffset.dp),
-                tint = Color.White
-            )
+            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                PlumpDuoIcon(
+                    icon = PlumpIcon.ChevronsRight,
+                    color = Color.White,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .offset(x = arrowOffset.dp)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .offset(x = arrowOffset.dp),
+                    tint = Color.White
+                )
+            }
         }
     }
 }
