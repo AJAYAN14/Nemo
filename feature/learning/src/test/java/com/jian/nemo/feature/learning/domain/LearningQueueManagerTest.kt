@@ -81,5 +81,61 @@ class LearningQueueManagerTest {
         assertEquals(2, (outOfBounds as QueueSelectionResult.Next).index)
         assertEquals("C", outOfBounds.item)
     }
+
+    @Test
+    fun `单张卡片在未来到期时应该返回 Wait 防秒弹`() {
+        val items = listOf("A")
+        val now = 1000L
+        val dueTime = now + 10 * 60 * 1000L // 10 分钟后
+
+        val result = manager.selectNextItem(
+            items = items,
+            getDueTime = { dueTime },
+            now = now,
+            learnAheadLimitMs = 20 * 60 * 1000L,
+            preferredIndex = 0
+        )
+
+        assertTrue("单张卡片在未来时应触发 Wait 倒计时，防止原地秒弹", result is QueueSelectionResult.Wait)
+        assertEquals(dueTime, (result as QueueSelectionResult.Wait).waitingUntil)
+    }
+
+    @Test
+    fun `所有卡片在未来且超出提前学习容差时应该返回 Wait`() {
+        val items = listOf("A", "B")
+        val now = 1000L
+        val dueTimes = mapOf("A" to now + 30 * 60 * 1000L, "B" to now + 40 * 60 * 1000L)
+
+        val result = manager.selectNextItem(
+            items = items,
+            getDueTime = { dueTimes[it] ?: 0L },
+            now = now,
+            learnAheadLimitMs = 20 * 60 * 1000L, // 容差 20 分钟，卡片需要 30 分钟
+            preferredIndex = 0
+        )
+
+        assertTrue(result is QueueSelectionResult.Wait)
+        assertEquals(now + 30 * 60 * 1000L, (result as QueueSelectionResult.Wait).waitingUntil)
+    }
+
+    @Test
+    fun `优先选择已到期的卡片`() {
+        val items = listOf("A", "B", "C")
+        val now = 1000L
+        // A 和 C 在未来，B 已经就绪
+        val dueTimes = mapOf("A" to now + 600000L, "B" to now - 1000L, "C" to now + 800000L)
+
+        val result = manager.selectNextItem(
+            items = items,
+            getDueTime = { dueTimes[it] ?: 0L },
+            now = now,
+            learnAheadLimitMs = 20 * 60 * 1000L,
+            preferredIndex = 0
+        )
+
+        assertTrue(result is QueueSelectionResult.Next)
+        assertEquals(1, (result as QueueSelectionResult.Next).index)
+        assertEquals("B", result.item)
+    }
 }
 

@@ -134,6 +134,7 @@ class LearningViewModel @Inject constructor(
     /** 学习日重置时间 (小时) */
     private var _resetHour: Int = 4
     private var _leechThreshold: Int = 5
+    private var _leechAction: String = "skip"
 
     /** 学习步进配置 (分钟列表) */
     private var _learningStepsConfig: List<Int> = listOf(1, 10)
@@ -170,6 +171,13 @@ class LearningViewModel @Inject constructor(
         viewModelScope.launch {
             settingsRepository.leechThresholdFlow.collect { threshold ->
                 _leechThreshold = threshold.coerceAtLeast(1)
+            }
+        }
+
+        // 监听 Leech 处置动作设置 (bury_today / skip)
+        viewModelScope.launch {
+            settingsRepository.leechActionFlow.collect { action ->
+                _leechAction = action
             }
         }
 
@@ -1668,6 +1676,8 @@ class LearningViewModel @Inject constructor(
         _learningSteps[item.id] = item.step
         _learningDueTimes[item.id] = item.dueTime
 
+        val now = System.currentTimeMillis()
+
         when (mode) {
             LearningMode.Word -> {
                 if (item is LearningItem.WordItem) {
@@ -1680,6 +1690,9 @@ class LearningViewModel @Inject constructor(
                     )
                     val selection = learningQueueManager.selectNextItem(
                         items = newList,
+                        getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                        now = now,
+                        learnAheadLimitMs = _learnAheadLimitMs,
                         preferredIndex = currentIndex
                     )
                     handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
@@ -1696,6 +1709,9 @@ class LearningViewModel @Inject constructor(
                     )
                     val selection = learningQueueManager.selectNextItem(
                         items = newList,
+                        getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                        now = now,
+                        learnAheadLimitMs = _learnAheadLimitMs,
                         preferredIndex = currentIndex
                     )
                     handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
@@ -1713,16 +1729,23 @@ class LearningViewModel @Inject constructor(
 
         _uiState.update { it.copy(waitingUntil = 0L) }
 
+        // 用户主动点击“立即学习”或倒计时结束：强制允许调度最早到期卡片
         val selection = when (mode) {
             LearningMode.Word -> {
                 learningQueueManager.selectNextItem(
                     items = state.wordList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = Long.MAX_VALUE,
+                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = state.currentIndex
                 )
             }
             LearningMode.Grammar -> {
                 learningQueueManager.selectNextItem(
                     items = state.grammarList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = Long.MAX_VALUE,
+                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = state.currentGrammarIndex
                 )
             }
@@ -1738,6 +1761,7 @@ class LearningViewModel @Inject constructor(
     private fun removeCurrentAndMoveNext() {
         val state = _uiState.value
         val mode = state.learningMode
+        val now = System.currentTimeMillis()
 
         when (mode) {
             LearningMode.Word -> {
@@ -1745,6 +1769,9 @@ class LearningViewModel @Inject constructor(
                 val newList = learningQueueManager.removeCurrent(state.wordList, currentIndex)
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = now,
+                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = currentIndex
                 )
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
@@ -1755,6 +1782,9 @@ class LearningViewModel @Inject constructor(
                 val newList = learningQueueManager.removeCurrent(state.grammarList, currentIndex)
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = now,
+                    learnAheadLimitMs = _learnAheadLimitMs,
                     preferredIndex = currentIndex
                 )
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
@@ -2208,15 +2238,47 @@ class LearningViewModel @Inject constructor(
      * 处理钉子户 (Leech)
      */
     private suspend fun handleLeech(item: LearningItem, totalLapses: Int) {
-        println("钉子户 (Leech): ${item.displayName} (Lapses: $totalLapses)")
+        println("钉子户 (Leech): ${item.displayName} (Lapses: $totalLapses, Action: $_leechAction)")
 
-        // 提示用户
-        _uiState.update {
-            it.copy(error = "已暂停钉子户: ${item.displayName} (累计失败 $totalLapses 次)")
+        if (_leechAction == "bury_today") {
+            val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+            try {
+                when (item) {
+                    is LearningItem.WordItem -> {
+                        val updatedWord = item.word.copy(buriedUntilDay = today)
+                        updateWordUseCase(updatedWord)
+                        println("[持久化] 顽固单词已埋藏今日: ${item.displayName}")
+                    }
+                    is LearningItem.GrammarItem -> {
+                        val updatedGrammar = item.grammar.copy(buriedUntilDay = today)
+                        updateGrammarUseCase(updatedGrammar)
+                        println("[持久化] 顽固语法已埋藏今日: ${item.displayName}")
+                    }
+                }
+            } catch (e: Exception) {
+                println("[持久化] 埋藏失败: ${e.message}")
+            }
+
+            // 从各类内存状态中移除
+            _learningSteps.remove(item.id)
+            _learningDueTimes.remove(item.id)
+
+            // 提示用户
+            _uiState.update {
+                it.copy(error = "已埋藏顽固卡片: ${item.displayName} (今日不再出现，明日自动回归)")
+            }
+
+            // 移出队列并前进
+            removeCurrentAndMoveNext()
+        } else {
+            // 提示用户
+            _uiState.update {
+                it.copy(error = "已冻结顽固卡片: ${item.displayName} (累计遗忘 $totalLapses 次，已移出复习)")
+            }
+
+            // 执行暂停逻辑
+            suspendItem(item)
         }
-
-        // 执行暂停逻辑
-        suspendItem(item)
     }
 
     /**

@@ -322,9 +322,16 @@ fun LearningScreen(
                             }
                         }
                         LearningStatus.Waiting -> {
+                            val pendingCount = if (uiState.learningMode == LearningMode.Word) uiState.wordList.size else uiState.grammarList.size
+                            val activeQueueCount = (uiState.queueLearningCount + uiState.queueReviewCount + uiState.queueRelearnCount)
+                                .let { if (it > 0) it else pendingCount }
                             WaitingContent(
                                 until = uiState.waitingUntil,
-                                onContinue = { viewModel.onEvent(LearningEvent.ResumeFromWaiting) }
+                                onContinue = { viewModel.onEvent(LearningEvent.ResumeFromWaiting) },
+                                onRest = onNavigateBack,
+                                completedCount = uiState.completedThisSession,
+                                queueCount = activeQueueCount,
+                                isDark = isDarkTheme
                             )
                         }
                         else -> {

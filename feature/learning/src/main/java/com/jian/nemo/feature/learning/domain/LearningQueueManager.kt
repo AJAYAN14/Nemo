@@ -93,10 +93,68 @@ class LearningQueueManager @Inject constructor() {
     }
 
     /**
-     * 选择下一个要展示的项目 (严格单向平滑选择)
+     * 选择下一个要展示的项目 (时间感知与单向平滑调度)
      *
-     * @param items 候选列表
-     * @param preferredIndex 首选索引 (当前位置)
+     * 1. 优先从当前位置 (preferredIndex) 开始寻找已到期的卡片 (dueTime <= now 或未设置 dueTime 的新词 0L)。
+     * 2. 若队列中所有卡片都在未来 (dueTime > now)：
+     *    - 找到最早到期的卡片及其等待时间 (waitMs = minDueTime - now)。
+     *    - 单卡片防秒弹保护：当队列只有 1 张在学卡片且未到期时，绝不立即原地秒弹，触发 Wait(minDueTime)。
+     *    - 若 waitMs > learnAheadLimitMs 或 learnAheadLimitMs <= 0 (超出提前学习容差或禁止提前学习)，触发 Wait(minDueTime)。
+     *    - 若 waitMs <= learnAheadLimitMs 且有多张卡片轮转，允许提前学习，选择最早到期的卡片。
+     * 3. 若列表为空，返回 Empty。
+     */
+    fun <T> selectNextItem(
+        items: List<T>,
+        getDueTime: (T) -> Long,
+        now: Long = System.currentTimeMillis(),
+        learnAheadLimitMs: Long = 20 * 60 * 1000L,
+        preferredIndex: Int = 0
+    ): QueueSelectionResult<T> {
+        if (items.isEmpty()) {
+            return QueueSelectionResult.Empty
+        }
+
+        val count = items.size
+
+        // 1. 优先寻找已经就绪的卡片 (dueTime <= now 或 0L)
+        // 从 preferredIndex 开始向前线性扫描一圈，保证平滑单向流动
+        val startIndex = preferredIndex.coerceIn(0, count - 1)
+        for (i in 0 until count) {
+            val idx = (startIndex + i) % count
+            val due = getDueTime(items[idx])
+            if (due <= now || due == 0L) {
+                return QueueSelectionResult.Next(idx, items[idx])
+            }
+        }
+
+        // 2. 队列中所有卡片都在未来 (due > now)
+        var earliestIndex = 0
+        var minDueTime = Long.MAX_VALUE
+        for (i in items.indices) {
+            val due = getDueTime(items[i])
+            if (due < minDueTime) {
+                minDueTime = due
+                earliestIndex = i
+            }
+        }
+
+        // 单卡片防秒弹保护：当队列只有 1 张卡片且在未来时，进入等待倒计时
+        if (count == 1) {
+            return QueueSelectionResult.Wait(minDueTime)
+        }
+
+        val waitMs = minDueTime - now
+        // 超出提前复习容差，或设置了禁止提前学习 (limit <= 0)，进入等待倒计时
+        if (learnAheadLimitMs <= 0 || waitMs > learnAheadLimitMs) {
+            return QueueSelectionResult.Wait(minDueTime)
+        }
+
+        // 在提前复习容差内且有多张卡片轮转，允许提前复习最早到期项
+        return QueueSelectionResult.Next(earliestIndex, items[earliestIndex])
+    }
+
+    /**
+     * 基础重载 (仅按索引选择，用于测试或无需时间判定的轻量场景)
      */
     fun <T> selectNextItem(
         items: List<T>,
@@ -108,19 +166,6 @@ class LearningQueueManager @Inject constructor() {
 
         val validIndex = preferredIndex.coerceIn(0, items.size - 1)
         return QueueSelectionResult.Next(validIndex, items[validIndex])
-    }
-
-    /**
-     * 兼容旧接口的重载
-     */
-    fun <T> selectNextItem(
-        items: List<T>,
-        getDueTime: (T) -> Long,
-        now: Long,
-        learnAheadLimitMs: Long,
-        preferredIndex: Int = 0
-    ): QueueSelectionResult<T> {
-        return selectNextItem(items, preferredIndex)
     }
 }
 

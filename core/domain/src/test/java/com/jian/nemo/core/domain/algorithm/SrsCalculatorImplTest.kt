@@ -2,8 +2,11 @@ package com.jian.nemo.core.domain.algorithm
 
 import com.jian.nemo.core.domain.model.SrsItem
 import com.jian.nemo.core.domain.repository.ReviewLogRepository
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -12,12 +15,15 @@ class SrsCalculatorImplTest {
 
     private lateinit var calculator: SrsCalculatorImpl
     private lateinit var reviewLogRepository: ReviewLogRepository
+    private lateinit var settingsRepository: SettingsRepository
 
     @Before
     fun setup() {
         reviewLogRepository = mockk(relaxed = true)
+        settingsRepository = mockk(relaxed = true)
         coEvery { reviewLogRepository.getRecentLogs(any()) } returns emptyList()
-        calculator = SrsCalculatorImpl(reviewLogRepository)
+        every { settingsRepository.targetRetentionFlow } returns flowOf(0.9f)
+        calculator = SrsCalculatorImpl(reviewLogRepository, settingsRepository)
     }
 
     // ========== FSRS 基础功能测试 ==========
@@ -192,6 +198,26 @@ class SrsCalculatorImplTest {
             firstLearnedDate = 80,
             type = 2
         )
+    }
+
+    @Test
+    fun `较高保留率设置应该产生更短或等于较低保留率的复习间隔`() {
+        val highRetentionSettings = mockk<SettingsRepository>(relaxed = true)
+        every { highRetentionSettings.targetRetentionFlow } returns flowOf(0.95f)
+        val highCalc = SrsCalculatorImpl(reviewLogRepository, highRetentionSettings)
+
+        val lowRetentionSettings = mockk<SettingsRepository>(relaxed = true)
+        every { lowRetentionSettings.targetRetentionFlow } returns flowOf(0.75f)
+        val lowCalc = SrsCalculatorImpl(reviewLogRepository, lowRetentionSettings)
+
+        val item = createItemWithRepetition(repetitionCount = 3, stability = 20f, difficulty = 5f, interval = 20, lastReviewedDate = 80)
+        
+        val highResult = highCalc.calculate(item, quality = 4, today = 100)
+        val lowResult = lowCalc.calculate(item, quality = 4, today = 100)
+
+        // 高保留率 (0.95) 对应更频繁的复习，因此间隔应该 <= 低保留率 (0.75) 的间隔
+        assertTrue("High retention interval (${highResult.interval}) should be <= low retention interval (${lowResult.interval})",
+            highResult.interval <= lowResult.interval)
     }
 
     private data class TestSrsItem(

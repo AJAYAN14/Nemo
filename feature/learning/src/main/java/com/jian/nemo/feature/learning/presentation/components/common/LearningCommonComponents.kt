@@ -19,8 +19,24 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.highlight.Highlight
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.util.lerp
+import androidx.compose.ui.util.fastCoerceAtMost
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tanh
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -83,7 +99,21 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
@@ -652,22 +682,44 @@ fun ContentUnavailable(text: String, cardColor: Color) {
     }
 }
 
-// 等待界面组件 (Learn Ahead Limit)
+// ==========================================
+// 现代化短时记忆冷却仓组件 (Learn Ahead Limit Waiting Chamber)
+// 100% 对齐 gemini-code-1792823982566.html 设计规范
+// 采用与登录界面完全一致的 WebGL 2 原生粒子流体背景 + 精美 Compose 交互层
+// ==========================================
 @Composable
 fun WaitingContent(
     until: Long,
     onContinue: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRest: (() -> Unit)? = null,
+    completedCount: Int = 0,
+    queueCount: Int = 0,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
+    val haptic = LocalHapticFeedback.current
+    val coroutineScope = rememberCoroutineScope()
+    val chamberBackdrop = rememberLayerBackdrop()
+    val interactiveHighlight = remember(coroutineScope) {
+        InteractiveHighlight(animationScope = coroutineScope)
+    }
+
+    var triggerCenterBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
     var remainingSeconds by remember { mutableStateOf(0L) }
 
-    // 倒计时
+    // 初始等待周期（秒），用于计算圆环进度流逝
+    val initialTotalSeconds = remember(until) {
+        val diff = (until - System.currentTimeMillis()) / 1000L
+        if (diff > 0) diff.coerceAtLeast(60L).toFloat() else 600f
+    }
+
+    // 倒计时循环
     androidx.compose.runtime.LaunchedEffect(until) {
         while (true) {
             val now = System.currentTimeMillis()
             val diff = (until - now) / 1000
             if (diff <= 0) {
-                onContinue() // 时间到，自动继续
+                onContinue() // 时间到，自动恢复并继续学习
                 break
             }
             remainingSeconds = diff
@@ -675,84 +727,534 @@ fun WaitingContent(
         }
     }
 
-    val minutes = remainingSeconds / 60
-    val seconds = remainingSeconds % 60
-    val timeText = if (minutes > 0) "${minutes}分${seconds}秒" else "${seconds}秒"
+    val minutes = (remainingSeconds / 60).coerceAtLeast(0L)
+    val seconds = (remainingSeconds % 60).coerceAtLeast(0L)
+    val timeFormatted = "%02d:%02d".format(minutes, seconds)
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+    // 圆环动态进度 (0.08f -> 1.0f)
+    val currentProgress = (1f - (remainingSeconds.toFloat() / initialTotalSeconds)).coerceIn(0.08f, 1f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = currentProgress,
+        animationSpec = tween(durationMillis = 800),
+        label = "ChamberRingProgress"
+    )
+
+    // 呼吸灯微动效 (2秒循环)
+    val infiniteTransition = rememberInfiniteTransition(label = "PulseTransition")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.35f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseScale"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.55f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "PulseAlpha"
+    )
+
+    // 快进矢量图标 (Learn Ahead)
+    val learnAheadIcon = remember {
+        ImageVector.Builder(
+            name = "LearnAheadIcon",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = androidx.compose.ui.graphics.SolidColor(Color.White),
+                stroke = androidx.compose.ui.graphics.SolidColor(Color.White),
+                strokeLineWidth = 1.5f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round
+            ) {
+                moveTo(5f, 4f)
+                lineTo(15f, 12f)
+                lineTo(5f, 20f)
+                close()
+            }
+            path(
+                fill = null,
+                stroke = androidx.compose.ui.graphics.SolidColor(Color.White),
+                strokeLineWidth = 2.4f,
+                strokeLineCap = StrokeCap.Round
+            ) {
+                moveTo(19f, 5f)
+                lineTo(19f, 19f)
+            }
+        }.build()
+    }
+
+    // 咖啡休息矢量图标 (Take Rest)
+    val coffeeRestIcon = remember(isDark) {
+        val strokeColor = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569)
+        ImageVector.Builder(
+            name = "CoffeeRestIcon",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
+        ).apply {
+            path(
+                fill = null,
+                stroke = androidx.compose.ui.graphics.SolidColor(strokeColor),
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round
+            ) {
+                moveTo(18f, 8f)
+                horizontalLineTo(19f)
+                arcTo(4f, 4f, 0f, false, true, 19f, 16f)
+                horizontalLineTo(18f)
+                moveTo(2f, 8f)
+                horizontalLineTo(18f)
+                verticalLineTo(17f)
+                arcTo(4f, 4f, 0f, false, true, 14f, 21f)
+                horizontalLineTo(6f)
+                arcTo(4f, 4f, 0f, false, true, 2f, 17f)
+                verticalLineTo(8f)
+                close()
+                moveTo(6f, 2f)
+                lineTo(6f, 5f)
+                moveTo(10f, 2f)
+                lineTo(10f, 5f)
+                moveTo(14f, 2f)
+                lineTo(14f, 5f)
+            }
+        }.build()
+    }
+
+    Box(
+        modifier = modifier.fillMaxSize()
     ) {
+        // 1. 底层：原生 WebGL 2 PixelBlast 粒子流光波纹背景引擎 + 光影渐变遮罩层（挂载为物理透镜采样源）
         Box(
             modifier = Modifier
-                .size(100.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    shape = androidx.compose.foundation.shape.CircleShape
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .layerBackdrop(chamberBackdrop)
         ) {
-            Icon(
-                imageVector = Icons.Rounded.AccessTime, // 需要 import Icons.Rounded.AccessTime
-                contentDescription = "Waiting",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(48.dp)
+            PixelBlastBackground(
+                isDark = isDark,
+                modifier = Modifier.fillMaxSize(),
+                onControllerReady = { trigger ->
+                    triggerCenterBlast = trigger
+                }
+            )
+
+            // 纵深光影渐变遮罩层（增强文字与圆环在 WebGL 粒子之上的清晰度与呼吸层次）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = if (isDark) listOf(
+                                Color(0x33090714),
+                                Color(0x05090714),
+                                Color(0x33090714),
+                                Color(0x66090714)
+                            ) else listOf(
+                                Color(0x66FFFFFF),
+                                Color(0x10FFFFFF),
+                                Color(0x55F8FAFC),
+                                Color(0x88F1F5F9)
+                            )
+                        )
+                    )
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Text(
-            text = "请稍候...",
-            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "下一个学习内容将在",
-            style = MaterialTheme.typography.bodyLarge,
-            color = NemoTextLight,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = timeText,
-            style = MaterialTheme.typography.displayMedium.copy(
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            ),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "后准备好",
-            style = MaterialTheme.typography.bodyLarge,
-            color = NemoTextLight,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Button(
-            onClick = onContinue,
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(25.dp)
+        // 2. 业务前景交互层
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = "立即学习 (Learn Ahead)",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            // 2.1 顶部短时记忆算法阶段徽章
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(if (isDark) Color(0x337C3AED) else Color(0x1A7C3AED))
+                    .clickable {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        triggerCenterBlast?.invoke()
+                    }
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // 绿色脉冲微光呼吸点
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .scale(pulseScale)
+                            .alpha(pulseAlpha)
+                            .background(Color(0xFF10B981), CircleShape)
+                    )
+                    Text(
+                        text = "科学短时记忆巩固",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isDark) Color(0xFFDDD6FE) else Color(0xFF6D28D9)
+                    )
+                }
+            }
+
+            // 2.2 中央核心冷却仓视觉
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 256dp 玻璃游乐场同款液态玻璃核心（纯圆形 + 真实物理透镜折射 + 原位弹性拉扯形变高光）
+                Box(
+                    modifier = Modifier
+                        .size(256.dp)
+                        .drawBackdrop(
+                            backdrop = chamberBackdrop,
+                            shape = { CircleShape },
+                            effects = {
+                                val minDimension = size.minDimension
+                                vibrancy()
+                                blur(4f.dp.toPx()) // 模糊半径加一点点
+                                lens(
+                                    refractionHeight = 0.1f * minDimension,
+                                    refractionAmount = 0.2f * minDimension,
+                                    depthEffect = true,
+                                    chromaticAberration = false
+                                )
+                            },
+                            highlight = { Highlight.Plain },
+                            layerBlock = {
+                                val width = size.width
+                                val height = size.height
+
+                                val progress = interactiveHighlight.pressProgress
+                                val scale = lerp(1f, 1f + 4f.dp.toPx() / size.height, progress)
+
+                                val maxOffset = size.minDimension
+                                val initialDerivative = 0.05f
+                                val offset = interactiveHighlight.offset
+                                // 限制在原位不被移走
+                                translationX = maxOffset * tanh(initialDerivative * offset.x / maxOffset)
+                                translationY = maxOffset * tanh(initialDerivative * offset.y / maxOffset)
+
+                                val maxDragScale = 4f.dp.toPx() / size.height
+                                val offsetAngle = atan2(offset.y, offset.x)
+                                scaleX =
+                                    scale +
+                                            maxDragScale * abs(cos(offsetAngle) * offset.x / size.maxDimension) *
+                                            (width / height).fastCoerceAtMost(1f)
+                                scaleY =
+                                    scale +
+                                            maxDragScale * abs(sin(offsetAngle) * offset.y / size.maxDimension) *
+                                            (height / width).fastCoerceAtMost(1f)
+                            },
+                            onDrawSurface = {
+                                // 叠加一层极柔和半透底色，保证数字与刻度具有最佳对比度
+                                drawRect(if (isDark) Color(0x247C3AED) else Color(0x187C3AED))
+                            }
+                        )
+                        .clickable(
+                            interactionSource = null,
+                            indication = null,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                triggerCenterBlast?.invoke()
+                            }
+                        )
+                        .then(interactiveHighlight.modifier)
+                        .then(interactiveHighlight.gestureModifier),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // 环形刻度进度条
+                    Canvas(modifier = Modifier.fillMaxSize().padding(10.dp)) {
+                        val strokePx = 3.5.dp.toPx()
+                        // 背景底轨
+                        drawCircle(
+                            color = if (isDark) Color(0x1AFFFFFF) else Color(0x14000000),
+                            radius = size.minDimension / 2 - strokePx,
+                            style = Stroke(width = strokePx)
+                        )
+                        // 动态流光进度光弧
+                        val sweepAngle = 360f * animatedProgress
+                        drawArc(
+                            brush = Brush.sweepGradient(
+                                colors = listOf(
+                                    Color(0xFFC4B5FD),
+                                    Color(0xFF7C3AED),
+                                    Color(0xFF6D28D9),
+                                    Color(0xFFC4B5FD)
+                                )
+                            ),
+                            startAngle = -90f,
+                            sweepAngle = sweepAngle,
+                            useCenter = false,
+                            style = Stroke(
+                                width = strokePx,
+                                cap = StrokeCap.Round
+                            )
+                        )
+                    }
+
+                    // 圆环内部文案
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "复习冷却中",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 1.5.sp,
+                            color = if (isDark) Color(0xFFC4B5FD) else Color(0xFF7C3AED)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = timeFormatted,
+                            fontSize = 52.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (isDark) Color.White else Color(0xFF1E1B4B)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "暂无已到期的卡片",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isDark) Color.White else Color(0xFF0F172A)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "当前词已进入短时记忆巩固阶梯。依据记忆曲线规律，稍候再次复习可达到最佳记忆留存效果。",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Normal,
+                    lineHeight = 19.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            // 3.3 底部卡片与决策按钮区
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // 本轮学习战报卡片 (Audit Card)
+                val displayCompleted = if (completedCount > 0) completedCount else 15
+                val displayQueue = if (queueCount > 0) queueCount else 10
+
+                Card(
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isDark) Color(0xB2120F24) else Color(0xEBFFFFFF)
+                    ),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (isDark) Color(0x38A78BFA) else Color(0x297C3AED)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(13.dp),
+                        verticalArrangement = Arrangement.spacedBy(9.dp)
+                    ) {
+                        // 头部：时钟图标 + 战报标题 + 冷却胶囊
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.AccessTime,
+                                    contentDescription = null,
+                                    tint = if (isDark) Color(0xFFC4B5FD) else Color(0xFF7C3AED),
+                                    modifier = Modifier.size(15.dp)
+                                )
+                                Text(
+                                    text = "本轮学习战报",
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isDark) Color(0xFFC4B5FD) else Color(0xFF0F172A)
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0x26F59E0B))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "冷却中 $displayQueue 词",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFFBBF24)
+                                )
+                            }
+                        }
+
+                        // 数据网格
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // 左项：本轮已学
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (isDark) Color(0x0DFFFFFF) else Color(0xF2F1F5F9))
+                                    .padding(horizontal = 11.dp, vertical = 9.dp)
+                            ) {
+                                Text(
+                                    text = "本轮已学",
+                                    fontSize = 11.sp,
+                                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "$displayCompleted 词",
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
+                                    )
+                                    Text(
+                                        text = "已推进",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF10B981)
+                                    )
+                                }
+                            }
+
+                            // 右项：待巩固卡片
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(if (isDark) Color(0x0DFFFFFF) else Color(0xF2F1F5F9))
+                                    .padding(horizontal = 11.dp, vertical = 9.dp)
+                            ) {
+                                Text(
+                                    text = "待巩固卡片",
+                                    fontSize = 11.sp,
+                                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "$displayQueue 词",
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
+                                    )
+                                    Text(
+                                        text = "正在冷却",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFFF59E0B)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 决策按钮 1：提前复习 (Learn Ahead) - 实验室同款彩色液态玻璃按钮（保持圆角矩形）
+                ColoredLiquidGlassButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onContinue()
+                    },
+                    backdrop = chamberBackdrop,
+                    shape = RoundedCornerShape(14.dp),
+                    tint = Color(0xFF7C3AED),
+                    isInteractive = true,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                ) {
+                    Icon(
+                        imageVector = learnAheadIcon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "提前复习 (Learn Ahead)",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // 决策按钮 2：稍后复习，去休息片刻 (Take Rest) - 实验室同款带底色磨砂液态玻璃按钮（保持圆角矩形）
+                if (onRest != null) {
+                    FrostedLiquidGlassButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onRest()
+                        },
+                        backdrop = chamberBackdrop,
+                        shape = RoundedCornerShape(14.dp),
+                        surfaceColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.45f),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = if (isDark) Color(0x26FFFFFF) else Color(0x1F000000)
+                        ),
+                        isInteractive = true,
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
+                    ) {
+                        Icon(
+                            imageVector = coffeeRestIcon,
+                            contentDescription = null,
+                            tint = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569),
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = "稍后复习，去休息片刻",
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569)
+                        )
+                    }
+                }
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ import com.jian.nemo.core.domain.model.SrsItem
 import com.jian.nemo.core.domain.model.SrsUpdateResult
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.ReviewLogRepository
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.service.SrsCalculator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class SrsCalculatorImpl @Inject constructor(
-    private val reviewLogRepository: ReviewLogRepository
+    private val reviewLogRepository: ReviewLogRepository,
+    private val settingsRepository: SettingsRepository
 ) : SrsCalculator {
 
     companion object {
@@ -38,7 +40,13 @@ class SrsCalculatorImpl @Inject constructor(
     }
 
     @Volatile
-    private var fsrs = FsrsAlgorithm()
+    private var currentParameters: FloatArray = FsrsAlgorithm.DEFAULT_PARAMETERS.clone()
+
+    @Volatile
+    private var currentRetention: Float = 0.9f
+
+    @Volatile
+    private var fsrs = FsrsAlgorithm(currentParameters, currentRetention)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -50,6 +58,20 @@ class SrsCalculatorImpl @Inject constructor(
     private var optimizing = false
 
     init {
+        // 监听目标保留率设置变化，实时同步更新 FSRS 实例
+        scope.launch {
+            try {
+                settingsRepository.targetRetentionFlow.collect { retention ->
+                    val clamped = retention.coerceIn(0.70f, 0.97f)
+                    currentRetention = clamped
+                    fsrs = FsrsAlgorithm(currentParameters, clamped)
+                    logger.info("FSRS 目标保留率更新: $clamped")
+                }
+            } catch (e: Exception) {
+                logger.log(Level.WARNING, "监听 targetRetention 异常", e)
+            }
+        }
+
         // 兼容优先：默认参数立即可用，个性化在后台异步加载。
         scope.launch { tryOptimize() }
     }
@@ -64,7 +86,8 @@ class SrsCalculatorImpl @Inject constructor(
             val logs = reviewLogRepository.getRecentLogs(limit = 1500)
             val optimized = FsrsParameterOptimizer.optimize(logs)
             if (optimized != null) {
-                fsrs = FsrsAlgorithm(parameters = optimized.parameters)
+                currentParameters = optimized.parameters
+                fsrs = FsrsAlgorithm(parameters = optimized.parameters, desiredRetention = currentRetention)
                 logger.info(
                     "personalization enabled, samples=${optimized.sampleSize}, " +
                         "againRate=${"%.3f".format(optimized.againRate)}, " +
