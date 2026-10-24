@@ -34,6 +34,12 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -189,11 +195,12 @@ fun HomeScreen(
     )
     // -------------------------
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
@@ -384,16 +391,37 @@ fun HomeScreen(
                                         .fillMaxSize(),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = iconBgOrange
+                                    val iconStyle = LocalSettingIconStyle.current
+                                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .then(
+                                                if (!isPlumpDuo) {
+                                                    Modifier
+                                                        .clip(CircleShape)
+                                                        .background(iconBgOrange)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            ),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Restore,
-                                            contentDescription = null,
-                                            tint = BentoColors.AccentOrange,
-                                            modifier = Modifier.padding(8.dp).size(20.dp)
-                                        )
+                                        if (isPlumpDuo) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.History,
+                                                color = IsoluminantPalette.WarmAmber,
+                                                size = 28.dp
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Restore,
+                                                contentDescription = null,
+                                                tint = BentoColors.AccentOrange,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
                                     }
                                     Spacer(Modifier.height(12.dp))
                                     val reviewOutstanding = uiState.itemsDue
@@ -459,16 +487,37 @@ fun HomeScreen(
                                         .fillMaxSize(),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = iconBgGreen
+                                    val iconStyle = LocalSettingIconStyle.current
+                                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .then(
+                                                if (!isPlumpDuo) {
+                                                    Modifier
+                                                        .clip(CircleShape)
+                                                        .background(iconBgGreen)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            ),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.CheckCircle,
-                                            contentDescription = null,
-                                            tint = BentoColors.AccentGreen,
-                                            modifier = Modifier.padding(8.dp).size(20.dp)
-                                        )
+                                        if (isPlumpDuo) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.BadgeCheck,
+                                                color = IsoluminantPalette.EmeraldGreen,
+                                                size = 28.dp
+                                            )
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Rounded.CheckCircle,
+                                                contentDescription = null,
+                                                tint = BentoColors.AccentGreen,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
                                     }
                                     Spacer(Modifier.height(12.dp))
                                     Text(
@@ -942,6 +991,7 @@ fun HomeScreen(
             canDismissByBackdrop = false
         )
     }
+}
 }
 
 /**

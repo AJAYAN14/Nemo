@@ -6,6 +6,7 @@ import com.jian.nemo.core.data.repository.NotificationRepositoryImpl
 import com.jian.nemo.core.domain.model.AppNotification
 import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.ConfigRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.usecase.auth.GetUserFlowUseCase
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.feature.learning.R
@@ -35,6 +36,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             getUserFlowUseCase().collect { user ->
                 _uiState.update { it.copy(user = user) }
+            }
+        }
+
+        // 监听图标风格
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
             }
         }
 
@@ -163,7 +171,10 @@ data class HomeUiState(
     val dailyGoal: Int = 0,
     
     // User Context
-    val user: User? = null
+    val user: User? = null,
+
+    // 图标视觉风格
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
 ) {
     val progressFraction: Float
         get() = if (dailyGoal > 0) (currentProgress.toFloat() / dailyGoal).coerceIn(0f, 1f) else 0f

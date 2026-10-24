@@ -14,11 +14,11 @@ internal val PlumpIconsProgressRegistry: Map<PlumpIcon, PlumpIconPathDefinition>
         fillAlpha = 0.20f
     ),
 
-    // 2. Calendar (学习日历) Lucide calendar.svg
+    // 2. Calendar (学习日历) Lucide calendar-days.svg
     PlumpIcon.Calendar to PlumpIconPathDefinition(
-        fillPathData = "M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
-        strokePathData = "M8 2v3 M16 2v3 M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M3 9h18",
-        fillAlpha = 0.18f
+        fillPathData = "M5 3h14a2 2 0 0 1 2 2v4H3V5a2 2 0 0 1 2-2z",
+        strokePathData = "M8 2v3 M16 2v3 M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M3 9h18 M8 13h.01 M12 13h.01 M16 13h.01 M8 17h.01 M12 17h.01 M16 17h.01",
+        fillAlpha = 0.22f
     ),
 
     // 3. ChartPie (今日统计) Lucide chart-pie.svg

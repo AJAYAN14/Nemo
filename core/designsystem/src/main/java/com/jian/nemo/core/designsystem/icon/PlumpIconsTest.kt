@@ -23,9 +23,9 @@ internal val PlumpIconsTestRegistry: Map<PlumpIcon, PlumpIconPathDefinition> = m
 
     // 3. ListChecks (选择题) Lucide list-checks.svg
     PlumpIcon.ListChecks to PlumpIconPathDefinition(
-        fillPathData = "M2 4h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z",
-        strokePathData = "M13 5h8 M13 12h8 M13 19h8 m-10 12 2 2 4-4 M3 7l2 2 4-4",
-        fillAlpha = 0.16f
+        fillPathData = "M5 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z M5 20a3 3 0 1 1 0-6 3 3 0 0 1 0 6z",
+        strokePathData = "M13 5h8 M13 12h8 M13 19h8 M3 7l2 2 4-4 M3 17l2 2 4-4",
+        fillAlpha = 0.22f
     ),
 
     // 4. Keyboard (手打题) Lucide keyboard.svg

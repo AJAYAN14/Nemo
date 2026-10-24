@@ -79,7 +79,10 @@ enum class PlumpIcon {
     Keyboard,         // 手打题 / 打字键盘
     GalleryVerticalEnd, // 卡片题 / 纵向层叠卡片
     ArrowDownUp,      // 排序题 / 上下双向排序
-    Infinity          // 能力工坊 / 无穷进阶
+    Infinity,         // 能力工坊 / 无穷进阶
+
+    // --- 6. 首页与概览分支 (PlumpIconsHome.kt) ---
+    BadgeCheck        // 新学达成 / 成就解锁徽章
 }
 
 /**
@@ -168,7 +171,8 @@ private val PlumpIconRegistry: Map<PlumpIcon, PlumpIconPathDefinition> by lazy {
         PlumpIconsMediaRegistry +
         PlumpIconsUserRegistry +
         PlumpIconsProgressRegistry +
-        PlumpIconsTestRegistry
+        PlumpIconsTestRegistry +
+        PlumpIconsHomeRegistry
 }
 
 /**
