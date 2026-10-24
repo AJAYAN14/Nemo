@@ -65,6 +65,7 @@ private enum class BentoVisualType {
 private data class BentoPageModel(
     val title: String,
     val icon: ImageVector,
+    val plumpIcon: PlumpIcon,
     val accentColor: Color,
     val main: BentoMetric,
     val topRight: BentoMetric,
@@ -138,11 +139,14 @@ fun LearningSummaryCard(
         else -> ((todayLearned.toFloat() / dailyGoal) * 100).toInt()
     }
 
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     val pageModels = listOf(
         BentoPageModel(
             title = "日间概览",
             icon = Icons.Rounded.Today,
-            accentColor = NemoPrimary,
+            plumpIcon = PlumpIcon.Calendar,
+            accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary,
             main = BentoMetric("今日已学", todayLearned.toString(), "项"),
             topRight = BentoMetric("待复习", dueCount.toString(), "项"),
             bottomRight = BentoMetric("目标完成度", todayProgress.toString(), "%"),
@@ -151,7 +155,8 @@ fun LearningSummaryCard(
         BentoPageModel(
             title = "学习轨迹",
             icon = Icons.Rounded.Timeline,
-            accentColor = NemoSecondary,
+            plumpIcon = PlumpIcon.Activity,
+            accentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary,
             main = BentoMetric("连续学习", studyStreak.toString(), "天"),
             topRight = BentoMetric("累计掌握", masteredCount.toString(), "项"),
             bottomRight = BentoMetric("待学习", unmasteredCount.toString(), "项"),
@@ -160,7 +165,8 @@ fun LearningSummaryCard(
         BentoPageModel(
             title = "成长总览",
             icon = Icons.AutoMirrored.Rounded.TrendingUp,
-            accentColor = Color(0xFFF4B73F),
+            plumpIcon = PlumpIcon.TrendingUp,
+            accentColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else Color(0xFFF4B73F),
             main = BentoMetric("总进度", (progress * 100).toInt().toString(), "%"),
             topRight = BentoMetric("累计学习", totalStudyDays.toString(), "天"),
             bottomRight = BentoMetric("本周学习", weekStudyDays.toString(), "天"),
@@ -208,6 +214,7 @@ private fun BentoStatsGrid(
             metric = model.main,
             accentColor = model.accentColor,
             icon = model.icon,
+            plumpIcon = model.plumpIcon,
             visualType = model.visualType,
             modifier = Modifier
                 .weight(1.45f)
@@ -240,6 +247,7 @@ private fun BentoMainTile(
     metric: BentoMetric,
     accentColor: Color,
     icon: ImageVector,
+    plumpIcon: PlumpIcon,
     visualType: BentoVisualType,
     modifier: Modifier = Modifier
 ) {
@@ -252,15 +260,26 @@ private fun BentoMainTile(
         color = mainTileColor
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.12f),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(72.dp)
-                    .offset(x = 8.dp, y = (-6).dp)
-            )
+            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = Color.White.copy(alpha = 0.22f),
+                    size = 72.dp,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 8.dp, y = (-6).dp)
+                )
+            } else {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.12f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(72.dp)
+                        .offset(x = 8.dp, y = (-6).dp)
+                )
+            }
 
             Column(
                 modifier = Modifier

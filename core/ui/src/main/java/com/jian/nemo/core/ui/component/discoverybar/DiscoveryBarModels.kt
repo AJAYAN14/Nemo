@@ -8,16 +8,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+
 /**
  * A model representing an option in the [DiscoveryBar].
  *
  * @param label The text label for this option.
  * @param icon The icon displayed next to the label. Set to null to show text only.
+ * @param plumpIcon The Plump Duo icon displayed next to the label in Plump Duo mode.
  * @param activeColor The color used when this option is active.
  */
 data class DiscoveryOption(
     val label: String,
     val icon: ImageVector? = null,
+    val plumpIcon: PlumpIcon? = null,
     val activeColor: Color = Color(0xFFFF3B30),
 )
 

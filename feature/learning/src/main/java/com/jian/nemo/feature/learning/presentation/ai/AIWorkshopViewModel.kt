@@ -13,6 +13,7 @@ import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.domain.model.AIExerciseHistory
 import com.jian.nemo.core.domain.model.AIReadingArticle
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import com.jian.nemo.core.domain.repository.AIConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,7 +60,8 @@ data class AIWorkshopUiState(
     val aiPlatform: String = "openai",
     val aiModel: String = "",
     val playingAudioId: String? = null,           // 当前正在播放的音频 ID
-    val switchedConfigName: String? = null        // 切换配置时短暂显示的别名
+    val switchedConfigName: String? = null,       // 切换配置时短暂显示的别名
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
 )
 
 
@@ -261,6 +263,13 @@ class AIWorkshopViewModel @Inject constructor(
                 }
 
                 isStateRestored = true
+            }
+        }
+
+        // 协程3：监听图标风格设置
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
             }
         }
     }

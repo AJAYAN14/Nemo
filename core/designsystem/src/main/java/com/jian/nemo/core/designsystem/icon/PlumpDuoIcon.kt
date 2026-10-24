@@ -95,7 +95,26 @@ enum class PlumpIcon {
     GraduationCap,    // JLPT 级别 / 学士帽
     TrendingUp,       // 日均学习 / 上升趋势
     BrainCircuit,     // 全库记忆全景 / 脑回路神经元
-    Zap               // 累计活跃 / 能量闪电
+    Zap,              // 累计活跃 / 能量闪电
+
+    // --- 7. 专项分类与 AI 工坊分支 (PlumpIconsCategory.kt) ---
+    Activity,          // 动词类 / 活力脉冲
+    SlidersHorizontal, // 副词类 / 横向调节滑块
+    Link2,             // 连体词 / 链接纽带
+    Workflow,          // 接续词 / 工作流转
+    Megaphone,         // 感叹词 / 扩音喇叭
+    Puzzle,            // 助词 / 拼图标记
+    ArrowRight,        // 接头词 / 向右前锋
+    ArrowLeft,         // 接尾词 / 向左后撤
+    Quote,             // 表达·固定句 / 引用语录
+    Globe,             // 外来语 / 环球语言
+    Cpu,               // 工坊 AI 芯片 / 计算单元
+    CircleQuestion,    // 工坊帮助指南 / 疑问标识
+    RotateCcw,         // 工坊换一题 / 逆时针重置
+    Lightbulb,         // 工坊提示灯泡 / 灵感启迪
+    SearchX,           // 工坊空状态 / 无检索结果
+    Search,            // 搜索放大镜 / 检索输入
+    X                  // 清除与关闭 / 叉号标记
 }
 
 /**
@@ -185,7 +204,8 @@ private val PlumpIconRegistry: Map<PlumpIcon, PlumpIconPathDefinition> by lazy {
         PlumpIconsUserRegistry +
         PlumpIconsProgressRegistry +
         PlumpIconsTestRegistry +
-        PlumpIconsHomeRegistry
+        PlumpIconsHomeRegistry +
+        PlumpIconsCategoryRegistry
 }
 
 /**

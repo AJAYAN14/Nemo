@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.automirrored.rounded.AltRoute
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -74,8 +81,10 @@ private fun getCategoryTheme(
 fun CategoryClassificationScreen(
     source: String = "practice",
     onNavigateBack: () -> Unit = {},
-    onCategorySelected: (String, String) -> Unit = { _, _ -> }
+    onCategorySelected: (String, String) -> Unit = { _, _ -> },
+    viewModel: CategoryClassificationViewModel = hiltViewModel()
 ) {
+    val settingIconStyle by viewModel.settingIconStyle.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 根据来源显示不同的标题
@@ -85,16 +94,17 @@ fun CategoryClassificationScreen(
         else -> "专项分类"
     }
 
-    Scaffold(
-        topBar = {
-            com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = title,
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor // Header 背景与页面一致
-            )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
+    CompositionLocalProvider(LocalSettingIconStyle provides settingIconStyle) {
+        Scaffold(
+            topBar = {
+                com.jian.nemo.core.ui.component.common.CommonHeader(
+                    title = title,
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor // Header 背景与页面一致
+                )
+            },
+            containerColor = backgroundColor
+        ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -112,6 +122,8 @@ fun CategoryClassificationScreen(
                         title = "名词类",
                         subtitle = "名词、代词等",
                         icon = Icons.AutoMirrored.Rounded.MenuBook,
+                        plumpIcon = PlumpIcon.BookOpen,
+                        isoluminantColor = IsoluminantPalette.SkyIndigo,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardNounBgLight, NemoCategoryColors.CardNounTextLight,
                             NemoCategoryColors.CardNounBgDark, NemoCategoryColors.CardNounTextDark
@@ -121,7 +133,9 @@ fun CategoryClassificationScreen(
                         id = "adj",
                         title = "形容词类",
                         subtitle = "い形、な形形容词",
-                        icon = Icons.Rounded.Stars,
+                        icon = Icons.Rounded.AutoAwesome,
+                        plumpIcon = PlumpIcon.Sparkles,
+                        isoluminantColor = IsoluminantPalette.WarmAmber,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardAdjIBgLight, NemoCategoryColors.CardAdjITextLight,
                             NemoCategoryColors.CardAdjIBgDark, NemoCategoryColors.CardAdjITextDark
@@ -132,6 +146,8 @@ fun CategoryClassificationScreen(
                         title = "动词类",
                         subtitle = "自动/他动/自他動词",
                         icon = Icons.AutoMirrored.Rounded.DirectionsRun,
+                        plumpIcon = PlumpIcon.Activity,
+                        isoluminantColor = IsoluminantPalette.EmeraldGreen,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardVerbBgLight, NemoCategoryColors.CardVerbTextLight,
                             NemoCategoryColors.CardVerbBgDark, NemoCategoryColors.CardVerbTextDark
@@ -141,7 +157,9 @@ fun CategoryClassificationScreen(
                         id = "adv",
                         title = "副词",
                         subtitle = "修饰用言词汇",
-                        icon = Icons.AutoMirrored.Rounded.Sort,
+                        icon = Icons.Rounded.Tune,
+                        plumpIcon = PlumpIcon.SlidersHorizontal,
+                        isoluminantColor = IsoluminantPalette.LakesideCyan,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardAdvBgLight, NemoCategoryColors.CardAdvTextLight,
                             NemoCategoryColors.CardAdvBgDark, NemoCategoryColors.CardAdvTextDark
@@ -165,6 +183,8 @@ fun CategoryClassificationScreen(
                         title = "连体词",
                         subtitle = "直接修饰体言",
                         icon = Icons.Rounded.Link,
+                        plumpIcon = PlumpIcon.Link2,
+                        isoluminantColor = IsoluminantPalette.SeaMarine,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardRentaiBgLight, NemoCategoryColors.CardRentaiTextLight,
                             NemoCategoryColors.CardRentaiBgDark, NemoCategoryColors.CardRentaiTextDark
@@ -174,7 +194,9 @@ fun CategoryClassificationScreen(
                         id = "conj",
                         title = "接続词",
                         subtitle = "连接句子成分",
-                        icon = Icons.Rounded.LinearScale,
+                        icon = Icons.AutoMirrored.Rounded.AltRoute,
+                        plumpIcon = PlumpIcon.Workflow,
+                        isoluminantColor = IsoluminantPalette.fromOklch(85f),
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardConjBgLight, NemoCategoryColors.CardConjTextLight,
                             NemoCategoryColors.CardConjBgDark, NemoCategoryColors.CardConjTextDark
@@ -185,6 +207,8 @@ fun CategoryClassificationScreen(
                         title = "感叹词",
                         subtitle = "表达情感语气",
                         icon = Icons.Rounded.Campaign,
+                        plumpIcon = PlumpIcon.Megaphone,
+                        isoluminantColor = IsoluminantPalette.CoralFlame,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardIdiomBgLight, NemoCategoryColors.CardIdiomTextLight,
                             NemoCategoryColors.CardIdiomBgDark, NemoCategoryColors.CardIdiomTextDark
@@ -194,7 +218,9 @@ fun CategoryClassificationScreen(
                         id = "particle",
                         title = "助词",
                         subtitle = "语法功能标记",
-                        icon = Icons.Rounded.Attribution,
+                        icon = Icons.Rounded.Extension,
+                        plumpIcon = PlumpIcon.Puzzle,
+                        isoluminantColor = IsoluminantPalette.LilacViolet,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardFixBgLight, NemoCategoryColors.CardFixTextLight,
                             NemoCategoryColors.CardFixBgDark, NemoCategoryColors.CardFixTextDark
@@ -218,6 +244,8 @@ fun CategoryClassificationScreen(
                         title = "接头词",
                         subtitle = "词语前置构成",
                         icon = Icons.AutoMirrored.Rounded.ArrowForward,
+                        plumpIcon = PlumpIcon.ArrowRight,
+                        isoluminantColor = IsoluminantPalette.RoseRuby,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardKataBgLight, NemoCategoryColors.CardKataTextLight,
                             NemoCategoryColors.CardKataBgDark, NemoCategoryColors.CardKataTextDark
@@ -228,6 +256,8 @@ fun CategoryClassificationScreen(
                         title = "接尾词",
                         subtitle = "词语后置构成",
                         icon = Icons.AutoMirrored.Rounded.ArrowBack,
+                        plumpIcon = PlumpIcon.ArrowLeft,
+                        isoluminantColor = IsoluminantPalette.GlazeMint,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight,
                             NemoCategoryColors.CardSoundBgDark, NemoCategoryColors.CardSoundTextDark
@@ -238,6 +268,8 @@ fun CategoryClassificationScreen(
                         title = "表达·固定句型",
                         subtitle = "习惯表达方式",
                         icon = Icons.Rounded.FormatQuote,
+                        plumpIcon = PlumpIcon.Quote,
+                        isoluminantColor = IsoluminantPalette.fromOklch(45f),
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardKeigoBgLight, NemoCategoryColors.CardKeigoTextLight,
                             NemoCategoryColors.CardKeigoBgDark, NemoCategoryColors.CardKeigoTextDark
@@ -248,6 +280,8 @@ fun CategoryClassificationScreen(
                         title = "外来语",
                         subtitle = "片假名借词体系",
                         icon = Icons.Rounded.Language,
+                        plumpIcon = PlumpIcon.Globe,
+                        isoluminantColor = IsoluminantPalette.OceanBlue,
                         colors = { getCategoryTheme(
                             NemoCategoryColors.CardAdjNaBgLight, NemoCategoryColors.CardAdjNaTextLight,
                             NemoCategoryColors.CardAdjNaBgDark, NemoCategoryColors.CardAdjNaTextDark
@@ -262,6 +296,7 @@ fun CategoryClassificationScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+}
 }
 
 @Composable
@@ -346,20 +381,38 @@ private fun CategoryCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Squircle Icon Container
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(iconContainerColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = item.icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(22.dp),
-                    tint = themeColors.contentColor // Strong tint
-                )
+            // Icon Container：根据全局设置区分 Plump Duo 与 MD3
+            val iconStyle = LocalSettingIconStyle.current
+            val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+
+            if (isPlumpDuo) {
+                // Plump Duo 规范：42dp 纯透明容器，居中展示 28dp 双层微质感矢量图标，无沉重方块背景
+                Box(
+                    modifier = Modifier.size(42.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlumpDuoIcon(
+                        icon = item.plumpIcon,
+                        color = item.isoluminantColor,
+                        size = 28.dp
+                    )
+                }
+            } else {
+                // 原生 Material 3 规范：Squircle 浅色容器与单色描边图标
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(iconContainerColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(22.dp),
+                        tint = themeColors.contentColor
+                    )
+                }
             }
 
             // Text
@@ -398,6 +451,8 @@ private data class CategoryItem(
     val title: String,
     val subtitle: String,
     val icon: ImageVector,
+    val plumpIcon: PlumpIcon,
+    val isoluminantColor: Color,
     val colors: @Composable () -> CategoryThemeColor
 )
 

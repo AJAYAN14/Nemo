@@ -342,7 +342,11 @@ fun HomeScreen(
                                         progress = uiState.progressFraction,
                                         isLoading = showLoadingRing,
                                         modifier = Modifier.size(100.dp),
-                                        color = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary,
+                                        color = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                            if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
+                                        } else {
+                                            if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
+                                        },
                                         trackColor = dividerColor
                                     )
                                     
@@ -558,7 +562,11 @@ fun HomeScreen(
                     }
 
                     // Bento 5: 底部主按钮 (全宽)
-                    val btnColor = if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
+                    val btnColor = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                        if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
+                    } else {
+                        if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
+                    }
 
                     // 2.4s 45° 斜切流光扫过 (Shimmer Sweep) 动效
                     val shimmerTransition = rememberInfiniteTransition(label = "Bento5Shimmer")
@@ -732,16 +740,30 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                                Surface(
-                                    shape = CircleShape,
-                                    color = dividerColor
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                        contentDescription = null,
-                                        tint = textSub,
-                                        modifier = Modifier.padding(8.dp).size(20.dp)
-                                    )
+                                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                    // Plump Duo 规范：通透纯净容器，无沉重圆块背景，保持文本次级中性色
+                                    Box(
+                                        modifier = Modifier.size(36.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.ArrowRight,
+                                            color = textSub,
+                                            size = 20.dp
+                                        )
+                                    }
+                                } else {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = dividerColor
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                            contentDescription = null,
+                                            tint = textSub,
+                                            modifier = Modifier.padding(8.dp).size(20.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

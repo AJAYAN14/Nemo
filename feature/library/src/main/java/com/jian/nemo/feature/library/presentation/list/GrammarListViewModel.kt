@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.jian.nemo.core.common.util.GrammarSearchUtils
 import javax.inject.Inject
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 
 /**
  * 语法列表UI状态
@@ -37,8 +39,16 @@ data class GrammarListUiState(
 @HiltViewModel
 class GrammarListViewModel @Inject constructor(
     private val grammarRepository: GrammarRepository,
-    private val syncManager: DictionarySyncManager
+    private val syncManager: DictionarySyncManager,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.MD3
+        )
 
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)

@@ -43,6 +43,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -174,12 +178,22 @@ fun DiscoveryBar(
                         .fillMaxSize()
                         .padding(start = 16.dp),
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = searchIconTint,
-                        modifier = Modifier.size(style.searchIconSize),
-                    )
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+                    if (isPlumpDuo) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.Search,
+                            color = searchIconTint,
+                            size = style.searchIconSize,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = searchIconTint,
+                            modifier = Modifier.size(style.searchIconSize),
+                        )
+                    }
 
                     // Search input: only visible when searching
                     val inputAlpha by animateFloatAsState(
@@ -263,12 +277,22 @@ fun DiscoveryBar(
                         },
                         fullArea = true,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = searchIconTint,
-                            modifier = Modifier.size(style.searchIconSize),
-                        )
+                        val iconStyle = LocalSettingIconStyle.current
+                        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+                        if (isPlumpDuo) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.X,
+                                color = searchIconTint,
+                                size = style.searchIconSize,
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = searchIconTint,
+                                modifier = Modifier.size(style.searchIconSize),
+                            )
+                        }
                     }
                 } else {
                     // Options selector
@@ -400,7 +424,15 @@ private fun OptionsSelector(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            if (option.icon != null) {
+                            val iconStyle = LocalSettingIconStyle.current
+                            if (iconStyle == SettingIconStyle.PLUMP_DUO && option.plumpIcon != null) {
+                                PlumpDuoIcon(
+                                    icon = option.plumpIcon,
+                                    color = iconColor,
+                                    size = style.iconSize,
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                            } else if (option.icon != null) {
                                 Icon(
                                     imageVector = option.icon,
                                     contentDescription = option.label,

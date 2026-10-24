@@ -2,11 +2,15 @@ package com.jian.nemo.feature.library.presentation.category
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,8 +23,16 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class CategoryWordsViewModel @Inject constructor(
-    private val getWordsByPartOfSpeechUseCase: com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase
+    private val getWordsByPartOfSpeechUseCase: com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.MD3
+        )
 
     private val _uiState = MutableStateFlow(CategoryWordsUiState())
     val uiState: StateFlow<CategoryWordsUiState> = _uiState.asStateFlow()

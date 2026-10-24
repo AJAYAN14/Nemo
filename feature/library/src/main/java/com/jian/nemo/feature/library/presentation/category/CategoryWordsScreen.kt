@@ -19,8 +19,14 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.rounded.Inbox
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,99 +82,124 @@ fun CategoryWordsScreen(
     }
 
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    val backdrop = rememberLayerBackdrop()
-    val lazyListState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        val backdrop = rememberLayerBackdrop()
+        val lazyListState = rememberLazyListState()
+        val coroutineScope = rememberCoroutineScope()
 
-    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    var searchQuery by rememberSaveable { mutableStateOf("") }
-    var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
-    var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
-    var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
+        var searchQuery by rememberSaveable { mutableStateOf("") }
+        var filterState by rememberSaveable { mutableStateOf(StudyFilter.ALL) }
+        var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
+        var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200),
-        label = "category_blur"
-    )
-
-    // 过滤词汇数据
-    val currentWords = remember(uiState.words, selectedLevel, searchQuery, filterState) {
-        uiState.words.filter { word ->
-            val matchesFilter = when (filterState) {
-                StudyFilter.ALL -> true
-                StudyFilter.LEARNED -> word.isLearned
-                StudyFilter.UNLEARNED -> !word.isLearned
-            }
-            if (!matchesFilter) return@filter false
-
-            val matchesLevel = if (selectedLevel == "ALL") true else word.level.equals(selectedLevel, ignoreCase = true)
-            if (!matchesLevel) return@filter false
-
-            if (searchQuery.isBlank()) {
-                true
-            } else {
-                word.japanese.contains(searchQuery, ignoreCase = true) ||
-                word.hiragana.contains(searchQuery, ignoreCase = true) ||
-                word.chinese.contains(searchQuery, ignoreCase = true)
-            }
-        }
-    }
-
-    // 计算各等级词汇数量
-    val countsByLevel = remember(uiState.words, searchQuery, filterState) {
-        val baseFiltered = uiState.words.filter { word ->
-            val matchesFilter = when (filterState) {
-                StudyFilter.ALL -> true
-                StudyFilter.LEARNED -> word.isLearned
-                StudyFilter.UNLEARNED -> !word.isLearned
-            }
-            if (!matchesFilter) return@filter false
-
-            if (searchQuery.isBlank()) {
-                true
-            } else {
-                word.japanese.contains(searchQuery, ignoreCase = true) ||
-                word.hiragana.contains(searchQuery, ignoreCase = true) ||
-                word.chinese.contains(searchQuery, ignoreCase = true)
-            }
-        }
-
-        listOf("ALL", "N1", "N2", "N3", "N4", "N5").associateWith { lvl ->
-            if (lvl == "ALL") baseFiltered.size
-            else baseFiltered.count { it.level.equals(lvl, ignoreCase = true) }
-        }
-    }
-
-    val options = remember {
-        listOf(
-            DiscoveryOption(
-                label = "全部",
-                icon = Icons.Default.Book,
-                activeColor = NemoIndigo,
-            ),
-            DiscoveryOption(
-                label = "已学",
-                icon = Icons.Default.CheckCircle,
-                activeColor = NemoSecondary,
-            ),
-            DiscoveryOption(
-                label = "未学",
-                icon = Icons.Default.Error,
-                activeColor = NemoOrange,
-            ),
+        val animatedBlurRadius by animateDpAsState(
+            targetValue = if (isMenuExpanded) 14.dp else 0.dp,
+            animationSpec = tween(durationMillis = 200),
+            label = "category_blur"
         )
-    }
-    val selectedIndex = when (filterState) {
-        StudyFilter.ALL -> 0
-        StudyFilter.LEARNED -> 1
-        StudyFilter.UNLEARNED -> 2
-    }
+
+        // 过滤词汇数据
+        val currentWords = remember(uiState.words, selectedLevel, searchQuery, filterState) {
+            uiState.words.filter { word ->
+                val matchesFilter = when (filterState) {
+                    StudyFilter.ALL -> true
+                    StudyFilter.LEARNED -> word.isLearned
+                    StudyFilter.UNLEARNED -> !word.isLearned
+                }
+                if (!matchesFilter) return@filter false
+
+                val matchesLevel = if (selectedLevel == "ALL") true else word.level.equals(selectedLevel, ignoreCase = true)
+                if (!matchesLevel) return@filter false
+
+                if (searchQuery.isBlank()) {
+                    true
+                } else {
+                    word.japanese.contains(searchQuery, ignoreCase = true) ||
+                    word.hiragana.contains(searchQuery, ignoreCase = true) ||
+                    word.chinese.contains(searchQuery, ignoreCase = true)
+                }
+            }
+        }
+
+        // 计算各等级词汇数量
+        val countsByLevel = remember(uiState.words, searchQuery, filterState) {
+            val baseFiltered = uiState.words.filter { word ->
+                val matchesFilter = when (filterState) {
+                    StudyFilter.ALL -> true
+                    StudyFilter.LEARNED -> word.isLearned
+                    StudyFilter.UNLEARNED -> !word.isLearned
+                }
+                if (!matchesFilter) return@filter false
+
+                if (searchQuery.isBlank()) {
+                    true
+                } else {
+                    word.japanese.contains(searchQuery, ignoreCase = true) ||
+                    word.hiragana.contains(searchQuery, ignoreCase = true) ||
+                    word.chinese.contains(searchQuery, ignoreCase = true)
+                }
+            }
+
+            listOf("ALL", "N1", "N2", "N3", "N4", "N5").associateWith { lvl ->
+                if (lvl == "ALL") baseFiltered.size
+                else baseFiltered.count { it.level.equals(lvl, ignoreCase = true) }
+            }
+        }
+
+        val options = remember(iconStyle) {
+            if (iconStyle == SettingIconStyle.PLUMP_DUO) {
+                listOf(
+                    DiscoveryOption(
+                        label = "全部",
+                        icon = Icons.Default.Book,
+                        plumpIcon = PlumpIcon.BookOpen,
+                        activeColor = IsoluminantPalette.SkyIndigo,
+                    ),
+                    DiscoveryOption(
+                        label = "已学",
+                        icon = Icons.Default.CheckCircle,
+                        plumpIcon = PlumpIcon.BadgeCheck,
+                        activeColor = IsoluminantPalette.EmeraldGreen,
+                    ),
+                    DiscoveryOption(
+                        label = "未学",
+                        icon = Icons.Default.Error,
+                        plumpIcon = PlumpIcon.Flame,
+                        activeColor = IsoluminantPalette.WarmAmber,
+                    ),
+                )
+            } else {
+                listOf(
+                    DiscoveryOption(
+                        label = "全部",
+                        icon = Icons.Default.Book,
+                        activeColor = NemoIndigo,
+                    ),
+                    DiscoveryOption(
+                        label = "已学",
+                        icon = Icons.Default.CheckCircle,
+                        activeColor = NemoSecondary,
+                    ),
+                    DiscoveryOption(
+                        label = "未学",
+                        icon = Icons.Default.Error,
+                        activeColor = NemoOrange,
+                    ),
+                )
+            }
+        }
+        val selectedIndex = when (filterState) {
+            StudyFilter.ALL -> 0
+            StudyFilter.LEARNED -> 1
+            StudyFilter.UNLEARNED -> 2
+        }
 
     Box(
         modifier = Modifier
@@ -244,10 +275,16 @@ fun CategoryWordsScreen(
                                 .padding(top = 80.dp),
                             contentAlignment = Alignment.Center
                         ) {
+                            val emptyIcon: androidx.compose.ui.graphics.vector.ImageVector =
+                                if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Inbox
+                            val emptyPlumpIcon: PlumpIcon =
+                                if (searchQuery.isNotEmpty()) PlumpIcon.SearchX else PlumpIcon.Globe
                             EmptyState(
-                                if (searchQuery.isNotEmpty()) "未找到相关单词"
-                                else if (selectedLevel != "ALL") "当前等级暂无单词"
-                                else "该分类下暂无词汇"
+                                message = if (searchQuery.isNotEmpty()) "未找到相关单词"
+                                    else if (selectedLevel != "ALL") "当前等级暂无单词"
+                                    else "该分类下暂无词汇",
+                                icon = emptyIcon,
+                                plumpIcon = emptyPlumpIcon
                             )
                         }
                     }
@@ -308,6 +345,7 @@ fun CategoryWordsScreen(
             bottomPadding = navBarBottom + 20.dp
         )
     }
+    }
 }
 
 @Composable
@@ -315,8 +353,10 @@ private fun WordListItemPremium(
     word: Word,
     onClick: () -> Unit
 ) {
-    val colorIndex = kotlin.math.abs(word.id.hashCode()) % AvatarColors.size
-    val avatarColor = AvatarColors[colorIndex]
+    val iconStyle = LocalSettingIconStyle.current
+    val avatarColors = if (iconStyle == SettingIconStyle.PLUMP_DUO) PlumpAvatarColors else Md3AvatarColors
+    val colorIndex = kotlin.math.abs(word.id.hashCode()) % avatarColors.size
+    val avatarColor = avatarColors[colorIndex]
 
     PremiumCard(onClick = onClick) {
         Row(
@@ -328,7 +368,7 @@ private fun WordListItemPremium(
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(avatarColor.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                    .background(avatarColor.copy(alpha = 0.12f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -457,14 +497,35 @@ private fun PremiumCard(
 }
 
 @Composable
-private fun EmptyState(message: String) {
+private fun EmptyState(
+    message: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox,
+    plumpIcon: PlumpIcon? = null
+) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.surfaceVariant
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Rounded.Inbox,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.size(64.dp)
-        )
+        if (isPlumpDuo && plumpIcon != null) {
+            Box(
+                modifier = Modifier.size(72.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = IsoluminantPalette.SkyIndigo,
+                    size = 56.dp
+                )
+            }
+        } else {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(64.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = message,
@@ -474,18 +535,31 @@ private fun EmptyState(message: String) {
     }
 }
 
+@Composable
 private fun getLevelColor(level: String): Color {
-    return when (level.uppercase()) {
-        "N5" -> NemoSecondary
-        "N4" -> NemoCyan
-        "N3" -> NemoPrimary
-        "N2" -> NemoOrange
-        "N1" -> IosColors.Pink
-        else -> NemoPrimary
+    val iconStyle = LocalSettingIconStyle.current
+    return if (iconStyle == SettingIconStyle.PLUMP_DUO) {
+        when (level.uppercase()) {
+            "N5" -> IsoluminantPalette.EmeraldGreen
+            "N4" -> IsoluminantPalette.LakesideCyan
+            "N3" -> IsoluminantPalette.SkyIndigo
+            "N2" -> IsoluminantPalette.WarmAmber
+            "N1" -> IsoluminantPalette.RoseRuby
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        when (level.uppercase()) {
+            "N5" -> NemoSecondary
+            "N4" -> NemoCyan
+            "N3" -> NemoPrimary
+            "N2" -> NemoOrange
+            "N1" -> IosColors.Pink
+            else -> NemoPrimary
+        }
     }
 }
 
-private val AvatarColors = listOf(
+private val Md3AvatarColors = listOf(
     NemoPrimary,
     NemoOrange,
     NemoSecondary,
@@ -494,4 +568,15 @@ private val AvatarColors = listOf(
     NemoPurple,
     IosColors.Pink,
     NemoCyan
+)
+
+private val PlumpAvatarColors = listOf(
+    IsoluminantPalette.SkyIndigo,     // 255°
+    IsoluminantPalette.LakesideCyan,  // 195°
+    IsoluminantPalette.EmeraldGreen,  // 145°
+    IsoluminantPalette.WarmAmber,     // 70°
+    IsoluminantPalette.CoralFlame,    // 30°
+    IsoluminantPalette.RoseRuby,      // 15°
+    IsoluminantPalette.LilacViolet,   // 295°
+    IsoluminantPalette.GlazeMint      // 175°
 )

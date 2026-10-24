@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
@@ -59,6 +60,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -126,6 +133,19 @@ private val PremiumCategoryPalette = listOf(
     KanaCardColorPair(NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight)
 )
 
+private val IsoluminantCategoryColors = listOf(
+    IsoluminantPalette.SkyIndigo,     // あ行 (255°)
+    IsoluminantPalette.EmeraldGreen,  // か行 (145°)
+    IsoluminantPalette.WarmAmber,     // さ行 (70°)
+    IsoluminantPalette.LilacViolet,   // た行 (295°)
+    IsoluminantPalette.LakesideCyan,  // な行 (195°)
+    IsoluminantPalette.RoseRuby,      // は行 (15°)
+    IsoluminantPalette.SeaMarine,     // ま行 (225°)
+    IsoluminantPalette.CoralFlame,    // や行 (30°)
+    IsoluminantPalette.GlazeMint,     // ら行 (175°)
+    IsoluminantPalette.OceanBlue      // わ行 (240°)
+)
+
 private val EP = KanaCell("", "", "", isEmpty = true)
 
 private object KanaSectionIndex {
@@ -144,6 +164,9 @@ fun KanaChartScreen(
     onNavigateBack: () -> Unit,
     viewModel: KanaChartViewModel = hiltViewModel()
 ) {
+    val iconStyle by viewModel.iconStyle.collectAsState()
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val haptic = LocalHapticFeedback.current
@@ -153,15 +176,24 @@ fun KanaChartScreen(
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
     val textMain = if (isDark) colorScheme.onSurface else Color(0xFF334155)
     val textSub = if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)
-    val accentColor = if (isDark) colorScheme.primary.copy(alpha = 0.7f) else LightAccent
+    var currentType by remember { mutableIntStateOf(0) }
+    var currentSection by remember { mutableStateOf("seion") }
+    val isKatakana = currentType == 1
+
+    val accentColor = if (isPlumpDuo) {
+        when (currentSection) {
+            "dakuon" -> IsoluminantPalette.EmeraldGreen
+            "yoon" -> IsoluminantPalette.LilacViolet
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        if (isDark) colorScheme.primary.copy(alpha = 0.7f) else LightAccent
+    }
     val tabContainerColor = if (isDark) colorScheme.surfaceContainer else Color(0xFFEAF6FF)
     val tabSelectedColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White
     val quickNavBaseColor = if (isDark) surfaceColor else LightQuickNavBase
     val quickNavSelectedColor = if (isDark) colorScheme.primary.copy(alpha = 0.28f) else LightQuickNavSelected
 
-    var currentType by remember { mutableIntStateOf(0) }
-    var currentSection by remember { mutableStateOf("seion") }
-    val isKatakana = currentType == 1
     val scope = rememberCoroutineScope()
     val playingAudioId by viewModel.playingAudioId.collectAsState()
 
@@ -170,11 +202,12 @@ fun KanaChartScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         // 1. 底层页面内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Column(
             modifier = Modifier
@@ -300,7 +333,11 @@ fun KanaChartScreen(
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
                 actions = {
-                    val toggleFg = if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+                    val toggleFg = if (isPlumpDuo) {
+                        if (currentType == 0) IsoluminantPalette.SkyIndigo else IsoluminantPalette.RoseRuby
+                    } else {
+                        if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+                    }
                     FrostedLiquidGlassButton(
                         onClick = {
                             view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -316,12 +353,20 @@ fun KanaChartScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.SwapHoriz,
-                                contentDescription = "切换假名类型",
-                                modifier = Modifier.size(20.dp),
-                                tint = toggleFg
-                            )
+                            if (isPlumpDuo) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.RandomShuffle,
+                                    color = toggleFg,
+                                    size = 18.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.SwapHoriz,
+                                    contentDescription = "切换假名类型",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = toggleFg
+                                )
+                            }
                             Text(
                                 text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
@@ -342,16 +387,23 @@ fun KanaChartScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val sections = listOf(
-                "seion" to stringResource(R.string.kana_quick_nav_seion),
-                "dakuon" to stringResource(R.string.kana_quick_nav_dakuon),
-                "yoon" to stringResource(R.string.kana_quick_nav_yoon)
+                Triple("seion", stringResource(R.string.kana_quick_nav_seion), IsoluminantPalette.SkyIndigo),
+                Triple("dakuon", stringResource(R.string.kana_quick_nav_dakuon), IsoluminantPalette.EmeraldGreen),
+                Triple("yoon", stringResource(R.string.kana_quick_nav_yoon), IsoluminantPalette.LilacViolet)
             )
-            sections.forEach { (sectionKey, label) ->
+            sections.forEach { (sectionKey, label, sectionColor) ->
                 val isSelected = currentSection == sectionKey
-                val selectedSurface = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.55f) else Color.White
+                val activeThemeColor = if (isPlumpDuo) sectionColor else Color(0xFF4F46E5)
+
+                val selectedSurface = if (isDark) {
+                    if (isPlumpDuo) activeThemeColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                } else {
+                    Color.White
+                }
                 val unselectedSurface = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.35f)
+
                 val textFg = if (isSelected) {
-                    if (isDark) Color.White else Color(0xFF4F46E5)
+                    if (isDark) Color.White else activeThemeColor
                 } else {
                     if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF334155)
                 }
@@ -367,17 +419,31 @@ fun KanaChartScreen(
                     isInteractive = true,
                     modifier = Modifier.height(46.dp)
                 ) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                        ),
-                        color = textFg
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        if (isPlumpDuo && isSelected) {
+                            Box(
+                                modifier = Modifier
+                                    .size(6.dp)
+                                    .clip(CircleShape)
+                                    .background(textFg)
+                            )
+                        }
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            ),
+                            color = textFg
+                        )
+                    }
                 }
             }
         }
     }
+}
 }
 
 
@@ -392,8 +458,10 @@ private fun QuickNavButton(
     isDark: Boolean,
     onClick: () -> Unit
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else Color(0xFF4F46E5)
     val fgColor by animateColorAsState(
-        targetValue = if (selected) Color(0xFF4F46E5) else textMain.copy(alpha = 0.6f),
+        targetValue = if (selected) activeColor else textMain.copy(alpha = 0.6f),
         animationSpec = tween(180),
         label = "quickNavFg"
     )
@@ -417,7 +485,7 @@ private fun QuickNavButton(
                 modifier = Modifier
                     .size(width = 20.dp, height = 3.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFF4F46E5))
+                    .background(activeColor)
             )
         } else {
             Spacer(modifier = Modifier.height(7.dp))
@@ -481,6 +549,8 @@ private fun KanaGrid(
     onSpeak: (String, String) -> Unit,
     onHaptic: () -> Unit
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         cells.chunked(columns).forEachIndexed { rowIndex, row ->
             Row(
@@ -488,18 +558,21 @@ private fun KanaGrid(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { cell ->
-                    val colorPair = PremiumCategoryPalette[rowIndex % PremiumCategoryPalette.size]
-                    val cardColor = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) {
-                        colorPair.bg
+                    val (cardColor, cardTextMain, cardBorderColor) = if (isPlumpDuo) {
+                        val isoluminantColor = IsoluminantCategoryColors[rowIndex % IsoluminantCategoryColors.size]
+                        if (cell?.isPlaceholder == false && cell.isEmpty == false) {
+                            val bg = isoluminantColor.copy(alpha = if (isDark) 0.12f else 0.08f)
+                            Triple(bg, isoluminantColor, isoluminantColor)
+                        } else {
+                            Triple(surfaceColor, textMain, playingBorderColor)
+                        }
                     } else {
-                        surfaceColor
+                        val colorPair = PremiumCategoryPalette[rowIndex % PremiumCategoryPalette.size]
+                        val bg = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) colorPair.bg else surfaceColor
+                        val fg = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) colorPair.text else textMain
+                        Triple(bg, fg, playingBorderColor)
                     }
-                    val cardTextMain = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) {
-                        colorPair.text
-                    } else {
-                        textMain
-                    }
-                    
+
                     KanaCard(
                         modifier = Modifier
                             .weight(1f)
@@ -511,7 +584,7 @@ private fun KanaGrid(
                         textSub = textSub,
                         isDark = isDark,
                         playingAudioId = playingAudioId,
-                        playingBorderColor = playingBorderColor,
+                        playingBorderColor = cardBorderColor,
                         onSpeak = onSpeak,
                         onHaptic = onHaptic
                     )

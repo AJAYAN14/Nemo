@@ -37,6 +37,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -99,69 +104,94 @@ fun WordListScreen(
     viewModel: WordListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val iconStyle by viewModel.iconStyle.collectAsStateWithLifecycle()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    val coroutineScope = rememberCoroutineScope()
-    val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
-    var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
-    var isMenuExpanded by remember { mutableStateOf(false) }
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        val coroutineScope = rememberCoroutineScope()
+        val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+        var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
+        var isMenuExpanded by remember { mutableStateOf(false) }
 
-    // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡，对齐学习界面景深规范)
-    val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200),
-        label = "wordListBlur"
-    )
-
-    // 回顶悬浮按钮触发状态（滑出首屏后优雅显现）
-    val showScrollToTop by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 200
-        }
-    }
-
-    val filteredWordsByLevel = uiState.wordsByLevel
-    val searchQuery = uiState.searchQuery
-
-    // 当前选中的单词扁平化列表（直接展示所有单词，无手风琴折叠阻碍）
-    val currentWords = remember(filteredWordsByLevel, selectedLevel) {
-        if (selectedLevel == "ALL") {
-            val sortedKeys = filteredWordsByLevel.keys.sorted()
-            sortedKeys.flatMap { filteredWordsByLevel[it] ?: emptyList() }
-        } else {
-            filteredWordsByLevel[selectedLevel] ?: emptyList()
-        }
-    }
-
-    val backdrop = rememberLayerBackdrop()
-    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
-    val options = remember {
-        listOf(
-            DiscoveryOption(
-                label = "全部",
-                icon = Icons.Default.Book,
-                activeColor = NemoIndigo,
-            ),
-            DiscoveryOption(
-                label = "已学",
-                icon = Icons.Default.CheckCircle,
-                activeColor = NemoSecondary,
-            ),
-            DiscoveryOption(
-                label = "未学",
-                icon = Icons.Default.Error,
-                activeColor = NemoOrange,
-            ),
+        // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡，对齐学习界面景深规范)
+        val animatedBlurRadius by animateDpAsState(
+            targetValue = if (isMenuExpanded) 14.dp else 0.dp,
+            animationSpec = tween(durationMillis = 200),
+            label = "wordListBlur"
         )
-    }
-    val selectedIndex = when (uiState.filterState) {
-        StudyFilter.ALL -> 0
-        StudyFilter.LEARNED -> 1
-        StudyFilter.UNLEARNED -> 2
-    }
+
+        // 回顶悬浮按钮触发状态（滑出首屏后优雅显现）
+        val showScrollToTop by remember {
+            derivedStateOf {
+                lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 200
+            }
+        }
+
+        val filteredWordsByLevel = uiState.wordsByLevel
+        val searchQuery = uiState.searchQuery
+
+        // 当前选中的单词扁平化列表（直接展示所有单词，无手风琴折叠阻碍）
+        val currentWords = remember(filteredWordsByLevel, selectedLevel) {
+            if (selectedLevel == "ALL") {
+                val sortedKeys = filteredWordsByLevel.keys.sorted()
+                sortedKeys.flatMap { filteredWordsByLevel[it] ?: emptyList() }
+            } else {
+                filteredWordsByLevel[selectedLevel] ?: emptyList()
+            }
+        }
+
+        val backdrop = rememberLayerBackdrop()
+        val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+        val options = remember(iconStyle) {
+            if (iconStyle == SettingIconStyle.PLUMP_DUO) {
+                listOf(
+                    DiscoveryOption(
+                        label = "全部",
+                        icon = Icons.Default.Book,
+                        plumpIcon = PlumpIcon.BookOpen,
+                        activeColor = IsoluminantPalette.SkyIndigo,
+                    ),
+                    DiscoveryOption(
+                        label = "已学",
+                        icon = Icons.Default.CheckCircle,
+                        plumpIcon = PlumpIcon.BadgeCheck,
+                        activeColor = IsoluminantPalette.EmeraldGreen,
+                    ),
+                    DiscoveryOption(
+                        label = "未学",
+                        icon = Icons.Default.Error,
+                        plumpIcon = PlumpIcon.Flame,
+                        activeColor = IsoluminantPalette.WarmAmber,
+                    ),
+                )
+            } else {
+                listOf(
+                    DiscoveryOption(
+                        label = "全部",
+                        icon = Icons.Default.Book,
+                        activeColor = NemoIndigo,
+                    ),
+                    DiscoveryOption(
+                        label = "已学",
+                        icon = Icons.Default.CheckCircle,
+                        activeColor = NemoSecondary,
+                    ),
+                    DiscoveryOption(
+                        label = "未学",
+                        icon = Icons.Default.Error,
+                        activeColor = NemoOrange,
+                    ),
+                )
+            }
+        }
+        val selectedIndex = when (uiState.filterState) {
+            StudyFilter.ALL -> 0
+            StudyFilter.LEARNED -> 1
+            StudyFilter.UNLEARNED -> 2
+        }
 
     Box(
         modifier = Modifier
@@ -259,11 +289,16 @@ fun WordListScreen(
                                     else ->
                                         "暂无单词数据" to "暂时没有收录相关单词条目"
                                 }
-                                val emptyIcon = if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Translate
+                                val (emptyIcon, emptyPlumpIcon) = if (searchQuery.isNotEmpty()) {
+                                    Icons.Rounded.Search to PlumpIcon.SearchX
+                                } else {
+                                    Icons.Rounded.Translate to PlumpIcon.Globe
+                                }
                                 EmptyState(
                                     title = emptyTitle,
                                     subtitle = emptySubtitle,
-                                    icon = emptyIcon
+                                    icon = emptyIcon,
+                                    plumpIcon = emptyPlumpIcon
                                 )
                             }
                         }
@@ -340,34 +375,61 @@ fun WordListScreen(
                 .padding(top = statusBarTop + 68.dp)
         )
     }
+    }
 }
 
-private val AvatarColors = listOf(
+private val Md3AvatarColors = listOf(
     NemoPrimary, NemoOrange, NemoSecondary, NemoIndigo,
     NemoTeal, NemoPurple, IosColors.Pink, NemoCyan
 )
 
+private val PlumpAvatarColors = listOf(
+    IsoluminantPalette.SkyIndigo,     // 255°
+    IsoluminantPalette.LakesideCyan,  // 195°
+    IsoluminantPalette.EmeraldGreen,  // 145°
+    IsoluminantPalette.WarmAmber,     // 70°
+    IsoluminantPalette.CoralFlame,    // 30°
+    IsoluminantPalette.RoseRuby,      // 15°
+    IsoluminantPalette.LilacViolet,   // 295°
+    IsoluminantPalette.GlazeMint      // 175°
+)
+
+@Composable
 private fun getLevelColor(level: String): Color {
-    return when (level.uppercase()) {
-        "N5" -> NemoSecondary
-        "N4" -> NemoCyan
-        "N3" -> NemoPrimary
-        "N2" -> NemoOrange
-        "N1" -> IosColors.Pink
-        else -> NemoPrimary
+    val iconStyle = LocalSettingIconStyle.current
+    return if (iconStyle == SettingIconStyle.PLUMP_DUO) {
+        when (level.uppercase()) {
+            "N5" -> IsoluminantPalette.EmeraldGreen
+            "N4" -> IsoluminantPalette.LakesideCyan
+            "N3" -> IsoluminantPalette.SkyIndigo
+            "N2" -> IsoluminantPalette.WarmAmber
+            "N1" -> IsoluminantPalette.RoseRuby
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        when (level.uppercase()) {
+            "N5" -> NemoSecondary
+            "N4" -> NemoCyan
+            "N3" -> NemoPrimary
+            "N2" -> NemoOrange
+            "N1" -> IosColors.Pink
+            else -> NemoPrimary
+        }
     }
 }
 
 @Composable
 private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
-    val avatarColor = AvatarColors[kotlin.math.abs(word.id.hashCode()) % AvatarColors.size]
+    val iconStyle = LocalSettingIconStyle.current
+    val avatarColors = if (iconStyle == SettingIconStyle.PLUMP_DUO) PlumpAvatarColors else Md3AvatarColors
+    val avatarColor = avatarColors[kotlin.math.abs(word.id.hashCode()) % avatarColors.size]
     PremiumCard(onClick = onClick) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Box(
-                modifier = Modifier.size(50.dp).background(avatarColor.copy(alpha = 0.1f), RoundedCornerShape(16.dp)),
+                modifier = Modifier.size(50.dp).background(avatarColor.copy(alpha = 0.12f), RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -449,9 +511,12 @@ private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
 private fun EmptyState(
     title: String,
     subtitle: String? = null,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Translate
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Translate,
+    plumpIcon: PlumpIcon? = null
 ) {
-    val accentColor = NemoSecondary
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoSecondary
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -460,18 +525,31 @@ private fun EmptyState(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
     ) {
-        Surface(
-            shape = RoundedCornerShape(32.dp),
-            color = accentColor.copy(alpha = 0.1f),
-            modifier = Modifier.size(100.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = accentColor.copy(alpha = 0.8f)
+        if (isPlumpDuo && plumpIcon != null) {
+            Box(
+                modifier = Modifier.size(72.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = accentColor,
+                    size = 56.dp
                 )
+            }
+        } else {
+            Surface(
+                shape = RoundedCornerShape(32.dp),
+                color = accentColor.copy(alpha = 0.1f),
+                modifier = Modifier.size(100.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = accentColor.copy(alpha = 0.8f)
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(24.dp))

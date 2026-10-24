@@ -31,6 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -92,11 +97,12 @@ fun AIWorkshopScreen(
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backdrop = rememberLayerBackdrop()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         // 1. 底层页面滚动内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
         Box(
             modifier = Modifier
@@ -157,11 +163,19 @@ fun AIWorkshopScreen(
                 ) {
                     Text("开始练习", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        Icons.AutoMirrored.Rounded.ArrowForward,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.ArrowRight,
+                            color = Color.White,
+                            size = 20.dp
+                        )
+                    } else {
+                        Icon(
+                            Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -206,7 +220,17 @@ fun AIWorkshopScreen(
                                 "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
-                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = textPrimary)
+                                else -> {
+                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.Cpu,
+                                            color = textPrimary,
+                                            size = 26.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = textPrimary)
+                                    }
+                                }
                             }
                         }
                         FrostedLiquidGlassButton(
@@ -217,7 +241,15 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.History,
+                                    color = textPrimary,
+                                    size = 26.dp
+                                )
+                            } else {
+                                Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            }
                         }
                         FrostedLiquidGlassButton(
                             onClick = { showHelp = true },
@@ -227,7 +259,15 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.CircleQuestion,
+                                    color = textPrimary,
+                                    size = 26.dp
+                                )
+                            } else {
+                                Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            }
                         }
                     }
                 }
@@ -455,6 +495,7 @@ fun AIWorkshopScreen(
         }
     }
 }
+}
 
 @Composable
 private fun WorkshopContent(
@@ -604,6 +645,7 @@ private fun ModeSection(
 @Composable
 private fun GrammarDataEmptyView() {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     Column(
         modifier = Modifier
@@ -611,18 +653,31 @@ private fun GrammarDataEmptyView() {
             .padding(top = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface(
-            modifier = Modifier.size(100.dp),
-            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-            shape = RoundedCornerShape(32.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    Icons.Rounded.SearchOff,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
+        if (isPlumpDuo) {
+            Box(
+                modifier = Modifier.size(80.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlumpDuoIcon(
+                    icon = PlumpIcon.SearchX,
+                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500,
+                    size = 56.dp
                 )
+            }
+        } else {
+            Surface(
+                modifier = Modifier.size(100.dp),
+                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
+                shape = RoundedCornerShape(32.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Rounded.SearchOff,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -758,18 +813,34 @@ private fun HeroStartView(
             .padding(top = 48.dp, bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface(
-            modifier = Modifier.size(100.dp),
-            color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
-            shape = RoundedCornerShape(32.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    icon,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = colorScheme.primary
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+        if (isPlumpDuo) {
+            val plumpIcon = if (isGrammarMode) PlumpIcon.BookOpen else PlumpIcon.Sparkles
+            val plumpColor = if (isGrammarMode) IsoluminantPalette.EmeraldGreen else IsoluminantPalette.SkyIndigo
+            Box(
+                modifier = Modifier.size(80.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = plumpColor,
+                    size = 56.dp
                 )
+            }
+        } else {
+            Surface(
+                modifier = Modifier.size(100.dp),
+                color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(32.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = colorScheme.primary
+                    )
+                }
             }
         }
 
@@ -897,12 +968,20 @@ private fun ExerciseContent(
                         isInteractive = true,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = "换一题",
-                            tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.RotateCcw,
+                                color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
+                                size = 20.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "换一题",
+                                tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
                     }
                 }
                 
@@ -931,12 +1010,21 @@ private fun ExerciseContent(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            Icon(
-                                Icons.Rounded.Lightbulb,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                                tint = Color(0xFFFBBF24)
-                            )
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.Lightbulb,
+                                    color = IsoluminantPalette.WarmAmber,
+                                    size = 16.dp,
+                                    modifier = Modifier.padding(top = 1.dp)
+                                )
+                            } else {
+                                Icon(
+                                    Icons.Rounded.Lightbulb,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color(0xFFFBBF24)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "提示: ${exercise.hints.joinToString(", ")}",
@@ -1220,6 +1308,7 @@ private fun FeedbackSection(
 @Composable
 private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     
     Column(
         modifier = Modifier
@@ -1227,18 +1316,31 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
             .padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Surface(
-            modifier = Modifier.size(100.dp),
-            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-            shape = CircleShape
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    Icons.Rounded.SettingsSuggest,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
+        if (isPlumpDuo) {
+            Box(
+                modifier = Modifier.size(80.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                PlumpDuoIcon(
+                    icon = PlumpIcon.Cpu,
+                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500,
+                    size = 56.dp
                 )
+            }
+        } else {
+            Surface(
+                modifier = Modifier.size(100.dp),
+                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
+                shape = CircleShape
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Rounded.SettingsSuggest,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -1267,12 +1369,20 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
             modifier = Modifier.height(48.dp)
         ) {
-            Icon(
-                Icons.Rounded.Settings,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = Color.White
-            )
+            if (isPlumpDuo) {
+                PlumpDuoIcon(
+                    icon = PlumpIcon.DailyGoalTarget,
+                    color = Color.White,
+                    size = 20.dp
+                )
+            } else {
+                Icon(
+                    Icons.Rounded.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color.White
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 "立即去配置",

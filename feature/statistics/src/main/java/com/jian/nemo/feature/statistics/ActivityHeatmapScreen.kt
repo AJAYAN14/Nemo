@@ -320,16 +320,19 @@ private fun RichStatItem(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null && isoluminantColor != null
+            val effectiveColor = if (isPlumpDuo && isoluminantColor != null) isoluminantColor else color
+
             // 顶部：Squircle 语义图标 + 胶囊状态标签
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null && isoluminantColor != null) {
+                if (isPlumpDuo && plumpIcon != null) {
                     PlumpDuoIcon(
                         icon = plumpIcon,
-                        color = isoluminantColor,
+                        color = effectiveColor,
                         size = 28.dp
                     )
                 } else {
@@ -337,7 +340,7 @@ private fun RichStatItem(
                         modifier = Modifier
                             .size(36.dp)
                             .background(
-                                color = color.copy(alpha = if (isDark) 0.2f else 0.12f),
+                                color = effectiveColor.copy(alpha = if (isDark) 0.2f else 0.12f),
                                 shape = RoundedCornerShape(10.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -345,7 +348,7 @@ private fun RichStatItem(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = color,
+                            tint = effectiveColor,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -354,13 +357,13 @@ private fun RichStatItem(
                 if (subLabel.isNotBlank()) {
                     Surface(
                         shape = RoundedCornerShape(6.dp),
-                        color = color.copy(alpha = if (isDark) 0.15f else 0.08f)
+                        color = effectiveColor.copy(alpha = if (isDark) 0.15f else 0.08f)
                     ) {
                         Text(
                             text = subLabel,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = color,
+                            color = effectiveColor,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }

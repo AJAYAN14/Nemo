@@ -2,9 +2,11 @@ package com.jian.nemo.feature.library.presentation.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.DictionarySyncManager
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +37,16 @@ data class WordListUiState(
 @HiltViewModel
 class WordListViewModel @Inject constructor(
     private val wordRepository: WordRepository,
-    private val syncManager: DictionarySyncManager
+    private val syncManager: DictionarySyncManager,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.MD3
+        )
 
     private val _searchQuery = MutableStateFlow("")
     private val _isRefreshing = MutableStateFlow(false)
