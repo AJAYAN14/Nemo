@@ -605,7 +605,8 @@ fun HomeScreen(
                                     icon = if (isLearned) PlumpIcon.ChevronsRight else PlumpIcon.Play,
                                     color = Color.White,
                                     modifier = Modifier
-                                        .size(24.dp)
+                                        .padding(start = 6.dp)
+                                        .size(18.dp)
                                         .graphicsLayer {
                                             alpha = pulseAlpha
                                         }

@@ -454,7 +454,7 @@ private fun MemoryPanoramaCard(
                 ) {
                     if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                         PlumpDuoIcon(
-                            icon = PlumpIcon.BrainCircuit,
+                            icon = PlumpIcon.MemoryBrain,
                             color = IsoluminantPalette.EmeraldGreen,
                             size = 28.dp
                         )
