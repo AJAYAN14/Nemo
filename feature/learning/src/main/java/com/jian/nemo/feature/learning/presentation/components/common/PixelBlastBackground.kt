@@ -370,7 +370,7 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           driftAngle: 35,
           hoverEffect: 'reveal',
           hoverRadius: 140,
-          autoRipple: 4.5,
+          autoRipple: 3.2,
           intro: true,
           lightMode: false,
           ...prev,
@@ -554,7 +554,7 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           clickPos[clickIndex * 2 + 1] = (view.height - y) * view.ratio;
           clickAt[clickIndex] = clock;
           clickIndex = (clickIndex + 1) % MAX_CLICKS;
-          nextAuto = (this.settings.autoRipple || 4.5);
+          nextAuto = (this.settings.autoRipple || 3.2) * 1.5;
           this.wake();
         };
 
@@ -580,8 +580,8 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           if (s.enableRipples && s.autoRipple > 0 && introClock >= 1 && !isPressing) {
             nextAuto -= dt;
             if (nextAuto <= 0) {
-              nextAuto = s.autoRipple;
-              this.addRipple(view.width / 2, view.height * 0.40);
+              nextAuto = s.autoRipple * (0.8 + Math.random() * 0.5);
+              this.addRipple((0.2 + Math.random() * 0.6) * view.width, (0.2 + Math.random() * 0.6) * view.height);
             }
           }
 
@@ -683,7 +683,6 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
         drift: 0.2,
         hoverEffect: 'reveal',
         enableRipples: true,
-        autoRipple: 4.5,
         rippleIntensityScale: 2.2,
         rippleThickness: 0.07,
         rippleSpeed: 0.65,

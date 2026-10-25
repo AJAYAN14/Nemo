@@ -98,9 +98,8 @@ class LearningQueueManager @Inject constructor() {
      * 1. 优先从当前位置 (preferredIndex) 开始寻找已到期的卡片 (dueTime <= now 或未设置 dueTime 的新词 0L)。
      * 2. 若队列中所有卡片都在未来 (dueTime > now)：
      *    - 找到最早到期的卡片及其等待时间 (waitMs = minDueTime - now)。
-     *    - 单卡片防秒弹保护：当队列只有 1 张在学卡片且未到期时，绝不立即原地秒弹，触发 Wait(minDueTime)。
      *    - 若 waitMs > learnAheadLimitMs 或 learnAheadLimitMs <= 0 (超出提前学习容差或禁止提前学习)，触发 Wait(minDueTime)。
-     *    - 若 waitMs <= learnAheadLimitMs 且有多张卡片轮转，允许提前学习，选择最早到期的卡片。
+     *    - 若 waitMs <= learnAheadLimitMs，对齐 Anki 规范，允许提前学习，选择最早到期的卡片。
      * 3. 若列表为空，返回 Empty。
      */
     fun <T> selectNextItem(
@@ -138,18 +137,13 @@ class LearningQueueManager @Inject constructor() {
             }
         }
 
-        // 单卡片防秒弹保护：当队列只有 1 张卡片且在未来时，进入等待倒计时
-        if (count == 1) {
-            return QueueSelectionResult.Wait(minDueTime)
-        }
-
         val waitMs = minDueTime - now
         // 超出提前复习容差，或设置了禁止提前学习 (limit <= 0)，进入等待倒计时
         if (learnAheadLimitMs <= 0 || waitMs > learnAheadLimitMs) {
             return QueueSelectionResult.Wait(minDueTime)
         }
 
-        // 在提前复习容差内且有多张卡片轮转，允许提前复习最早到期项
+        // 在提前复习容差内 (waitMs <= learnAheadLimitMs)，对齐 Anki 规范允许提前复习最早到期项
         return QueueSelectionResult.Next(earliestIndex, items[earliestIndex])
     }
 

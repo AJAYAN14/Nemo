@@ -963,7 +963,7 @@ class LearningViewModel @Inject constructor(
         if (_uiState.value.status == LearningStatus.Processing) return
 
         val state = _uiState.value
-        if (state.isShowAnswerDelayEnabled && System.currentTimeMillis() + SHOW_ANSWER_GRACE_MS < state.showAnswerAvailableAt) {
+        if (state.showAnswerAvailableAt > 0L && System.currentTimeMillis() + SHOW_ANSWER_GRACE_MS < state.showAnswerAvailableAt) {
             return
         }
 
@@ -1074,12 +1074,24 @@ class LearningViewModel @Inject constructor(
 
     private fun armShowAnswerDelay() {
         val state = _uiState.value
-        if (!state.isShowAnswerDelayEnabled || state.isAnswerShown || !state.hasPendingItems || state.status != LearningStatus.Learning) {
+        if (state.isAnswerShown || !state.hasPendingItems || state.status != LearningStatus.Learning) {
             _uiState.update { it.copy(showAnswerAvailableAt = 0L) }
             return
         }
 
-        _uiState.update { it.copy(showAnswerAvailableAt = System.currentTimeMillis() + _showAnswerDelayMs) }
+        val now = System.currentTimeMillis()
+        val currentItem = getCurrentItem()
+        val dueTime = currentItem?.let { _learningDueTimes[it.id] } ?: 0L
+
+        // 判定当前卡片是否处于冷却锁定期（例如手动滑动翻阅至尚未到期的卡片）
+        val waitMs = dueTime - now
+        val isCooling = waitMs > 0L && (_learnAheadLimitMs <= 0L || waitMs > _learnAheadLimitMs)
+
+        val delayTarget = if (state.isShowAnswerDelayEnabled) now + _showAnswerDelayMs else 0L
+        val coolingTarget = if (isCooling) dueTime else 0L
+
+        val availableAt = maxOf(delayTarget, coolingTarget)
+        _uiState.update { it.copy(showAnswerAvailableAt = availableAt) }
     }
 
     /**

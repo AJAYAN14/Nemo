@@ -83,7 +83,7 @@ class LearningQueueManagerTest {
     }
 
     @Test
-    fun `单张卡片在未来到期时应该返回 Wait 防秒弹`() {
+    fun `单张卡片在未来但处于提前学习容差内时应该对齐 Anki 返回 Next 允许提前温习`() {
         val items = listOf("A")
         val now = 1000L
         val dueTime = now + 10 * 60 * 1000L // 10 分钟后
@@ -92,11 +92,30 @@ class LearningQueueManagerTest {
             items = items,
             getDueTime = { dueTime },
             now = now,
-            learnAheadLimitMs = 20 * 60 * 1000L,
+            learnAheadLimitMs = 20 * 60 * 1000L, // 容差 20 分钟 >= 10 分钟
             preferredIndex = 0
         )
 
-        assertTrue("单张卡片在未来时应触发 Wait 倒计时，防止原地秒弹", result is QueueSelectionResult.Wait)
+        assertTrue("单张卡片在容差内应允许提前温习", result is QueueSelectionResult.Next)
+        assertEquals(0, (result as QueueSelectionResult.Next).index)
+        assertEquals("A", result.item)
+    }
+
+    @Test
+    fun `单张卡片在未来且容差设为 0 时应该返回 Wait`() {
+        val items = listOf("A")
+        val now = 1000L
+        val dueTime = now + 10 * 60 * 1000L // 10 分钟后
+
+        val result = manager.selectNextItem(
+            items = items,
+            getDueTime = { dueTime },
+            now = now,
+            learnAheadLimitMs = 0L, // 容差为 0，严格等待
+            preferredIndex = 0
+        )
+
+        assertTrue("容差为 0 时应触发 Wait 倒计时", result is QueueSelectionResult.Wait)
         assertEquals(dueTime, (result as QueueSelectionResult.Wait).waitingUntil)
     }
 

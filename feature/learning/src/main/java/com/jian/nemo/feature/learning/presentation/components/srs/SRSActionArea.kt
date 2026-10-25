@@ -93,26 +93,29 @@ fun SRSActionArea(
     val colorEmerald600 = if (isDarkTheme) Color(0xFF6EE7B7) else Color(0xFF059669)   // 浅色600 / 深色300
     val colorEmerald50 = if (isDarkTheme) Color(0xFF064E3B) else Color(0xFFECFDF5)    // 浅色50 / 深色900
 
+    val isDelayActive = isShowAnswerDelayEnabled || showAnswerAvailableAt > 0L
+
     val now by produceState(
         initialValue = System.currentTimeMillis(),
         key1 = isAnswerShown,
-        key2 = isShowAnswerDelayEnabled,
+        key2 = isDelayActive,
         key3 = showAnswerAvailableAt
     ) {
-        while (!isAnswerShown && isShowAnswerDelayEnabled && showAnswerAvailableAt > System.currentTimeMillis()) {
+        while (!isAnswerShown && isDelayActive && showAnswerAvailableAt > System.currentTimeMillis()) {
             value = System.currentTimeMillis()
             delay(100L)
         }
         value = System.currentTimeMillis()
     }
 
-    val remainingMs = if (!isAnswerShown && isShowAnswerDelayEnabled) {
+    val remainingMs = if (!isAnswerShown && isDelayActive) {
         (showAnswerAvailableAt - now).coerceAtLeast(0L)
     } else {
         0L
     }
     val canShowAnswer = remainingMs <= graceMs
     val remainingSec = ((remainingMs + 999L) / 1000L).toInt()
+    val countdownText = if (remainingSec >= 60) "${remainingSec / 60}m ${remainingSec % 60}s" else "${remainingSec}s"
 
 
     val lastRateClickTime = androidx.compose.runtime.remember { androidx.compose.runtime.mutableLongStateOf(0L) }
@@ -173,7 +176,7 @@ fun SRSActionArea(
                                     .size(18.dp)
                             )
                             Text(
-                                text = if (canShowAnswer) "显示答案" else "显示答案 (${remainingSec}s)",
+                                text = if (canShowAnswer) "显示答案" else "显示答案 ($countdownText)",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White.copy(alpha = if (canShowAnswer) 1f else 0.9f)
