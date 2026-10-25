@@ -21,6 +21,11 @@ import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,11 +90,14 @@ fun HistoricalStatisticsScreen(
             .toSortedMap()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             state = listState,
@@ -139,7 +147,9 @@ fun HistoricalStatisticsScreen(
                         message = "暂无单词学习记录",
                         subtitle = "去学习词汇，积累你的专属词库吧",
                         icon = Icons.Rounded.Translate,
-                        accentColor = NemoSecondary
+                        plumpIcon = PlumpIcon.Languages,
+                        accentColor = NemoSecondary,
+                        isoluminantColor = IsoluminantPalette.EmeraldGreen
                     )
                 }
             }
@@ -167,7 +177,9 @@ fun HistoricalStatisticsScreen(
                         message = "暂无语法学习记录",
                         subtitle = "去学习语法，掌握核心句型表达吧",
                         icon = Icons.Rounded.Checklist,
-                        accentColor = NemoSecondary
+                        plumpIcon = PlumpIcon.ListChecks,
+                        accentColor = NemoSecondary,
+                        isoluminantColor = IsoluminantPalette.EmeraldGreen
                     )
                 }
             }
@@ -212,7 +224,7 @@ fun HistoricalStatisticsScreen(
             title = "单词等级分布",
             data = wordLevelData,
             totalData = uiState.wordTotalCountMap,
-            themeColor = NemoPrimary,
+            themeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary,
             predictions = uiState.wordPredictions,
             overallPrediction = uiState.wordOverallPrediction,
             itemUnit = "词",
@@ -226,12 +238,13 @@ fun HistoricalStatisticsScreen(
             title = "语法等级分布",
             data = grammarLevelData,
             totalData = uiState.grammarTotalCountMap,
-            themeColor = NemoSecondary,
+            themeColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary,
             predictions = uiState.grammarPredictions,
             overallPrediction = uiState.grammarOverallPrediction,
             itemUnit = "条",
             onDismiss = { showGrammarDialog = false }
         )
+    }
     }
 }
 
@@ -243,6 +256,10 @@ fun HistoricalSummaryCard(
     onWordsClick: () -> Unit,
     onGrammarsClick: () -> Unit
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val wordColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary
+    val grammarColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary
+
     PremiumCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -252,7 +269,7 @@ fun HistoricalSummaryCard(
             StatItem(
                 value = totalWords.toString(),
                 label = "单词总数",
-                color = NemoPrimary,
+                color = wordColor,
                 modifier = Modifier.weight(1f),
                 onClick = onWordsClick
             )
@@ -261,7 +278,7 @@ fun HistoricalSummaryCard(
             StatItem(
                 value = totalGrammars.toString(),
                 label = "语法总数",
-                color = NemoSecondary,
+                color = grammarColor,
                 modifier = Modifier.weight(1f),
                 onClick = onGrammarsClick
             )
@@ -278,6 +295,8 @@ fun StatItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -286,6 +305,12 @@ fun StatItem(
         label = "statItemScale"
     )
 
+    val bgAlpha = if (isDark) {
+        if (isPlumpDuo) 0.12f else 0.10f
+    } else {
+        0.06f
+    }
+
     Column(
         modifier = modifier
             .graphicsLayer {
@@ -293,7 +318,7 @@ fun StatItem(
                 scaleY = scale
             }
             .clip(RoundedCornerShape(20.dp))
-            .background(color.copy(alpha = 0.06f))
+            .background(color.copy(alpha = bgAlpha))
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
