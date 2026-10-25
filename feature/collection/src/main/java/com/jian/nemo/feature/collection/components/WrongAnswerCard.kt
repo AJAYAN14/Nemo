@@ -34,6 +34,9 @@ import java.util.Locale
  */
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 @Composable
 fun WrongAnswerCard(
@@ -42,6 +45,10 @@ fun WrongAnswerCard(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    val wrongColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
+    val correctColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
 
     Card(
         modifier = modifier
@@ -90,14 +97,14 @@ fun WrongAnswerCard(
                 Text(
                     text = "你的答案: ${wrongAnswer.userAnswer}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    color = wrongColor
                 )
 
                 // 正确答案
                 Text(
                     text = "正确答案: ${wrongAnswer.correctAnswer}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = correctColor
                 )
 
                 // 时间戳
@@ -115,7 +122,7 @@ fun WrongAnswerCard(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "删除错题",
-                    tint = MaterialTheme.colorScheme.error
+                    tint = wrongColor
                 )
             }
         }

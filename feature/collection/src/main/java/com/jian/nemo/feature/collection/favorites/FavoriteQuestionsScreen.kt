@@ -1,6 +1,11 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,12 +60,22 @@ fun FavoriteQuestionsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
 
-    // Premium Flat Colors
+    // 图标与等亮度双风格判定
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // Premium Flat Colors (默认方案完整保留原有配色)
     val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
     val premiumGreen = Color(0xFF34C759)
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+
+    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
+    val heartColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else premiumRed
+    val accentGreen = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumGreen
+    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
+    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedQuestionIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -88,166 +103,182 @@ fun FavoriteQuestionsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            if (isSelectionMode) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(56.dp),
-                    color = backgroundColor
-                ) {
-                    Row(
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Scaffold(
+            containerColor = backgroundColor,
+            topBar = {
+                if (isSelectionMode) {
+                    Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .height(56.dp),
+                        color = backgroundColor
                     ) {
-                        IconButton(onClick = { selectedQuestionIds = emptySet() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "取消选择",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "已选择 ${selectedQuestionIds.size} 项",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        val allQuestionIds = uiState.favoriteQuestions.map { it.id }.toSet()
-                        val isAllSelected = selectedQuestionIds.size == allQuestionIds.size
-                        TextButton(
-                            onClick = {
-                                selectedQuestionIds = if (isAllSelected) emptySet() else allQuestionIds
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = if (isAllSelected) "取消全选" else "全选",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = premiumBlue
-                            )
-                        }
-                        
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Delete,
-                                contentDescription = "批量取消收藏",
-                                tint = premiumRed
-                            )
-                        }
-                    }
-                }
-            } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "收藏题目",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-            }
-        }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NemoChasingDotsLoader()
-                }
-            }
-            uiState.favoriteQuestions.isEmpty() -> {
-                // Flat Empty State
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(32.dp),
-                            color = premiumRed.copy(alpha = 0.1f),
-                            modifier = Modifier.size(100.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            IconButton(onClick = { selectedQuestionIds = emptySet() }) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Favorite,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = premiumRed.copy(alpha = 0.6f)
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = "取消选择",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "已选择 ${selectedQuestionIds.size} 项",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                            
+                            val allQuestionIds = uiState.favoriteQuestions.map { it.id }.toSet()
+                            val isAllSelected = selectedQuestionIds.size == allQuestionIds.size
+                            TextButton(
+                                onClick = {
+                                    selectedQuestionIds = if (isAllSelected) emptySet() else allQuestionIds
+                                }
+                            ) {
+                                Text(
+                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = accentBlue
+                                )
+                            }
+                            
+                            IconButton(onClick = { showDeleteDialog = true }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = "批量取消收藏",
+                                    tint = deleteColor
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "暂无收藏题目",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "做题时点击 ❤️ 收藏重点题目",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            maxLines = 2,
-                            modifier = Modifier.padding(horizontal = 32.dp),
-                            textAlign = TextAlign.Center
-                        )
                     }
+                } else {
+                    com.jian.nemo.core.ui.component.common.CommonHeader(
+                        title = "收藏题目",
+                        onBack = onNavigateBack,
+                        backgroundColor = backgroundColor
+                    )
                 }
             }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
-                ) {
-                    items(
-                        items = uiState.favoriteQuestions,
-                        key = { "fav_q_${it.id}" }
-                    ) { question ->
-                        val isSelected = selectedQuestionIds.contains(question.id)
-                        Box(modifier = Modifier.animateListItem()) {
-                            FavoriteQuestionItem(
-                                question = question,
-                                isSelectionMode = isSelectionMode,
-                                isSelected = isSelected,
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        selectedQuestionIds = if (isSelected) {
-                                            selectedQuestionIds - question.id
-                                        } else {
-                                            selectedQuestionIds + question.id
-                                        }
+        ) { paddingValues ->
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NemoChasingDotsLoader()
+                    }
+                }
+                uiState.favoriteQuestions.isEmpty() -> {
+                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Heart,
+                                        color = heartColor,
+                                        size = 64.dp
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = premiumRed.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(100.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Favorite,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = premiumRed.copy(alpha = 0.6f)
+                                        )
                                     }
-                                },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        selectedQuestionIds = selectedQuestionIds + question.id
-                                    }
-                                },
-                                accentGreen = premiumGreen,
-                                tagColor = premiumBlue,
-                                heartColor = premiumRed,
-                                onUnfavorite = { viewModel.unfavorite(question.id) }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Text(
+                                text = "暂无收藏题目",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "做题时点击 ❤️ 收藏重点题目",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 2,
+                                modifier = Modifier.padding(horizontal = 32.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(vertical = 24.dp)
+                    ) {
+                        items(
+                            items = uiState.favoriteQuestions,
+                            key = { "fav_q_${it.id}" }
+                        ) { question ->
+                            val isSelected = selectedQuestionIds.contains(question.id)
+                            Box(modifier = Modifier.animateListItem()) {
+                                FavoriteQuestionItem(
+                                    question = question,
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = isSelected,
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            selectedQuestionIds = if (isSelected) {
+                                                selectedQuestionIds - question.id
+                                            } else {
+                                                selectedQuestionIds + question.id
+                                            }
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!isSelectionMode) {
+                                            selectedQuestionIds = selectedQuestionIds + question.id
+                                        }
+                                    },
+                                    accentGreen = accentGreen,
+                                    tagColor = accentBlue,
+                                    heartColor = heartColor,
+                                    isPlumpDuo = isPlumpDuo,
+                                    onUnfavorite = { viewModel.unfavorite(question.id) }
+                                )
+                            }
                         }
                     }
                 }
@@ -272,6 +303,7 @@ private fun FavoriteQuestionItem(
     accentGreen: Color,
     tagColor: Color,
     heartColor: Color,
+    isPlumpDuo: Boolean,
     onUnfavorite: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -340,18 +372,31 @@ private fun FavoriteQuestionItem(
                             onClick = onUnfavorite,
                             modifier = Modifier.size(32.dp)
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = heartColor.copy(alpha = 0.1f),
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Favorite,
-                                        contentDescription = "取消收藏",
-                                        tint = heartColor,
-                                        modifier = Modifier.size(18.dp)
+                            if (isPlumpDuo) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Heart,
+                                        color = heartColor,
+                                        size = 18.dp
                                     )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = heartColor.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Favorite,
+                                            contentDescription = "取消收藏",
+                                            tint = heartColor,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

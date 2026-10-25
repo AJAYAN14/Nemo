@@ -75,6 +75,7 @@ enum class PlumpIcon {
     // --- 5. 测试与练习分支 (PlumpIconsTest.kt) ---
     CircleX,          // 我的错题 / 圆形叉号
     Star,             // 我的收藏 / 收藏星标
+    Heart,            // 收藏爱心 / 重点收藏
     ListChecks,       // 选择题 / 多项清单
     Keyboard,         // 手打题 / 打字键盘
     GalleryVerticalEnd, // 卡片题 / 纵向层叠卡片

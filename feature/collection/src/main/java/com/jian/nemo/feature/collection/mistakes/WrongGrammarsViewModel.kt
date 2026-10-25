@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.GrammarWrongAnswer
 import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,11 +32,22 @@ data class WrongGrammarsUiState(
  */
 @HiltViewModel
 class WrongGrammarsViewModel @Inject constructor(
-    private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository
+    private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository,
+    settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WrongGrammarsUiState())
     val uiState: StateFlow<WrongGrammarsUiState> = _uiState.asStateFlow()
+
+    /**
+     * 图标风格（MD3 / Plump Duo），供界面双风格自适应
+     */
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.MD3
+        )
 
     init {
         loadWrongGrammars()

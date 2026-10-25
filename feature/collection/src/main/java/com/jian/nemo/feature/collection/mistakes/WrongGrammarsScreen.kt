@@ -1,6 +1,11 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
@@ -43,10 +48,20 @@ fun WrongGrammarsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
+
+    // 图标与等亮度双风格判定
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // Custom Premium Colors (默认方案完整保留原有配色)
     val premiumBlue = Color(0xFF007AFF)
     val premiumRed = Color(0xFFFF3B30)
     val premiumGray = Color(0xFF8E8E93)
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+
+    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
+    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
+    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -74,134 +89,170 @@ fun WrongGrammarsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            if (isSelectionMode) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(56.dp),
-                    color = backgroundColor
-                ) {
-                    Row(
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Scaffold(
+            containerColor = backgroundColor,
+            topBar = {
+                if (isSelectionMode) {
+                    Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .height(56.dp),
+                        color = backgroundColor
                     ) {
-                        IconButton(onClick = { selectedGrammarIds = emptySet() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "取消选择",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "已选择 ${selectedGrammarIds.size} 项",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        val allGrammarIds = uiState.wrongAnswers.map { it.grammarId }.toSet()
-                        val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
-                        TextButton(
-                            onClick = {
-                                selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            IconButton(onClick = { selectedGrammarIds = emptySet() }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = "取消选择",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (isAllSelected) "取消全选" else "全选",
-                                style = MaterialTheme.typography.labelLarge,
+                                text = "已选择 ${selectedGrammarIds.size} 项",
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = premiumBlue
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
                             )
-                        }
-                        
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Delete,
-                                contentDescription = "批量删除",
-                                tint = premiumRed
-                            )
-                        }
-                    }
-                }
-            } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "错误的语法",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-            }
-        }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                    NemoChasingDotsLoader()
-                }
-            }
-            uiState.wrongAnswers.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Surface(shape = RoundedCornerShape(32.dp), color = premiumGray.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = Color(0xFF34C759).copy(alpha = 0.5f))
+                            
+                            val allGrammarIds = uiState.wrongAnswers.map { it.grammarId }.toSet()
+                            val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
+                            TextButton(
+                                onClick = {
+                                    selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
+                                }
+                            ) {
+                                Text(
+                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = accentBlue
+                                )
+                            }
+                            
+                            IconButton(onClick = { showDeleteDialog = true }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = "批量删除",
+                                    tint = deleteColor
+                                )
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text("暂无错题记录", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Text("语法掌握得很好！继续保持。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     }
+                } else {
+                    com.jian.nemo.core.ui.component.common.CommonHeader(
+                        title = "错误的语法",
+                        onBack = onNavigateBack,
+                        backgroundColor = backgroundColor
+                    )
                 }
             }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
-                ) {
-                    items(items = uiState.wrongAnswers, key = { "mistake_${it.id}" }) { mistake ->
-                        val isSelected = selectedGrammarIds.contains(mistake.grammarId)
-                        Box(modifier = Modifier.animateListItem()) {
-                            WrongGrammarCard(
-                                mistake = mistake,
-                                isSelectionMode = isSelectionMode,
-                                isSelected = isSelected,
-                                onSelectedChange = { checked ->
-                                    selectedGrammarIds = if (checked) {
-                                        selectedGrammarIds + mistake.grammarId
-                                    } else {
-                                        selectedGrammarIds - mistake.grammarId
-                                    }
-                                },
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        selectedGrammarIds = if (isSelected) {
-                                            selectedGrammarIds - mistake.grammarId
-                                        } else {
-                                            selectedGrammarIds + mistake.grammarId
-                                        }
-                                    } else {
-                                        mistake.grammar?.id?.let { onGrammarClick(it) }
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        selectedGrammarIds = selectedGrammarIds + mistake.grammarId
+        ) { paddingValues ->
+            when {
+                uiState.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                        NemoChasingDotsLoader()
+                    }
+                }
+                uiState.wrongAnswers.isEmpty() -> {
+                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
+                    Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.BadgeCheck,
+                                        color = IsoluminantPalette.EmeraldGreen,
+                                        size = 64.dp
+                                    )
+                                }
+                            } else {
+                                Surface(shape = RoundedCornerShape(32.dp), color = premiumGray.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = Color(0xFF34C759).copy(alpha = 0.5f))
                                     }
                                 }
-                            )
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Text("暂无错题记录", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("语法掌握得很好！继续保持。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(vertical = 24.dp)
+                    ) {
+                        items(items = uiState.wrongAnswers, key = { "mistake_${it.id}" }) { mistake ->
+                            val isSelected = selectedGrammarIds.contains(mistake.grammarId)
+                            Box(modifier = Modifier.animateListItem()) {
+                                WrongGrammarCard(
+                                    mistake = mistake,
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = isSelected,
+                                    isPlumpDuo = isPlumpDuo,
+                                    onSelectedChange = { checked ->
+                                        selectedGrammarIds = if (checked) {
+                                            selectedGrammarIds + mistake.grammarId
+                                        } else {
+                                            selectedGrammarIds - mistake.grammarId
+                                        }
+                                    },
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            selectedGrammarIds = if (isSelected) {
+                                                selectedGrammarIds - mistake.grammarId
+                                            } else {
+                                                selectedGrammarIds + mistake.grammarId
+                                            }
+                                        } else {
+                                            mistake.grammar?.id?.let { onGrammarClick(it) }
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!isSelectionMode) {
+                                            selectedGrammarIds = selectedGrammarIds + mistake.grammarId
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ */
+private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
+    return if (isPlumpDuo) {
+        when (level.uppercase()) {
+            "N5" -> IsoluminantPalette.EmeraldGreen
+            "N4" -> IsoluminantPalette.LakesideCyan
+            "N3" -> IsoluminantPalette.SkyIndigo
+            "N2" -> IsoluminantPalette.WarmAmber
+            "N1" -> IsoluminantPalette.RoseRuby
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        Color(0xFF007AFF) // premiumBlue
     }
 }
 
@@ -211,6 +262,7 @@ private fun WrongGrammarCard(
     mistake: GrammarWrongAnswer,
     isSelectionMode: Boolean,
     isSelected: Boolean,
+    isPlumpDuo: Boolean,
     onSelectedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
     onLongClick: () -> Unit
@@ -220,6 +272,12 @@ private fun WrongGrammarCard(
     val premiumGreen = Color(0xFF34C759)
     val premiumBlue = Color(0xFF007AFF)
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    // 双方案色彩分流：Plump Duo 对应等亮度色，MD3 100% 保持原色
+    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
+    val accentRed = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
+    val accentGreen = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumGreen
+    val tagColor = getLevelColor(mistake.grammar?.grammarLevel ?: "", isPlumpDuo)
 
     Card(
         modifier = Modifier
@@ -233,7 +291,7 @@ private fun WrongGrammarCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) premiumBlue else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+            color = if (isSelected) accentBlue else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -252,7 +310,7 @@ private fun WrongGrammarCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     NemoRoundCheckbox(
                         checked = isSelected,
-                        checkedColor = premiumBlue
+                        checkedColor = accentBlue
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                 }
@@ -267,14 +325,14 @@ private fun WrongGrammarCard(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = premiumBlue.copy(alpha = 0.1f)
+                        color = tagColor.copy(alpha = 0.1f)
                     ) {
                         Text(
                             text = mistake.grammar?.grammarLevel ?: "N/A",
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = premiumBlue
+                            color = tagColor
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -286,7 +344,7 @@ private fun WrongGrammarCard(
                     )
                     
                     if (!isSelectionMode) {
-                        Icon(Icons.Rounded.Cancel, null, tint = premiumRed, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Rounded.Cancel, null, tint = accentRed, modifier = Modifier.size(20.dp))
                     }
                 }
 
@@ -300,7 +358,7 @@ private fun WrongGrammarCard(
                         parts.forEachIndexed { index, part ->
                             append(part)
                             if (index < parts.size - 1) {
-                                withStyle(style = SpanStyle(color = premiumRed, fontWeight = FontWeight.Bold, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)) {
+                                withStyle(style = SpanStyle(color = accentRed, fontWeight = FontWeight.Bold, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)) {
                                     append("____")
                                 }
                             }
@@ -322,30 +380,30 @@ private fun WrongGrammarCard(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.Close, null, tint = premiumRed, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.Close, null, tint = accentRed, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "你的答案：${mistake.userAnswer}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = premiumRed,
+                                color = accentRed,
                                 fontWeight = FontWeight.Medium
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.Check, null, tint = premiumGreen, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.Check, null, tint = accentGreen, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "正确答案：${mistake.correctAnswer}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = premiumGreen,
+                                color = accentGreen,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
 
-                // Explanation Section
+                // Explanation Section - 辅助指示箭头在 Plump Duo 模式下严格保持中性灰
                 if (!mistake.explanation.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
@@ -354,8 +412,17 @@ private fun WrongGrammarCard(
                         modifier = Modifier.height(32.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(if (expanded) "收起解析" else "查看解析", style = MaterialTheme.typography.labelLarge)
-                            Icon(if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null, modifier = Modifier.size(18.dp))
+                            Text(
+                                text = if (expanded) "收起解析" else "查看解析",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = if (isPlumpDuo) accentBlue else MaterialTheme.colorScheme.primary
+                            )
+                            Icon(
+                                imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
 

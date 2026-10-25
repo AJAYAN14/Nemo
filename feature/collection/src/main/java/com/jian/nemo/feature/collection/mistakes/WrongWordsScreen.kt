@@ -1,6 +1,11 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -58,6 +63,7 @@ fun WrongWordsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     // Premium Aesthetics
@@ -67,11 +73,18 @@ fun WrongWordsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    // Custom Premium Colors
+    // 图标与等亮度双风格判定
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // Custom Premium Colors (默认方案完整保留原有配色)
     val premiumRed = Color(0xFFFF3B30) // Apple-style System Red
     val premiumBlue = Color(0xFF007AFF) // Apple-style System Blue
     val premiumOrange = Color(0xFFFF9500) // Apple-style System Orange
     val premiumGray = Color(0xFF8E8E93) // System Gray
+
+    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
+    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
+    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedWordIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -99,211 +112,244 @@ fun WrongWordsScreen(
         )
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NemoChasingDotsLoader()
-                }
-            }
-            uiState.words.isEmpty() -> {
-                // Premium Empty State
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
+            // 1. 底层滚动内容（被 backdrop 采样源录制）
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(32.dp),
-                            color = premiumGray.copy(alpha = 0.1f),
-                            modifier = Modifier.size(100.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Cancel,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = premiumGray.copy(alpha = 0.5f)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "暂无错词记录",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "太棒了！继续保持全对的状态。",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
+                        NemoChasingDotsLoader()
                     }
                 }
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .layerBackdrop(backdrop),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = statusBarTop + 60.dp + 16.dp,
-                        bottom = navBarBottom + 24.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(
-                        items = uiState.words,
-                        key = { "wrong_word_${it.id}" }
-                    ) { word ->
-                        val isSelected = selectedWordIds.contains(word.id)
-                        Box(modifier = Modifier.animateListItem()) {
-                            WrongWordItem(
-                                word = word,
-                                isSelectionMode = isSelectionMode,
-                                isSelected = isSelected,
-                                onSelectedChange = { checked ->
-                                    selectedWordIds = if (checked) {
-                                        selectedWordIds + word.id
-                                    } else {
-                                        selectedWordIds - word.id
+                uiState.words.isEmpty() -> {
+                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = statusBarTop + 60.dp, bottom = navBarBottom),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.CircleX,
+                                        color = IsoluminantPalette.EmeraldGreen,
+                                        size = 64.dp
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = premiumGray.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(100.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Cancel,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = premiumGray.copy(alpha = 0.5f)
+                                        )
                                     }
-                                },
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        selectedWordIds = if (isSelected) {
-                                            selectedWordIds - word.id
-                                        } else {
-                                            selectedWordIds + word.id
-                                        }
-                                    } else {
-                                        onWordClick(word.id)
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        selectedWordIds = selectedWordIds + word.id
-                                    }
-                                },
-                                accentColor = premiumBlue,
-                                tagColor = premiumBlue
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Text(
+                                text = "暂无错词记录",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "太棒了！继续保持全对的状态。",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
                         }
                     }
                 }
-            }
-        }
-
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.95f),
-                            backgroundColor.copy(alpha = 0.75f),
-                            backgroundColor.copy(alpha = 0.35f),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(bottom = 8.dp)
-        ) {
-            if (isSelectionMode) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    FrostedLiquidGlassButton(
-                        onClick = { selectedWordIds = emptySet() },
-                        backdrop = backdrop,
-                        shape = CircleShape,
-                        contentPadding = PaddingValues(0.dp),
-                        isInteractive = true,
-                        modifier = Modifier.size(48.dp)
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .layerBackdrop(backdrop),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = statusBarTop + 60.dp + 16.dp,
+                            bottom = navBarBottom + 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = "取消选择",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = "已选择 ${selectedWordIds.size} 项",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    val allWordIds = uiState.words.map { it.id }.toSet()
-                    val isAllSelected = selectedWordIds.size == allWordIds.size
-                    TextButton(
-                        onClick = {
-                            selectedWordIds = if (isAllSelected) emptySet() else allWordIds
+                        items(
+                            items = uiState.words,
+                            key = { "wrong_word_${it.id}" }
+                        ) { word ->
+                            val isSelected = selectedWordIds.contains(word.id)
+                            Box(modifier = Modifier.animateListItem()) {
+                                WrongWordItem(
+                                    word = word,
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = isSelected,
+                                    onSelectedChange = { checked ->
+                                        selectedWordIds = if (checked) {
+                                            selectedWordIds + word.id
+                                        } else {
+                                            selectedWordIds - word.id
+                                        }
+                                    },
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            selectedWordIds = if (isSelected) {
+                                                selectedWordIds - word.id
+                                            } else {
+                                                selectedWordIds + word.id
+                                            }
+                                        } else {
+                                            onWordClick(word.id)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!isSelectionMode) {
+                                            selectedWordIds = selectedWordIds + word.id
+                                        }
+                                    },
+                                    accentColor = accentColor,
+                                    tagColor = getLevelColor(word.level, isPlumpDuo)
+                                )
+                            }
                         }
-                    ) {
-                        Text(
-                            text = if (isAllSelected) "取消全选" else "全选",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = premiumBlue
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    FrostedLiquidGlassButton(
-                        onClick = { showDeleteDialog = true },
-                        backdrop = backdrop,
-                        shape = CircleShape,
-                        contentPadding = PaddingValues(0.dp),
-                        isInteractive = true,
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Delete,
-                            contentDescription = "批量删除",
-                            tint = premiumRed,
-                            modifier = Modifier.size(30.dp)
-                        )
                     }
                 }
-            } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "错误的单词",
-                    onBack = onNavigateBack,
-                    backgroundColor = Color.Transparent,
-                    backdrop = backdrop,
-                    backButtonSize = 48.dp
-                )
+            }
+
+            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                if (isSelectionMode) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FrostedLiquidGlassButton(
+                            onClick = { selectedWordIds = emptySet() },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = "取消选择",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "已选择 ${selectedWordIds.size} 项",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        val allWordIds = uiState.words.map { it.id }.toSet()
+                        val isAllSelected = selectedWordIds.size == allWordIds.size
+                        TextButton(
+                            onClick = {
+                                selectedWordIds = if (isAllSelected) emptySet() else allWordIds
+                            }
+                        ) {
+                            Text(
+                                text = if (isAllSelected) "取消全选" else "全选",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        FrostedLiquidGlassButton(
+                            onClick = { showDeleteDialog = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = "批量删除",
+                                tint = deleteColor,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                } else {
+                    com.jian.nemo.core.ui.component.common.CommonHeader(
+                        title = "错误的单词",
+                        onBack = onNavigateBack,
+                        backgroundColor = Color.Transparent,
+                        backdrop = backdrop,
+                        backButtonSize = 48.dp
+                    )
+                }
             }
         }
+    }
+}
+
+/**
+ * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ */
+private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
+    return if (isPlumpDuo) {
+        when (level.uppercase()) {
+            "N5" -> IsoluminantPalette.EmeraldGreen
+            "N4" -> IsoluminantPalette.LakesideCyan
+            "N3" -> IsoluminantPalette.SkyIndigo
+            "N2" -> IsoluminantPalette.WarmAmber
+            "N1" -> IsoluminantPalette.RoseRuby
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        Color(0xFF007AFF) // premiumBlue
     }
 }
 

@@ -200,7 +200,7 @@ fun FavoritesList(
             icon = Icons.Rounded.Translate,
             iconColor = NemoSecondary,
             onClick = onWordFavoritesClick,
-            plumpIcon = PlumpIcon.Star,
+            plumpIcon = PlumpIcon.Languages,
             paletteColor = IsoluminantPalette.WarmAmber     // 70° 暖色系 = 词汇/收藏语义
         )
 
@@ -228,9 +228,8 @@ fun FavoriteCategoryCard(
     plumpIcon: PlumpIcon? = null,
     paletteColor: Color? = null
 ) {
-    // 双风格判定（与 WrongAnswerCategoryCard / DashboardTile 标准模式一致）
-    val iconStyle = LocalSettingIconStyle.current
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
+    // 双风格判定（通过 LocalSettingIconStyle 判断）
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else iconColor
 
     PremiumCard(onClick = onClick) {
