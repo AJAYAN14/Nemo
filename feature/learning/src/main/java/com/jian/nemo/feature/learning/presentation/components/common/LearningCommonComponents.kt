@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
+import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.drawBackdrop
@@ -687,6 +688,52 @@ fun ContentUnavailable(text: String, cardColor: Color) {
 // 100% 对齐 gemini-code-1792823982566.html 设计规范
 // 采用与登录界面完全一致的 WebGL 2 原生粒子流体背景 + 精美 Compose 交互层
 // ==========================================
+
+/**
+ * 等待界面的全屏流光粒子特效背景层
+ * 可挂载在不受安全内边距限制的最外层容器，铺满至手机物理边缘和状态栏
+ */
+@Composable
+fun WaitingBackground(
+    backdrop: LayerBackdrop,
+    isDark: Boolean,
+    modifier: Modifier = Modifier,
+    onControllerReady: ((triggerCenterBlast: () -> Unit) -> Unit)? = null
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .layerBackdrop(backdrop)
+    ) {
+        PixelBlastBackground(
+            isDark = isDark,
+            modifier = Modifier.fillMaxSize(),
+            onControllerReady = onControllerReady
+        )
+
+        // 纵深光影渐变遮罩层（增强文字与圆环在 WebGL 粒子之上的清晰度与呼吸层次）
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = if (isDark) listOf(
+                            Color(0x33090714),
+                            Color(0x05090714),
+                            Color(0x33090714),
+                            Color(0x66090714)
+                        ) else listOf(
+                            Color(0x66FFFFFF),
+                            Color(0x10FFFFFF),
+                            Color(0x55F8FAFC),
+                            Color(0x88F1F5F9)
+                        )
+                    )
+                )
+        )
+    }
+}
+
 @Composable
 fun WaitingContent(
     until: Long,
@@ -695,16 +742,21 @@ fun WaitingContent(
     onRest: (() -> Unit)? = null,
     completedCount: Int = 0,
     queueCount: Int = 0,
-    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
+    backdrop: LayerBackdrop? = null,
+    onTriggerCenterBlast: (() -> Unit)? = null,
+    showBackground: Boolean = true
 ) {
     val haptic = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
-    val chamberBackdrop = rememberLayerBackdrop()
+    val localBackdrop = rememberLayerBackdrop()
+    val chamberBackdrop = backdrop ?: localBackdrop
     val interactiveHighlight = remember(coroutineScope) {
         InteractiveHighlight(animationScope = coroutineScope)
     }
 
-    var triggerCenterBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var localTriggerCenterBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val triggerCenterBlast = onTriggerCenterBlast ?: localTriggerCenterBlast
     var remainingSeconds by remember { mutableStateOf(0L) }
 
     // 初始等待周期（秒），用于计算圆环进度流逝
@@ -836,38 +888,13 @@ fun WaitingContent(
         modifier = modifier.fillMaxSize()
     ) {
         // 1. 底层：原生 WebGL 2 PixelBlast 粒子流光波纹背景引擎 + 光影渐变遮罩层（挂载为物理透镜采样源）
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .layerBackdrop(chamberBackdrop)
-        ) {
-            PixelBlastBackground(
+        if (showBackground) {
+            WaitingBackground(
+                backdrop = chamberBackdrop,
                 isDark = isDark,
-                modifier = Modifier.fillMaxSize(),
                 onControllerReady = { trigger ->
-                    triggerCenterBlast = trigger
+                    localTriggerCenterBlast = trigger
                 }
-            )
-
-            // 纵深光影渐变遮罩层（增强文字与圆环在 WebGL 粒子之上的清晰度与呼吸层次）
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = if (isDark) listOf(
-                                Color(0x33090714),
-                                Color(0x05090714),
-                                Color(0x33090714),
-                                Color(0x66090714)
-                            ) else listOf(
-                                Color(0x66FFFFFF),
-                                Color(0x10FFFFFF),
-                                Color(0x55F8FAFC),
-                                Color(0x88F1F5F9)
-                            )
-                        )
-                    )
             )
         }
 
@@ -875,7 +902,7 @@ fun WaitingContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 12.dp),
+                .padding(horizontal = if (showBackground) 24.dp else 8.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {

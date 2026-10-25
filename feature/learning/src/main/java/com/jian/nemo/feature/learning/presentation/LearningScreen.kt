@@ -64,6 +64,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
+import com.jian.nemo.feature.learning.presentation.components.common.WaitingBackground
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
@@ -134,6 +135,8 @@ fun LearningScreen(
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showSharePosterDialog by remember { mutableStateOf(false) }
     val finishBackdrop = rememberLayerBackdrop()
+    val waitingBackdrop = rememberLayerBackdrop()
+    var triggerWaitingBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，菜单展开或展示分享海报时自动触发背景模糊遮罩)
     val animatedBlurRadius by animateDpAsState(
@@ -142,8 +145,9 @@ fun LearningScreen(
         label = "learningBlur"
     )
 
+    val isWaiting = uiState.status == LearningStatus.Waiting
     val isFinished = uiState.status != LearningStatus.Loading &&
-            uiState.status != LearningStatus.Waiting &&
+            !isWaiting &&
             ((uiState.learningMode == LearningMode.Word && uiState.currentWord == null) ||
              (uiState.learningMode == LearningMode.Grammar && uiState.currentGrammar == null))
 
@@ -167,6 +171,17 @@ fun LearningScreen(
                                 )
                             )
                         )
+                )
+            }
+
+            // 当处于短时记忆冷却等待时，在最外层（不受 Scaffold padding 限制）全屏铺设 WebGL 2 原生流光粒子背景（直通状态栏与左右物理边缘）
+            if (isWaiting) {
+                WaitingBackground(
+                    backdrop = waitingBackdrop,
+                    isDark = isDarkTheme,
+                    onControllerReady = { trigger ->
+                        triggerWaitingBlast = trigger
+                    }
                 )
             }
 
@@ -331,7 +346,10 @@ fun LearningScreen(
                                 onRest = onNavigateBack,
                                 completedCount = uiState.completedThisSession,
                                 queueCount = activeQueueCount,
-                                isDark = isDarkTheme
+                                isDark = isDarkTheme,
+                                backdrop = waitingBackdrop,
+                                onTriggerCenterBlast = triggerWaitingBlast,
+                                showBackground = false
                             )
                         }
                         else -> {
