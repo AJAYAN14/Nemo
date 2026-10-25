@@ -58,6 +58,11 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import androidx.compose.ui.res.painterResource
@@ -125,6 +130,7 @@ fun AISettingsScreen(
                     )
                 ) {
                         item {
+                            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                             PremiumCard(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -135,21 +141,34 @@ fun AISettingsScreen(
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(46.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                                RoundedCornerShape(14.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.AutoAwesome,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(24.dp)
-                                        )
+                                    if (isPlumpDuo) {
+                                        Box(
+                                            modifier = Modifier.size(46.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            PlumpDuoIcon(
+                                                icon = PlumpIcon.AiBot,
+                                                color = IsoluminantPalette.GlazeMint,
+                                                size = 36.dp
+                                            )
+                                        }
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                                    RoundedCornerShape(14.dp)
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.AutoAwesome,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        }
                                     }
                                     Spacer(modifier = Modifier.width(16.dp))
                                     Column {
@@ -529,12 +548,21 @@ fun AIConfigCard(
                         tint = Color.Unspecified
                     )
                 } else {
-                    Icon(
-                        imageVector = Icons.Rounded.Cable,
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = platformColor
-                    )
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    if (isPlumpDuo) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.Cpu,
+                            color = platformColor,
+                            size = 28.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Cable,
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = platformColor
+                        )
+                    }
                 }
             }
 

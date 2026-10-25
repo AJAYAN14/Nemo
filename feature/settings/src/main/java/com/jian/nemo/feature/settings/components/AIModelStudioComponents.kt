@@ -58,6 +58,11 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.Memory
@@ -277,6 +282,8 @@ fun MatrixChipDock(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Column(modifier = modifier.fillMaxWidth()) {
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -286,18 +293,23 @@ fun MatrixChipDock(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                    modifier = Modifier.size(28.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Memory,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    if (isPlumpDuo) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.Cpu,
+                            color = IsoluminantPalette.WarmAmber,
+                            size = 24.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Memory,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -463,19 +475,25 @@ fun SlotModelPicker(
                         .weight(1f)
                         .padding(end = 12.dp)
                 ) {
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(platform.brandColor.copy(alpha = 0.12f)),
+                        modifier = Modifier.size(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Psychology,
-                            contentDescription = null,
-                            tint = platform.brandColor,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (isPlumpDuo) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.BrainCircuit,
+                                color = IsoluminantPalette.EmeraldGreen,
+                                size = 28.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Psychology,
+                                contentDescription = null,
+                                tint = platform.brandColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(
@@ -711,19 +729,25 @@ fun CryptKeySocket(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(platform.brandColor.copy(alpha = 0.12f)),
+                        modifier = Modifier.size(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Key,
-                            contentDescription = null,
-                            tint = platform.brandColor,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (isPlumpDuo) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.KeyRound,
+                                color = IsoluminantPalette.LakesideCyan,
+                                size = 28.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Key,
+                                contentDescription = null,
+                                tint = platform.brandColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
@@ -982,19 +1006,25 @@ fun SloshGaugeProbe(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(platform.brandColor.copy(alpha = 0.12f)),
+                        modifier = Modifier.size(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Radar,
-                            contentDescription = null,
-                            tint = platform.brandColor,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        if (isPlumpDuo) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.Gauge,
+                                color = IsoluminantPalette.SkyIndigo,
+                                size = 28.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Radar,
+                                contentDescription = null,
+                                tint = platform.brandColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
