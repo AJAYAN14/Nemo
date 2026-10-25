@@ -44,7 +44,9 @@ import androidx.navigation.compose.rememberNavController
 import com.jian.nemo.core.ui.component.NemoBottomBar
 import com.jian.nemo.core.data.util.DatabaseInitializer
 import com.jian.nemo.core.designsystem.theme.NemoTheme
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.navigation.NemoNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -166,15 +168,20 @@ class MainActivity : ComponentActivity() {
                 result
             }
 
-            // 4. 获取用户自定义主题色
+            // 4. 获取用户自定义主题色与图标风格
             val themeColorLong by settingsRepository.themeColorFlow.collectAsState(initial = null)
+            val settingIconStyle by settingsRepository.settingIconStyleFlow.collectAsState(initial = SettingIconStyle.MD3)
 
             NemoTheme(
                 darkTheme = isDarkTheme,
                 dynamicColor = false, // 禁用动态取色以强制使用品牌色
                 themeColor = themeColorLong?.let { Color(it.toULong()) }
             ) {
-                NemoApp()
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalSettingIconStyle provides settingIconStyle
+                ) {
+                    NemoApp()
+                }
             }
         }
     }

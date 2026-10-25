@@ -1,6 +1,11 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -55,16 +60,26 @@ fun FavoriteGrammarsScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    // 图标与等亮度双风格判定
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    // Custom Premium Colors (Shared Palette)
+    // Custom Premium Colors (Shared Palette) - 默认方案完整保留原有配色
     val premiumRed = Color(0xFFFF3B30)
     val premiumBlue = Color(0xFF007AFF)
     val premiumOrange = Color(0xFFFF9500)
     val premiumGray = Color(0xFF8E8E93)
+
+    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
+    val heartColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else premiumRed
+    val accentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumOrange
+    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
+    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -92,171 +107,206 @@ fun FavoriteGrammarsScreen(
         )
     }
 
-    Scaffold(
-        containerColor = backgroundColor,
-        topBar = {
-            if (isSelectionMode) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .height(56.dp),
-                    color = backgroundColor
-                ) {
-                    Row(
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Scaffold(
+            containerColor = backgroundColor,
+            topBar = {
+                if (isSelectionMode) {
+                    Surface(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .height(56.dp),
+                        color = backgroundColor
                     ) {
-                        IconButton(onClick = { selectedGrammarIds = emptySet() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Close,
-                                contentDescription = "取消选择",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "已选择 ${selectedGrammarIds.size} 项",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
-                        
-                        val allGrammarIds = uiState.favoriteGrammars.map { it.id }.toSet()
-                        val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
-                        TextButton(
-                            onClick = {
-                                selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
-                            }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = if (isAllSelected) "取消全选" else "全选",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = premiumBlue
-                            )
-                        }
-                        
-                        IconButton(onClick = { showDeleteDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Delete,
-                                contentDescription = "批量取消收藏",
-                                tint = premiumRed
-                            )
-                        }
-                    }
-                }
-            } else {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
-                    title = "收藏语法",
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-            }
-        }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NemoChasingDotsLoader()
-                }
-            }
-            uiState.favoriteGrammars.isEmpty() -> {
-                // Premium Empty State
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Surface(
-                            shape = RoundedCornerShape(32.dp),
-                            color = premiumRed.copy(alpha = 0.1f),
-                            modifier = Modifier.size(100.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
+                            IconButton(onClick = { selectedGrammarIds = emptySet() }) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Favorite,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(48.dp),
-                                    tint = premiumRed.copy(alpha = 0.6f)
+                                    imageVector = Icons.Rounded.Close,
+                                    contentDescription = "取消选择",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "已选择 ${selectedGrammarIds.size} 项",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f)
+                            )
+                            
+                            val allGrammarIds = uiState.favoriteGrammars.map { it.id }.toSet()
+                            val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
+                            TextButton(
+                                onClick = {
+                                    selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
+                                }
+                            ) {
+                                Text(
+                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = accentBlue
+                                )
+                            }
+                            
+                            IconButton(onClick = { showDeleteDialog = true }) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = "批量取消收藏",
+                                    tint = deleteColor
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Text(
-                            text = "暂无收藏语法",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "遇到重点语法记得收藏起来复习哦",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            maxLines = 2,
-                            modifier = Modifier.padding(horizontal = 32.dp),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
                     }
+                } else {
+                    com.jian.nemo.core.ui.component.common.CommonHeader(
+                        title = "收藏语法",
+                        onBack = onNavigateBack,
+                        backgroundColor = backgroundColor
+                    )
                 }
             }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(vertical = 24.dp)
-                ) {
-                    items(
-                        items = uiState.favoriteGrammars,
-                        key = { "favorite_grammar_${it.id}" }
-                    ) { grammar ->
-                        val isSelected = selectedGrammarIds.contains(grammar.id)
-                        Box(modifier = Modifier.animateListItem()) {
-                            FavoriteGrammarItem(
-                                grammar = grammar,
-                                isSelectionMode = isSelectionMode,
-                                isSelected = isSelected,
-                                onClick = {
-                                    if (isSelectionMode) {
-                                        selectedGrammarIds = if (isSelected) {
-                                            selectedGrammarIds - grammar.id
-                                        } else {
-                                            selectedGrammarIds + grammar.id
-                                        }
-                                    } else {
-                                        onGrammarClick(grammar.id)
+        ) { paddingValues ->
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        NemoChasingDotsLoader()
+                    }
+                }
+                uiState.favoriteGrammars.isEmpty() -> {
+                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Heart,
+                                        color = heartColor,
+                                        size = 64.dp
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = premiumRed.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(100.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Favorite,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = premiumRed.copy(alpha = 0.6f)
+                                        )
                                     }
-                                },
-                                onLongClick = {
-                                    if (!isSelectionMode) {
-                                        selectedGrammarIds = selectedGrammarIds + grammar.id
-                                    }
-                                },
-                                accentColor = premiumOrange,
-                                tagColor = premiumBlue
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Text(
+                                text = "暂无收藏语法",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "遇到重点语法记得收藏起来复习哦",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                maxLines = 2,
+                                modifier = Modifier.padding(horizontal = 32.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(vertical = 24.dp)
+                    ) {
+                        items(
+                            items = uiState.favoriteGrammars,
+                            key = { "favorite_grammar_${it.id}" }
+                        ) { grammar ->
+                            val isSelected = selectedGrammarIds.contains(grammar.id)
+                            Box(modifier = Modifier.animateListItem()) {
+                                FavoriteGrammarItem(
+                                    grammar = grammar,
+                                    isSelectionMode = isSelectionMode,
+                                    isSelected = isSelected,
+                                    onClick = {
+                                        if (isSelectionMode) {
+                                            selectedGrammarIds = if (isSelected) {
+                                                selectedGrammarIds - grammar.id
+                                            } else {
+                                                selectedGrammarIds + grammar.id
+                                            }
+                                        } else {
+                                            onGrammarClick(grammar.id)
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!isSelectionMode) {
+                                            selectedGrammarIds = selectedGrammarIds + grammar.id
+                                        }
+                                    },
+                                    accentColor = accentColor,
+                                    tagColor = getLevelColor(grammar.grammarLevel, isPlumpDuo),
+                                    heartColor = heartColor,
+                                    isPlumpDuo = isPlumpDuo
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ */
+private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
+    return if (isPlumpDuo) {
+        when (level.uppercase()) {
+            "N5" -> IsoluminantPalette.EmeraldGreen
+            "N4" -> IsoluminantPalette.LakesideCyan
+            "N3" -> IsoluminantPalette.SkyIndigo
+            "N2" -> IsoluminantPalette.WarmAmber
+            "N1" -> IsoluminantPalette.RoseRuby
+            else -> IsoluminantPalette.SkyIndigo
+        }
+    } else {
+        Color(0xFF007AFF) // premiumBlue
     }
 }
 
@@ -272,10 +322,10 @@ private fun FavoriteGrammarItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     accentColor: Color,
-    tagColor: Color
+    tagColor: Color,
+    heartColor: Color,
+    isPlumpDuo: Boolean
 ) {
-    val premiumRed = Color(0xFFFF3B30)
-
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Card(
@@ -343,29 +393,42 @@ private fun FavoriteGrammarItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-             // Stacked Icons/Tags
+            // Stacked Icons/Tags
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Heart Icon (Red Tinted Squircle) (多选模式下隐藏)
+                // Heart Icon：Plump Duo 取消方块背景，使用透明对齐容器 (多选模式下隐藏)
                 AnimatedVisibility(
                     visible = !isSelectionMode,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    Surface(
-                         shape = RoundedCornerShape(8.dp),
-                         color = premiumRed.copy(alpha = 0.1f),
-                         modifier = Modifier.size(32.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Rounded.Favorite,
-                                contentDescription = "Favorited",
-                                tint = premiumRed,
-                                modifier = Modifier.size(18.dp)
+                    if (isPlumpDuo) {
+                        Box(
+                            modifier = Modifier.size(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.Heart,
+                                color = heartColor,
+                                size = 18.dp
                             )
+                        }
+                    } else {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = heartColor.copy(alpha = 0.1f),
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Favorite,
+                                    contentDescription = "Favorited",
+                                    tint = heartColor,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
                     }
                 }

@@ -21,6 +21,13 @@ internal val PlumpIconsTestRegistry: Map<PlumpIcon, PlumpIconPathDefinition> = m
         fillAlpha = 0.24f
     ),
 
+    // 2.1 Heart (收藏爱心 / 重点收藏) Lucide heart.svg
+    PlumpIcon.Heart to PlumpIconPathDefinition(
+        fillPathData = "M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5Z",
+        strokePathData = "M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5Z",
+        fillAlpha = 0.22f
+    ),
+
     // 3. ListChecks (选择题) Lucide list-checks.svg
     PlumpIcon.ListChecks to PlumpIconPathDefinition(
         fillPathData = "M5 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6z M5 20a3 3 0 1 1 0-6 3 3 0 0 1 0 6z",

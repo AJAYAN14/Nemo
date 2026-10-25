@@ -33,6 +33,11 @@ import com.jian.nemo.core.domain.model.Word
  */
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 @Composable
 fun WordListItem(
@@ -42,6 +47,7 @@ fun WordListItem(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     Card(
         modifier = modifier
@@ -92,11 +98,19 @@ fun WordListItem(
 
                 // 取消收藏按钮
                 IconButton(onClick = onUnfavorite) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "取消收藏",
-                        tint = MaterialTheme.colorScheme.error
-                    )
+                    if (isPlumpDuo) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.Heart,
+                            color = IsoluminantPalette.RoseRuby,
+                            size = 20.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "取消收藏",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
