@@ -6,11 +6,13 @@ import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 
 // ==============================================================================
@@ -368,7 +370,7 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           driftAngle: 35,
           hoverEffect: 'reveal',
           hoverRadius: 140,
-          autoRipple: 3.2,
+          autoRipple: 4.5,
           intro: true,
           lightMode: false,
           ...prev,
@@ -552,7 +554,7 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           clickPos[clickIndex * 2 + 1] = (view.height - y) * view.ratio;
           clickAt[clickIndex] = clock;
           clickIndex = (clickIndex + 1) % MAX_CLICKS;
-          nextAuto = (this.settings.autoRipple || 3.2) * 1.5;
+          nextAuto = (this.settings.autoRipple || 4.5);
           this.wake();
         };
 
@@ -578,8 +580,8 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           if (s.enableRipples && s.autoRipple > 0 && introClock >= 1 && !isPressing) {
             nextAuto -= dt;
             if (nextAuto <= 0) {
-              nextAuto = s.autoRipple * (0.8 + Math.random() * 0.5);
-              this.addRipple((0.2 + Math.random() * 0.6) * view.width, (0.2 + Math.random() * 0.6) * view.height);
+              nextAuto = s.autoRipple;
+              this.addRipple(view.width / 2, view.height * 0.40);
             }
           }
 
@@ -654,7 +656,6 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
           const { x, y, inside } = locate(event);
           if (!inside) return;
           isPressing = true;
-          this.addRipple(x, y);
         }, { capture: true, passive: true });
 
         window.addEventListener('pointerup', () => { isPressing = false; }, { capture: true, passive: true });
@@ -682,6 +683,7 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
         drift: 0.2,
         hoverEffect: 'reveal',
         enableRipples: true,
+        autoRipple: 4.5,
         rippleIntensityScale: 2.2,
         rippleThickness: 0.07,
         rippleSpeed: 0.65,
@@ -689,12 +691,12 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
       });
     });
 
-    window.setTheme = function(isDark) {
+    window.setTheme = function(isDark, colorHex, accentHex) {
       if (!globalEngine) return;
       globalEngine.updateSettings({
         lightMode: !isDark,
-        color: isDark ? '#6D28D9' : '#7C3AED',
-        accentColor: isDark ? '#C4B5FD' : '#8B5CF6',
+        color: colorHex || (isDark ? '#6D28D9' : '#7C3AED'),
+        accentColor: accentHex || (isDark ? '#C4B5FD' : '#8B5CF6'),
         glow: isDark ? 0.45 : 0.35
       });
     };
@@ -708,6 +710,13 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
 </body>
 </html>"""
 
+private fun Color.toHex(): String {
+    val r = (red * 255f).toInt().coerceIn(0, 255)
+    val g = (green * 255f).toInt().coerceIn(0, 255)
+    val b = (blue * 255f).toInt().coerceIn(0, 255)
+    return "#%02X%02X%02X".format(r, g, b)
+}
+
 /**
  * 原生 WebGL 2 PixelBlast 粒子流光波纹背景引擎
  * 完全对齐 gemini-code-1792823982566.html 设计规范
@@ -718,12 +727,23 @@ private const val PIXEL_BLAST_HTML = """<!DOCTYPE html>
 fun PixelBlastBackground(
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    accentColor: Color = MaterialTheme.colorScheme.primaryContainer,
     onControllerReady: ((triggerCenterBlast: () -> Unit) -> Unit)? = null
 ) {
     val webViewRef = remember { mutableStateOf<WebView?>(null) }
+    val primaryHex = remember(primaryColor) { primaryColor.toHex() }
+    val accentHex = remember(accentColor) { accentColor.toHex() }
 
-    LaunchedEffect(isDark) {
-        webViewRef.value?.evaluateJavascript("if (window.setTheme) window.setTheme($isDark);", null)
+    fun sendTheme(webView: WebView?) {
+        webView?.evaluateJavascript(
+            "if (window.setTheme) window.setTheme($isDark, '$primaryHex', '$accentHex');",
+            null
+        )
+    }
+
+    LaunchedEffect(isDark, primaryHex, accentHex) {
+        sendTheme(webViewRef.value)
     }
 
     AndroidView(
@@ -748,7 +768,7 @@ fun PixelBlastBackground(
                 webViewClient = object : android.webkit.WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
-                        view?.evaluateJavascript("if (window.setTheme) window.setTheme($isDark);", null)
+                        sendTheme(view)
                         onControllerReady?.invoke {
                             view?.evaluateJavascript("if (window.triggerCenterBlast) window.triggerCenterBlast();", null)
                         }
@@ -759,7 +779,7 @@ fun PixelBlastBackground(
             }
         },
         update = { webView ->
-            webView.evaluateJavascript("if (window.setTheme) window.setTheme($isDark);", null)
+            sendTheme(webView)
         },
         onRelease = { webView ->
             webView.destroy()

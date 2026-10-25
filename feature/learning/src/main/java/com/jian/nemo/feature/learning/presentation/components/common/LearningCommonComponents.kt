@@ -1,7 +1,10 @@
 package com.jian.nemo.feature.learning.presentation.components.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -59,6 +63,7 @@ import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -217,7 +222,8 @@ fun LearnHeader(
     queueReviewCount: Int = 0,
     queueRelearnCount: Int = 0,
     isMenuExpanded: Boolean = false,
-    onToggleMenu: ((Boolean) -> Unit)? = null
+    onToggleMenu: ((Boolean) -> Unit)? = null,
+    backdrop: Backdrop? = null
 ) {
     val progress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
 
@@ -277,7 +283,8 @@ fun LearnHeader(
                     FrostedLiquidGlassButton(
                         onClick = onClose,
                         shape = CircleShape,
-                        hasLens = false,
+                        backdrop = backdrop,
+                        hasLens = true,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
                         modifier = Modifier.size(48.dp)
@@ -313,7 +320,8 @@ fun LearnHeader(
                         FrostedLiquidGlassButton(
                             onClick = { onUndo?.invoke() },
                             shape = CircleShape,
-                            hasLens = false,
+                            backdrop = backdrop,
+                            hasLens = true,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
@@ -337,7 +345,8 @@ fun LearnHeader(
                         FrostedLiquidGlassButton(
                             onClick = {},
                             shape = CircleShape,
-                            hasLens = false,
+                            backdrop = backdrop,
+                            hasLens = true,
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                             isInteractive = true,
                             modifier = Modifier.height(48.dp)
@@ -383,6 +392,7 @@ fun LearnHeader(
                             NemoMorphMenu(
                                 expanded = expanded,
                                 onExpandedChange = setExpanded,
+                                backdrop = backdrop,
                                 buttonSize = 48.dp,
                                 menuWidth = 240.dp,
                                 icon = Icons.Rounded.MoreVert,
@@ -698,6 +708,8 @@ fun WaitingBackground(
     backdrop: LayerBackdrop,
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    accentColor: Color = MaterialTheme.colorScheme.primaryContainer,
     onControllerReady: ((triggerCenterBlast: () -> Unit) -> Unit)? = null
 ) {
     Box(
@@ -707,6 +719,8 @@ fun WaitingBackground(
     ) {
         PixelBlastBackground(
             isDark = isDark,
+            primaryColor = primaryColor,
+            accentColor = accentColor,
             modifier = Modifier.fillMaxSize(),
             onControllerReady = onControllerReady
         )
@@ -734,6 +748,7 @@ fun WaitingBackground(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WaitingContent(
     until: Long,
@@ -782,35 +797,6 @@ fun WaitingContent(
     val minutes = (remainingSeconds / 60).coerceAtLeast(0L)
     val seconds = (remainingSeconds % 60).coerceAtLeast(0L)
     val timeFormatted = "%02d:%02d".format(minutes, seconds)
-
-    // 圆环动态进度 (0.08f -> 1.0f)
-    val currentProgress = (1f - (remainingSeconds.toFloat() / initialTotalSeconds)).coerceIn(0.08f, 1f)
-    val animatedProgress by animateFloatAsState(
-        targetValue = currentProgress,
-        animationSpec = tween(durationMillis = 800),
-        label = "ChamberRingProgress"
-    )
-
-    // 呼吸灯微动效 (2秒循环)
-    val infiniteTransition = rememberInfiniteTransition(label = "PulseTransition")
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.35f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "PulseScale"
-    )
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 0.55f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "PulseAlpha"
-    )
 
     // 快进矢量图标 (Learn Ahead)
     val learnAheadIcon = remember {
@@ -906,45 +892,11 @@ fun WaitingContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // 2.1 顶部短时记忆算法阶段徽章
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(if (isDark) Color(0x337C3AED) else Color(0x1A7C3AED))
-                    .clickable {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        triggerCenterBlast?.invoke()
-                    }
-                    .padding(horizontal = 14.dp, vertical = 7.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // 绿色脉冲微光呼吸点
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .scale(pulseScale)
-                            .alpha(pulseAlpha)
-                            .background(Color(0xFF10B981), CircleShape)
-                    )
-                    Text(
-                        text = "科学短时记忆巩固",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isDark) Color(0xFFDDD6FE) else Color(0xFF6D28D9)
-                    )
-                }
-            }
-
-            // 2.2 中央核心冷却仓视觉
+            // 2. 中央核心冷却仓视觉（纯圆形 + 真实物理凸透镜折射 + 原位弹性拉扯形变高光）
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 256dp 玻璃游乐场同款液态玻璃核心（纯圆形 + 真实物理透镜折射 + 原位弹性拉扯形变高光）
                 Box(
                     modifier = Modifier
                         .size(256.dp)
@@ -954,7 +906,7 @@ fun WaitingContent(
                             effects = {
                                 val minDimension = size.minDimension
                                 vibrancy()
-                                blur(4f.dp.toPx()) // 模糊半径加一点点
+                                blur(2.5f.dp.toPx())
                                 lens(
                                     refractionHeight = 0.1f * minDimension,
                                     refractionAmount = 0.2f * minDimension,
@@ -987,16 +939,13 @@ fun WaitingContent(
                                     scale +
                                             maxDragScale * abs(sin(offsetAngle) * offset.y / size.maxDimension) *
                                             (height / width).fastCoerceAtMost(1f)
-                            },
-                            onDrawSurface = {
-                                // 叠加一层极柔和半透底色，保证数字与刻度具有最佳对比度
-                                drawRect(if (isDark) Color(0x247C3AED) else Color(0x187C3AED))
                             }
                         )
-                        .clickable(
-                            interactionSource = null,
+                        .combinedClickable(
+                            interactionSource = remember { MutableInteractionSource() },
                             indication = null,
-                            onClick = {
+                            onClick = {},
+                            onLongClick = {
                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 triggerCenterBlast?.invoke()
                             }
@@ -1005,37 +954,7 @@ fun WaitingContent(
                         .then(interactiveHighlight.gestureModifier),
                     contentAlignment = Alignment.Center
                 ) {
-                    // 环形刻度进度条
-                    Canvas(modifier = Modifier.fillMaxSize().padding(10.dp)) {
-                        val strokePx = 3.5.dp.toPx()
-                        // 背景底轨
-                        drawCircle(
-                            color = if (isDark) Color(0x1AFFFFFF) else Color(0x14000000),
-                            radius = size.minDimension / 2 - strokePx,
-                            style = Stroke(width = strokePx)
-                        )
-                        // 动态流光进度光弧
-                        val sweepAngle = 360f * animatedProgress
-                        drawArc(
-                            brush = Brush.sweepGradient(
-                                colors = listOf(
-                                    Color(0xFFC4B5FD),
-                                    Color(0xFF7C3AED),
-                                    Color(0xFF6D28D9),
-                                    Color(0xFFC4B5FD)
-                                )
-                            ),
-                            startAngle = -90f,
-                            sweepAngle = sweepAngle,
-                            useCenter = false,
-                            style = Stroke(
-                                width = strokePx,
-                                cap = StrokeCap.Round
-                            )
-                        )
-                    }
-
-                    // 圆环内部文案
+                    // 圆环内部文案（已取消外围进度弧线条）
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -1045,7 +964,7 @@ fun WaitingContent(
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 1.5.sp,
-                            color = if (isDark) Color(0xFFC4B5FD) else Color(0xFF7C3AED)
+                            color = if (isDark) Color(0xFFE2E8F0) else Color(0xFF475569)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
@@ -1218,7 +1137,7 @@ fun WaitingContent(
                     }
                 }
 
-                // 决策按钮 1：提前复习 (Learn Ahead) - 实验室同款彩色液态玻璃按钮（保持圆角矩形）
+                // 决策按钮 1：提前复习 - 实验室同款彩色液态玻璃按钮（无描边，高度48dp）
                 ColoredLiquidGlassButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -1226,7 +1145,8 @@ fun WaitingContent(
                     },
                     backdrop = chamberBackdrop,
                     shape = RoundedCornerShape(14.dp),
-                    tint = Color(0xFF7C3AED),
+                    tint = MaterialTheme.colorScheme.primary,
+                    border = null,
                     isInteractive = true,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     modifier = Modifier
@@ -1239,15 +1159,16 @@ fun WaitingContent(
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)
                     )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "提前复习 (Learn Ahead)",
+                        text = "提前复习",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
 
-                // 决策按钮 2：稍后复习，去休息片刻 (Take Rest) - 实验室同款带底色磨砂液态玻璃按钮（保持圆角矩形）
+                // 决策按钮 2：稍后复习，去休息片刻 - 实验室同款带底色磨砂液态玻璃按钮（无描边，高度48dp）
                 if (onRest != null) {
                     FrostedLiquidGlassButton(
                         onClick = {
@@ -1256,16 +1177,13 @@ fun WaitingContent(
                         },
                         backdrop = chamberBackdrop,
                         shape = RoundedCornerShape(14.dp),
-                        surfaceColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.45f),
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = if (isDark) Color(0x26FFFFFF) else Color(0x1F000000)
-                        ),
+                        surfaceColor = if (isDark) Color(0xFF262038).copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
+                        border = null,
                         isInteractive = true,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(44.dp)
+                            .height(48.dp)
                     ) {
                         Icon(
                             imageVector = coffeeRestIcon,
@@ -1273,6 +1191,7 @@ fun WaitingContent(
                             tint = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569),
                             modifier = Modifier.size(15.dp)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "稍后复习，去休息片刻",
                             fontSize = 13.5.sp,

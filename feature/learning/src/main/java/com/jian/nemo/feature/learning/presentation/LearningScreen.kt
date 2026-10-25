@@ -320,7 +320,8 @@ fun LearningScreen(
                         queueNewCount = uiState.queueNewCount,
                         queueLearningCount = uiState.queueLearningCount,
                         queueReviewCount = uiState.queueReviewCount,
-                        queueRelearnCount = uiState.queueRelearnCount
+                        queueRelearnCount = uiState.queueRelearnCount,
+                        backdrop = if (isWaiting) waitingBackdrop else null
                     )
                 }
 
