@@ -73,8 +73,8 @@ fun WrongWordsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    // 图标与等亮度双风格判定
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
     // Custom Premium Colors (默认方案完整保留原有配色)
     val premiumRed = Color(0xFFFF3B30) // Apple-style System Red
@@ -333,6 +333,7 @@ fun WrongWordsScreen(
             }
         }
     }
+}
 }
 
 /**

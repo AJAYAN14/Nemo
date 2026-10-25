@@ -12,6 +12,8 @@ import com.jian.nemo.core.domain.usecase.word.RecoverLeechWordUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
 data class LeechManagementUiState(
@@ -20,7 +22,8 @@ data class LeechManagementUiState(
     val isLoading: Boolean = false,
     val selectedTab: LeechTab = LeechTab.Word,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3
 )
 
 enum class LeechTab { Word, Grammar }
@@ -37,7 +40,8 @@ class LeechManagementViewModel @Inject constructor(
     private val getSkippedWordsUseCase: GetSkippedWordsUseCase,
     private val getSkippedGrammarsUseCase: GetSkippedGrammarsUseCase,
     private val recoverLeechWordUseCase: RecoverLeechWordUseCase,
-    private val recoverLeechGrammarUseCase: RecoverLeechGrammarUseCase
+    private val recoverLeechGrammarUseCase: RecoverLeechGrammarUseCase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LeechManagementUiState())
@@ -45,6 +49,15 @@ class LeechManagementViewModel @Inject constructor(
 
     init {
         loadData()
+        observeSettings()
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     private fun loadData() {

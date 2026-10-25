@@ -171,6 +171,7 @@ fun AIReadingScreen(
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
                 actions = {
+                    val topActionColor = if (isDark) Color.White else colorScheme.onSurface
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FrostedLiquidGlassButton(
                             onClick = onNavigateToHistory,
@@ -183,7 +184,7 @@ fun AIReadingScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.History,
-                                    color = IsoluminantPalette.LilacViolet,
+                                    color = topActionColor,
                                     size = 26.dp
                                 )
                             } else {
@@ -215,7 +216,7 @@ fun AIReadingScreen(
                                     if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                         PlumpDuoIcon(
                                             icon = PlumpIcon.Cpu,
-                                            color = IsoluminantPalette.LakesideCyan,
+                                            color = topActionColor,
                                             size = 26.dp
                                         )
                                     } else {
@@ -235,7 +236,7 @@ fun AIReadingScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.ThemePalette,
-                                    color = IsoluminantPalette.RoseRuby,
+                                    color = topActionColor,
                                     size = 26.dp
                                 )
                             } else {

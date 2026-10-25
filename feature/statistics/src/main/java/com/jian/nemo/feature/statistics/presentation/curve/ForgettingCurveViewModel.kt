@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.roundToInt
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 
 /**
  * 时间范围选项
@@ -33,7 +34,8 @@ data class ForgettingCurveUiState(
     val curveData: ForgettingCurveData? = null,
     val isLoading: Boolean = false,
     val selectedRange: CurveTimeRange = CurveTimeRange.MEDIUM,
-    val selectedStage: CurveStage = CurveStage.COMPOSITE
+    val selectedStage: CurveStage = CurveStage.COMPOSITE,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3
 )
 
 /**
@@ -64,6 +66,15 @@ class ForgettingCurveViewModel @Inject constructor(
 
     init {
         loadCurveData()
+        observeSettings()
+    }
+
+    private fun observeSettings() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     /**

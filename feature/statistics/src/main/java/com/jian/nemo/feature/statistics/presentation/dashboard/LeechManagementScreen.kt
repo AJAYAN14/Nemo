@@ -76,26 +76,28 @@ fun LeechManagementScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            CommonHeader(
-                title = "复学清单",
-                onBack = onBack,
-                backgroundColor = backgroundColor
-            )
-        },
-        containerColor = backgroundColor
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-            val wordAccentColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else MaterialTheme.colorScheme.primary
-            val grammarAccentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
-            val currentAccentColor = if (uiState.selectedTab == LeechTab.Word) wordAccentColor else grammarAccentColor
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        val isPlumpDuo = uiState.settingIconStyle == SettingIconStyle.PLUMP_DUO
+        val wordAccentColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else MaterialTheme.colorScheme.primary
+        val grammarAccentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
+        val currentAccentColor = if (uiState.selectedTab == LeechTab.Word) wordAccentColor else grammarAccentColor
+
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            topBar = {
+                CommonHeader(
+                    title = "复学清单",
+                    onBack = onBack,
+                    backgroundColor = backgroundColor
+                )
+            },
+            containerColor = backgroundColor
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
 
             // 1. Floating Liquid Pill Tabs
             Row(
@@ -181,6 +183,7 @@ fun LeechManagementScreen(
             }
         }
     }
+}
 }
 
 /**
@@ -374,6 +377,8 @@ private fun LeechItemCardBase(
                 )
             }
 
+            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
             // Recover Button
             IconButton(
                 onClick = {
@@ -382,20 +387,34 @@ private fun LeechItemCardBase(
                 },
                 enabled = !isRecovering,
                 modifier = Modifier
-                    .background(
-                        color = tagColor.copy(alpha = 0.1f), // Subtle background matching tag
-                        shape = CircleShape
+                    .then(
+                        if (!isPlumpDuo) {
+                            Modifier.background(
+                                color = tagColor.copy(alpha = 0.1f),
+                                shape = CircleShape
+                            )
+                        } else {
+                            Modifier
+                        }
                     )
             ) {
                 if (isRecovering) {
                     NemoChasingDotsLoader(size = 20.dp)
                 } else {
-                    Icon(
-                        imageVector = Icons.Rounded.Restore,
-                        contentDescription = "Recover",
-                        tint = tagColor,
-                        modifier = Modifier.size(22.dp)
-                    )
+                    if (isPlumpDuo) {
+                        PlumpDuoIcon(
+                            icon = PlumpIcon.RotateCcw,
+                            color = tagColor,
+                            size = 20.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.Restore,
+                            contentDescription = "Recover",
+                            tint = tagColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
                 }
             }
         }

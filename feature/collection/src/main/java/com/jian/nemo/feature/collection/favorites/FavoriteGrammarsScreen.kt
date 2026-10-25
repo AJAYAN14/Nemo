@@ -63,8 +63,8 @@ fun FavoriteGrammarsScreen(
     val iconStyle by viewModel.iconStyle.collectAsState()
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // 图标与等亮度双风格判定
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
     // Premium Aesthetics
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
@@ -290,6 +290,7 @@ fun FavoriteGrammarsScreen(
             }
         }
     }
+}
 }
 
 /**

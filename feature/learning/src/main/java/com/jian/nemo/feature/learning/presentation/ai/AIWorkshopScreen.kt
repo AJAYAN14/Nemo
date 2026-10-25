@@ -203,6 +203,7 @@ fun AIWorkshopScreen(
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
                 actions = {
+                    val topActionColor = if (isDark) Color.White else textPrimary
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FrostedLiquidGlassButton(
                             onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
@@ -224,7 +225,7 @@ fun AIWorkshopScreen(
                                     if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                         PlumpDuoIcon(
                                             icon = PlumpIcon.Cpu,
-                                            color = IsoluminantPalette.LakesideCyan,
+                                            color = topActionColor,
                                             size = 26.dp
                                         )
                                     } else {
@@ -244,7 +245,7 @@ fun AIWorkshopScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.History,
-                                    color = IsoluminantPalette.LilacViolet,
+                                    color = topActionColor,
                                     size = 26.dp
                                 )
                             } else {
@@ -262,7 +263,7 @@ fun AIWorkshopScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.CircleQuestion,
-                                    color = IsoluminantPalette.OceanBlue,
+                                    color = topActionColor,
                                     size = 26.dp
                                 )
                             } else {

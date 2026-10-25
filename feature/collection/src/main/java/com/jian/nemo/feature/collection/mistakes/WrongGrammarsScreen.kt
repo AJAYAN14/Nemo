@@ -50,8 +50,8 @@ fun WrongGrammarsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val iconStyle by viewModel.iconStyle.collectAsState()
 
-    // 图标与等亮度双风格判定
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
     // Custom Premium Colors (默认方案完整保留原有配色)
     val premiumBlue = Color(0xFF007AFF)
@@ -236,6 +236,7 @@ fun WrongGrammarsScreen(
             }
         }
     }
+}
 }
 
 /**

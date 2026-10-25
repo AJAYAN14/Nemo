@@ -31,6 +31,11 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.animation.*
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,6 +46,7 @@ fun AIHistoryScreen(
 ) {
     val historyList by viewModel.historyState.collectAsState()
     val playingAudioId by viewModel.playingAudioId.collectAsState()
+    val settingIconStyle by viewModel.settingIconStyle.collectAsState()
     var showClearConfirm by remember { mutableStateOf(false) }
     var selectedItem by remember { mutableStateOf<AIExerciseHistory?>(null) }
 
@@ -51,115 +57,117 @@ fun AIHistoryScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层滚动内容 / 空状态（被 backdrop 采样源录制）
-        if (historyList.isEmpty()) {
-            EmptyHistoryView(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(backdrop)
-                    .padding(top = statusBarTop + 60.dp, bottom = navBarBottom)
-            )
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(backdrop),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(historyList) { history ->
-                    HistoryItemCard(history, onClick = { selectedItem = history })
-                }
-            }
-        }
-
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+    CompositionLocalProvider(LocalSettingIconStyle provides settingIconStyle) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.95f),
-                            backgroundColor.copy(alpha = 0.75f),
-                            backgroundColor.copy(alpha = 0.35f),
-                            Color.Transparent
-                        )
-                    )
-                )
-                .padding(bottom = 8.dp)
+                .fillMaxSize()
+                .background(backgroundColor)
         ) {
-            CommonHeader(
-                title = "练习历史",
-                onBack = onNavigateBack,
-                backgroundColor = Color.Transparent,
-                backdrop = backdrop,
-                backButtonSize = 48.dp,
-                actions = {
-                    if (historyList.isNotEmpty()) {
-                        FrostedLiquidGlassButton(
-                            onClick = { showClearConfirm = true },
-                            backdrop = backdrop,
-                            shape = CircleShape,
-                            contentPadding = PaddingValues(0.dp),
-                            isInteractive = true,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Delete,
-                                contentDescription = "清空历史",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
+            // 1. 底层滚动内容 / 空状态（被 backdrop 采样源录制）
+            if (historyList.isEmpty()) {
+                EmptyHistoryView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(backdrop)
+                        .padding(top = statusBarTop + 60.dp, bottom = navBarBottom)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(backdrop),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(historyList) { history ->
+                        HistoryItemCard(history, onClick = { selectedItem = history })
                     }
                 }
-            )
-        }
+            }
 
-        // 全景详情覆盖层 (Edge-to-Edge)
-        // 使用 AnimatedContent 确保在 selectedItem 置空时退出动画能完整播放
-        AnimatedContent(
-            targetState = selectedItem,
-            transitionSpec = {
-                (fadeIn() + slideInVertically(initialOffsetY = { it / 2 }))
-                    .togetherWith(fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }))
-            },
-            label = "DetailOverlay"
-        ) { targetItem ->
-            if (targetItem != null) {
-                AIExerciseDetailDialog(
-                    history = targetItem,
-                    playingAudioId = playingAudioId,
-                    onSpeak = { text, id -> viewModel.speakText(text, id) },
-                    onDismiss = { selectedItem = null }
+            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                CommonHeader(
+                    title = "练习历史",
+                    onBack = onNavigateBack,
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp,
+                    actions = {
+                        if (historyList.isNotEmpty()) {
+                            FrostedLiquidGlassButton(
+                                onClick = { showClearConfirm = true },
+                                backdrop = backdrop,
+                                shape = CircleShape,
+                                contentPadding = PaddingValues(0.dp),
+                                isInteractive = true,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = "清空历史",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                    }
                 )
             }
-        }
 
-        if (showClearConfirm) {
-            NemoDialog(
-                onDismissRequest = { showClearConfirm = false },
-                title = "清空历史记录",
-                text = "确定要清空所有的练习历史吗？此操作不可撤销。",
-                confirmText = "确认清空",
-                dismissText = "取消",
-                isDangerous = true,
-                onConfirm = {
-                    viewModel.clearAllHistory()
-                    showClearConfirm = false
+            // 全景详情覆盖层 (Edge-to-Edge)
+            // 使用 AnimatedContent 确保在 selectedItem 置空时退出动画能完整播放
+            AnimatedContent(
+                targetState = selectedItem,
+                transitionSpec = {
+                    (fadeIn() + slideInVertically(initialOffsetY = { it / 2 }))
+                        .togetherWith(fadeOut() + slideOutVertically(targetOffsetY = { it / 2 }))
+                },
+                label = "DetailOverlay"
+            ) { targetItem ->
+                if (targetItem != null) {
+                    AIExerciseDetailDialog(
+                        history = targetItem,
+                        playingAudioId = playingAudioId,
+                        onSpeak = { text, id -> viewModel.speakText(text, id) },
+                        onDismiss = { selectedItem = null }
+                    )
                 }
-            )
+            }
+
+            if (showClearConfirm) {
+                NemoDialog(
+                    onDismissRequest = { showClearConfirm = false },
+                    title = "清空历史记录",
+                    text = "确定要清空所有的练习历史吗？此操作不可撤销。",
+                    confirmText = "确认清空",
+                    dismissText = "取消",
+                    isDangerous = true,
+                    onConfirm = {
+                        viewModel.clearAllHistory()
+                        showClearConfirm = false
+                    }
+                )
+            }
         }
     }
 }
@@ -168,6 +176,7 @@ fun AIHistoryScreen(
 private fun EmptyHistoryView(
     modifier: Modifier = Modifier
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
@@ -180,18 +189,31 @@ private fun EmptyHistoryView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Surface(
-                shape = RoundedCornerShape(32.dp),
-                color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
-                modifier = Modifier.size(100.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.History,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = colorScheme.primary
+            if (isPlumpDuo) {
+                Box(
+                    modifier = Modifier.size(72.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlumpDuoIcon(
+                        icon = PlumpIcon.History,
+                        color = IsoluminantPalette.SkyIndigo,
+                        size = 56.dp
                     )
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(32.dp),
+                    color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = colorScheme.primary
+                        )
+                    }
                 }
             }
 
@@ -201,7 +223,7 @@ private fun EmptyHistoryView(
                 text = "暂无练习历史",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = colorScheme.primary,
+                color = if (isPlumpDuo) colorScheme.onSurface else colorScheme.primary,
                 textAlign = TextAlign.Center
             )
 
@@ -225,6 +247,7 @@ private fun HistoryItemCard(
     history: AIExerciseHistory,
     onClick: () -> Unit
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()) }
     val dateStr = dateFormat.format(Date(history.createdAt))
 
@@ -251,15 +274,17 @@ private fun HistoryItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // 类型标签
+                val typeTagBg = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = 0.08f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                val typeTagColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary
                 Surface(
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    color = typeTagBg,
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
                         text = if (history.type == "CN_TO_JP") "中翻日" else "日翻中",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = typeTagColor,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -290,15 +315,19 @@ private fun HistoryItemCard(
             ) {
                 // 分数展示
                 val scoreColor = when {
+                    isPlumpDuo && history.score >= 80 -> IsoluminantPalette.EmeraldGreen
+                    isPlumpDuo && history.score >= 60 -> IsoluminantPalette.WarmAmber
+                    isPlumpDuo -> IsoluminantPalette.CoralFlame
                     history.score >= 80 -> NemoSecondary
                     history.score >= 60 -> NemoYellow
                     else -> NemoDanger
                 }
+                val scoreBgAlpha = if (isPlumpDuo) 0.08f else 0.1f
 
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .background(scoreColor.copy(alpha = 0.1f), CircleShape),
+                        .background(scoreColor.copy(alpha = scoreBgAlpha), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(

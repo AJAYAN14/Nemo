@@ -77,27 +77,28 @@ fun ForgettingCurveScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        if (uiState.isLoading || uiState.curveData == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = statusBarTop + 60.dp + 16.dp,
-                        bottom = navBarBottom + 24.dp
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                NemoChasingDotsLoader()
-            }
-        } else {
-            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        val isPlumpDuo = uiState.settingIconStyle == SettingIconStyle.PLUMP_DUO
 
-            Column(
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
+            if (uiState.isLoading || uiState.curveData == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = statusBarTop + 60.dp + 16.dp,
+                            bottom = navBarBottom + 24.dp
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    NemoChasingDotsLoader()
+                }
+            } else {
+                Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(backdrop)
@@ -183,6 +184,7 @@ fun ForgettingCurveScreen(
             )
         }
     }
+}
 }
 
 /**

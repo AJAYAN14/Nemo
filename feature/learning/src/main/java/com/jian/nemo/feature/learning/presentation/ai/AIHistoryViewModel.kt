@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.jian.nemo.core.domain.repository.AudioRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,8 +22,16 @@ import javax.inject.Inject
 @HiltViewModel
 class AIHistoryViewModel @Inject constructor(
     private val repository: AIWorkshopRepository,
-    private val audioRepository: AudioRepository
+    private val audioRepository: AudioRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    val settingIconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.PLUMP_DUO
+        )
 
     private val _playingAudioId = MutableStateFlow<String?>(null)
     val playingAudioId: StateFlow<String?> = _playingAudioId.asStateFlow()
