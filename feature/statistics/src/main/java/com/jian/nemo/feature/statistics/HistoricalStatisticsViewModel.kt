@@ -3,6 +3,7 @@ package com.jian.nemo.feature.statistics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.usecase.statistics.GetAllLearnedGrammarsUseCase
@@ -46,6 +47,7 @@ data class OverallPredictionSummary(
  * 历史统计界面 UI 状态
  */
 data class HistoricalStatisticsUiState(
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO,
     val learnedWords: List<StatisticDisplayItem> = emptyList(),
     val learnedGrammars: List<StatisticDisplayItem> = emptyList(),
     val wordTotalCountMap: Map<String, Int> = emptyMap(),
@@ -91,6 +93,15 @@ class HistoricalStatisticsViewModel @Inject constructor(
 
     init {
         loadHistoricalStatistics()
+        observeSettingIconStyle()
+    }
+
+    private fun observeSettingIconStyle() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     private fun loadHistoricalStatistics() {

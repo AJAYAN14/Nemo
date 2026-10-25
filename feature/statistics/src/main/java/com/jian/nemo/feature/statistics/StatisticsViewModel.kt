@@ -12,6 +12,7 @@ import com.jian.nemo.core.domain.usecase.statistics.GetLearnedWordsForDateUseCas
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewedGrammarsForDateUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewedWordsForDateUseCase
 import com.jian.nemo.core.domain.model.ReviewForecast
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.usecase.statistics.GetReviewForecastUseCase
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
@@ -53,6 +54,15 @@ class StatisticsViewModel @Inject constructor(
         loadStatistics()
         observeSelectedDate()
         syncTodayDate()
+        observeSettingIconStyle()
+    }
+
+    private fun observeSettingIconStyle() {
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(settingIconStyle = style) }
+            }
+        }
     }
 
     /**
@@ -251,6 +261,11 @@ class StatisticsViewModel @Inject constructor(
  * 统计界面 UI 状态
  */
 data class StatisticsUiState(
+    /**
+     * 图标设计风格
+     */
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO,
+
     /**
      * 是否正在加载
      */

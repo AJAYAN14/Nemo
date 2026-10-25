@@ -35,6 +35,9 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.Rubik
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.statistics.LevelPredictionInfo
 import com.jian.nemo.feature.statistics.OverallPredictionSummary
 import kotlinx.coroutines.delay
@@ -216,14 +219,25 @@ fun LevelBreakdownDialog(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     val levelList = listOf("N5", "N4", "N3", "N2", "N1")
-                    val levelColors = mapOf(
-                        "N1" to IosColors.Red,
-                        "N2" to IosColors.Orange,
-                        "N3" to IosColors.Yellow,
-                        "N4" to IosColors.Green,
-                        "N5" to IosColors.Blue
-                    )
+                    val levelColors = if (isPlumpDuo) {
+                        mapOf(
+                            "N5" to IsoluminantPalette.EmeraldGreen,
+                            "N4" to IsoluminantPalette.LakesideCyan,
+                            "N3" to IsoluminantPalette.SkyIndigo,
+                            "N2" to IsoluminantPalette.WarmAmber,
+                            "N1" to IsoluminantPalette.RoseRuby
+                        )
+                    } else {
+                        mapOf(
+                            "N1" to IosColors.Red,
+                            "N2" to IosColors.Orange,
+                            "N3" to IosColors.Yellow,
+                            "N4" to IosColors.Green,
+                            "N5" to IosColors.Blue
+                        )
+                    }
 
                     levelList.forEach { level ->
                         val count = data[level] ?: 0
