@@ -171,7 +171,6 @@ fun AIReadingScreen(
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
                 actions = {
-                    val topActionColor = if (isDark) Color.White else colorScheme.onSurface
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FrostedLiquidGlassButton(
                             onClick = onNavigateToHistory,
@@ -181,20 +180,12 @@ fun AIReadingScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.History,
-                                    color = topActionColor,
-                                    size = 26.dp
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.History,
-                                    contentDescription = "阅读历史",
-                                    modifier = Modifier.size(30.dp),
-                                    tint = colorScheme.onSurface
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.History,
+                                contentDescription = "阅读历史",
+                                modifier = Modifier.size(30.dp),
+                                tint = colorScheme.onSurface
+                            )
                         }
                         FrostedLiquidGlassButton(
                             onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) },
@@ -212,17 +203,7 @@ fun AIReadingScreen(
                                 "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
-                                else -> {
-                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.Cpu,
-                                            color = topActionColor,
-                                            size = 26.dp
-                                        )
-                                    } else {
-                                        Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = colorScheme.onSurface)
-                                    }
-                                }
+                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = colorScheme.onSurface)
                             }
                         }
                         FrostedLiquidGlassButton(
@@ -233,20 +214,12 @@ fun AIReadingScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.ThemePalette,
-                                    color = topActionColor,
-                                    size = 26.dp
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Settings,
-                                    contentDescription = "AI设置",
-                                    modifier = Modifier.size(30.dp),
-                                    tint = colorScheme.onSurface
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = "AI设置",
+                                modifier = Modifier.size(30.dp),
+                                tint = colorScheme.onSurface
+                            )
                         }
                     }
                 }

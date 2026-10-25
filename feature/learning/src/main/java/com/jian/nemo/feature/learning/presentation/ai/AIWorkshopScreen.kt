@@ -203,7 +203,6 @@ fun AIWorkshopScreen(
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
                 actions = {
-                    val topActionColor = if (isDark) Color.White else textPrimary
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FrostedLiquidGlassButton(
                             onClick = { viewModel.onEvent(AIWorkshopEvent.QuickSwitchPlatform) },
@@ -221,17 +220,7 @@ fun AIWorkshopScreen(
                                 "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
-                                else -> {
-                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.Cpu,
-                                            color = topActionColor,
-                                            size = 26.dp
-                                        )
-                                    } else {
-                                        Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = textPrimary)
-                                    }
-                                }
+                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = textPrimary)
                             }
                         }
                         FrostedLiquidGlassButton(
@@ -242,15 +231,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.History,
-                                    color = topActionColor,
-                                    size = 26.dp
-                                )
-                            } else {
-                                Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
-                            }
+                            Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
                         }
                         FrostedLiquidGlassButton(
                             onClick = { showHelp = true },
@@ -260,15 +241,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.CircleQuestion,
-                                    color = topActionColor,
-                                    size = 26.dp
-                                )
-                            } else {
-                                Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
-                            }
+                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
                         }
                     }
                 }
