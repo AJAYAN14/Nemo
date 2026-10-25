@@ -4,14 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WrongAnswerRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -26,11 +30,22 @@ class MistakesViewModel @Inject constructor(
     private val wrongAnswerRepository: WrongAnswerRepository,
     private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository,
     private val wordRepository: WordRepository,
-    private val grammarRepository: GrammarRepository
+    private val grammarRepository: GrammarRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MistakesUiState())
     val uiState: StateFlow<MistakesUiState> = _uiState.asStateFlow()
+
+    /**
+     * 图标风格（MD3 / Plump Duo），供界面双风格自适应
+     */
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.MD3
+        )
 
     init {
         loadWrongAnswers()

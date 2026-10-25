@@ -17,7 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.AccountTree
+import androidx.compose.material.icons.rounded.Spellcheck
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,13 +31,19 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -64,6 +71,7 @@ fun MistakesScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -79,15 +87,17 @@ fun MistakesScreen(
         label = "mistakesBlur"
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .containerTransform(
-                key = "container_mistakes",
-                shape = RoundedCornerShape(0.dp)
-            )
-    ) {
+    // 图标风格双自适应（MD3 / Plump Duo）下发给整页子组件
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+                .containerTransform(
+                    key = "container_mistakes",
+                    shape = RoundedCornerShape(0.dp)
+                )
+        ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         Column(
             modifier = Modifier
@@ -178,6 +188,7 @@ fun MistakesScreen(
                     )
             )
         }
+        }
     }
 }
 
@@ -207,10 +218,20 @@ fun StatsOverviewCard(
     }
 
     // 颜色状态 (仅影响文字和装饰，不影响Card背景)
-    val stateColor = when {
-        gapRate <= 5 -> NemoSecondary
-        gapRate <= 15 -> NemoOrange
-        else -> NemoDanger
+    // 双风格自适应：Plump Duo 下状态色联动切换为等亮度调色板；MD3 保留原生色彩（100% 向下兼容）
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val stateColor = if (isPlumpDuo) {
+        when {
+            gapRate <= 5 -> IsoluminantPalette.EmeraldGreen   // 良好（翡翠竹青 145°）
+            gapRate <= 15 -> IsoluminantPalette.WarmAmber     // 注意（暖金琥珀 70°）
+            else -> IsoluminantPalette.CoralFlame             // 危险（赤焰珊瑚 30°）
+        }
+    } else {
+        when {
+            gapRate <= 5 -> NemoSecondary
+            gapRate <= 15 -> NemoOrange
+            else -> NemoDanger
+        }
     }
 
     PremiumCard {
@@ -280,16 +301,22 @@ fun WrongAnswersList(
             title = "错误的单词",
             subtitle = "学习和测试中答错的单词",
             count = wrongWordsCount,
+            icon = Icons.Rounded.Spellcheck,
             iconColor = NemoSecondary,
-            onClick = onWordMistakesClick
+            onClick = onWordMistakesClick,
+            plumpIcon = PlumpIcon.SpellCheck,
+            paletteColor = IsoluminantPalette.WarmAmber     // 70° 暖色系 = 词汇语义
         )
 
         WrongAnswerCategoryCard(
             title = "错误的语法",
             subtitle = "学习和测试中答错的语法",
             count = wrongGrammarsCount,
+            icon = Icons.Rounded.AccountTree,
             iconColor = NemoOrange,
-            onClick = onGrammarMistakesClick
+            onClick = onGrammarMistakesClick,
+            plumpIcon = PlumpIcon.GrammarLayers,
+            paletteColor = IsoluminantPalette.EmeraldGreen  // 145° 清爽系 = 语法语义
         )
     }
 }
@@ -299,28 +326,51 @@ fun WrongAnswerCategoryCard(
     title: String,
     subtitle: String,
     count: Int,
+    icon: ImageVector,
     iconColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    plumpIcon: PlumpIcon? = null,
+    paletteColor: Color? = null
 ) {
+    // 双风格判定（与 SquircleListItem / DashboardTile 标准模式一致）
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
+    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else iconColor
+
     PremiumCard(onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Squircle Icon
+            // 图标容器：MD3 保留 Squircle 色块底；Plump Duo 彻底取消背景方块（规范铁律）
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(iconColor.copy(alpha = 0.1f)),
+                    .then(
+                        if (!isPlumpDuo) {
+                            Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(effectiveColor.copy(alpha = 0.1f))
+                        } else {
+                            Modifier
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(24.dp)
-                )
+                if (isPlumpDuo && plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = effectiveColor,
+                        size = 28.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = effectiveColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

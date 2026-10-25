@@ -33,12 +33,18 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoOrange
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -65,6 +71,7 @@ fun FavoritesScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val iconStyle by viewModel.iconStyle.collectAsState()
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var isMenuExpanded by remember { mutableStateOf(false) }
@@ -80,15 +87,17 @@ fun FavoritesScreen(
         label = "favoritesBlur"
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .containerTransform(
-                key = "container_favorites",
-                shape = RoundedCornerShape(0.dp)
-            )
-    ) {
+    // 图标风格双自适应（MD3 / Plump Duo）下发给整页子组件
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+                .containerTransform(
+                    key = "container_favorites",
+                    shape = RoundedCornerShape(0.dp)
+                )
+        ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         Column(
             modifier = Modifier
@@ -172,6 +181,7 @@ fun FavoritesScreen(
                     )
             )
         }
+        }
     }
 }
 
@@ -189,7 +199,9 @@ fun FavoritesList(
             count = favoriteWordsCount,
             icon = Icons.Rounded.Translate,
             iconColor = NemoSecondary,
-            onClick = onWordFavoritesClick
+            onClick = onWordFavoritesClick,
+            plumpIcon = PlumpIcon.Star,
+            paletteColor = IsoluminantPalette.WarmAmber     // 70° 暖色系 = 词汇/收藏语义
         )
 
         FavoriteCategoryCard(
@@ -198,7 +210,9 @@ fun FavoritesList(
             count = favoriteGrammarsCount,
             icon = Icons.Rounded.Checklist,
             iconColor = NemoOrange,
-            onClick = onGrammarFavoritesClick
+            onClick = onGrammarFavoritesClick,
+            plumpIcon = PlumpIcon.ListChecks,
+            paletteColor = IsoluminantPalette.EmeraldGreen  // 145° 清爽系 = 题目/语法语义
         )
     }
 }
@@ -208,29 +222,51 @@ fun FavoriteCategoryCard(
     title: String,
     subtitle: String,
     count: Int,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     iconColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    plumpIcon: PlumpIcon? = null,
+    paletteColor: Color? = null
 ) {
+    // 双风格判定（与 WrongAnswerCategoryCard / DashboardTile 标准模式一致）
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
+    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else iconColor
+
     PremiumCard(onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Squircle Icon
+            // 图标容器：MD3 保留 Squircle 色块底；Plump Duo 彻底取消背景方块（规范铁律）
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(iconColor.copy(alpha = 0.1f)),
+                    .then(
+                        if (!isPlumpDuo) {
+                            Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(effectiveColor.copy(alpha = 0.1f))
+                        } else {
+                            Modifier
+                        }
+                    ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(24.dp)
-                )
+                if (isPlumpDuo && plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = effectiveColor,
+                        size = 28.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = effectiveColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
