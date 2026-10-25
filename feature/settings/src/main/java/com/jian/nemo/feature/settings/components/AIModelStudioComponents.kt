@@ -242,7 +242,18 @@ object AIPlatformRegistry {
             brandColor = Color(0xFF8B5CF6),
             iconVector = Icons.Rounded.Cable,
             defaultUrl = "",
-            flagshipModels = emptyList()
+            flagshipModels = listOf(
+                "MiniMax-Text-01",
+                "abab6.5s-chat",
+                "step-2-16k",
+                "step-1v-8k",
+                "yi-lightning",
+                "yi-large",
+                "deepseek-ai/DeepSeek-V3",
+                "deepseek-ai/DeepSeek-R1",
+                "llama-3.3-70b-instruct",
+                "mistral-large-2411"
+            )
         )
     )
 

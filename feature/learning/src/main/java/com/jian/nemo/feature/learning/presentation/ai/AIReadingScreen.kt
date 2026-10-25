@@ -180,12 +180,20 @@ fun AIReadingScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.History,
-                                contentDescription = "阅读历史",
-                                modifier = Modifier.size(30.dp),
-                                tint = colorScheme.onSurface
-                            )
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.History,
+                                    color = IsoluminantPalette.LilacViolet,
+                                    size = 26.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.History,
+                                    contentDescription = "阅读历史",
+                                    modifier = Modifier.size(30.dp),
+                                    tint = colorScheme.onSurface
+                                )
+                            }
                         }
                         FrostedLiquidGlassButton(
                             onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) },
@@ -203,7 +211,17 @@ fun AIReadingScreen(
                                 "claude" -> Icon(painterResource(DesignR.drawable.ic_claude), contentDescription = "Claude", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "doubao" -> Icon(painterResource(DesignR.drawable.ic_doubao), contentDescription = "Doubao", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
                                 "mimo" -> Icon(painterResource(DesignR.drawable.ic_mimo), contentDescription = "Mimo", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
-                                else -> Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = colorScheme.onSurface)
+                                else -> {
+                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.Cpu,
+                                            color = IsoluminantPalette.LakesideCyan,
+                                            size = 26.dp
+                                        )
+                                    } else {
+                                        Icon(Icons.Rounded.Memory, contentDescription = "Custom", modifier = Modifier.size(30.dp), tint = colorScheme.onSurface)
+                                    }
+                                }
                             }
                         }
                         FrostedLiquidGlassButton(
@@ -214,12 +232,20 @@ fun AIReadingScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Settings,
-                                contentDescription = "AI设置",
-                                modifier = Modifier.size(30.dp),
-                                tint = colorScheme.onSurface
-                            )
+                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.ThemePalette,
+                                    color = IsoluminantPalette.RoseRuby,
+                                    size = 26.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Settings,
+                                    contentDescription = "AI设置",
+                                    modifier = Modifier.size(30.dp),
+                                    tint = colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }
@@ -457,15 +483,17 @@ private fun ConfigScreen(
                     }
 
                     // 当前选中的微胶囊标头
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    val levelAccent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = BentoColors.Primary.copy(alpha = 0.12f)
+                        color = levelAccent.copy(alpha = 0.12f)
                     ) {
                         Text(
                             text = uiState.difficulty,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
-                            color = BentoColors.Primary
+                            color = levelAccent
                         )
                     }
                 }
@@ -578,10 +606,16 @@ private fun ConfigScreen(
 
         Spacer(Modifier.height(8.dp))
 
+        // 当前选中的主题信息与主色协同
+        val selectedThemeInfo = themes.find { it.name == uiState.readingTheme } ?: themes.first()
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+        val ctaAccentColor = if (isPlumpDuo) selectedThemeInfo.isoluminantColor else BentoColors.Primary
+
         // 底部高光主按钮 (Specular Action Button)
         SpecularCtaButton(
             onClick = { onEvent(AIReadingEvent.GenerateArticle) },
-            text = "开启智能阅读训练"
+            text = "开启智能阅读训练",
+            accentColor = ctaAccentColor
         )
 
         Spacer(Modifier.height(navBarBottom + 24.dp))
@@ -630,6 +664,24 @@ private fun FluidLevelSegmentedPicker(
             label = "fluidCapsuleOffset"
         )
 
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+        val indicatorColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
+        val indicatorBrush = if (isPlumpDuo) {
+            Brush.verticalGradient(
+                colors = listOf(
+                    indicatorColor.copy(alpha = 0.92f),
+                    indicatorColor
+                )
+            )
+        } else {
+            Brush.verticalGradient(
+                colors = listOf(
+                    Color(0xFFFB923C), // 珊瑚亮橙
+                    BentoColors.Primary // 元气橘
+                )
+            )
+        }
+
         // 滑动的活动指示胶囊 (带高斯弥散光晕)
         Box(
             modifier = Modifier
@@ -637,18 +689,13 @@ private fun FluidLevelSegmentedPicker(
                 .width(segmentWidth)
                 .fillMaxHeight()
                 .softShadow(
-                    color = BentoColors.Primary.copy(alpha = 0.40f),
+                    color = indicatorColor.copy(alpha = if (isPlumpDuo) 0.28f else 0.40f),
                     borderRadius = 13.dp,
                     blurRadius = 10.dp,
                     offsetY = 3.dp
                 )
                 .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFFFB923C), // 珊瑚亮橙
-                            BentoColors.Primary // 元气橘
-                        )
-                    ),
+                    brush = indicatorBrush,
                     shape = RoundedCornerShape(13.dp)
                 )
         )
@@ -731,20 +778,33 @@ private fun LevelCapabilityCard(
         label = "levelDetailContent",
         modifier = modifier.fillMaxWidth()
     ) { item ->
+        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+        val capabilityAccent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
+        val cardBg = if (isPlumpDuo) {
+            capabilityAccent.copy(alpha = if (isDark) 0.12f else 0.07f)
+        } else {
+            if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f) else BentoColors.PrimaryLight.copy(alpha = 0.35f)
+        }
+        val cardBorder = if (isPlumpDuo) {
+            capabilityAccent.copy(alpha = if (isDark) 0.25f else 0.15f)
+        } else {
+            if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f) else BentoColors.Primary.copy(alpha = 0.15f)
+        }
+
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .softShadow(
-                    color = BentoColors.Primary.copy(alpha = if (isDark) 0.16f else 0.08f),
+                    color = capabilityAccent.copy(alpha = if (isDark) 0.16f else 0.08f),
                     borderRadius = 14.dp,
                     blurRadius = 10.dp,
                     offsetY = 2.dp
                 ),
             shape = RoundedCornerShape(14.dp),
-            color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f) else BentoColors.PrimaryLight.copy(alpha = 0.35f),
+            color = cardBg,
             border = BorderStroke(
                 width = 1.dp,
-                color = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f) else BentoColors.Primary.copy(alpha = 0.15f)
+                color = cardBorder
             )
         ) {
             Row(
@@ -753,13 +813,13 @@ private fun LevelCapabilityCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = BentoColors.Primary.copy(alpha = 0.15f)
+                    color = capabilityAccent.copy(alpha = 0.15f)
                 ) {
                     Text(
                         text = item.tag,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = BentoColors.Primary
+                        color = capabilityAccent
                     )
                 }
                 Spacer(Modifier.width(10.dp))
@@ -800,6 +860,8 @@ private fun ThemeBentoItem(
     val haptic = LocalHapticFeedback.current
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val effectiveAccent = if (isPlumpDuo) info.isoluminantColor else info.accent
 
     // 交互态按压弹性动画 (Apple 经典按压微缩放)
     val interactionSource = remember { MutableInteractionSource() }
@@ -841,7 +903,7 @@ private fun ThemeBentoItem(
 
     // 边框质感：极细且克制 (Hairline 细微边框，避免视觉粗重)
     val borderStroke = if (isSelected) {
-        BorderStroke(1.5.dp, info.accent)
+        BorderStroke(1.5.dp, effectiveAccent)
     } else {
         BorderStroke(
             0.8.dp,
@@ -866,7 +928,7 @@ private fun ThemeBentoItem(
             .run {
                 if (isSelected) {
                     this.softShadow(
-                        color = info.accent.copy(alpha = shadowAlpha),
+                        color = effectiveAccent.copy(alpha = shadowAlpha),
                         borderRadius = 22.dp,
                         blurRadius = shadowBlur,
                         offsetY = 5.dp
@@ -936,7 +998,7 @@ private fun ThemeBentoItem(
                     fontSize = 16.5.sp,
                     letterSpacing = (-0.3).sp
                 ),
-                color = if (isSelected && !isDark) info.accent else (if (isDark) colorScheme.onSurface else BentoColors.TextMain)
+                color = if (isSelected && !isDark) effectiveAccent else (if (isDark) colorScheme.onSurface else BentoColors.TextMain)
             )
 
             Spacer(Modifier.height(4.dp))
@@ -964,9 +1026,11 @@ private fun ThemeBentoItem(
 private fun SpecularCtaButton(
     onClick: () -> Unit,
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    accentColor: Color = BentoColors.Primary
 ) {
     val haptic = LocalHapticFeedback.current
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     // 扫光位移动画 (Specular Light Sweep)
     val infiniteTransition = rememberInfiniteTransition(label = "specularTransition")
@@ -991,12 +1055,26 @@ private fun SpecularCtaButton(
         label = "arrowOffset"
     )
 
+    val gradientColors = if (isPlumpDuo) {
+        listOf(
+            accentColor.copy(alpha = 0.88f),
+            accentColor,
+            accentColor.copy(alpha = 0.96f)
+        )
+    } else {
+        listOf(
+            Color(0xFFFB923C),
+            BentoColors.Primary,
+            Color(0xFFEA580C)
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(58.dp)
             .softShadow(
-                color = BentoColors.Primary.copy(alpha = 0.38f),
+                color = accentColor.copy(alpha = 0.38f),
                 borderRadius = 22.dp,
                 blurRadius = 18.dp,
                 offsetY = 6.dp
@@ -1004,11 +1082,7 @@ private fun SpecularCtaButton(
             .clip(RoundedCornerShape(22.dp))
             .background(
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFFFB923C),
-                        BentoColors.Primary,
-                        Color(0xFFEA580C)
-                    )
+                    colors = gradientColors
                 )
             )
             .clickable(

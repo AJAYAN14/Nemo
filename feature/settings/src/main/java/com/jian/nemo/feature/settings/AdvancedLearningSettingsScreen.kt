@@ -49,6 +49,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.feature.settings.components.FloatingLiquidIsland
@@ -149,13 +152,15 @@ fun AdvancedLearningSettingsScreen(
         showExitConfirmation = true
     }
 
-    // 多维度语义色彩体系：拒绝全局单一紫色
-    val retentionColor = Color(0xFFAF52DE)      // 目标保留率核心：Nemo 品牌紫
-    val learningStepColor = Color(0xFF0E68FF)   // 新卡初学阶梯：深邃探索蓝
-    val relearningStepColor = Color(0xFFFF9F0A) // 遗忘重学阶梯：警醒暖琥珀橙
-    val leechColor = Color(0xFFF43F5E)          // 水蛭防爆哨兵：守护玫瑰红
-    val temporalColor = Color(0xFF00C4B5)       // 提前复习容差：极光薄荷青
-    val backlogColor = Color(0xFF34C759)        // 积压排产微会话：活力薄荷翠绿
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // 多维度语义色彩体系：支持原有专属原色与 OKLCH 等亮度调色板双方案自适应
+    val retentionColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else Color(0xFFAF52DE)      // 目标保留率核心：丁香紫 (295°) / Nemo 品牌紫
+    val learningStepColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else Color(0xFF0E68FF)     // 新卡初学阶梯：晴空蓝 (255°) / 深邃探索蓝
+    val relearningStepColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFF9F0A)   // 遗忘重学阶梯：暖金琥珀 (70°) / 警醒暖琥珀橙
+    val leechColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else Color(0xFFF43F5E)          // 水蛭防爆哨兵：赤焰珊瑚 (30°) / 守护玫瑰红
+    val temporalColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else Color(0xFF00C4B5)     // 提前复习容差：湖光青 (195°) / 极光薄荷青
+    val backlogColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else Color(0xFF34C759)      // 积压排产微会话：翡翠竹青 (145°) / 活力薄荷翠绿
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val backdrop = rememberLayerBackdrop()
@@ -267,16 +272,13 @@ fun AdvancedLearningSettingsScreen(
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            backgroundColor.copy(alpha = 0.98f),
-                            backgroundColor.copy(alpha = 0.88f),
-                            backgroundColor.copy(alpha = 0.55f),
-                            backgroundColor.copy(alpha = 0.20f),
-                            Color.Transparent
-                        )
+                        0.0f to backgroundColor,
+                        0.70f to backgroundColor.copy(alpha = 0.98f),
+                        0.88f to backgroundColor.copy(alpha = 0.60f),
+                        1.0f to Color.Transparent
                     )
                 )
-                .padding(bottom = 16.dp)
+                .padding(bottom = 20.dp)
         ) {
             CommonHeader(
                 title = "记忆算法调校",

@@ -25,8 +25,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +39,20 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.Brush
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
 
 // 动词变形规则数据模型
 data class GrammarRule(
@@ -54,6 +66,7 @@ data class GrammarData(
     val prefix: String,   // 数字前缀，如 "1. "
     val title: String,    // 变形名称，如 "辞书形 (基本形 / 原形)"
     val usage: String,
+    val plumpColor: Color, // 等亮度调色板主色 (OKLCH L=62%, C=0.165)
     val colorLight: Color,
     val colorDark: Color,
     val bgColorLight: Color,
@@ -61,12 +74,39 @@ data class GrammarData(
     val rules: List<GrammarRule>
 )
 
+@HiltViewModel
+class VerbConjugationHandbookViewModel @Inject constructor(
+    settingsRepository: SettingsRepository
+) : ViewModel() {
+    val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.PLUMP_DUO
+        )
+}
+
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun VerbConjugationHandbookScreen(
+    onNavigateBack: () -> Unit,
+    viewModel: VerbConjugationHandbookViewModel = hiltViewModel()
+) {
+    val iconStyle by viewModel.iconStyle.collectAsState()
+    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
+        VerbConjugationHandbookContent(onNavigateBack = onNavigateBack)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun VerbConjugationHandbookContent(
     onNavigateBack: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
@@ -85,7 +125,7 @@ fun VerbConjugationHandbookScreen(
     
     val scope = rememberCoroutineScope()
 
-    // 13 种变形的教科书级数据源 (已将前缀与标题分离定义)
+    // 13 种变形的教科书级数据源 (已将前缀与标题分离定义，并支持等亮度感知调色板与双风格自适应)
     val grammarList = remember {
         listOf(
             GrammarData(
@@ -93,6 +133,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "1. ",
                 title = "辞书形 (基本形 / 原形)",
                 usage = "动词在字典里的原始形态。用于普通体的现在时/将来时，或连接特定语法（如「～ことができる」）。",
+                plumpColor = IsoluminantPalette.SkyIndigo,
                 colorLight = IosColors.Blue,
                 colorDark = IosColors.BlueDark,
                 bgColorLight = IosColors.Blue.copy(alpha = 0.08f),
@@ -108,6 +149,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "2. ",
                 title = "ます形 (敬体连用形)",
                 usage = "日语中最基础、最礼貌的表达方式（敬体）。",
+                plumpColor = IsoluminantPalette.LakesideCyan,
                 colorLight = IosColors.Indigo,
                 colorDark = IosColors.IndigoDark,
                 bgColorLight = IosColors.Indigo.copy(alpha = 0.08f),
@@ -123,6 +165,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "3. ",
                 title = "て形 (中顿 / 请求)",
                 usage = "用于表示动作的先后顺序、原因、中顿，或与「～てください」连用表示请求。一类动词有音便现象。",
+                plumpColor = IsoluminantPalette.EmeraldGreen,
                 colorLight = IosColors.Green,
                 colorDark = IosColors.GreenDark,
                 bgColorLight = IosColors.Green.copy(alpha = 0.08f),
@@ -130,7 +173,7 @@ fun VerbConjugationHandbookScreen(
                 rules = listOf(
                     GrammarRule(
                         "一类动词",
-                        "【促音便】う,つ,る结尾 → って\n【拨音便】ぬ,ぶ,む结尾 → んで\n【イ音便】く,ぐ结尾 → いて/いで\n【特殊】す结尾 → して。行く(いく) → 行って(い进て)",
+                        "【促音便】う,つ,る结尾 → って\n【拨音便】ぬ,ぶ,む结尾 → んで\n【イ音便】く,ぐ结尾 → いて/いで\n【特殊】す结尾 → して。行く(いく) → 行って(いって)",
                         listOf("買う(かう) → 買って(かって)", "飲む(のむ) → 飲んで(のんで)", "書く(かく) → 書いて(かいて)", "話す(はなす) → 話して(はなして)")
                     ),
                     GrammarRule("二类动词", "去掉词尾的「る」 + て。", listOf("食べる → 食べて (たべて)", "見る → 見て (みて)")),
@@ -142,6 +185,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "4. ",
                 title = "た形 (过去式)",
                 usage = "表达动作已经发生（普通体的过去式）。变形规则与「て形」完全一致，只需把て/で换成た/だ。",
+                plumpColor = IsoluminantPalette.GlazeMint,
                 colorLight = IosColors.Teal,
                 colorDark = IosColors.TealDark,
                 bgColorLight = IosColors.Teal.copy(alpha = 0.08f),
@@ -156,7 +200,8 @@ fun VerbConjugationHandbookScreen(
                 id = 5,
                 prefix = "5. ",
                 title = "ない形 (否定形)",
-                usage = "表达否定意义（普通体），或连接「～ないでください」（请不要做...）。",
+                usage = "表达否定意义（普通体），或连接「～ない对ください」（请不要做...）。",
+                plumpColor = IsoluminantPalette.RoseRuby,
                 colorLight = IosColors.Red,
                 colorDark = IosColors.RedDark,
                 bgColorLight = IosColors.Red.copy(alpha = 0.08f),
@@ -172,6 +217,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "6. ",
                 title = "意志形",
                 usage = "表达说话人的决心、意愿，或提议“一起做某事吧”。",
+                plumpColor = IsoluminantPalette.WarmAmber,
                 colorLight = IosColors.Orange,
                 colorDark = IosColors.OrangeDark,
                 bgColorLight = IosColors.Orange.copy(alpha = 0.08f),
@@ -187,6 +233,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "7. ",
                 title = "命令形",
                 usage = "强硬地命令他人做某事，常用于男性粗鲁用语、标语、紧急情况。",
+                plumpColor = IsoluminantPalette.CoralFlame,
                 colorLight = IosColors.RedDark,
                 colorDark = IosColors.Red,
                 bgColorLight = IosColors.RedDark.copy(alpha = 0.08f),
@@ -202,6 +249,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "8. ",
                 title = "禁止形",
                 usage = "强硬地命令他人“不准做某事”。",
+                plumpColor = IsoluminantPalette.fromOklch(20f),
                 colorLight = Color(0xFFDC2626),
                 colorDark = Color(0xFFEF4444),
                 bgColorLight = Color(0xFFFEF2F2),
@@ -215,6 +263,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "9. ",
                 title = "条件形 (ば形)",
                 usage = "表示假定条件，即“如果……的话”。",
+                plumpColor = IsoluminantPalette.SeaMarine,
                 colorLight = IosColors.Cyan,
                 colorDark = IosColors.CyanDark,
                 bgColorLight = IosColors.Cyan.copy(alpha = 0.08f),
@@ -230,12 +279,13 @@ fun VerbConjugationHandbookScreen(
                 prefix = "10. ",
                 title = "可能形",
                 usage = "表示能力或客观条件允许，即“能够做某事”。",
+                plumpColor = IsoluminantPalette.LilacViolet,
                 colorLight = IosColors.Purple,
                 colorDark = IosColors.PurpleDark,
                 bgColorLight = IosColors.Purple.copy(alpha = 0.08f),
                 bgColorDark = IosColors.PurpleDark.copy(alpha = 0.15f),
                 rules = listOf(
-                    GrammarRule("一类动词", "词尾「う」段变同行「え」段 + る。", listOf("書く → 書ける (かける)", "話す → 話せる (haなせる)")),
+                    GrammarRule("一类动词", "词尾「う」段变同行「え」段 + る。", listOf("書く → 書ける (かける)", "話す → 話せる (はなせる)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + られる。", listOf("食べる → 食べられる", "見る → 見られる")),
                     GrammarRule("三类动词", "特殊记忆。する 的可能形是一个全新的词。", listOf("する → できる", "来る → 来られる (こられる)"))
                 )
@@ -245,6 +295,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "11. ",
                 title = "被动形 (受身形)",
                 usage = "表示动作的承受者（被做某事），也可表示受害或间接尊敬。",
+                plumpColor = IsoluminantPalette.fromOklch(335f),
                 colorLight = IosColors.Pink,
                 colorDark = IosColors.Pink,
                 bgColorLight = IosColors.Pink.copy(alpha = 0.08f),
@@ -260,6 +311,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "12. ",
                 title = "使役形",
                 usage = "表示让某人做某事，或者允许某人做某事。",
+                plumpColor = IsoluminantPalette.fromOklch(50f),
                 colorLight = IosColors.OrangeDark,
                 colorDark = IosColors.Orange,
                 bgColorLight = IosColors.OrangeDark.copy(alpha = 0.08f),
@@ -275,6 +327,7 @@ fun VerbConjugationHandbookScreen(
                 prefix = "13. ",
                 title = "使役被动形",
                 usage = "表示被迫做某事（“被逼着不得不做……”），是使役形 + 被动形的结合。",
+                plumpColor = IsoluminantPalette.OceanBlue,
                 colorLight = NemoNeutrals.Gray600,
                 colorDark = NemoNeutrals.DarkTextSecondary,
                 bgColorLight = NemoNeutrals.Gray200,
@@ -335,12 +388,20 @@ fun VerbConjugationHandbookScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Book,
-                            contentDescription = null,
-                            tint = if (isDark) IosColors.BlueDark else IosColors.Blue,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (isPlumpDuo) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.BookOpen,
+                                color = IsoluminantPalette.SkyIndigo,
+                                size = 22.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Rounded.Book,
+                                contentDescription = null,
+                                tint = if (isDark) IosColors.BlueDark else IosColors.Blue,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         // NotoSerifJP 排版美学：主卡片标题增强易读性字重与字号 (18.sp)
                         Text(
                             text = "必读：动词三大分类",
@@ -361,6 +422,10 @@ fun VerbConjugationHandbookScreen(
                     )
 
                     // 1, 2, 3 分类卡片内容
+                    val group1Color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else (if (isDark) IosColors.BlueDark else IosColors.Blue)
+                    val group2Color = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else (if (isDark) IosColors.GreenDark else IosColors.Green)
+                    val group3Color = if (isPlumpDuo) IsoluminantPalette.LilacViolet else (if (isDark) IosColors.PurpleDark else IosColors.Purple)
+
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -368,33 +433,58 @@ fun VerbConjugationHandbookScreen(
                             number = "1",
                             title = "一类动词 (五段)：",
                             desc = "词尾是「う」段假名。(如: 買う, 書く)",
-                            tintColor = if (isDark) IosColors.BlueDark else IosColors.Blue,
-                            isDark = isDark
+                            tintColor = group1Color,
+                            isDark = isDark,
+                            isPlumpDuo = isPlumpDuo
                         )
                         VerbGroupItem(
                             number = "2",
                             title = "二类动词 (一段)：",
                             desc = "词尾是「る」，且倒数第二音在い或え段。(如: 食べる, 見る)",
-                            tintColor = if (isDark) IosColors.GreenDark else IosColors.Green,
-                            isDark = isDark
+                            tintColor = group2Color,
+                            isDark = isDark,
+                            isPlumpDuo = isPlumpDuo
                         )
                         VerbGroupItem(
                             number = "3",
                             title = "三类动词 (不规则)：",
                             desc = "只有两个词：する (做), 来る (来)。",
-                            tintColor = if (isDark) IosColors.PurpleDark else IosColors.Purple,
-                            isDark = isDark
+                            tintColor = group3Color,
+                            isDark = isDark,
+                            isPlumpDuo = isPlumpDuo
                         )
                     }
 
                     // 特殊一类避坑警告卡片
                     Spacer(modifier = Modifier.height(16.dp))
+                    val warningColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else (if (isDark) IosColors.RedDark else IosColors.Red)
+                    val warningBg = if (isPlumpDuo) {
+                        warningColor.copy(alpha = if (isDark) 0.12f else 0.06f)
+                    } else {
+                        if (isDark) Color(0xFF3B1E1E) else Color(0xFFFFF1F2)
+                    }
+                    val warningBorder = if (isPlumpDuo) {
+                        warningColor.copy(alpha = if (isDark) 0.25f else 0.18f)
+                    } else {
+                        if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.5f) else Color(0xFFFFE4E6)
+                    }
+                    val innerChipBg = if (isPlumpDuo) {
+                        warningColor.copy(alpha = if (isDark) 0.18f else 0.08f)
+                    } else {
+                        if (isDark) Color(0xFF4C1D1D) else Color(0xFFFFE4E6).copy(alpha = 0.5f)
+                    }
+                    val innerTextColor = if (isPlumpDuo) {
+                        warningColor
+                    } else {
+                        if (isDark) Color(0xFFFDA4AF) else Color(0xFFBE123C)
+                    }
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(if (isDark) Color(0xFF3B1E1E) else Color(0xFFFFF1F2))
-                            .border(0.5.dp, if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.5f) else Color(0xFFFFE4E6), RoundedCornerShape(16.dp))
+                            .background(warningBg)
+                            .border(0.5.dp, warningBorder, RoundedCornerShape(16.dp))
                             .padding(14.dp)
                     ) {
                         Column {
@@ -406,7 +496,7 @@ fun VerbConjugationHandbookScreen(
                                 Icon(
                                     imageVector = Icons.Rounded.ReportProblem,
                                     contentDescription = null,
-                                    tint = if (isDark) IosColors.RedDark else IosColors.Red,
+                                    tint = warningColor,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
@@ -415,13 +505,13 @@ fun VerbConjugationHandbookScreen(
                                         fontFamily = NotoSerifJP,
                                         fontWeight = FontWeight.ExtraBold
                                     ),
-                                    color = if (isDark) IosColors.RedDark else IosColors.Red
+                                    color = warningColor
                                 )
                             }
                             Text(
                                 text = "有极少数动词长着“二类动词”的脸（以「る」结尾且倒数第二音在「い/え」段），但它们其实是 一类动词！必须死记，否则变形全错。",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (isDark) NemoNeutrals.DarkTextSecondary else Color(0xFF9F1239),
+                                color = if (isDark) NemoNeutrals.DarkTextSecondary else (if (isPlumpDuo) warningColor.copy(alpha = 0.85f) else Color(0xFF9F1239)),
                                 lineHeight = 16.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -429,14 +519,14 @@ fun VerbConjugationHandbookScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isDark) Color(0xFF4C1D1D) else Color(0xFFFFE4E6).copy(alpha = 0.5f))
+                                    .background(innerChipBg)
                                     .padding(8.dp)
                             ) {
                                 Text(
                                     text = "常见：帰る(回家)、切る(切)、知る(知道)、入る(进入)、走る(跑)",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isDark) Color(0xFFFDA4AF) else Color(0xFFBE123C)
+                                    color = innerTextColor
                                 )
                             }
                         }
@@ -451,8 +541,12 @@ fun VerbConjugationHandbookScreen(
             ) {
                 grammarList.forEachIndexed { index, item ->
                     val isExpanded = expandedId == item.id
-                    val themeColor = if (isDark) item.colorDark else item.colorLight
-                    val themeBgColor = if (isDark) item.bgColorDark else item.bgColorLight
+                    val themeColor = if (isPlumpDuo) item.plumpColor else (if (isDark) item.colorDark else item.colorLight)
+                    val themeBgColor = if (isPlumpDuo) {
+                        themeColor.copy(alpha = if (isDark) 0.12f else 0.08f)
+                    } else {
+                        if (isDark) item.bgColorDark else item.bgColorLight
+                    }
 
                     // --- 聚焦/失焦平滑动画 ---
                     val isFocused = expandedId == null || isExpanded
@@ -542,17 +636,28 @@ fun VerbConjugationHandbookScreen(
                                     }
                                 }
 
+                                val arrowBg = if (isPlumpDuo) {
+                                    if (isExpanded) {
+                                        if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray100
+                                    } else {
+                                        if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else NemoNeutrals.Gray100.copy(alpha = 0.6f)
+                                    }
+                                } else {
+                                    if (isExpanded) themeBgColor else if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray100
+                                }
+                                val arrowTint = if (isPlumpDuo) textSub else (if (isExpanded) themeColor else textSub)
+
                                 Box(
                                     modifier = Modifier
                                         .size(32.dp)
                                         .clip(CircleShape)
-                                        .background(if (isExpanded) themeBgColor else if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray100),
+                                        .background(arrowBg),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                                         contentDescription = if (isExpanded) "收起" else "展开",
-                                        tint = if (isExpanded) themeColor else textSub,
+                                        tint = arrowTint,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
@@ -584,7 +689,7 @@ fun VerbConjugationHandbookScreen(
                                         Icon(
                                             imageVector = Icons.Rounded.Info,
                                             contentDescription = null,
-                                            tint = themeColor,
+                                            tint = if (isPlumpDuo) textSub else themeColor,
                                             modifier = Modifier
                                                 .size(16.dp)
                                                 .padding(top = 2.dp)
@@ -713,7 +818,8 @@ private fun VerbGroupItem(
     title: String,
     desc: String,
     tintColor: Color,
-    isDark: Boolean
+    isDark: Boolean,
+    isPlumpDuo: Boolean = false
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -724,7 +830,7 @@ private fun VerbGroupItem(
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(tintColor.copy(alpha = if (isDark) 0.15f else 0.1f)),
+                .background(tintColor.copy(alpha = if (isPlumpDuo) (if (isDark) 0.16f else 0.10f) else (if (isDark) 0.15f else 0.1f))),
             contentAlignment = Alignment.Center
         ) {
             Text(

@@ -884,7 +884,7 @@ fun LeechSentinelCard(
                         Icon(
                             imageVector = Icons.Rounded.Remove,
                             contentDescription = "减少",
-                            tint = accentColor,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -942,7 +942,7 @@ fun LeechSentinelCard(
                         Icon(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = "增加",
-                            tint = accentColor,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -996,7 +996,7 @@ private fun RubberSegmentToggle(
             Surface(
                 onClick = { onSelectedChange(key) },
                 shape = RoundedCornerShape(16.dp),
-                color = if (isSelected) accentColor.copy(alpha = 0.10f) else Color.Transparent,
+                color = if (isSelected) accentColor.copy(alpha = if (isDark) 0.12f else 0.08f) else Color.Transparent,
                 border = BorderStroke(
                     1.dp,
                     if (isSelected) accentColor.copy(alpha = animatedBorderAlpha)

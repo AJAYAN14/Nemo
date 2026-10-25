@@ -224,7 +224,7 @@ fun AIWorkshopScreen(
                                     if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                         PlumpDuoIcon(
                                             icon = PlumpIcon.Cpu,
-                                            color = textPrimary,
+                                            color = IsoluminantPalette.LakesideCyan,
                                             size = 26.dp
                                         )
                                     } else {
@@ -244,7 +244,7 @@ fun AIWorkshopScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.History,
-                                    color = textPrimary,
+                                    color = IsoluminantPalette.LilacViolet,
                                     size = 26.dp
                                 )
                             } else {
@@ -262,7 +262,7 @@ fun AIWorkshopScreen(
                             if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.CircleQuestion,
-                                    color = textPrimary,
+                                    color = IsoluminantPalette.OceanBlue,
                                     size = 26.dp
                                 )
                             } else {
@@ -559,6 +559,12 @@ private fun ModeSection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val activeColor = if (isPlumpDuo) {
+        if (currentMode == WorkshopMode.GRAMMAR) IsoluminantPalette.EmeraldGreen else IsoluminantPalette.LakesideCyan
+    } else {
+        colorScheme.primary
+    }
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
     val haptic = LocalHapticFeedback.current
     val modes = listOf(WorkshopMode.FREE, WorkshopMode.GRAMMAR)
@@ -594,7 +600,7 @@ private fun ModeSection(
                     .fillMaxHeight()
                     .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
                     .background(
-                        color = colorScheme.primary,
+                        color = activeColor,
                         shape = RoundedCornerShape(11.dp)
                     )
             )
@@ -706,6 +712,8 @@ private fun DifficultySection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorScheme.primary
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
     val haptic = LocalHapticFeedback.current
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
@@ -740,7 +748,7 @@ private fun DifficultySection(
                     .fillMaxHeight()
                     .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
                     .background(
-                        color = colorScheme.primary,
+                        color = activeColor,
                         shape = RoundedCornerShape(11.dp)
                     )
             )
@@ -897,10 +905,15 @@ private fun ExerciseContent(
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     val isCnToJp = exercise.type == "CN_TO_JP"
-                    val labelColor = if (isCnToJp) NemoPrimary else NemoRed
+                    val labelColor = if (isPlumpDuo) {
+                        if (isCnToJp) IsoluminantPalette.SkyIndigo else IsoluminantPalette.RoseRuby
+                    } else {
+                        if (isCnToJp) NemoPrimary else NemoRed
+                    }
                     Surface(
-                        color = labelColor.copy(alpha = 0.1f),
+                        color = labelColor.copy(alpha = if (isPlumpDuo) 0.12f else 0.1f),
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
@@ -914,8 +927,9 @@ private fun ExerciseContent(
                     // 语法专项模式标签
                     uiState.currentGrammarPoint?.let { grammarPoint ->
                         Spacer(modifier = Modifier.width(8.dp))
+                        val grammarColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
                         Surface(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            color = grammarColor.copy(alpha = if (isPlumpDuo) 0.12f else 0.1f),
                             shape = RoundedCornerShape(6.dp)
                         ) {
                             val label = buildString {
@@ -928,7 +942,7 @@ private fun ExerciseContent(
                                 text = label,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = grammarColor,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -947,14 +961,14 @@ private fun ExerciseContent(
                         ) {
                             if (isPlaying) {
                                 SoundWaveAnimation(
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary,
                                     size = 20.dp
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = "朗读",
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -968,10 +982,10 @@ private fun ExerciseContent(
                         isInteractive = true,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                        if (isPlumpDuo) {
                             PlumpDuoIcon(
                                 icon = PlumpIcon.RotateCcw,
-                                color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
+                                color = IsoluminantPalette.GlazeMint,
                                 size = 20.dp
                             )
                         } else {
@@ -1002,15 +1016,27 @@ private fun ExerciseContent(
                 
                 if (exercise.hints.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(20.dp))
+                    val isPlumpDuoHint = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    val hintBgColor = if (isPlumpDuoHint) {
+                        IsoluminantPalette.WarmAmber.copy(alpha = if (isDark) 0.12f else 0.07f)
+                    } else {
+                        if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+                    }
+                    val hintBorder = if (isPlumpDuoHint) {
+                        BorderStroke(0.5.dp, IsoluminantPalette.WarmAmber.copy(alpha = if (isDark) 0.25f else 0.18f))
+                    } else {
+                        null
+                    }
                     Surface(
-                        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50,
-                        shape = RoundedCornerShape(12.dp)
+                        color = hintBgColor,
+                        shape = RoundedCornerShape(12.dp),
+                        border = hintBorder
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                            if (isPlumpDuoHint) {
                                 PlumpDuoIcon(
                                     icon = PlumpIcon.Lightbulb,
                                     color = IsoluminantPalette.WarmAmber,
@@ -1134,11 +1160,20 @@ private fun FeedbackSection(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
-    val scoreColor = when {
-        result.score >= 80 -> NemoSecondary
-        result.score >= 60 -> NemoYellow
-        else -> NemoDanger
+    val scoreColor = if (isPlumpDuo) {
+        when {
+            result.score >= 80 -> IsoluminantPalette.EmeraldGreen
+            result.score >= 60 -> IsoluminantPalette.WarmAmber
+            else -> IsoluminantPalette.CoralFlame
+        }
+    } else {
+        when {
+            result.score >= 80 -> NemoSecondary
+            result.score >= 60 -> NemoYellow
+            else -> NemoDanger
+        }
     }
 
 

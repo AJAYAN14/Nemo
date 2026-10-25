@@ -245,9 +245,13 @@ fun TestDashboardScreen(
 private fun StatsPager(
     uiState: TestDashboardUiState
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     data class CompactStatsPage(
         val title: String,
         val icon: ImageVector,
+        val plumpIcon: PlumpIcon,
+        val paletteColor: Color,
         val accent: Color,
         val primaryValue: String,
         val primaryLabel: String,
@@ -260,10 +264,18 @@ private fun StatsPager(
     )
 
     fun ringColorByAccuracy(accuracyPercent: Int): Color {
-        return when {
-            accuracyPercent < 60 -> NemoDanger
-            accuracyPercent < 85 -> NemoOrange
-            else -> NemoSecondary
+        return if (isPlumpDuo) {
+            when {
+                accuracyPercent < 60 -> IsoluminantPalette.CoralFlame
+                accuracyPercent < 85 -> IsoluminantPalette.WarmAmber
+                else -> IsoluminantPalette.EmeraldGreen
+            }
+        } else {
+            when {
+                accuracyPercent < 60 -> NemoDanger
+                accuracyPercent < 85 -> NemoOrange
+                else -> NemoSecondary
+            }
         }
     }
 
@@ -288,7 +300,9 @@ private fun StatsPager(
         CompactStatsPage(
             title = "今日测试",
             icon = Icons.Rounded.Bolt,
-            accent = MaterialTheme.colorScheme.primary,
+            plumpIcon = PlumpIcon.Zap,
+            paletteColor = IsoluminantPalette.SkyIndigo,
+            accent = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary,
             primaryValue = uiState.todayTestCount.toString(),
             primaryLabel = "已测题目",
             secondaryValue = uiState.consecutiveTestDays.toString(),
@@ -300,7 +314,9 @@ private fun StatsPager(
         CompactStatsPage(
             title = "总体统计",
             icon = Icons.Rounded.EmojiEvents,
-            accent = NemoDanger,
+            plumpIcon = PlumpIcon.Trophy,
+            paletteColor = IsoluminantPalette.WarmAmber,
+            accent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else NemoDanger,
             primaryValue = uiState.totalTestCount.toString(),
             primaryLabel = "累计测试",
             secondaryValue = uiState.maxTestStreak.toString(),
@@ -347,18 +363,31 @@ private fun StatsPager(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .background(pageData.accent, RoundedCornerShape(10.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = pageData.icon,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(34.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = pageData.plumpIcon,
+                                        color = pageData.paletteColor,
+                                        size = 26.dp
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .background(pageData.accent, RoundedCornerShape(10.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = pageData.icon,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
                             }
                             Column {
                                 Text(
