@@ -518,15 +518,13 @@ private fun ConnectionPill(
             if (isPlumpDuo) accentColor.copy(alpha = 0.25f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
         )
     ) {
-        com.jian.nemo.core.ui.component.text.FuriganaText(
+        Text(
             text = text,
-            baseTextStyle = MaterialTheme.typography.bodyMedium.copy(
+            style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                 fontWeight = FontWeight.Medium
             ),
-            baseTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            furiganaTextColor = if (isDark) accentColor.copy(alpha = 0.8f) else accentColor.copy(alpha = 0.7f),
-            furiganaTextSize = 9.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
     }
