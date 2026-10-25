@@ -160,6 +160,13 @@ class LearningViewModel @Inject constructor(
             }
         }
 
+        // 监听图标风格设置 (Plump Duo 等)
+        viewModelScope.launch {
+            settingsRepository.settingIconStyleFlow.collect { iconStyle ->
+                _uiState.update { it.copy(settingIconStyle = iconStyle) }
+            }
+        }
+
         // 监听打卡统计数据以获取真实连续打卡天数 (Streak)
         viewModelScope.launch {
             getLearningStatsUseCase().collect { stats ->

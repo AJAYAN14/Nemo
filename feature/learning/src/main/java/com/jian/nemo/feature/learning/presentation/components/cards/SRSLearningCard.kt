@@ -50,6 +50,11 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
@@ -126,6 +131,9 @@ fun SRSLearningCard(
     isWhiteboardEnabled: Boolean = false,
     autoRevealProgress: Float? = null
 ) {
+    // 检测图标风格
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(word.id) { mutableStateOf(false) }
 
@@ -187,7 +195,7 @@ fun SRSLearningCard(
                         .height(3.dp)
                         .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
                         .align(Alignment.TopCenter),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary,
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -202,7 +210,6 @@ fun SRSLearningCard(
                     .padding(top = 20.dp), // 预留空间避免与顶部徽章重叠
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Japanese
                 // Japanese
                 Text(
                     text = word.japanese,
@@ -224,9 +231,10 @@ fun SRSLearningCard(
 
                 // 假名读音 (答案显示时) / 思考提示 (答案隐藏时)
                 if (isAnswerShown) {
+                    val pronunciationColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoNeutrals.Blue600
                     Text(
                         text = word.hiragana,
-                        color = NemoNeutrals.Blue600,
+                        color = pronunciationColor,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = NotoSerifJP,
@@ -246,16 +254,27 @@ fun SRSLearningCard(
             }
 
             // 左上角等级徽章 (镜像对称)
+            val effectiveLevelBg = if (isPlumpDuo) {
+                IsoluminantPalette.LilacViolet.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+            } else {
+                indigoBg
+            }
+            val effectiveLevelText = if (isPlumpDuo) {
+                IsoluminantPalette.LilacViolet
+            } else {
+                indigoText
+            }
+
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(top = 24.dp, start = 16.dp)
-                    .background(indigoBg, CircleShape)
+                    .background(effectiveLevelBg, CircleShape)
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = word.level,
-                    color = indigoText,
+                    color = effectiveLevelText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.2.sp
@@ -264,10 +283,26 @@ fun SRSLearningCard(
 
             cardBadge?.let { badge ->
                 val (text, bgColor, textColor) = when (badge) {
-                    CardBadge.NEW -> Triple("新学", if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFE0EDFF), if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8))
-                    CardBadge.LEARNING -> Triple("在学", if (isDarkTheme) Color(0xFF083344) else Color(0xFFE0F2FE), if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)) // Cyan
-                    CardBadge.REVIEW -> Triple("复习", if (isDarkTheme) Color(0xFF14532D) else Color(0xFFDCFCE7), if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534))
-                    CardBadge.RELEARN -> Triple("重学", if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFEDD5), if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412))
+                    CardBadge.NEW -> if (isPlumpDuo) {
+                        Triple("新学", IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.SkyIndigo)
+                    } else {
+                        Triple("新学", if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFE0EDFF), if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8))
+                    }
+                    CardBadge.LEARNING -> if (isPlumpDuo) {
+                        Triple("在学", IsoluminantPalette.LakesideCyan.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.LakesideCyan)
+                    } else {
+                        Triple("在学", if (isDarkTheme) Color(0xFF083344) else Color(0xFFE0F2FE), if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2))
+                    }
+                    CardBadge.REVIEW -> if (isPlumpDuo) {
+                        Triple("复习", IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.EmeraldGreen)
+                    } else {
+                        Triple("复习", if (isDarkTheme) Color(0xFF14532D) else Color(0xFFDCFCE7), if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534))
+                    }
+                    CardBadge.RELEARN -> if (isPlumpDuo) {
+                        Triple("重学", IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.WarmAmber)
+                    } else {
+                        Triple("重学", if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFEDD5), if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412))
+                    }
                 }
 
                 Box(
@@ -485,56 +520,130 @@ fun SRSLearningCard(
                     }
                 }
 
-                // 按钮区域（右上角）：朗读 + 跟打练习
+                // 按钮区域（右上角）：朗读 + 跟打练习 + 临时手写板
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // 朗读单词按钮
-                    if (onSpeakWord != null) {
-                        SpeakerButton(
-                            isPlaying = playingAudioId == "word",
-                            onClick = { onSpeakWord() },
-                            tint = practiceButtonColor,
-                            size = 44.dp,
-                            backgroundColor = practiceButtonBgColor
-                        )
-                    }
+                    if (isPlumpDuo) {
+                        // Plump Duo 方案：切换为 IsoluminantPalette 对应的等亮度颜色，图标换为 PlumpDuoIcon
+                        val plumpAudioColor = IsoluminantPalette.SkyIndigo
+                        val plumpPracticeColor = IsoluminantPalette.LakesideCyan
+                        val plumpWhiteboardColor = IsoluminantPalette.WarmAmber
 
-                    // 跟打练习按钮
-                    if (onPracticeClick != null) {
+                        // 1. 朗读单词按钮
+                        if (onSpeakWord != null) {
+                            if (playingAudioId == "word") {
+                                SpeakerButton(
+                                    isPlaying = true,
+                                    onClick = { onSpeakWord() },
+                                    tint = plumpAudioColor,
+                                    size = 44.dp,
+                                    backgroundColor = plumpAudioColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+                                )
+                            } else {
+                                LiquidButton(
+                                    onClick = { onSpeakWord() },
+                                    backgroundColor = plumpAudioColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
+                                    shape = CircleShape,
+                                    elevation = 0.dp,
+                                    modifier = Modifier.size(44.dp)
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.AudioVolume,
+                                        color = plumpAudioColor,
+                                        size = 24.dp
+                                    )
+                                }
+                            }
+                        }
+
+                        // 2. 跟打练习按钮
+                        if (onPracticeClick != null) {
+                            LiquidButton(
+                                onClick = { onPracticeClick() },
+                                backgroundColor = plumpPracticeColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
+                                shape = CircleShape,
+                                elevation = 0.dp,
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.Languages,
+                                    color = plumpPracticeColor,
+                                    size = 24.dp
+                                )
+                            }
+                        }
+
+                        // 3. 手写白板按钮
+                        val whiteboardBg = if (showBackWhiteboard) {
+                            plumpWhiteboardColor
+                        } else {
+                            plumpWhiteboardColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+                        }
+                        val whiteboardIconColor = if (showBackWhiteboard) Color.White else plumpWhiteboardColor
+
                         LiquidButton(
-                            onClick = { onPracticeClick() },
-                            backgroundColor = practiceButtonBgColor,
+                            onClick = { showBackWhiteboard = !showBackWhiteboard },
+                            backgroundColor = whiteboardBg,
+                            shape = CircleShape,
+                            elevation = 0.dp,
+                            modifier = Modifier.size(44.dp)
+                        ) {
+                            PlumpDuoIcon(
+                                icon = PlumpIcon.UserPen,
+                                color = whiteboardIconColor,
+                                size = 24.dp
+                            )
+                        }
+                    } else {
+                        // 默认方案：100% 保持原有配色和图标不变
+                        // 朗读单词按钮
+                        if (onSpeakWord != null) {
+                            SpeakerButton(
+                                isPlaying = playingAudioId == "word",
+                                onClick = { onSpeakWord() },
+                                tint = practiceButtonColor,
+                                size = 44.dp,
+                                backgroundColor = practiceButtonBgColor
+                            )
+                        }
+
+                        // 跟打练习按钮
+                        if (onPracticeClick != null) {
+                            LiquidButton(
+                                onClick = { onPracticeClick() },
+                                backgroundColor = practiceButtonBgColor,
+                                shape = CircleShape,
+                                elevation = 0.dp,
+                                modifier = Modifier.size(44.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Translate,
+                                    contentDescription = "跟打练习",
+                                    tint = practiceButtonColor,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+
+                        // 手写白板按钮 (背面固定显示，不用去 menu 再次打开了)
+                        LiquidButton(
+                            onClick = { showBackWhiteboard = !showBackWhiteboard },
+                            backgroundColor = if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor,
                             shape = CircleShape,
                             elevation = 0.dp,
                             modifier = Modifier.size(44.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Translate,
-                                contentDescription = "跟打练习",
-                                tint = practiceButtonColor,
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = "临时手写板",
+                                tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
                                 modifier = Modifier.size(24.dp)
                             )
                         }
-                    }
-
-                    // 手写白板按钮 (背面固定显示，不用去 menu 再次打开了)
-                    LiquidButton(
-                        onClick = { showBackWhiteboard = !showBackWhiteboard },
-                        backgroundColor = if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor,
-                        shape = CircleShape,
-                        elevation = 0.dp,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = "临时手写板",
-                            tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
-                            modifier = Modifier.size(24.dp)
-                        )
                     }
                 }
             }

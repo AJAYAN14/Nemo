@@ -91,6 +91,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.toArgb
 import com.jian.nemo.core.designsystem.theme.NemoText
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
@@ -548,6 +551,9 @@ fun LearnHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Progress Bar - MD3: 使用 LinearProgressIndicator 风格
+                val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                val effectiveProgressColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary
+
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -559,7 +565,7 @@ fun LearnHeader(
                             .fillMaxWidth(progress.coerceIn(0f, 1f))
                             .fillMaxSize()
                             .background(
-                                color = MaterialTheme.colorScheme.primary, // MD3: 使用 primary 色
+                                color = effectiveProgressColor,
                                 shape = RoundedCornerShape(2.dp)
                             )
                     )
@@ -571,7 +577,8 @@ fun LearnHeader(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     // 新学 (NEW) - 蓝色
-                    val newColor = if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
+                    val defaultNewColor = if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
+                    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else defaultNewColor
                     Text(
                         text = "$queueNewCount",
                         color = newColor.copy(alpha = if (queueNewCount > 0) 1f else 0.3f),
@@ -579,7 +586,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 在学 (LEARNING) - 青色
-                    val learningColor = if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
+                    val defaultLearningColor = if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
+                    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else defaultLearningColor
                     Text(
                         text = "$queueLearningCount",
                         color = learningColor.copy(alpha = if (queueLearningCount > 0) 1f else 0.3f),
@@ -587,7 +595,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 复习 (REVIEW) - 绿色
-                    val reviewColor = if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
+                    val defaultReviewColor = if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
+                    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else defaultReviewColor
                     Text(
                         text = "$queueReviewCount",
                         color = reviewColor.copy(alpha = if (queueReviewCount > 0) 1f else 0.3f),
@@ -595,7 +604,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 重学 (RELEARN) - 橙色
-                    val relearnColor = if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+                    val defaultRelearnColor = if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+                    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else defaultRelearnColor
                     Text(
                         text = "$queueRelearnCount",
                         color = relearnColor.copy(alpha = if (queueRelearnCount > 0) 1f else 0.3f),

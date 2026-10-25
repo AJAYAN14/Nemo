@@ -21,6 +21,9 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -128,6 +131,23 @@ fun SRSActionArea(
         }
     }
 
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // 4个评分按钮在双模式下的自适应配色
+    val effectiveAgainColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else colorRose700
+    val effectiveAgainContainer = if (isPlumpDuo) IsoluminantPalette.CoralFlame.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorRose100
+
+    val effectiveHardColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else colorOrange600
+    val effectiveHardContainer = if (isPlumpDuo) IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorOrange50
+
+    val effectiveGoodColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorBlue600
+    val effectiveGoodContainer = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorBlue50
+
+    val effectiveEasyColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else colorEmerald600
+    val effectiveEasyContainer = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorEmerald50
+
+    val effectiveStarColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFACC15)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -170,7 +190,7 @@ fun SRSActionArea(
                             Icon(
                                 imageVector = if (canShowAnswer) Icons.Default.AutoAwesome else Icons.Default.AccessTime,
                                 contentDescription = null,
-                                tint = if (canShowAnswer) Color(0xFFFACC15) else Color.White.copy(alpha = 0.88f),
+                                tint = if (canShowAnswer) effectiveStarColor else Color.White.copy(alpha = 0.88f),
                                 modifier = Modifier
                                     .padding(end = 8.dp)
                                     .size(18.dp)
@@ -195,8 +215,8 @@ fun SRSActionArea(
                     SRSRatingButton(
                         label = "重来",
                         time = ratingIntervals[1] ?: "-",
-                        color = colorRose700,
-                        containerColor = colorRose100,
+                        color = effectiveAgainColor,
+                        containerColor = effectiveAgainContainer,
                         onClick = { 
                             safeRate(1) {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
@@ -210,8 +230,8 @@ fun SRSActionArea(
                     SRSRatingButton(
                         label = "困难",
                         time = ratingIntervals[3] ?: "-",
-                        color = colorOrange600,
-                        containerColor = colorOrange50,
+                        color = effectiveHardColor,
+                        containerColor = effectiveHardContainer,
                         onClick = { 
                             safeRate(3) {
                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -225,8 +245,8 @@ fun SRSActionArea(
                     SRSRatingButton(
                         label = "良好",
                         time = ratingIntervals[4] ?: "-",
-                        color = colorBlue600,
-                        containerColor = colorBlue50,
+                        color = effectiveGoodColor,
+                        containerColor = effectiveGoodContainer,
                         onClick = { 
                             safeRate(4) {
                                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -240,8 +260,8 @@ fun SRSActionArea(
                     SRSRatingButton(
                         label = "简单",
                         time = ratingIntervals[5] ?: "-",
-                        color = colorEmerald600,
-                        containerColor = colorEmerald50,
+                        color = effectiveEasyColor,
+                        containerColor = effectiveEasyContainer,
                         onClick = { 
                             safeRate(5) {
                                 view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)

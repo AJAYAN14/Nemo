@@ -38,6 +38,11 @@ import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 
 /**
@@ -87,6 +92,11 @@ fun LeechManagementScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
+            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+            val wordAccentColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else MaterialTheme.colorScheme.primary
+            val grammarAccentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
+            val currentAccentColor = if (uiState.selectedTab == LeechTab.Word) wordAccentColor else grammarAccentColor
+
             // 1. Floating Liquid Pill Tabs
             Row(
                 modifier = Modifier
@@ -98,7 +108,7 @@ fun LeechManagementScreen(
                     title = "单词",
                     count = uiState.skippedWords.size,
                     isSelected = uiState.selectedTab == LeechTab.Word,
-                    selectedColor = MaterialTheme.colorScheme.primary,
+                    selectedColor = wordAccentColor,
                     onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Word)) }
                 )
 
@@ -106,7 +116,7 @@ fun LeechManagementScreen(
                     title = "语法",
                     count = uiState.skippedGrammars.size,
                     isSelected = uiState.selectedTab == LeechTab.Grammar,
-                    selectedColor = MaterialTheme.colorScheme.primary,
+                    selectedColor = grammarAccentColor,
                     onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Grammar)) }
                 )
             }
@@ -134,9 +144,12 @@ fun LeechManagementScreen(
                                 emptyTitle = "暂无待复学单词",
                                 emptySubtitle = "当前没有被冻结的难点单词，继续保持哦",
                                 onItemKey = { it.id },
+                                isPlumpDuo = isPlumpDuo,
+                                accentColor = wordAccentColor,
                                 itemContent = { word, onRecover ->
                                     LeechWordCard(
                                         word = word, 
+                                        tagColor = wordAccentColor,
                                         onRecover = onRecover,
                                         onClick = { onNavigateToWordDetail(word.id) }
                                     )
@@ -150,9 +163,12 @@ fun LeechManagementScreen(
                                 emptyTitle = "暂无待复学语法",
                                 emptySubtitle = "当前没有被冻结的难点语法，继续保持哦",
                                 onItemKey = { it.id },
+                                isPlumpDuo = isPlumpDuo,
+                                accentColor = grammarAccentColor,
                                 itemContent = { grammar, onRecover ->
                                     LeechGrammarCard(
                                         grammar = grammar, 
+                                        tagColor = grammarAccentColor,
                                         onRecover = onRecover,
                                         onClick = { onNavigateToGrammarDetail(grammar.id) }
                                     )
@@ -223,11 +239,18 @@ private fun <T> LeechList(
     emptyTitle: String,
     emptySubtitle: String,
     onItemKey: (T) -> Int,
+    isPlumpDuo: Boolean = false,
+    accentColor: Color = MaterialTheme.colorScheme.primary,
     itemContent: @Composable (T, () -> Unit) -> Unit,
     onRecover: (Int) -> Unit
 ) {
     if (items.isEmpty()) {
-        EmptyLeechView(title = emptyTitle, subtitle = emptySubtitle)
+        EmptyLeechView(
+            title = emptyTitle,
+            subtitle = emptySubtitle,
+            isPlumpDuo = isPlumpDuo,
+            accentColor = accentColor
+        )
     } else {
         LazyColumn(
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp), // More horizontal padding
@@ -258,11 +281,16 @@ private fun <T> LeechList(
  * 单词卡片
  */
 @Composable
-private fun LeechWordCard(word: Word, onRecover: () -> Unit, onClick: () -> Unit = {}) {
+private fun LeechWordCard(
+    word: Word,
+    tagColor: Color = MaterialTheme.colorScheme.primary,
+    onRecover: () -> Unit,
+    onClick: () -> Unit = {}
+) {
     LeechItemCardBase(
         title = word.japanese,
         subtitle = "${word.hiragana ?: ""} ${word.chinese}",
-        tagColor = MaterialTheme.colorScheme.primary,
+        tagColor = tagColor,
         onRecover = onRecover,
         onClick = onClick
     )
@@ -272,11 +300,16 @@ private fun LeechWordCard(word: Word, onRecover: () -> Unit, onClick: () -> Unit
  * 语法卡片
  */
 @Composable
-private fun LeechGrammarCard(grammar: Grammar, onRecover: () -> Unit, onClick: () -> Unit = {}) {
+private fun LeechGrammarCard(
+    grammar: Grammar,
+    tagColor: Color = MaterialTheme.colorScheme.primary,
+    onRecover: () -> Unit,
+    onClick: () -> Unit = {}
+) {
     LeechItemCardBase(
         title = grammar.grammar,
         subtitle = grammar.getFirstExplanation(),
-        tagColor = MaterialTheme.colorScheme.primary,
+        tagColor = tagColor,
         onRecover = onRecover,
         onClick = onClick
     )
@@ -375,7 +408,9 @@ private fun LeechItemCardBase(
 @Composable
 private fun EmptyLeechView(
     title: String,
-    subtitle: String
+    subtitle: String,
+    isPlumpDuo: Boolean = false,
+    accentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -385,18 +420,32 @@ private fun EmptyLeechView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Surface(
-                shape = RoundedCornerShape(32.dp),
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                modifier = Modifier.size(100.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Rounded.CheckCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.primary
+            if (isPlumpDuo) {
+                // Plump Duo 规范：彻底取消外层纯色方块/圆角底框，采用纯透明对齐容器，图标通透居中呈现
+                Box(
+                    modifier = Modifier.size(72.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlumpDuoIcon(
+                        icon = PlumpIcon.Flame,
+                        color = accentColor,
+                        size = 56.dp
                     )
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(32.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))

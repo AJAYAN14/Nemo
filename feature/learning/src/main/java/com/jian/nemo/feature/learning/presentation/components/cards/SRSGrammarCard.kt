@@ -58,6 +58,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
@@ -121,6 +126,9 @@ fun SRSGrammarCard(
 
     val scope = rememberCoroutineScope()
 
+    // 检测图标风格
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -165,7 +173,7 @@ fun SRSGrammarCard(
                         .height(4.dp)
                         .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
                         .align(Alignment.TopCenter),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -186,14 +194,25 @@ fun SRSGrammarCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 等级标签
+                    val effectiveLevelBg = if (isPlumpDuo) {
+                        IsoluminantPalette.LilacViolet.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+                    } else {
+                        indigoBg
+                    }
+                    val effectiveLevelText = if (isPlumpDuo) {
+                        IsoluminantPalette.LilacViolet
+                    } else {
+                        indigoText
+                    }
+
                     Box(
                         modifier = Modifier
-                            .background(indigoBg, CircleShape)
+                            .background(effectiveLevelBg, CircleShape)
                             .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
                         Text(
                             text = grammar.grammarLevel,
-                            color = indigoText,
+                            color = effectiveLevelText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.2.sp
@@ -203,22 +222,42 @@ fun SRSGrammarCard(
                     // 顶部手写白板按钮 (仅在背面且 isAnswerShown 为 true 时显示，避免错位和重叠)
                     if (isAnswerShown) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        val buttonBgColor = if (showBackWhiteboard) MaterialTheme.colorScheme.primary else (if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f))
-                        val buttonTextColor = if (showBackWhiteboard) Color.White else (if (isDarkTheme) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.6f))
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(buttonBgColor)
-                                .clickable { showBackWhiteboard = !showBackWhiteboard },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Edit,
-                                contentDescription = "临时手写板",
-                                tint = buttonTextColor,
-                                modifier = Modifier.size(15.dp)
-                            )
+                        if (isPlumpDuo) {
+                            val whiteboardColor = IsoluminantPalette.WarmAmber
+                            val buttonBgColor = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+                            val buttonTextColor = if (showBackWhiteboard) Color.White else whiteboardColor
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .clip(CircleShape)
+                                    .background(buttonBgColor)
+                                    .clickable { showBackWhiteboard = !showBackWhiteboard },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.UserPen,
+                                    color = buttonTextColor,
+                                    size = 18.dp
+                                )
+                            }
+                        } else {
+                            val buttonBgColor = if (showBackWhiteboard) MaterialTheme.colorScheme.primary else (if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f))
+                            val buttonTextColor = if (showBackWhiteboard) Color.White else (if (isDarkTheme) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.6f))
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .background(buttonBgColor)
+                                    .clickable { showBackWhiteboard = !showBackWhiteboard },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Edit,
+                                    contentDescription = "临时手写板",
+                                    tint = buttonTextColor,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -415,10 +454,21 @@ fun SRSGrammarCard(
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                            val effectiveUsageBg = if (isPlumpDuo) {
+                                IsoluminantPalette.LilacViolet.copy(alpha = if (isExpanded) (if (isDarkTheme) 0.16f else 0.10f) else (if (isDarkTheme) 0.08f else 0.05f))
+                            } else {
+                                if (isExpanded) indigoBg else indigoBg.copy(alpha = 0.5f)
+                            }
+                            val effectiveUsageText = if (isPlumpDuo) {
+                                if (isExpanded) IsoluminantPalette.LilacViolet else IsoluminantPalette.LilacViolet.copy(alpha = 0.7f)
+                            } else {
+                                if (isExpanded) indigoText else indigoText.copy(alpha = 0.7f)
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .background(
-                                        if (isExpanded) indigoBg else indigoBg.copy(alpha = 0.5f),
+                                        effectiveUsageBg,
                                         RoundedCornerShape(8.dp)
                                     )
                                     .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -429,7 +479,7 @@ fun SRSGrammarCard(
                                     text = "用法$label",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = if (isExpanded) indigoText else indigoText.copy(alpha = 0.7f),
+                                    color = effectiveUsageText,
                                     letterSpacing = 1.sp
                                 )
                             }
@@ -537,18 +587,27 @@ fun SRSGrammarCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(bottom = 16.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Lightbulb,
-                                        contentDescription = null,
-                                        tint = indigoText,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    val effectiveExplanationColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else indigoText
+                                    if (isPlumpDuo) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.Lightbulb,
+                                            color = effectiveExplanationColor,
+                                            size = 20.dp
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.Lightbulb,
+                                            contentDescription = null,
+                                            tint = effectiveExplanationColor,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = "说明",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = indigoText,
+                                        color = effectiveExplanationColor,
                                         letterSpacing = 1.sp
                                     )
                                 }
@@ -668,25 +727,42 @@ fun SRSGrammarCard(
 
                             // TIPS卡片（如果存在）
                             if (!usage.notes.isNullOrBlank()) {
+                                val effectiveTipsBg = if (isPlumpDuo) {
+                                    IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
+                                } else {
+                                    yellowBg
+                                }
+                                val effectiveTipsIcon = if (isPlumpDuo) IsoluminantPalette.WarmAmber else yellowIcon
+                                val effectiveTipsText = if (isPlumpDuo) IsoluminantPalette.WarmAmber else yellowText
+
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(yellowBg, RoundedCornerShape(16.dp))
+                                        .background(effectiveTipsBg, RoundedCornerShape(16.dp))
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.Top
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
-                                        contentDescription = null,
-                                        tint = yellowIcon,
-                                        modifier = Modifier.size(18.dp).padding(top = 2.dp)
-                                    )
+                                    if (isPlumpDuo) {
+                                        PlumpDuoIcon(
+                                            icon = PlumpIcon.Sparkles,
+                                            color = effectiveTipsIcon,
+                                            size = 18.dp,
+                                            modifier = Modifier.padding(top = 2.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Default.AutoAwesome,
+                                            contentDescription = null,
+                                            tint = effectiveTipsIcon,
+                                            modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                                        )
+                                    }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = "TIPS: ${usage.notes}",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = yellowText,
+                                        color = effectiveTipsText,
                                         lineHeight = 24.sp
                                     )
                                 }

@@ -35,6 +35,8 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.feature.learning.R
+import androidx.compose.runtime.CompositionLocalProvider
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -151,9 +153,10 @@ fun LearningScreen(
             ((uiState.learningMode == LearningMode.Word && uiState.currentWord == null) ||
              (uiState.learningMode == LearningMode.Grammar && uiState.currentGrammar == null))
 
-    Scaffold(
-        containerColor = backgroundColor
-    ) { padding ->
+    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+        Scaffold(
+            containerColor = backgroundColor
+        ) { padding ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -495,6 +498,7 @@ fun LearningScreen(
                 )
             }
         }
+    }
     }
 }
 

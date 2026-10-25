@@ -42,6 +42,9 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.discoverybar.TapPulseWrapper
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.statistics.presentation.curve.components.ForgettingCurveChart
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -92,6 +95,8 @@ fun ForgettingCurveScreen(
                 NemoChasingDotsLoader()
             }
         } else {
+            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -107,6 +112,7 @@ fun ForgettingCurveScreen(
                 TimeRangeSelector(
                     selectedRange = uiState.selectedRange,
                     onRangeSelected = { viewModel.setTimeRange(it) },
+                    isPlumpDuo = isPlumpDuo,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
@@ -116,7 +122,8 @@ fun ForgettingCurveScreen(
                     CurveStageSelector(
                         stages = uiState.curveData!!.stages,
                         selectedStage = uiState.selectedStage,
-                        onStageSelected = { viewModel.setStage(it) }
+                        onStageSelected = { viewModel.setStage(it) },
+                        isPlumpDuo = isPlumpDuo
                     )
                 }
 
@@ -125,6 +132,7 @@ fun ForgettingCurveScreen(
                 // ========== 折线图区域 ==========
                 ForgettingCurveChart(
                     data = uiState.curveData!!,
+                    isPlumpDuo = isPlumpDuo,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
 
@@ -134,6 +142,7 @@ fun ForgettingCurveScreen(
                 CurveLegend(
                     selectedStage = uiState.selectedStage,
                     alertThreshold = uiState.curveData?.alertThreshold ?: 0.90f,
+                    isPlumpDuo = isPlumpDuo,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
 
@@ -184,6 +193,7 @@ private fun CurveStageSelector(
     stages: List<StageStat>,
     selectedStage: CurveStage,
     onStageSelected: (CurveStage) -> Unit,
+    isPlumpDuo: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -201,7 +211,17 @@ private fun CurveStageSelector(
             val stage = stat.stage
             val isSelected = stage == selectedStage
             val isAvailable = stat.isAvailable || stage == CurveStage.COMPOSITE
-            val stageColor = stage.themeColor
+            val stageColor = if (isPlumpDuo) {
+                when (stage) {
+                    CurveStage.COMPOSITE -> IsoluminantPalette.LilacViolet
+                    CurveStage.YOUNG_EARLY -> IsoluminantPalette.CoralFlame
+                    CurveStage.YOUNG_DEVELOPING -> IsoluminantPalette.SkyIndigo
+                    CurveStage.MATURE -> IsoluminantPalette.EmeraldGreen
+                    CurveStage.EXPERT -> IsoluminantPalette.WarmAmber
+                }
+            } else {
+                stage.themeColor
+            }
 
             val backgroundColor by animateColorAsState(
                 targetValue = when {
@@ -289,9 +309,22 @@ private fun CurveStageSelector(
 private fun CurveLegend(
     selectedStage: CurveStage,
     alertThreshold: Float = 0.90f,
+    isPlumpDuo: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    val stageColor = selectedStage.themeColor
+    val stageColor = if (isPlumpDuo) {
+        when (selectedStage) {
+            CurveStage.COMPOSITE -> IsoluminantPalette.LilacViolet
+            CurveStage.YOUNG_EARLY -> IsoluminantPalette.CoralFlame
+            CurveStage.YOUNG_DEVELOPING -> IsoluminantPalette.SkyIndigo
+            CurveStage.MATURE -> IsoluminantPalette.EmeraldGreen
+            CurveStage.EXPERT -> IsoluminantPalette.WarmAmber
+        }
+    } else {
+        selectedStage.themeColor
+    }
+    val stdColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
+    val alertColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFFD60A)
     val thresholdPercent = (alertThreshold * 100).roundToInt()
     Column(
         modifier = modifier,
@@ -302,12 +335,12 @@ private fun CurveLegend(
             text = "${selectedStage.label}遗忘曲线"
         )
         LegendItem(
-            color = ChartColors.FreshGreen,
+            color = stdColor,
             text = "艾宾浩斯遗忘曲线 (标准参考)",
             isDashed = true
         )
         LegendItem(
-            color = Color(0xFFFFD60A),
+            color = alertColor,
             text = "自适应警戒线 (${thresholdPercent}%)",
             isDashed = true
         )
@@ -546,6 +579,7 @@ private fun rememberMockForgettingCurveData(): ForgettingCurveData {
 private fun TimeRangeSelector(
     selectedRange: CurveTimeRange,
     onRangeSelected: (CurveTimeRange) -> Unit,
+    isPlumpDuo: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -555,16 +589,25 @@ private fun TimeRangeSelector(
     val selectedIndex = ranges.indexOf(selectedRange).coerceAtLeast(0)
 
     // 4 档时间跨度色彩映射
-    val rangeColors = remember {
-        mapOf(
-            CurveTimeRange.SHORT to Color(0xFF007AFF),   // 7天: 经典蓝
-            CurveTimeRange.MEDIUM to Color(0xFF34C759),  // 30天: 鲜活绿
-            CurveTimeRange.LONG to Color(0xFFFF9500),    // 90天: 活力橙
-            CurveTimeRange.EXTENDED to Color(0xFFAF52DE) // 365天: 高级紫
-        )
+    val rangeColors = remember(isPlumpDuo) {
+        if (isPlumpDuo) {
+            mapOf(
+                CurveTimeRange.SHORT to IsoluminantPalette.SkyIndigo,       // 7天: 天空靛蓝
+                CurveTimeRange.MEDIUM to IsoluminantPalette.EmeraldGreen,   // 30天: 翡翠绿
+                CurveTimeRange.LONG to IsoluminantPalette.WarmAmber,        // 90天: 暖琥珀
+                CurveTimeRange.EXTENDED to IsoluminantPalette.LilacViolet   // 365天: 丁香紫
+            )
+        } else {
+            mapOf(
+                CurveTimeRange.SHORT to Color(0xFF007AFF),   // 7天: 经典蓝
+                CurveTimeRange.MEDIUM to Color(0xFF34C759),  // 30天: 鲜活绿
+                CurveTimeRange.LONG to Color(0xFFFF9500),    // 90天: 活力橙
+                CurveTimeRange.EXTENDED to Color(0xFFAF52DE) // 365天: 高级紫
+            )
+        }
     }
 
-    val currentActiveColor = rangeColors[selectedRange] ?: Color(0xFF34C759)
+    val currentActiveColor = rangeColors[selectedRange] ?: (if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else Color(0xFF34C759))
     val inactiveTextColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
     val barHeight = 56.dp

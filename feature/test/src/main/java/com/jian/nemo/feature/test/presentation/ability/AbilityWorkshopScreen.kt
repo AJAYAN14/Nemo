@@ -15,13 +15,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.designsystem.theme.IosColors
-import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 /**
  * 能力工坊界面 - 提供多种专项能力训练游戏
@@ -31,6 +37,8 @@ fun AbilityWorkshopScreen(
     onBack: () -> Unit,
     onNavigateToGame: (String) -> Unit = {}
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -59,6 +67,9 @@ fun AbilityWorkshopScreen(
                 description = "聆听本地纯正单词发音，检验听辨与词义联想能力。",
                 icon = Icons.Rounded.Headphones,
                 iconColor = IosColors.Indigo,
+                plumpIcon = PlumpIcon.AudioVolume,
+                isoluminantColor = IsoluminantPalette.SkyIndigo,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("listening_comprehension") }
             )
             AbilityItemCard(
@@ -66,6 +77,9 @@ fun AbilityWorkshopScreen(
                 description = "根据释义和句子提示，拼写填入被挖空的假名。",
                 icon = Icons.Rounded.EditCalendar,
                 iconColor = IosColors.Orange,
+                plumpIcon = PlumpIcon.SpellCheck,
+                isoluminantColor = IsoluminantPalette.WarmAmber,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("word_cloze") }
             )
             AbilityItemCard(
@@ -73,6 +87,9 @@ fun AbilityWorkshopScreen(
                 description = "为真实句子选择自然的动词形式。",
                 icon = Icons.Rounded.AutoFixHigh,
                 iconColor = IosColors.Blue,
+                plumpIcon = PlumpIcon.Sparkles,
+                isoluminantColor = IsoluminantPalette.EmeraldGreen,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("verb_conjugation") }
             )
             AbilityItemCard(
@@ -80,6 +97,9 @@ fun AbilityWorkshopScreen(
                 description = "连接意思相近的单词。",
                 icon = Icons.Rounded.Schema,
                 iconColor = IosColors.Orange,
+                plumpIcon = PlumpIcon.Link2,
+                isoluminantColor = IsoluminantPalette.LakesideCyan,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("synonym_connection") }
             )
             AbilityItemCard(
@@ -87,6 +107,9 @@ fun AbilityWorkshopScreen(
                 description = "匹配反义词，消除单词对。",
                 icon = Icons.Rounded.SwapHoriz,
                 iconColor = IosColors.Teal,
+                plumpIcon = PlumpIcon.Zap,
+                isoluminantColor = IsoluminantPalette.GlazeMint,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("antonym_matching") }
             )
             AbilityItemCard(
@@ -94,6 +117,9 @@ fun AbilityWorkshopScreen(
                 description = "组合听起来自然的词语搭配。",
                 icon = Icons.Rounded.Hub,
                 iconColor = IosColors.Green,
+                plumpIcon = PlumpIcon.Puzzle,
+                isoluminantColor = IsoluminantPalette.LilacViolet,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("collocation") }
             )
             AbilityItemCard(
@@ -101,6 +127,9 @@ fun AbilityWorkshopScreen(
                 description = "找出语法错误，并选择正确改法。",
                 icon = Icons.Rounded.Spellcheck,
                 iconColor = IosColors.Purple,
+                plumpIcon = PlumpIcon.BadgeCheck,
+                isoluminantColor = IsoluminantPalette.CoralFlame,
+                isPlumpDuo = isPlumpDuo,
                 onClick = { onNavigateToGame("grammar_correction") }
             )
             
@@ -115,10 +144,20 @@ private fun AbilityItemCard(
     description: String,
     icon: ImageVector,
     iconColor: Color,
+    plumpIcon: PlumpIcon,
+    isoluminantColor: Color,
+    isPlumpDuo: Boolean,
     onClick: () -> Unit
 ) {
-    // 借鉴图片中的浅色背景风格，使用极低透明度的图标颜色作为卡片背景
-    val cardBg = iconColor.copy(alpha = 0.05f)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val effectiveColor = if (isPlumpDuo) isoluminantColor else iconColor
+
+    // 背景微光：默认方案 100% 保持原有 0.05f，Plump Duo 方案使用感知通透微光
+    val cardBg = if (isPlumpDuo) {
+        effectiveColor.copy(alpha = if (isDark) 0.10f else 0.06f)
+    } else {
+        iconColor.copy(alpha = 0.05f)
+    }
     
     Surface(
         modifier = Modifier
@@ -135,19 +174,34 @@ private fun AbilityItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 图标容器
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(iconColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
+            if (isPlumpDuo) {
+                // Plump Duo 方案：彻底取消厚重实色方块贴纸底座，使用纯透明对齐容器，通透立体居中呈现
+                Box(
+                    modifier = Modifier.size(56.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = isoluminantColor,
+                        size = 48.dp
+                    )
+                }
+            } else {
+                // 原有默认方案：100% 保留原有 56dp 实色方块底座与单色白图标
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(iconColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -173,7 +227,7 @@ private fun AbilityItemCard(
             
             Spacer(modifier = Modifier.width(8.dp))
             
-            // 箭头指示器
+            // 箭头指示器（严格保持灰色中性控件，严禁滥用彩色）
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
@@ -182,3 +236,4 @@ private fun AbilityItemCard(
         }
     }
 }
+

@@ -17,6 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -186,6 +191,9 @@ private fun GrammarDetailContent(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val accentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
+
     // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
     val transitionDistancePx = with(density) { 90.dp.toPx() }
     val scrollProgress = (scrollState.value / transitionDistancePx).coerceIn(0f, 1f)
@@ -208,10 +216,10 @@ private fun GrammarDetailContent(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = if (isDark) listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                accentColor.copy(alpha = if (isPlumpDuo) 0.20f else 0.2f),
                                 MaterialTheme.colorScheme.background
                             ) else listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                accentColor.copy(alpha = if (isPlumpDuo) 0.10f else 0.1f),
                                 MaterialTheme.colorScheme.background
                             )
                         )
@@ -235,7 +243,7 @@ private fun GrammarDetailContent(
                             fontFamily = NotoSerifJP
                         ),
                         baseTextColor = MaterialTheme.colorScheme.onBackground,
-                        furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        furiganaTextColor = if (isDark) accentColor.copy(alpha = if (isPlumpDuo) 0.85f else 0.8f) else accentColor.copy(alpha = if (isPlumpDuo) 0.75f else 0.7f),
                         furiganaTextSize = 12.sp,
                         furiganaFontFamily = NotoSerifJP
                     )
@@ -244,9 +252,21 @@ private fun GrammarDetailContent(
 
                     // Level Tag (Enhanced)
                     grammar.grammarLevel?.let { level ->
+                        val levelColor = if (isPlumpDuo) {
+                            when (level.uppercase()) {
+                                "N5" -> IsoluminantPalette.EmeraldGreen
+                                "N4" -> IsoluminantPalette.LakesideCyan
+                                "N3" -> IsoluminantPalette.SkyIndigo
+                                "N2" -> IsoluminantPalette.WarmAmber
+                                "N1" -> IsoluminantPalette.RoseRuby
+                                else -> IsoluminantPalette.EmeraldGreen
+                            }
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
                         Surface(
                             shape = RoundedCornerShape(50),
-                            color = MaterialTheme.colorScheme.primaryContainer, // Use Primary Container for consistency
+                            color = if (isPlumpDuo) levelColor.copy(alpha = if (isDark) 0.18f else 0.12f) else MaterialTheme.colorScheme.primaryContainer,
                             modifier = Modifier.height(32.dp)
                         ) {
                              Box(
@@ -256,7 +276,7 @@ private fun GrammarDetailContent(
                                 Text(
                                     text = level,
                                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                    color = if (isPlumpDuo) levelColor else MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
@@ -270,8 +290,8 @@ private fun GrammarDetailContent(
                         isPlaying = playingAudioId == grammarAudioId,
                         onClick = { onPlayAudio(grammar.grammar ?: "", grammarAudioId) },
                         size = 56.dp,
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        backgroundColor = if (isPlumpDuo) accentColor.copy(alpha = if (isDark) 0.18f else 0.12f) else MaterialTheme.colorScheme.primaryContainer,
+                        tint = if (isPlumpDuo) accentColor else MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
@@ -288,7 +308,7 @@ private fun GrammarDetailContent(
                     Text(
                         text = "用法 ${index + 1}${if (usage.subtype != null) " · ${usage.subtype}" else ""}",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = accentColor,
                         modifier = Modifier.padding(bottom = 12.dp, top = if (index > 0) 24.dp else 0.dp)
                     )
                 }
@@ -298,17 +318,25 @@ private fun GrammarDetailContent(
                         // Explanation
                         if (usage.explanation.isNotBlank()) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
+                                if (isPlumpDuo) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.BookOpen,
+                                        color = accentColor,
+                                        size = 18.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "解释",
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = accentColor
                                 )
                             }
                             Spacer(modifier = Modifier.height(8.dp))
@@ -320,47 +348,62 @@ private fun GrammarDetailContent(
                                     lineHeight = 26.sp
                                 ),
                                 baseTextColor = MaterialTheme.colorScheme.onSurface,
-                                furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                furiganaTextColor = if (isDark) accentColor.copy(alpha = if (isPlumpDuo) 0.75f else 0.7f) else accentColor.copy(alpha = if (isPlumpDuo) 0.65f else 0.6f),
                                 furiganaTextSize = 10.sp
                             )
                         }
 
                         // Connection Rules (Visualized)
                         if (usage.connection.isNotBlank()) {
-                             Spacer(modifier = Modifier.height(24.dp))
-                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Link,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(18.dp),
-                                    tint = NemoOrange
-                                )
+                            val connectionColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else NemoOrange
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (isPlumpDuo) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Link2,
+                                        color = connectionColor,
+                                        size = 18.dp
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Link,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = NemoOrange
+                                    )
+                                }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = "接续",
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = NemoOrange
+                                    color = connectionColor
                                 )
                             }
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            ConnectionPill(text = usage.connection.trim(), isDark = isDark)
+                            ConnectionPill(
+                                text = usage.connection.trim(),
+                                isDark = isDark,
+                                isPlumpDuo = isPlumpDuo,
+                                accentColor = connectionColor
+                            )
                         }
 
                         // Notes
                         if (!usage.notes.isNullOrBlank()) {
+                            val notesColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
                                 text = "注意",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.error,
+                                color = notesColor,
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                             com.jian.nemo.core.ui.component.text.FuriganaText(
                                 text = usage.notes?.trim() ?: "",
                                 baseTextStyle = MaterialTheme.typography.bodyMedium,
                                 baseTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f),
-                                furiganaTextColor = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                                furiganaTextColor = notesColor.copy(alpha = 0.7f),
                                 furiganaTextSize = 9.sp,
                                 furiganaFontFamily = NotoSerifJP
                             )
@@ -386,7 +429,8 @@ private fun GrammarDetailContent(
                                             onPlayAudio = onPlayAudio,
                                             grammarId = grammar.id,
                                             usageIndex = index,
-                                            exampleIndex = exIndex
+                                            exampleIndex = exIndex,
+                                            accentColor = accentColor
                                         )
                                         if (exIndex < usage.examples.size - 1) {
                                             HorizontalDivider(
@@ -401,7 +445,7 @@ private fun GrammarDetailContent(
                     } // End of Column (padding 20.dp)
                 } // End of PremiumDetailCard
             }
-             Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(48.dp))
         }
     }
 
@@ -460,13 +504,18 @@ private fun GrammarDetailContent(
  * Visual Pill for Connection Rules
  */
 @Composable
-private fun ConnectionPill(text: String, isDark: Boolean) {
+private fun ConnectionPill(
+    text: String,
+    isDark: Boolean,
+    isPlumpDuo: Boolean = false,
+    accentColor: Color = NemoOrange
+) {
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         border = androidx.compose.foundation.BorderStroke(
             0.5.dp,
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+            if (isPlumpDuo) accentColor.copy(alpha = 0.25f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
         )
     ) {
         com.jian.nemo.core.ui.component.text.FuriganaText(
@@ -476,7 +525,7 @@ private fun ConnectionPill(text: String, isDark: Boolean) {
                 fontWeight = FontWeight.Medium
             ),
             baseTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            furiganaTextColor = if (isDark) accentColor.copy(alpha = 0.8f) else accentColor.copy(alpha = 0.7f),
             furiganaTextSize = 9.sp,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
         )
@@ -495,7 +544,8 @@ private fun GrammarExampleItem(
     onPlayAudio: (String, String?) -> Unit,
     grammarId: Int,
     usageIndex: Int,
-    exampleIndex: Int
+    exampleIndex: Int,
+    accentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val exampleId = "grammar_${grammarId}_u${usageIndex}_e${exampleIndex}"
 
@@ -513,7 +563,7 @@ private fun GrammarExampleItem(
                 fontFamily = NotoSerifJP
             ),
             baseTextColor = MaterialTheme.colorScheme.onBackground,
-            furiganaTextColor = if (isDark) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            furiganaTextColor = if (isDark) accentColor.copy(alpha = 0.8f) else accentColor.copy(alpha = 0.7f),
             furiganaTextSize = 9.sp,
             furiganaFontFamily = NotoSerifJP
         )
@@ -531,7 +581,7 @@ private fun GrammarExampleItem(
             isPlaying = playingAudioId == exampleId,
             onClick = { onPlayAudio(sentence, exampleId) },
             size = 44.dp,
-            tint = MaterialTheme.colorScheme.primary
+            tint = accentColor
         )
     }
 }
