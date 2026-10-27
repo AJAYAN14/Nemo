@@ -1771,6 +1771,19 @@ class LearningViewModel @Inject constructor(
         }
 
         val list = if (mode == LearningMode.Word) state.wordList else state.grammarList
+
+        // 用户主动点击“提前复习”或倒计时结束：若选中未来卡片，清除其在内存中的冷却等待时间，解除答案显示锁定
+        if (selection is QueueSelectionResult.Next) {
+            val itemId = when (val item = selection.item) {
+                is Word -> item.id
+                is Grammar -> item.id
+                else -> null
+            }
+            if (itemId != null) {
+                _learningDueTimes.remove(itemId)
+            }
+        }
+
         handleSelectionResult(selection, list, state.selectedLevel, isWord = mode == LearningMode.Word)
     }
 
@@ -1855,14 +1868,16 @@ class LearningViewModel @Inject constructor(
                     val nextWord = nextItemObj as Word
                     // Anki Learn Ahead check was already done in manager
                     val due = _learningDueTimes[nextWord.id] ?: 0L
-                    if (due > System.currentTimeMillis()) {
-                         println("提前学习 (Learn Ahead)")
+                    val isLearnAhead = due > System.currentTimeMillis()
+                    if (isLearnAhead) {
+                        println("提前学习 (Learn Ahead)")
+                        _learningDueTimes.remove(nextWord.id)
                     }
 
                     val nextItem = LearningItem.WordItem(
                         nextWord,
                         step = _learningSteps[nextWord.id] ?: 0,
-                        dueTime = due
+                        dueTime = if (isLearnAhead) 0L else due
                     )
 
                     _uiState.update {
@@ -1884,14 +1899,16 @@ class LearningViewModel @Inject constructor(
                 } else {
                     val nextGrammar = nextItemObj as Grammar
                     val due = _learningDueTimes[nextGrammar.id] ?: 0L
-                    if (due > System.currentTimeMillis()) {
-                         println("提前学习 (Learn Ahead)")
+                    val isLearnAhead = due > System.currentTimeMillis()
+                    if (isLearnAhead) {
+                        println("提前学习 (Learn Ahead)")
+                        _learningDueTimes.remove(nextGrammar.id)
                     }
 
                     val nextItem = LearningItem.GrammarItem(
                         nextGrammar,
                         step = _learningSteps[nextGrammar.id] ?: 0,
-                        dueTime = due
+                        dueTime = if (isLearnAhead) 0L else due
                     )
 
                     _uiState.update {

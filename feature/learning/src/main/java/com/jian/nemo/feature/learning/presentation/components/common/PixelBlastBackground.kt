@@ -726,6 +726,7 @@ private fun Color.toHex(): String {
 fun PixelBlastBackground(
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    isActive: Boolean = true,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
     accentColor: Color = MaterialTheme.colorScheme.primaryContainer,
     onControllerReady: ((triggerCenterBlast: () -> Unit) -> Unit)? = null
@@ -743,6 +744,18 @@ fun PixelBlastBackground(
 
     LaunchedEffect(isDark, primaryHex, accentHex) {
         sendTheme(webViewRef.value)
+    }
+
+    LaunchedEffect(isActive) {
+        webViewRef.value?.let { wv ->
+            if (isActive) {
+                wv.onResume()
+                wv.setOnTouchListener(null)
+            } else {
+                wv.onPause()
+                wv.setOnTouchListener { _, _ -> false }
+            }
+        }
     }
 
     AndroidView(
@@ -768,17 +781,32 @@ fun PixelBlastBackground(
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
                         sendTheme(view)
+                        if (!isActive) {
+                            view?.onPause()
+                            view?.setOnTouchListener { _, _ -> false }
+                        }
                         onControllerReady?.invoke {
                             view?.evaluateJavascript("if (window.triggerCenterBlast) window.triggerCenterBlast();", null)
                         }
                     }
                 }
                 loadDataWithBaseURL("https://nemo.local/", PIXEL_BLAST_HTML, "text/html", "UTF-8", null)
+                if (!isActive) {
+                    onPause()
+                    setOnTouchListener { _, _ -> false }
+                }
                 webViewRef.value = this
             }
         },
         update = { webView ->
             sendTheme(webView)
+            if (isActive) {
+                webView.onResume()
+                webView.setOnTouchListener(null)
+            } else {
+                webView.onPause()
+                webView.setOnTouchListener { _, _ -> false }
+            }
         },
         onRelease = { webView ->
             webView.destroy()

@@ -748,6 +748,7 @@ fun WaitingBackground(
     backdrop: LayerBackdrop,
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    isActive: Boolean = true,
     primaryColor: Color = MaterialTheme.colorScheme.primary,
     accentColor: Color = MaterialTheme.colorScheme.primaryContainer,
     onControllerReady: ((triggerCenterBlast: () -> Unit) -> Unit)? = null
@@ -759,6 +760,7 @@ fun WaitingBackground(
     ) {
         PixelBlastBackground(
             isDark = isDark,
+            isActive = isActive,
             primaryColor = primaryColor,
             accentColor = accentColor,
             modifier = Modifier.fillMaxSize(),

@@ -48,9 +48,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.DisposableEffect
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -177,16 +179,25 @@ fun LearningScreen(
                 )
             }
 
-            // 当处于短时记忆冷却等待时，在最外层（不受 Scaffold padding 限制）全屏铺设 WebGL 2 原生流光粒子背景（直通状态栏与左右物理边缘）
-            if (isWaiting) {
-                WaitingBackground(
-                    backdrop = waitingBackdrop,
-                    isDark = isDarkTheme,
-                    onControllerReady = { trigger ->
-                        triggerWaitingBlast = trigger
-                    }
-                )
-            }
+            // 冷却等待流光背景透明度渐变 (240ms 柔和淡入/淡出)
+            val waitingAlpha by animateFloatAsState(
+                targetValue = if (isWaiting) 1f else 0f,
+                animationSpec = tween(durationMillis = 240),
+                label = "waitingBackgroundAlpha"
+            )
+
+            // 全屏铺设 WebGL 2 原生流光粒子背景（常驻预热消除冷启动延迟，非等待时自动 onPause 零能耗，等待时第 1 帧零延迟平滑呈现）
+            WaitingBackground(
+                backdrop = waitingBackdrop,
+                isDark = isDarkTheme,
+                isActive = isWaiting,
+                onControllerReady = { trigger ->
+                    triggerWaitingBlast = trigger
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(waitingAlpha)
+            )
 
             // 1. 页面主体内容 (Z = 0，高斯模糊景深)
             Column(
