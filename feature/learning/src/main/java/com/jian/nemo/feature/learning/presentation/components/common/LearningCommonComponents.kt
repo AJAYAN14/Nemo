@@ -92,6 +92,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.toArgb
@@ -392,6 +393,8 @@ fun LearnHeader(
                                 onToggleMenu?.invoke(expandedValue)
                             }
 
+                            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
                             NemoMorphMenu(
                                 expanded = expanded,
                                 onExpandedChange = setExpanded,
@@ -405,6 +408,8 @@ fun LearnHeader(
                                     NemoMorphMenuItem(
                                         text = "评分说明（新学/复习）",
                                         leadingIcon = Icons.Rounded.CheckCircle,
+                                        plumpIcon = PlumpIcon.BadgeCheck,
+                                        iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
                                         onClick = {
                                             close()
                                             onShowRatingGuide()
@@ -420,6 +425,8 @@ fun LearnHeader(
                                     NemoMorphMenuItem(
                                         text = "暂停此卡片 (Suspend)",
                                         leadingIcon = Icons.Rounded.Pause,
+                                        plumpIcon = PlumpIcon.Pause,
+                                        iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
                                         onClick = {
                                             close()
                                             onSuspend()
@@ -428,6 +435,8 @@ fun LearnHeader(
                                     NemoMorphMenuItem(
                                         text = "今日暂缓此项 (Bury)",
                                         leadingIcon = Icons.Rounded.AccessTime,
+                                        plumpIcon = PlumpIcon.StudyClock,
+                                        iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
                                         onClick = {
                                             close()
                                             onBury()
@@ -437,6 +446,8 @@ fun LearnHeader(
                                     NemoMorphMenuItem(
                                         text = "报告条目错误",
                                         leadingIcon = Icons.Rounded.Report,
+                                        plumpIcon = PlumpIcon.CircleX,
+                                        iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
                                         onClick = {
                                             close()
                                             onReportError()
@@ -468,6 +479,8 @@ fun LearnHeader(
                                         NemoMorphMenuItem(
                                             text = "等待时长: $showAnswerDelayDurationLabel",
                                             leadingIcon = Icons.Rounded.Timer,
+                                            plumpIcon = PlumpIcon.StudyClock,
+                                            iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
                                             onClick = {
                                                 close()
                                                 if (onOpenShowAnswerDelayDialog != null) {
@@ -491,6 +504,8 @@ fun LearnHeader(
                                         NemoMorphMenuItem(
                                             text = "翻面时长: $autoRevealAnswerDurationLabel",
                                             leadingIcon = Icons.Rounded.Timer,
+                                            plumpIcon = PlumpIcon.StudyClock,
+                                            iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
                                             onClick = {
                                                 close()
                                                 if (onOpenAutoRevealAnswerDialog != null) {
@@ -508,6 +523,8 @@ fun LearnHeader(
                                     NemoMorphMenuItem(
                                         text = "手写白板: $whiteboardLabel",
                                         leadingIcon = Icons.Rounded.Edit,
+                                        plumpIcon = PlumpIcon.IconLab,
+                                        iconColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else null,
                                         onClick = {
                                             onToggleWhiteboard(!isWhiteboardEnabled)
                                         }
@@ -529,15 +546,28 @@ fun LearnHeader(
                                     true -> Icons.Rounded.DarkMode
                                     false -> Icons.Rounded.LightMode
                                 }
+                                val themePlumpIcon = when (isDarkMode) {
+                                    null -> PlumpIcon.ThemePalette
+                                    true -> PlumpIcon.Moon
+                                    false -> PlumpIcon.Sun
+                                }
+                                val themeColor = when (isDarkMode) {
+                                    null -> IsoluminantPalette.SkyIndigo
+                                    true -> IsoluminantPalette.LilacViolet
+                                    false -> IsoluminantPalette.WarmAmber
+                                }
 
                                 NemoMorphMenuItem(
                                     text = "显示模式: $themeLabel",
                                     leadingIcon = themeIcon,
+                                    plumpIcon = themePlumpIcon,
+                                    iconColor = if (isPlumpDuo) themeColor else null,
                                     onClick = {
                                         onCycleDarkMode()
                                     }
                                 )
                             }
+
                         }
                     }
                 }
@@ -1257,5 +1287,7 @@ private fun MorphMenuToggleItem(
         }
     }
 }
+
+
 
 

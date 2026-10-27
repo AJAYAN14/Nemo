@@ -48,6 +48,7 @@ enum class PlumpIcon {
     Moon,             // 开启深色模式 / 月亮
     Sun,              // 结束深色模式 / 太阳
     IconStyle,        // 图标风格选择 / 几何图形
+    Pause,            // 暂停操作 / 双竖条
 
     // --- 2. 语音与媒体参数分支 (PlumpIconsMedia.kt) ---
     Mic,              // 日语语音 / 麦克风

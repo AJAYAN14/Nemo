@@ -42,6 +42,11 @@ import androidx.compose.ui.window.PopupProperties
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.graphics.painter.Painter
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -330,9 +335,10 @@ fun NemoMorphMenu(
 /**
  * NemoMorphMenuItem - 形变菜单标准项（内置错峰入场/退场动画）
  *
- * 动效规格：
- * - **入场**：延迟 80ms + index * 60ms，从右侧偏移 24dp + 缩放 0.9 伴随超调弹性曲线滑入
- * - **退场**：逆序延迟 (total - 1 - index) * 40ms，减速曲线快速消失
+ * 遵循图标设计与等亮度调色板开发规范：
+ * - 默认方案 (isPlumpDuo == false): 100% 完整保留原有配色与图标不变；
+ * - Plump Duo 方案 (isPlumpDuo == true): 强调色切换为 IsoluminantPalette 等亮度色彩，优先展示 PlumpDuoIcon；
+ * - 辅助中性控件 (trailingIcon) 保持中性灰色 (onSurfaceVariant)，禁止滥用彩色。
  */
 @Composable
 fun NemoMorphMenuScope.NemoMorphMenuItem(
@@ -341,12 +347,43 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     leadingPainter: Painter? = null,
+    plumpIcon: PlumpIcon? = null,
+    iconColor: Color? = null,
     trailingIcon: ImageVector? = null,
     enabled: Boolean = true,
     isDestructive: Boolean = false
 ) {
     val itemIndex = nextItemIndex()
     val totalCount = itemCount
+
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    val defaultLegacyColor = if (isDestructive) {
+        MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val defaultIsoluminantColor = if (isDestructive) {
+        IsoluminantPalette.CoralFlame
+    } else {
+        IsoluminantPalette.SkyIndigo
+    }
+
+    val effectiveIconColor = if (isPlumpDuo) {
+        iconColor ?: defaultIsoluminantColor
+    } else {
+        iconColor ?: defaultLegacyColor
+    }
+
+    val mainColor = if (isDestructive) {
+        if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    // 铁律：辅助中性控件（如折角箭头、打勾等）一律保持中性灰色
+    val neutralTrailingTint = MaterialTheme.colorScheme.onSurfaceVariant
 
     // ── 从 scope.transition 派生高帧率、无协程开销的错峰动画 ──
     val itemAlpha by transition.animateFloat(
@@ -412,18 +449,6 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
         if (isOpen) 1f else 0.9f
     }
 
-    val mainColor = if (isDestructive) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-
-    val iconTint = if (isDestructive) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.primary
-    }
-
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val bgAlpha = if (isPressed) 0.08f else 0f
@@ -456,12 +481,19 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            if (leadingPainter != null) {
+            if (isPlumpDuo && plumpIcon != null) {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = effectiveIconColor,
+                    size = 20.dp
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            } else if (leadingPainter != null) {
                 Icon(
                     painter = leadingPainter,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = iconTint.copy(alpha = if (enabled) 1f else 0.38f)
+                    tint = effectiveIconColor.copy(alpha = if (enabled) 1f else 0.38f)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
             } else if (leadingIcon != null) {
@@ -469,7 +501,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
                     imageVector = leadingIcon,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = iconTint.copy(alpha = if (enabled) 1f else 0.38f)
+                    tint = effectiveIconColor.copy(alpha = if (enabled) 1f else 0.38f)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
             }
@@ -489,9 +521,10 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
                     imageVector = trailingIcon,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = iconTint.copy(alpha = if (enabled) 0.7f else 0.38f)
+                    tint = neutralTrailingTint.copy(alpha = if (enabled) 0.7f else 0.38f)
                 )
             }
         }
     }
 }
+

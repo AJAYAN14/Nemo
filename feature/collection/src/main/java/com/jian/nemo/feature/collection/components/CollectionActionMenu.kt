@@ -10,6 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
@@ -24,7 +28,7 @@ import com.kyant.backdrop.Backdrop
  *   - Dark: Surface Container (#1C1C1E) + Subtle Border
  * - Shape: Rounded 16dp
  * - Typography: Inter/System Default (Clean)
- * - Icons: Rounded Material Icons
+ * - Icons: 双方案自适应（默认原生图标，Plump Duo 模式呈现等亮度线面立体图标）
  * - Dialog: Premium Alert Dialog Style
  */
 @Composable
@@ -40,6 +44,8 @@ fun CollectionActionMenu(
     backdrop: Backdrop? = null
 ) {
     if (wordCount <= 0 && grammarCount <= 0) return
+
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     var internalExpanded by remember { mutableStateOf(false) }
     val expanded = if (onToggleMenu != null) isExpanded else internalExpanded
@@ -63,6 +69,8 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = "清除所有${titleSuffix}",
             leadingIcon = Icons.Rounded.DeleteSweep,
+            plumpIcon = PlumpIcon.ResetTrash,
+            iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
             isDestructive = true,
             onClick = {
                 close()
@@ -78,6 +86,8 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = "清除单词${titleSuffix}",
             leadingIcon = Icons.Rounded.Delete,
+            plumpIcon = PlumpIcon.SpellCheck,
+            iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
             enabled = wordCount > 0,
             onClick = {
                 close()
@@ -88,6 +98,8 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = "清除语法${titleSuffix}",
             leadingIcon = Icons.Rounded.FolderDelete,
+            plumpIcon = PlumpIcon.GrammarLayers,
+            iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
             enabled = grammarCount > 0,
             onClick = {
                 close()

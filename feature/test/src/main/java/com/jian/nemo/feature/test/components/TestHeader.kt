@@ -29,6 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
 import com.jian.nemo.core.ui.component.common.NemoMenuItem
 
@@ -101,6 +105,8 @@ fun TestHeader(
                 )
             }
 
+            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
             NemoDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -113,7 +119,9 @@ fun TestHeader(
                             expanded = false
                             onToggleFavorite(itemId, !isFavorite)
                         },
-                        leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+                        leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        plumpIcon = PlumpIcon.Heart,
+                        iconColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else null
                     )
                 }
 
@@ -124,7 +132,9 @@ fun TestHeader(
                         expanded = false
                         onPause()
                     },
-                    leadingIcon = Icons.Rounded.Pause
+                    leadingIcon = Icons.Rounded.Pause,
+                    plumpIcon = PlumpIcon.Pause,
+                    iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null
                 )
             }
         }

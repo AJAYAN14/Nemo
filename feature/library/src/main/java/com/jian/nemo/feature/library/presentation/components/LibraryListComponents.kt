@@ -36,6 +36,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -107,11 +111,13 @@ fun LibraryLevelSelectionMenu(
     backdrop: Backdrop?,
     onScrollToTop: () -> Unit
 ) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         buttonSize = 48.dp,
-        menuWidth = 200.dp,
+        menuWidth = if (isPlumpDuo) 220.dp else 200.dp,
         enableHaptic = false,
         backdrop = backdrop,
         iconPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
@@ -122,6 +128,8 @@ fun LibraryLevelSelectionMenu(
 
         NemoMorphMenuItem(
             text = "全部等级 ($allCount)",
+            plumpIcon = PlumpIcon.GraduationCap,
+            iconColor = if (isPlumpDuo) IsoluminantPalette.OceanBlue else null,
             trailingIcon = if (isAllSelected) Icons.Rounded.Check else null,
             onClick = {
                 onLevelSelected("ALL")
@@ -134,12 +142,20 @@ fun LibraryLevelSelectionMenu(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
         )
 
-        val levelsList = listOf("N5", "N4", "N3", "N2", "N1")
-        levelsList.forEach { level ->
+        val levelsList = listOf(
+            "N5" to IsoluminantPalette.EmeraldGreen,
+            "N4" to IsoluminantPalette.LakesideCyan,
+            "N3" to IsoluminantPalette.SkyIndigo,
+            "N2" to IsoluminantPalette.LilacViolet,
+            "N1" to IsoluminantPalette.CoralFlame
+        )
+        levelsList.forEach { (level, levelColor) ->
             val count = countsByLevel[level] ?: 0
             val isSelected = selectedLevel.equals(level, ignoreCase = true)
             NemoMorphMenuItem(
                 text = "$level 等级 ($count)",
+                plumpIcon = PlumpIcon.GraduationCap,
+                iconColor = if (isPlumpDuo) levelColor else null,
                 trailingIcon = if (isSelected) Icons.Rounded.Check else null,
                 onClick = {
                     onLevelSelected(level)
@@ -150,6 +166,7 @@ fun LibraryLevelSelectionMenu(
         }
     }
 }
+
 
 /**
  * 词库列表通用 - 页面全屏高斯模糊景深遮罩

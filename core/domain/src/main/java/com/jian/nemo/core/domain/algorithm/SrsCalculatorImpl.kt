@@ -141,7 +141,7 @@ class SrsCalculatorImpl @Inject constructor(
         // 4. 执行 FSRS step
         val newState = fsrs.step(currentState, rating, elapsedDays)
 
-        // 5. 计算新间隔
+        // 5. 计算新间隔与单调性保证
         val newInterval: Int
         val newRepetitionCount: Int
 
@@ -150,10 +150,37 @@ class SrsCalculatorImpl @Inject constructor(
             newRepetitionCount = item.repetitionCount // 不扣减
             newInterval = fsrs.nextIntervalDays(newState.stability)
         } else {
-            // 成功
+            // 成功: 必须严格保证 Hard <= Good <= Easy 的单调性约束 (对齐 Anki 官方调度器)
             newRepetitionCount = item.repetitionCount + 1
-            val seed = buildFuzzSeed(item, today, quality, newRepetitionCount)
-            newInterval = fsrs.nextIntervalDaysWithFuzz(newState.stability, seed)
+            val seed = buildFuzzSeed(item, today, newRepetitionCount)
+
+            // 联合推演成功各档状态
+            val stateHard = if (rating == FsrsRating.Hard) newState else fsrs.step(currentState, FsrsRating.Hard, elapsedDays)
+            val stateGood = if (rating == FsrsRating.Good) newState else fsrs.step(currentState, FsrsRating.Good, elapsedDays)
+            val stateEasy = if (rating == FsrsRating.Easy) newState else fsrs.step(currentState, FsrsRating.Easy, elapsedDays)
+
+            val rawHard = fsrs.nextIntervalDays(stateHard.stability)
+            val rawGood = fsrs.nextIntervalDays(stateGood.stability)
+            val rawEasy = fsrs.nextIntervalDays(stateEasy.stability)
+
+            var fuzzedHard = fsrs.fuzzIntervalDays(rawHard, seed)
+            var fuzzedGood = fsrs.fuzzIntervalDays(rawGood, seed)
+            var fuzzedEasy = fsrs.fuzzIntervalDays(rawEasy, seed)
+
+            // 施加严格单调性截断约束：Hard <= Good <= Easy
+            if (fuzzedHard > fuzzedGood) {
+                fuzzedHard = fuzzedGood
+            }
+            if (fuzzedEasy < fuzzedGood) {
+                fuzzedEasy = fuzzedGood
+            }
+
+            newInterval = when (rating) {
+                FsrsRating.Hard -> fuzzedHard
+                FsrsRating.Good -> fuzzedGood
+                FsrsRating.Easy -> fuzzedEasy
+                else -> fuzzedGood
+            }
         }
 
         // 6. 计算日期
@@ -202,13 +229,13 @@ class SrsCalculatorImpl @Inject constructor(
         }
     }
 
-    private fun buildFuzzSeed(item: SrsItem, today: Long, quality: Int, repetitions: Int): Long {
+    private fun buildFuzzSeed(item: SrsItem, today: Long, repetitions: Int): Long {
         val itemId = when (item) {
             is Word -> item.id
             is Grammar -> item.id
             else -> 0
         }
-        return (itemId.toLong() shl 32) xor (today shl 8) xor (quality.toLong() shl 4) xor repetitions.toLong()
+        return (itemId.toLong() shl 32) xor (today shl 8) xor repetitions.toLong()
     }
 
     override fun forgettingCurve(elapsedDays: Float, stability: Float): Float {

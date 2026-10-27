@@ -220,6 +220,63 @@ class SrsCalculatorImplTest {
             highResult.interval <= lowResult.interval)
     }
 
+    @Test
+    fun `复习阶段_困难间隔必须小于等于良好间隔且良好必须小于等于简单`() {
+        // Given: 处于临界稳定性区间的卡片 (之前容易因 Fuzz 倒挂)
+        val item = createItemWithRepetition(
+            repetitionCount = 2,
+            stability = 3.5f,
+            difficulty = 6.0f,
+            interval = 3,
+            nextReviewDate = 100,
+            lastReviewedDate = 96 // elapsed = 4 天
+        )
+
+        // When: 分别评估 Hard(3), Good(4), Easy(5)
+        val hardResult = calculator.calculate(item, quality = 3, today = 100)
+        val goodResult = calculator.calculate(item, quality = 4, today = 100)
+        val easyResult = calculator.calculate(item, quality = 5, today = 100)
+
+        // Then: 必须严格满足单调性约束
+        assertTrue(
+            "Hard (${hardResult.interval}) 必须 <= Good (${goodResult.interval})",
+            hardResult.interval <= goodResult.interval
+        )
+        assertTrue(
+            "Good (${goodResult.interval}) 必须 <= Easy (${easyResult.interval})",
+            goodResult.interval <= easyResult.interval
+        )
+    }
+
+    @Test
+    fun `大规模随机卡片与时间序列下_复习间隔必须恒保持单调递增性`() {
+        for (elapsed in 1..20) {
+            for (stab in listOf(1.5f, 2.5f, 3.8f, 4.2f, 7.0f, 15.0f)) {
+                val item = createItemWithRepetition(
+                    repetitionCount = 2,
+                    stability = stab,
+                    difficulty = 5.0f,
+                    interval = stab.toInt().coerceAtLeast(1),
+                    nextReviewDate = 100,
+                    lastReviewedDate = 100L - elapsed
+                )
+
+                val hardResult = calculator.calculate(item, quality = 3, today = 100)
+                val goodResult = calculator.calculate(item, quality = 4, today = 100)
+                val easyResult = calculator.calculate(item, quality = 5, today = 100)
+
+                assertTrue(
+                    "在 stab=$stab, elapsed=$elapsed 时，Hard (${hardResult.interval}) > Good (${goodResult.interval}) 发生了倒挂！",
+                    hardResult.interval <= goodResult.interval
+                )
+                assertTrue(
+                    "在 stab=$stab, elapsed=$elapsed 时，Good (${goodResult.interval}) > Easy (${easyResult.interval}) 发生了倒挂！",
+                    goodResult.interval <= easyResult.interval
+                )
+            }
+        }
+    }
+
     private data class TestSrsItem(
         override val repetitionCount: Int,
         override val stability: Float,

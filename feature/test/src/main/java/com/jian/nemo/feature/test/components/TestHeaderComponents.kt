@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -123,6 +127,8 @@ fun TestHeaderActions(
         }
     }
 
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
@@ -137,6 +143,8 @@ fun TestHeaderActions(
             NemoMorphMenuItem(
                 text = if (isFavorite) "取消收藏" else "收藏",
                 leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                plumpIcon = PlumpIcon.Heart,
+                iconColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else null,
                 onClick = {
                     close()
                     onToggleFavorite(itemId, !isFavorite)
@@ -148,6 +156,8 @@ fun TestHeaderActions(
         NemoMorphMenuItem(
             text = "暂停测试",
             leadingIcon = Icons.Rounded.Pause,
+            plumpIcon = PlumpIcon.Pause,
+            iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
             onClick = {
                 close()
                 onPause()
@@ -155,3 +165,4 @@ fun TestHeaderActions(
         )
     }
 }
+

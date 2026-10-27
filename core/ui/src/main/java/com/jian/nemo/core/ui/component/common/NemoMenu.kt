@@ -16,6 +16,7 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -23,16 +24,11 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-import com.jian.nemo.core.ui.modifier.softCardShadow
-
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 /**
  * Nemo 风格的顶级下拉菜单 (Premium Design)
@@ -88,16 +84,20 @@ fun NemoDropdownMenu(
 /**
  * Nemo 风格的菜单项 (Premium Design)
  *
- * - 字体: Title Medium (16sp) 提升可读性
- * - 图标: 使用主题色 (NemoPrimary) 增强视觉引导
- * - 间距: 宽敞的 Horizontal Padding
+ * 遵循图标设计与等亮度调色板开发规范：
+ * - 默认方案 (isPlumpDuo == false): 100% 完整保留原有配色与图标不变；
+ * - Plump Duo 方案 (isPlumpDuo == true): 强调色切换为 IsoluminantPalette 等亮度色彩，优先展示 PlumpDuoIcon；
+ * - 辅助中性控件 (trailingIcon) 保持中性灰色 (onSurfaceVariant)，禁止滥用彩色。
  *
  * @param text 文本
  * @param onClick 点击回调
- * @param leadingIcon 图标 (可选)
- * @param trailingIcon 尾部图标 (可选)
+ * @param modifier 修饰符
+ * @param leadingIcon 原生矢量图标 (可选)
+ * @param plumpIcon Plump Duo 双色丰满图标 (可选)
+ * @param iconColor 显式指定强调色 (可选)
+ * @param trailingIcon 尾部辅助中性指示图标 (如对勾、箭头等，可选)
  * @param enabled 是否启用
- * @param isDestructive 是否是破坏性操作 (红色)
+ * @param isDestructive 是否是破坏性操作 (红色警告色)
  */
 @Composable
 fun NemoMenuItem(
@@ -105,42 +105,69 @@ fun NemoMenuItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
+    plumpIcon: PlumpIcon? = null,
+    iconColor: Color? = null,
     trailingIcon: ImageVector? = null,
     enabled: Boolean = true,
     isDestructive: Boolean = false
 ) {
-    // 使用主题色 (Primary) 或 错误色 (Error)
-    val mainColor = if (isDestructive) {
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
+    // 默认原色 vs 等亮度色彩体系
+    val defaultLegacyColor = if (isDestructive) {
         MaterialTheme.colorScheme.error
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val defaultIsoluminantColor = if (isDestructive) {
+        IsoluminantPalette.CoralFlame
+    } else {
+        IsoluminantPalette.SkyIndigo
+    }
+
+    val effectiveIconColor = if (isPlumpDuo) {
+        iconColor ?: defaultIsoluminantColor
+    } else {
+        iconColor ?: defaultLegacyColor
+    }
+
+    val mainColor = if (isDestructive) {
+        if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
     } else {
         MaterialTheme.colorScheme.onSurface
     }
 
-    val iconTint = if (isDestructive) {
-        MaterialTheme.colorScheme.error
-    } else {
-        MaterialTheme.colorScheme.primary // 普通图标使用主色调，更精致
-    }
+    // 铁律：辅助中性控件（如折角箭头、打勾等）一律保持中性灰色
+    val neutralTrailingTint = MaterialTheme.colorScheme.onSurfaceVariant
 
     DropdownMenuItem(
         text = {
             Text(
                 text = text,
-                style = MaterialTheme.typography.titleMedium, // 使用稍大的字体 (16sp)
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium,
-                fontSize = 15.sp, // 微调
+                fontSize = 15.sp,
                 color = mainColor
             )
         },
         onClick = onClick,
         modifier = modifier,
-        leadingIcon = if (leadingIcon != null) {
+        leadingIcon = if (isPlumpDuo && plumpIcon != null) {
+            {
+                PlumpDuoIcon(
+                    icon = plumpIcon,
+                    color = effectiveIconColor,
+                    size = 20.dp
+                )
+            }
+        } else if (leadingIcon != null) {
             {
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = iconTint.copy(alpha = if (enabled) 1f else 0.38f)
+                    tint = effectiveIconColor.copy(alpha = if (enabled) 1f else 0.38f)
                 )
             }
         } else null,
@@ -150,16 +177,17 @@ fun NemoMenuItem(
                     imageVector = trailingIcon,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
-                    tint = iconTint.copy(alpha = if (enabled) 0.7f else 0.38f)
+                    tint = neutralTrailingTint.copy(alpha = if (enabled) 0.7f else 0.38f)
                 )
             }
         } else null,
         enabled = enabled,
         colors = MenuDefaults.itemColors(
             textColor = mainColor,
-            leadingIconColor = iconTint,
-            trailingIconColor = iconTint,
+            leadingIconColor = effectiveIconColor,
+            trailingIconColor = neutralTrailingTint,
         ),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp) // 增加间距
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
     )
 }
+

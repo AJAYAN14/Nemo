@@ -41,6 +41,8 @@ class SrsIntervalPreview @Inject constructor(
         // Currently Learning: New Card OR Relearning Card
         val isLearning = isNew || currentStep != null
 
+        val intervalSeconds = mutableMapOf<Int, Long>()
+
         for (q in 0..5) {
             // 1. Fail (Again): Show first relearning step (or learning step if new)
             if (q < 3) {
@@ -50,7 +52,7 @@ class SrsIntervalPreview @Inject constructor(
                     relearningStepsConfig.firstOrNull() ?: 1
                 }
 
-                intervals[q] = SrsTimeFormatter.formatSrsInterval(firstStepMin * 60L)
+                intervalSeconds[q] = firstStepMin * 60L
                 continue
             }
 
@@ -65,13 +67,13 @@ class SrsIntervalPreview @Inject constructor(
                     if (stepIndex < config.size - 1) {
                         // Move to next step
                         val nextStepMin = config.getOrElse(stepIndex + 1) { 10 }
-                        intervals[q] = SrsTimeFormatter.formatSrsInterval(nextStepMin * 60L)
+                        intervalSeconds[q] = nextStepMin * 60L
                         continue
                     } else {
                         // Graduate
                         // 特殊处理: 重学毕业 (Relearning Graduate)
                         if (!isNew) {
-                            intervals[q] = SrsTimeFormatter.formatSrsInterval(item.interval * 86400L)
+                            intervalSeconds[q] = item.interval * 86400L
                             continue
                         }
                         // 新卡毕业 -> Fall through to calculator
@@ -90,7 +92,7 @@ class SrsIntervalPreview @Inject constructor(
                     } else {
                         (config.getOrElse(stepIndex) { 1 } * 60L)
                     }
-                    intervals[q] = SrsTimeFormatter.formatSrsInterval(hardSecs)
+                    intervalSeconds[q] = hardSecs
                     continue
                 } else if (q == 5) {
                     // Easy (5): Instant Graduate
@@ -100,7 +102,23 @@ class SrsIntervalPreview @Inject constructor(
 
             // 3. SRS Calculator / Graduation
             val result = srsCalculator.calculate(item, q, today)
-            intervals[q] = SrsTimeFormatter.formatSrsInterval(result.interval * 86400L)
+            intervalSeconds[q] = result.interval * 86400L
+        }
+
+        // 单调性防御约束 (对齐 Anki 官方规范：Hard <= Good <= Easy)
+        val secHard = intervalSeconds[3]
+        val secGood = intervalSeconds[4]
+        val secEasy = intervalSeconds[5]
+
+        if (secHard != null && secGood != null && secHard > secGood) {
+            intervalSeconds[3] = secGood
+        }
+        if (secEasy != null && secGood != null && secEasy < secGood) {
+            intervalSeconds[5] = secGood
+        }
+
+        for ((q, sec) in intervalSeconds) {
+            intervals[q] = SrsTimeFormatter.formatSrsInterval(sec)
         }
         return intervals
     }

@@ -152,5 +152,13 @@ internal val PlumpIconsSettingsRegistry: Map<PlumpIcon, PlumpIconPathDefinition>
         fillPathData = "M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z M4 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z M 21 17.5 a 3.5 3.5 0 1 0 -7 0 a 3.5 3.5 0 1 0 7 0 Z",
         strokePathData = "M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z M4 14h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1Z M 21 17.5 a 3.5 3.5 0 1 0 -7 0 a 3.5 3.5 0 1 0 7 0 Z",
         fillAlpha = 0.22f
+    ),
+
+    // 22. Pause (暂停操作 / 双竖条)
+    PlumpIcon.Pause to PlumpIconPathDefinition(
+        fillPathData = "M 6 3 h 3 a 1 1 0 0 1 1 1 v 16 a 1 1 0 0 1 -1 1 h -3 a 1 1 0 0 1 -1 -1 v -16 a 1 1 0 0 1 1 -1 Z M 15 3 h 3 a 1 1 0 0 1 1 1 v 16 a 1 1 0 0 1 -1 1 h -3 a 1 1 0 0 1 -1 -1 v -16 a 1 1 0 0 1 1 -1 Z",
+        strokePathData = "M 6 3 h 3 a 1 1 0 0 1 1 1 v 16 a 1 1 0 0 1 -1 1 h -3 a 1 1 0 0 1 -1 -1 v -16 a 1 1 0 0 1 1 -1 Z M 15 3 h 3 a 1 1 0 0 1 1 1 v 16 a 1 1 0 0 1 -1 1 h -3 a 1 1 0 0 1 -1 -1 v -16 a 1 1 0 0 1 1 -1 Z",
+        fillAlpha = 0.22f
     )
 )
+
