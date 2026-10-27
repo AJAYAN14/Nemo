@@ -55,16 +55,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.platform.LocalViewConfiguration
-import androidx.compose.ui.platform.ViewConfiguration
-import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
 import androidx.compose.animation.*
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
@@ -606,89 +601,37 @@ fun WordLearningContent(
                         .layerBackdrop(cardBackdrop),
                     contentAlignment = Alignment.TopCenter
                  ) {
-                     // 使用 HorizontalPager 实现手势滑动切换
-                     val pagerState = rememberPagerState(
-                         initialPage = uiState.currentIndex,
-                         pageCount = { uiState.wordList.size }
-                     )
-
-                     // 最佳实践：优化手势冲突
-                     // 1. 排除系统手势边缘 (System Gesture Exclusion)
-                     // 2. 自定义 ViewConfiguration 指令
-                     val viewConfiguration = LocalViewConfiguration.current
-                     val customViewConfiguration = remember {
-                         object : ViewConfiguration by viewConfiguration {
-                             override val touchSlop: Float
-                                 get() = viewConfiguration.touchSlop * 0.8f // 提高灵敏度
-                         }
-                     }
-
-                     // 标志位：是否正在由 ViewModel 驱动的滚动
-                     var isViewModelDriven by remember { mutableStateOf(false) }
-
-                     // 同步 ViewModel 状态到 Pager（ViewModel 驱动）
-                     LaunchedEffect(uiState.currentIndex) {
-                         if (pagerState.currentPage != uiState.currentIndex) {
-                             isViewModelDriven = true
-                             pagerState.animateScrollToPage(uiState.currentIndex)
-                             isViewModelDriven = false
-                         }
-                     }
-
-                     // 同步 Pager 状态到 ViewModel（仅手势驱动时）
-                     LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
-                         if (!isViewModelDriven && !pagerState.isScrollInProgress && pagerState.currentPage != uiState.currentIndex) {
-                             onEvent(LearningEvent.GoToIndex(pagerState.currentPage))
-                         }
-                     }
-
-                     androidx.compose.runtime.CompositionLocalProvider(
-                         LocalViewConfiguration provides customViewConfiguration
-                     ) {
-                         HorizontalPager(
-                             state = pagerState,
-                             modifier = Modifier
-                                 .fillMaxSize()
-                                 .systemGestureExclusion(), // 排除系统返回手势
-                             beyondViewportPageCount = 1,
-                             userScrollEnabled = !uiState.isAnswerShown
-                         ) { page ->
-                             // 使用 AnimatedContent 实现评分后的过渡动画
-                             // 当 page 索引不变（例如一直是 0），但内容（wordList）发生改变时触发
-                             val word = uiState.wordList.getOrNull(page)
-
-                             AnimatedContent(
-                                targetState = word,
-                                transitionSpec = {
-                                    if (uiState.slideDirection == SlideDirection.FORWARD) {
-                                        (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                                            slideOutHorizontally { width -> -width } + fadeOut())
-                                    } else {
-                                        (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                                            slideOutHorizontally { width -> width } + fadeOut())
-                                    }.using(
-                                        SizeTransform(clip = false)
-                                    )
-                                },
-                                label = "WordCardTransition"
-                             ) { targetWord ->
-                                 if (targetWord != null) {
-                                     SRSLearningCard(
-                                          word = targetWord,
-                                          isAnswerShown = uiState.isAnswerShown && page == uiState.currentIndex,
-                                          cardBadge = LearningItem.WordItem(targetWord).cardBadge,
-                                          modifier = Modifier.fillMaxSize(),
-                                          onPracticeClick = {
-                                              showTypingDialog = true
-                                          },
-                                          onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
-                                          onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                          playingAudioId = uiState.playingAudioId,
-                                          isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                          autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown && page == uiState.currentIndex) autoRevealAnim.value else null
-                                      )
-                                 }
-                             }
+                     // 单卡封闭模式：禁止左右手势翻页，仅由评分与撤销驱动卡片切换动效
+                     AnimatedContent(
+                        targetState = uiState.currentWord,
+                        transitionSpec = {
+                            if (uiState.slideDirection == SlideDirection.FORWARD) {
+                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> -width } + fadeOut())
+                            } else {
+                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> width } + fadeOut())
+                            }.using(
+                                SizeTransform(clip = false)
+                            )
+                        },
+                        label = "WordCardTransition"
+                     ) { targetWord ->
+                         if (targetWord != null) {
+                             SRSLearningCard(
+                                  word = targetWord,
+                                  isAnswerShown = uiState.isAnswerShown,
+                                  cardBadge = LearningItem.WordItem(targetWord).cardBadge,
+                                  modifier = Modifier.fillMaxSize(),
+                                  onPracticeClick = {
+                                      showTypingDialog = true
+                                  },
+                                  onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
+                                  onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                                  playingAudioId = uiState.playingAudioId,
+                                  isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                  autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                              )
                          }
                      }
                  }
@@ -819,84 +762,36 @@ fun GrammarLearningContent(
                         .layerBackdrop(cardBackdrop),
                     contentAlignment = Alignment.TopCenter
                  ) {
-                     // 使用 HorizontalPager 实现手势滑动切换
-                     val pagerState = rememberPagerState(
-                         initialPage = uiState.currentGrammarIndex,
-                         pageCount = { uiState.grammarList.size }
-                     )
-
-                     // 最佳实践：优化手势冲突
-                     val viewConfiguration = LocalViewConfiguration.current
-                     val customViewConfiguration = remember {
-                         object : ViewConfiguration by viewConfiguration {
-                             override val touchSlop: Float
-                                 get() = viewConfiguration.touchSlop * 0.8f // 提高灵敏度
-                         }
-                     }
-
-                     // 标志位：是否正在由 ViewModel 驱动的滚动
-                     var isViewModelDriven by remember { mutableStateOf(false) }
-
-                     // 同步 ViewModel 状态到 Pager（ViewModel 驱动）
-                     LaunchedEffect(uiState.currentGrammarIndex) {
-                         if (pagerState.currentPage != uiState.currentGrammarIndex) {
-                             isViewModelDriven = true
-                             pagerState.animateScrollToPage(uiState.currentGrammarIndex)
-                             isViewModelDriven = false
-                         }
-                     }
-
-                     // 同步 Pager 状态到 ViewModel（仅手势驱动时）
-                     LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
-                         if (!isViewModelDriven && !pagerState.isScrollInProgress && pagerState.currentPage != uiState.currentGrammarIndex) {
-                             onEvent(LearningEvent.GoToIndex(pagerState.currentPage))
-                         }
-                     }
-
-                     androidx.compose.runtime.CompositionLocalProvider(
-                         LocalViewConfiguration provides customViewConfiguration
-                     ) {
-                         HorizontalPager(
-                             state = pagerState,
-                             modifier = Modifier
-                                 .fillMaxSize()
-                                 .systemGestureExclusion(),
-                             beyondViewportPageCount = 1,
-                             userScrollEnabled = !uiState.isAnswerShown
-                         ) { page ->
-                         val grammar = uiState.grammarList.getOrNull(page)
-
-                         AnimatedContent(
-                            targetState = grammar,
-                            transitionSpec = {
-                                if (uiState.slideDirection == SlideDirection.FORWARD) {
-                                    (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                                        slideOutHorizontally { width -> -width } + fadeOut())
-                                } else {
-                                    (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                                        slideOutHorizontally { width -> width } + fadeOut())
-                                }.using(
-                                    SizeTransform(clip = false)
-                                )
-                            },
-                            label = "GrammarCardTransition"
-                         ) { targetGrammar ->
-                             if (targetGrammar != null) {
-                                  SRSGrammarCard(
-                                      grammar = targetGrammar,
-                                      isAnswerShown = uiState.isAnswerShown && page == uiState.currentGrammarIndex,
-                                      cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
-                                      modifier = Modifier.fillMaxSize(),
-                                      onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                      playingAudioId = uiState.playingAudioId,
-                                      isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                      autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown && page == uiState.currentGrammarIndex) autoRevealAnim.value else null
-                                  )
-                             }
+                     // 单卡封闭模式：禁止左右手势翻页，仅由评分与撤销驱动卡片切换动效
+                     AnimatedContent(
+                        targetState = uiState.currentGrammar,
+                        transitionSpec = {
+                            if (uiState.slideDirection == SlideDirection.FORWARD) {
+                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> -width } + fadeOut())
+                            } else {
+                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                                    slideOutHorizontally { width -> width } + fadeOut())
+                            }.using(
+                                SizeTransform(clip = false)
+                            )
+                        },
+                        label = "GrammarCardTransition"
+                     ) { targetGrammar ->
+                         if (targetGrammar != null) {
+                              SRSGrammarCard(
+                                  grammar = targetGrammar,
+                                  isAnswerShown = uiState.isAnswerShown,
+                                  cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
+                                  modifier = Modifier.fillMaxSize(),
+                                  onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                                  playingAudioId = uiState.playingAudioId,
+                                  isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                  autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                              )
                          }
                      }
                  }
-            }
 
 
                   // SRS Action Area (Bottom)
