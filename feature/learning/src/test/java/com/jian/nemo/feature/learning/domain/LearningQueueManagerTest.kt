@@ -156,5 +156,68 @@ class LearningQueueManagerTest {
         assertEquals(1, (result as QueueSelectionResult.Next).index)
         assertEquals("B", result.item)
     }
+
+    @Test
+    fun `reorderQueueAnkiStyle 点Again的卡片处于未来冷却中时应排在所有常规未学卡片之后`() {
+        // Given: [A, B, C]，当前正在做 A (index 0)
+        // B, C 是常规待学卡 (due = 0)
+        // A 点了 Again，到期时间设定为 1 分钟后 (now + 60s)
+        val items = listOf("A", "B", "C")
+        val now = 10000L
+        val dueMap = mutableMapOf("A" to now + 60_000L, "B" to 0L, "C" to 0L)
+
+        // When
+        val reordered = manager.reorderQueueAnkiStyle(
+            items = items,
+            currentIndex = 0,
+            itemToRequeue = "A",
+            getDueTime = { dueMap[it] ?: 0L },
+            now = now
+        )
+
+        // Then: A 排在 B, C 之后，下一张顺理成章是 B
+        assertEquals(listOf("B", "C", "A"), reordered)
+    }
+
+    @Test
+    fun `reorderQueueAnkiStyle 当在学卡片时间到达时应优先插队在常规卡片之前`() {
+        // Given: 列表中有 [B, C, A]，其中 A 是 60s 前点了 Again 的卡片
+        // 经过 65s 后，用户刚做完 B，此时 A 的到期时间已过 (已成熟 due <= now)
+        // C 仍然是常规未学卡 (due = 0)
+        val items = listOf("B", "C", "A")
+        val now = 100000L
+        val dueMap = mapOf("B" to 0L, "C" to 0L, "A" to now - 5000L) // A 已到期 5 秒
+
+        // When: B 毕业移出，对剩余列表排序
+        val sorted = manager.sortAnkiStyle(
+            items = listOf("C", "A"),
+            getDueTime = { dueMap[it] ?: 0L },
+            now = now
+        )
+
+        // Then: A 具有最高调度优先级，插队到 C 之前！
+        assertEquals(listOf("A", "C"), sorted)
+    }
+
+    @Test
+    fun `reorderQueueAnkiStyle 多张点Again卡片应严格按到期时间升序排列`() {
+        // Given: 原列表中有 [A, C, B]，当前正在做 A (index 0)
+        // A 点了 Again 到期时间是 10s 后，B 在先前点了 Again 到期时间是 60s 后，C 是常规未学卡 (due = 0)
+        val items = listOf("A", "C", "B")
+        val now = 10000L
+        val dueMap = mapOf("A" to now + 10_000L, "B" to now + 60_000L, "C" to 0L)
+
+        // When: A 点了 Again 重新入队
+        val reordered = manager.reorderQueueAnkiStyle(
+            items = items,
+            currentIndex = 0,
+            itemToRequeue = "A",
+            getDueTime = { dueMap[it] ?: 0L },
+            now = now
+        )
+
+        // Then: 常规卡 C 在前，冷却卡按 A -> B 升序排在后
+        assertEquals(listOf("C", "A", "B"), reordered)
+    }
 }
 

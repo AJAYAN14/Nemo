@@ -78,6 +78,122 @@ class LearningQueueManager @Inject constructor() {
     }
 
     /**
+     * 按 Anki 优先级排布卡片列表 (已到期在学词 > 常规词 > 冷却中在学词)
+     */
+    fun <T> sortAnkiStyle(
+        items: List<T>,
+        getDueTime: (T) -> Long,
+        now: Long = System.currentTimeMillis()
+    ): List<T> {
+        if (items.size <= 1) return items
+
+        val dueLearning = mutableListOf<T>()
+        val regular = mutableListOf<T>()
+        val futureLearning = mutableListOf<T>()
+
+        for (item in items) {
+            val due = getDueTime(item)
+            when {
+                due in 1..now -> dueLearning.add(item)
+                due > now -> futureLearning.add(item)
+                else -> regular.add(item)
+            }
+        }
+
+        dueLearning.sortBy { getDueTime(it) }
+        futureLearning.sortBy { getDueTime(it) }
+
+        return ArrayList<T>(items.size).apply {
+            addAll(dueLearning)
+            addAll(regular)
+            addAll(futureLearning)
+        }
+    }
+
+    /**
+     * 对齐 Anki 的卡片重入队与重排算法 (Anki Sched Queue Reordering):
+     *
+     * 当卡片评分后需要留在队列中 (Again 重来、Hard 困难、Good 中间步) 时：
+     * 1. 从原列表中移除正在操作的卡片 (位于 currentIndex 处)。
+     * 2. 如果除当前项外无其它卡片，直接返回包含本卡片的单元素列表。
+     * 3. 划分剩余原有卡片：
+     *    - 优先级 1 (已到期的在学卡片)：dueTime > 0 且 dueTime <= now，按 dueTime 升序排在最前；
+     *    - 优先级 2 (常规未开始待学卡片)：未在学的新词或未评级复习词 (dueTime == 0L)，保持原有先后顺序；
+     *    - 优先级 3 (冷却中的在学卡片)：处于分钟级未来倒计时中的卡片 (dueTime > now)，按 dueTime 升序排在末尾。
+     * 4. 插入当前操作的这顶卡片 (itemToRequeue)：
+     *    - 若当前卡片已到期 (dueTime <= now)：插入优先级 1 中；
+     *    - 若当前卡片在未来 (dueTime > now)：严格对齐 Anki test_learn_collapsedV2 规范，
+     *      只要队列中还有其它卡片在等候，当前卡片排在已有等候卡片之后，绝对防止刚点完 Again 连续两次展示同一张卡片。
+     */
+    fun <T> reorderQueueAnkiStyle(
+        items: List<T>,
+        currentIndex: Int,
+        itemToRequeue: T,
+        getDueTime: (T) -> Long,
+        now: Long = System.currentTimeMillis()
+    ): List<T> {
+        val remaining = items.toMutableList()
+        if (currentIndex in remaining.indices) {
+            remaining.removeAt(currentIndex)
+        }
+        if (remaining.isEmpty()) {
+            return listOf(itemToRequeue)
+        }
+
+        val dueLearning = mutableListOf<T>()
+        val regular = mutableListOf<T>()
+        val futureLearning = mutableListOf<T>()
+
+        for (item in remaining) {
+            val due = getDueTime(item)
+            when {
+                due in 1..now -> dueLearning.add(item)
+                due > now -> futureLearning.add(item)
+                else -> regular.add(item)
+            }
+        }
+
+        dueLearning.sortBy { getDueTime(it) }
+        futureLearning.sortBy { getDueTime(it) }
+
+        val currentDue = getDueTime(itemToRequeue)
+        if (currentDue in 1..now) {
+            dueLearning.add(itemToRequeue)
+        } else {
+            futureLearning.add(itemToRequeue)
+        }
+
+        dueLearning.sortBy { getDueTime(it) }
+        futureLearning.sortBy { getDueTime(it) }
+
+        val result = ArrayList<T>(items.size).apply {
+            addAll(dueLearning)
+            addAll(regular)
+            addAll(futureLearning)
+        }
+
+        // 防瞬间重复 (Anti-immediate repeat, 对齐 Anki SchedulerTest.test_learn_collapsedV2):
+        // 如果刚操作的卡片排在了第 0 项，但队列中明明还有其他卡片在等候，
+        // 则将其后移，优先展示队列中的下一张卡片，避免用户刚点完操作立刻又看到同一张卡片。
+        if (result.isNotEmpty() && result[0] == itemToRequeue && result.size > 1) {
+            result.removeAt(0)
+            var inserted = false
+            for (i in result.indices) {
+                if (getDueTime(result[i]) > currentDue) {
+                    result.add(i.coerceAtLeast(1), itemToRequeue)
+                    inserted = true
+                    break
+                }
+            }
+            if (!inserted) {
+                result.add(itemToRequeue)
+            }
+        }
+
+        return result
+    }
+
+    /**
      * 从列表中移除当前项 (用于 Graduate 毕业)
      *
      * @param items 当前列表

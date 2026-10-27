@@ -1506,16 +1506,16 @@ class LearningViewModel @Inject constructor(
                 }
 
                 if (result.isLapse) {
-                    println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, 后移 ${result.relativeOffset} 张")
+                    println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
                 } else {
                     if (result.nextStepIndex == _learningSteps[item.id]) {
-                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, 后移 ${result.relativeOffset} 张")
+                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
                     } else {
-                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), 后移 ${result.relativeOffset} 张")
+                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), 到期时间: ${result.dueTime}")
                     }
                 }
 
-                reQueueAtRelativeOffset(item, result.relativeOffset)
+                reQueueAtRelativeOffset(item)
             }
         }
     }
@@ -1685,9 +1685,9 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 相对位置重新入队 (平滑调度)
+     * 对齐 Anki 的卡片重入队 (基于时间戳与队列优先级重排)
      */
-    private fun reQueueAtRelativeOffset(item: LearningItem, offset: Int) {
+    private fun reQueueAtRelativeOffset(item: LearningItem, offset: Int = 0) {
         val state = _uiState.value
         val mode = state.learningMode
 
@@ -1701,18 +1701,19 @@ class LearningViewModel @Inject constructor(
             LearningMode.Word -> {
                 if (item is LearningItem.WordItem) {
                     val currentIndex = state.currentIndex
-                    val newList = learningQueueManager.insertAtRelativeOffset(
+                    val newList = learningQueueManager.reorderQueueAnkiStyle(
                         items = state.wordList,
                         currentIndex = currentIndex,
-                        itemToInsert = item.word,
-                        offset = offset
+                        itemToRequeue = item.word,
+                        getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                        now = now
                     )
                     val selection = learningQueueManager.selectNextItem(
                         items = newList,
                         getDueTime = { _learningDueTimes[it.id] ?: 0L },
                         now = now,
                         learnAheadLimitMs = _learnAheadLimitMs,
-                        preferredIndex = currentIndex
+                        preferredIndex = 0
                     )
                     handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
                 }
@@ -1720,18 +1721,19 @@ class LearningViewModel @Inject constructor(
             LearningMode.Grammar -> {
                 if (item is LearningItem.GrammarItem) {
                     val currentIndex = state.currentGrammarIndex
-                    val newList = learningQueueManager.insertAtRelativeOffset(
+                    val newList = learningQueueManager.reorderQueueAnkiStyle(
                         items = state.grammarList,
                         currentIndex = currentIndex,
-                        itemToInsert = item.grammar,
-                        offset = offset
+                        itemToRequeue = item.grammar,
+                        getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                        now = now
                     )
                     val selection = learningQueueManager.selectNextItem(
                         items = newList,
                         getDueTime = { _learningDueTimes[it.id] ?: 0L },
                         now = now,
                         learnAheadLimitMs = _learnAheadLimitMs,
-                        preferredIndex = currentIndex
+                        preferredIndex = 0
                     )
                     handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
                 }
@@ -1788,7 +1790,7 @@ class LearningViewModel @Inject constructor(
     }
 
     /**
-     * 移出当前已毕业卡片并平滑移动到下一个
+     * 移出当前已毕业卡片并按 Anki 优先级平滑移动到下一个
      */
     private fun removeCurrentAndMoveNext() {
         val state = _uiState.value
@@ -1798,26 +1800,36 @@ class LearningViewModel @Inject constructor(
         when (mode) {
             LearningMode.Word -> {
                 val currentIndex = state.currentIndex
-                val newList = learningQueueManager.removeCurrent(state.wordList, currentIndex)
+                val remainingList = learningQueueManager.removeCurrent(state.wordList, currentIndex)
+                val newList = learningQueueManager.sortAnkiStyle(
+                    items = remainingList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = now
+                )
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
                     getDueTime = { _learningDueTimes[it.id] ?: 0L },
                     now = now,
                     learnAheadLimitMs = _learnAheadLimitMs,
-                    preferredIndex = currentIndex
+                    preferredIndex = 0
                 )
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = true)
             }
 
             LearningMode.Grammar -> {
                 val currentIndex = state.currentGrammarIndex
-                val newList = learningQueueManager.removeCurrent(state.grammarList, currentIndex)
+                val remainingList = learningQueueManager.removeCurrent(state.grammarList, currentIndex)
+                val newList = learningQueueManager.sortAnkiStyle(
+                    items = remainingList,
+                    getDueTime = { _learningDueTimes[it.id] ?: 0L },
+                    now = now
+                )
                 val selection = learningQueueManager.selectNextItem(
                     items = newList,
                     getDueTime = { _learningDueTimes[it.id] ?: 0L },
                     now = now,
                     learnAheadLimitMs = _learnAheadLimitMs,
-                    preferredIndex = currentIndex
+                    preferredIndex = 0
                 )
                 handleSelectionResult(selection, newList, state.selectedLevel, isWord = false)
             }

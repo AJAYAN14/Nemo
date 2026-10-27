@@ -75,16 +75,12 @@ class LearningScheduler @Inject constructor() {
             is LearningItem.GrammarItem -> item.copy(step = nextStep, dueTime = dueTime, type = newType)
         }
 
-        // 生疏词：相对当前位置后移 3~5 张卡片（根据 lapse 次数错峰微扰，避免连错扎堆）
-        val fuzz = (newLapseCount % 3)
-        val relativeOffset = 3 + fuzz
-
+        // 对齐 Anki：不使用固定卡片张数插队，出队顺序严格由 dueTime 时间戳判定
         return ScheduleResult.Requeue(
             updatedItem = updatedItem,
             nextStepIndex = nextStep,
             dueTime = dueTime,
-            isLapse = true,
-            relativeOffset = relativeOffset
+            isLapse = true
         )
     }
 
@@ -97,7 +93,7 @@ class LearningScheduler @Inject constructor() {
         currentStep: Int,
         stepConfig: List<Int>
     ): ScheduleResult {
-        // Hard (3): 保持当前 Step，中度间隔后移 (5~7 张)
+        // Hard (3): 保持当前 Step
         if (quality == 3) {
             val hardDelayMillis = if (currentStep == 0) {
                 val againSecs = (stepConfig.getOrNull(0) ?: 1) * 60L
@@ -123,8 +119,7 @@ class LearningScheduler @Inject constructor() {
                 updatedItem = updatedItem,
                 nextStepIndex = currentStep,
                 dueTime = dueTime,
-                isLapse = false,
-                relativeOffset = 6 // Hard 相对后移 6 张
+                isLapse = false
             )
         }
 
@@ -143,8 +138,7 @@ class LearningScheduler @Inject constructor() {
                 updatedItem = updatedItem,
                 nextStepIndex = nextStep,
                 dueTime = dueTime,
-                isLapse = false,
-                relativeOffset = 10 // Good 中间步：相对后移 10 张
+                isLapse = false
             )
         }
 
