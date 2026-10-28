@@ -138,9 +138,9 @@ fun LearningScreen(
     val waitingBackdrop = rememberLayerBackdrop()
     var triggerWaitingBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-    // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，菜单展开或展示分享海报时自动触发背景模糊遮罩)
+    // 动态高斯模糊半径 (仅在展示分享海报弹窗时触发背景模糊遮罩)
     val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded || showSharePosterDialog) 18.dp else 0.dp,
+        targetValue = if (showSharePosterDialog) 18.dp else 0.dp,
         animationSpec = tween(durationMillis = 240),
         label = "learningBlur"
     )
@@ -387,24 +387,6 @@ fun LearningScreen(
                         }
                     }
                 }
-            }
-
-            // 2. 页面全屏高斯模糊景深遮罩 (Z = 1，12% 柔光暗化 + 200ms 淡入淡出)
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isMenuExpanded,
-                enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
-                exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.12f))
-                        .clickable(
-                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                            indication = null,
-                            onClick = { isMenuExpanded = false }
-                        )
-                )
             }
 
             // 动态构建通知列表（最新产生的通知插入在最上方）
