@@ -296,12 +296,12 @@ fun LearningScreen(
                         queueLearningCount = uiState.queueLearningCount,
                         queueReviewCount = uiState.queueReviewCount,
                         queueRelearnCount = uiState.queueRelearnCount,
-                        backdrop = if (isWaiting) waitingBackdrop else screenBackdrop,
+                        backdrop = if (isWaiting) waitingBackdrop else null,
                         menu = {
                             LearnHeaderMoreMenuButton(
                                 onClick = { isMenuExpanded = true },
                                 onBoundsChanged = { menuAnchorBounds = it },
-                                backdrop = if (isWaiting) waitingBackdrop else screenBackdrop
+                                backdrop = if (isWaiting) waitingBackdrop else null
                             )
                         }
                     )
