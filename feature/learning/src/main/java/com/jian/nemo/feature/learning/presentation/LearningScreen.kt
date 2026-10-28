@@ -136,6 +136,7 @@ fun LearningScreen(
     var showSharePosterDialog by remember { mutableStateOf(false) }
     val finishBackdrop = rememberLayerBackdrop()
     val waitingBackdrop = rememberLayerBackdrop()
+    val screenBackdrop = rememberLayerBackdrop()
     var triggerWaitingBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     // 动态高斯模糊半径 (仅在展示分享海报弹窗时触发背景模糊遮罩)
@@ -199,6 +200,7 @@ fun LearningScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .layerBackdrop(screenBackdrop)
                     .then(
                         if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
                         else Modifier
@@ -291,14 +293,14 @@ fun LearningScreen(
                         queueLearningCount = uiState.queueLearningCount,
                         queueReviewCount = uiState.queueReviewCount,
                         queueRelearnCount = uiState.queueRelearnCount,
-                        backdrop = if (isWaiting) waitingBackdrop else null,
+                        backdrop = if (isWaiting) waitingBackdrop else screenBackdrop,
                         menu = {
                             LearnHeaderMoreMenu(
                                 remainingCount = remainingTaskCount,
                                 onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
                                 onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
                                 onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
-                                backdrop = if (isWaiting) waitingBackdrop else null,
+                                backdrop = if (isWaiting) waitingBackdrop else screenBackdrop,
                                 onShowRatingGuide = { showRatingGuide = true },
                                 isMenuExpanded = isMenuExpanded,
                                 onToggleMenu = { isMenuExpanded = it },

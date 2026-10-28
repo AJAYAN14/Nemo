@@ -49,6 +49,8 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
 import androidx.compose.ui.graphics.painter.Painter
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
@@ -301,8 +303,9 @@ fun NemoMorphMenu(
                 }
 
                 val panelShape = RoundedCornerShape(20.dp)
-                val panelBgColor = if (isDarkTheme) Color(0xF51E1E22) else Color(0xFAFAFAFC)
-                val highlightBorderColor = if (isDarkTheme) Color.White.copy(alpha = 0.14f) else Color.Black.copy(alpha = 0.08f)
+                val glassSurfaceColor = if (isDarkTheme) Color(0x5218181C) else Color(0x7AFFFFFF)
+                val fallbackBgColor = if (isDarkTheme) Color(0xF01E1E22) else Color(0xFAFAFAFC)
+                val highlightBorderColor = if (isDarkTheme) Color.White.copy(alpha = 0.16f) else Color.Black.copy(alpha = 0.08f)
 
                 // 面板卡片容器（右上角原位弹性下拉展开）
                 Box(
@@ -317,7 +320,23 @@ fun NemoMorphMenu(
                         }
                         .appleDiffuseShadow(shape = panelShape, isDark = isDarkTheme)
                         .clip(panelShape)
-                        .background(panelBgColor)
+                        .then(
+                            if (backdrop != null) {
+                                Modifier.drawBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { panelShape },
+                                    effects = {
+                                        padding = 32.dp.toPx() * 2
+                                        blur(32.dp.toPx())
+                                    },
+                                    onDrawSurface = {
+                                        drawRect(glassSurfaceColor)
+                                    }
+                                )
+                            } else {
+                                Modifier.background(fallbackBgColor)
+                            }
+                        )
                         .border(
                             BorderStroke(0.5.dp, highlightBorderColor),
                             panelShape
