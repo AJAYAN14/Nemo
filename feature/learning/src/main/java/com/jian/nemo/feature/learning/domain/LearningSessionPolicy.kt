@@ -19,7 +19,7 @@ data class OverduePartition<T : SrsItem>(
     val p3Stale: List<T>
 ) {
     /** 活跃待复习项（排除休眠池） */
-    val activeItems: List<T> get() = p0UrgentRescue + p1DeepOverdue + p2RegularCurrent
+    val activeItems: List<T> get() = p0UrgentRescue + p2RegularCurrent + p1DeepOverdue
 
     /** 待复习总数 */
     val totalCount: Int get() = p0UrgentRescue.size + p1DeepOverdue.size + p2RegularCurrent.size + p3Stale.size

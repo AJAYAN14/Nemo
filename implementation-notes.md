@@ -33,3 +33,11 @@
 1. **中性色箭头防污染**：`StatisticsListCard` 中「展开查看更多 / 收起」在 MD3 模式下原为主题主色，但在 Plump Duo 模式下，根据指南铁律（禁止滥用彩色），箭头图标严格切换为中性色 `MaterialTheme.colorScheme.onSurfaceVariant`，文字使用等亮度色 `SkyIndigo`。
 2. **纯色背景块消除**：今日统计顶部卡片原有 38dp 圆形色块，空状态原有 64dp 圆角方块；根据设计规范第 2 条，Plump Duo 模式下将其彻底置为无背景透明对齐容器，由双色线面自身的微光填充呈现通透立体层次。
 3. **工作区环境变量与配置**：git worktree 初始未包含 `.gitignore` 排除的 `gradle.properties`，从主分支目录补全后，通过 `.\gradlew :feature:statistics:compileDebugKotlin` 与 `.\gradlew :app:compileDebugKotlin` 双重验证，全模块 100% 编译通过。
+
+---
+
+## 学习会话策略（LearningSessionPolicy）出牌排序一致性修正
+- **修改文件**：[`feature/learning/.../LearningSessionPolicy.kt`](file:///e:/Android/Nemo/feature/learning/src/main/java/com/jian/nemo/feature/learning/domain/LearningSessionPolicy.kt#L22)
+- **改动内容**：将 `OverduePartition.activeItems` 的排序定义由 `p0 + p1 + p2` 调整为 `p0UrgentRescue + p2RegularCurrent + p1DeepOverdue`。
+- **改动原因与价值**：与 `SessionLoader.kt` 中的出牌优先级完全对齐。无论常规主会话还是加餐（`BonusStudy`），均严格遵循「P0 临界抢救级 -> P2 常规当期保底 -> P1 深度逾期推进」的统一策略，杜绝加餐时提前抽取深度遗忘死题而导致当期健康任务掉队。
+- **验证结果**：通过 `.\gradlew :feature:learning:compileDebugKotlin` 与 `.\gradlew :feature:learning:testDebugUnitTest` 验证，编译与所有测试 100% 通过。

@@ -1750,43 +1750,44 @@ class LearningViewModel @Inject constructor(
 
         _uiState.update { it.copy(waitingUntil = 0L) }
 
-        // 用户主动点击“立即学习”或倒计时结束：强制允许调度最早到期卡片
-        val selection = when (mode) {
+        // 用户主动点击“提前复习/立即学习”或倒计时结束：
+        // 1. 先将整组卡片严格按原定到期时间戳升序排队（最早到期的排在最前）；
+        // 2. 一次性解除当前列表所有卡片的内存冷却倒计时，避免背一个单词就弹一次等待打断用户；
+        // 3. 从第 0 项开始如流水线般连贯出题。
+        when (mode) {
             LearningMode.Word -> {
-                learningQueueManager.selectNextItem(
+                val sortedList = learningQueueManager.sortAnkiStyle(
                     items = state.wordList,
                     getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = Long.MAX_VALUE,
-                    learnAheadLimitMs = _learnAheadLimitMs,
-                    preferredIndex = state.currentIndex
+                    now = Long.MAX_VALUE
                 )
+                for (item in sortedList) {
+                    _learningDueTimes.remove(item.id)
+                }
+                val selection = if (sortedList.isNotEmpty()) {
+                    QueueSelectionResult.Next(0, sortedList[0])
+                } else {
+                    QueueSelectionResult.Empty
+                }
+                handleSelectionResult(selection, sortedList, state.selectedLevel, isWord = true)
             }
             LearningMode.Grammar -> {
-                learningQueueManager.selectNextItem(
+                val sortedList = learningQueueManager.sortAnkiStyle(
                     items = state.grammarList,
                     getDueTime = { _learningDueTimes[it.id] ?: 0L },
-                    now = Long.MAX_VALUE,
-                    learnAheadLimitMs = _learnAheadLimitMs,
-                    preferredIndex = state.currentGrammarIndex
+                    now = Long.MAX_VALUE
                 )
+                for (item in sortedList) {
+                    _learningDueTimes.remove(item.id)
+                }
+                val selection = if (sortedList.isNotEmpty()) {
+                    QueueSelectionResult.Next(0, sortedList[0])
+                } else {
+                    QueueSelectionResult.Empty
+                }
+                handleSelectionResult(selection, sortedList, state.selectedLevel, isWord = false)
             }
         }
-
-        val list = if (mode == LearningMode.Word) state.wordList else state.grammarList
-
-        // 用户主动点击“提前复习”或倒计时结束：若选中未来卡片，清除其在内存中的冷却等待时间，解除答案显示锁定
-        if (selection is QueueSelectionResult.Next) {
-            val itemId = when (val item = selection.item) {
-                is Word -> item.id
-                is Grammar -> item.id
-                else -> null
-            }
-            if (itemId != null) {
-                _learningDueTimes.remove(itemId)
-            }
-        }
-
-        handleSelectionResult(selection, list, state.selectedLevel, isWord = mode == LearningMode.Word)
     }
 
     /**

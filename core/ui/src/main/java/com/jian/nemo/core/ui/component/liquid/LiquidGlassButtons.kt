@@ -137,10 +137,12 @@ fun LiquidGlassButton(
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
     tint: Color = Color.Unspecified,
+    tintAlpha: Float = 0.75f,
     surfaceColor: Color = Color.Unspecified,
     shape: Shape = Capsule(),
     border: BorderStroke? = null,
     hasLens: Boolean = true,
+    chromaticAberration: Boolean = false,
     isInteractive: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     content: @Composable RowScope.() -> Unit
@@ -164,7 +166,11 @@ fun LiquidGlassButton(
                     vibrancy()
                     blur(2f.dp.toPx())
                     if (hasLens) {
-                        lens(12f.dp.toPx(), 24f.dp.toPx())
+                        lens(
+                            12f.dp.toPx(),
+                            24f.dp.toPx(),
+                            chromaticAberration = chromaticAberration
+                        )
                     }
                 },
                 layerBlock = if (isInteractive) {
@@ -198,7 +204,7 @@ fun LiquidGlassButton(
                 onDrawSurface = {
                     if (tint.isSpecified) {
                         drawRect(tint, blendMode = BlendMode.Hue)
-                        drawRect(tint.copy(alpha = 0.75f))
+                        drawRect(tint.copy(alpha = tintAlpha))
                     }
                     if (surfaceColor.isSpecified) {
                         drawRect(surfaceColor)
@@ -240,6 +246,8 @@ fun ClearLiquidGlassButton(
     backdrop: Backdrop? = null,
     shape: Shape = Capsule(),
     border: BorderStroke? = null,
+    hasLens: Boolean = true,
+    chromaticAberration: Boolean = false,
     isInteractive: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     content: @Composable RowScope.() -> Unit
@@ -252,6 +260,8 @@ fun ClearLiquidGlassButton(
         surfaceColor = Color.Unspecified,
         shape = shape,
         border = border,
+        hasLens = hasLens,
+        chromaticAberration = chromaticAberration,
         isInteractive = isInteractive,
         contentPadding = contentPadding,
         content = content
@@ -273,6 +283,7 @@ fun FrostedLiquidGlassButton(
     shape: Shape = Capsule(),
     border: BorderStroke? = null,
     hasLens: Boolean = true,
+    chromaticAberration: Boolean = false,
     isInteractive: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     content: @Composable RowScope.() -> Unit
@@ -293,6 +304,7 @@ fun FrostedLiquidGlassButton(
         shape = shape,
         border = border,
         hasLens = hasLens,
+        chromaticAberration = chromaticAberration,
         isInteractive = isInteractive,
         contentPadding = contentPadding,
         content = content
@@ -310,10 +322,13 @@ fun ColoredLiquidGlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tint: Color = Color(0xFF0088FF),
+    tintAlpha: Float = 0.75f,
     surfaceColor: Color = Color.Unspecified,
     backdrop: Backdrop? = null,
     shape: Shape = Capsule(),
     border: BorderStroke? = null,
+    hasLens: Boolean = true,
+    chromaticAberration: Boolean = false,
     isInteractive: Boolean = true,
     contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     content: @Composable RowScope.() -> Unit
@@ -323,9 +338,12 @@ fun ColoredLiquidGlassButton(
         modifier = modifier,
         backdrop = backdrop,
         tint = tint,
+        tintAlpha = tintAlpha,
         surfaceColor = surfaceColor,
         shape = shape,
         border = border,
+        hasLens = hasLens,
+        chromaticAberration = chromaticAberration,
         isInteractive = isInteractive,
         contentPadding = contentPadding,
         content = content

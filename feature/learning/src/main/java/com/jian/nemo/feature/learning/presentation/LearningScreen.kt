@@ -63,6 +63,7 @@ import androidx.compose.animation.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
+import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenu
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingBackground
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
@@ -272,65 +273,73 @@ fun LearningScreen(
                         }
                     }
                 } else {
+                    val remainingTaskCount = if (uiState.learningMode == LearningMode.Word)
+                        uiState.wordList.size
+                    else
+                        uiState.grammarList.size
+
                     // Header
                     LearnHeader(
                         learningMode = uiState.learningMode,
                         completedCount = uiState.completedToday,
                         dailyGoal = uiState.dailyGoal,
-                        totalCount = if (uiState.learningMode == LearningMode.Word)
-                            uiState.wordList.size
-                        else
-                            uiState.grammarList.size,
+                        totalCount = remainingTaskCount,
                         onClose = onNavigateBack,
-                        onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
-                        onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
-                        onShowRatingGuide = { showRatingGuide = true },
-                        isMenuExpanded = isMenuExpanded,
-                        onToggleMenu = { isMenuExpanded = it },
-                        isAutoAudioEnabled = uiState.isAutoAudioEnabled,
-                        onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
-                            { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
-                        } else null,
-                        isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
-                        onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
-                        showAnswerDelayDurationLabel = delayDurationLabel,
-                        onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
-                        onOpenShowAnswerDelayDialog = {
-                            isMenuExpanded = false
-                            showDelayDurationDialog = true
-                        },
-                        isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
-                        onToggleAutoRevealAnswer = {
-                            if (uiState.learningMode == LearningMode.Word) {
-                                viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
-                            } else {
-                                viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
-                            }
-                        },
-                        autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
-                        onCycleAutoRevealAnswerDuration = {
-                            if (uiState.learningMode == LearningMode.Word) {
-                                viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
-                            } else {
-                                viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
-                            }
-                        },
-                        onOpenAutoRevealAnswerDialog = {
-                            isMenuExpanded = false
-                            showAutoRevealDurationDialog = true
-                        },
-                        isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                        onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
                         canUndo = uiState.canUndo,
                         onUndo = { viewModel.onEvent(LearningEvent.Undo) },
-                        onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
-                        isDarkMode = uiState.isDarkMode,
-                        onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) },
                         queueNewCount = uiState.queueNewCount,
                         queueLearningCount = uiState.queueLearningCount,
                         queueReviewCount = uiState.queueReviewCount,
                         queueRelearnCount = uiState.queueRelearnCount,
-                        backdrop = if (isWaiting) waitingBackdrop else null
+                        backdrop = if (isWaiting) waitingBackdrop else null,
+                        menu = {
+                            LearnHeaderMoreMenu(
+                                remainingCount = remainingTaskCount,
+                                onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
+                                onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
+                                onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
+                                backdrop = if (isWaiting) waitingBackdrop else null,
+                                onShowRatingGuide = { showRatingGuide = true },
+                                isMenuExpanded = isMenuExpanded,
+                                onToggleMenu = { isMenuExpanded = it },
+                                isAutoAudioEnabled = uiState.isAutoAudioEnabled,
+                                onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
+                                    { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
+                                } else null,
+                                isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
+                                onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
+                                showAnswerDelayDurationLabel = delayDurationLabel,
+                                onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                                onOpenShowAnswerDelayDialog = {
+                                    isMenuExpanded = false
+                                    showDelayDurationDialog = true
+                                },
+                                isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
+                                onToggleAutoRevealAnswer = {
+                                    if (uiState.learningMode == LearningMode.Word) {
+                                        viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
+                                    } else {
+                                        viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
+                                    }
+                                },
+                                autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
+                                onCycleAutoRevealAnswerDuration = {
+                                    if (uiState.learningMode == LearningMode.Word) {
+                                        viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
+                                    } else {
+                                        viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
+                                    }
+                                },
+                                onOpenAutoRevealAnswerDialog = {
+                                    isMenuExpanded = false
+                                    showAutoRevealDurationDialog = true
+                                },
+                                isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
+                                isDarkMode = uiState.isDarkMode,
+                                onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
+                            )
+                        }
                     )
                 }
 
@@ -617,22 +626,20 @@ fun WordLearningContent(
                         },
                         label = "WordCardTransition"
                      ) { targetWord ->
-                         if (targetWord != null) {
-                             SRSLearningCard(
-                                  word = targetWord,
-                                  isAnswerShown = uiState.isAnswerShown,
-                                  cardBadge = LearningItem.WordItem(targetWord).cardBadge,
-                                  modifier = Modifier.fillMaxSize(),
-                                  onPracticeClick = {
-                                      showTypingDialog = true
-                                  },
-                                  onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
-                                  onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                  playingAudioId = uiState.playingAudioId,
-                                  isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                  autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
-                              )
-                         }
+                         SRSLearningCard(
+                             word = targetWord,
+                             isAnswerShown = uiState.isAnswerShown,
+                             cardBadge = LearningItem.WordItem(targetWord).cardBadge,
+                             modifier = Modifier.fillMaxSize(),
+                             onPracticeClick = {
+                                 showTypingDialog = true
+                             },
+                             onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
+                             onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                             playingAudioId = uiState.playingAudioId,
+                             isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                             autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                         )
                      }
                  }
 
@@ -778,18 +785,16 @@ fun GrammarLearningContent(
                         },
                         label = "GrammarCardTransition"
                      ) { targetGrammar ->
-                         if (targetGrammar != null) {
-                              SRSGrammarCard(
-                                  grammar = targetGrammar,
-                                  isAnswerShown = uiState.isAnswerShown,
-                                  cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
-                                  modifier = Modifier.fillMaxSize(),
-                                  onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                  playingAudioId = uiState.playingAudioId,
-                                  isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                  autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
-                              )
-                         }
+                         SRSGrammarCard(
+                             grammar = targetGrammar,
+                             isAnswerShown = uiState.isAnswerShown,
+                             cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
+                             modifier = Modifier.fillMaxSize(),
+                             onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                             playingAudioId = uiState.playingAudioId,
+                             isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                             autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                         )
                      }
                  }
 

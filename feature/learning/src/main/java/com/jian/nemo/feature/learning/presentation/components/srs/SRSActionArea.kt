@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.feature.learning.presentation.components.common.scaleOnPress
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -81,14 +80,8 @@ fun SRSActionArea(
     val colorRose700 = if (isDarkTheme) Color(0xFFFDA4AF) else Color(0xFFBE123C)      // 浅色700 / 深色300
     val colorRose100 = if (isDarkTheme) Color(0xFF4C0519) else Color(0xFFFFE4E6)      // 浅色100 / 深色900
 
-    val colorRed600 = if (isDarkTheme) Color(0xFFFCA5A5) else Color(0xFFDC2626)       // 浅色600 / 深色300
-    val colorRed50 = if (isDarkTheme) Color(0xFF7F1D1D) else Color(0xFFFEF2F2)        // 浅色50 / 深色900
-
     val colorOrange600 = if (isDarkTheme) Color(0xFFFDBA74) else Color(0xFFEA580C)    // 浅色600 / 深色300
     val colorOrange50 = if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFF7ED)     // 浅色50 / 深色900
-
-    val colorYellow600 = if (isDarkTheme) Color(0xFFFDE047) else Color(0xFFCA8A04)    // 浅色600 / 深色300
-    val colorYellow50 = if (isDarkTheme) Color(0xFF713F12) else Color(0xFFFEFCE8)     // 浅色50 / 深色900
 
     val colorBlue600 = if (isDarkTheme) Color(0xFF93C5FD) else Color(0xFF2563EB)      // 浅色600 / 深色300
     val colorBlue50 = if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFEFF6FF)       // 浅色50 / 深色900

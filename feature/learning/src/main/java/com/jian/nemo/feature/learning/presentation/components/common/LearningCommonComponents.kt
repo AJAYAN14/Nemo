@@ -1,192 +1,95 @@
 package com.jian.nemo.feature.learning.presentation.components.common
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.Undo
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastCoerceAtMost
+import androidx.compose.ui.util.lerp
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.feature.learning.presentation.components.dialogs.LearningOverviewDialog
+import com.jian.nemo.feature.learning.presentation.components.dialogs.QueueExplanationDialog
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.util.lerp
-import androidx.compose.ui.util.fastCoerceAtMost
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tanh
-import com.jian.nemo.core.ui.modifier.softCardShadow
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-
-import androidx.compose.material.icons.automirrored.rounded.Undo
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.AccessTime
-import androidx.compose.material.icons.rounded.Timer
-import androidx.compose.material.icons.rounded.Report
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DarkMode
-import androidx.compose.material.icons.rounded.LightMode
-import androidx.compose.material.icons.rounded.SettingsBrightness
-import androidx.compose.material.icons.rounded.Edit
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
-import com.jian.nemo.core.ui.modifier.softCardShadow
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import com.jian.nemo.core.ui.component.common.NemoMorphMenu
-import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
-import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
-import com.jian.nemo.core.ui.component.common.NemoMenuItem
-import androidx.compose.material3.MaterialTheme
-import com.jian.nemo.core.ui.component.common.NemoGooeyToggle
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jian.nemo.feature.learning.presentation.LearningMode
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import androidx.compose.ui.graphics.toArgb
-import com.jian.nemo.core.designsystem.theme.NemoText
-import com.jian.nemo.core.designsystem.theme.NemoTextLight
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.platform.LocalContext
-import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.path
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.LinearEasing
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import nl.dionsegijn.konfetti.compose.KonfettiView
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material.icons.rounded.CalendarToday
-import androidx.compose.material.icons.rounded.List
-import nl.dionsegijn.konfetti.core.Party
-import nl.dionsegijn.konfetti.core.Position
-import nl.dionsegijn.konfetti.core.emitter.Emitter
-import java.util.concurrent.TimeUnit
-import androidx.compose.ui.unit.IntOffset
-import kotlin.math.roundToInt
-import androidx.compose.ui.platform.LocalDensity
-
-/**
- * 按压缩放效果 (Scale on Press)
- * 按下时缩小到 targetScale，松开时回弹
- */
-@Composable
-fun Modifier.scaleOnPress(
-    targetScale: Float = 0.95f,
-    onTap: (() -> Unit)? = null
-): Modifier {
-    var isPressed by remember { mutableStateOf(false) }
-    val currentOnTap by rememberUpdatedState(onTap)
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) targetScale else 1f,
-        label = "scale"
-    )
-
-    return this
-        .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    isPressed = true
-                    tryAwaitRelease()
-                    isPressed = false
-                },
-                onTap = {
-                    currentOnTap?.invoke()
-                }
-            )
-        }
-}
 
 // 学习界面头部组件 (SRS 样式)
 // 学习界面头部组件 - 遵循 Material Design 3 TopAppBar 规范
@@ -197,70 +100,38 @@ fun LearnHeader(
     dailyGoal: Int,
     totalCount: Int,
     onClose: () -> Unit,
-    onSuspend: () -> Unit,
-    onBury: () -> Unit,
-    onReportError: () -> Unit,
-    onShowRatingGuide: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
-    isAutoAudioEnabled: Boolean = false,
-    onToggleAutoAudio: ((Boolean) -> Unit)? = null,
-    isShowAnswerDelayEnabled: Boolean = false,
-    onToggleShowAnswerDelay: ((Boolean) -> Unit)? = null,
-    showAnswerDelayDurationLabel: String = "1.0s",
-    onCycleShowAnswerDelayDuration: (() -> Unit)? = null,
-    onOpenShowAnswerDelayDialog: (() -> Unit)? = null,
-    isAutoRevealAnswerEnabled: Boolean = false,
-    onToggleAutoRevealAnswer: ((Boolean) -> Unit)? = null,
-    autoRevealAnswerDurationLabel: String = "5.0s",
-    onCycleAutoRevealAnswerDuration: (() -> Unit)? = null,
-    onOpenAutoRevealAnswerDialog: (() -> Unit)? = null,
-    isWhiteboardEnabled: Boolean = false,
-    onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     canUndo: Boolean = false,
     onUndo: (() -> Unit)? = null,
-    menu: @Composable (() -> Unit)? = null,
-    isDarkMode: Boolean? = null,
-    onCycleDarkMode: () -> Unit = {},
     queueNewCount: Int = 0,
     queueLearningCount: Int = 0,
     queueReviewCount: Int = 0,
     queueRelearnCount: Int = 0,
-    isMenuExpanded: Boolean = false,
-    onToggleMenu: ((Boolean) -> Unit)? = null,
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    menu: @Composable (() -> Unit)? = null
 ) {
-    val progress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
+    val rawProgress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
+    val animatedProgress by animateFloatAsState(
+        targetValue = rawProgress.coerceIn(0f, 1f),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
+        label = "learn_header_progress"
+    )
 
-
+    val haptic = LocalHapticFeedback.current
+    var showQueueExplanationDialog by remember { mutableStateOf(false) }
+    var showTodayOverviewDialog by remember { mutableStateOf(false) }
+    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val remainingCount = totalCount
 
     // MD3: 使用 MaterialTheme 的颜色系统
     val contentColor = MaterialTheme.colorScheme.onSurface
 
     // 导航按钮组背景：深色模式用半透明白色，浅色模式用纯白色
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val navGroupBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.White
-
     val progressBackground = MaterialTheme.colorScheme.surfaceVariant
-    val context = LocalContext.current
-
-    // 震动辅助函数
-    @android.annotation.SuppressLint("MissingPermission")
-    fun performHapticFeedback() {
-        try {
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-            vibrator?.let {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val effect = VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE)
-                    it.vibrate(effect)
-                } else {
-                    @Suppress("DEPRECATION")
-                    it.vibrate(30)
-                }
-            }
-        } catch (e: Exception) {
-            // 忽略震动失败
-        }
-    }
 
     // MD3: 使用 Surface 提供容器结构，但背景透明以融入界面
     Box(
@@ -289,6 +160,7 @@ fun LearnHeader(
                         shape = CircleShape,
                         backdrop = backdrop,
                         hasLens = true,
+                        chromaticAberration = backdrop != null,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
                         modifier = Modifier.size(48.dp)
@@ -326,6 +198,7 @@ fun LearnHeader(
                             shape = CircleShape,
                             backdrop = backdrop,
                             hasLens = true,
+                            chromaticAberration = backdrop != null,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
@@ -343,14 +216,16 @@ fun LearnHeader(
                     // 这里显示的是当前学习队列（wordList/grammarList）中的总数。
                     // 它是“待处理任务量”，而不是“页面浏览进度”。
                     // 只要卡片没有被评分（Rate）并移出队列，该数字在滑动浏览时不应减小。
-                    val remainingCount = totalCount
-
                     if (remainingCount > 0) {
                         FrostedLiquidGlassButton(
-                            onClick = {},
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                showTodayOverviewDialog = true
+                            },
                             shape = CircleShape,
                             backdrop = backdrop,
                             hasLens = true,
+                            chromaticAberration = backdrop != null,
                             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                             isInteractive = true,
                             modifier = Modifier.height(48.dp)
@@ -380,196 +255,8 @@ fun LearnHeader(
                         }
                     }
 
-                    // More Menu
-                    val canShowMenu = true
-                    if (canShowMenu) {
-                        if (menu != null) {
-                            menu()
-                        } else {
-                            var internalExpanded by remember { mutableStateOf(false) }
-                            val expanded = if (onToggleMenu != null) isMenuExpanded else internalExpanded
-                            val setExpanded: (Boolean) -> Unit = { expandedValue ->
-                                internalExpanded = expandedValue
-                                onToggleMenu?.invoke(expandedValue)
-                            }
-
-                            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
-                            NemoMorphMenu(
-                                expanded = expanded,
-                                onExpandedChange = setExpanded,
-                                backdrop = backdrop,
-                                buttonSize = 48.dp,
-                                menuWidth = 240.dp,
-                                icon = Icons.Rounded.MoreVert,
-                                contentDescription = "更多选项"
-                            ) {
-                                if (onShowRatingGuide != null) {
-                                    NemoMorphMenuItem(
-                                        text = "评分说明（新学/复习）",
-                                        leadingIcon = Icons.Rounded.CheckCircle,
-                                        plumpIcon = PlumpIcon.BadgeCheck,
-                                        iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
-                                        onClick = {
-                                            close()
-                                            onShowRatingGuide()
-                                        }
-                                    )
-
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                    )
-                                }
-
-                                if (remainingCount > 0) {
-                                    NemoMorphMenuItem(
-                                        text = "暂停此卡片 (Suspend)",
-                                        leadingIcon = Icons.Rounded.Pause,
-                                        plumpIcon = PlumpIcon.Pause,
-                                        iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
-                                        onClick = {
-                                            close()
-                                            onSuspend()
-                                        }
-                                    )
-                                    NemoMorphMenuItem(
-                                        text = "今日暂缓此项 (Bury)",
-                                        leadingIcon = Icons.Rounded.AccessTime,
-                                        plumpIcon = PlumpIcon.StudyClock,
-                                        iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
-                                        onClick = {
-                                            close()
-                                            onBury()
-                                        }
-                                    )
-
-                                    NemoMorphMenuItem(
-                                        text = "报告条目错误",
-                                        leadingIcon = Icons.Rounded.Report,
-                                        plumpIcon = PlumpIcon.CircleX,
-                                        iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
-                                        onClick = {
-                                            close()
-                                            onReportError()
-                                        }
-                                    )
-
-                                    androidx.compose.material3.HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                    )
-                                }
-
-                                // 自动朗读开关
-                                if (onToggleAutoAudio != null) {
-                                    MorphMenuToggleItem(
-                                        text = "翻面自动朗读",
-                                        checked = isAutoAudioEnabled,
-                                        onCheckedChange = { onToggleAutoAudio(it) }
-                                    )
-                                }
-
-                                if (onToggleShowAnswerDelay != null) {
-                                    MorphMenuToggleItem(
-                                        text = "显示答案等待",
-                                        checked = isShowAnswerDelayEnabled,
-                                        onCheckedChange = { onToggleShowAnswerDelay(it) }
-                                    )
-
-                                    if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
-                                        NemoMorphMenuItem(
-                                            text = "等待时长: $showAnswerDelayDurationLabel",
-                                            leadingIcon = Icons.Rounded.Timer,
-                                            plumpIcon = PlumpIcon.StudyClock,
-                                            iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
-                                            onClick = {
-                                                close()
-                                                if (onOpenShowAnswerDelayDialog != null) {
-                                                    onOpenShowAnswerDelayDialog()
-                                                } else {
-                                                    onCycleShowAnswerDelayDuration?.invoke()
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-
-                                if (onToggleAutoRevealAnswer != null) {
-                                    MorphMenuToggleItem(
-                                        text = "自动翻面",
-                                        checked = isAutoRevealAnswerEnabled,
-                                        onCheckedChange = { onToggleAutoRevealAnswer(it) }
-                                    )
-
-                                    if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
-                                        NemoMorphMenuItem(
-                                            text = "翻面时长: $autoRevealAnswerDurationLabel",
-                                            leadingIcon = Icons.Rounded.Timer,
-                                            plumpIcon = PlumpIcon.StudyClock,
-                                            iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
-                                            onClick = {
-                                                close()
-                                                if (onOpenAutoRevealAnswerDialog != null) {
-                                                    onOpenAutoRevealAnswerDialog()
-                                                } else {
-                                                    onCycleAutoRevealAnswerDuration?.invoke()
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-
-                                if (onToggleWhiteboard != null) {
-                                    val whiteboardLabel = if (isWhiteboardEnabled) "已开启" else "已关闭"
-                                    NemoMorphMenuItem(
-                                        text = "手写白板: $whiteboardLabel",
-                                        leadingIcon = Icons.Rounded.Edit,
-                                        plumpIcon = PlumpIcon.IconLab,
-                                        iconColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else null,
-                                        onClick = {
-                                            onToggleWhiteboard(!isWhiteboardEnabled)
-                                        }
-                                    )
-                                }
-
-                                androidx.compose.material3.HorizontalDivider(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
-                                )
-
-                                // 主题切换项 (循环模式)
-                                val themeLabel = when (isDarkMode) {
-                                    null -> "跟随系统"
-                                    true -> "深色模式"
-                                    false -> "浅色模式"
-                                }
-                                val themeIcon = when (isDarkMode) {
-                                    null -> Icons.Rounded.SettingsBrightness
-                                    true -> Icons.Rounded.DarkMode
-                                    false -> Icons.Rounded.LightMode
-                                }
-                                val themePlumpIcon = when (isDarkMode) {
-                                    null -> PlumpIcon.ThemePalette
-                                    true -> PlumpIcon.Moon
-                                    false -> PlumpIcon.Sun
-                                }
-                                val themeColor = when (isDarkMode) {
-                                    null -> IsoluminantPalette.SkyIndigo
-                                    true -> IsoluminantPalette.LilacViolet
-                                    false -> IsoluminantPalette.WarmAmber
-                                }
-
-                                NemoMorphMenuItem(
-                                    text = "显示模式: $themeLabel",
-                                    leadingIcon = themeIcon,
-                                    plumpIcon = themePlumpIcon,
-                                    iconColor = if (isPlumpDuo) themeColor else null,
-                                    onClick = {
-                                        onCycleDarkMode()
-                                    }
-                                )
-                            }
-
-                        }
-                    }
+                    // More Menu Slot
+                    menu?.invoke()
                 }
             }
 
@@ -580,8 +267,7 @@ fun LearnHeader(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Progress Bar - MD3: 使用 LinearProgressIndicator 风格
-                val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                // Progress Bar - MD3: 使用 LinearProgressIndicator 风格（平滑插值动画）
                 val effectiveProgressColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary
 
                 Box(
@@ -592,7 +278,7 @@ fun LearnHeader(
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(progress.coerceIn(0f, 1f))
+                            .fillMaxWidth(animatedProgress)
                             .fillMaxSize()
                             .background(
                                 color = effectiveProgressColor,
@@ -601,10 +287,21 @@ fun LearnHeader(
                     )
                 }
 
-                // 四色状态计数
+                // 四色状态计数（点击可查看各状态说明）
                 Row(
-                    modifier = Modifier.padding(start = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            showQueueExplanationDialog = true
+                        }
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 新学 (NEW) - 蓝色
                     val defaultNewColor = if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
@@ -645,93 +342,40 @@ fun LearnHeader(
                 }
             }
         }
-    }
-}
 
-// 等级指示器组件
-@Composable
-fun LevelIndicator(level: String, onClick: () -> Unit) {
-    Text(
-        text = "JLPT $level",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier
-            .clickable(
-                onClick = onClick,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
+        // 队列状态说明弹窗
+        if (showQueueExplanationDialog) {
+            QueueExplanationDialog(
+                onDismissRequest = { showQueueExplanationDialog = false },
+                queueNewCount = queueNewCount,
+                queueLearningCount = queueLearningCount,
+                queueReviewCount = queueReviewCount,
+                queueRelearnCount = queueRelearnCount,
+                isDarkTheme = isDarkTheme,
+                isPlumpDuo = isPlumpDuo
             )
-            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
-    )
-}
+        }
 
-// 语法子头部组件
-@Composable
-fun GrammarSubHeader(
-    isGrammarDailyGoalMet: Boolean,
-    todayLearnedGrammarCount: Int,
-    grammarDailyGoal: Int,
-    selectedGrammarLevel: String,
-    onLevelClick: () -> Unit
-) {
-    // [Requirement Fix] 采用“剩余”逻辑
-    val remaining = (grammarDailyGoal - todayLearnedGrammarCount).coerceAtLeast(0)
-    val grammarProgressText = if (isGrammarDailyGoalMet) "今日已完成" else "剩余 $remaining / $grammarDailyGoal"
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 10.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = grammarProgressText,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        LevelIndicator(
-            level = selectedGrammarLevel,
-            onClick = onLevelClick
-        )
-    }
-}
-
-
-
-
-// 内容不可用组件
-@Composable
-fun ContentUnavailable(text: String, cardColor: Color) {
-    Box(
-        modifier = Modifier.fillMaxWidth(), // Legacy fillMaxSize
-        contentAlignment = Alignment.Center
-    ) {
-        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp)
-                .softCardShadow(borderRadius = 20.dp, isDark = isDark),
-            colors = CardDefaults.cardColors(containerColor = cardColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            shape = RoundedCornerShape(20.dp)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = NemoTextLight,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-            }
+        // 今日学习概览面板弹窗
+        if (showTodayOverviewDialog) {
+            LearningOverviewDialog(
+                onDismissRequest = { showTodayOverviewDialog = false },
+                learningMode = learningMode,
+                completedCount = completedCount,
+                dailyGoal = dailyGoal,
+                remainingCount = remainingCount,
+                queueNewCount = queueNewCount,
+                queueLearningCount = queueLearningCount,
+                queueReviewCount = queueReviewCount,
+                queueRelearnCount = queueRelearnCount,
+                isDarkTheme = isDarkTheme,
+                isPlumpDuo = isPlumpDuo
+            )
         }
     }
 }
+
+
 
 // ==========================================
 // 现代化短时记忆冷却仓组件 (Learn Ahead Limit Waiting Chamber)
@@ -765,6 +409,22 @@ fun WaitingBackground(
             accentColor = accentColor,
             modifier = Modifier.fillMaxSize(),
             onControllerReady = onControllerReady
+        )
+
+        // 原生 Compose 多色流光底衬：为透镜和色散着色器注入丰富的高饱和度与高对比度折射采样源
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            primaryColor.copy(alpha = if (isDark) 0.35f else 0.25f),
+                            accentColor.copy(alpha = if (isDark) 0.18f else 0.12f),
+                            Color.Transparent
+                        ),
+                        radius = 1200f
+                    )
+                )
         )
 
         // 纵深光影渐变遮罩层（增强文字与圆环在 WebGL 粒子之上的清晰度与呼吸层次）
@@ -814,13 +474,11 @@ fun WaitingContent(
 
     var localTriggerCenterBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
     val triggerCenterBlast = onTriggerCenterBlast ?: localTriggerCenterBlast
-    var remainingSeconds by remember { mutableStateOf(0L) }
-
-    // 初始等待周期（秒），用于计算圆环进度流逝
-    val initialTotalSeconds = remember(until) {
-        val diff = (until - System.currentTimeMillis()) / 1000L
-        if (diff > 0) diff.coerceAtLeast(60L).toFloat() else 600f
+    val initialRemainingSeconds = remember(until) {
+        val diff = (until - System.currentTimeMillis()) / 1000
+        diff.coerceAtLeast(0L)
     }
+    var remainingSeconds by remember(until) { mutableStateOf(initialRemainingSeconds) }
 
     // 倒计时循环
     androidx.compose.runtime.LaunchedEffect(until) {
@@ -828,6 +486,7 @@ fun WaitingContent(
             val now = System.currentTimeMillis()
             val diff = (until - now) / 1000
             if (diff <= 0) {
+                remainingSeconds = 0L
                 onContinue() // 时间到，自动恢复并继续学习
                 break
             }
@@ -836,9 +495,15 @@ fun WaitingContent(
         }
     }
 
-    val minutes = (remainingSeconds / 60).coerceAtLeast(0L)
+    val hours = (remainingSeconds / 3600).coerceAtLeast(0L)
+    val minutes = ((remainingSeconds % 3600) / 60).coerceAtLeast(0L)
     val seconds = (remainingSeconds % 60).coerceAtLeast(0L)
-    val timeFormatted = "%02d:%02d".format(minutes, seconds)
+    val timeFormatted = if (hours > 0) {
+        "%02d:%02d:%02d".format(hours, minutes, seconds)
+    } else {
+        "%02d:%02d".format(minutes, seconds)
+    }
+    val timeFontSize = if (hours > 0) 36.sp else 52.sp
 
     // 快进矢量图标 (Learn Ahead)
     val learnAheadIcon = remember {
@@ -953,10 +618,10 @@ fun WaitingContent(
                                     refractionHeight = 0.1f * minDimension,
                                     refractionAmount = 0.2f * minDimension,
                                     depthEffect = true,
-                                    chromaticAberration = false
+                                    chromaticAberration = true
                                 )
                             },
-                            highlight = { Highlight.Plain },
+                            highlight = { Highlight.Default.copy(alpha = 0.85f, width = 1.2.dp) },
                             layerBlock = {
                                 val width = size.width
                                 val height = size.height
@@ -1011,7 +676,7 @@ fun WaitingContent(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = timeFormatted,
-                            fontSize = 52.sp,
+                            fontSize = timeFontSize,
                             fontWeight = FontWeight.ExtraBold,
                             color = if (isDark) Color.White else Color(0xFF1E1B4B)
                         )
@@ -1045,9 +710,9 @@ fun WaitingContent(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // 本轮学习战报卡片 (Audit Card)
-                val displayCompleted = if (completedCount > 0) completedCount else 15
-                val displayQueue = if (queueCount > 0) queueCount else 10
+                // 本轮学习战报卡片 (Audit Card) - 真实数据驱动
+                val displayCompleted = completedCount
+                val displayQueue = queueCount
 
                 Card(
                     shape = RoundedCornerShape(18.dp),
@@ -1188,6 +853,8 @@ fun WaitingContent(
                     backdrop = chamberBackdrop,
                     shape = RoundedCornerShape(14.dp),
                     tint = MaterialTheme.colorScheme.primary,
+                    tintAlpha = 0.38f,
+                    chromaticAberration = true,
                     border = null,
                     isInteractive = true,
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -1219,6 +886,7 @@ fun WaitingContent(
                         },
                         backdrop = chamberBackdrop,
                         shape = RoundedCornerShape(14.dp),
+                        chromaticAberration = true,
                         surfaceColor = if (isDark) Color(0xFF262038).copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
                         border = null,
                         isInteractive = true,
@@ -1246,50 +914,3 @@ fun WaitingContent(
         }
     }
 }
-
-@Composable
-private fun MorphMenuToggleItem(
-    text: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-
-    androidx.compose.material3.Surface(
-        onClick = {
-            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
-            onCheckedChange(!checked)
-        },
-        color = Color.Transparent,
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            com.jian.nemo.core.ui.component.liquid.LiquidToggle(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                accentColor = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-
-
-
