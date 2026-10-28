@@ -104,7 +104,7 @@ class LearningViewModel @Inject constructor(
         private const val NAVIGATION_DEBOUNCE_MS = 400L
 
         /** 评分防抖延迟 (ms) */
-        private const val RATING_DEBOUNCE_MS = 300L
+        private const val RATING_DEBOUNCE_MS = 100L
 
         /** 点击边界容差，避免倒计时到点仍被拦截 */
         private const val SHOW_ANSWER_GRACE_MS = 150L
@@ -1365,11 +1365,9 @@ class LearningViewModel @Inject constructor(
     /**
      * 应用失败惩罚 (Lapse Penalty)
      *
-     * 当用户点击"重来"时，立即更新数据库中的 Interval 和 EF。
-     * 这样做的目的是：当卡片在重学阶段结束后再次毕业时，
-     * 它的下一次间隔会基于这个"打折后"的值来计算，而不是基于原来的长间隔。
+     * 纯内存计算惩罚后的 Item 模型，立即返回用于排队调度，避免同步写库阻塞切卡动画。
      */
-    private suspend fun applyLapsePenalty(item: LearningItem, quality: Int): LearningItem? {
+    private fun applyLapsePenalty(item: LearningItem, quality: Int): LearningItem {
         val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
 
         return when (item) {
@@ -1386,9 +1384,6 @@ class LearningViewModel @Inject constructor(
                     firstLearnedDate = srsResult.firstLearnedDate,
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
-                // 更新数据库
-                updateWordUseCase(updatedWord)
-                // 返回更新后的 Item
                 item.copy(word = updatedWord)
             }
             is LearningItem.GrammarItem -> {
@@ -1404,9 +1399,6 @@ class LearningViewModel @Inject constructor(
                     firstLearnedDate = srsResult.firstLearnedDate,
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
-                // 更新数据库
-                updateGrammarUseCase(updatedGrammar)
-                // 返回更新后的 Item
                 item.copy(grammar = updatedGrammar)
             }
         }
@@ -1415,22 +1407,17 @@ class LearningViewModel @Inject constructor(
     /**
      * 处理重学毕业 (Re-learning Graduation)
      *
-     * 此时卡片的 Interval 已经在 Lapse 时被惩罚过了 (例如 100 -> 45)。
-     * 毕业时，只需将其移回复习队列，并设定下次复习日期为 Today + 45。
-     * 不需要再次乘以 EF。
-     * 但我们会应用轻微的 Fuzzing (模糊) 以防止复习尖峰。
+     * 此时卡片的 Interval 已经在 Lapse 时被惩罚过了。
+     * 立即乐观切卡刷新 UI，并将写库操作移至后台异步执行。
      */
-    private suspend fun processRelearningGraduation(item: LearningItem) {
+    private fun processRelearningGraduation(item: LearningItem) {
         val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
         val isNew = item.isNew
 
-        when (item) {
+        val updatedItem = when (item) {
             is LearningItem.WordItem -> {
                 val word = item.word
-                // 说明：此时 word.interval 已经在 applyLapsePenalty 时由 FSRS 算法计算并更新过了。
-                // 毕业时只需将其“激活”为下一次复习日期，不再进行二次 Fuzz 或手动计算。
                 val interval = word.interval.coerceAtLeast(1)
-
                 val updatedWord = word.copy(
                     type = 2, // 🎯 毕业进入复习 (Review)
                     interval = interval,
@@ -1440,13 +1427,11 @@ class LearningViewModel @Inject constructor(
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
                 println("重学毕业: id=${updatedWord.id}, stability=${updatedWord.stability}, next_interval=${updatedWord.interval}d")
-                val result = updateWordUseCase(updatedWord)
-                handleSrsUpdateResult(result, isNew, isLapse = false, item = item, quality = 3)
+                item.copy(word = updatedWord)
             }
             is LearningItem.GrammarItem -> {
                 val grammar = item.grammar
                 val interval = grammar.interval.coerceAtLeast(1)
-
                 val updatedGrammar = grammar.copy(
                     type = 2, // 🎯 毕业进入复习 (Review)
                     interval = interval,
@@ -1456,10 +1441,22 @@ class LearningViewModel @Inject constructor(
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
                 println("重学毕业: id=${updatedGrammar.id}, stability=${updatedGrammar.stability}, next_interval=${updatedGrammar.interval}d")
-                val result = updateGrammarUseCase(updatedGrammar)
-                handleSrsUpdateResult(result, isNew, isLapse = false, item = item, quality = 3)
+                item.copy(grammar = updatedGrammar)
             }
         }
+
+        // 🎯 乐观更新 UI：立即计次并切卡
+        _uiState.update {
+            it.copy(
+                completedThisSession = it.completedThisSession + 1,
+                completedToday = if (isNew) it.completedToday + 1 else it.completedToday,
+                sessionProcessedCount = it.sessionProcessedCount + 1
+            )
+        }
+        removeCurrentAndMoveNext()
+
+        // 🎯 异步安全持久化写入数据库
+        persistRatingItemAsync(updatedItem, isGraduation = true, isNew = isNew, isLapse = false, quality = 3)
     }
 
     /**
@@ -1473,7 +1470,6 @@ class LearningViewModel @Inject constructor(
                 _learningSteps.remove(result.item.id)
 
                 // 区分: 新卡毕业 vs 重学毕业 (Re-learning Graduation)
-                // 重学毕业时，不应再次乘以 EF (因为 Lapse 时已经重置了间隔)，只需恢复到复习队列
                 if (!result.item.isNew && result.quality < 5) {
                     processRelearningGraduation(result.item)
                 } else {
@@ -1481,56 +1477,62 @@ class LearningViewModel @Inject constructor(
                 }
             }
             is ScheduleResult.Requeue -> {
-                var item = result.updatedItem
+                val item = result.updatedItem
                 _learningSteps[item.id] = result.nextStepIndex
 
-                // 🎯 核心修复：同步更新底层模型的 type 字段并持久化
-                val mode = _uiState.value.learningMode
-                when (mode) {
+                val updatedItem = when (_uiState.value.learningMode) {
                     LearningMode.Word -> {
                         if (item is LearningItem.WordItem) {
                             val updatedWord = item.word.copy(type = item.type)
-                            item = item.copy(word = updatedWord)
-                            updateWordUseCase(updatedWord)
-                            if (result.isLapse) settingsRepository.incrementWordLapse(item.id)
-                        }
+                            item.copy(word = updatedWord)
+                        } else item
                     }
                     LearningMode.Grammar -> {
                         if (item is LearningItem.GrammarItem) {
                             val updatedGrammar = item.grammar.copy(type = item.type)
-                            item = item.copy(grammar = updatedGrammar)
-                            updateGrammarUseCase(updatedGrammar)
-                            if (result.isLapse) settingsRepository.incrementGrammarLapse(item.id)
-                        }
+                            item.copy(grammar = updatedGrammar)
+                        } else item
                     }
                 }
 
                 if (result.isLapse) {
-                    println("失败 (Again): ${item.displayName}, Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
+                    println("失败 (Again): ${updatedItem.displayName}, Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
                 } else {
-                    if (result.nextStepIndex == _learningSteps[item.id]) {
-                        println("困难 (Hard): ${item.displayName}, Keep Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
+                    if (result.nextStepIndex == _learningSteps[updatedItem.id]) {
+                        println("困难 (Hard): ${updatedItem.displayName}, Keep Step ${result.nextStepIndex}, 到期时间: ${result.dueTime}")
                     } else {
-                        println("进阶 (Good): ${item.displayName} (Step -> ${result.nextStepIndex}), 到期时间: ${result.dueTime}")
+                        println("进阶 (Good): ${updatedItem.displayName} (Step -> ${result.nextStepIndex}), 到期时间: ${result.dueTime}")
                     }
                 }
 
-                reQueueAtRelativeOffset(item)
+                // 🎯 乐观更新 UI：立即累加处理步数并重新排队切词
+                _uiState.update {
+                    it.copy(sessionProcessedCount = it.sessionProcessedCount + 1)
+                }
+                reQueueAtRelativeOffset(updatedItem)
+
+                // 🎯 异步安全持久化写入数据库
+                persistRatingItemAsync(
+                    updatedItem,
+                    isGraduation = false,
+                    isNew = updatedItem.isNew,
+                    isLapse = result.isLapse,
+                    quality = 1
+                )
             }
         }
     }
 
     /**
-     * SRS 更新
+     * SRS 更新（乐观切卡与异步持久化）
      *
      * 使用会话锁定的学习日 (零点跨天保护)
      */
-    private suspend fun processSrsUpdate(item: LearningItem, quality: Int, isLapse: Boolean) {
-        // 使用会话锁定的学习日，如果未设置则使用当前学习日
+    private fun processSrsUpdate(item: LearningItem, quality: Int, isLapse: Boolean) {
         val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
         val isNew = item.isNew
 
-        when (item) {
+        val updatedItem = when (item) {
             is LearningItem.WordItem -> {
                 val word = item.word
                 val srsResult = srsCalculator.calculate(word, quality, today)
@@ -1545,10 +1547,8 @@ class LearningViewModel @Inject constructor(
                     firstLearnedDate = srsResult.firstLearnedDate,
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
-
                 println("更新单词: id=${updatedWord.id}, rep=${updatedWord.repetitionCount}, interval=${updatedWord.interval}d")
-                val result = updateWordUseCase(updatedWord)
-                handleSrsUpdateResult(result, isNew, isLapse, item, quality)
+                item.copy(word = updatedWord)
             }
 
             is LearningItem.GrammarItem -> {
@@ -1565,50 +1565,62 @@ class LearningViewModel @Inject constructor(
                     firstLearnedDate = srsResult.firstLearnedDate,
                     lastModifiedTime = com.jian.nemo.core.common.util.DateTimeUtils.getCurrentCompensatedMillis()
                 )
-
                 println("更新语法: id=${updatedGrammar.id}, rep=${updatedGrammar.repetitionCount}, interval=${updatedGrammar.interval}d")
-                val result = updateGrammarUseCase(updatedGrammar)
-                handleSrsUpdateResult(result, isNew, isLapse, item, quality)
+                item.copy(grammar = updatedGrammar)
             }
         }
+
+        // 🎯 乐观更新 UI：立即计次并切卡
+        _uiState.update {
+            it.copy(
+                completedThisSession = it.completedThisSession + 1,
+                completedToday = if (isNew) it.completedToday + 1 else it.completedToday,
+                sessionProcessedCount = it.sessionProcessedCount + 1
+            )
+        }
+        removeCurrentAndMoveNext()
+
+        // 🎯 异步安全持久化写入数据库
+        persistRatingItemAsync(updatedItem, isGraduation = true, isNew = isNew, isLapse = isLapse, quality = quality)
     }
 
-    private suspend fun handleSrsUpdateResult(
-        result: Result<Unit>,
+    /**
+     * 后台异步安全持久化评分结果与学习统计
+     */
+    private fun persistRatingItemAsync(
+        updatedItem: LearningItem,
+        isGraduation: Boolean,
         isNew: Boolean,
         isLapse: Boolean,
-        item: LearningItem? = null,
-        quality: Int = 4
+        quality: Int
     ) {
-        when (result) {
-            is Result.Success -> {
-                if (isLapse) {
-                    // Lapse: 已在 handleFailure 中处理
-                } else {
-                    // 更新统计
-                    val mode = _uiState.value.learningMode
-                    when (mode) {
-                        LearningMode.Word -> {
+        viewModelScope.launch(Dispatchers.IO) {
+            val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
+            try {
+                when (updatedItem) {
+                    is LearningItem.WordItem -> {
+                        val word = updatedItem.word
+                        val result = updateWordUseCase(word)
+                        if (result is Result.Error) {
+                            println("后台保存单词失败: ${result.exception.message}")
+                            return@launch
+                        }
+
+                        if (isLapse) {
+                            settingsRepository.incrementWordLapse(word.id)
+                        }
+
+                        if (isGraduation) {
                             if (isNew) studyRecordRepository.incrementLearnedWords(1)
                             else studyRecordRepository.incrementReviewedWords(1)
-                        }
-                        LearningMode.Grammar -> {
-                            if (isNew) studyRecordRepository.incrementLearnedGrammars(1)
-                            else studyRecordRepository.incrementReviewedGrammars(1)
-                        }
-                    }
 
-                    // 补全复习日志与统计记录（仅在复习旧词且成功时执行）
-                    if (!isNew && item != null) {
-                        val today = _sessionLockedDay ?: DateTimeUtils.getLearningDay(_resetHour)
-                        when (item) {
-                            is LearningItem.WordItem -> {
-                                settingsRepository.addTodayTestedWordId(item.word.id)
+                            if (!isNew) {
+                                settingsRepository.addTodayTestedWordId(word.id)
                                 if (quality <= 2) {
-                                    settingsRepository.addTodayWrongWordId(item.word.id)
+                                    settingsRepository.addTodayWrongWordId(word.id)
                                 }
                                 try {
-                                    val lastDate = item.word.lastReviewedDate
+                                    val lastDate = word.lastReviewedDate
                                     val actualInterval = if (lastDate != null && lastDate > 0L) {
                                         (today - lastDate).toInt()
                                     } else {
@@ -1616,7 +1628,7 @@ class LearningViewModel @Inject constructor(
                                     }
                                     reviewLogRepository.insertLog(
                                         com.jian.nemo.core.domain.model.ReviewLog(
-                                            itemId = item.word.id,
+                                            itemId = word.id,
                                             itemType = "word",
                                             reviewDate = DateTimeUtils.getCurrentCompensatedMillis(),
                                             intervalDays = actualInterval,
@@ -1628,13 +1640,33 @@ class LearningViewModel @Inject constructor(
                                 }
                                 srsCalculator.notifyReviewCompleted()
                             }
-                            is LearningItem.GrammarItem -> {
-                                settingsRepository.addTodayTestedGrammarId(item.grammar.id)
+                            syncTodayCounts()
+                        }
+                    }
+
+                    is LearningItem.GrammarItem -> {
+                        val grammar = updatedItem.grammar
+                        val result = updateGrammarUseCase(grammar)
+                        if (result is Result.Error) {
+                            println("后台保存语法失败: ${result.exception.message}")
+                            return@launch
+                        }
+
+                        if (isLapse) {
+                            settingsRepository.incrementGrammarLapse(grammar.id)
+                        }
+
+                        if (isGraduation) {
+                            if (isNew) studyRecordRepository.incrementLearnedGrammars(1)
+                            else studyRecordRepository.incrementReviewedGrammars(1)
+
+                            if (!isNew) {
+                                settingsRepository.addTodayTestedGrammarId(grammar.id)
                                 if (quality <= 2) {
-                                    settingsRepository.addTodayWrongGrammarId(item.grammar.id)
+                                    settingsRepository.addTodayWrongGrammarId(grammar.id)
                                 }
                                 try {
-                                    val lastDate = item.grammar.lastReviewedDate
+                                    val lastDate = grammar.lastReviewedDate
                                     val actualInterval = if (lastDate != null && lastDate > 0L) {
                                         (today - lastDate).toInt()
                                     } else {
@@ -1642,7 +1674,7 @@ class LearningViewModel @Inject constructor(
                                     }
                                     reviewLogRepository.insertLog(
                                         com.jian.nemo.core.domain.model.ReviewLog(
-                                            itemId = item.grammar.id,
+                                            itemId = grammar.id,
                                             itemType = "grammar",
                                             reviewDate = DateTimeUtils.getCurrentCompensatedMillis(),
                                             intervalDays = actualInterval,
@@ -1654,33 +1686,13 @@ class LearningViewModel @Inject constructor(
                                 }
                                 srsCalculator.notifyReviewCompleted()
                             }
+                            syncTodayCounts()
                         }
                     }
-
-                    _uiState.update {
-                        it.copy(
-                            completedThisSession = it.completedThisSession + 1,
-                            completedToday = if (isNew) it.completedToday + 1 else it.completedToday,
-                            sessionProcessedCount = it.sessionProcessedCount + 1
-                        )
-                    }
-
-                    // 数据库更新成功后同步最新战报与统计
-                    syncTodayCounts()
-
-                    // 移出已毕业卡片并前进
-                    removeCurrentAndMoveNext()
                 }
+            } catch (e: Exception) {
+                println("后台持久化评分失败: ${e.message}")
             }
-            is Result.Error -> {
-                _uiState.update {
-                    it.copy(
-                        status = LearningStatus.Error,
-                        error = "更新失败: ${result.exception.message}"
-                    )
-                }
-            }
-            else -> {}
         }
     }
 

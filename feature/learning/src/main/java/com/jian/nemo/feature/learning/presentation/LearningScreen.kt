@@ -50,6 +50,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -612,20 +614,23 @@ fun WordLearningContent(
                  ) {
                      // 单卡封闭模式：禁止左右手势翻页，仅由评分与撤销驱动卡片切换动效
                      AnimatedContent(
-                        targetState = uiState.currentWord,
+                        targetState = uiState.currentWord to uiState.sessionProcessedCount,
                         transitionSpec = {
+                            val animSpec = tween<Float>(durationMillis = 220, easing = FastOutSlowInEasing)
+                            val offsetSpec = tween<IntOffset>(durationMillis = 220, easing = FastOutSlowInEasing)
                             if (uiState.slideDirection == SlideDirection.FORWARD) {
-                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                                    slideOutHorizontally { width -> -width } + fadeOut())
+                                (slideInHorizontally(animationSpec = offsetSpec) { width -> width } + fadeIn(animationSpec = animSpec)).togetherWith(
+                                    slideOutHorizontally(animationSpec = offsetSpec) { width -> -width } + fadeOut(animationSpec = animSpec))
                             } else {
-                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                                    slideOutHorizontally { width -> width } + fadeOut())
+                                (slideInHorizontally(animationSpec = offsetSpec) { width -> -width } + fadeIn(animationSpec = animSpec)).togetherWith(
+                                    slideOutHorizontally(animationSpec = offsetSpec) { width -> width } + fadeOut(animationSpec = animSpec))
                             }.using(
                                 SizeTransform(clip = false)
                             )
                         },
                         label = "WordCardTransition"
-                     ) { targetWord ->
+                     ) { (targetWord, _) ->
+                         if (targetWord != null) {
                          SRSLearningCard(
                              word = targetWord,
                              isAnswerShown = uiState.isAnswerShown,
@@ -640,6 +645,7 @@ fun WordLearningContent(
                              isWhiteboardEnabled = uiState.isWhiteboardEnabled,
                              autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
                          )
+                         }
                      }
                  }
 
@@ -771,30 +777,34 @@ fun GrammarLearningContent(
                  ) {
                      // 单卡封闭模式：禁止左右手势翻页，仅由评分与撤销驱动卡片切换动效
                      AnimatedContent(
-                        targetState = uiState.currentGrammar,
+                        targetState = uiState.currentGrammar to uiState.sessionProcessedCount,
                         transitionSpec = {
+                            val animSpec = tween<Float>(durationMillis = 220, easing = FastOutSlowInEasing)
+                            val offsetSpec = tween<IntOffset>(durationMillis = 220, easing = FastOutSlowInEasing)
                             if (uiState.slideDirection == SlideDirection.FORWARD) {
-                                (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                                    slideOutHorizontally { width -> -width } + fadeOut())
+                                (slideInHorizontally(animationSpec = offsetSpec) { width -> width } + fadeIn(animationSpec = animSpec)).togetherWith(
+                                    slideOutHorizontally(animationSpec = offsetSpec) { width -> -width } + fadeOut(animationSpec = animSpec))
                             } else {
-                                (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                                    slideOutHorizontally { width -> width } + fadeOut())
+                                (slideInHorizontally(animationSpec = offsetSpec) { width -> -width } + fadeIn(animationSpec = animSpec)).togetherWith(
+                                    slideOutHorizontally(animationSpec = offsetSpec) { width -> width } + fadeOut(animationSpec = animSpec))
                             }.using(
                                 SizeTransform(clip = false)
                             )
                         },
                         label = "GrammarCardTransition"
-                     ) { targetGrammar ->
-                         SRSGrammarCard(
-                             grammar = targetGrammar,
-                             isAnswerShown = uiState.isAnswerShown,
-                             cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
-                             modifier = Modifier.fillMaxSize(),
-                             onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                             playingAudioId = uiState.playingAudioId,
-                             isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                             autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
-                         )
+                     ) { (targetGrammar, _) ->
+                         if (targetGrammar != null) {
+                             SRSGrammarCard(
+                                 grammar = targetGrammar,
+                                 isAnswerShown = uiState.isAnswerShown,
+                                 cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
+                                 modifier = Modifier.fillMaxSize(),
+                                 onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                                 playingAudioId = uiState.playingAudioId,
+                                 isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                                 autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                             )
+                         }
                      }
                  }
 
