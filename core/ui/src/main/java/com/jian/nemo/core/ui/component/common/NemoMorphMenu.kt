@@ -1,5 +1,6 @@
 package com.jian.nemo.core.ui.component.common
 
+import android.graphics.BlurMaskFilter
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
@@ -23,10 +24,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -292,6 +300,10 @@ fun NemoMorphMenu(
                     onExpandedChange(false)
                 }
 
+                val panelShape = RoundedCornerShape(20.dp)
+                val panelBgColor = if (isDarkTheme) Color(0xF51E1E22) else Color(0xFAFAFAFC)
+                val highlightBorderColor = if (isDarkTheme) Color.White.copy(alpha = 0.14f) else Color.Black.copy(alpha = 0.08f)
+
                 // 面板卡片容器（右上角原位弹性下拉展开）
                 Box(
                     modifier = Modifier
@@ -303,21 +315,12 @@ fun NemoMorphMenu(
                             alpha = panelAlpha
                             transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 0f)
                         }
-                        .then(
-                            if (elevation > 0.dp) {
-                                Modifier.shadow(
-                                    elevation = elevation,
-                                    shape = RoundedCornerShape(20.dp)
-                                )
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(containerColor)
+                        .appleDiffuseShadow(shape = panelShape, isDark = isDarkTheme)
+                        .clip(panelShape)
+                        .background(panelBgColor)
                         .border(
-                            BorderStroke(0.5.dp, borderColor),
-                            RoundedCornerShape(20.dp)
+                            BorderStroke(0.5.dp, highlightBorderColor),
+                            panelShape
                         )
                 ) {
                     Column(
@@ -333,6 +336,93 @@ fun NemoMorphMenu(
                 }
             }
         }
+    }
+}
+
+/**
+ * 苹果风格分组分割条 (Apple Menu Section Divider)
+ *
+ * 具有厚度的半透明底槽，用于在菜单各功能组之间提供清晰舒适的苹果式视觉分区。
+ */
+@Composable
+fun AppleMenuSectionDivider(
+    modifier: Modifier = Modifier,
+    height: Dp = 8.dp
+) {
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val dividerColor = if (isDarkTheme) {
+        Color.White.copy(alpha = 0.06f)
+    } else {
+        Color.Black.copy(alpha = 0.05f)
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .background(dividerColor)
+    )
+}
+
+/**
+ * 绘制苹果风格漫反射阴影修饰符
+ */
+private fun Modifier.appleDiffuseShadow(
+    shape: Shape,
+    isDark: Boolean,
+    shadowRadius: Dp = 20.dp,
+    shadowOffsetY: Dp = 8.dp
+): Modifier = this.drawBehind {
+    val shadowRadiusPx = shadowRadius.toPx()
+    val shadowOffsetYPx = shadowOffsetY.toPx()
+
+    val shadowColor = if (isDark) {
+        Color.Black.copy(alpha = 0.36f)
+    } else {
+        Color.Black.copy(alpha = 0.10f)
+    }
+
+    val paint = android.graphics.Paint().apply {
+        isAntiAlias = true
+        color = shadowColor.toArgb()
+        maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+    }
+
+    drawIntoCanvas { canvas ->
+        canvas.save()
+        canvas.translate(0f, shadowOffsetYPx)
+        val outline = shape.createOutline(size, layoutDirection, this)
+        when (outline) {
+            is Outline.Rounded -> {
+                val roundRect = outline.roundRect
+                canvas.nativeCanvas.drawRoundRect(
+                    roundRect.left,
+                    roundRect.top,
+                    roundRect.right,
+                    roundRect.bottom,
+                    roundRect.bottomLeftCornerRadius.x,
+                    roundRect.bottomLeftCornerRadius.y,
+                    paint
+                )
+            }
+            is Outline.Rectangle -> {
+                val rect = outline.rect
+                canvas.nativeCanvas.drawRect(
+                    rect.left,
+                    rect.top,
+                    rect.right,
+                    rect.bottom,
+                    paint
+                )
+            }
+            is Outline.Generic -> {
+                canvas.nativeCanvas.drawPath(
+                    outline.path.asAndroidPath(),
+                    paint
+                )
+            }
+        }
+        canvas.restore()
     }
 }
 
