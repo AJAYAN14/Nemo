@@ -39,9 +39,11 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -68,30 +70,10 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.text.FuriganaText
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateMapOf
-import kotlin.math.abs
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.presentation.CardBadge
-
-/**
- * 获取随机贴纸文件名 (Grammar Version)
- */
-private fun getStickerForGrammar(grammarId: Int): String {
-    val stickers = listOf(
-        "bad_taste", "birthday", "cleaning", "confused", "cooking",
-        "cool", "eating_noodles", "headache", "listening_music", "love",
-        "pretend_sleep", "really", "receiving_gift", "scared", "selfie",
-        "shocked", "singing", "something", "studying", "superman",
-        "sure", "taking_photo", "waving", "yoga", "zoning_out"
-    )
-    val index = abs(grammarId) % stickers.size
-    return stickers[index]
-}
 
 /**
  * 全新设计的语法学习卡片
@@ -321,9 +303,6 @@ fun SRSGrammarCard(
 
         // --- Sticker Area or Whiteboard (答案显示前) ---
         if (!isAnswerShown) {
-            val context = LocalContext.current
-            val stickerName = remember(grammar.id) { getStickerForGrammar(grammar.id) }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -347,14 +326,48 @@ fun SRSGrammarCard(
                                 .height(400.dp)
                         )
                     } else {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data("file:///android_asset/stickers/${stickerName}.svg")
-                                .decoderFactory(SvgDecoder.Factory())
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier.size(240.dp) // Slightly smaller than WordCard (320dp) as Grammar card is taller
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        ) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Lightbulb,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        size = 56.dp
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(100.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Lightbulb,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "回想接续与含义，点击下方查看答案",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

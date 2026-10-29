@@ -1,39 +1,43 @@
 package com.jian.nemo.feature.learning.presentation.components.dialogs
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Report
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogWindowProvider
-import androidx.compose.ui.graphics.luminance
-import com.jian.nemo.core.designsystem.theme.NemoIndigo
+import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
- * 内容报告确认对话框
+ * 内容报告确认对话框 - 完全基于项目统一的 NemoDialog 组件实现
  */
 @Composable
 fun ContentReportDialog(
@@ -42,17 +46,9 @@ fun ContentReportDialog(
     onConfirm: (errorType: String, description: String?) -> Unit,
     useDarkTheme: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
-    // 自动判断深色模式状态（跟随 App 当前 MaterialTheme 主题，而不是系统）
     val isDark = useDarkTheme
-
-    // 颜色配置
-    val primaryColor = NemoIndigo
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
-    val titleColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF1A1A1A)
-    val bodyColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFF555555)
-    val chipBg = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color(0xFFF5F6F8)
-    val chipBorder = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else Color(0xFFE0E2E6)
-    val inputBg = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color(0xFFF8F9FA)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val haptic = LocalHapticFeedback.current
 
     // 错误选项配置
     val errorOptions = remember(learningMode) {
@@ -80,92 +76,33 @@ fun ContentReportDialog(
     var selectedType by remember { mutableStateOf(errorOptions.first().first) }
     var otherDescription by remember { mutableStateOf("") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        val view = LocalView.current
-        val haptic = LocalHapticFeedback.current
+    val isDescriptionRequired = selectedType == "other"
+    val isSubmitEnabled = !isDescriptionRequired || otherDescription.trim().isNotEmpty()
+    val itemName = if (learningMode == LearningMode.Word) "单词" else "语法"
 
-        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
-        DisposableEffect(view) {
-            val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                window.attributes = window.attributes.apply {
-                    blurBehindRadius = 48 // 48px 原生 GPU 硬件级细腻毛玻璃
-                    dimAmount = 0.20f    // 20% 通透柔光暗化
-                }
-            }
-            onDispose {
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-        }
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .shadow(12.dp, RoundedCornerShape(24.dp))
-                .clip(RoundedCornerShape(24.dp))
-                .background(containerColor)
-        ) {
+    NemoDialog(
+        onDismissRequest = onDismiss,
+        title = "报告内容错误",
+        confirmText = "确认反馈",
+        dismissText = "我再想想",
+        confirmEnabled = isSubmitEnabled,
+        onConfirm = {
+            val desc = otherDescription.trim().takeIf { it.isNotEmpty() }
+            onConfirm(selectedType, desc)
+        },
+        content = {
             Column(
-                modifier = Modifier.padding(vertical = 24.dp, horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // 1. Header Icon
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(52.dp)
-                        .background(
-                            color = primaryColor.copy(alpha = 0.10f),
-                            shape = CircleShape
-                        )
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Report,
-                        contentDescription = null,
-                        modifier = Modifier.size(26.dp),
-                        tint = primaryColor
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 2. Title
-                Text(
-                    text = "报告内容错误",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = titleColor
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // 3. Description
-                val itemName = if (learningMode == LearningMode.Word) "单词" else "语法"
                 Text(
                     text = "请选择当前${itemName}内容的错误类型：",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        lineHeight = 20.sp
-                    ),
-                    textAlign = TextAlign.Center,
-                    color = bodyColor
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                // 4. Choice Grid (2 Columns)
+                // Choice Grid (2 Columns)
                 val rows = errorOptions.chunked(2)
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -182,23 +119,23 @@ fun ContentReportDialog(
                                     contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(42.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .height(44.dp)
+                                        .clip(RoundedCornerShape(12.dp))
                                         .background(
-                                            if (isSelected) primaryColor.copy(alpha = 0.08f)
-                                             else chipBg
+                                            if (isSelected) primaryColor.copy(alpha = if (isDark) 0.16f else 0.08f)
+                                            else MaterialTheme.colorScheme.surfaceContainer
                                         )
                                         .border(
                                             BorderStroke(
-                                                width = if (isSelected) 1.5.dp else 0.8.dp,
+                                                width = if (isSelected) 1.5.dp else 1.dp,
                                                 color = if (isSelected) primaryColor
-                                                else chipBorder
+                                                else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
                                             ),
-                                            shape = RoundedCornerShape(10.dp)
+                                            shape = RoundedCornerShape(12.dp)
                                         )
-                                        .clickable { 
+                                        .clickable {
                                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                            selectedType = code 
+                                            selectedType = code
                                         }
                                         .padding(horizontal = 8.dp)
                                 ) {
@@ -208,7 +145,7 @@ fun ContentReportDialog(
                                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                             fontSize = 13.5.sp
                                         ),
-                                        color = if (isSelected) primaryColor else titleColor,
+                                        color = if (isSelected) primaryColor else MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -221,11 +158,9 @@ fun ContentReportDialog(
                     }
                 }
 
-                // 5. Description Input Field
-                val isDescriptionRequired = selectedType == "other"
-                val isSubmitEnabled = !isDescriptionRequired || otherDescription.trim().isNotEmpty()
-
                 Spacer(modifier = Modifier.height(14.dp))
+
+                // Description Input Field
                 OutlinedTextField(
                     value = otherDescription,
                     onValueChange = { if (it.length <= 100) otherDescription = it },
@@ -233,11 +168,11 @@ fun ContentReportDialog(
                         Text(
                             text = if (isDescriptionRequired) "请详细描述错误内容（必填，100字以内）" else "补充具体错误细节（选填，100字以内）",
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = bodyColor.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                             )
                         )
                     },
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = titleColor),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     maxLines = 3,
                     supportingText = {
                         Box(
@@ -250,7 +185,7 @@ fun ContentReportDialog(
                                 color = if (isDescriptionRequired && otherDescription.trim().isEmpty()) {
                                     MaterialTheme.colorScheme.error
                                 } else {
-                                    bodyColor.copy(alpha = 0.5f)
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                                 }
                             )
                         }
@@ -258,63 +193,19 @@ fun ContentReportDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 80.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = titleColor,
-                        unfocusedTextColor = titleColor,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         focusedBorderColor = primaryColor,
-                        unfocusedBorderColor = chipBorder,
-                        focusedContainerColor = inputBg,
-                        unfocusedContainerColor = inputBg,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                         cursorColor = primaryColor
                     )
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // 6. Action Buttons (Original Style)
-                Button(
-                    onClick = { 
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        val desc = otherDescription.trim().takeIf { it.isNotEmpty() }
-                        onConfirm(selectedType, desc) 
-                    },
-                    enabled = isSubmitEnabled,
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = primaryColor,
-                        contentColor = Color.White,
-                        disabledContainerColor = primaryColor.copy(alpha = 0.38f),
-                        disabledContentColor = Color.White.copy(alpha = 0.5f)
-                    ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    Text("确认反馈", fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(
-                    onClick = {
-                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onDismiss()
-                    },
-                    shape = CircleShape,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text(
-                        text = "我再想想",
-                        color = bodyColor,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
             }
         }
-    }
+    )
 }
 

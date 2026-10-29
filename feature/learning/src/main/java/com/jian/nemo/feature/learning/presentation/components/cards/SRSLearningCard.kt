@@ -26,9 +26,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import androidx.compose.runtime.Composable
@@ -58,13 +60,8 @@ import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
-import androidx.compose.ui.graphics.painter.ColorPainter
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.text.FuriganaText
-import coil.compose.AsyncImage
-import coil.decode.SvgDecoder
-import coil.request.ImageRequest
-import androidx.compose.ui.platform.LocalContext
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
@@ -87,20 +84,7 @@ private val higColors = listOf(
     IosColors.Yellow
 )
 
-/**
- * 获取随机贴纸文件名
- */
-private fun getStickerForWord(wordId: Int): String {
-    val stickers = listOf(
-        "bad_taste", "birthday", "cleaning", "confused", "cooking",
-        "cool", "eating_noodles", "headache", "listening_music", "love",
-        "pretend_sleep", "really", "receiving_gift", "scared", "selfie",
-        "shocked", "singing", "something", "studying", "superman",
-        "sure", "taking_photo", "waving", "yoga", "zoning_out"
-    )
-    val index = abs(wordId) % stickers.size
-    return stickers[index]
-}
+
 
 /**
  * 根据单词 ID 获取稳定的随机颜色
@@ -327,8 +311,6 @@ fun SRSLearningCard(
 
         // --- Sticker Area or Whiteboard (答案显示前) ---
         if (!isAnswerShown) {
-            val context = LocalContext.current
-            val stickerName = remember(word.id) { getStickerForWord(word.id) }
 
             Box(
                 modifier = Modifier
@@ -353,17 +335,48 @@ fun SRSLearningCard(
                                 .height(420.dp)
                         )
                     } else {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data("file:///android_asset/stickers/${stickerName}.svg")
-                                .decoderFactory(SvgDecoder.Factory())
-                                .crossfade(300)
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier.size(320.dp),
-                            placeholder = ColorPainter(Color.Gray.copy(alpha = 0.1f)),
-                            error = ColorPainter(Color.Red.copy(alpha = 0.05f))
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        ) {
+                            if (isPlumpDuo) {
+                                Box(
+                                    modifier = Modifier.size(100.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PlumpDuoIcon(
+                                        icon = PlumpIcon.Lightbulb,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        size = 56.dp
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(32.dp),
+                                    color = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                    modifier = Modifier.size(100.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Lightbulb,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "回想词义与发音，点击下方查看答案",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

@@ -844,14 +844,14 @@ fun WaitingContent(
                     }
                 }
 
-                // 决策按钮 1：提前复习 - 实验室同款彩色液态玻璃按钮（无描边，高度48dp）
+                // 决策按钮 1：提前复习 - 实验室同款彩色液态玻璃按钮（无描边，高度54dp，圆角16dp，对齐登录界面按钮尺寸）
                 ColoredLiquidGlassButton(
                     onClick = {
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onContinue()
                     },
                     backdrop = chamberBackdrop,
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(16.dp),
                     tint = MaterialTheme.colorScheme.primary,
                     tintAlpha = 0.38f,
                     chromaticAberration = true,
@@ -860,7 +860,8 @@ fun WaitingContent(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
+                        .padding(horizontal = 4.dp)
+                        .height(54.dp)
                 ) {
                     Icon(
                         imageVector = learnAheadIcon,
@@ -877,7 +878,7 @@ fun WaitingContent(
                     )
                 }
 
-                // 决策按钮 2：稍后复习，去休息片刻 - 实验室同款带底色磨砂液态玻璃按钮（无描边，高度48dp）
+                // 决策按钮 2：稍后复习，去休息片刻 - 实验室同款带底色磨砂液态玻璃按钮（无描边，高度54dp，圆角16dp，对齐登录界面按钮尺寸）
                 if (onRest != null) {
                     FrostedLiquidGlassButton(
                         onClick = {
@@ -885,7 +886,7 @@ fun WaitingContent(
                             onRest()
                         },
                         backdrop = chamberBackdrop,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         chromaticAberration = true,
                         surfaceColor = if (isDark) Color(0xFF262038).copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
                         border = null,
@@ -893,7 +894,8 @@ fun WaitingContent(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(48.dp)
+                            .padding(horizontal = 4.dp)
+                            .height(54.dp)
                     ) {
                         Icon(
                             imageVector = coffeeRestIcon,
