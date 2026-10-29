@@ -161,7 +161,7 @@ fun ForgettingCurveChart(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(600.dp)
     ) {
         val totalWidth = constraints.maxWidth.toFloat()
         val totalHeight = constraints.maxHeight.toFloat()
