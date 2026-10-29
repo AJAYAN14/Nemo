@@ -511,36 +511,19 @@ fun DataAndResourcesSection(
     onForgettingCurveClick: () -> Unit = {}
 ) {
      Column(modifier = Modifier.fillMaxWidth()) {
-        SectionTitle("数据与资料")
-
+        // 1. 统计与分析
+        SectionTitle("统计与分析")
         PremiumCard {
-             Column(modifier = Modifier.padding(8.dp)) {
+            Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
-                    icon = Icons.Rounded.SportsEsports,
-                    color = NemoSecondary,
-                    title = "专项训练",
-                    subtitle = "针对性强化练习",
-                    onClick = onCategoryPracticeClick,
-                    plumpIcon = PlumpIcon.Gamepad,
-                    paletteColor = IsoluminantPalette.SeaMarine
-                )
-                SquircleListItem(
-                    icon = Icons.Rounded.BubbleChart,
-                    color = NemoPrimary,
-                    title = "学习日历",
-                    subtitle = "查看学习计划与记录",
-                    onClick = onLearningCalendarClick,
-                    plumpIcon = PlumpIcon.Calendar,
-                    paletteColor = IsoluminantPalette.SkyIndigo
-                )
-                 SquircleListItem(
                     icon = Icons.Rounded.QueryStats,
                     color = NemoDanger,
                     title = "今日统计",
                     subtitle = "查看今日详细的学习统计",
                     onClick = onStatisticsClick,
                     plumpIcon = PlumpIcon.ChartPie,
-                    paletteColor = IsoluminantPalette.RoseRuby
+                    paletteColor = IsoluminantPalette.RoseRuby,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Insights,
@@ -549,7 +532,8 @@ fun DataAndResourcesSection(
                     subtitle = "查看所有详细的学习统计",
                     onClick = onHistoricalStatisticsClick,
                     plumpIcon = PlumpIcon.History,
-                    paletteColor = IsoluminantPalette.LilacViolet
+                    paletteColor = IsoluminantPalette.LilacViolet,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.ShowChart,
@@ -558,16 +542,37 @@ fun DataAndResourcesSection(
                     subtitle = "记忆衰减可视化分析",
                     onClick = onForgettingCurveClick,
                     plumpIcon = PlumpIcon.TrendingDown,
-                    paletteColor = IsoluminantPalette.EmeraldGreen
+                    paletteColor = IsoluminantPalette.EmeraldGreen,
+                    showDivider = true
                 )
-                 SquircleListItem(
+                SquircleListItem(
+                    icon = Icons.Rounded.BubbleChart,
+                    color = NemoPrimary,
+                    title = "学习日历",
+                    subtitle = "查看学习计划与记录",
+                    onClick = onLearningCalendarClick,
+                    plumpIcon = PlumpIcon.Calendar,
+                    paletteColor = IsoluminantPalette.SkyIndigo,
+                    showDivider = false
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 2. 资料与词库
+        SectionTitle("资料与词库")
+        PremiumCard {
+            Column(modifier = Modifier.padding(8.dp)) {
+                SquircleListItem(
                     icon = Icons.Rounded.SortByAlpha,
                     color = NemoSecondary,
                     title = "单词列表",
                     subtitle = "词汇库管理",
                     onClick = onWordListClick,
                     plumpIcon = PlumpIcon.SpellCheck,
-                    paletteColor = IsoluminantPalette.WarmAmber
+                    paletteColor = IsoluminantPalette.WarmAmber,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Book,
@@ -576,7 +581,8 @@ fun DataAndResourcesSection(
                     subtitle = "语法知识库",
                     onClick = onGrammarListClick,
                     plumpIcon = PlumpIcon.GrammarLayers,
-                    paletteColor = IsoluminantPalette.SkyIndigo
+                    paletteColor = IsoluminantPalette.SkyIndigo,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Dataset,
@@ -585,7 +591,8 @@ fun DataAndResourcesSection(
                     subtitle = "按分类查看词汇",
                     onClick = onCategoryClassificationClick,
                     plumpIcon = PlumpIcon.LayoutGrid,
-                    paletteColor = IsoluminantPalette.LakesideCyan
+                    paletteColor = IsoluminantPalette.LakesideCyan,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoAwesome,
@@ -594,7 +601,27 @@ fun DataAndResourcesSection(
                     subtitle = "日语惯用句与常用搭配库",
                     onClick = onLibraryClick,
                     plumpIcon = PlumpIcon.Sparkles,
-                    paletteColor = IsoluminantPalette.GlazeMint
+                    paletteColor = IsoluminantPalette.GlazeMint,
+                    showDivider = false
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 3. 强化与突破
+        SectionTitle("强化与突破")
+        PremiumCard {
+            Column(modifier = Modifier.padding(8.dp)) {
+                SquircleListItem(
+                    icon = Icons.Rounded.SportsEsports,
+                    color = NemoSecondary,
+                    title = "专项训练",
+                    subtitle = "针对性强化练习",
+                    onClick = onCategoryPracticeClick,
+                    plumpIcon = PlumpIcon.Gamepad,
+                    paletteColor = IsoluminantPalette.SeaMarine,
+                    showDivider = true
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoFixHigh,
@@ -602,11 +629,11 @@ fun DataAndResourcesSection(
                     title = "复学清单",
                     subtitle = "难点项召回与复习",
                     onClick = onLeechManagementClick,
-                    showDivider = false,
                     plumpIcon = PlumpIcon.Flame,
-                    paletteColor = IsoluminantPalette.CoralFlame
+                    paletteColor = IsoluminantPalette.CoralFlame,
+                    showDivider = false
                 )
-             }
+            }
         }
      }
 }
