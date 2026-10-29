@@ -53,7 +53,6 @@ import com.jian.nemo.feature.settings.ThemeSettingsScreen
 import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
 import com.jian.nemo.feature.settings.AISettingsScreen
 import com.jian.nemo.feature.settings.LiquidGlassLabScreen
-import com.jian.nemo.feature.settings.IconLabScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -596,17 +595,7 @@ fun NemoNavHost(
                 onNavigateToLiquidLab = {
                     navController.navigate(NavDestination.LIQUID_GLASS_LAB)
                 },
-                onNavigateToIconLab = {
-                    navController.navigate(NavDestination.ICON_LAB)
-                },
                 onCheckUpdate = onCheckUpdate
-            )
-        }
-
-        // 图标设计实验室
-        composable(NavDestination.ICON_LAB) {
-            IconLabScreen(
-                onNavigateBack = { navController.popBackStack() }
             )
         }
 
