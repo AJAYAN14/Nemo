@@ -727,6 +727,10 @@ interface SettingsRepository {
     /** 设置项图标风格 Flow (默认 MD3) */
     val settingIconStyleFlow: Flow<SettingIconStyle>
     suspend fun setSettingIconStyle(style: SettingIconStyle)
+
+    /** 桌面启动图标风格 Flow (默认 DEFAULT) */
+    val appIconStyleFlow: Flow<AppIconStyle>
+    suspend fun setAppIconStyle(style: AppIconStyle)
 }
 
 /**
@@ -743,6 +747,14 @@ enum class ToggleStyle {
 enum class SettingIconStyle {
     MD3,       // Material Design 3 风格（带圆角彩色卡片底框）
     PLUMP_DUO  // Plump Duo 风格（无背景框双色线面与等亮度调色板）
+}
+
+/**
+ * 桌面启动图标风格
+ */
+enum class AppIconStyle {
+    DEFAULT,     // 默认版
+    MONOCHROME   // 黑白版
 }
 
 /**

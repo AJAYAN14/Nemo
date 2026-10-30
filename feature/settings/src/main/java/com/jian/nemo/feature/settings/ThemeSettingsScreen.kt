@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -39,6 +40,12 @@ import com.jian.nemo.core.ui.component.NemoDialog
 import java.time.LocalTime
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.AppIconStyle
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.feature.settings.components.IsoluminantPalette
 import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PlumpIcon
@@ -94,6 +101,8 @@ fun ThemeSettingsScreen(
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showThemeColorDialog by remember { mutableStateOf(false) }
     var showIconStyleDialog by remember { mutableStateOf(false) }
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -291,6 +300,22 @@ fun ThemeSettingsScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
+                SettingsSectionTitle(text = "桌面图标")
+                PremiumCard {
+                    AppIconSelectionGrid(
+                        selectedStyle = uiState.appIconStyle,
+                        onStyleSelected = { style ->
+                            if (uiState.appIconStyle != style) {
+                                viewModel.onEvent(SettingsEvent.SetAppIconStyle(style))
+                                snackbarMessage = "已切换桌面图标"
+                                snackbarVisible = true
+                            }
+                        }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
@@ -318,6 +343,18 @@ fun ThemeSettingsScreen(
                 backButtonSize = 48.dp
             )
         }
+
+        // 3. 通用顶部通知
+        NemoSnackbar(
+            visible = snackbarVisible,
+            message = snackbarMessage,
+            type = NemoSnackbarType.SUCCESS,
+            autoDismissMs = 2000L,
+            onDismiss = { snackbarVisible = false },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarTop + 8.dp)
+        )
     }
 }
 
@@ -836,6 +873,111 @@ private fun ThemeSelectionCardLightPreview() {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppIconSelectionGrid(
+    selectedStyle: AppIconStyle,
+    onStyleSelected: (AppIconStyle) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_default_foreground,
+            isSelected = selectedStyle == AppIconStyle.DEFAULT,
+            onClick = { onStyleSelected(AppIconStyle.DEFAULT) }
+        )
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_monochrome_foreground,
+            isSelected = selectedStyle == AppIconStyle.MONOCHROME,
+            onClick = { onStyleSelected(AppIconStyle.MONOCHROME) }
+        )
+    }
+}
+
+@Composable
+private fun AppIconOption(
+    @androidx.annotation.DrawableRes drawableRes: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    // 整个图标选择项：高度紧凑轻薄，无多余灰色大盒子
+    Box(
+        modifier = Modifier
+            .clickable(
+                onClick = onClick,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            )
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // 贴合图标外缘的紧凑选中高亮环
+        Box(
+            modifier = Modifier
+                .size(72.dp)
+                .border(
+                    width = if (isSelected) 2.5.dp else 0.dp,
+                    color = if (isSelected) primaryColor else Color.Transparent,
+                    shape = RoundedCornerShape(19.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            // 图标容器：64dp 尺寸，通过将内部图像居中放大 1.45 倍，使主体海马充盈饱满，消除多余空白
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .border(
+                        width = 0.5.dp,
+                        color = Color.Black.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = drawableRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(scaleX = 1.7f, scaleY = 1.7f)
+                )
+            }
+        }
+
+        // 选中时在右上角精致呈现的对勾微标
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 2.dp, y = (-2).dp)
+                    .size(19.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(primaryColor)
+                    .border(
+                        width = 1.5.dp,
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(11.dp)
+                )
             }
         }
     }

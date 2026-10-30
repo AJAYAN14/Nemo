@@ -74,6 +74,9 @@ object PreferencesKeys {
     /** 设置项图标视觉风格 (MD3, PLUMP_DUO) 默认: MD3 */
     val SETTING_ICON_STYLE = stringPreferencesKey("setting_icon_style")
 
+    /** 桌面启动图标风格 (DEFAULT, MONOCHROME) 默认: DEFAULT */
+    val APP_ICON_STYLE = stringPreferencesKey("app_icon_style")
+
 
     /** 通知开关 默认: true */
     val IS_NOTIFICATION_ENABLED = booleanPreferencesKey("is_notification_enabled")
