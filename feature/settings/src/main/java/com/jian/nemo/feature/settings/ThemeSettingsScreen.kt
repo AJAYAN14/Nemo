@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
@@ -496,12 +497,8 @@ private fun StrategyOptionItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        RadioButton(
-            selected = isSelected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+        NemoRoundCheckbox(
+            checked = isSelected
         )
     }
     if (showDivider) {
@@ -633,12 +630,8 @@ private fun IconStyleOptionRow(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        RadioButton(
-            selected = isSelected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+        NemoRoundCheckbox(
+            checked = isSelected
         )
     }
 }
