@@ -25,4 +25,8 @@
   - `:core:ui` 中的 `NemoRoundCheckbox` 作为全局基础规范组件，边框与底色加入平滑过渡与弹性缩放，并添加 Light / Dark 模式 Compose Previews。
   - `ThemeSettingsScreen.kt` 的 `StrategyOptionItem` 和 `IconStyleOptionRow` 接入 `NemoRoundCheckbox`（20.dp），并提供对应 Compose Previews。
   - `AIReadingScreen.kt` 的 `QuestionCard` 单选作答选项接入 `NemoRoundCheckbox`（18.dp，内部对勾 12.dp），并提供 Compose Previews。
+- iOS 显示模式重构规范：
+  - “显示模式”主卡片（`PremiumCard`）双列并排浅色与深色 2 个微缩手机模型，移除原第 3 个自动模型。
+  - “自动”选项下沉为同卡片底部的独立行，采用通用液态玻璃开关 `LiquidToggle` 并接入 `backdrop` 采样。
+  - 交互联动严格对齐 iOS：开启自动时双模型高亮展示当前实际生效模式；用户主动点击浅色/深色模型时，自动退出自动模式并锁定该外观；开启自动时在主卡片下方平滑展开调度配置（跟随系统 / 定时深色）。
 
