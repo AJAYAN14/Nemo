@@ -3,6 +3,8 @@ package com.jian.nemo.feature.learning.domain
 import android.content.Context
 import com.jian.nemo.feature.learning.presentation.CardBadge
 import com.jian.nemo.feature.learning.presentation.LearningMode
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 /**
  * 战报统计快照数据结构
@@ -18,7 +20,9 @@ data class SessionStats(
 /**
  * 学习会话统计与本地持久化逻辑管理器
  */
-class LearningSessionStatsManager(private val context: Context) {
+class LearningSessionStatsManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
 
     private val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
 

@@ -40,13 +40,12 @@ data class LearningUiState(
     val isCardFlipped: Boolean = false,  // 是否翻转显示答案
 
     // 学习设置
-    val selectedLevel: String = "N5",
+    val selectedLevel: String = "GLOBAL",
     val dailyGoal: Int = 20,  // 默认值改为20，与旧项目保持一致
     val completedToday: Int = 0,
 
     // SRS State
     val isAnswerShown: Boolean = false,
-    val sessionQueue: List<Word> = emptyList(), // 暂未完全实现，预留
     val completedThisSession: Int = 0,
     val ratingIntervals: Map<Int, String> = emptyMap(), // key: quality 0-5, value: formatted interval text (e.g. "3d"), // 本次会话已完成数量
     val slideDirection: SlideDirection = SlideDirection.FORWARD, // 滑动方向，用于动画
@@ -63,9 +62,6 @@ data class LearningUiState(
 
     // 会话初始大小（用于进度条显示，防止重入队导致总数一直增加）
     val sessionInitialSize: Int = 0,
-
-    // [Fix]: Session Stats for Learning Mode
-    val sessionCorrectCount: Int = 0, // 本次会话正确数
 
     // [Fix]: Track processed items (Pass + Fail) for accurate Remaining Count
     val sessionProcessedCount: Int = 0,
@@ -124,6 +120,14 @@ data class LearningUiState(
 
     val shouldShowDailyGoalMet: Boolean
         get() = completedToday >= dailyGoal && !hasPendingItems
+
+    /** 本组微会话独立完成的单词/语法总数（新学 + 复习，攻克属于复习子集，杜绝重复计算） */
+    val sessionTotalCount: Int
+        get() = (sessionNewCount + maxOf(sessionReviewCount, sessionRelearnCount)).coerceAtLeast(1)
+
+    /** 顺畅巩固复习数（一次性通过、未触发重学攻克） */
+    val smoothReviewCount: Int
+        get() = (sessionReviewCount - sessionRelearnCount).coerceAtLeast(0)
 }
 
 /**
@@ -136,7 +140,6 @@ enum class LearningStatus {
     Processing,        // 处理中（掌握/跳过）
     Waiting,           // 等待中（Learn Ahead Limit 超限）
     SessionCompleted,  // 会话完成
-    NoMoreWords,       // 无更多单词
     Error              // 错误
 }
 

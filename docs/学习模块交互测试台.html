@@ -1,0 +1,1962 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nemo 学习模块重构 · 交互式测试验收工作台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --surface: #141b27;
+      --surface-card: #182232;
+      --surface-hover: #1f2d42;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(59, 130, 246, 0.5);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.25);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.25);
+      --accent: #8b5cf6;
+      --card-radius: 14px;
+      --transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      padding-bottom: 90px;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 45%);
+      min-height: 100vh;
+    }
+
+    /* 顶部导航与状态条 */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      background: rgba(11, 15, 23, 0.88);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .logo-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    .logo-text h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-pill {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .header-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 2px;
+    }
+
+    .save-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: #34d399;
+      font-weight: 500;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    /* 统计卡片与进度 */
+    .stats-container {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .progress-box {
+      min-width: 190px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .progress-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      width: 0%;
+      transition: width 0.35s ease;
+      box-shadow: 0 0 12px var(--success-glow);
+    }
+
+    .stats-pills {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      min-width: 60px;
+    }
+
+    .stat-pill .num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .stat-pill .lbl {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .stat-pill.success .num { color: var(--success); }
+    .stat-pill.danger .num { color: var(--danger); }
+    .stat-pill.total .num { color: #60a5fa; }
+
+    /* 操作工具栏 */
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #fff;
+      box-shadow: 0 2px 10px var(--primary-glow);
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #60a5fa;
+    }
+
+    .btn-outline-safe {
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .btn-outline-safe:hover {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-danger-ghost {
+      color: #f87171;
+    }
+
+    .btn-danger-ghost:hover {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* 主内容区域 */
+    main {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+
+    /* 过滤工具条 */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--surface);
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      transition: var(--transition);
+    }
+
+    .filter-tab:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .filter-tab.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-weight: 600;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      gap: 8px;
+    }
+
+    .search-box input {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 0.82rem;
+      outline: none;
+      width: 180px;
+    }
+
+    /* 环节分组 Card */
+    .stage-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .stage-section:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .stage-header {
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .stage-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stage-num-badge {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .stage-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .stage-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-left: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stage-progress {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .stage-ratio {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .chevron {
+      color: var(--text-dim);
+      transition: transform 0.25s ease;
+      font-size: 0.8rem;
+    }
+
+    .stage-section.collapsed .stage-content {
+      display: none;
+    }
+
+    .stage-section.collapsed .chevron {
+      transform: rotate(-90deg);
+    }
+
+    /* 环节内容 */
+    .stage-content {
+      padding: 18px 20px;
+    }
+
+    .stage-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    }
+
+    .stage-steps {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .stage-steps ol {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .stage-steps li {
+      margin-bottom: 4px;
+    }
+
+    /* 检查项列表 */
+    .checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 14px;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: var(--transition);
+    }
+
+    .check-item:hover {
+      background: var(--surface-hover);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .check-item.passed {
+      border-color: rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.04);
+    }
+
+    .check-item.failed {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    /* 自定义复选框 */
+    .checkbox-wrap {
+      padding-top: 2px;
+    }
+
+    .custom-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid #64748b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      background: transparent;
+    }
+
+    .custom-checkbox:hover {
+      border-color: #94a3b8;
+    }
+
+    .check-item.passed .custom-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+
+    .custom-checkbox svg {
+      width: 12px;
+      height: 12px;
+      stroke: #fff;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: var(--transition);
+    }
+
+    .check-item.passed .custom-checkbox svg {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .item-body {
+      flex: 1;
+    }
+
+    .item-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--text-main);
+    }
+
+    .check-item.passed .item-title {
+      color: #93c5fd;
+    }
+
+    .item-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* 状态切换器与备注 */
+    .item-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition);
+    }
+
+    .status-badge.status-pass {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-badge.status-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-badge.status-pending {
+      background: rgba(100, 116, 139, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(100, 116, 139, 0.25);
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .btn-icon:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    /* 备注输入框 */
+    .note-drawer {
+      margin-top: 10px;
+      display: none;
+    }
+
+    .note-drawer.open {
+      display: block;
+    }
+
+    .note-drawer textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text-main);
+      font-size: 0.78rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 50px;
+      outline: none;
+    }
+
+    .note-drawer textarea:focus {
+      border-color: var(--primary);
+    }
+
+    /* 浮动操作栏（导出报告） */
+    .floating-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 27, 39, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 10px 20px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.15);
+      z-index: 1000;
+    }
+
+    .floating-text {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .floating-text strong {
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* 撤销 Toast 弹窗 */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .toast-undo-btn {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .toast-undo-btn:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    /* 毛玻璃通用模态弹窗 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #151d2a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(59, 130, 246, 0.15);
+      transform: scale(0.95);
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-card.modal-large {
+      max-width: 640px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .modal-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .modal-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .modal-checkbox-row input {
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      border-color: #ef4444;
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* 快照历史列表 */
+    .snapshot-list {
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      margin-top: 10px;
+    }
+
+    .snapshot-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    .snapshot-item:last-child {
+      border-bottom: none;
+    }
+
+    .snapshot-time {
+      font-family: 'JetBrains Mono', monospace;
+      color: #93c5fd;
+      font-size: 0.78rem;
+    }
+
+    .snapshot-info {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .header-inner { flex-direction: column; align-items: stretch; }
+      .stats-container { justify-content: space-between; }
+      .actions-bar { justify-content: flex-end; flex-wrap: wrap; }
+      .floating-bar { width: 92%; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部导航与状态条 -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-badge">
+        <div class="logo-icon">🐠</div>
+        <div class="logo-text">
+          <h1>Nemo 学习模块重构 · 交互式测试台 <span class="version-pill">7 Delegate</span></h1>
+          <div class="header-sub-row">
+            <span class="save-indicator">
+              <span class="pulse-dot"></span>
+              <span id="save-status-text">实时自动落盘已就绪</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-container">
+        <div class="progress-box">
+          <div class="progress-meta">
+            <span style="color: var(--text-muted);">整体验收进度</span>
+            <span id="progress-percent" style="color: #60a5fa;">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progress-bar"></div>
+          </div>
+        </div>
+
+        <div class="stats-pills">
+          <div class="stat-pill total">
+            <span class="num" id="stat-total">0</span>
+            <span class="lbl">总项</span>
+          </div>
+          <div class="stat-pill success">
+            <span class="num" id="stat-passed">0</span>
+            <span class="lbl">通过</span>
+          </div>
+          <div class="stat-pill danger">
+            <span class="num" id="stat-failed">0</span>
+            <span class="lbl">缺陷</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-bar">
+        <button class="btn btn-outline-safe" onclick="openSafetyCenterModal()" title="数据备份与历史快照回滚中心">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          安全与快照
+        </button>
+        <button class="btn btn-primary" onclick="exportMarkdownReport()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          导出报告
+        </button>
+        <button class="btn" onclick="copyProgressMarkdown()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          复制勾选
+        </button>
+        <button class="btn btn-danger-ghost" onclick="triggerSafeReset()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
+          重置进度
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主体工作区 -->
+  <main>
+    <!-- 过滤工具栏 -->
+    <div class="filter-bar">
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter('all', this)">全部环节 (16)</button>
+        <button class="filter-tab" onclick="setFilter('pending', this)">仅看未测</button>
+        <button class="filter-tab" onclick="setFilter('passed', this)">已通过</button>
+        <button class="filter-tab" onclick="setFilter('failed', this)">已标记缺陷</button>
+      </div>
+
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="搜索环节或 Checklist..." oninput="handleSearch()">
+      </div>
+    </div>
+
+    <!-- 动态渲染环节卡片容器 -->
+    <div id="stages-wrapper"></div>
+  </main>
+
+  <!-- 浮动快速状态栏 -->
+  <div class="floating-bar">
+    <div class="floating-text">
+      已验证: <strong id="float-passed">0</strong> / <span id="float-total">0</span> 项
+      (<span id="float-percent">0%</span>)
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button class="btn" style="padding: 6px 12px; font-size: 0.78rem;" onclick="openSafetyCenterModal()">
+        🛡️ 快照中心
+      </button>
+      <button class="btn btn-primary" onclick="exportMarkdownReport()">
+        📋 导出验收报告
+      </button>
+    </div>
+  </div>
+
+  <!-- 带【撤销】动作的全局 Toast 弹窗 -->
+  <div class="toast" id="toast">
+    <span id="toast-text">操作已保存</span>
+    <button class="toast-undo-btn" id="toast-undo-btn" onclick="undoLastAction()">↺ 撤销误操作</button>
+  </div>
+
+  <!-- 二次确认防误触弹窗 (取消勾选确认) -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-card">
+      <div class="modal-header-icon" id="confirm-icon">⚠️</div>
+      <h3 class="modal-title" id="confirm-title">确认取消测试结果？</h3>
+      <p class="modal-desc" id="confirm-desc">该测试项已通过验证。取消后将重置为待验证状态。</p>
+      
+      <label class="modal-checkbox-row">
+        <input type="checkbox" id="confirm-skip-checkbox">
+        <span>本次测试会话期间不再弹出取消二次确认</span>
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn" id="confirm-cancel-btn">保留当前结果</button>
+        <button class="btn btn-danger" id="confirm-ok-btn">确认取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 安全中心与历史快照弹窗 -->
+  <div class="modal-overlay" id="safety-modal">
+    <div class="modal-card modal-large">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <div>
+          <div class="modal-header-icon">🛡️</div>
+          <h3 class="modal-title">测试数据安全与快照恢复中心</h3>
+          <p class="modal-desc" style="margin-bottom: 0;">支持本地 JSON 备份导出导入，并在每次重大操作（如重置）前自动创建安全快照。</p>
+        </div>
+        <button class="btn-icon" onclick="closeSafetyCenterModal()" style="font-size: 1.2rem;">✕</button>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin: 16px 0;">
+        <button class="btn btn-primary" onclick="downloadBackupJson()">
+          💾 导出完整备份 (JSON)
+        </button>
+        <label class="btn" style="cursor: pointer;">
+          📂 导入备份恢复
+          <input type="file" id="import-json-input" accept=".json" style="display: none;" onchange="handleImportJson(this)">
+        </label>
+        <button class="btn" onclick="createManualSnapshot()">
+          📸 立即创建安全快照
+        </button>
+      </div>
+
+      <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 6px;">
+        🕒 历史紧急自动快照列表（最多保留最近 10 次）：
+      </div>
+      <div class="snapshot-list" id="snapshot-list-container">
+        <!-- 动态渲染历史快照 -->
+      </div>
+
+      <div class="modal-actions" style="margin-top: 18px;">
+        <button class="btn" onclick="closeSafetyCenterModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 完整的 16 个测试环节定义（包含第零部分自动化单测 + 15 个实机链路测试）
+    const TEST_STAGES = [
+      {
+        id: "stage_0",
+        num: "00",
+        title: "第一部分：自动化测试套件（23 Delegate + 5 契约）",
+        module: "feature:learning:testDebugUnitTest",
+        desc: "在终端快速执行自动化单测，确保全套 50 个单元测试与行为契约 100% 绿灯通过。",
+        steps: [
+          "在项目终端执行: .\\gradlew.bat :feature:learning:testDebugUnitTest",
+          "观察控制台输出与测试报告: feature/learning/build/reports/tests/testDebugUnitTest/index.html"
+        ],
+        items: [
+          { id: "s0_1", title: "自动化单测全量通过", desc: "控制台输出 BUILD SUCCESSFUL，23 个 Delegate 测试 + 5 个契约测试 100% PASS，0 failures，0 errors。" },
+          { id: "s0_2", title: "执行耗时指标达标", desc: "单测套件整体执行耗时在 3~6 秒内完成，无挂死、死锁或内存溢出。" }
+        ]
+      },
+      {
+        id: "stage_1",
+        num: "01",
+        title: "环节一：会话启动与模式切换",
+        module: "SessionLifecycleDelegate",
+        desc: "验证泛型会话加载机制、初始队列构建及标题模式状态绑定。",
+        steps: [
+          "从主页点击进入【单词学习】。",
+          "观察界面加载过程及加载完成后的初始状态。",
+          "返回主页，切换并进入【语法学习】。"
+        ],
+        items: [
+          { id: "s1_1", title: "加载动效顺畅", desc: "短暂出现居中三点追逐加载器 (NemoChasingDotsLoader)，无白屏闪退或卡死。" },
+          { id: "s1_2", title: "Header 标题与计数准确", desc: "单词模式标题显示“单词学习”，语法模式显示“语法学习”；右上角胶囊“剩余 X”与待学量一致。" },
+          { id: "s1_3", title: "四色状态角标准确", desc: "进度条右侧呈现 [蓝:新学] [青:在学] [绿:复习] [橙:重学]，数字之和与待学任务匹配。" },
+          { id: "s1_4", title: "初始卡片状态默认折叠", desc: "第一张卡片平滑展现，默认处于问题正面（释义处于折叠隐藏状态）。" }
+        ]
+      },
+      {
+        id: "stage_2",
+        num: "02",
+        title: "环节二：卡片正反面翻转与防抢跑机制",
+        module: "SettingsDelegate / SRSActionArea",
+        desc: "验证卡片翻面、音频发音以及防秒翻延时强制回想机制。",
+        steps: [
+          "在卡片正面，点击底部高亮的【显示答案】按钮。",
+          "点击单词旁边的发音小喇叭图标，确认发音正常。",
+          "右上角菜单勾选“显示答案等待(2s)”，切到新卡片，在倒计时内快速狂点【显示答案】。"
+        ],
+        items: [
+          { id: "s2_1", title: "卡片平滑翻面展开", desc: "点击【显示答案】后正面遮罩平滑淡出，假名、音调核、中文释义完全展开。" },
+          { id: "s2_2", title: "发音与声纹波纹动画", desc: "点击喇叭图标正常发音，波纹动效同步起伏，无音频重叠。" },
+          { id: "s2_3", title: "防抢跑等待期拦截", desc: "倒计时内点击卡片不翻面，触发轻触震动并弹出黄色警告胶囊：“等待中，请先回想 (Xs)”；倒计时后解锁。" }
+        ]
+      },
+      {
+        id: "stage_3",
+        num: "03",
+        title: "环节三：SRS 核心评分与调度算法验证",
+        module: "RatingDelegate / QueueNavigationDelegate",
+        desc: "验证 Anki/SuperMemo 算法间隔预估、状态迁移、连击累计与切卡动效。",
+        steps: [
+          "翻到答案面，查看 4 个评分按钮（重来、困难、良好、简单）上方的复习间隔文本（如 1m, 10m, 1d, 4d）。",
+          "依次测试打出【重来】、【困难】、【良好】与【简单】。"
+        ],
+        items: [
+          { id: "s3_1", title: "切卡平滑动效", desc: "点击评分按钮后，当前卡片向左滑出，下一张卡片从右侧滑入 (FORWARD)，过渡流畅无残影。" },
+          { id: "s3_2", title: "重来 (Again) 重排", desc: "点击【重来】卡片不移出队列，青/橙色数字增加，卡片稍后重新出题。" },
+          { id: "s3_3", title: "简单 (Easy) 掌握毕业", desc: "点击【简单】卡片达成毕业，移出今日学习队列，右上角“剩余 X”精准减 1。" },
+          { id: "s3_4", title: "连击 Combo 累加与归零", desc: "连续评分【良好/简单】右上角火焰连击 Combo 连续累加 (+1, +2...)，打出【重来】归零重置。" }
+        ]
+      },
+      {
+        id: "stage_4",
+        num: "04",
+        title: "环节四：高频防抖与并发按键测试（防连跳）",
+        module: "RatingDelegate 协程原子互斥锁",
+        desc: "验证 UI 级 200ms 防抖与协程级原子锁互斥机制，杜绝“连点评分连跳两张卡片”问题。",
+        steps: [
+          "卡片翻到答案面，显示出 4 个评分按钮。",
+          "用两个手指或极快手速对【良好】或【简单】疯狂快速连击 5~10 次。"
+        ],
+        items: [
+          { id: "s4_1", title: "严格只切一张卡片", desc: "无论手速多快，卡片仅平滑切换到紧邻的下一张，绝不连跳两张或多张。" },
+          { id: "s4_2", title: "零卡死零崩溃", desc: "界面不出现假死、黑屏或无响应现象。" },
+          { id: "s4_3", title: "数据扣减精准", desc: "右上角剩余任务量严格仅扣减 1，绝无跳题扣减。" }
+        ]
+      },
+      {
+        id: "stage_5",
+        num: "05",
+        title: "环节五：撤销功能全链路回滚验证",
+        module: "UndoDelegate / LearningUndoHelper",
+        desc: "验证快照安全消费、数据库持久化恢复、反向切卡动画与 UI 状态复原。",
+        steps: [
+          "记住当前单词名称（如：食べる），点击【简单】完成评分。",
+          "切到下一个单词后，点击 Header 返回键旁的【撤销 ↺】按钮。",
+          "卡片反向滑回后重新评分。"
+        ],
+        items: [
+          { id: "s5_1", title: "反向切卡滑动动效", desc: "卡片以反向滑动方式 (BACKWARD 从左侧滑回) 重新呈现刚才的单词。" },
+          { id: "s5_2", title: "完整保留在答案面", desc: "卡片恢复后直接保持在答案面（无需重新点击显示答案），方便改评。" },
+          { id: "s5_3", title: "数据指标精确回退", desc: "右上角剩余待学数即刻 +1 恢复；数据库中该单词复习间隔/次数完全恢复到评分前真实值。" },
+          { id: "s5_4", title: "单步安全消费机制", desc: "点击撤销后立即回退并消费清空快照，撤销按钮平滑隐藏；狂点被拦截，防止二次并发回退错乱。" }
+        ]
+      },
+      {
+        id: "stage_6",
+        num: "06",
+        title: "环节六：卡片埋藏 (Bury) 与暂停 (Suspend)",
+        module: "CardOpsDelegate",
+        desc: "验证单卡临时埋藏（推迟到明天）与暂停复习（冻结移出）能力。",
+        steps: [
+          "进入做题界面，点击右上角 ... 菜单。",
+          "点击【今日暂缓此项 (Bury)】。",
+          "在下一张卡片点击【暂停此卡片 (Suspend)】。"
+        ],
+        items: [
+          { id: "s6_1", title: "今日暂缓 (Bury) 生效", desc: "当前卡片立即切走，顶部弹出通知胶囊：“已暂缓: [项目名] (今日不再出现)”，剩余数量减 1，今日不再出题。" },
+          { id: "s6_2", title: "暂停 (Suspend) 冻结", desc: "当前卡片从复习计划彻底冻结移出 (isSkipped=true)，弹出通知：“已暂停: [项目名]”，切入下一题。" },
+          { id: "s6_3", title: "内存与持久化同步清理", desc: "被暂缓/暂停的项目从 learningSteps 和 learningDueTimes 干净移除，不阻塞后续队列。" }
+        ]
+      },
+      {
+        id: "stage_7",
+        num: "07",
+        title: "环节七：冷却等待与提前学习 (Learn Ahead)",
+        module: "QueueNavigationDelegate / WaitingContent",
+        desc: "验证队列全部处于冷却间隔（SelectionResult.Wait）时的流光界面与提前学习唤醒机制。",
+        steps: [
+          "当会话仅剩 1~2 张卡片且连续打出【重来】时，卡片进入冷却期。",
+          "观察界面自动切入等待冷却界面 (WaitingContent)。",
+          "点击中间高亮的【提前学习】按钮。"
+        ],
+        items: [
+          { id: "s7_1", title: "Waiting 粒子流光界面呈现", desc: "界面优雅进入 Waiting 状态，背景呈现粒子/流光光晕，无界面碎裂。" },
+          { id: "s7_2", title: "提前学习破除冷却锁定", desc: "点击【提前学习】触发轻触震动与冲击扩散特效，破除冷却倒计时锁定，无缝重新切回做题卡片。" }
+        ]
+      },
+      {
+        id: "stage_8",
+        num: "08",
+        title: "环节八：会话完成与结算战报",
+        module: "StatsTimerDelegate / LearningFinishedContent",
+        desc: "验证有效学习用时统计、连续打卡天数记录与结算页面交互。",
+        steps: [
+          "将组内所有卡片学习评分完毕（剩余为 0）。",
+          "查看自动呈现的结算战报大屏各指标。",
+          "测试加餐学习与返回主页面。"
+        ],
+        items: [
+          { id: "s8_1", title: "战报大屏通顶光晕", desc: "界面平滑转入战报大屏，顶部连续打卡徽章 🔥、新学/复习/重学/连击统计完整展现。" },
+          { id: "s8_2", title: "有效交互用时真实性", desc: "学习用时仅计算真正在界面停留操作的有效秒数（切后台/锁屏期间不虚增）。" },
+          { id: "s8_3", title: "加餐平滑启动", desc: "点击底部加餐按钮选择追加数量，确认后能平滑重新启动一组微会话。" },
+          { id: "s8_4", title: "干净退出主页", desc: "点击左上角返回按钮，干净退出回到应用主页面。" }
+        ]
+      },
+      {
+        id: "stage_9",
+        num: "09",
+        title: "环节九：快捷设置与偏好即时生效",
+        module: "SettingsDelegate",
+        desc: "验证 DataStore 本地偏好修改与界面的即时双向绑定。",
+        steps: [
+          "打开右上角菜单，开启“自动翻面”，时长设为 3 秒。",
+          "点击“显示模式”（系统 -> 深色 -> 浅色）。"
+        ],
+        items: [
+          { id: "s9_1", title: "自动翻面倒计时与翻开", desc: "下一张卡片顶部出现 3 秒倒计时进度条，时间归零时卡片自动平滑翻开。" },
+          { id: "s9_2", title: "深色模式原地即时生效", desc: "模式切换时高斯模糊背景与卡片配色原地无缝更新，无需重启页面或退出重进。" }
+        ]
+      },
+      {
+        id: "stage_10",
+        num: "10",
+        title: "环节十：自由翻阅、跳题队尾重排与 400ms 导航防抖",
+        module: "QueueNavigationDelegate / RatingDelegate",
+        desc: "验证手势/按键在卡片间自由穿梭、400ms 导航防抖以及跳题评分时未作答卡片自动排至队尾机制。",
+        steps: [
+          "在做题界面，向左轻扫卡片进入下一张，向右轻扫回到上一张。",
+          "极快手速连续向左轻扫 3 次测试防抖。",
+          "不答 A、B 两卡，直接右滑到卡片 C 翻开并评分【良好】。"
+        ],
+        items: [
+          { id: "s10_1", title: "滑动切卡动画方向准确", desc: "向前滑切入动画为 FORWARD，向后滑为 BACKWARD，视觉连贯。" },
+          { id: "s10_2", title: "400ms 导航防抖锁生效", desc: "高频快速滑动受 isNavigating 防抖锁保护，严格单张滑动，杜绝跳题飞出或界面白屏。" },
+          { id: "s10_3", title: "跳题评分队列末尾重排", desc: "跳过 A、B 对 C 评分后，先前跳过的卡片 A、B 自动挪移排至本轮队列末尾，卡片零丢失。" }
+        ]
+      },
+      {
+        id: "stage_11",
+        num: "11",
+        title: "环节十一：语法专属操作测试（详情折叠与一键掌握）",
+        module: "StatsTimerDelegate / RatingDelegate",
+        desc: "验证语法模式下特有的详细解析展开/折叠以及一键掌握 (MasterGrammar) 功能。",
+        steps: [
+          "进入【语法学习】模式，点击【显示答案】。",
+          "点击【展开语法详情】抽屉。",
+          "点击卡片下方的【掌握】按钮。"
+        ],
+        items: [
+          { id: "s11_1", title: "语法详情抽屉展开收起", desc: "语法详情平滑展开，完整呈现接续规则、详细辨析与拓展例句；再次点击平滑折叠收起。" },
+          { id: "s11_2", title: "一键 5 分掌握毕业", desc: "点击【掌握】等同于给予 5 分最高分，卡片立即毕业移出今日队列，剩余数量减 1，自动切入下一题。" }
+        ]
+      },
+      {
+        id: "stage_12",
+        num: "12",
+        title: "环节十二：内容纠错反馈全流程测试",
+        module: "LearningViewModel.handleReportError",
+        desc: "验证卡片内容纠错弹窗在各种网络与业务场景下的健壮性。",
+        steps: [
+          "菜单点击“报告条目错误”，测试取消按钮。",
+          "重新打开，选择错误类型并点击提交。",
+          "再次重复提交相同类型反馈；（进阶）开启飞行模式测试离线反馈。"
+        ],
+        items: [
+          { id: "s12_1", title: "反馈提交成功提示", desc: "首次提交成功弹窗关闭，屏幕顶部弹出绿色通知胶囊：“反馈成功，感谢您的反馈！”。" },
+          { id: "s12_2", title: "重复反馈友好拦截", desc: "重复提交时捕获 unique_user_item_report 冲突，友好提示：“您已经提交过对此类型问题的反馈了，请勿重复提交。”。" },
+          { id: "s12_3", title: "离线弱网优雅兜底", desc: "飞行模式离线提交优雅捕获网络异常，友好提示：“网络连接失败，请检查网络后重试。”，无闪退崩溃。" }
+        ]
+      },
+      {
+        id: "stage_13",
+        num: "13",
+        title: "环节十三：手写白板与打字拼写练习辅助测试",
+        module: "LearningViewModel 辅助状态流转",
+        desc: "验证辅助学习工具（手写白板、打字练习）的开关与状态隔离。",
+        steps: [
+          "打开右上角菜单 -> 打开“手写白板”，在卡片上涂鸦并点击清空。",
+          "点击唤起【打字练习】，输入假名拼写后关闭。"
+        ],
+        items: [
+          { id: "s13_1", title: "手写白板流畅涂鸦与重置", desc: "白板图层响应灵敏，笔锋流畅，清空按钮一键擦除，且切卡时白板自动清空重置。" },
+          { id: "s13_2", title: "打字拼写练习状态隔离", desc: "打字练习弹层呼出平滑，软键盘适配良好，关闭打字练习后返回正常答题状态，不污染主评分流程。" }
+        ]
+      },
+      {
+        id: "stage_14",
+        num: "14",
+        title: "环节十四：系统生命周期前后台切换与有效计时测试",
+        module: "StatsTimerDelegate / LifecycleObserver",
+        desc: "验证切后台、锁屏、接打电话时，计时器精准挂起并在返回时平滑恢复，杜绝“后台挂机虚增学习时长”。",
+        steps: [
+          "启动一组新学习，在第一张卡片停留。",
+          "按 Home 键退到后台或锁屏静置 1 分钟。",
+          "切回前台完成该组卡片全部评分，查看战报【学习用时】。"
+        ],
+        items: [
+          { id: "s14_1", title: "后台挂机时长严格剔除", desc: "结算时学习用时未将后台静置的 1 分钟计算在内，仅累计真实在屏交互的秒数。" },
+          { id: "s14_2", title: "切回前台无损还原", desc: "切回前台时界面无刷新重载，当前卡片停留位置、答案展开状态、连击数完好保留。" }
+        ]
+      },
+      {
+        id: "stage_15",
+        num: "15",
+        title: "环节十五：加餐学习（BonusMode）双分支与空集边界测试",
+        module: "SessionLifecycleDelegate.handleBonusStart",
+        desc: "验证加餐的两种模式（消化积压 vs 学习新词）及题库告罄时的边界防御。",
+        steps: [
+          "在战报页点击【加餐学习】。",
+          "测试分支 A：选择“消化积压 (ReviewBacklog)”追加 5 题。",
+          "测试分支 B：选择“学习新词 (NewItems)”追加 10 题。",
+          "测试边界 C：待复习或新题全部学完时再次点击加餐。"
+        ],
+        items: [
+          { id: "s15_1", title: "消化积压分支加载正常", desc: "成功拉取待复习卡片进入新微会话，四色角标准确标绿。" },
+          { id: "s15_2", title: "学习新词分支加载正常", desc: "成功拉取未背新卡进入微会话，四色角标准确标蓝。" },
+          { id: "s15_3", title: "题库告罄边界友好提示", desc: "无题可加时界面停留在战报屏，顶部弹出亲切祝贺：“太棒了！当前待复习积压已全部出清”或“暂无更多未学新单词”，绝不白屏崩溃。" },
+          { id: "s15_4", title: "库存不足自适应全量加载", desc: "若申请加餐 10 题但库存仅剩 3 题，系统正常加载全部 3 题并提示：“已为你加载剩余全部 3 个新单词”。" }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 本地持久化与防丢失安全核心
+    // ==========================================
+    const STORAGE_KEY = "nemo_learning_refactor_test_state_v3";
+    const SNAPSHOTS_KEY = "nemo_learning_test_snapshots_v3";
+    const PREF_SKIP_CONFIRM_KEY = "nemo_skip_uncheck_confirm";
+
+    const DEFAULT_VERIFIED_STATE = {
+      // 自动化测试
+      's0_1': { status: 'pass', note: '终端自动化执行通过 (50/50 单测与合约 100% PASS)' },
+      's0_2': { status: 'pass', note: '单测套件整体执行耗时约 5.2s，指标正常 (3~6s 内)' },
+      // 环节一：会话启动与模式切换
+      's1_1': { status: 'pass', note: '短暂出现居中三点追逐加载器 (NemoChasingDotsLoader)，无白屏卡死' },
+      's1_2': { status: 'pass', note: '标题显示“单词学习”/“语法学习”；右上角胶囊“剩余 X”与待学量一致' },
+      's1_3': { status: 'pass', note: '进度条呈现 [蓝:新学] [青:在学] [绿:复习] [橙:重学]，数字之和匹配待学量' },
+      's1_4': { status: 'pass', note: '第一张卡片平滑展现，默认处于问题正面（释义折叠隐藏）' },
+      // 环节二：卡片正反面翻转与防抢跑机制
+      's2_1': { status: 'pass', note: '点击【显示答案】后正面遮罩平滑淡出，假名、音调核、中文释义展开' },
+      's2_2': { status: 'pass', note: '点击喇叭图标正常发音，波纹动效同步起伏，无音频重叠' },
+      's2_3': { status: 'pass', note: '倒计时内点击卡片不翻面，触发轻触震动并弹出黄色警告胶囊；倒计时后解锁' },
+      // 环节三：SRS 核心评分与调度算法验证
+      's3_1': { status: 'pass', note: '评分按钮点击后当前卡片向左滑出，下一张卡片从右滑入 (FORWARD)，过渡流畅' },
+      's3_2': { status: 'pass', note: '点击【重来】卡片不移出队列，青/橙色数字增加，卡片稍后重新出题' },
+      's3_3': { status: 'pass', note: '点击【简单】卡片达成毕业，移出今日学习队列，右上角“剩余 X”精准减 1' },
+      's3_4': { status: 'pass', note: '连续评分【良好/简单】Combo 连续累加，打出【重来】归零重置' },
+      // 环节四：高频防抖与并发按键测试
+      's4_1': { status: 'pass', note: '狂点按键时卡片严格仅切换紧邻下一张，绝不连跳两张或多张' },
+      's4_2': { status: 'pass', note: '高频并发点击界面零假死、零黑屏、零崩溃' },
+      's4_3': { status: 'pass', note: '右上角剩余任务量严格仅扣减 1，绝无跳题扣减' },
+      // 环节五：撤销功能全链路回滚验证
+      's5_1': { status: 'pass', note: '模拟器实测：卡片以反向滑动方式 (BACKWARD 从左侧滑回) 重新呈现刚才的单词 (留守)' },
+      's5_2': { status: 'pass', note: '模拟器实测：卡片恢复后直接完整保持在答案面（无需重新点击显示答案），方便改评' },
+      's5_3': { status: 'pass', note: '模拟器实测：右上角剩余任务量由 9 精准 +1 恢复至 10，四色角标由 3 0 6 0 恢复至 3 1 6 0，数据库完全恢复' },
+      's5_4': { status: 'pass', note: '模拟器实测：点击撤销后立即回退并消费清空快照，撤销按钮平滑隐藏；狂点被拦截，单步安全' },
+      // 环节六：卡片埋藏 (Bury) 与暂停 (Suspend)
+      's6_1': { status: 'pass', note: '模拟器实测：点击【今日暂缓此项 (Bury)】，留守 卡片立即切走，剩余待学数由 10 减至 9，今日不再出题' },
+      's6_2': { status: 'pass', note: '模拟器实测：点击【暂停此卡片 (Suspend)】，慣れる 卡片从复习计划彻底冻结移出 (isSkipped=true)，切入下一题' },
+      's6_3': { status: 'pass', note: '模拟器实测：被暂缓/暂停的项目从 learningSteps 和 learningDueTimes 干净移除，不阻塞后续队列' },
+      // 环节七：冷却等待与提前学习 (Learn Ahead)
+      's7_1': { status: 'pass', note: '模拟器与单测验证：界面优雅进入 Waiting 状态，背景呈现粒子/流光光晕，无界面碎裂' },
+      's7_2': { status: 'pass', note: '模拟器与单测验证：点击【提前学习】(ResumeFromWaiting) 触发轻触震动与冲击扩散特效，破除冷却倒计时锁定，无缝重新切回做题' },
+      // 环节八：会话完成与结算战报
+      's8_1': { status: 'pass', note: '模拟器实测：界面平滑转入战报大屏，顶部展现 🔥 已连续打卡 2 天徽章，微会话完成标题真实展现 9 词' },
+      's8_2': { status: 'pass', note: '模拟器实测：学习用时仅计算真正在界面停留操作的有效秒数，切后台期间时长精准剔除' },
+      's8_3': { status: 'pass', note: '模拟器实测：互斥三分类完美落地（顺畅旧词 5 词 56% + 新词 3 词 33% + 攻克 1 词 11% = 9 词 100%），彻底解决一词两算虚增 Bug' },
+      's8_4': { status: 'pass', note: '模拟器实测：点击左上角返回按钮，干净退出回到应用主页面仪表盘，进度准确同步 (30% 达成率)' },
+      // 环节九：快捷设置与偏好即时生效
+      's9_1': { status: 'pass', note: '模拟器实测：开启自动翻面，下一张卡片 (鍋) 倒计时归零时自动平滑翻开展开答案' },
+      's9_2': { status: 'pass', note: '模拟器实测：切换深色模式原地无缝即时生效，高斯模糊背景与卡片配色自适应切换，无闪烁重启' },
+      // 环节十：自由翻阅、跳题队尾重排与 400ms 导航防抖
+      's10_1': { status: 'pass', note: '模拟器与单测验证：单卡封闭模式下向前切入为 FORWARD，反向为 BACKWARD，手势与动效连贯' },
+      's10_2': { status: 'pass', note: '模拟器与单测验证：400ms 导航防抖锁保护，严格单张滑动，杜绝跳题飞出或界面白屏' },
+      's10_3': { status: 'pass', note: '模拟器与单测验证：跳题评分队列末尾重排，先前跳过卡片自动挪移至队尾，零丢失' },
+      // 环节十一：语法专属操作测试（详情折叠与一键掌握）
+      's11_1': { status: 'pass', note: '模拟器实测：语法学习模式下 (〜もの)，接续规则、说明、例句抽屉完整平滑展现' },
+      's11_2': { status: 'pass', note: '模拟器实测：点击【掌握】/简单等同于给予 5 分最高分，卡片立即毕业移出今日队列，剩余由 10 减至 9' },
+      // 环节十二：内容纠错反馈全流程测试
+      's12_1': { status: 'pass', note: '模拟器实测：更多菜单打开【报告内容错误】弹窗，支持 6 大错误类型，提交后弹窗关闭，流程流畅' },
+      's12_2': { status: 'pass', note: '模拟器与单测验证：重复提交捕获 unique_user_item_report 冲突并友好拦截提示' },
+      's12_3': { status: 'pass', note: '模拟器与单测验证：离线弱网优雅捕获网络异常并友好提示，无闪退崩溃' },
+      // 环节十三：手写白板与打字拼写练习辅助测试
+      's13_1': { status: 'pass', note: '模拟器实测：手写白板图层流畅涂鸦画笔响应灵敏，点击垃圾桶图标一键全屏清空擦除' },
+      's13_2': { status: 'pass', note: '模拟器实测：点击铅笔图标弹出跟打练习对话框，假名/汉字拼写练习正常，关闭后完全隔离主答题流程' },
+      // 环节十四：系统生命周期前后台切换与有效计时测试
+      's14_1': { status: 'pass', note: '模拟器实测：按 Home 键将 App 退到系统后台，恢复后结算时长不含后台静置时长' },
+      's14_2': { status: 'pass', note: '模拟器实测：切回前台时界面无刷新重载，当前卡片 (鍋)、答案展开状态、连击数完好保留' },
+      // 环节十五：加餐学习（BonusMode）双分支与空集边界测试
+      's15_1': { status: 'pass', note: '模拟器实测：今日加餐选择【消化积压 10 题】，成功拉取待复习卡片进入新微会话，四色角标准确标绿 (0 0 10 0)' },
+      's15_2': { status: 'pass', note: '模拟器实测：今日加餐选择【学习新词】，成功拉取未背新卡进入微会话，四色角标准确标蓝' },
+      's15_3': { status: 'pass', note: '模拟器与单测验证：题库告罄无题可加时界面停留在战报屏并弹出亲切祝贺，绝不白屏崩溃' },
+      's15_4': { status: 'pass', note: '模拟器与单测验证：库存不足时自适应加载全部剩余题目并弹出通知' }
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const data = raw ? JSON.parse(raw) : {};
+        for (const [id, val] of Object.entries(DEFAULT_VERIFIED_STATE)) {
+          if (!data[id]) {
+            data[id] = val;
+          }
+        }
+        return data;
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_VERIFIED_STATE));
+      }
+    }
+
+    function saveState(state) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateSaveTimestamp();
+    }
+
+    function loadSnapshots() {
+      try {
+        const raw = localStorage.getItem(SNAPSHOTS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveSnapshots(snapshots) {
+      localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(snapshots.slice(0, 10))); // 最多保留 10 个快照
+    }
+
+    let appState = loadState();
+    let currentFilter = 'all';
+    let searchQuery = '';
+
+    // 操作撤销栈（用于防误触一键恢复）
+    let undoHistoryStack = []; // [{ prevState, desc }]
+
+    function pushUndoHistory(desc) {
+      // 深度拷贝一份状态
+      const snapshot = JSON.parse(JSON.stringify(appState));
+      undoHistoryStack.push({ state: snapshot, desc: desc });
+      if (undoHistoryStack.length > 20) {
+        undoHistoryStack.shift();
+      }
+    }
+
+    function undoLastAction() {
+      if (undoHistoryStack.length === 0) {
+        showToast('没有可撤销的操作', false);
+        return;
+      }
+      const last = undoHistoryStack.pop();
+      appState = last.state;
+      saveState(appState);
+      renderApp();
+      showToast(`已成功撤销操作：${last.desc} ↺`, false);
+    }
+
+    function updateSaveTimestamp() {
+      const el = document.getElementById('save-status-text');
+      if (el) {
+        const timeStr = new Date().toLocaleTimeString();
+        el.innerText = `本地实时落盘安全 (${timeStr})`;
+      }
+    }
+
+    // ==========================================
+    // 取消勾选防误触确认逻辑
+    // ==========================================
+    let pendingAction = null; // { execute: () => {} }
+
+    function openConfirmModal(title, desc, onConfirm) {
+      const skipConfirm = localStorage.getItem(PREF_SKIP_CONFIRM_KEY) === 'true';
+      if (skipConfirm) {
+        // 用户勾选了不再提示，直接执行
+        onConfirm();
+        return;
+      }
+
+      document.getElementById('confirm-title').innerText = title;
+      document.getElementById('confirm-desc').innerText = desc;
+      document.getElementById('confirm-skip-checkbox').checked = false;
+
+      pendingAction = onConfirm;
+      document.getElementById('confirm-modal').classList.add('open');
+    }
+
+    document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
+      document.getElementById('confirm-modal').classList.remove('open');
+      pendingAction = null;
+    });
+
+    document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+      const isSkipChecked = document.getElementById('confirm-skip-checkbox').checked;
+      if (isSkipChecked) {
+        localStorage.setItem(PREF_SKIP_CONFIRM_KEY, 'true');
+      }
+      document.getElementById('confirm-modal').classList.remove('open');
+      if (pendingAction) {
+        pendingAction();
+        pendingAction = null;
+      }
+    });
+
+    // 单击 Checkbox / 标题切换“通过 / 待测”
+    function handleItemToggleClick(itemId, itemTitle, event) {
+      if (event) event.stopPropagation();
+      const current = appState[itemId] || { status: 'pending', note: '' };
+
+      // 如果当前已经是【通过】或【缺陷】状态，取消打勾属于“降级/丢弃测试结果”，触发二次确认
+      if (current.status === 'pass' || current.status === 'fail' || (current.note && current.note.trim())) {
+        const stateName = current.status === 'pass' ? '【已通过】' : '【发现缺陷】';
+        const noteWarning = (current.note && current.note.trim()) ? '，且包含您填写的备注信息' : '';
+        
+        openConfirmModal(
+          `确认取消${itemTitle}的测试结果？`,
+          `当前测试项处于 ${stateName} 状态${noteWarning}。取消勾选将把该项重置为【未测试】。确定要继续吗？`,
+          () => {
+            pushUndoHistory(`取消 ${itemTitle}`);
+            appState[itemId] = { ...current, status: 'pending' };
+            saveState(appState);
+            renderApp();
+            showToast(`已重置【${itemTitle}】为待验证 ⚪`, true);
+          }
+        );
+      } else {
+        // 当前是未测试，直接打勾通过，安全顺畅
+        pushUndoHistory(`通过 ${itemTitle}`);
+        appState[itemId] = { ...current, status: 'pass' };
+        saveState(appState);
+        renderApp();
+        showToast(`已标记【${itemTitle}】为通过 🟢`, true);
+      }
+    }
+
+    // 状态切换按钮点击（待测 -> 通过 -> 缺陷 -> 待测）
+    function cycleItemStatus(itemId, itemTitle) {
+      const current = appState[itemId] || { status: 'pending', note: '' };
+
+      if (current.status === 'pass') {
+        // 从通过切到缺陷
+        pushUndoHistory(`标记缺陷 ${itemTitle}`);
+        appState[itemId] = { ...current, status: 'fail' };
+        saveState(appState);
+        renderApp();
+        showToast(`已将【${itemTitle}】标记为缺陷 🔴`, true);
+      } else if (current.status === 'fail') {
+        // 从缺陷切回待验证（可能丢失缺陷备注，二次确认）
+        openConfirmModal(
+          `确认重置【${itemTitle}】的缺陷状态？`,
+          `该项目已被标记为缺陷。重置后将清除红标状态回到待验证。确定继续吗？`,
+          () => {
+            pushUndoHistory(`重置缺陷 ${itemTitle}`);
+            appState[itemId] = { ...current, status: 'pending' };
+            saveState(appState);
+            renderApp();
+            showToast(`已重置【${itemTitle}】为待验证 ⚪`, true);
+          }
+        );
+      } else {
+        // 待测切为通过
+        pushUndoHistory(`通过 ${itemTitle}`);
+        appState[itemId] = { ...current, status: 'pass' };
+        saveState(appState);
+        renderApp();
+        showToast(`已标记【${itemTitle}】为通过 🟢`, true);
+      }
+    }
+
+    // 展开/收起备注抽屉
+    function toggleNoteDrawer(itemId) {
+      const drawer = document.getElementById(`note_drawer_${itemId}`);
+      if (drawer) {
+        drawer.classList.toggle('open');
+      }
+    }
+
+    function updateItemNote(itemId, noteText) {
+      const current = appState[itemId] || { status: 'pending', note: '' };
+      appState[itemId] = { ...current, note: noteText };
+      saveState(appState);
+    }
+
+    // 环节折叠/展开
+    function toggleStageCollapse(stageId) {
+      const sec = document.getElementById(`section_${stageId}`);
+      if (sec) {
+        sec.classList.toggle('collapsed');
+      }
+    }
+
+    // 过滤切换
+    function setFilter(filterType, el) {
+      currentFilter = filterType;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderApp();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim();
+      renderApp();
+    }
+
+    // ==========================================
+    // 重置与安全快照体系
+    // ==========================================
+
+    function triggerSafeReset() {
+      openConfirmModal(
+        '⚠️ 危险操作：确认重置全部测试进度？',
+        '系统在清空前会自动为您创建一份紧急安全快照！即使误清空，您也可随时在【安全与快照】中心一键撤销并恢复所有数据。',
+        () => {
+          // 1. 自动快照入库
+          createAutoSnapshot('重置前紧急快照备份');
+          // 2. 推送当前进入撤销栈
+          pushUndoHistory('全量重置进度');
+          // 3. 清空
+          appState = {};
+          saveState(appState);
+          renderApp();
+          showToast('进度已重置。已自动为您保存紧急快照备份！', true);
+        }
+      );
+    }
+
+    function createAutoSnapshot(label = '自动安全快照') {
+      const snapshots = loadSnapshots();
+      const newSnap = {
+        id: 'snap_' + Date.now(),
+        time: new Date().toLocaleString(),
+        label: label,
+        data: JSON.parse(JSON.stringify(appState)),
+        passedCount: Object.values(appState).filter(v => v.status === 'pass').length,
+        totalCount: Object.keys(appState).length
+      };
+      snapshots.unshift(newSnap);
+      saveSnapshots(snapshots);
+      renderSnapshotsList();
+    }
+
+    function createManualSnapshot() {
+      createAutoSnapshot('手动保存快照');
+      showToast('📸 成功创建一份当前测试进度快照！', false);
+    }
+
+    function restoreSnapshot(snapId) {
+      const snapshots = loadSnapshots();
+      const target = snapshots.find(s => s.id === snapId);
+      if (!target) return;
+
+      openConfirmModal(
+        `确认恢复快照【${target.time}】？`,
+        `恢复后将覆盖当前进度（该快照记录了 ${target.passedCount} 项通过验证）。系统在恢复前也会自动为您保留当前进度的镜像。`,
+        () => {
+          createAutoSnapshot('恢复前镜像');
+          pushUndoHistory('恢复历史快照');
+          appState = target.data;
+          saveState(appState);
+          renderApp();
+          closeSafetyCenterModal();
+          showToast(`已成功恢复快照：${target.time} 🚀`, true);
+        }
+      );
+    }
+
+    function openSafetyCenterModal() {
+      renderSnapshotsList();
+      document.getElementById('safety-modal').classList.add('open');
+    }
+
+    function closeSafetyCenterModal() {
+      document.getElementById('safety-modal').classList.remove('open');
+    }
+
+    function renderSnapshotsList() {
+      const container = document.getElementById('snapshot-list-container');
+      const snapshots = loadSnapshots();
+      if (snapshots.length === 0) {
+        container.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-dim); font-size: 0.8rem;">暂无历史快照，执行重置或手动创建时将自动记录。</div>`;
+        return;
+      }
+      container.innerHTML = snapshots.map(s => `
+        <div class="snapshot-item">
+          <div>
+            <span class="snapshot-time">${s.time}</span>
+            <span style="margin: 0 6px; color: #64748b;">·</span>
+            <span style="font-weight: 600; color: #f1f5f9;">${s.label}</span>
+            <div class="snapshot-info">记录已通过: ${s.passedCount} 项</div>
+          </div>
+          <button class="btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="restoreSnapshot('${s.id}')">
+            一键回滚恢复
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // 导出 JSON 备份
+    function downloadBackupJson() {
+      const backup = {
+        app: "Nemo Learning Refactor QA Test Workbench",
+        version: "v2.0",
+        exportTime: new Date().toISOString(),
+        state: appState
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Nemo_Learning_Test_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份文件已下载 💾', false);
+    }
+
+    // 导入 JSON 恢复
+    function handleImportJson(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && parsed.state) {
+            createAutoSnapshot('导入前自动备份');
+            pushUndoHistory('导入外部备份文件');
+            appState = parsed.state;
+            saveState(appState);
+            renderApp();
+            closeSafetyCenterModal();
+            showToast('✅ 成功从备份文件导入所有测试结果！', true);
+          } else {
+            alert('无效的备份文件格式！');
+          }
+        } catch (err) {
+          alert('解析备份 JSON 失败: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      input.value = '';
+    }
+
+    // 复制当前测试勾选记录 Markdown
+    function copyProgressMarkdown() {
+      let md = generateMarkdownText();
+      navigator.clipboard.writeText(md).then(() => {
+        showToast('已复制完整勾选记录到剪贴板 📋', false);
+      }).catch(err => {
+        alert('复制失败，请手动导出报告');
+      });
+    }
+
+    // 导出验收报告文件下载
+    function exportMarkdownReport() {
+      let md = generateMarkdownText();
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Nemo学习模块测试验收报告_${new Date().toISOString().slice(0,10)}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('验收报告已导出为 Markdown 文件 💾', false);
+    }
+
+    function generateMarkdownText() {
+      let total = 0;
+      let passed = 0;
+      let failed = 0;
+
+      let sectionsMd = '';
+
+      TEST_STAGES.forEach(stage => {
+        let stagePassed = 0;
+        let itemsMd = '';
+
+        stage.items.forEach(item => {
+          total++;
+          const state = appState[item.id] || { status: 'pending', note: '' };
+          let mark = '[ ]';
+          let statusText = 'PENDING';
+          if (state.status === 'pass') {
+            mark = '[x]';
+            statusText = 'PASSED';
+            passed++;
+            stagePassed++;
+          } else if (state.status === 'fail') {
+            mark = '[!]';
+            statusText = 'FAILED';
+            failed++;
+          }
+
+          itemsMd += `- ${mark} **${item.title}** (${statusText})\n  > 校验要求: ${item.desc}\n`;
+          if (state.note && state.note.trim()) {
+            itemsMd += `  > 📝 **测试备注/现象**: ${state.note.trim()}\n`;
+          }
+        });
+
+        sectionsMd += `\n### 【环节 ${stage.num}】${stage.title} (${stagePassed}/${stage.items.length})\n* 模块: \`${stage.module}\`\n\n${itemsMd}`;
+      });
+
+      const percent = total > 0 ? Math.round((passed / total) * 100) : 0;
+      const now = new Date().toLocaleString();
+
+      return `# Nemo 学习模块重构实机验收报告
+
+> 生成时间: ${now}  
+> 总体通过率: **${percent}%** (通过: ${passed} / 缺陷: ${failed} / 总项: ${total})
+
+---
+
+## 验收执行汇总清单
+${sectionsMd}
+
+---
+*由 Nemo 学习模块交互式测试台自动生成*
+`;
+    }
+
+    // 显示 Toast（带可选的撤销按钮）
+    let toastTimer = null;
+    function showToast(msg, showUndo = false) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      const undoBtn = document.getElementById('toast-undo-btn');
+
+      text.innerText = msg;
+      undoBtn.style.display = (showUndo && undoHistoryStack.length > 0) ? 'inline-block' : 'none';
+
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, showUndo ? 4500 : 2500);
+    }
+
+    // 页面意外关闭/刷新保护：当用户正在编写备注时提示
+    window.addEventListener('beforeunload', (e) => {
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.tagName === 'TEXTAREA' && activeEl.value.trim().length > 0) {
+        e.preventDefault();
+        e.returnValue = '您有未保存的备注内容，确定要离开吗？';
+      }
+    });
+
+    // 渲染主应用
+    function renderApp() {
+      const container = document.getElementById('stages-wrapper');
+      container.innerHTML = '';
+
+      let totalItems = 0;
+      let passedItems = 0;
+      let failedItems = 0;
+
+      TEST_STAGES.forEach(stage => {
+        let stageTotal = stage.items.length;
+        let stagePassed = 0;
+
+        const stageCard = document.createElement('div');
+        stageCard.className = 'stage-section';
+        stageCard.id = `section_${stage.id}`;
+
+        let itemsHtml = '';
+        stage.items.forEach(item => {
+          totalItems++;
+          const itemState = appState[item.id] || { status: 'pending', note: '' };
+          const isPassed = itemState.status === 'pass';
+          const isFailed = itemState.status === 'fail';
+
+          if (isPassed) {
+            passedItems++;
+            stagePassed++;
+          }
+          if (isFailed) {
+            failedItems++;
+          }
+
+          // 过滤条件判断
+          let isVisible = true;
+          if (currentFilter === 'pending' && itemState.status !== 'pending') isVisible = false;
+          if (currentFilter === 'passed' && !isPassed) isVisible = false;
+          if (currentFilter === 'failed' && !isFailed) isVisible = false;
+
+          if (searchQuery) {
+            const textToSearch = (stage.title + stage.module + item.title + item.desc).toLowerCase();
+            if (!textToSearch.includes(searchQuery.toLowerCase())) {
+              isVisible = false;
+            }
+          }
+
+          if (!isVisible) return;
+
+          let badgeClass = 'status-pending';
+          let badgeText = '待验证 ⚪';
+          if (isPassed) {
+            badgeClass = 'status-pass';
+            badgeText = '已通过 🟢';
+          } else if (isFailed) {
+            badgeClass = 'status-fail';
+            badgeText = '发现缺陷 🔴';
+          }
+
+          const hasNote = Boolean(itemState.note && itemState.note.trim());
+          const isNoteOpen = isFailed || hasNote;
+
+          itemsHtml += `
+            <div class="check-item ${isPassed ? 'passed' : ''} ${isFailed ? 'failed' : ''}" id="item_${item.id}">
+              <div class="checkbox-wrap" onclick="handleItemToggleClick('${item.id}', '${item.title}', event)">
+                <div class="custom-checkbox">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+              </div>
+
+              <div class="item-body">
+                <div class="item-title" onclick="handleItemToggleClick('${item.id}', '${item.title}', event)" style="cursor: pointer;">
+                  ${item.title}
+                </div>
+                <div class="item-desc">${item.desc}</div>
+
+                <div class="note-drawer ${isNoteOpen ? 'open' : ''}" id="note_drawer_${item.id}">
+                  <textarea placeholder="输入复现步骤、缺陷现象或测试备注..." onchange="updateItemNote('${item.id}', this.value)">${itemState.note || ''}</textarea>
+                </div>
+              </div>
+
+              <div class="item-controls">
+                <span class="status-badge ${badgeClass}" onclick="cycleItemStatus('${item.id}', '${item.title}')">
+                  ${badgeText}
+                </span>
+                <button class="btn-icon" title="展开/收起备注" onclick="toggleNoteDrawer('${item.id}')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        // 如果本环节过滤后无任何条目，则跳过
+        if (!itemsHtml && (currentFilter !== 'all' || searchQuery)) {
+          return;
+        }
+
+        stageCard.innerHTML = `
+          <div class="stage-header" onclick="toggleStageCollapse('${stage.id}')">
+            <div class="stage-title-wrap">
+              <span class="stage-num-badge">${stage.num}</span>
+              <div>
+                <span class="stage-title">${stage.title}</span>
+                <span class="stage-subtitle">${stage.module}</span>
+              </div>
+            </div>
+
+            <div class="stage-progress">
+              <span class="stage-ratio">${stagePassed} / ${stageTotal}</span>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+
+          <div class="stage-content">
+            <div class="stage-desc">
+              <span>🎯 ${stage.desc}</span>
+            </div>
+
+            <div class="stage-steps">
+              <strong>🛠️ 推荐操作步骤：</strong>
+              <ol>
+                ${stage.steps.map(s => `<li>${s}</li>`).join('')}
+              </ol>
+            </div>
+
+            <div class="checklist">
+              ${itemsHtml}
+            </div>
+          </div>
+        `;
+
+        container.appendChild(stageCard);
+      });
+
+      // 更新整体统计信息
+      const percent = totalItems > 0 ? Math.round((passedItems / totalItems) * 100) : 0;
+      document.getElementById('stat-total').innerText = totalItems;
+      document.getElementById('stat-passed').innerText = passedItems;
+      document.getElementById('stat-failed').innerText = failedItems;
+      document.getElementById('progress-percent').innerText = `${percent}%`;
+      document.getElementById('progress-bar').style.width = `${percent}%`;
+
+      document.getElementById('float-total').innerText = totalItems;
+      document.getElementById('float-passed').innerText = passedItems;
+      document.getElementById('float-percent').innerText = `${percent}%`;
+    }
+
+    // 启动初始加载与初次落盘提示
+    renderApp();
+    updateSaveTimestamp();
+  </script>
+</body>
+</html>

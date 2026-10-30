@@ -123,7 +123,10 @@ fun LearningFinishedContent(
     val accentGold = Color(0xFFF59E0B)  // 反复攻克 / 最高连击金
     val bonusOrange = Color(0xFFFF5500) // 原版加餐专属橙
 
-    val sessionTotalCount = (sessionNewCount + sessionReviewCount + sessionRelearnCount).coerceAtLeast(1)
+    // 互斥三分类计算：旧词总数拆解为「顺畅巩固」与「反复攻克」，杜绝一词两算
+    val smoothReviewCount = (sessionReviewCount - sessionRelearnCount).coerceAtLeast(0)
+    val relearnCount = sessionRelearnCount
+    val sessionTotalCount = (sessionNewCount + maxOf(sessionReviewCount, sessionRelearnCount)).coerceAtLeast(1)
 
     // 动效控制器
     val countUpNumber = remember { Animatable(0f) }
@@ -308,17 +311,17 @@ fun LearningFinishedContent(
 
                     // 双色/三色堆叠圆角进度条（严格保持原版：交界处平滑柔和渐变过渡与流动动画）
                     val progressGradientBrush = remember(
-                        sessionReviewCount,
+                        smoothReviewCount,
                         sessionNewCount,
-                        sessionRelearnCount,
+                        relearnCount,
                         accentGreen,
                         accentBlue,
                         accentGold
                     ) {
                         val items = mutableListOf<Pair<Int, Color>>()
-                        if (sessionReviewCount > 0) items.add(sessionReviewCount to accentGreen)
+                        if (smoothReviewCount > 0) items.add(smoothReviewCount to accentGreen)
                         if (sessionNewCount > 0) items.add(sessionNewCount to accentBlue)
-                        if (sessionRelearnCount > 0) items.add(sessionRelearnCount to accentGold)
+                        if (relearnCount > 0) items.add(relearnCount to accentGold)
 
                         if (items.isEmpty()) {
                             Brush.horizontalGradient(listOf(accentGreen, accentGreen))
@@ -407,7 +410,7 @@ fun LearningFinishedContent(
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "$sessionReviewCount",
+                                    text = "$smoothReviewCount",
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Black,
                                     color = textPrimary,
@@ -420,7 +423,7 @@ fun LearningFinishedContent(
                                     color = textPrimary,
                                     modifier = Modifier.padding(start = 2.dp, end = 6.dp, bottom = 2.dp)
                                 )
-                                val reviewPercent = ((sessionReviewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                val reviewPercent = ((smoothReviewCount.toFloat() / sessionTotalCount) * 100).roundToInt()
                                 Text(
                                     text = "$reviewPercent%",
                                     fontSize = 11.sp,
@@ -493,7 +496,7 @@ fun LearningFinishedContent(
                         }
 
                         // 第 3 等份: 攻克 (如果有反复攻克词数)
-                        if (sessionRelearnCount > 0) {
+                        if (relearnCount > 0) {
                             // 垂直细分割线 2
                             Box(
                                 modifier = Modifier
@@ -530,7 +533,7 @@ fun LearningFinishedContent(
                                     horizontalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = "$sessionRelearnCount",
+                                        text = "$relearnCount",
                                         fontSize = 22.sp,
                                         fontWeight = FontWeight.Black,
                                         color = textPrimary,
@@ -543,7 +546,7 @@ fun LearningFinishedContent(
                                         color = textPrimary,
                                         modifier = Modifier.padding(start = 2.dp, end = 6.dp, bottom = 2.dp)
                                     )
-                                    val relearnPercent = ((sessionRelearnCount.toFloat() / sessionTotalCount) * 100).roundToInt()
+                                    val relearnPercent = ((relearnCount.toFloat() / sessionTotalCount) * 100).roundToInt()
                                     Text(
                                         text = "$relearnPercent%",
                                         fontSize = 11.sp,
