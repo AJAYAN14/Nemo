@@ -18,4 +18,11 @@
    - （可选）替换各模块内私有重复声明。
 
 ## 发现的边界情况与偏离记录 (Deviations & Discovered Edge Cases)
-- 视觉设计演进：用户进一步明确按 iOS 原生规范实现单选列表。根据 iOS Human Interface Guidelines，设置等单选列表中采用“右侧纯蓝色对勾，未选中留白”的最简视觉设计，去除外层灰色空心圆圈噪音，同时与项目中 `SettingsComponents.kt` 内的原生单选列表规范全面对齐。实心圆底白勾组件 `NemoRoundCheckbox` 保留在 `:core:ui` 供批量编辑/多选场景复用。
+- 视觉设计重明确：根据用户最新明确的要求与参考图片（`media_1793360166879_a3af3de1.jpg`），明确单选框及选项指示器（非仅勾无底，非未选留白），统一采用：
+  1. 选中状态：实心主题色圆底 + 居中白色对勾，且严格动态适配当前 MaterialTheme 动态主题色；
+  2. 未选中状态：灰色轮廓空心圆圈（无对勾，灰色外边框，内部透明）。
+- 落地规范：
+  - `:core:ui` 中的 `NemoRoundCheckbox` 作为全局基础规范组件，边框与底色加入平滑过渡与弹性缩放，并添加 Light / Dark 模式 Compose Previews。
+  - `ThemeSettingsScreen.kt` 的 `StrategyOptionItem` 和 `IconStyleOptionRow` 接入 `NemoRoundCheckbox`（20.dp），并提供对应 Compose Previews。
+  - `AIReadingScreen.kt` 的 `QuestionCard` 单选作答选项接入 `NemoRoundCheckbox`（18.dp，内部对勾 12.dp），并提供 Compose Previews。
+

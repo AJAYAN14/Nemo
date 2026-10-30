@@ -29,8 +29,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
@@ -496,14 +498,12 @@ private fun StrategyOptionItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Rounded.Check,
-                contentDescription = "已选择",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        Spacer(modifier = Modifier.width(8.dp))
+        NemoRoundCheckbox(
+            checked = isSelected,
+            size = 20.dp,
+            checkSize = 13.dp
+        )
     }
     if (showDivider) {
         HorizontalDivider(
@@ -634,13 +634,100 @@ private fun IconStyleOptionRow(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Rounded.Check,
-                contentDescription = "已选择",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
+        NemoRoundCheckbox(
+            checked = isSelected,
+            size = 20.dp,
+            checkSize = 13.dp
+        )
+    }
+}
+
+@Preview(name = "StrategyOptionItem Preview", showBackground = true)
+@Composable
+private fun StrategyOptionItemPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            StrategyOptionItem(
+                title = "跟随系统",
+                subtitle = "根据系统设置自动切换深浅色主题",
+                isSelected = true,
+                onClick = {}
             )
+            StrategyOptionItem(
+                title = "定时深色模式",
+                subtitle = "在指定时间段开启深色模式",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "StrategyOptionItem Preview - Dark Mode", showBackground = true)
+@Composable
+private fun StrategyOptionItemDarkPreview() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface {
+            Column(modifier = Modifier.padding(16.dp)) {
+                StrategyOptionItem(
+                    title = "跟随系统",
+                    subtitle = "根据系统设置自动切换深浅色主题",
+                    isSelected = true,
+                    onClick = {}
+                )
+                StrategyOptionItem(
+                    title = "定时深色模式",
+                    subtitle = "在指定时间段开启深色模式",
+                    isSelected = false,
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "IconStyleOptionRow Preview", showBackground = true)
+@Composable
+private fun IconStyleOptionRowPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            IconStyleOptionRow(
+                title = "Material Design 3",
+                description = "经典圆角彩色背景底框，单色聚焦图标",
+                isSelected = true,
+                onClick = {}
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            IconStyleOptionRow(
+                title = "Plump Duo",
+                description = "现代无背景通透设计，双色线面与等亮度调色板",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "IconStyleOptionRow Preview - Dark Mode", showBackground = true)
+@Composable
+private fun IconStyleOptionRowDarkPreview() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface {
+            Column(modifier = Modifier.padding(16.dp)) {
+                IconStyleOptionRow(
+                    title = "Material Design 3",
+                    description = "经典圆角彩色背景底框，单色聚焦图标",
+                    isSelected = true,
+                    onClick = {}
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                IconStyleOptionRow(
+                    title = "Plump Duo",
+                    description = "现代无背景通透设计，双色线面与等亮度调色板",
+                    isSelected = false,
+                    onClick = {}
+                )
+            }
         }
     }
 }
