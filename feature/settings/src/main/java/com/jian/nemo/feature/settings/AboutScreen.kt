@@ -117,7 +117,7 @@ private fun parade(): List<Party> {
  * 关于 Nemo 界面 (AboutScreen)
  *
  * 1. 顶部融合 Cresto 同款 3D 物理倾斜、AGSL 光波扩散与明度发光边框；
- * 2. 支持连续点击 10 次与【长按 1.5s】触发 Cresto 1:1 双炮筒抛物线喷射彩花；
+ * 2. 支持连续点击 10 次与【长按 0.8s】触发 Cresto 1:1 双炮筒抛物线喷射彩花；
  * 3. 启动更新检测开关持久化控制冷启动更新；
  * 4. 更新日志对接 Supabase 后端 (ConfigRepository)，拒绝硬编码；
  * 5. 全面收拢 GitHub 开源项目、版本构建信息与检查新版本。
@@ -148,6 +148,18 @@ fun AboutScreen(
     var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
 
     var isChangelogExpanded by remember { mutableStateOf(true) }
+    var isCheckingUpdate by remember { mutableStateOf(false) }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "checkUpdateTransition")
+    val checkUpdateRotation by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "checkUpdateRotation"
+    )
 
     val versionName = remember { AppUtils.getVersionName(context) }
     val versionCode = remember {
@@ -210,7 +222,7 @@ fun AboutScreen(
                             .softCardShadow(borderRadius = 24.dp, isDark = isDark)
                             .tiltOnPress(
                                 maxTilt = 12f,
-                                longPressTimeoutMillis = 1500L,
+                                longPressTimeoutMillis = 800L,
                                 onLongClick = {
                                     triggerEasterEgg()
                                 },
@@ -276,14 +288,22 @@ fun AboutScreen(
                         )
 
                         SquircleSettingItem(
-                            icon = Icons.Rounded.SystemUpdate,
+                            icon = Icons.Rounded.Cached,
                             plumpIcon = PlumpIcon.CheckUpdate,
                             iconColor = NemoSecondary,
                             plumpColor = IsoluminantPalette.OceanBlue,
+                            iconRotation = if (isCheckingUpdate) checkUpdateRotation else 0f,
                             title = "检查新版本",
-                            subtitle = "当前版本 v$versionName (Build $versionCode)",
+                            subtitle = if (isCheckingUpdate) "正在检测新版本..." else "当前版本 v$versionName (Build $versionCode)",
                             onClick = {
-                                onCheckUpdate()
+                                if (!isCheckingUpdate) {
+                                    isCheckingUpdate = true
+                                    onCheckUpdate()
+                                    scope.launch {
+                                        delay(1500L)
+                                        isCheckingUpdate = false
+                                    }
+                                }
                             },
                             showDivider = false,
                             trailing = {
@@ -336,18 +356,18 @@ fun AboutScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(38.dp)
-                                        .background(NemoPrimary.copy(alpha = 0.12f), CircleShape),
+                                        .size(42.dp)
+                                        .background(NemoPrimary.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Info,
                                         contentDescription = null,
                                         tint = NemoPrimary,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(22.dp)
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(12.dp))
+                                Spacer(modifier = Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = logTitle,
@@ -746,11 +766,13 @@ private fun NemoArtisticBanner(isDark: Boolean) {
             }
         }
 
-        // 4. 透明青蛙 Logo 放置在卡片中
+        // 4. 透明青蛙 Logo 放置在卡片中（居中留白，呈现高级艺术呼吸感）
         Image(
             painter = painterResource(id = DesignR.drawable.img_about_frog_logo),
             contentDescription = "Logo",
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 28.dp, vertical = 20.dp),
             contentScale = ContentScale.Fit
         )
     }

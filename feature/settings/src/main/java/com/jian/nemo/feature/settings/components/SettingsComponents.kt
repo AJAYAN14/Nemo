@@ -157,6 +157,7 @@ fun SquircleSettingItem(
     iconColor: Color,
     plumpColor: Color = iconColor,
     iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
+    iconRotation: Float = 0f,
     title: String,
     subtitle: String? = null,
     onClick: () -> Unit,
@@ -200,13 +201,16 @@ fun SquircleSettingItem(
                             imageVector = icon,
                             contentDescription = null,
                             tint = iconColor,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier
+                                .size(22.dp)
+                                .graphicsLayer { rotationZ = iconRotation }
                         )
                     } else if (plumpIcon != null) {
                         PlumpDuoIcon(
                             icon = plumpIcon,
                             color = plumpColor,
-                            size = 28.dp
+                            size = 28.dp,
+                            modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
                         )
                     }
                 }
@@ -220,14 +224,17 @@ fun SquircleSettingItem(
                         PlumpDuoIcon(
                             icon = plumpIcon,
                             color = plumpColor,
-                            size = 30.dp
+                            size = 30.dp,
+                            modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
                         )
                     } else if (icon != null) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
                             tint = iconColor,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier
+                                .size(24.dp)
+                                .graphicsLayer { rotationZ = iconRotation }
                         )
                     }
                 }
