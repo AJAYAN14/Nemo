@@ -72,6 +72,9 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
+    // Confetti
+    implementation(libs.konfetti.compose)
+
     // Feature modules
     // implementation(project(":feature:user"))
 

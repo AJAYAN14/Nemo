@@ -278,13 +278,16 @@ fun SquircleSettingItem(
  * 分组标题 (V2)
  */
 @Composable
-fun SettingsSectionTitle(text: String) {
+fun SettingsSectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        modifier = modifier
     )
 }
 
