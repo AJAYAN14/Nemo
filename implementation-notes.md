@@ -27,6 +27,14 @@
   - `AIReadingScreen.kt` 的 `QuestionCard` 单选作答选项接入 `NemoRoundCheckbox`（18.dp，内部对勾 12.dp），并提供 Compose Previews。
 - iOS 显示模式重构规范：
   - “显示模式”主卡片（`PremiumCard`）双列并排浅色与深色 2 个微缩手机模型，移除原第 3 个自动模型。
-  - “自动”选项下沉为同卡片底部的独立行，采用通用液态玻璃开关 `LiquidToggle` 并接入 `backdrop` 采样。
+  - “自动”选项下沉为同卡片底部的独立行，采用通用液态玻璃开关 `LiquidToggle`。
   - 交互联动严格对齐 iOS：开启自动时双模型高亮展示当前实际生效模式；用户主动点击浅色/深色模型时，自动退出自动模式并锁定该外观；开启自动时在主卡片下方平滑展开调度配置（跟随系统 / 定时深色）。
-
+- **小米 MIUI / HyperOS Native 崩溃 (SIGSEGV) 排查与修复**：
+  - **崩溃现象**：用户在外观设置界面点击触发崩溃：`Fatal signal 11 (SIGSEGV), code 2 (SEGV_ACCERR), fault addr 0x6ff88b1ff0 in tid 18603 (RenderThread)`。
+  - **堆栈定位**：
+    `android::uirenderer::RenderProperties::promotedToLayer()`
+    `android::uirenderer::skiapipeline::MiBackgroundBlurBlend::preUpdateInfo`
+    `android::uirenderer::RenderNode::prepareTreeImpl`
+    `android::uirenderer::skiapipeline::SkiaDisplayList::prepareListAndChildren`
+  - **根因分析**：在 `ThemeSettingsScreen.kt` 中，外层滚动列表挂载了 `Modifier.layerBackdrop(backdrop)`。此前在此容器内部向子组件 `LiquidToggle` 传递了外层的 `backdrop`。在渲染管线遍历 RenderNode 树时，小米定制的 `MiBackgroundBlurBlend::preUpdateInfo` 会递归检查图层提升与背景模糊；由于子节点向父级图层发起自包含递归采样，访问了尚未就绪的图层属性，导致内存越界访问与 native segfault 崩溃。
+  - **修复措施**：移除 `LiquidToggle` 处的外层 `backdrop` 参数注入，使用其内部默认的 `rememberCanvasBackdrop { drawRect(surfaceColor) }` 自包含底轨反射采样（与项目中 `AboutScreen`、`SettingsScreen` 的标准用法保持一致）；同时在 `LiquidToggle` 的注释中明令禁止传入包含自身的祖先容器 `backdrop`。

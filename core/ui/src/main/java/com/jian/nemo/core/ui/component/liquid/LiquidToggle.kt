@@ -57,6 +57,9 @@ import kotlin.math.abs
 /**
  * 液态玻璃开关组件 (LiquidToggle)
  * 包含底轨与胶囊滑块，支持光影折射、物理弹性拖拽以及防手势冲突处理。
+ *
+ * @param backdrop 可选背景采样源。⚠️严禁传入包含当前开关自身的祖先容器 backdrop（例如外层页面的 layerBackdrop），
+ * 否则会导致 RenderNode 循环采样并触发 Android/MIUI 渲染引擎 Native 崩溃 (SIGSEGV)。通常保持默认 null 即可。
  */
 @Composable
 fun LiquidToggle(

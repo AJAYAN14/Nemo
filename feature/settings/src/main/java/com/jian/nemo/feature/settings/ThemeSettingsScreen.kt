@@ -182,7 +182,6 @@ fun ThemeSettingsScreen(
                                         )
                                     }
                                 },
-                                backdrop = backdrop,
                                 accentColor = MaterialTheme.colorScheme.primary
                             )
                         }
