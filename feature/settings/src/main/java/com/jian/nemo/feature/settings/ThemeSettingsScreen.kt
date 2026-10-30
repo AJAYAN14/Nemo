@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
@@ -497,9 +496,14 @@ private fun StrategyOptionItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        NemoRoundCheckbox(
-            checked = isSelected
-        )
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                contentDescription = "已选择",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
     if (showDivider) {
         HorizontalDivider(
@@ -630,9 +634,14 @@ private fun IconStyleOptionRow(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        NemoRoundCheckbox(
-            checked = isSelected
-        )
+        if (isSelected) {
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                contentDescription = "已选择",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }
 

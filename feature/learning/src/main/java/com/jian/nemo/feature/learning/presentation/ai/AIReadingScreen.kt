@@ -40,7 +40,6 @@ import com.jian.nemo.core.domain.model.ReadingQuestion
 import com.jian.nemo.core.domain.model.ReadingVocabulary
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -2017,13 +2016,14 @@ private fun QuestionCard(
                                     }
                                 }
                             } else {
-                                NemoRoundCheckbox(
-                                    checked = isSelected,
-                                    size = 18.dp,
-                                    checkSize = 12.dp,
-                                    checkedColor = colorScheme.primary,
-                                    uncheckedBorderColor = if (isDark) colorScheme.outline else NemoNeutrals.Gray300
-                                )
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = "已选",
+                                        tint = colorScheme.primary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
                         }
                     }
