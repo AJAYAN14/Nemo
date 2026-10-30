@@ -103,6 +103,7 @@ fun ThemeSettingsScreen(
     var showIconStyleDialog by remember { mutableStateOf(false) }
     var snackbarVisible by remember { mutableStateOf(false) }
     var snackbarMessage by remember { mutableStateOf("") }
+    var pendingAppIconStyle by remember { mutableStateOf<AppIconStyle?>(null) }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -308,9 +309,7 @@ fun ThemeSettingsScreen(
                         selectedStyle = uiState.appIconStyle,
                         onStyleSelected = { style ->
                             if (uiState.appIconStyle != style) {
-                                viewModel.onEvent(SettingsEvent.SetAppIconStyle(style))
-                                snackbarMessage = "已切换桌面图标"
-                                snackbarVisible = true
+                                pendingAppIconStyle = style
                             }
                         }
                     )
@@ -365,6 +364,28 @@ fun ThemeSettingsScreen(
             onStyleSelect = { style ->
                 viewModel.onEvent(SettingsEvent.SetSettingIconStyle(style))
                 showIconStyleDialog = false
+            }
+        )
+    }
+
+    if (pendingAppIconStyle != null) {
+        val targetStyle = pendingAppIconStyle!!
+        NemoDialog(
+            onDismissRequest = { pendingAppIconStyle = null },
+            title = "更换桌面图标",
+            confirmText = "确认更换",
+            dismissText = "取消",
+            onConfirm = {
+                pendingAppIconStyle = null
+                viewModel.onEvent(SettingsEvent.SetAppIconStyle(targetStyle))
+            },
+            content = {
+                Text(
+                    text = "更换桌面图标需要刷新系统快捷方式，应用将自动返回手机桌面以完成生效。\n\n是否确认更换？",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 22.sp
+                )
             }
         )
     }

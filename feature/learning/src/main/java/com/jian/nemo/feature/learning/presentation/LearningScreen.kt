@@ -683,9 +683,10 @@ fun WordLearningContent(
                 onBackClick = onBackClick
             )
         } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+            val remainingWords = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
             LearningFinishedContent(
                 title = "本组微会话完成！",
-                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，可点击下方加餐继续出清积压",
+                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，继续完成今日目标吧（还差 $remainingWords 词）",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -701,7 +702,12 @@ fun WordLearningContent(
                 onConfirmBonus = { bonusCount, bonusMode ->
                     onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
                 },
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                showBonusCard = false,
+                showNextGroupButton = true,
+                onNextGroupClick = {
+                    onEvent(LearningEvent.StartLearning(mode = LearningMode.Word))
+                }
             )
         } else {
             LearningFinishedContent(
@@ -843,9 +849,10 @@ fun GrammarLearningContent(
                 onBackClick = onBackClick
             )
         } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+            val remainingGrammars = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
             LearningFinishedContent(
                 title = "本组微会话完成！",
-                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，可点击下方加餐继续出清积压",
+                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，继续完成今日目标吧（还差 $remainingGrammars 项）",
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -861,7 +868,12 @@ fun GrammarLearningContent(
                 onConfirmBonus = { bonusCount, bonusMode ->
                     onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
                 },
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                showBonusCard = false,
+                showNextGroupButton = true,
+                onNextGroupClick = {
+                    onEvent(LearningEvent.StartLearning(mode = LearningMode.Grammar))
+                }
             )
         } else {
             LearningFinishedContent(

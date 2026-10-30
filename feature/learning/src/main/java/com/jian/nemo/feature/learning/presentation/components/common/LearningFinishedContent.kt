@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.CalendarToday
@@ -102,6 +103,9 @@ fun LearningFinishedContent(
     onDismissShareDialog: () -> Unit = {},
     onConfirmBonus: (Int, BonusMode) -> Unit = { _, _ -> },
     onBackClick: () -> Unit = {},
+    showBonusCard: Boolean = true,
+    showNextGroupButton: Boolean = false,
+    onNextGroupClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -830,97 +834,99 @@ fun LearningFinishedContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            if (showBonusCard) {
+                Spacer(modifier = Modifier.height(14.dp))
 
-            // ==========================================
-            // 5. 今日加餐入口卡片（100% 保持原版效果 + 45° 斜扫光动效）
-            // ==========================================
-            Surface(
-                onClick = { showBonusDialog = true },
-                shape = RoundedCornerShape(24.dp),
-                color = if (isDark) Color(0xFF2B1F17) else Color(0xFFFFF7ED),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = bonusOrange.copy(alpha = if (isDark) 0.35f else 0.20f)
-                ),
-                shadowElevation = 0.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = 10.dp,
-                        shape = RoundedCornerShape(24.dp),
-                        clip = false,
-                        spotColor = shadowSpotColor,
-                        ambientColor = shadowAmbientColor
-                    )
-                    .clip(RoundedCornerShape(24.dp))
-                    .drawWithContent {
-                        drawContent()
-                        // 原版 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
-                        val width = size.width
-                        val height = size.height
-                        val xOffset = shimmerProgress * width
-
-                        val shimmerBrush = Brush.linearGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.White.copy(alpha = if (isDark) 0.25f else 0.45f),
-                                Color.Transparent
-                            ),
-                            start = Offset(xOffset, 0f),
-                            end = Offset(xOffset + width * 0.4f, height * 1.2f)
-                        )
-                        drawRect(brush = shimmerBrush)
-                    }
-            ) {
-                Row(
+                // ==========================================
+                // 5. 今日加餐入口卡片（100% 保持原版效果 + 45° 斜扫光动效）
+                // ==========================================
+                Surface(
+                    onClick = { showBonusDialog = true },
+                    shape = RoundedCornerShape(24.dp),
+                    color = if (isDark) Color(0xFF2B1F17) else Color(0xFFFFF7ED),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = bonusOrange.copy(alpha = if (isDark) 0.35f else 0.20f)
+                    ),
+                    shadowElevation = 0.dp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            clip = false,
+                            spotColor = shadowSpotColor,
+                            ambientColor = shadowAmbientColor
+                        )
+                        .clip(RoundedCornerShape(24.dp))
+                        .drawWithContent {
+                            drawContent()
+                            // 原版 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                            val width = size.width
+                            val height = size.height
+                            val xOffset = shimmerProgress * width
+
+                            val shimmerBrush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.White.copy(alpha = if (isDark) 0.25f else 0.45f),
+                                    Color.Transparent
+                                ),
+                                start = Offset(xOffset, 0f),
+                                end = Offset(xOffset + width * 0.4f, height * 1.2f)
+                            )
+                            drawRect(brush = shimmerBrush)
+                        }
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Flag,
-                            contentDescription = null,
-                            tint = bonusOrange,
-                            modifier = Modifier.size(26.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Flag,
+                                contentDescription = null,
+                                tint = bonusOrange,
+                                modifier = Modifier.size(26.dp)
+                            )
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = "今日加餐",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textPrimary
+                                )
+                                Text(
+                                    text = "突破常规，设定追加练习目标",
+                                    fontSize = 13.sp,
+                                    color = textSecondary
+                                )
+                            }
+                        }
+
+                        // 右侧亮橙全胶囊标签
+                        Surface(
+                            shape = CircleShape,
+                            color = bonusOrange,
+                            contentColor = Color.White
                         ) {
                             Text(
-                                text = "今日加餐",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = textPrimary
-                            )
-                            Text(
-                                text = "突破常规，设定追加练习目标",
+                                text = "去加餐",
                                 fontSize = 13.sp,
-                                color = textSecondary
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                             )
                         }
-                    }
-
-                    // 右侧亮橙全胶囊标签
-                    Surface(
-                        shape = CircleShape,
-                        color = bonusOrange,
-                        contentColor = Color.White
-                    ) {
-                        Text(
-                            text = "去加餐",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-                        )
                     }
                 }
             }
@@ -928,29 +934,89 @@ fun LearningFinishedContent(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ==========================================
-            // 6. 底部主操作区 (Primary CTA - 闭环完成今日学习)
+            // 6. 底部主操作区 (Primary CTA)
             // ==========================================
-            ColoredLiquidGlassButton(
-                onClick = onBackClick,
-                tint = themePrimary,
-                shape = RoundedCornerShape(18.dp),
-                border = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text(
-                    text = "完成今日学习",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Icon(
-                    imageVector = Icons.Rounded.Check,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(18.dp)
-                )
+            if (showNextGroupButton) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 左侧：完成今日学习（次要描边按钮）
+                    OutlinedButton(
+                        onClick = onBackClick,
+                        shape = RoundedCornerShape(18.dp),
+                        border = BorderStroke(1.5.dp, themePrimary.copy(alpha = 0.6f)),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = themePrimary
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "完成今日学习",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    // 右侧：学习下一组（核心高亮按钮）
+                    ColoredLiquidGlassButton(
+                        onClick = onNextGroupClick,
+                        tint = themePrimary,
+                        shape = RoundedCornerShape(18.dp),
+                        border = null,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "学习下一组",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            } else {
+                ColoredLiquidGlassButton(
+                    onClick = onBackClick,
+                    tint = themePrimary,
+                    shape = RoundedCornerShape(18.dp),
+                    border = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "完成今日学习",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
