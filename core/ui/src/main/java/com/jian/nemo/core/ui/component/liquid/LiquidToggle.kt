@@ -134,6 +134,7 @@ fun LiquidToggle(
                         val change = event.changes.fastFirstOrNull { it.id == pointerId }
 
                         if (change == null || change.changedToUpIgnoreConsumed()) {
+                            change?.consume()
                             if (!isDragging) {
                                 // 点击 (Tap)：切换状态并触发弹簧弹性滑动
                                 val nextState = !currentSelected()
@@ -159,17 +160,14 @@ fun LiquidToggle(
                         val dragDelta = change.positionChange()
                         if (!isDragging) {
                             accumulatedDragX += dragDelta.x
-                            if (abs(accumulatedDragX) > touchSlop || abs(dragDelta.x) > 1.5f) {
+                            if (abs(accumulatedDragX) > touchSlop) {
                                 isDragging = true
                                 change.consume()
-                                val delta = dragDelta.x / dragWidth
+                                val delta = (dragDelta.x) / dragWidth
                                 fraction =
                                     if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
                                     else (fraction - delta).fastCoerceIn(0f, 1f)
                                 dampedDragAnimation.updateValue(fraction)
-                            } else if (abs(dragDelta.x) > 0.5f) {
-                                // 横向微动阶段消费事件，避免外层列表抢占
-                                change.consume()
                             }
                         } else {
                             // 拖拽中持续消费事件，彻底锁定外层滚动

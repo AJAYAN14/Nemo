@@ -38,6 +38,7 @@ import com.jian.nemo.core.ui.navigation.NavDestination
 import com.jian.nemo.core.ui.component.splash.SplashScreen
 import com.jian.nemo.feature.user.AuthViewModel
 import com.jian.nemo.core.ui.animation.NemoNavigationAnimations
+import com.jian.nemo.core.ui.animation.SubScreenContainer
 import com.jian.nemo.feature.learning.presentation.home.HomeScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIWorkshopScreen
 import com.jian.nemo.feature.learning.presentation.ai.AIReadingScreen
@@ -53,6 +54,7 @@ import com.jian.nemo.feature.settings.ThemeSettingsScreen
 import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
 import com.jian.nemo.feature.settings.AISettingsScreen
 import com.jian.nemo.feature.settings.LiquidGlassLabScreen
+import com.jian.nemo.feature.settings.AboutScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -306,19 +308,23 @@ fun NemoNavHost(
         }
 
         composable(NavDestination.AI_WORKSHOP) {
-            AIWorkshopScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) },
-                onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) }
-            )
+            SubScreenContainer {
+                AIWorkshopScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHistory = { navController.navigate(NavDestination.AI_HISTORY) },
+                    onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) }
+                )
+            }
         }
 
         composable(NavDestination.AI_READING) { backStackEntry ->
-            AIReadingScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) },
-                onNavigateToHistory = { navController.navigate(NavDestination.AI_READING_HISTORY) }
-            )
+            SubScreenContainer {
+                AIReadingScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToSettings = { navController.navigate(NavDestination.AI_SETTINGS) },
+                    onNavigateToHistory = { navController.navigate(NavDestination.AI_READING_HISTORY) }
+                )
+            }
         }
 
         composable(NavDestination.AI_READING_HISTORY) { backStackEntry ->
@@ -326,23 +332,29 @@ fun NemoNavHost(
                 navController.getBackStackEntry(NavDestination.AI_READING)
             }
             val viewModel: AIReadingViewModel = hiltViewModel(parentEntry)
-            AIReadingHistoryScreen(
-                viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
-                onHistorySelected = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                AIReadingHistoryScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onHistorySelected = { navController.popBackStack() }
+                )
+            }
         }
 
         composable(NavDestination.AI_HISTORY) {
-            AIHistoryScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                AIHistoryScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable(NavDestination.AI_SETTINGS) {
-            AISettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                AISettingsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // 进度页 - 主界面
@@ -595,22 +607,39 @@ fun NemoNavHost(
                 onNavigateToLiquidLab = {
                     navController.navigate(NavDestination.LIQUID_GLASS_LAB)
                 },
+                onNavigateToAbout = {
+                    navController.navigate(NavDestination.ABOUT)
+                },
                 onCheckUpdate = onCheckUpdate
             )
         }
 
+        // 关于 Nemo 页面
+        composable(NavDestination.ABOUT) {
+            SubScreenContainer {
+                AboutScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onCheckUpdate = onCheckUpdate
+                )
+            }
+        }
+
         // 液态玻璃实验室
         composable(NavDestination.LIQUID_GLASS_LAB) {
-            LiquidGlassLabScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                LiquidGlassLabScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // TTS设置
         composable(NavDestination.TTS_SETTINGS) {
-             TtsSettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                TtsSettingsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // 云端备份历史
@@ -624,36 +653,42 @@ fun NemoNavHost(
             )
         ) { backStackEntry ->
             val isFromLogin = backStackEntry.arguments?.getBoolean("isFromLogin") ?: false
-            com.jian.nemo.feature.settings.CloudBackupHistoryScreen(
-                isFromLogin = isFromLogin,
-                onNavigateBack = { navController.popBackStack() },
-                onSkipRestore = {
-                    navController.navigate(NavDestination.LEARNING) {
-                        popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
-                    }
-                },
-                onRestoreSuccess = {
-                    if (isFromLogin) {
+            SubScreenContainer {
+                com.jian.nemo.feature.settings.CloudBackupHistoryScreen(
+                    isFromLogin = isFromLogin,
+                    onNavigateBack = { navController.popBackStack() },
+                    onSkipRestore = {
                         navController.navigate(NavDestination.LEARNING) {
                             popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
                         }
+                    },
+                    onRestoreSuccess = {
+                        if (isFromLogin) {
+                            navController.navigate(NavDestination.LEARNING) {
+                                popUpTo(NavDestination.CLOUD_BACKUP_HISTORY_ROUTE) { inclusive = true }
+                            }
+                        }
                     }
-                }
-            )
+                )
+            }
         }
 
         // 主题设置
         composable(NavDestination.THEME_SETTINGS) {
-            ThemeSettingsScreen(
-                onBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                ThemeSettingsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
  
         // 记忆算法设置
         composable(NavDestination.ADVANCED_LEARNING) {
-            com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // 词性分类
