@@ -10,6 +10,7 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SessionData
 import com.jian.nemo.core.domain.repository.ToggleStyle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.AppIconStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import com.jian.nemo.core.domain.model.AppSettings
@@ -2049,6 +2050,24 @@ class SettingsRepositoryImpl @Inject constructor(
     override suspend fun setSettingIconStyle(style: SettingIconStyle) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.SETTING_ICON_STYLE] = style.name
+            preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
+        }
+    }
+
+    /** 桌面启动图标风格 Flow (默认 DEFAULT) */
+    override val appIconStyleFlow: Flow<AppIconStyle> = dataStore.data.map { preferences ->
+        val styleStr = preferences[PreferencesKeys.APP_ICON_STYLE]
+        try {
+            if (styleStr != null) AppIconStyle.valueOf(styleStr) else AppIconStyle.DEFAULT
+        } catch (e: Exception) {
+            AppIconStyle.DEFAULT
+        }
+    }
+
+    /** 设置桌面启动图标风格 */
+    override suspend fun setAppIconStyle(style: AppIconStyle) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_ICON_STYLE] = style.name
             preferences[PreferencesKeys.LAST_SETTINGS_MODIFIED_TIME] = System.currentTimeMillis()
         }
     }

@@ -8,6 +8,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,17 +24,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
+import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.component.NemoDialog
+import java.time.LocalTime
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.AppIconStyle
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.feature.settings.components.IsoluminantPalette
 import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PlumpIcon
@@ -58,11 +70,39 @@ fun ThemeSettingsScreen(
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backgroundColor = MaterialTheme.colorScheme.background
 
+    // 计算实际生效的深浅色与自动模式状态
+    val isSystemInDark = isSystemInDarkTheme()
+    val isAuto = uiState.darkMode == DarkModeOption.AUTO
+    val isEffectiveDark = when (uiState.darkMode) {
+        DarkModeOption.LIGHT -> false
+        DarkModeOption.DARK -> true
+        DarkModeOption.AUTO -> {
+            if (uiState.darkModeStrategy == DarkModeStrategy.FOLLOW_SYSTEM) {
+                isSystemInDark
+            } else {
+                try {
+                    val now = LocalTime.now()
+                    val start = LocalTime.parse(uiState.darkModeStartTime)
+                    val end = LocalTime.parse(uiState.darkModeEndTime)
+                    if (start.isBefore(end)) {
+                        now.isAfter(start) && now.isBefore(end)
+                    } else {
+                        now.isAfter(start) || now.isBefore(end)
+                    }
+                } catch (_: Exception) {
+                    isSystemInDark
+                }
+            }
+        }
+    }
+
     // 弹窗状态
     var showStartTimePicker by remember { mutableStateOf(false) }
     var showEndTimePicker by remember { mutableStateOf(false) }
     var showThemeColorDialog by remember { mutableStateOf(false) }
     var showIconStyleDialog by remember { mutableStateOf(false) }
+    var snackbarVisible by remember { mutableStateOf(false) }
+    var snackbarMessage by remember { mutableStateOf("") }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -87,10 +127,74 @@ fun ThemeSettingsScreen(
 
                 SettingsSectionTitle(text = "显示模式")
                 PremiumCard {
-                    ThemeSelectionGrid(
-                        selectedMode = uiState.darkMode,
-                        onModeSelected = { viewModel.onEvent(SettingsEvent.SetDarkMode(it)) }
-                    )
+                    Column {
+                        ThemeSelectionGrid(
+                            selectedMode = if (isAuto) {
+                                if (isEffectiveDark) DarkModeOption.DARK else DarkModeOption.LIGHT
+                            } else {
+                                uiState.darkMode
+                            },
+                            onModeSelected = { mode ->
+                                viewModel.onEvent(SettingsEvent.SetDarkMode(mode))
+                            }
+                        )
+
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                            thickness = 0.5.dp
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val nextAuto = !isAuto
+                                    if (nextAuto) {
+                                        viewModel.onEvent(SettingsEvent.SetDarkMode(DarkModeOption.AUTO))
+                                    } else {
+                                        viewModel.onEvent(
+                                            SettingsEvent.SetDarkMode(
+                                                if (isEffectiveDark) DarkModeOption.DARK else DarkModeOption.LIGHT
+                                            )
+                                        )
+                                    }
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "自动",
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "根据设置在浅色与深色外观间自动切换",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            LiquidToggle(
+                                checked = isAuto,
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        viewModel.onEvent(SettingsEvent.SetDarkMode(DarkModeOption.AUTO))
+                                    } else {
+                                        viewModel.onEvent(
+                                            SettingsEvent.SetDarkMode(
+                                                if (isEffectiveDark) DarkModeOption.DARK else DarkModeOption.LIGHT
+                                            )
+                                        )
+                                    }
+                                },
+                                accentColor = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
                 }
 
                 AnimatedVisibility(
@@ -196,6 +300,22 @@ fun ThemeSettingsScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(20.dp))
+
+                SettingsSectionTitle(text = "桌面图标")
+                PremiumCard {
+                    AppIconSelectionGrid(
+                        selectedStyle = uiState.appIconStyle,
+                        onStyleSelected = { style ->
+                            if (uiState.appIconStyle != style) {
+                                viewModel.onEvent(SettingsEvent.SetAppIconStyle(style))
+                                snackbarMessage = "已切换桌面图标"
+                                snackbarVisible = true
+                            }
+                        }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
@@ -223,6 +343,18 @@ fun ThemeSettingsScreen(
                 backButtonSize = 48.dp
             )
         }
+
+        // 3. 通用顶部通知
+        NemoSnackbar(
+            visible = snackbarVisible,
+            message = snackbarMessage,
+            type = NemoSnackbarType.SUCCESS,
+            autoDismissMs = 2000L,
+            onDismiss = { snackbarVisible = false },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = statusBarTop + 8.dp)
+        )
     }
 }
 
@@ -282,7 +414,7 @@ private fun ThemeSelectionGrid(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp, horizontal = 8.dp),
+            .padding(vertical = 16.dp, horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -298,13 +430,6 @@ private fun ThemeSelectionGrid(
             label = "深色",
             isSelected = selectedMode == DarkModeOption.DARK,
             onClick = { onModeSelected(DarkModeOption.DARK) },
-            modifier = Modifier.weight(1f)
-        )
-        ThemeOption(
-            mode = DarkModeOption.AUTO,
-            label = "自动",
-            isSelected = selectedMode == DarkModeOption.AUTO,
-            onClick = { onModeSelected(DarkModeOption.AUTO) },
             modifier = Modifier.weight(1f)
         )
     }
@@ -344,28 +469,17 @@ private fun DeviceMockup(
     isSelected: Boolean
 ) {
     val borderColor = when (mode) {
-        DarkModeOption.LIGHT -> Color(0xFFE5E5EA)
         DarkModeOption.DARK -> Color(0xFF3A3A3C)
-        DarkModeOption.AUTO -> Color(0xFF8E8E93).copy(alpha = 0.5f)
+        else -> Color(0xFFE5E5EA)
     }
 
     val mockupBackground = when (mode) {
-        DarkModeOption.LIGHT -> Modifier.background(Color.White)
         DarkModeOption.DARK -> Modifier.background(Color(0xFF1C1C1E))
-        DarkModeOption.AUTO -> Modifier.background(
-            brush = Brush.linearGradient(
-                colors = listOf(
-                    Color.White,
-                    Color(0xFFE5E5EA),
-                    Color(0xFF8E8E93),
-                    Color(0xFF2C2C2E),
-                    Color(0xFF1C1C1E)
-                ),
-                start = Offset.Zero,
-                end = Offset.Infinite
-            )
-        )
+        else -> Modifier.background(Color.White)
     }
+
+    val mockupWidth = 78.dp
+    val mockupHeight = 156.dp
 
     Box(
         contentAlignment = Alignment.Center,
@@ -375,7 +489,7 @@ private fun DeviceMockup(
         if (isSelected) {
             Box(
                 modifier = Modifier
-                    .size(width = 72.dp + 10.dp, height = 150.dp + 10.dp)
+                    .size(width = mockupWidth + 10.dp, height = mockupHeight + 10.dp)
                     .border(
                         width = 2.dp,
                         color = MaterialTheme.colorScheme.primary,
@@ -387,7 +501,7 @@ private fun DeviceMockup(
         // 手机本体
         Box(
             modifier = Modifier
-                .size(72.dp, 150.dp)
+                .size(mockupWidth, mockupHeight)
                 .clip(RoundedCornerShape(14.dp))
                 .then(mockupBackground)
                 .border(
@@ -401,9 +515,9 @@ private fun DeviceMockup(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // UI 元素占位
                 MockupNav(mode)
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 MockupCard(mode)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 MockupLine(mode, isShort = false)
                 MockupLine(mode, isShort = true)
             }
@@ -414,17 +528,12 @@ private fun DeviceMockup(
 @Composable
 private fun MockupNav(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFE5E5EA))
         DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
-        DarkModeOption.AUTO -> Modifier.background(
-            brush = Brush.linearGradient(
-                colors = listOf(Color(0xFFE5E5EA), Color(0xFF8E8E93), Color(0xFF3A3A3C))
-            )
-        )
+        else -> Modifier.background(Color(0xFFE5E5EA))
     }
     Box(
         modifier = Modifier
-            .size(36.dp, 6.dp)
+            .size(38.dp, 6.dp)
             .clip(RoundedCornerShape(3.dp))
             .then(modifier)
     )
@@ -433,17 +542,12 @@ private fun MockupNav(mode: DarkModeOption) {
 @Composable
 private fun MockupCard(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFF2F2F7))
         DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
-        DarkModeOption.AUTO -> Modifier.background(
-            brush = Brush.linearGradient(
-                colors = listOf(Color(0xFFF2F2F7), Color(0xFF636366), Color(0xFF2C2C2E))
-            )
-        )
+        else -> Modifier.background(Color(0xFFF2F2F7))
     }
     Box(
         modifier = Modifier
-            .size(52.dp, 30.dp)
+            .size(56.dp, 32.dp)
             .clip(RoundedCornerShape(6.dp))
             .then(modifier)
     )
@@ -452,19 +556,14 @@ private fun MockupCard(mode: DarkModeOption) {
 @Composable
 private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
     val modifier = when (mode) {
-        DarkModeOption.LIGHT -> Modifier.background(Color(0xFFE5E5EA))
         DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
-        DarkModeOption.AUTO -> Modifier.background(
-            brush = Brush.linearGradient(
-                colors = listOf(Color(0xFF8E8E93).copy(alpha = 0.6f), Color(0xFF3A3A3C))
-            )
-        )
+        else -> Modifier.background(Color(0xFFE5E5EA))
     }
     Box(
         modifier = Modifier
-            .padding(start = 10.dp, bottom = 6.dp)
+            .padding(start = 11.dp, bottom = 6.dp)
             .align(Alignment.Start)
-            .size(if (isShort) 24.dp else 40.dp, 5.dp)
+            .size(if (isShort) 26.dp else 44.dp, 5.dp)
             .clip(RoundedCornerShape(2.5.dp))
             .then(modifier)
     )
@@ -496,12 +595,11 @@ private fun StrategyOptionItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        RadioButton(
-            selected = isSelected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+        Spacer(modifier = Modifier.width(8.dp))
+        NemoRoundCheckbox(
+            checked = isSelected,
+            size = 20.dp,
+            checkSize = 13.dp
         )
     }
     if (showDivider) {
@@ -633,13 +731,256 @@ private fun IconStyleOptionRow(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        RadioButton(
-            selected = isSelected,
-            onClick = onClick,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colorScheme.primary
-            )
+        NemoRoundCheckbox(
+            checked = isSelected,
+            size = 20.dp,
+            checkSize = 13.dp
         )
     }
 }
+
+@Preview(name = "StrategyOptionItem Preview", showBackground = true)
+@Composable
+private fun StrategyOptionItemPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            StrategyOptionItem(
+                title = "跟随系统",
+                subtitle = "根据系统设置自动切换深浅色主题",
+                isSelected = true,
+                onClick = {}
+            )
+            StrategyOptionItem(
+                title = "定时深色模式",
+                subtitle = "在指定时间段开启深色模式",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "StrategyOptionItem Preview - Dark Mode", showBackground = true)
+@Composable
+private fun StrategyOptionItemDarkPreview() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface {
+            Column(modifier = Modifier.padding(16.dp)) {
+                StrategyOptionItem(
+                    title = "跟随系统",
+                    subtitle = "根据系统设置自动切换深浅色主题",
+                    isSelected = true,
+                    onClick = {}
+                )
+                StrategyOptionItem(
+                    title = "定时深色模式",
+                    subtitle = "在指定时间段开启深色模式",
+                    isSelected = false,
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "IconStyleOptionRow Preview", showBackground = true)
+@Composable
+private fun IconStyleOptionRowPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            IconStyleOptionRow(
+                title = "Material Design 3",
+                description = "经典圆角彩色背景底框，单色聚焦图标",
+                isSelected = true,
+                onClick = {}
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            IconStyleOptionRow(
+                title = "Plump Duo",
+                description = "现代无背景通透设计，双色线面与等亮度调色板",
+                isSelected = false,
+                onClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "IconStyleOptionRow Preview - Dark Mode", showBackground = true)
+@Composable
+private fun IconStyleOptionRowDarkPreview() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface {
+            Column(modifier = Modifier.padding(16.dp)) {
+                IconStyleOptionRow(
+                    title = "Material Design 3",
+                    description = "经典圆角彩色背景底框，单色聚焦图标",
+                    isSelected = true,
+                    onClick = {}
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                IconStyleOptionRow(
+                    title = "Plump Duo",
+                    description = "现代无背景通透设计，双色线面与等亮度调色板",
+                    isSelected = false,
+                    onClick = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "ThemeSelectionCard Preview - Light", showBackground = true)
+@Composable
+private fun ThemeSelectionCardLightPreview() {
+    MaterialTheme {
+        Column(modifier = Modifier.padding(16.dp)) {
+            PremiumCard {
+                Column {
+                    ThemeSelectionGrid(
+                        selectedMode = DarkModeOption.LIGHT,
+                        onModeSelected = {}
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                        thickness = 0.5.dp
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "自动",
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "根据设置在浅色与深色外观间自动切换",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        LiquidToggle(
+                            checked = true,
+                            onCheckedChange = {},
+                            accentColor = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppIconSelectionGrid(
+    selectedStyle: AppIconStyle,
+    onStyleSelected: (AppIconStyle) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_default_foreground,
+            isSelected = selectedStyle == AppIconStyle.DEFAULT,
+            onClick = { onStyleSelected(AppIconStyle.DEFAULT) }
+        )
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_monochrome_foreground,
+            isSelected = selectedStyle == AppIconStyle.MONOCHROME,
+            onClick = { onStyleSelected(AppIconStyle.MONOCHROME) }
+        )
+    }
+}
+
+@Composable
+private fun AppIconOption(
+    @androidx.annotation.DrawableRes drawableRes: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+
+    // 整个图标选择项：高度紧凑轻薄，无多余灰色大盒子
+    Box(
+        modifier = Modifier
+            .clickable(
+                onClick = onClick,
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            )
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // 贴合图标外缘的紧凑选中高亮环
+        Box(
+            modifier = Modifier
+                .size(72.dp)
+                .border(
+                    width = if (isSelected) 2.5.dp else 0.dp,
+                    color = if (isSelected) primaryColor else Color.Transparent,
+                    shape = RoundedCornerShape(19.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            // 图标容器：64dp 尺寸，通过将内部图像居中放大 1.45 倍，使主体海马充盈饱满，消除多余空白
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+                    .border(
+                        width = 0.5.dp,
+                        color = Color.Black.copy(alpha = 0.08f),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = drawableRes),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer(scaleX = 1.5f, scaleY = 1.5f)
+                )
+            }
+        }
+
+        // 选中时在右上角精致呈现的对勾微标
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 2.dp, y = (-2).dp)
+                    .size(19.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(primaryColor)
+                    .border(
+                        width = 1.5.dp,
+                        color = MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(10.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(11.dp)
+                )
+            }
+        }
+    }
+}
+
 

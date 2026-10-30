@@ -18,6 +18,10 @@ object SoundEffectPlayer {
     @Volatile
     private var goodSoundId: Int = 0
     @Volatile
+    private var hardSoundId: Int = 0
+    @Volatile
+    private var easySoundId: Int = 0
+    @Volatile
     private var otherSoundId: Int = 0
     @Volatile
     private var loadedIds: MutableSet<Int> = mutableSetOf()
@@ -25,6 +29,8 @@ object SoundEffectPlayer {
     private const val CORRECT_ASSET = "audio/correct.mp3"
     private const val ERROR_ASSET = "audio/error.mp3"
     private const val GOOD_ASSET = "audio/sound_good.mp3"
+    private const val HARD_ASSET = "audio/sound_hard.mp3"
+    private const val EASY_ASSET = "audio/sound_easy.mp3"
     private const val OTHER_ASSET = "audio/sound_other.mp3"
 
     @Synchronized
@@ -37,7 +43,7 @@ object SoundEffectPlayer {
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .build()
         val sp = SoundPool.Builder()
-            .setMaxStreams(4)
+            .setMaxStreams(6)
             .setAudioAttributes(attributes)
             .build()
 
@@ -50,6 +56,12 @@ object SoundEffectPlayer {
             }
             context.assets.openFd(GOOD_ASSET).use { afd ->
                 goodSoundId = sp.load(afd, 1)
+            }
+            context.assets.openFd(HARD_ASSET).use { afd ->
+                hardSoundId = sp.load(afd, 1)
+            }
+            context.assets.openFd(EASY_ASSET).use { afd ->
+                easySoundId = sp.load(afd, 1)
             }
             context.assets.openFd(OTHER_ASSET).use { afd ->
                 otherSoundId = sp.load(afd, 1)
@@ -104,6 +116,30 @@ object SoundEffectPlayer {
             if (stream == 0) fallbackPlay(context, GOOD_ASSET)
         } else {
             fallbackPlay(context, GOOD_ASSET)
+        }
+    }
+
+    fun playHardSound(context: Context) {
+        ensureInit(context)
+        val sp = soundPool
+        val id = hardSoundId
+        if (sp != null && id != 0 && loadedIds.contains(id)) {
+            val stream = sp.play(id, 1f, 1f, 1, 0, 1f)
+            if (stream == 0) fallbackPlay(context, HARD_ASSET)
+        } else {
+            fallbackPlay(context, HARD_ASSET)
+        }
+    }
+
+    fun playEasySound(context: Context) {
+        ensureInit(context)
+        val sp = soundPool
+        val id = easySoundId
+        if (sp != null && id != 0 && loadedIds.contains(id)) {
+            val stream = sp.play(id, 1f, 1f, 1, 0, 1f)
+            if (stream == 0) fallbackPlay(context, EASY_ASSET)
+        } else {
+            fallbackPlay(context, EASY_ASSET)
         }
     }
 

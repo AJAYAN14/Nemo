@@ -38,8 +38,10 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIReadingArticle
 import com.jian.nemo.core.domain.model.ReadingQuestion
 import com.jian.nemo.core.domain.model.ReadingVocabulary
+import androidx.compose.ui.tooling.preview.Preview
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -2016,21 +2018,11 @@ private fun QuestionCard(
                                     }
                                 }
                             } else {
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.RadioButtonChecked,
-                                        contentDescription = "已选",
-                                        tint = colorScheme.primary,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Rounded.RadioButtonUnchecked,
-                                        contentDescription = "未选",
-                                        tint = if (isDark) colorScheme.outline else NemoNeutrals.Gray300,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
+                                NemoRoundCheckbox(
+                                    checked = isSelected,
+                                    size = 18.dp,
+                                    checkSize = 12.dp
+                                )
                             }
                         }
                     }
@@ -2220,3 +2212,60 @@ private fun findContextSentence(fullText: String, target: String): String {
     // 如果没有精确匹配到句子，返回全文前 200 字
     return fullText.take(200)
 }
+
+@Preview(name = "QuestionCard Options Preview", showBackground = true)
+@Composable
+private fun QuestionCardPreview() {
+    MaterialTheme {
+        Box(modifier = Modifier.padding(16.dp)) {
+            QuestionCard(
+                question = ReadingQuestion(
+                    question = "What is the main topic of the article?",
+                    options = listOf(
+                        "Technology and Innovation",
+                        "Nature and Environment",
+                        "History and Culture",
+                        "Arts and Literature"
+                    ),
+                    answer = 0,
+                    explanation = "The article introduces modern tech developments."
+                ),
+                qIndex = 0,
+                selectedAns = 0,
+                isSubmitted = false,
+                uiState = AIReadingUiState(),
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "QuestionCard Options Preview - Dark Mode", showBackground = true)
+@Composable
+private fun QuestionCardDarkPreview() {
+    MaterialTheme(colorScheme = darkColorScheme()) {
+        Surface {
+            Box(modifier = Modifier.padding(16.dp)) {
+                QuestionCard(
+                    question = ReadingQuestion(
+                        question = "What is the main topic of the article?",
+                        options = listOf(
+                            "Technology and Innovation",
+                            "Nature and Environment",
+                            "History and Culture",
+                            "Arts and Literature"
+                        ),
+                        answer = 0,
+                        explanation = "The article introduces modern tech developments."
+                    ),
+                    qIndex = 0,
+                    selectedAns = 0,
+                    isSubmitted = false,
+                    uiState = AIReadingUiState(),
+                    onEvent = {}
+                )
+            }
+        }
+    }
+}
+

@@ -228,7 +228,7 @@ fun SRSActionArea(
                         onClick = { 
                             safeRate(3) {
                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                SoundEffectPlayer.playOtherSound(context)
+                                SoundEffectPlayer.playHardSound(context)
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -258,7 +258,7 @@ fun SRSActionArea(
                         onClick = { 
                             safeRate(5) {
                                 view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                                SoundEffectPlayer.playGoodSound(context)
+                                SoundEffectPlayer.playEasySound(context)
                             }
                         },
                         modifier = Modifier.weight(1f)

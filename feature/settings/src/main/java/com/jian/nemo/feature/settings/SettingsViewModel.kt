@@ -123,6 +123,12 @@ class SettingsViewModel @Inject constructor(
             }
         }
 
+        viewModelScope.launch {
+            settingsRepository.appIconStyleFlow.collect { style ->
+                _uiState.update { it.copy(appIconStyle = style) }
+            }
+        }
+
         // 加载可用语音列表
         viewModelScope.launch {
             val voices = audioRepository.getAvailableVoices()
@@ -247,6 +253,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetThemeColor -> setThemeColor(event.colorArgb)
             is SettingsEvent.SetToggleStyle -> setToggleStyle(event.style)
             is SettingsEvent.SetSettingIconStyle -> setSettingIconStyle(event.style)
+            is SettingsEvent.SetAppIconStyle -> setAppIconStyle(event.style)
             is SettingsEvent.SetDailyGoal -> setDailyGoal(event.goal)
             is SettingsEvent.SetGrammarDailyGoal -> setGrammarDailyGoal(event.goal)
             is SettingsEvent.SetDefaultBonusBatchSize -> setDefaultBonusBatchSize(event.size)
@@ -575,6 +582,16 @@ class SettingsViewModel @Inject constructor(
     private fun setSettingIconStyle(style: com.jian.nemo.core.domain.repository.SettingIconStyle) {
         viewModelScope.launch {
             settingsRepository.setSettingIconStyle(style)
+        }
+    }
+
+    /**
+     * 设置桌面启动图标风格
+     */
+    private fun setAppIconStyle(style: com.jian.nemo.core.domain.repository.AppIconStyle) {
+        viewModelScope.launch {
+            settingsRepository.setAppIconStyle(style)
+            com.jian.nemo.feature.settings.util.AppIconManager.switchIcon(application, style)
         }
     }
 

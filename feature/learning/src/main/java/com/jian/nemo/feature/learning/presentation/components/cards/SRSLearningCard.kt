@@ -41,9 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
@@ -315,8 +318,7 @@ fun SRSLearningCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .animateContentSize(animationSpec = tween(300))
-                    .padding(vertical = if (isWhiteboardEnabled) 8.dp else 24.dp),
+                    .animateContentSize(animationSpec = tween(300)),
                 contentAlignment = Alignment.Center
             ) {
                 AnimatedContent(
@@ -332,50 +334,82 @@ fun SRSLearningCard(
                             wordId = word.id,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(420.dp)
+                                .height(440.dp)
                         )
                     } else {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 16.dp)
-                        ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.Lightbulb,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        size = 56.dp
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(32.dp),
-                                    color = if (isDarkTheme) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(100.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Lightbulb,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp),
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
+                        val dotColor = if (isDarkTheme) Color.White else Color.Black
+                        val baseDotAlpha = if (isDarkTheme) 0.12f else 0.08f
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(440.dp)
+                                .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
+                                .clip(RoundedCornerShape(26.dp))
+                                .background(cardBackground.copy(alpha = if (isDarkTheme) 0.85f else 0.95f))
+                                .border(
+                                    width = 0.8.dp,
+                                    color = borderColor,
+                                    shape = RoundedCornerShape(26.dp)
+                                )
+                                .drawBehind {
+                                    val dotSpacing = 18.dp.toPx()
+                                    val dotRadius = 1.25.dp.toPx()
+
+                                    val cols = (size.width / dotSpacing).toInt()
+                                    val rows = (size.height / dotSpacing).toInt()
+                                    val startX = (size.width - (cols - 1) * dotSpacing) / 2f
+                                    val startY = (size.height - (rows - 1) * dotSpacing) / 2f
+
+                                    // 图标在垂直偏上位置，避让中心设为略偏上的位置
+                                    // 图标位于几何正中心，避让中心正对称
+                                    val clearCenterX = size.width / 2f
+                                    val clearCenterY = size.height / 2f
+                                    val clearRadius = 80.dp.toPx()
+
+                                    for (i in 0 until cols) {
+                                        for (j in 0 until rows) {
+                                            val x = startX + i * dotSpacing
+                                            val y = startY + j * dotSpacing
+
+                                            val dx = x - clearCenterX
+                                            val dy = y - clearCenterY
+                                            val dist = kotlin.math.sqrt(dx * dx + dy * dy)
+                                            val distRatio = dist / clearRadius
+
+                                            // 方案 A：中心正圆避让（呼吸圈）加柔和渐变过渡
+                                            if (distRatio >= 0.85f) {
+                                                val pointAlpha = if (distRatio < 1.35f) {
+                                                    ((distRatio - 0.85f) / 0.5f).coerceIn(0f, 1f) * baseDotAlpha
+                                                } else {
+                                                    baseDotAlpha
+                                                }
+                                                drawCircle(
+                                                    color = dotColor.copy(alpha = pointAlpha),
+                                                    radius = dotRadius,
+                                                    center = Offset(x, y)
+                                                )
+                                            }
+                                        }
                                     }
                                 }
+                                .padding(vertical = 42.dp, horizontal = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (isPlumpDuo) {
+                                PlumpDuoIcon(
+                                    icon = PlumpIcon.Lightbulb,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    size = 96.dp
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Lightbulb,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(96.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
                             }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            Text(
-                                text = "回想词义与发音，点击下方查看答案",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-                                textAlign = TextAlign.Center
-                            )
                         }
                     }
                 }
@@ -395,7 +429,7 @@ fun SRSLearningCard(
                         wordId = word.id,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(420.dp),
+                            .height(390.dp),
                         onClose = { showBackWhiteboard = false }
                     )
                 }

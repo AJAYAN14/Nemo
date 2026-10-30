@@ -24,6 +24,9 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.unit.dp
 
 // 包含颜色信息的数据类
@@ -72,11 +75,11 @@ fun NemoWhiteboard(
     var drawTrigger by remember(wordId) { mutableIntStateOf(0) }
 
     // 背景与工具栏暗色适配
-    val boardBg = if (isDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFAFAFA)
-    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
-    val toolbarBg = if (isDarkTheme) Color(0xFF2C2C2E).copy(alpha = 0.9f) else Color.White.copy(alpha = 0.9f)
+    val boardBg = if (isDarkTheme) Color(0xFF1C1C1E) else Color.White
+    val toolbarBg = if (isDarkTheme) Color(0xFF2C2C2E).copy(alpha = 0.9f) else Color(0xFFF2F2F7).copy(alpha = 0.9f)
     val iconTint = if (isDarkTheme) Color(0xFFF2F2F7) else Color(0xFF333333)
     val iconBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
+    var isColorPaletteExpanded by remember(wordId) { mutableStateOf(false) }
     
     // 绘制样式
     val drawStyle = Stroke(
@@ -88,9 +91,9 @@ fun NemoWhiteboard(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDarkTheme)
             .clip(RoundedCornerShape(24.dp))
             .background(boardBg)
-            .border(1.dp, borderColor, RoundedCornerShape(24.dp))
     ) {
         Canvas(
             modifier = Modifier
@@ -187,31 +190,56 @@ fun NemoWhiteboard(
             }
         }
 
-        // 顶部工具栏 (颜色选择器)
+        // 顶部工具栏 (折叠式颜色选择器：平时仅展示单色圆钮，点击展开可选列表)
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 12.dp)
+                .animateContentSize(animationSpec = tween(250))
                 .background(toolbarBg, RoundedCornerShape(50))
-                .border(1.dp, borderColor, RoundedCornerShape(50))
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                .clickable { isColorPaletteExpanded = !isColorPaletteExpanded }
+                .padding(horizontal = if (isColorPaletteExpanded) 10.dp else 4.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            penColors.forEach { color ->
-                val isSelected = currentColor == color
+            if (!isColorPaletteExpanded) {
+                // 收起态：仅占用 32dp 的当前颜色微圆钮
                 Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .background(color)
-                        .border(
-                            width = if (isSelected) 3.dp else 1.dp,
-                            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else Color.Transparent,
-                            shape = CircleShape
-                        )
-                        .clickable { currentColor = color }
-                )
+                    modifier = Modifier.size(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(currentColor)
+                            .border(
+                                width = 1.5.dp,
+                                color = if (isDarkTheme) Color.White.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.15f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            } else {
+                // 展开态：展示全部笔刷颜色
+                penColors.forEach { color ->
+                    val isSelected = currentColor == color
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .border(
+                                width = if (isSelected) 3.dp else 1.dp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.1f),
+                                shape = CircleShape
+                            )
+                            .clickable {
+                                currentColor = color
+                                isColorPaletteExpanded = false
+                            }
+                    )
+                }
             }
         }
     }

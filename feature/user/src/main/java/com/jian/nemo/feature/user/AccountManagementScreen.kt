@@ -34,9 +34,13 @@ import com.jian.nemo.feature.user.component.*
 import androidx.compose.animation.*
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import com.jian.nemo.core.ui.component.Capsule
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -92,15 +96,24 @@ fun AccountManagementScreen(
     // Premium Card Colors
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 
+    val backdrop = rememberLayerBackdrop()
+
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+            // 底层背景挂载 backdrop 采样图层（支持液态玻璃折射）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop)
+            )
+
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
             // 1. Common Header
             CommonHeader(
                 title = "账户管理",
@@ -182,20 +195,20 @@ fun AccountManagementScreen(
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                // Liquid Logout Button
-                LiquidButton(
+                // Colored Liquid Glass Logout Button
+                ColoredLiquidGlassButton(
                     onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
-                    backgroundColor = MaterialTheme.colorScheme.error,
-                    shape = CircleShape,
-                    elevation = 6.dp
+                    tint = IsoluminantPalette.CoralFlame,
+                    backdrop = backdrop,
+                    shape = Capsule()
                 ) {
                     Text(
                         text = "退出登录",
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onError
+                        color = Color.White
                     )
                 }
 

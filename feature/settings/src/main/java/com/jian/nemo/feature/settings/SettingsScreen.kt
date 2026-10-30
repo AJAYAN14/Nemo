@@ -52,7 +52,7 @@ fun SettingsScreen(
     onNavigateToAiSettings: () -> Unit,
     onNavigateToCloudBackupHistory: () -> Unit,
     onNavigateToLiquidLab: () -> Unit,
-    onNavigateToIconLab: () -> Unit = {},
+    onNavigateToAbout: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -147,7 +147,7 @@ fun SettingsScreen(
 
                 // 账号与同步
                 item {
-                    SettingsSectionTitle("账号")
+                    SettingsSectionTitle("账号", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         if (isLoggedIn && currentUser != null) {
                             // 用户信息 (Custom Squircle Implementation for Avatar)
@@ -201,7 +201,7 @@ fun SettingsScreen(
 
                 // 外观
                 item {
-                    SettingsSectionTitle("外观") // 使用分组标题
+                    SettingsSectionTitle("外观", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)) // 使用分组标题
                     PremiumCard {
                         // 主题外观
                         SquircleSettingItem(
@@ -224,7 +224,7 @@ fun SettingsScreen(
 
                 // 学习
                 item {
-                    SettingsSectionTitle("学习")
+                    SettingsSectionTitle("学习", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.TrackChanges,
@@ -368,7 +368,7 @@ fun SettingsScreen(
 
                 // 语音
                 item {
-                    SettingsSectionTitle("语音")
+                    SettingsSectionTitle("语音", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.AutoMirrored.Rounded.VolumeUp,
@@ -386,7 +386,7 @@ fun SettingsScreen(
 
                 // 数据
                 item {
-                    SettingsSectionTitle("数据")
+                    SettingsSectionTitle("数据", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.FileDownload,
@@ -430,20 +430,10 @@ fun SettingsScreen(
 
                 // 实验室
                 val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
-                item {
-                    SettingsSectionTitle("实验室")
-                    PremiumCard {
-                        SquircleSettingItem(
-                            icon = Icons.Rounded.Palette,
-                            plumpIcon = PlumpIcon.IconLab,
-                            iconColor = NemoPrimary,
-                            plumpColor = IsoluminantPalette.GlazeMint,
-                            title = "图标设计实验室",
-                            subtitle = "4列方格对比与真实列表项渲染",
-                            onClick = onNavigateToIconLab,
-                            showDivider = isLabAccessible
-                        )
-                        if (isLabAccessible) {
+                if (isLabAccessible) {
+                    item {
+                        SettingsSectionTitle("实验室", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                        PremiumCard {
                             SquircleSettingItem(
                                 icon = Icons.Rounded.Science,
                                 plumpIcon = PlumpIcon.LiquidLab,
@@ -455,87 +445,34 @@ fun SettingsScreen(
                                 showDivider = false
                             )
                         }
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 // 关于
                 item {
-                    SettingsSectionTitle("关于")
+                    SettingsSectionTitle("关于", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         val context = androidx.compose.ui.platform.LocalContext.current
                         val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
 
                         SquircleSettingItem(
-                            icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
-                            plumpIcon = PlumpIcon.GitHub,
+                            icon = Icons.Rounded.Info,
+                            plumpIcon = PlumpIcon.LiquidLab,
                             iconColor = NemoPrimary,
                             plumpColor = IsoluminantPalette.OceanBlue,
-                            title = "GitHub 项目",
-                            subtitle = "访问开源代码仓库",
-                            onClick = {
-                                val githubUrl = "https://github.com/AJAYAN14/Nemo"
-                                // 1. 复制项目地址到系统剪贴板
-                                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("GitHub URL", githubUrl)
-                                clipboard?.setPrimaryClip(clip)
-
-                                // 2. 解析系统默认浏览器（避免被 GitHub 客户端拦截）
-                                try {
-                                    val browserProbeIntent = android.content.Intent(
-                                        android.content.Intent.ACTION_VIEW,
-                                        android.net.Uri.parse("https://")
-                                    )
-                                    val resolveInfo = context.packageManager.resolveActivity(
-                                        browserProbeIntent,
-                                        android.content.pm.PackageManager.MATCH_DEFAULT_ONLY
-                                    )
-                                    val defaultBrowserPackage = resolveInfo?.activityInfo?.packageName
-
-                                    val targetIntent = android.content.Intent(
-                                        android.content.Intent.ACTION_VIEW,
-                                        android.net.Uri.parse(githubUrl)
-                                    ).apply {
-                                        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        if (!defaultBrowserPackage.isNullOrBlank() && defaultBrowserPackage != "android") {
-                                            setPackage(defaultBrowserPackage)
-                                        }
-                                    }
-                                    context.startActivity(targetIntent)
-                                    snackbarMessage = "已复制项目地址并打开浏览器"
-                                    snackbarType = NemoSnackbarType.SUCCESS
-                                    snackbarVisible = true
-                                } catch (_: Exception) {
-                                    try {
-                                        val fallbackIntent = android.content.Intent(
-                                            android.content.Intent.ACTION_VIEW,
-                                            android.net.Uri.parse(githubUrl)
-                                        ).apply {
-                                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        }
-                                        context.startActivity(fallbackIntent)
-                                        snackbarMessage = "已复制项目地址并打开浏览器"
-                                        snackbarType = NemoSnackbarType.SUCCESS
-                                        snackbarVisible = true
-                                    } catch (_: Exception) {
-                                        snackbarMessage = "已复制项目地址，无法打开系统浏览器"
-                                        snackbarType = NemoSnackbarType.ERROR
-                                        snackbarVisible = true
-                                    }
-                                }
-                            },
-                            showDivider = true
-                        )
-
-                        SquircleSettingItem(
-                            icon = Icons.Rounded.SystemUpdate,
-                            plumpIcon = PlumpIcon.CheckUpdate,
-                            iconColor = NemoSecondary,
-                            plumpColor = IsoluminantPalette.OceanBlue,
-                            title = "检查更新",
-                            subtitle = "获取最新版本",
-                            onClick = onCheckUpdate,
-                            showDivider = false
+                            title = "关于 Nemo",
+                            subtitle = "版本 v$versionName • 更新检测与更新日志",
+                            onClick = onNavigateToAbout,
+                            showDivider = false,
+                            trailing = {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
                         )
                     }
                     Spacer(modifier = Modifier.height(24.dp))

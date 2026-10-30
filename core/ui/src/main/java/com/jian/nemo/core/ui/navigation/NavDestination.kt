@@ -29,7 +29,7 @@ object NavDestination {
     const val LISTENING_COMPREHENSION = "listening_comprehension" // 听力理解
     const val WORD_CLOZE = "word_cloze" // 单词挖空测试
     const val LIQUID_GLASS_LAB = "liquid_glass_lab" // 液态玻璃实验室
-    const val ICON_LAB = "icon_lab"                 // 图标设计实验室
+    const val ABOUT = "about" // 关于 Nemo 页面
 
 
 

@@ -10,7 +10,6 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class NemoApplication : Application() {
 
-
     override fun onCreate() {
         super.onCreate()
         // Supabase 通过 Hilt (SupabaseModule) 进行初始化；此处无需进行 SDK 初始化。

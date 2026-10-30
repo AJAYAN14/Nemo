@@ -210,9 +210,13 @@ fun NemoApp(
         1
     }
 
-    // 检查应用更新
+    // 检查应用更新 (遵循关于页面的“启动时检测更新”开关配置)
     LaunchedEffect(Unit) {
-        viewModel.checkUpdate(currentVersionCode)
+        val prefs = context.getSharedPreferences("nemo_app_prefs", android.content.Context.MODE_PRIVATE)
+        val checkOnStartup = prefs.getBoolean("check_update_on_startup", true)
+        if (checkOnStartup) {
+            viewModel.checkUpdate(currentVersionCode)
+        }
     }
 
     val navController = rememberNavController()
