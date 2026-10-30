@@ -18,5 +18,4 @@
    - （可选）替换各模块内私有重复声明。
 
 ## 发现的边界情况与偏离记录 (Deviations & Discovered Edge Cases)
-- 尺寸适配：默认尺寸 22.dp (图标 14.dp)，阅读理解选项区使用紧凑尺寸 18.dp (图标 12.dp)。
-- 颜色适配：在深浅色模式下，未选中状态边框使用语义化 `onSurfaceVariant.copy(alpha = 0.4f)`。
+- 视觉设计演进：用户进一步明确按 iOS 原生规范实现单选列表。根据 iOS Human Interface Guidelines，设置等单选列表中采用“右侧纯蓝色对勾，未选中留白”的最简视觉设计，去除外层灰色空心圆圈噪音，同时与项目中 `SettingsComponents.kt` 内的原生单选列表规范全面对齐。实心圆底白勾组件 `NemoRoundCheckbox` 保留在 `:core:ui` 供批量编辑/多选场景复用。
