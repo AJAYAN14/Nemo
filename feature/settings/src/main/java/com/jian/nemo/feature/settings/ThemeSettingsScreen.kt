@@ -951,7 +951,7 @@ private fun AppIconOption(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer(scaleX = 1.7f, scaleY = 1.7f)
+                        .graphicsLayer(scaleX = 1.5f, scaleY = 1.5f)
                 )
             }
         }
