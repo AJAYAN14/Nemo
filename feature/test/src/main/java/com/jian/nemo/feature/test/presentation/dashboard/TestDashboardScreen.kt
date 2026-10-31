@@ -102,7 +102,7 @@ fun TestDashboardScreen(
 
             StatsPager(uiState = uiState)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SectionTitle("复习与回顾")
             Row(
@@ -141,7 +141,7 @@ fun TestDashboardScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             SectionTitle("基础练习")
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -218,7 +218,7 @@ fun TestDashboardScreen(
             }
 
             if (isAbilityWorkshopEnabled) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 SectionTitle("其他测试")
                 DashboardBanner(

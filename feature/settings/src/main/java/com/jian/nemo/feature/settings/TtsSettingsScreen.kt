@@ -88,7 +88,10 @@ fun TtsSettingsScreen(
                 // =====================
                 // 语音来源
                 // =====================
-                SettingsSectionTitle("语音来源")
+                SettingsSectionTitle(
+                    text = "语音来源",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
 
                 PremiumCard {
                     Column {
@@ -120,7 +123,10 @@ fun TtsSettingsScreen(
                 // =====================
                 // 语速调节
                 // =====================
-                SettingsSectionTitle("语速调节")
+                SettingsSectionTitle(
+                    text = "语速调节",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
 
                 PremiumCard {
                     FlatSliderSettingItem(
@@ -145,7 +151,10 @@ fun TtsSettingsScreen(
                 // =====================
                 // 音调调节
                 // =====================
-                SettingsSectionTitle("音调调节")
+                SettingsSectionTitle(
+                    text = "音调调节",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
 
                 PremiumCard {
                     FlatSliderSettingItem(
@@ -170,7 +179,10 @@ fun TtsSettingsScreen(
             // =====================
             // 试听 & 重置
             // =====================
-            SettingsSectionTitle("试听 & 重置")
+            SettingsSectionTitle(
+                text = "试听 & 重置",
+                modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+            )
 
             PremiumCard {
                 Column(

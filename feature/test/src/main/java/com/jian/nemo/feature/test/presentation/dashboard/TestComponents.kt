@@ -225,11 +225,15 @@ fun SquircleListItem(
 }
 
 @Composable
-fun SectionTitle(text: String) {
+fun SectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+        modifier = modifier
     )
 }

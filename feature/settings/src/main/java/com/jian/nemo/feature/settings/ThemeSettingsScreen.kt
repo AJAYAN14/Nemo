@@ -126,7 +126,10 @@ fun ThemeSettingsScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SettingsSectionTitle(text = "显示模式")
+                SettingsSectionTitle(
+                    text = "显示模式",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
                 PremiumCard {
                     Column {
                         ThemeSelectionGrid(
@@ -205,7 +208,10 @@ fun ThemeSettingsScreen(
                 ) {
                     Column {
                         Spacer(modifier = Modifier.height(20.dp))
-                        SettingsSectionTitle(text = "自动切换模式")
+                        SettingsSectionTitle(
+                            text = "自动切换模式",
+                            modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                        )
                         PremiumCard {
                             StrategyOptionItem(
                                 title = "跟随系统",
@@ -229,7 +235,10 @@ fun ThemeSettingsScreen(
                         ) {
                             Column {
                                 Spacer(modifier = Modifier.height(20.dp))
-                                SettingsSectionTitle(text = "深色模式定时")
+                                SettingsSectionTitle(
+                                    text = "深色模式定时",
+                                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                                )
                                 PremiumCard {
                                     SquircleSettingItem(
                                         icon = Icons.Rounded.DarkMode,
@@ -274,7 +283,10 @@ fun ThemeSettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                SettingsSectionTitle(text = "个性化")
+                SettingsSectionTitle(
+                    text = "个性化",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
                 PremiumCard {
                     SquircleSettingItem(
                         icon = Icons.Rounded.Palette,
@@ -303,7 +315,10 @@ fun ThemeSettingsScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                SettingsSectionTitle(text = "桌面图标")
+                SettingsSectionTitle(
+                    text = "桌面图标",
+                    modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+                )
                 PremiumCard {
                     AppIconSelectionGrid(
                         selectedStyle = uiState.appIconStyle,

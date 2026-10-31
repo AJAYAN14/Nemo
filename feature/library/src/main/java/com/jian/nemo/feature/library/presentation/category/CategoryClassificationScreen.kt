@@ -110,11 +110,10 @@ fun CategoryClassificationScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
             // 1. 基础词性类
             SectionHeader(title = "基础词性类", delay = 0)
-            Spacer(modifier = Modifier.height(16.dp))
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
@@ -171,11 +170,10 @@ fun CategoryClassificationScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 2. 构词·句法功能类
             SectionHeader(title = "構词·句法功能类", delay = 100)
-            Spacer(modifier = Modifier.height(16.dp))
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
@@ -232,11 +230,10 @@ fun CategoryClassificationScreen(
                 }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 3. 构词·表达用法类
             SectionHeader(title = "構词·表达用法类", delay = 200)
-            Spacer(modifier = Modifier.height(16.dp))
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
@@ -300,7 +297,11 @@ fun CategoryClassificationScreen(
 }
 
 @Composable
-private fun SectionHeader(title: String, delay: Int = 0) {
+private fun SectionHeader(
+    title: String,
+    delay: Int = 0,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
@@ -308,18 +309,14 @@ private fun SectionHeader(title: String, delay: Int = 0) {
         launch { alpha.animateTo(1f, tween(500)) }
     }
 
-    // Style matches LearningCalendarSectionTitle
     Text(
         text = title,
-        style = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.5.sp
-        ),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .alpha(alpha.value)
-            .padding(horizontal = 4.dp, vertical = 4.dp)
     )
 }
 

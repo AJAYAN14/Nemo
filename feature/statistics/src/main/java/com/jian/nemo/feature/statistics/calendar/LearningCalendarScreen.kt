@@ -141,9 +141,7 @@ fun LearningCalendarScreen(
             // 1. 核心活动三环卡片 (周模式 ↔ 月模式联动)
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     AnimatedContent(
                         targetState = isMonthMode,
@@ -179,13 +177,16 @@ fun LearningCalendarScreen(
 }
 
 @Composable
-fun CalendarSectionTitle(text: String) {
+fun CalendarSectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+        modifier = modifier
     )
 }
 

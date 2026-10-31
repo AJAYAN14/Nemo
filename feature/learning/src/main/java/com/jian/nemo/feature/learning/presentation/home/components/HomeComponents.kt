@@ -1,4 +1,4 @@
-﻿package com.jian.nemo.feature.learning.presentation.home.components
+package com.jian.nemo.feature.learning.presentation.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -191,15 +191,18 @@ fun HomeSquircleListItem(
 }
 
 /**
- * 鍒嗙粍鏍囬 (V2.2: Solid Style)
+ * 分组标题 (V2.2: Solid Style)
  */
 @Composable
-fun HomeSectionTitle(text: String) {
+fun HomeSectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp)
+        modifier = modifier
     )
 }

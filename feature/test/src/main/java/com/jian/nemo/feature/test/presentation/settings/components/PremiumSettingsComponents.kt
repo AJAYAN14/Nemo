@@ -20,15 +20,17 @@ import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
 @Composable
-fun SectionTitle(text: String) {
+fun SectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium.copy(
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 0.5.sp
-        ),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
+
         color = MaterialTheme.colorScheme.onSurfaceVariant, // Standard Grey Title
-        modifier = Modifier.padding(start = 4.dp, bottom = 12.dp, top = 8.dp) // Aligned padding
+        modifier = modifier
     )
 }
 
@@ -120,3 +122,4 @@ fun PremiumSwitchRow(
         )
     }
 }
+

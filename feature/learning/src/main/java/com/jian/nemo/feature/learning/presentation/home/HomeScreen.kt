@@ -671,16 +671,8 @@ fun HomeScreen(
             // 3. 学习资源区块 (分组处理以确保间距逻辑对齐进度页)
             item {
                 Column {
-                    Text(
-                        text = stringResource(R.string.title_learning_resources),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = textSub,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(top = 12.dp, bottom = 12.dp) // Gap Above = 20 (spacedBy) + 12 = 32 | Gap Below = 12
+                    HomeSectionTitle(
+                        text = stringResource(R.string.title_learning_resources)
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

@@ -225,13 +225,16 @@ private val PlumpAvatarColors = listOf(
 )
 
 @Composable
-fun StatisticsSectionTitle(text: String) {
+fun StatisticsSectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+        modifier = modifier
     )
 }
 
