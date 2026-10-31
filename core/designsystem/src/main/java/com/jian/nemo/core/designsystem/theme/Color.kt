@@ -477,6 +477,10 @@ object BentoColors {
     val IconBgGreen = Color(0xFFECFDF5)
     val IconBgBlue = Color(0xFFEFF6FF)
     val IconBgPurple = Color(0xFFF5F3FF)
+
+    // 分段控件深色表面
+    val SegmentTrackDark = Color(0xFF121214)
+    val SegmentThumbDark = Color(0xFF55555A)
 }
 
 

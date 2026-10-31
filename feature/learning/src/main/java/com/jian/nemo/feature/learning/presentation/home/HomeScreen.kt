@@ -283,7 +283,7 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val badgeBgColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
+                            val badgeBgColor = if (isDark) BentoColors.SegmentTrackDark else MaterialTheme.colorScheme.surfaceVariant
                             val textColor = MaterialTheme.colorScheme.onSurface
                             
                             StreakBadgeWithEasterEgg(
@@ -293,7 +293,10 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             // 模式切换
-                            val modeOptions = listOf("单词", "语法")
+                            val modeOptions = listOf(
+                                stringResource(R.string.mode_word),
+                                stringResource(R.string.mode_grammar)
+                            )
                             val modeIndex = if (uiState.learningMode == LearningMode.Word) 0 else 1
                             BentoAnimatedSegmentedControl(
                                 options = modeOptions,
@@ -1070,15 +1073,15 @@ private fun BentoAnimatedSegmentedControl(
     isDark: Boolean,
     onOptionSelected: (Int) -> Unit
 ) {
-    val dividerColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else BentoColors.BgBase
-    val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else BentoColors.Surface
+    val trackColor = if (isDark) BentoColors.SegmentTrackDark else BentoColors.BgBase
+    val pillColor = if (isDark) BentoColors.SegmentThumbDark else BentoColors.Surface
 
     Surface(
         shape = CircleShape,
-        color = dividerColor
+        color = trackColor
     ) {
         BoxWithConstraints(
-            modifier = Modifier.padding(4.dp).height(30.dp)
+            modifier = Modifier.padding(3.dp).height(32.dp)
         ) {
             val optionWidth = 60.dp
 
@@ -1095,8 +1098,13 @@ private fun BentoAnimatedSegmentedControl(
                     .offset(x = indicatorOffset)
                     .width(optionWidth)
                     .fillMaxHeight()
+                    .shadow(
+                        elevation = if (isDark) 2.dp else 1.dp,
+                        shape = CircleShape,
+                        clip = false
+                    )
                     .clip(CircleShape)
-                    .background(surfaceColor)
+                    .background(pillColor)
             )
 
             Row {
@@ -1125,7 +1133,7 @@ private fun BentoAnimatedSegmentedControl(
                             text = text,
                             color = textColor,
                             style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                         )
                     }
                 }
