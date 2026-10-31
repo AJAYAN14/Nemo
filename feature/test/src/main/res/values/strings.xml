@@ -80,4 +80,47 @@
     <string name="test_cloze_guide_ime_compat_title">输入法兼容</string>
     <string name="test_cloze_guide_ime_compat_method">支持多种拼写</string>
     <string name="test_cloze_guide_ime_compat_example">し(si/shi), つ(tu/tsu), ふ(hu/fu)</string>
+
+    <!-- 测验通用与各模式文案 -->
+    <string name="test_common_btn_back">返回</string>
+    <string name="test_common_btn_continue_test">继续测试</string>
+    <string name="test_common_label_your_answer">你的答案</string>
+    <string name="test_common_title_data_overview">数据概况</string>
+    <string name="test_common_btn_confirm">确定</string>
+    <string name="test_common_btn_preparing">准备中...</string>
+    <string name="test_common_btn_start_test">开始测试</string>
+    <string name="test_common_btn_prev_question">上一题</string>
+    <string name="test_common_label_accuracy">正确率</string>
+    <string name="test_common_btn_exit_workshop">离开工坊</string>
+    <string name="test_common_btn_retry">重试</string>
+
+    <!-- 听力挑战 (ListeningComprehensionScreen) -->
+    <string name="test_listening_empty_history">暂无挑战记录</string>
+    <string name="test_listening_subtitle">本地听辨强化训练</string>
+    <string name="test_listening_title_select_level">选择听力挑战等级</string>
+    <string name="test_listening_desc_select_level">声波频段已锁定，系统将基于本地词库出题</string>
+    <string name="test_listening_title_generate_failed">出题失败</string>
+    <string name="test_listening_speed_slow">0.75x 慢速</string>
+    <string name="test_listening_speed_standard">1.0x 标准</string>
+    <string name="test_listening_speed_fast">1.25x 快速</string>
+    <string name="test_listening_title_completed">听力练习完成！</string>
+    <string name="test_listening_format_result">本次通关：答对 %1$d 题 / 共 %2$d 题</string>
+    <string name="test_listening_btn_retry_new_words">换一批单词重新听</string>
+    <string name="test_listening_btn_back_to_levels">返回等级选择</string>
+
+    <!-- 动词活用 (VerbConjugationScreen) -->
+    <string name="test_verb_empty_history">暂无记录</string>
+    <string name="test_verb_subtitle">智能动词活用训练</string>
+    <string name="test_verb_title_no_ai">未连接 AI 大脑</string>
+    <string name="test_verb_btn_back_to_config">返回去配置</string>
+    <string name="test_verb_title_select_level">选择挑战难度</string>
+    <string name="test_verb_desc_select_level">AI 将根据您的本地词库出题</string>
+    <string name="test_verb_btn_abort_generate">放弃生成</string>
+    <string name="test_verb_btn_regenerate">重新生成</string>
+    <string name="test_verb_title_generate_failed">出题失败</string>
+    <string name="test_verb_badge_text">文</string>
+    <string name="test_verb_title_completed">练习完成！</string>
+    <string name="test_verb_format_result">本次挑战：答对 %1$d 题 / 共 %2$d 题</string>
+    <string name="test_verb_btn_new_batch">换一批新题</string>
+    <string name="test_verb_btn_back_to_levels">返回难度选择</string>
 </resources>

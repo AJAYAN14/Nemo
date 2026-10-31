@@ -207,4 +207,17 @@
     <string name="cooldown_cooling_status">正在冷却</string>
     <string name="cooldown_btn_review_ahead">提前复习</string>
     <string name="cooldown_btn_take_rest">稍后复习，去休息片刻</string>
+
+    <!-- AI 工坊与打字练习 -->
+    <string name="workshop_btn_start_practice">开始练习</string>
+    <string name="workshop_btn_submit_eval">提交 AI 评分</string>
+    <string name="workshop_btn_next_question">下一题</string>
+    <string name="typing_dialog_label_kana">假名</string>
+    <string name="typing_dialog_label_kanji">汉字</string>
+
+    <!-- AI 阅读界面操作文案 -->
+    <string name="ai_reading_btn_confirm">确定</string>
+    <string name="ai_reading_btn_back_to_config">返回配置</string>
+    <string name="ai_reading_btn_switch_article">换一篇短文</string>
+    <string name="ai_reading_btn_regenerate">重新生成</string>
 </resources>

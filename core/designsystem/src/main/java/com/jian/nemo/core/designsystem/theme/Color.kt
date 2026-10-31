@@ -3,72 +3,6 @@ package com.jian.nemo.core.designsystem.theme
 import androidx.compose.ui.graphics.Color
 
 // ============================================================================
-// Material 3 基础色板 (Tokens)
-// ============================================================================
-
-// Light Theme Colors
-val PrimaryLight = Color(0xFF6750A4)
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFEADDFF)
-val OnPrimaryContainerLight = Color(0xFF21005D)
-
-val SecondaryLight = Color(0xFF625B71)
-val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFE8DEF8)
-val OnSecondaryContainerLight = Color(0xFF1D192B)
-
-val TertiaryLight = Color(0xFF7D5260)
-val OnTertiaryLight = Color(0xFFFFFFFF)
-val TertiaryContainerLight = Color(0xFFFFD8E4)
-val OnTertiaryContainerLight = Color(0xFF31111D)
-
-val ErrorLight = Color(0xFFB3261E)
-val OnErrorLight = Color(0xFFFFFFFF)
-val ErrorContainerLight = Color(0xFFF9DEDC)
-val OnErrorContainerLight = Color(0xFF410E0B)
-
-val BackgroundLight = Color(0xFFFFFBFE)
-val OnBackgroundLight = Color(0xFF1C1B1F)
-val SurfaceLight = Color(0xFFFFFBFE)
-val OnSurfaceLight = Color(0xFF1C1B1F)
-val SurfaceVariantLight = Color(0xFFE7E0EC)
-val OnSurfaceVariantLight = Color(0xFF49454F)
-
-val OutlineLight = Color(0xFF79747E)
-val OutlineVariantLight = Color(0xFFCAC4D0)
-
-// Dark Theme Colors
-val PrimaryDark = Color(0xFFD0BCFF)
-val OnPrimaryDark = Color(0xFF381E72)
-val PrimaryContainerDark = Color(0xFF4F378B)
-val OnPrimaryContainerDark = Color(0xFFEADDFF)
-
-val SecondaryDark = Color(0xFFCCC2DC)
-val OnSecondaryDark = Color(0xFF332D41)
-val SecondaryContainerDark = Color(0xFF4A4458)
-val OnSecondaryContainerDark = Color(0xFFE8DEF8)
-
-val TertiaryDark = Color(0xFFEFB8C8)
-val OnTertiaryDark = Color(0xFF492532)
-val TertiaryContainerDark = Color(0xFF633B48)
-val OnTertiaryContainerDark = Color(0xFFFFD8E4)
-
-val ErrorDark = Color(0xFFF2B8B5)
-val OnErrorDark = Color(0xFF601410)
-val ErrorContainerDark = Color(0xFF8C1D18)
-val OnErrorContainerDark = Color(0xFFF9DEDC)
-
-val BackgroundDark = Color(0xFF1C1B1F)
-val OnBackgroundDark = Color(0xFFE6E1E5)
-val SurfaceDark = Color(0xFF1C1B1F)
-val OnSurfaceDark = Color(0xFFE6E1E5)
-val SurfaceVariantDark = Color(0xFF49454F)
-val OnSurfaceVariantDark = Color(0xFFCAC4D0)
-
-val OutlineDark = Color(0xFF938F99)
-val OutlineVariantDark = Color(0xFF49454F)
-
-// ============================================================================
 // Nemo 品牌语义色彩 (Semantic Colors)
 // ============================================================================
 
@@ -84,6 +18,44 @@ val NemoWarning = Color(0xFFFF9500)          // 警告/提示橙 (规范橙)
 val NemoWarningDark = Color(0xFFFF9F0A)      // 警告/提示橙 (深色琥珀橙)
 val NemoGold = Color(0xFFFFD700)             // 金色/高亮色
 val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
+val NemoPink = Color(0xFFFF2D55)             // 规范粉红
+val NemoNeutralGray = Color(0xFF8E8E93)      // 中性灰基准 (Dynamic Color Spec 规范)
+
+// ColorScheme 容器与对应前景配色 (Light)
+val NemoPrimaryContainerLight = Color(0xFFE5F1FF)
+val NemoOnPrimaryContainerLight = Color(0xFF004CB3)
+val NemoSecondaryContainerLight = Color(0xFFDDF5E3)
+val NemoOnSecondaryContainerLight = Color(0xFF0F5A24)
+val NemoOnTertiaryContainerLight = Color(0xFF3C3C43)
+val NemoErrorContainerLight = Color(0xFFFFE5E5)
+val NemoOnErrorContainerLight = Color(0xFF991B1B)
+val NemoSurfaceContainerLowLight = Color(0xFFF7F7FA)
+
+// ColorScheme 容器与对应前景配色 (Dark)
+val NemoPrimaryContainerDark = Color(0xFF00408A)
+val NemoOnPrimaryContainerDark = Color(0xFFB3D9FF)
+val NemoOnSecondaryDark = Color(0xFF003912)
+val NemoSecondaryContainerDark = Color(0xFF135324)
+val NemoOnSecondaryContainerDark = Color(0xFF82F79E)
+val NemoOnTertiaryContainerDark = Color(0xFFEBEBF5)
+val NemoOnErrorDark = Color(0xFF4A0002)
+val NemoErrorContainerDark = Color(0xFF801015)
+val NemoOnErrorContainerDark = Color(0xFFFFD4D4)
+val NemoSurfaceContainerLowDark = Color(0xFF141416)
+val NemoBottomBarContainerDark = Color(0xFF121212)
+val NemoBottomBarContainerLight = Color(0xFFFAFAFA)
+
+// 学习稳定性与热力图分桶配色 (统一收纳)
+const val StabilityEarlyHex = "#EF4444"
+const val StabilityDevelopingHex = "#3B82F6"
+const val StabilityMatureHex = "#22C55E"
+const val StabilityExpertHex = "#8B5CF6"
+val StabilityEarly = Color(0xFFEF4444)
+val StabilityDeveloping = Color(0xFF3B82F6)
+val StabilityMature = Color(0xFF22C55E)
+val StabilityExpert = Color(0xFF8B5CF6)
+val HeatmapSubtleTextDark = Color(0xFF8B949E)
+val HeatmapSubtleTextLight = Color(0xFF64748B)
 
 
 // 测试结算页原始配色（集中管理）

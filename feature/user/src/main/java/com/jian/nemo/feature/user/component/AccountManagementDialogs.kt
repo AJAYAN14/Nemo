@@ -12,8 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.user.R
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.NemoDialog
@@ -129,7 +131,7 @@ fun AccountResetPasswordDialog(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("邮箱地址", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_email), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
@@ -148,7 +150,7 @@ fun AccountResetPasswordDialog(
                     OutlinedTextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = { Text("验证码", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_otp), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
@@ -167,7 +169,7 @@ fun AccountResetPasswordDialog(
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
-                        label = { Text("新密码", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_new_password), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
@@ -259,7 +261,7 @@ fun AccountUpdateUsernameDialog(
                 OutlinedTextField(
                     value = newUsername,
                     onValueChange = { if (it.length <= 16) newUsername = it },
-                    label = { Text("新用户名（最多16字）", fontSize = 14.sp) },
+                    label = { Text(stringResource(R.string.user_dialog_label_new_username), fontSize = 14.sp) },
                     supportingText = {
                         Text(
                             text = "${newUsername.length}/16",
@@ -369,7 +371,7 @@ fun AccountUpdateEmailDialog(
                     OutlinedTextField(
                         value = newEmail,
                         onValueChange = { newEmail = it },
-                        label = { Text("新邮箱", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_new_email), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
@@ -388,7 +390,7 @@ fun AccountUpdateEmailDialog(
                     OutlinedTextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = { Text("验证码", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_otp), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
@@ -477,7 +479,7 @@ fun DeleteAccountDialog(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("验证登录密码", fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_verify_password), fontSize = 14.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,

@@ -14,9 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 
 // ==============================================================================
-// 100% 原版 WebGL2 假名极光天幕引擎（1:1 像素级复刻 React Bits 官方着色器管线）
+// WebGL2 假名极光天幕引擎（包含 4 重 RenderPass 着色器管线）
 // 包含 4 重 RenderPass（FIELD, HALO 1/4降采样, BLUR 双向高斯模糊, COMPOSITE 物理加法发光）
-// 胶片颗粒噪点、手势滑动波纹与触控交互，与原版 demo HTML 绝对 100% 毫无二致
+// 包含胶片颗粒噪点、手势滑动波纹与触控交互
 // ==============================================================================
 
 private const val KANA_WAVE_HTML = """<!DOCTYPE html>
@@ -742,8 +742,8 @@ private const val KANA_WAVE_HTML = """<!DOCTYPE html>
 
 /**
  * 顶部假名流动天幕背景
- * 100% 运行原版 WebGL2 原生渲染引擎（包含 4 重 RenderPass、双向高斯模糊辉光与胶片颗粒）
- * 达成绝对 100.00% 像素级无缝复刻
+ * 基于 WebGL2 渲染引擎（包含 4 重 RenderPass、双向高斯模糊辉光与胶片颗粒）
+
  */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable

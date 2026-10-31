@@ -1550,7 +1550,7 @@ class SettingsRepositoryImpl @Inject constructor(
             grammarDailyGoal = prefs[PreferencesKeys.GRAMMAR_DAILY_GOAL] ?: 10,
             isUnmasteredOnlyMode = false,
 
-            isDynamicColorEnabled = prefs[PreferencesKeys.IS_DYNAMIC_COLOR_ENABLED] ?: true,
+            isDynamicColorEnabled = prefs[PreferencesKeys.IS_DYNAMIC_COLOR_ENABLED] ?: false,
             learningDayResetHour = prefs[PreferencesKeys.LEARNING_DAY_RESET_HOUR] ?: 4,
 
             testQuestionCount = prefs[PreferencesKeys.TEST_QUESTION_COUNT] ?: 10,

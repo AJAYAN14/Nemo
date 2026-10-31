@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.ui.component.AvatarImage
@@ -147,7 +149,7 @@ fun SettingsScreen(
 
                 // 账号与同步
                 item {
-                    SettingsSectionTitle("账号", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_account), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         if (isLoggedIn && currentUser != null) {
                             // 用户信息 (Custom Squircle Implementation for Avatar)
@@ -201,7 +203,7 @@ fun SettingsScreen(
 
                 // 外观
                 item {
-                    SettingsSectionTitle("外观", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)) // 使用分组标题
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_appearance), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         // 主题外观
                         SquircleSettingItem(
@@ -224,7 +226,7 @@ fun SettingsScreen(
 
                 // 学习
                 item {
-                    SettingsSectionTitle("学习", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_learning), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.TrackChanges,
@@ -368,7 +370,7 @@ fun SettingsScreen(
 
                 // 语音
                 item {
-                    SettingsSectionTitle("语音", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_voice), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.AutoMirrored.Rounded.VolumeUp,
@@ -386,7 +388,7 @@ fun SettingsScreen(
 
                 // 数据
                 item {
-                    SettingsSectionTitle("数据", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_data), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.FileDownload,
@@ -432,7 +434,7 @@ fun SettingsScreen(
                 val isLabAccessible = currentUser?.email?.equals("a.jian0629@gmail.com", ignoreCase = true) == true
                 if (isLabAccessible) {
                     item {
-                        SettingsSectionTitle("实验室", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                        SettingsSectionTitle(stringResource(R.string.settings_section_title_lab), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                         PremiumCard {
                             SquircleSettingItem(
                                 icon = Icons.Rounded.Science,
@@ -451,7 +453,7 @@ fun SettingsScreen(
 
                 // 关于
                 item {
-                    SettingsSectionTitle("关于", modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
+                    SettingsSectionTitle(stringResource(R.string.settings_section_title_about), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
                         val context = androidx.compose.ui.platform.LocalContext.current
                         val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }

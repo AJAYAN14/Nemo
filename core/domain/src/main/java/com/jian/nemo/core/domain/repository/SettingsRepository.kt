@@ -156,8 +156,7 @@ interface SettingsRepository {
     suspend fun setDarkModeEndTime(time: String)
 
     /**
-     * 动态颜色开关Flow
-     * 默认值: true
+     * 动态颜色开关Flow (设计规范红线：彻底禁用，恒为 false)
      */
     val isDynamicColorEnabledFlow: Flow<Boolean>
 

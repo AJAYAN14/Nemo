@@ -1,0 +1,5 @@
+<resources>
+    <!-- 词库展示文本 -->
+    <string name="library_pos_title_screen">词性分类</string>
+    <string name="library_expression_placeholder_search">搜索表达、假名、释义...</string>
+</resources>

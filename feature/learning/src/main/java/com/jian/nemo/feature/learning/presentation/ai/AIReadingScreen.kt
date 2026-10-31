@@ -274,7 +274,7 @@ fun AIReadingScreen(
             Snackbar(
                 action = {
                     TextButton(onClick = { viewModel.onEvent(AIReadingEvent.ClearError) }) {
-                        Text("确定", color = colorScheme.inversePrimary)
+                        Text(stringResource(R.string.ai_reading_btn_confirm), color = colorScheme.inversePrimary)
                     }
                 },
                 modifier = Modifier
@@ -1761,7 +1761,7 @@ private fun ArticleContentScreen(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, colorScheme.primary)
                         ) {
-                            Text("返回配置", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ai_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -1772,7 +1772,7 @@ private fun ArticleContentScreen(
                             shape = RoundedCornerShape(16.dp),
                             elevation = null
                         ) {
-                            Text("换一篇短文", fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ai_reading_btn_switch_article), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -2157,7 +2157,7 @@ private fun ErrorScreen(
                     shape = RoundedCornerShape(14.dp),
                     border = BorderStroke(1.dp, colorScheme.primary)
                 ) {
-                    Text("返回配置", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.ai_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -2168,7 +2168,7 @@ private fun ErrorScreen(
                     shape = RoundedCornerShape(14.dp),
                     elevation = null
                 ) {
-                    Text("重新生成", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.ai_reading_btn_regenerate), fontWeight = FontWeight.Bold)
                 }
             }
         }

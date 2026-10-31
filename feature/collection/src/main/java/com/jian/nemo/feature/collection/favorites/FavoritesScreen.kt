@@ -49,9 +49,6 @@ import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 
-// 临时本地定义 (对应 Color.kt 中的值)，保证编译通过且视觉一致
-// private val NemoSecondary = Color(0xFF4CAF50)  // 绿色
-// private val NemoOrange = Color(0xFFFF9500)     // 橙色
 
 /**
  * 我的收藏界面 - UI/UX Pro Max 风格

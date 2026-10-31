@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 底部导航栏 Tab 标题 -->
+    <string name="core_bottombar_tab_learning">学习</string>
+    <string name="core_bottombar_tab_progress">进度</string>
+    <string name="core_bottombar_tab_test">测试</string>
+    <string name="core_bottombar_tab_settings">个人</string>
+
+    <!-- 通用操作与无障碍描述 -->
+    <string name="core_common_btn_back">返回</string>
+    <string name="core_common_btn_confirm">确定</string>
+    <string name="core_common_btn_cancel">取消</string>
+    <string name="core_common_btn_close">关闭</string>
+    <string name="core_common_btn_scroll_to_top">返回顶部</string>
+</resources>

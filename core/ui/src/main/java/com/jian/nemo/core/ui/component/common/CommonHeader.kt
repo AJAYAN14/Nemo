@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.kyant.backdrop.Backdrop
@@ -79,7 +81,7 @@ fun CommonHeader(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(R.string.core_common_btn_back),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(backButtonSize * (30f / 48f))
                         )

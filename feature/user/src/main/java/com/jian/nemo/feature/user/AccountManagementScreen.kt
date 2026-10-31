@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -117,7 +118,7 @@ fun AccountManagementScreen(
             ) {
             // 1. Common Header
             CommonHeader(
-                title = "账户管理",
+                title = stringResource(R.string.user_account_title_screen),
                 onBack = onNavigateBack,
                 backgroundColor = backgroundColor
             )
@@ -143,13 +144,13 @@ fun AccountManagementScreen(
                     .padding(horizontal = 16.dp)
             ) {
                 // Group 1: Profile Settings
-                PremiumSettingsGroup(title = "个人信息", cardBg = cardBg) {
+                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_profile_section), cardBg = cardBg) {
                     PremiumSettingsItem(
                         icon = Icons.Rounded.Badge,
                         iconTint = IosColors.Blue,
                         plumpIcon = PlumpIcon.UserPen,
                         plumpColor = IsoluminantPalette.SkyIndigo,
-                        title = "修改用户名",
+                        title = stringResource(R.string.user_account_btn_change_username),
                         onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
                     )
                     if (uiState.user?.isOnlyGoogleIdentity != true) {
@@ -159,7 +160,7 @@ fun AccountManagementScreen(
                             iconTint = IosColors.Green,
                             plumpIcon = PlumpIcon.Mail,
                             plumpColor = IsoluminantPalette.EmeraldGreen,
-                            title = "修改邮箱",
+                            title = stringResource(R.string.user_account_btn_change_email),
                             onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
                         )
                     }
@@ -168,13 +169,13 @@ fun AccountManagementScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Group 2: CheckIn & Privacy (Security)
-                PremiumSettingsGroup(title = "安全", cardBg = cardBg) {
+                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_security_section), cardBg = cardBg) {
                      PremiumSettingsItem(
                         icon = Icons.Rounded.LockReset,
                         iconTint = IosColors.Orange,
                         plumpIcon = PlumpIcon.KeyRound,
                         plumpColor = IsoluminantPalette.WarmAmber,
-                        title = "重置密码",
+                        title = stringResource(R.string.user_account_btn_reset_password),
                         onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
                     )
                 }
@@ -182,13 +183,13 @@ fun AccountManagementScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Group 4: Danger Zone
-                PremiumSettingsGroup(title = "危险区域", cardBg = cardBg) {
+                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_danger_section), cardBg = cardBg) {
                     PremiumSettingsItem(
                         icon = Icons.Rounded.DeleteForever,
                         iconTint = MaterialTheme.colorScheme.error,
                         plumpIcon = PlumpIcon.UserX,
                         plumpColor = IsoluminantPalette.CoralFlame,
-                        title = "注销账户",
+                        title = stringResource(R.string.user_account_btn_delete_account),
                         titleColor = MaterialTheme.colorScheme.error,
                         onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
                     )
@@ -207,7 +208,7 @@ fun AccountManagementScreen(
                     shape = Capsule()
                 ) {
                     Text(
-                        text = "退出登录",
+                        text = stringResource(R.string.user_account_btn_logout),
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 设置页分组标题 -->
+    <string name="settings_section_title_account">账号</string>
+    <string name="settings_section_title_appearance">外观</string>
+    <string name="settings_section_title_learning">学习</string>
+    <string name="settings_section_title_voice">语音</string>
+    <string name="settings_section_title_data">数据</string>
+    <string name="settings_section_title_lab">实验室</string>
+    <string name="settings_section_title_about">关于</string>
+    <string name="settings_section_title_customization">个性化</string>
+
+    <!-- 关于页分组标题 -->
+    <string name="settings_about_section_maintenance">更新与维护</string>
+    <string name="settings_about_section_changelog">版本更新日志</string>
+    <string name="settings_about_section_opensource">开源与社区</string>
+    <string name="settings_about_section_build_info">版本与构建信息</string>
+
+    <!-- 主题设置页文案 -->
+    <string name="settings_theme_title_dark_mode_start">开启深色模式</string>
+    <string name="settings_theme_title_dark_mode_end">结束深色模式</string>
+    <string name="settings_theme_title_color_palette">主题色彩</string>
+    <string name="settings_theme_subtitle_color_palette">选择您喜欢的品牌配色</string>
+    <string name="settings_dialog_title_select_time">选择时间</string>
+
+    <!-- 关于页操作文案 -->
+    <string name="settings_about_btn_fetch_log">重新拉取日志</string>
+
+    <!-- 还原预览弹窗文案 -->
+    <string name="settings_restore_title_word_merge">词库合并：</string>
+    <string name="settings_restore_item_word_insert">• 新增: %1$d</string>
+    <string name="settings_restore_item_word_update">• 更新: %1$d</string>
+    <string name="settings_restore_item_word_skip">• 跳过: %1$d</string>
+    <string name="settings_restore_title_grammar_merge">语法合并：</string>
+    <string name="settings_restore_item_grammar_insert">• 新增: %1$d</string>
+    <string name="settings_restore_item_grammar_update">• 更新: %1$d</string>
+    <string name="settings_restore_item_grammar_skip">• 跳过: %1$d</string>
+    <string name="settings_restore_title_data_impact">原有数据将受影响：</string>
+    <string name="settings_restore_item_clear_progress">• 本地进度将被清空(%1$d条)</string>
+    <string name="settings_restore_title_will_import">将导入：</string>
+    <string name="settings_restore_item_import_words">• 词库: %1$d</string>
+    <string name="settings_restore_item_import_grammars">• 语法: %1$d</string>
+    <string name="settings_restore_title_other_data">其他数据：</string>
+    <string name="settings_restore_item_new_mistakes">• 新增错题: %1$d</string>
+    <string name="settings_restore_item_new_tests">• 新增测验记录: %1$d</string>
+    <string name="settings_restore_item_new_studies">• 新增学习记录: %1$d</string>
+    <string name="settings_restore_item_new_favorites">• 新增收藏: %1$d</string>
+    <string name="settings_restore_format_validation">数据校验: %1$s</string>
+    <string name="settings_restore_note_override_settings">注：本次恢复将覆盖应用设置</string>
+
+    <!-- 高级学习设置默认参数清单文案 -->
+    <string name="settings_adv_preset_learning_steps">• 新卡初学阶段: 1 10 分钟</string>
+    <string name="settings_adv_preset_relearning_steps">• 遗忘重学阶段: 1 10 分钟</string>
+    <string name="settings_adv_preset_early_review_tolerance">• 提前复习容差: 20 分钟</string>
+    <string name="settings_adv_preset_leech_threshold">• 顽固卡片判定阈值: 5 次</string>
+    <string name="settings_adv_preset_leech_action">• 顽固卡片处置行为: 冻结卡片</string>
+    <string name="settings_adv_preset_fsrs_target_retention">• FSRS 目标保留率: 90%</string>
+    <string name="settings_adv_preset_micro_session_capacity">• 单组微会话容量: 20 词</string>
+    <string name="settings_adv_preset_daily_review_limit">• 每日复习上限: 不设限制</string>
+    <string name="settings_adv_preset_backlog_strategy">• 积压新词策略: 微量尝鲜</string>
+</resources>

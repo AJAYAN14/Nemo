@@ -1,4 +1,4 @@
-package com.jian.nemo.feature.test.presentation.settings
+﻿package com.jian.nemo.feature.test.presentation.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,7 +8,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
@@ -422,9 +424,9 @@ fun TestSettingsScreen(
                          if (isGenerating) {
                              NemoChasingDotsLoader(size = 24.dp)
                              Spacer(Modifier.width(8.dp))
-                             Text("准备中...", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                             Text(stringResource(R.string.test_common_btn_preparing), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                          } else {
-                             Text("开始测试", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                             Text(stringResource(R.string.test_common_btn_start_test), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                          }
                      }
                  }

@@ -19,8 +19,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.NemoDialog
@@ -148,7 +150,7 @@ fun TypingPracticeDialog(
                     OutlinedTextField(
                         value = state.kanaInput,
                         onValueChange = state::updateKanaInput,
-                        label = { Text("假名", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        label = { Text(stringResource(R.string.typing_dialog_label_kana), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp),
@@ -174,7 +176,7 @@ fun TypingPracticeDialog(
                     OutlinedTextField(
                         value = state.kanjiInput,
                         onValueChange = state::updateKanjiInput,
-                        label = { Text("汉字", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        label = { Text(stringResource(R.string.typing_dialog_label_kanji), color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),

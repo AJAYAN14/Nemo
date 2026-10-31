@@ -99,7 +99,7 @@ import kotlin.math.tanh
  *         border = null,                                     // 磨砂玻璃推荐无描边
  *         modifier = Modifier.align(Alignment.BottomCenter)
  *     ) {
- *         Text("评分按钮")
+ *         Text("Button")
  *     }
  * }
  * ```

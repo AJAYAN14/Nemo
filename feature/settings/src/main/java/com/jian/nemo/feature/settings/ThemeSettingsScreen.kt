@@ -37,6 +37,8 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.common.NemoRoundCheckbox
 import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.feature.settings.R
 import java.time.LocalTime
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.domain.repository.SettingIconStyle
@@ -243,9 +245,9 @@ fun ThemeSettingsScreen(
                                     SquircleSettingItem(
                                         icon = Icons.Rounded.DarkMode,
                                         plumpIcon = PlumpIcon.Moon,
-                                        iconColor = Color(0xFF5856D6),
+                                        iconColor = NemoIndigo,
                                         plumpColor = IsoluminantPalette.LilacViolet,
-                                        title = "开启深色模式",
+                                        title = stringResource(R.string.settings_theme_title_dark_mode_start),
                                         subtitle = uiState.darkModeStartTime,
                                         onClick = { showStartTimePicker = true },
                                         trailing = {
@@ -260,9 +262,9 @@ fun ThemeSettingsScreen(
                                     SquircleSettingItem(
                                         icon = Icons.Rounded.LightMode,
                                         plumpIcon = PlumpIcon.Sun,
-                                        iconColor = Color(0xFFFF9500),
+                                        iconColor = NemoWarning,
                                         plumpColor = IsoluminantPalette.WarmAmber,
-                                        title = "结束深色模式",
+                                        title = stringResource(R.string.settings_theme_title_dark_mode_end),
                                         subtitle = uiState.darkModeEndTime,
                                         showDivider = false,
                                         onClick = { showEndTimePicker = true },
@@ -284,17 +286,17 @@ fun ThemeSettingsScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 SettingsSectionTitle(
-                    text = "个性化",
+                    text = stringResource(R.string.settings_section_title_customization),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
                 PremiumCard {
                     SquircleSettingItem(
                         icon = Icons.Rounded.Palette,
                         plumpIcon = PlumpIcon.ThemePalette,
-                        iconColor = Color(0xFFFF2D55), // MD3 原版粉红
-                        plumpColor = IsoluminantPalette.RoseRuby, // Plump 规范等亮度蔷薇绯红
-                        title = "主题色彩",
-                        subtitle = "选择您喜欢的品牌配色",
+                        iconColor = NemoPink,
+                        plumpColor = IsoluminantPalette.RoseRuby,
+                        title = stringResource(R.string.settings_theme_title_color_palette),
+                        subtitle = stringResource(R.string.settings_theme_subtitle_color_palette),
                         onClick = { showThemeColorDialog = true },
                         showDivider = true
                     )
@@ -505,13 +507,13 @@ private fun DeviceMockup(
     isSelected: Boolean
 ) {
     val borderColor = when (mode) {
-        DarkModeOption.DARK -> Color(0xFF38383A)
-        else -> Color(0xFFC6C6C8)
+        DarkModeOption.DARK -> NemoSurfaceBorderDark
+        else -> NemoSurfaceBorder
     }
 
     val mockupBackground = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF000000))
-        else -> Modifier.background(Color(0xFFF2F2F7))
+        DarkModeOption.DARK -> Modifier.background(NemoSurfaceBackgroundDark)
+        else -> Modifier.background(NemoSurfaceBackground)
     }
 
     val mockupWidth = 78.dp
@@ -564,8 +566,8 @@ private fun DeviceMockup(
 @Composable
 private fun MockupNav(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
-        else -> Modifier.background(Color(0xFFE5E5EA))
+        DarkModeOption.DARK -> Modifier.background(NemoSurfaceSubcardDark)
+        else -> Modifier.background(NemoSurfaceSubcard)
     }
     Box(
         modifier = Modifier
@@ -578,7 +580,7 @@ private fun MockupNav(mode: DarkModeOption) {
 @Composable
 private fun MockupCard(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF1C1C1E))
+        DarkModeOption.DARK -> Modifier.background(NemoSurfaceCardDark)
         else -> Modifier.background(Color.White)
     }
     Box(
@@ -592,8 +594,8 @@ private fun MockupCard(mode: DarkModeOption) {
 @Composable
 private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
-        else -> Modifier.background(Color(0xFFE5E5EA))
+        DarkModeOption.DARK -> Modifier.background(NemoSurfaceSubcardDark)
+        else -> Modifier.background(NemoSurfaceSubcard)
     }
     Box(
         modifier = Modifier
@@ -666,14 +668,14 @@ private fun TimePickerDialog(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val primaryColor = MaterialTheme.colorScheme.primary
-    val neutralCardBg = if (isDark) Color(0xFF2C2C2E) else Color(0xFFF2F2F7)
-    val textPrimary = if (isDark) Color.White else Color(0xFF1C1C1E)
+    val neutralCardBg = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceBackground
+    val textPrimary = if (isDark) Color.White else NemoSurfaceCardDark
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "选择时间",
-        confirmText = "确定",
-        dismissText = "取消",
+        title = stringResource(R.string.settings_dialog_title_select_time),
+        confirmText = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_confirm),
+        dismissText = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_cancel),
         onConfirm = {
             val formattedTime = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
             onTimeSelected(formattedTime)

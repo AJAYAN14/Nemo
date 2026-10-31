@@ -10,6 +10,10 @@ import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.model.SrsItem
+import com.jian.nemo.core.designsystem.theme.StabilityEarlyHex
+import com.jian.nemo.core.designsystem.theme.StabilityDevelopingHex
+import com.jian.nemo.core.designsystem.theme.StabilityMatureHex
+import com.jian.nemo.core.designsystem.theme.StabilityExpertHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -82,10 +86,10 @@ class ActivityHeatmapViewModel @Inject constructor(
                 val totalCount = allItems.size
                 
                 val buckets = listOf(
-                    createBucket("young_early", "初识", allItems.count { it.stability < 3f }, totalCount, "#EF4444"),
-                    createBucket("young_developing", "熟悉", allItems.count { it.stability >= 3f && it.stability < 21f }, totalCount, "#3B82F6"),
-                    createBucket("mature", "稳固", allItems.count { it.stability >= 21f && it.stability < 90f }, totalCount, "#22C55E"),
-                    createBucket("expert", "长效", allItems.count { it.stability >= 90f }, totalCount, "#8B5CF6")
+                    createBucket("young_early", "初识", allItems.count { it.stability < 3f }, totalCount, StabilityEarlyHex),
+                    createBucket("young_developing", "熟悉", allItems.count { it.stability >= 3f && it.stability < 21f }, totalCount, StabilityDevelopingHex),
+                    createBucket("mature", "稳固", allItems.count { it.stability >= 21f && it.stability < 90f }, totalCount, StabilityMatureHex),
+                    createBucket("expert", "长效", allItems.count { it.stability >= 90f }, totalCount, StabilityExpertHex)
                 )
 
                 val panoramaData = MemoryPanoramaData(totalCount, buckets)

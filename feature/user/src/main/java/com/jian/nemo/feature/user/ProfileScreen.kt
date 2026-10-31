@@ -12,7 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.user.R
 
 /**
  * 个人中心界面
@@ -32,7 +35,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("我的") },
+                title = { Text(stringResource(R.string.user_profile_title_screen)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -54,7 +57,8 @@ fun ProfileScreen(
 
             // 功能列表
             Text(
-                text = "学习工具",
+                text = stringResource(R.string.user_profile_title_learning_tools),
+                fontWeight = FontWeight.ExtraBold,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -69,8 +73,8 @@ fun ProfileScreen(
                 Column {
                     ProfileMenuItem(
                         icon = Icons.Default.Favorite,
-                        title = "我的收藏",
-                        subtitle = "查看收藏的单词和语法",
+                        title = stringResource(R.string.user_profile_title_favorites),
+                        subtitle = stringResource(R.string.user_profile_label_favorites_desc),
                         onClick = onNavigateToFavorites
                     )
 
@@ -78,8 +82,8 @@ fun ProfileScreen(
 
                     ProfileMenuItem(
                         icon = Icons.Default.Error,
-                        title = "我的错题",
-                        subtitle = "查看学习过程中的错误",
+                        title = stringResource(R.string.user_profile_title_mistakes),
+                        subtitle = stringResource(R.string.user_profile_label_mistakes_desc),
                         onClick = onNavigateToMistakes
                     )
 
@@ -87,8 +91,8 @@ fun ProfileScreen(
 
                     ProfileMenuItem(
                         icon = Icons.Default.Category,
-                        title = "词性分类",
-                        subtitle = "按词性浏览单词",
+                        title = stringResource(R.string.user_profile_title_pos),
+                        subtitle = stringResource(R.string.user_profile_label_pos_desc),
                         onClick = onNavigateToPartOfSpeech
                     )
                 }
@@ -97,7 +101,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "设置",
+                text = stringResource(R.string.user_profile_title_settings_section),
+                fontWeight = FontWeight.ExtraBold,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -112,8 +117,8 @@ fun ProfileScreen(
                 Column {
                     ProfileMenuItem(
                         icon = Icons.Default.Settings,
-                        title = "应用设置",
-                        subtitle = "学习目标、主题、通知设置",
+                        title = stringResource(R.string.user_profile_title_app_settings),
+                        subtitle = stringResource(R.string.user_profile_label_app_settings_desc),
                         onClick = onNavigateToSettings
                     )
 
@@ -121,7 +126,7 @@ fun ProfileScreen(
 
                     ProfileMenuItem(
                         icon = Icons.Default.Info,
-                        title = "关于",
+                        title = stringResource(R.string.user_profile_title_about),
                         subtitle = "版本 1.0.0",
                         onClick = { /* TODO */ }
                     )
@@ -167,13 +172,13 @@ private fun UserInfoCard() {
 
             Column {
                 Text(
-                    text = "日语学习者",
+                    text = stringResource(R.string.user_profile_label_default_user_name),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "继续加油！",
+                    text = stringResource(R.string.user_profile_label_default_cheer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                 )

@@ -58,13 +58,15 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
+import com.jian.nemo.core.designsystem.theme.NemoBottomBarContainerDark
+import com.jian.nemo.core.designsystem.theme.NemoBottomBarContainerLight
 
 import com.kyant.backdrop.Backdrop
 import com.jian.nemo.core.ui.component.liquid.LiquidBottomTabs
 import com.jian.nemo.core.ui.component.liquid.LiquidBottomTab
-
-// 定义颜色常量
-private val LearningCardBackgroundDark = Color(0xFF2c2c2c)
 
 /**
  * Nemo应用底部导航栏 (液态玻璃版 / 悬浮胶囊版)
@@ -85,14 +87,13 @@ fun NemoBottomBar(
     // 根据主题判断深色/浅色模式
     val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5
     
-    // 原版 LiquidGlass accentColor 对齐规范动态蓝 (浅色 #007AFF, 深色 #0A84FF)
     val accentColor = MaterialTheme.colorScheme.primary
     
-    // 胶囊容器背景色设置 (对齐原版 LiquidGlass)
+    // 胶囊容器背景色设置
     val containerColor = if (isDarkTheme) 
-        Color(0xFF121212).copy(alpha = 0.4f)
+        NemoBottomBarContainerDark.copy(alpha = 0.4f)
     else 
-        Color(0xFFFAFAFA).copy(alpha = 0.4f)
+        NemoBottomBarContainerLight.copy(alpha = 0.4f)
         
     // 边框描边颜色 (规范 5.2 微光发丝线)
     val borderColor = if (isDarkTheme)
@@ -126,7 +127,7 @@ fun NemoBottomBar(
     val offsetIndex = remember { Animatable(selectedIndex.toFloat()) }
     val pressProgress = remember { Animatable(0f) }
     val smoothedVelocity = remember { Animatable(0f) }
-    // 对齐原版：scaleX/scaleY 独立 Animatable，使用不同弹簧产生不对称回弹
+    // scaleX 与 scaleY 独立 Animatable，使用非对称弹簧实现自然回弹
     val scaleXAnim = remember { Animatable(1f) }
     val scaleYAnim = remember { Animatable(1f) }
     
@@ -149,7 +150,7 @@ fun NemoBottomBar(
     val paddingOffsetPx = with(density) { 4.dp.toPx() }
     val strokeWidthPx = with(density) { 1.dp.toPx() }
 
-    // vibrancy 效果：缓存 RenderEffect（对齐原版 saturation = 1.5f）
+    // 饱和度增强滤镜：缓存 RenderEffect
     @Suppress("NewApi")
     val vibrancyEffect = remember {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -169,7 +170,7 @@ fun NemoBottomBar(
         derivedStateOf<Float> {
             if (innerWidth <= 0f) 0f else {
                 val fraction = (offsetAnimation.value / innerWidth).coerceIn(-1f, 1f)
-                // 物理公式：最高拉扯 4.dp 的弹性位移量（对齐原版）
+                // 物理公式：最高拉扯 4.dp 的弹性位移量
                 with(density) {
                     val directionSign = if (fraction > 0f) 1f else if (fraction < 0f) -1f else 0f
                     4.dp.toPx() * directionSign * EaseOut.transform(abs(fraction))
@@ -183,7 +184,6 @@ fun NemoBottomBar(
         if (!offsetIndex.isRunning || offsetIndex.targetValue != selectedIndex.toFloat()) {
             offsetIndex.animateTo(
                 targetValue = selectedIndex.toFloat(),
-                // 对齐原版 valueAnimationSpec: spring(1f, 300f)
                 animationSpec = spring(
                     dampingRatio = 1f,
                     stiffness = 300f
@@ -235,6 +235,7 @@ fun NemoBottomBar(
                 ) {
                     BottomNavItem.entries.forEachIndexed { index, item ->
                         val isSelected = activeTabIndex == index
+                        val tabTitle = stringResource(item.titleRes)
 
                         LiquidBottomTab(
                             onClick = {
@@ -255,13 +256,13 @@ fun NemoBottomBar(
                             } else {
                                 Icon(
                                     imageVector = item.icon,
-                                    contentDescription = item.title,
+                                    contentDescription = tabTitle,
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
 
                             Text(
-                                text = item.title,
+                                text = tabTitle,
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                     fontSize = 11.sp
@@ -304,7 +305,7 @@ fun NemoBottomBar(
                     modifier = Modifier
                         .matchParentSize()
                         .graphicsLayer {
-                            // vibrancy 效果：对齐原版 saturation = 1.5f (API 31+)
+                            // 动态饱和度滤镜 (API 31+)
                             renderEffect = vibrancyEffect
                         }
                         .then(
@@ -340,11 +341,10 @@ fun NemoBottomBar(
                                     // 核心性能优化：位移完全移入 graphicsLayer
                                     translationX = (offsetIndex.value * tabWidth)
                                     
-                                    // 对齐原版：scaleX/scaleY 独立动画值
                                     scaleX = scaleXAnim.value
                                     scaleY = scaleYAnim.value
                                     
-                                    // 对齐原版速度形变：dampedDragAnimation.velocity / 10f
+                                    // 阻尼动态形变
                                     // smoothedVelocity 已是归一化值(index空间/range)，直接 /10f
                                     // 非拖动时 offsetIndex.velocity 是 index/s，除以 range 再 /10f
                                     val velocity = if (isDragging) {
@@ -381,7 +381,7 @@ fun NemoBottomBar(
                                             isDragging = false
                                             velocityTracker.resetTracking()
 
-                                            // 按下时立刻膨胀（对齐原版 press()）
+                                            // 按下时立刻膨胀
                                             launch {
                                                 pressProgress.animateTo(1f, spring(dampingRatio = 1f, stiffness = 1000f))
                                             }
@@ -405,10 +405,10 @@ fun NemoBottomBar(
                                                     // 手指抬起（释放手势）
                                                     isDragging = false
                                                     launch {
-                                                        // 手势平滑速度阻尼归 0（对齐原版 velocityAnimationSpec）
+                                                        // 手势平滑速度阻尼归 0
                                                         smoothedVelocity.animateTo(0f, spring(dampingRatio = 0.5f, stiffness = 300f))
                                                     }
-                                                    // 整体容器阻尼复位（对齐原版 spring(1f, 300f, 0.5f)）
+                                                    // 整体容器阻尼复位
                                                     launch {
                                                         offsetAnimation.animateTo(0f, spring(dampingRatio = 1f, stiffness = 300f, visibilityThreshold = 0.5f))
                                                     }
@@ -469,8 +469,7 @@ fun NemoBottomBar(
                                                         }
                                                     }
 
-                                                    // 对齐原版 release()：延迟释放 press/scale
-                                                    // 等到滑块接近目标位置后才开始消退 press 效果
+                                                    // 延迟释放 press/scale，滑块接近目标位置后消退按压形变
                                                     launch {
                                                         val threshold = (tabsCount - 1).toFloat() * 0.025f
                                                         if (offsetIndex.value != offsetIndex.targetValue) {
@@ -513,7 +512,7 @@ fun NemoBottomBar(
                                                         offsetIndex.snapTo(newTarget)
                                                     }
 
-                                                    // 对齐原版 updateVelocity()：在 index 空间追踪速度并归一化
+                                                    // 在 index 空间追踪速度并归一化
                                                     velocityTracker.addPosition(change.uptimeMillis, Offset(offsetIndex.value, 0f))
                                                     val rawVelocity = velocityTracker.calculateVelocity().x / (tabsCount - 1).toFloat()
                                                     launch {
@@ -586,6 +585,7 @@ private fun CapsuleNavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically)
     ) {
+        val tabTitle = stringResource(item.titleRes)
         if (item == BottomNavItem.SETTINGS && user != null) {
             // 已登录且是“个人”Tab，显示头像
             AvatarImage(
@@ -599,7 +599,7 @@ private fun CapsuleNavItem(
             // 默认显示 Icon
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.title,
+                contentDescription = tabTitle,
                 tint = contentColor,
                 modifier = Modifier.size(24.dp)
             )
@@ -607,7 +607,7 @@ private fun CapsuleNavItem(
         
 
         Text(
-            text = item.title,
+            text = tabTitle,
             color = contentColor,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = if (activeFraction > 0.5f) FontWeight.Bold else FontWeight.Medium,
@@ -623,27 +623,27 @@ private fun CapsuleNavItem(
  */
 enum class BottomNavItem(
     val route: String,
-    val title: String,
+    @StringRes val titleRes: Int,
     val icon: ImageVector
 ) {
     LEARNING(
         route = "learning",
-        title = "学习",
+        titleRes = R.string.core_bottombar_tab_learning,
         icon = Icons.AutoMirrored.Rounded.MenuBook
     ),
     PROGRESS(
         route = "progress",
-        title = "进度",
+        titleRes = R.string.core_bottombar_tab_progress,
         icon = Icons.Rounded.BarChart
     ),
     TEST(
         route = "test",
-        title = "测试",
+        titleRes = R.string.core_bottombar_tab_test,
         icon = Icons.Rounded.Interests
     ),
     SETTINGS(
         route = "settings",
-        title = "个人",
+        titleRes = R.string.core_bottombar_tab_settings,
         icon = Icons.Rounded.AccountCircle
     )
 }

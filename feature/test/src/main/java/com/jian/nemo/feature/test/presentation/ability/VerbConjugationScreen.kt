@@ -15,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -47,7 +49,6 @@ import java.util.Date
 import java.util.Locale
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.airbnb.lottie.compose.*
-import com.jian.nemo.feature.test.R
 import androidx.compose.ui.text.withStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,7 +168,7 @@ fun HistoryView(
             Spacer(modifier = Modifier.height(16.dp))
             if (historyRecords.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("暂无记录", color = NemoNeutrals.Gray500)
+                    Text(stringResource(R.string.test_verb_empty_history), color = NemoNeutrals.Gray500)
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -180,7 +181,7 @@ fun HistoryView(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("智能动词活用训练", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
+                                Text(stringResource(R.string.test_verb_subtitle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(dateStr, style = MaterialTheme.typography.bodySmall, color = NemoNeutrals.Gray500)
                             }
@@ -209,7 +210,7 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
             Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(56.dp), tint = IosColors.Yellow)
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Text("未连接 AI 大脑", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_verb_title_no_ai), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             "您尚未在设置中配置大模型 API Key，无法使用动态出题功能。",
@@ -222,7 +223,7 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)
         ) {
-            Text("返回去配置", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.test_verb_btn_back_to_config), fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -242,9 +243,9 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("选择挑战难度", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_verb_title_select_level), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("AI 将根据您的本地词库出题", style = MaterialTheme.typography.bodyMedium, color = NemoNeutrals.Gray500)
+        Text(stringResource(R.string.test_verb_desc_select_level), style = MaterialTheme.typography.bodyMedium, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
         levels.forEach { (level, desc, color) ->
             Button(
@@ -327,7 +328,7 @@ private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () ->
                 border = BorderStroke(1.dp, if (isDark) NemoNeutrals.Gray700 else NemoNeutrals.Gray300),
                 modifier = Modifier.weight(1f)
             ) {
-                Text("放弃生成", maxLines = 1)
+                Text(stringResource(R.string.test_verb_btn_abort_generate), maxLines = 1)
             }
 
             // 重新生成：核心操作，使用主色调 Button 终止并重试当前等级
@@ -340,7 +341,7 @@ private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () ->
                 ),
                 modifier = Modifier.weight(1f)
             ) {
-                Text("重新生成", maxLines = 1)
+                Text(stringResource(R.string.test_verb_btn_regenerate), maxLines = 1)
             }
         }
     }
@@ -355,12 +356,12 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
     ) {
         Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(64.dp), tint = IosColors.Red)
         Spacer(modifier = Modifier.height(16.dp))
-        Text("出题失败", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_verb_title_generate_failed), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(message, textAlign = TextAlign.Center, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)) {
-            Text("重试")
+            Text(stringResource(R.string.test_common_btn_retry))
         }
     }
 }
@@ -476,7 +477,7 @@ private fun ReadyView(
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.size(20.dp).background(IosColors.Blue.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
-                        Text("文", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IosColors.Blue)
+                        Text(stringResource(R.string.test_verb_badge_text), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IosColors.Blue)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = currentQuestion.translation, style = MaterialTheme.typography.bodySmall, color = textSub)
@@ -540,7 +541,7 @@ private fun ReadyView(
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("上一题", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.test_common_btn_prev_question), fontWeight = FontWeight.Bold)
             }
 
             val isLast = state.currentIndex == state.questions.size - 1
@@ -704,13 +705,13 @@ private fun ResultView(
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$accuracy%", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = ringColor)
-                Text("正确率", style = MaterialTheme.typography.bodySmall, color = textColor)
+                Text(stringResource(R.string.test_common_label_accuracy), style = MaterialTheme.typography.bodySmall, color = textColor)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
-        Text("练习完成！", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_verb_title_completed), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("本次挑战：答对 $correctCount 题 / 共 $totalCount 题", style = MaterialTheme.typography.bodyLarge, color = textColor)
+        Text(stringResource(R.string.test_verb_format_result, correctCount, totalCount), style = MaterialTheme.typography.bodyLarge, color = textColor)
         Spacer(modifier = Modifier.height(48.dp))
         
         Button(
@@ -721,7 +722,7 @@ private fun ResultView(
         ) {
             Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("换一批新题", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text(stringResource(R.string.test_verb_btn_new_batch), fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedButton(
@@ -729,11 +730,11 @@ private fun ResultView(
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text("返回难度选择", fontSize = 16.sp)
+            Text(stringResource(R.string.test_verb_btn_back_to_levels), fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(24.dp))
         TextButton(onClick = onBack) {
-            Text("离开工坊", color = textColor)
+            Text(stringResource(R.string.test_common_btn_exit_workshop), color = textColor)
         }
     }
 }

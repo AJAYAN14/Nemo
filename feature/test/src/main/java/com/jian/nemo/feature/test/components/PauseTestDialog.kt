@@ -11,7 +11,9 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -146,7 +148,7 @@ fun PauseTestDialog(
                     ),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
-                    Text("继续测试", fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.test_common_btn_continue_test), fontWeight = FontWeight.Bold)
                 }
             }
         }

@@ -1,0 +1,58 @@
+<resources>
+    <!-- 欢迎与认证流程 -->
+    <string name="user_auth_title_welcome">在流动之间，\n精准掌握日语。</string>
+    <string name="user_auth_label_welcome_desc">Nemo 将沉浸式语言美学与 FSRS 科学记忆算法融合，助您轻松攻克假名、词汇、语法与动词变形。</string>
+    <string name="user_auth_btn_login">登录账号</string>
+    <string name="user_auth_btn_register">注册新账号</string>
+    <string name="user_auth_title_login">欢迎回来</string>
+    <string name="user_auth_label_login_desc">使用邮箱密码或 Google 账号继续</string>
+    <string name="user_auth_btn_to_register">去注册</string>
+    <string name="user_auth_btn_to_login">去登录</string>
+    <string name="user_auth_title_register">开启旅程</string>
+    <string name="user_auth_label_register_desc">开启您的沉浸式日语假名习得之旅</string>
+    <string name="user_auth_placeholder_email">电子邮箱地址</string>
+    <string name="user_auth_placeholder_password">输入登录密码</string>
+    <string name="user_auth_placeholder_username">设置您的用户名</string>
+    <string name="user_auth_placeholder_confirm_password">再次输入密码确认</string>
+    <string name="user_auth_btn_forgot_password">忘记密码</string>
+    <string name="user_auth_btn_login_submit">立即登录</string>
+    <string name="user_auth_label_divider_or">或</string>
+    <string name="user_auth_btn_google_login">使用 Google 账号登录</string>
+    <string name="user_auth_btn_register_submit">立即注册</string>
+    <string name="user_auth_desc_back_to_welcome">返回封面</string>
+
+    <!-- 个人主页 -->
+    <string name="user_profile_title_screen">我的</string>
+    <string name="user_profile_title_learning_tools">学习工具</string>
+    <string name="user_profile_title_favorites">我的收藏</string>
+    <string name="user_profile_label_favorites_desc">查看收藏的单词和语法</string>
+    <string name="user_profile_title_mistakes">我的错题</string>
+    <string name="user_profile_label_mistakes_desc">查看学习过程中的错误</string>
+    <string name="user_profile_title_pos">词性分类</string>
+    <string name="user_profile_label_pos_desc">按词性浏览单词</string>
+    <string name="user_profile_title_settings_section">设置</string>
+    <string name="user_profile_title_app_settings">应用设置</string>
+    <string name="user_profile_label_app_settings_desc">学习目标、主题、通知设置</string>
+    <string name="user_profile_title_about">关于</string>
+    <string name="user_profile_label_default_user_name">日语学习者</string>
+    <string name="user_profile_label_default_cheer">继续加油！</string>
+
+    <!-- 账户管理 -->
+    <string name="user_account_title_screen">账户管理</string>
+    <string name="user_account_title_profile_section">个人信息</string>
+    <string name="user_account_btn_change_username">修改用户名</string>
+    <string name="user_account_btn_change_email">修改邮箱</string>
+    <string name="user_account_title_security_section">安全</string>
+    <string name="user_account_btn_reset_password">重置密码</string>
+    <string name="user_account_title_danger_section">危险区域</string>
+    <string name="user_account_btn_delete_account">注销账户</string>
+    <string name="user_account_btn_logout">退出登录</string>
+
+    <!-- 弹窗输入框标签 -->
+    <string name="user_dialog_label_email">邮箱地址</string>
+    <string name="user_dialog_label_otp">验证码</string>
+    <string name="user_dialog_label_new_password">新密码</string>
+    <string name="user_dialog_label_new_username">新用户名（最多16字）</string>
+    <string name="user_dialog_label_new_email">新邮箱</string>
+    <string name="user_dialog_label_verify_password">验证登录密码</string>
+</resources>

@@ -72,7 +72,7 @@ val AuroraPresets = listOf(
 )
 
 // ==============================================================================
-// 100% 原版 WebGL2 极光引擎（完全对齐 code_artifact.html 原型规范）
+// WebGL2 极光引擎（基于原生着色器渲染管线）
 // 架构完全对齐登录界面 KanaWaveBackground.kt：纯静态常量 HTML + evaluateJavascript
 // 1. 包含 OKLCH 色彩空间转换、多层流动噪声与物理光晕渲染管线
 // 2. 扎根底部升腾，支持手势滑动与触控跟随交互

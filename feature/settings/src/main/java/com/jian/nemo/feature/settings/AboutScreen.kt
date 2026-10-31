@@ -16,6 +16,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.settings.R
 import android.os.Build
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.foundation.lazy.LazyColumn
@@ -261,7 +263,7 @@ fun AboutScreen(
                 // 2. 更新设置与检查更新
                 // ==========================================
                 item {
-                    SettingsSectionTitle("更新与维护")
+                    SettingsSectionTitle(stringResource(R.string.settings_about_section_maintenance))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = Icons.Rounded.RocketLaunch,
@@ -324,7 +326,7 @@ fun AboutScreen(
                 // 3. 更新日志（后端 Supabase 真实数据动态加载）
                 // ==========================================
                 item {
-                    SettingsSectionTitle("版本更新日志")
+                    SettingsSectionTitle(stringResource(R.string.settings_about_section_changelog))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Column(
                             modifier = Modifier
@@ -451,7 +453,7 @@ fun AboutScreen(
                                                         modifier = Modifier.size(16.dp)
                                                     )
                                                     Spacer(modifier = Modifier.width(4.dp))
-                                                    Text("重新拉取日志", fontSize = 13.sp)
+                                                    Text(stringResource(R.string.settings_about_btn_fetch_log), fontSize = 13.sp)
                                                 }
                                             }
                                         }
@@ -467,7 +469,7 @@ fun AboutScreen(
                 // 4. 项目开源与开发者
                 // ==========================================
                 item {
-                    SettingsSectionTitle("开源与社区")
+                    SettingsSectionTitle(stringResource(R.string.settings_about_section_opensource))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
@@ -529,7 +531,7 @@ fun AboutScreen(
                 // 5. 版本与构建规格
                 // ==========================================
                 item {
-                    SettingsSectionTitle("版本与构建信息")
+                    SettingsSectionTitle(stringResource(R.string.settings_about_section_build_info))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Column(
                             modifier = Modifier

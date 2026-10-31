@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
@@ -371,15 +372,15 @@ fun AdvancedLearningSettingsScreen(
                                 modifier = Modifier.padding(14.dp),
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Text("• 新卡初学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
-                                Text("• 遗忘重学阶段: 1 10 分钟", style = MaterialTheme.typography.labelSmall)
-                                Text("• 提前复习容差: 20 分钟", style = MaterialTheme.typography.labelSmall)
-                                Text("• 顽固卡片判定阈值: 5 次", style = MaterialTheme.typography.labelSmall)
-                                Text("• 顽固卡片处置行为: 冻结卡片", style = MaterialTheme.typography.labelSmall)
-                                Text("• FSRS 目标保留率: 90%", style = MaterialTheme.typography.labelSmall)
-                                Text("• 单组微会话容量: 20 词", style = MaterialTheme.typography.labelSmall)
-                                Text("• 每日复习上限: 不设限制", style = MaterialTheme.typography.labelSmall)
-                                Text("• 积压新词策略: 微量尝鲜", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_learning_steps), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_relearning_steps), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_early_review_tolerance), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_leech_threshold), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_leech_action), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_fsrs_target_retention), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_micro_session_capacity), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_daily_review_limit), style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.settings_adv_preset_backlog_strategy), style = MaterialTheme.typography.labelSmall)
                             }
                         }
                     }

@@ -15,7 +15,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.settings.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -97,7 +99,7 @@ fun RestorePreviewDialog(
                 ) {
                     if (preview.validationSummary.isNotEmpty()) {
                         Text(
-                            text = "数据校验: ${preview.validationSummary}",
+                            text = stringResource(R.string.settings_restore_format_validation, preview.validationSummary),
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 13.sp
                         )
@@ -105,35 +107,35 @@ fun RestorePreviewDialog(
                     }
 
                     if (preview.strategy == ImportStrategy.MERGE) {
-                        Text("词库合并：", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                        Text("• 新增: ${preview.wordInsertCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("• 更新: ${preview.wordUpdateCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("• 跳过: ${preview.wordSkipCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_title_word_merge), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.settings_restore_item_word_insert, preview.wordInsertCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_item_word_update, preview.wordUpdateCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_item_word_skip, preview.wordSkipCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("语法合并：", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                        Text("• 新增: ${preview.grammarInsertCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("• 更新: ${preview.grammarUpdateCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("• 跳过: ${preview.grammarSkipCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_title_grammar_merge), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.settings_restore_item_grammar_insert, preview.grammarInsertCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_item_grammar_update, preview.grammarUpdateCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_item_grammar_skip, preview.grammarSkipCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
-                        Text("原有数据将受影响：", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
-                        Text("• 本地进度将被清空(${preview.localWordStateCount + preview.localGrammarStateCount}条)", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.settings_restore_title_data_impact), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.settings_restore_item_clear_progress, preview.localWordStateCount + preview.localGrammarStateCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("将导入：", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                        Text("• 词库: ${preview.wordInsertCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("• 语法: ${preview.grammarInsertCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_title_will_import), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(R.string.settings_restore_item_import_words, preview.wordInsertCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.settings_restore_item_import_grammars, preview.grammarInsertCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("其他数据：", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                    Text("• 新增错题: ${preview.wrongAnswerNewCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("• 新增测验记录: ${preview.testRecordNewCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("• 新增学习记录: ${preview.studyRecordNewCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("• 新增收藏: ${preview.favoriteNewCount}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_restore_title_other_data), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.settings_restore_item_new_mistakes, preview.wrongAnswerNewCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_restore_item_new_tests, preview.testRecordNewCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_restore_item_new_studies, preview.studyRecordNewCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_restore_item_new_favorites, preview.favoriteNewCount), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     if (preview.settingsWillChange) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "注：本次恢复将覆盖应用设置",
+                            text = stringResource(R.string.settings_restore_note_override_settings),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold

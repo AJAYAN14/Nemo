@@ -15,6 +15,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -159,7 +160,7 @@ fun TestScreenContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(onClick = onNavigateBack) {
-                    Text("返回")
+                    Text(stringResource(R.string.test_common_btn_back))
                 }
             }
         }

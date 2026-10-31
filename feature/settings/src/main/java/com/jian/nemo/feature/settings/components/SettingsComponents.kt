@@ -310,7 +310,7 @@ fun DailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 20, 30, 50)
-    val accentColor = Color(0xFFFF9500) // NemoOrange
+    val accentColor = NemoWarning
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -378,7 +378,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 15, 20, 25)
-    val accentColor = Color(0xFF34C759) // NemoGreen
+    val accentColor = NemoSecondary
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -490,7 +490,7 @@ fun LearningDayResetHourBottomSheet(
     onHourSelected: (Int) -> Unit
 ) {
     val hours = listOf(0, 2, 4, 5, 6)
-    val accentColor = Color(0xFF5856D6) // NemoIndigo
+    val accentColor = NemoIndigo
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -621,7 +621,7 @@ fun VoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val accentColor = Color(0xFFFF2D55) // NemoRed
+    val accentColor = NemoPink
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     // 按本地/云端分组

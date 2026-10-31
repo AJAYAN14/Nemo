@@ -23,7 +23,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.Modifier
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.ui.graphics.luminance
@@ -191,9 +193,9 @@ fun WrongGrammarsScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.height(24.dp))
-                            Text("暂无错题记录", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.collection_mistakes_empty_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("语法掌握得很好！继续保持。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                            Text(stringResource(R.string.collection_mistakes_empty_desc), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                         }
                     }
                 }

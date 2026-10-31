@@ -132,7 +132,7 @@ fun LearningFinishedContent(
     val accentGreen = BentoColors.AccentGreen // 旧词巩固（复习）
     val accentBlue = BentoColors.AccentBlue  // 新词拓展（新知）
     val accentGold = BentoColors.AccentOrange  // 反复攻克 / 最高连击金
-    val bonusOrange = UiPalette.BonusOrange // 原版加餐专属橙
+    val bonusOrange = UiPalette.BonusOrange // 加餐专属橙
 
     // 互斥三分类计算：旧词总数拆解为「顺畅巩固」与「反复攻克」，杜绝一词两算
     val smoothReviewCount = (sessionReviewCount - sessionRelearnCount).coerceAtLeast(0)
@@ -146,7 +146,7 @@ fun LearningFinishedContent(
     var showBonusDialog by remember { mutableStateOf(false) }
     var showConfetti by remember { mutableStateOf(false) }
 
-    // 原版 2.4 秒平滑呼吸的 45° 斜扫光流动着色器 (Shimmer Sweep)
+    // 2.4 秒周期的 45° 斜扫光流动着色器 (Shimmer Sweep)
     val shimmerTransition = rememberInfiniteTransition(label = "ShimmerTransition")
     val shimmerProgress by shimmerTransition.animateFloat(
         initialValue = -1.5f,
@@ -320,7 +320,7 @@ fun LearningFinishedContent(
                         }
                     }
 
-                    // 双色/三色堆叠圆角进度条（严格保持原版：交界处平滑柔和渐变过渡与流动动画）
+                    // 双色/三色堆叠圆角进度条（交界处平滑柔和渐变过渡与流动动画）
                     val progressGradientBrush = remember(
                         smoothReviewCount,
                         sessionNewCount,
@@ -845,7 +845,7 @@ fun LearningFinishedContent(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // ==========================================
-                // 5. 今日加餐入口卡片（100% 保持原版效果 + 45° 斜扫光动效）
+                // 5. 今日加餐入口卡片（45° 斜扫光动效）
                 // ==========================================
                 Surface(
                     onClick = { showBonusDialog = true },
@@ -868,7 +868,7 @@ fun LearningFinishedContent(
                         .clip(RoundedCornerShape(24.dp))
                         .drawWithContent {
                             drawContent()
-                            // 原版 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                            // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
                             val width = size.width
                             val height = size.height
                             val xOffset = shimmerProgress * width
@@ -1030,7 +1030,7 @@ fun LearningFinishedContent(
         }
 
         // ==========================================
-        // 7. 项目原版 KonfettiView 漫天五彩纸屑庆祝层
+        // 7. 五彩纸屑庆祝层
         // ==========================================
         AnimatedVisibility(
             visible = showConfetti,

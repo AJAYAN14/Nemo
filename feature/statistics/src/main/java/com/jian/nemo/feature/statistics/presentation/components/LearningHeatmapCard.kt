@@ -43,6 +43,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.toArgb
+import com.jian.nemo.core.designsystem.theme.HeatmapSubtleTextDark
+import com.jian.nemo.core.designsystem.theme.HeatmapSubtleTextLight
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -334,7 +337,7 @@ private fun HeatmapContent(
     Row(modifier = Modifier.fillMaxWidth()) {
         val textPaint = remember(isDarkTheme) {
             android.graphics.Paint().apply {
-                color = if (isDarkTheme) android.graphics.Color.parseColor("#8B949E") else android.graphics.Color.parseColor("#64748B")
+                color = if (isDarkTheme) HeatmapSubtleTextDark.toArgb() else HeatmapSubtleTextLight.toArgb()
                 textSize = with(density) { 10.sp.toPx() }
                 isAntiAlias = true
             }

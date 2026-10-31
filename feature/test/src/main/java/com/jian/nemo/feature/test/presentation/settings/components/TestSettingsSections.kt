@@ -10,7 +10,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.feature.test.domain.model.QuestionSource
@@ -60,7 +62,7 @@ fun BasicSettingsSection(
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
             horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
         ) {
-            Text("数据概况", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.test_common_title_data_overview), style = MaterialTheme.typography.bodyLarge)
             Text(
                 text = if (uiState.isLoadingDataCount) "查询中..." else if (isInsufficient) "$dataCountText (不足)" else dataCountText,
                 style = MaterialTheme.typography.bodyMedium,

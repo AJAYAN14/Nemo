@@ -162,7 +162,7 @@ fun AIWorkshopScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                 ) {
-                    Text("开始练习", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.workshop_btn_start_practice), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
                     if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
                         PlumpDuoIcon(
@@ -1118,7 +1118,7 @@ private fun InputSection(
             enabled = answer.isNotBlank() && enabled,
             elevation = null
         ) {
-            Text("提交 AI 评分", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.workshop_btn_submit_eval), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -1310,7 +1310,7 @@ private fun FeedbackSection(
                 .fillMaxWidth()
                 .height(60.dp)
         ) {
-            Text("下一题", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(stringResource(R.string.workshop_btn_next_question), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }

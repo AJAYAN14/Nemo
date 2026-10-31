@@ -15,7 +15,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -140,7 +142,7 @@ private fun TypingInput(
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(focusRequester),
-        label = { Text("你的答案") },
+        label = { Text(stringResource(R.string.test_common_label_your_answer)) },
         singleLine = true,
         enabled = !question.isAnswered,
         shape = RoundedCornerShape(16.dp), // 16dp Radius

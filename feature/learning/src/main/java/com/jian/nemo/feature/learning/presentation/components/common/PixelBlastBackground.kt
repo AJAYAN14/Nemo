@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 
 // ==============================================================================
-// 100% 原版 WebGL 2 PixelBlast 粒子波纹背景引擎
+// WebGL 2 PixelBlast 粒子波纹背景引擎
 // 架构完全对齐登录界面 KanaWaveBackground.kt：纯静态常量 HTML + evaluateJavascript
 // 1. 包含 Bayer 8x8 空间抖动、FBM 流体噪点、粒子网格变幻以及物理波动衰减管线
 // 2. 具备触控波纹互动能力，可根据点击位置与时间进行物理波纹扩散

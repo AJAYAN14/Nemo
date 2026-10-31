@@ -23,6 +23,8 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -191,7 +193,7 @@ private fun ListeningHistoryView(
             Spacer(modifier = Modifier.height(16.dp))
             if (historyRecords.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("暂无挑战记录", color = NemoNeutrals.Gray500)
+                    Text(stringResource(R.string.test_listening_empty_history), color = NemoNeutrals.Gray500)
                 }
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -204,7 +206,7 @@ private fun ListeningHistoryView(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text("本地听辨强化训练", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
+                                Text(stringResource(R.string.test_listening_subtitle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(dateStr, style = MaterialTheme.typography.bodySmall, color = NemoNeutrals.Gray500)
                             }
@@ -237,9 +239,9 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("选择听力挑战等级", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_listening_title_select_level), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("声波频段已锁定，系统将基于本地词库出题", style = MaterialTheme.typography.bodyMedium, color = NemoNeutrals.Gray500)
+        Text(stringResource(R.string.test_listening_desc_select_level), style = MaterialTheme.typography.bodyMedium, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
         levels.forEach { (level, desc, color) ->
             AbilityLevelCard(
@@ -264,12 +266,12 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
     ) {
         Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(64.dp), tint = IosColors.Red)
         Spacer(modifier = Modifier.height(16.dp))
-        Text("出题失败", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_listening_title_generate_failed), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(message, textAlign = TextAlign.Center, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = IosColors.Indigo)) {
-            Text("返回")
+            Text(stringResource(R.string.test_common_btn_back))
         }
     }
 }
@@ -476,13 +478,13 @@ private fun ReadyView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Box(modifier = Modifier.width(48.dp), contentAlignment = Alignment.Center) {
-                            Text("0.75x 慢速", fontSize = 10.sp, color = textSub, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(stringResource(R.string.test_listening_speed_slow), fontSize = 10.sp, color = textSub, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                         Box(modifier = Modifier.width(76.dp), contentAlignment = Alignment.Center) {
-                            Text("1.0x 标准", fontSize = 10.sp, color = IosColors.Indigo, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(stringResource(R.string.test_listening_speed_standard), fontSize = 10.sp, color = IosColors.Indigo, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                         Box(modifier = Modifier.width(48.dp), contentAlignment = Alignment.Center) {
-                            Text("1.25x 快速", fontSize = 10.sp, color = textSub, fontWeight = FontWeight.Bold, maxLines = 1)
+                            Text(stringResource(R.string.test_listening_speed_fast), fontSize = 10.sp, color = textSub, fontWeight = FontWeight.Bold, maxLines = 1)
                         }
                     }
                 }
@@ -600,7 +602,7 @@ private fun ReadyView(
             ) {
                 Icon(Icons.Rounded.ArrowBack, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("上一题", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.test_common_btn_prev_question), fontWeight = FontWeight.Bold)
             }
 
             val isLast = state.currentIndex == state.questions.size - 1
@@ -818,13 +820,13 @@ private fun ResultView(
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("$accuracy%", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = ringColor)
-                Text("正确率", style = MaterialTheme.typography.bodySmall, color = textColor)
+                Text(stringResource(R.string.test_common_label_accuracy), style = MaterialTheme.typography.bodySmall, color = textColor)
             }
         }
         Spacer(modifier = Modifier.height(32.dp))
-        Text("听力练习完成！", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.test_listening_title_completed), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("本次通关：答对 $correctCount 题 / 共 $totalCount 题", style = MaterialTheme.typography.bodyLarge, color = textColor)
+        Text(stringResource(R.string.test_listening_format_result, correctCount, totalCount), style = MaterialTheme.typography.bodyLarge, color = textColor)
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
@@ -835,7 +837,7 @@ private fun ResultView(
         ) {
             Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("换一批单词重新听", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
+            Text(stringResource(R.string.test_listening_btn_retry_new_words), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
         }
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedButton(
@@ -843,11 +845,11 @@ private fun ResultView(
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
             shape = RoundedCornerShape(28.dp)
         ) {
-            Text("返回等级选择", fontSize = 16.sp)
+            Text(stringResource(R.string.test_listening_btn_back_to_levels), fontSize = 16.sp)
         }
         Spacer(modifier = Modifier.height(24.dp))
         TextButton(onClick = onBack) {
-            Text("离开工坊", color = textColor)
+            Text(stringResource(R.string.test_common_btn_exit_workshop), color = textColor)
         }
     }
 }

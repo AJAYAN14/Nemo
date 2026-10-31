@@ -12,7 +12,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -500,7 +502,7 @@ fun LevelSelector(
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
-        Text("确定", fontWeight = FontWeight.Bold, color = Color.White)
+        Text(stringResource(R.string.test_common_btn_confirm), fontWeight = FontWeight.Bold, color = Color.White)
     }
 }
 

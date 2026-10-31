@@ -116,7 +116,7 @@ fun LiquidToggle(
     val trackBackdrop = rememberLayerBackdrop()
     val effectiveBackdrop = backdrop ?: rememberCanvasBackdrop { drawRect(surfaceColor) }
 
-    // 组合容器：支持原版胶囊尺寸，统一全区域手势（捕获按下、拖动与点击，并在拖拽时消费事件锁定外层滚动）
+    // 组合容器：统一全区域手势（捕获按下、拖动与点击，并在拖拽时消费事件锁定外层滚动）
     Box(
         modifier = modifier
             .size(64f.dp, 28f.dp)
@@ -199,7 +199,7 @@ fun LiquidToggle(
                 .size(64f.dp, 28f.dp)
         )
 
-        // 2. 原版液态玻璃胶囊滑块 (40dp × 24dp 饱满胶囊)
+        // 2. 液态玻璃胶囊滑块 (40dp × 24dp 饱满胶囊)
         Box(
             Modifier
                 .graphicsLayer {
