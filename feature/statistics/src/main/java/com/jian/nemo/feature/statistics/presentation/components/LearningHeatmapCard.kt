@@ -64,27 +64,28 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.usecase.statistics.HeatmapDay
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.designsystem.theme.HeatmapPalette
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sin
 
 // 热力图主题配色（火焰渐变）
-private val Level0 = Color(0xFFF1F5F9)
-private val Level1 = Color(0xFFFFD7D5)
-private val Level2 = Color(0xFFFFA39E)
-private val Level3 = Color(0xFFFF4D4F)
-private val Level4 = Color(0xFFCF1322)
+private val Level0 = HeatmapPalette.Level0
+private val Level1 = HeatmapPalette.Level1
+private val Level2 = HeatmapPalette.Level2
+private val Level3 = HeatmapPalette.Level3
+private val Level4 = HeatmapPalette.Level4
 
 // 暗色模式配色（炽热熔岩微光）
-private val Level0Dark = Color(0xFF1E2430)
-private val Level1Dark = Color(0xFF3F2020)
-private val Level2Dark = Color(0xFF742929)
-private val Level3Dark = Color(0xFFBD3131)
-private val Level4Dark = Color(0xFFF04A4A)
+private val Level0Dark = HeatmapPalette.Level0Dark
+private val Level1Dark = HeatmapPalette.Level1Dark
+private val Level2Dark = HeatmapPalette.Level2Dark
+private val Level3Dark = HeatmapPalette.Level3Dark
+private val Level4Dark = HeatmapPalette.Level4Dark
 
 // 粒子高光核心色
-private val DotGlowLight = Color(0xFFFFFFFF)
-private val DotGlowDark = Color(0xFFFFECEB)
+private val DotGlowLight = HeatmapPalette.DotGlowLight
+private val DotGlowDark = HeatmapPalette.DotGlowDark
 
 private val WEEKDAYS = listOf("一", "", "三", "", "五", "", "日")
 private val MONTHS = listOf("1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月")

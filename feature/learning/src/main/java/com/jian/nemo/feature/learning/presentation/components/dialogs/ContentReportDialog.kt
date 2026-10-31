@@ -30,11 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
@@ -51,42 +54,52 @@ fun ContentReportDialog(
     val haptic = LocalHapticFeedback.current
 
     // 纯净中性灰色设计系统（双模自适应，去除 MD3 主色调侵入）
-    val chipSelectedBg = if (isDark) Color(0xFF3F3F46) else Color(0xFF18181B)
-    val chipSelectedBorder = if (isDark) Color(0xFF71717A) else Color(0xFF18181B)
+    val chipSelectedBg = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc900
+    val chipSelectedBorder = if (isDark) LearningPalette.ReportZinc500 else LearningPalette.ReportZinc900
     val chipSelectedText = Color.White
-    val chipUnselectedBg = if (isDark) Color(0xFF27272A) else Color(0xFFF4F4F5)
-    val chipUnselectedBorder = if (isDark) Color(0xFF3F3F46) else Color(0xFFE4E4E7)
-    val chipUnselectedText = if (isDark) Color(0xFFA1A1AA) else Color(0xFF52525B)
+    val chipUnselectedBg = if (isDark) LearningPalette.ReportZinc800 else LearningPalette.ReportZinc100
+    val chipUnselectedBorder = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc200
+    val chipUnselectedText = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc600
 
-    val inputBg = if (isDark) Color(0xFF27272A) else Color(0xFFF4F4F5)
-    val inputBorderFocused = if (isDark) Color(0xFFA1A1AA) else Color(0xFF52525B)
-    val inputBorderUnfocused = if (isDark) Color(0xFF3F3F46) else Color(0xFFE4E4E7)
-    val inputCursor = if (isDark) Color.White else Color(0xFF18181B)
-    val inputTextColor = if (isDark) Color(0xFFF4F4F5) else Color(0xFF18181B)
-    val hintTextColor = if (isDark) Color(0xFFA1A1AA).copy(alpha = 0.6f) else Color(0xFF71717A).copy(alpha = 0.7f)
-    val promptTextColor = if (isDark) Color(0xFFA1A1AA) else Color(0xFF71717A)
+    val inputBg = if (isDark) LearningPalette.ReportZinc800 else LearningPalette.ReportZinc100
+    val inputBorderFocused = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc600
+    val inputBorderUnfocused = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc200
+    val inputCursor = if (isDark) Color.White else LearningPalette.ReportZinc900
+    val inputTextColor = if (isDark) LearningPalette.ReportZinc100 else LearningPalette.ReportZinc900
+    val hintTextColor = if (isDark) LearningPalette.ReportZinc400.copy(alpha = 0.6f) else LearningPalette.ReportZinc500.copy(alpha = 0.7f)
+    val promptTextColor = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc500
 
-    val confirmButtonColor = if (isDark) Color(0xFF3F3F46) else Color(0xFF18181B)
+    val confirmButtonColor = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc900
 
     // 错误选项配置
-    val errorOptions = remember(learningMode) {
+    val errMeaning = stringResource(R.string.report_err_meaning)
+    val errFurigana = stringResource(R.string.report_err_furigana)
+    val errExample = stringResource(R.string.report_err_example)
+    val errSpelling = stringResource(R.string.report_err_spelling)
+    val errPos = stringResource(R.string.report_err_pos)
+    val errOther = stringResource(R.string.report_err_other)
+    val errExplanation = stringResource(R.string.report_err_explanation)
+    val errConnection = stringResource(R.string.report_err_connection)
+    val errLevel = stringResource(R.string.report_err_level)
+
+    val errorOptions = remember(learningMode, errMeaning, errFurigana, errExample, errSpelling, errPos, errOther, errExplanation, errConnection, errLevel) {
         if (learningMode == LearningMode.Word) {
             listOf(
-                "meaning_error" to "释义错误",
-                "furigana_error" to "注音错误",
-                "example_error" to "例句错误",
-                "spelling_error" to "拼写错误",
-                "pos_error" to "词性错误",
-                "other" to "其他问题"
+                "meaning_error" to errMeaning,
+                "furigana_error" to errFurigana,
+                "example_error" to errExample,
+                "spelling_error" to errSpelling,
+                "pos_error" to errPos,
+                "other" to errOther
             )
         } else {
             listOf(
-                "meaning_error" to "解释错误",
-                "connection_error" to "接续错误",
-                "furigana_error" to "注音错误",
-                "example_error" to "例句错误",
-                "level_error" to "级别错误",
-                "other" to "其他问题"
+                "meaning_error" to errExplanation,
+                "connection_error" to errConnection,
+                "furigana_error" to errFurigana,
+                "example_error" to errExample,
+                "level_error" to errLevel,
+                "other" to errOther
             )
         }
     }
@@ -96,13 +109,13 @@ fun ContentReportDialog(
 
     val isDescriptionRequired = selectedType == "other"
     val isSubmitEnabled = !isDescriptionRequired || otherDescription.trim().isNotEmpty()
-    val itemName = if (learningMode == LearningMode.Word) "单词" else "语法"
+    val itemName = if (learningMode == LearningMode.Word) stringResource(R.string.mode_word) else stringResource(R.string.mode_grammar)
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "报告内容错误",
-        confirmText = "确认反馈",
-        dismissText = "我再想想",
+        title = stringResource(R.string.title_content_report),
+        confirmText = stringResource(R.string.btn_confirm_feedback),
+        dismissText = stringResource(R.string.btn_think_again),
         confirmButtonColor = confirmButtonColor,
         confirmEnabled = isSubmitEnabled,
         onConfirm = {
@@ -114,7 +127,7 @@ fun ContentReportDialog(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "请选择当前${itemName}内容的错误类型：",
+                    text = stringResource(R.string.desc_select_error_type, itemName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = promptTextColor
                 )
@@ -181,7 +194,7 @@ fun ContentReportDialog(
                     onValueChange = { if (it.length <= 100) otherDescription = it },
                     placeholder = {
                         Text(
-                            text = if (isDescriptionRequired) "请详细描述错误内容（必填，100字以内）" else "补充具体错误细节（选填，100字以内）",
+                            text = if (isDescriptionRequired) stringResource(R.string.report_other_desc_required) else stringResource(R.string.report_other_desc_placeholder),
                             style = MaterialTheme.typography.bodySmall.copy(color = hintTextColor)
                         )
                     },

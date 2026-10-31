@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -97,18 +100,18 @@ fun ThemeColorDialog(
     }
 
     val themeColors = listOf(
-        ThemeColor("默认", Color(0xFF0E68FF)), // 品牌原生蓝置顶
-        ThemeColor("蔷薇红", Color(0xFFFF2D55)),
-        ThemeColor("活力橙", Color(0xFFFF9500)),
-        ThemeColor("明快黄", Color(0xFFFFCC00)),
-        ThemeColor("薄荷绿", Color(0xFF4CD964)),
-        ThemeColor("天空蓝", Color(0xFF5AC8FA)),
-        ThemeColor("经典蓝", Color(0xFF007AFF)),
-        ThemeColor("薰衣草紫", Color(0xFF5856D6)),
-        ThemeColor("罗兰紫", Color(0xFFAF52DE)),
-        ThemeColor("荧光青", Color(0xFF00E5FF)),
-        ThemeColor("亮青绿", Color(0xFF1DE9B6)),
-        ThemeColor("炽热红", Color(0xFFFF3D00))
+        ThemeColor("默认", UserPalette.PrimaryGlassTintLight),
+        ThemeColor("蔷薇红", IosColors.Pink),
+        ThemeColor("活力橙", IosColors.Orange),
+        ThemeColor("明快黄", IosColors.Yellow),
+        ThemeColor("薄荷绿", SettingsPalette.ThemeAppleGreen),
+        ThemeColor("天空蓝", IosColors.Teal),
+        ThemeColor("经典蓝", IosColors.Blue),
+        ThemeColor("薰衣草紫", IosColors.Indigo),
+        ThemeColor("罗兰紫", IosColors.Purple),
+        ThemeColor("荧光青", SettingsPalette.ThemeElectricCyan),
+        ThemeColor("亮青绿", SettingsPalette.ThemeBrightTeal),
+        ThemeColor("炽热红", SettingsPalette.ThemeBrightOrangeRed)
     )
 
     // 默认颜色与外部选中颜色初始化

@@ -2,6 +2,8 @@ package com.jian.nemo.feature.learning.presentation.kana
 
 import android.view.HapticFeedbackConstants
 import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -154,10 +156,10 @@ private object KanaSectionIndex {
     const val Yoon = 5
 }
 
-private val LightPrimaryChip = Color(0xFFDFF4FF)
-private val LightAccent = Color(0xFF0EA5A8)
-private val LightQuickNavBase = Color(0xFFF3FAFF)
-private val LightQuickNavSelected = Color(0xFFD7F1FF)
+private val LightPrimaryChip = LearningPalette.KanaChipBgLight
+private val LightAccent = LearningPalette.KanaAccentLight
+private val LightQuickNavBase = LearningPalette.KanaQuickNavBaseLight
+private val LightQuickNavSelected = LearningPalette.KanaQuickNavSelectedLight
 
 @Composable
 fun KanaChartScreen(
@@ -174,8 +176,8 @@ fun KanaChartScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
-    val textMain = if (isDark) colorScheme.onSurface else Color(0xFF334155)
-    val textSub = if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)
+    val textMain = if (isDark) colorScheme.onSurface else LearningPalette.KanaSlateDark
+    val textSub = if (isDark) colorScheme.onSurfaceVariant else LearningPalette.KanaSlateSub
     var currentType by remember { mutableIntStateOf(0) }
     var currentSection by remember { mutableStateOf("seion") }
     val isKatakana = currentType == 1
@@ -189,7 +191,7 @@ fun KanaChartScreen(
     } else {
         if (isDark) colorScheme.primary.copy(alpha = 0.7f) else LightAccent
     }
-    val tabContainerColor = if (isDark) colorScheme.surfaceContainer else Color(0xFFEAF6FF)
+    val tabContainerColor = if (isDark) colorScheme.surfaceContainer else LearningPalette.KanaTabBgLight
     val tabSelectedColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White
     val quickNavBaseColor = if (isDark) surfaceColor else LightQuickNavBase
     val quickNavSelectedColor = if (isDark) colorScheme.primary.copy(alpha = 0.28f) else LightQuickNavSelected
@@ -336,7 +338,7 @@ fun KanaChartScreen(
                     val toggleFg = if (isPlumpDuo) {
                         if (currentType == 0) IsoluminantPalette.SkyIndigo else IsoluminantPalette.RoseRuby
                     } else {
-                        if (currentType == 0) Color(0xFF4F46E5) else Color(0xFFDB2777)
+                        if (currentType == 0) LearningPalette.KanaIndigoAccent else LearningPalette.KanaPinkAccent
                     }
                     FrostedLiquidGlassButton(
                         onClick = {
@@ -362,7 +364,7 @@ fun KanaChartScreen(
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.SwapHoriz,
-                                    contentDescription = "切换假名类型",
+                                    contentDescription = stringResource(R.string.kana_btn_toggle_type),
                                     modifier = Modifier.size(20.dp),
                                     tint = toggleFg
                                 )
@@ -393,7 +395,7 @@ fun KanaChartScreen(
             )
             sections.forEach { (sectionKey, label, sectionColor) ->
                 val isSelected = currentSection == sectionKey
-                val activeThemeColor = if (isPlumpDuo) sectionColor else Color(0xFF4F46E5)
+                val activeThemeColor = if (isPlumpDuo) sectionColor else LearningPalette.KanaIndigoAccent
 
                 val selectedSurface = if (isDark) {
                     if (isPlumpDuo) activeThemeColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
@@ -405,7 +407,7 @@ fun KanaChartScreen(
                 val textFg = if (isSelected) {
                     if (isDark) Color.White else activeThemeColor
                 } else {
-                    if (isDark) Color.White.copy(alpha = 0.7f) else Color(0xFF334155)
+                    if (isDark) Color.White.copy(alpha = 0.7f) else LearningPalette.KanaSlateDark
                 }
 
                 FrostedLiquidGlassButton(
@@ -459,7 +461,7 @@ private fun QuickNavButton(
     onClick: () -> Unit
 ) {
     val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else Color(0xFF4F46E5)
+    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else LearningPalette.KanaIndigoAccent
     val fgColor by animateColorAsState(
         targetValue = if (selected) activeColor else textMain.copy(alpha = 0.6f),
         animationSpec = tween(180),
@@ -617,7 +619,7 @@ private fun KanaCard(
     }
 
     if (cell.isEmpty) {
-        val emptyBorderColor = if (isDark) Color(0xFF374151) else Color(0xFFE5E7EB)
+        val emptyBorderColor = if (isDark) NemoNeutrals.Gray700 else NemoNeutrals.Gray200
         Box(
             modifier = modifier
                 .aspectRatio(1f)
@@ -643,7 +645,7 @@ private fun KanaCard(
     val cardAudioId = "kana_${kanaText.hashCode()}"
     val isPlaying = playingAudioId == cardAudioId
     
-    val defaultBorderColor = if (cell.isPlaceholder) Color(0xFFD1D5DB) else Color.Transparent
+    val defaultBorderColor = if (cell.isPlaceholder) NemoNeutrals.Gray300 else Color.Transparent
     val borderColor by animateColorAsState(
         targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.88f else 0.78f) else defaultBorderColor,
         animationSpec = tween(180),

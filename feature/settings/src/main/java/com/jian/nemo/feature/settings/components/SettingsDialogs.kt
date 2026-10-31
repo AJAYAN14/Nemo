@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.testTag
 
 
 /**
- * 重置确认对话框 (V2: Pro Max Style)
+ * 重置确认对话框
  */
 @Composable
 fun ConfirmResetDialog(

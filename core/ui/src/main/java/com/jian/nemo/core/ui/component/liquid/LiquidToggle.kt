@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
@@ -72,8 +73,8 @@ fun LiquidToggle(
     val isLightTheme = !isSystemInDarkTheme()
     val actualAccentColor = accentColor ?: MaterialTheme.colorScheme.primary
     val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(0.2f)
-        else Color(0xFF787880).copy(0.36f)
+        if (isLightTheme) UiPalette.LiquidTrackLight.copy(0.2f)
+        else UiPalette.LiquidTrackDark.copy(0.36f)
     val surfaceColor = MaterialTheme.colorScheme.surface
 
     val density = LocalDensity.current

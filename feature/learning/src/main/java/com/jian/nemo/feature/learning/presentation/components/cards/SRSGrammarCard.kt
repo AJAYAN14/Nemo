@@ -44,6 +44,8 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -72,6 +74,8 @@ import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import androidx.compose.runtime.remember
@@ -120,20 +124,20 @@ fun SRSGrammarCard(
 
     // 颜色系统
     val cardBackground = if (isDarkTheme) NemoSurfaceCardDark else NemoSurfaceCard
-    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color(0xFFE5E7EB)
+    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray200
     val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
-    val secondaryTextColor = if (isDarkTheme) Color(0xFF9CA3AF) else Color(0xFF6B7280)
+    val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
     // Indigo 标签色
-    val indigoBg = if (isDarkTheme) Color(0xFF1E1B4B) else Color(0xFFEEF2FF)
-    val indigoBorder = if (isDarkTheme) Color(0xFF3730A3) else Color(0xFFE0E7FF)
-    val indigoText = if (isDarkTheme) Color(0xFFA5B4FC) else Color(0xFF4F46E5)
+    val indigoBg = if (isDarkTheme) LearningPalette.IndigoBgDark else LearningPalette.IndigoBgLight
+    val indigoBorder = if (isDarkTheme) LearningPalette.IndigoBorderDark else LearningPalette.IndigoBorderLight
+    val indigoText = if (isDarkTheme) LearningPalette.IndigoTextDark else LearningPalette.IndigoTextLight
 
     // Yellow 提示色
-    val yellowBg = if (isDarkTheme) Color(0xFF713F12) else Color(0xFFFEFCE8)
-    val yellowBorder = if (isDarkTheme) Color(0xFF92400E) else Color(0xFFFEF3C7)
-    val yellowIcon = if (isDarkTheme) Color(0xFFFDE047) else Color(0xFFCA8A04)
-    val yellowText = if (isDarkTheme) Color(0xFFFEF08A) else Color(0xFF92400E)
+    val yellowBg = if (isDarkTheme) LearningPalette.YellowTipsBgDark else LearningPalette.YellowTipsBgLight
+    val yellowBorder = if (isDarkTheme) LearningPalette.YellowTipsBorderDark else LearningPalette.YellowTipsBorderLight
+    val yellowIcon = if (isDarkTheme) LearningPalette.YellowTipsIconDark else LearningPalette.YellowTipsIconLight
+    val yellowText = if (isDarkTheme) LearningPalette.YellowTipsTextDark else LearningPalette.YellowTipsTextLight
 
     Column(
         modifier = modifier
@@ -239,7 +243,7 @@ fun SRSGrammarCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Edit,
-                                    contentDescription = "临时手写板",
+                                    contentDescription = stringResource(R.string.btn_temp_whiteboard),
                                     tint = buttonTextColor,
                                     modifier = Modifier.size(15.dp)
                                 )
@@ -266,7 +270,7 @@ fun SRSGrammarCard(
                 // 思考提示（答案隐藏时）
                 if (!isAnswerShown) {
                     Text(
-                        text = "思考这个语法的用法...",
+                        text = stringResource(R.string.hint_think_grammar_usage),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryTextColor.copy(alpha = 0.6f),
@@ -277,10 +281,10 @@ fun SRSGrammarCard(
 
             cardBadge?.let { badge ->
                 val (text, bgColor, textColor) = when (badge) {
-                    CardBadge.NEW -> Triple("新学", if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFE0EDFF), if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8))
-                    CardBadge.LEARNING -> Triple("在学", if (isDarkTheme) Color(0xFF083344) else Color(0xFFE0F2FE), if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)) // Cyan
-                    CardBadge.REVIEW -> Triple("复习", if (isDarkTheme) Color(0xFF14532D) else Color(0xFFDCFCE7), if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534))
-                    CardBadge.RELEARN -> Triple("重学", if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFEDD5), if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412))
+                    CardBadge.NEW -> Triple(stringResource(R.string.card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
+                    CardBadge.LEARNING -> Triple(stringResource(R.string.card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
+                    CardBadge.REVIEW -> Triple(stringResource(R.string.card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
+                    CardBadge.RELEARN -> Triple(stringResource(R.string.card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
                 }
 
                 Box(
@@ -523,7 +527,7 @@ fun SRSGrammarCard(
                                 val chineseNumbers = listOf("一", "二", "三", "四", "五", "六", "七", "八", "九", "十")
                                 val label = chineseNumbers.getOrNull(usageIndex) ?: (usageIndex + 1).toString()
                                 Text(
-                                    text = "用法$label",
+                                    text = stringResource(R.string.grammar_label_usage_prefix, label),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
                                     color = effectiveUsageText,
@@ -546,7 +550,7 @@ fun SRSGrammarCard(
                             // 展开状态图标
                             Icon(
                                 imageVector = Icons.Rounded.KeyboardArrowDown, // 始终使用向下箭头
-                                contentDescription = if (isExpanded) "收起" else "展开",
+                                contentDescription = if (isExpanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand),
                                 tint = secondaryTextColor.copy(alpha = 0.5f),
                                 modifier = Modifier
                                     .size(20.dp)
@@ -603,7 +607,7 @@ fun SRSGrammarCard(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "接续",
+                                            text = stringResource(R.string.grammar_label_connection),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = secondaryTextColor,
@@ -651,7 +655,7 @@ fun SRSGrammarCard(
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = "说明",
+                                        text = stringResource(R.string.grammar_label_explanation),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = effectiveExplanationColor,
@@ -690,7 +694,7 @@ fun SRSGrammarCard(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = "例句",
+                                            text = stringResource(R.string.label_word_example),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = secondaryTextColor,
@@ -703,7 +707,7 @@ fun SRSGrammarCard(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .background(
-                                                if (isDarkTheme) Color(0xFF2D2D2D) else Color.White,
+                                                if (isDarkTheme) LearningPalette.ExampleBoxDark else Color.White,
                                                 RoundedCornerShape(16.dp)
                                             )
                                             .padding(horizontal = 12.dp)
@@ -806,7 +810,7 @@ fun SRSGrammarCard(
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = "TIPS: ${usage.notes}",
+                                        text = stringResource(R.string.grammar_tips_prefix, usage.notes ?: ""),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = effectiveTipsText,

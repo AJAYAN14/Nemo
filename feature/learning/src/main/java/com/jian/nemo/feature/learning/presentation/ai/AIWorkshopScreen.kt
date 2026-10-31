@@ -52,6 +52,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.delay
 import com.jian.nemo.feature.learning.presentation.ai.components.AIAuroraBackground
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -344,10 +345,10 @@ fun AIWorkshopScreen(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(22.dp),
-                        color = if (isDark) Color(0xFF0F172A).copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
+                        color = if (isDark) LearningPalette.AiSlateText.copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
                         border = BorderStroke(
                             1.dp,
-                            if (isDark) Color.White.copy(alpha = 0.14f) else Color(0x18000000)
+                            if (isDark) Color.White.copy(alpha = 0.14f) else LearningPalette.DrawerBorderLight
                         ),
                         shadowElevation = 0.dp,
                         modifier = Modifier.fillMaxWidth()
@@ -365,17 +366,17 @@ fun AIWorkshopScreen(
                                     Icon(
                                         imageVector = Icons.Rounded.AutoAwesome,
                                         contentDescription = null,
-                                        tint = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB),
+                                        tint = if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        text = "AI 正在生成例文与场景运用",
+                                        text = stringResource(R.string.workshop_ai_generating),
                                         style = MaterialTheme.typography.titleSmall.copy(
                                             fontWeight = FontWeight.Bold,
                                             letterSpacing = 0.5.sp
                                         ),
-                                        color = if (isDark) Color.White else Color(0xFF0F172A)
+                                        color = if (isDark) Color.White else LearningPalette.AiSlateText
                                     )
                                 }
                             }
@@ -406,12 +407,12 @@ fun AIWorkshopScreen(
                                                         .padding(top = 2.dp)
                                                         .size(18.dp)
                                                         .clip(CircleShape)
-                                                        .background(Color(0xFF10B981)), // 祖母绿实心圆
+                                                        .background(LearningPalette.ReadingAccentGreen),
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     Icon(
                                                         imageVector = Icons.Rounded.Check,
-                                                        contentDescription = "已完成",
+                                                        contentDescription = stringResource(R.string.status_completed),
                                                         tint = Color.White,
                                                         modifier = Modifier.size(12.dp)
                                                     )
@@ -426,7 +427,7 @@ fun AIWorkshopScreen(
                                                     CircularProgressIndicator(
                                                         modifier = Modifier.size(14.dp),
                                                         strokeWidth = 2.dp,
-                                                        color = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+                                                        color = if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight
                                                     )
                                                 }
                                             }
@@ -539,10 +540,10 @@ private fun ModeSection(
     } else {
         colorScheme.primary
     }
-    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
+    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
     val modes = listOf(WorkshopMode.FREE, WorkshopMode.GRAMMAR)
-    val modeLabels = listOf("自由模式", "语法专项")
+    val modeLabels = listOf(stringResource(R.string.workshop_mode_free), stringResource(R.string.workshop_mode_grammar))
     val selectedIndex = modes.indexOf(currentMode).coerceAtLeast(0)
 
     Box(
@@ -552,7 +553,7 @@ private fun ModeSection(
             .background(trackBg, RoundedCornerShape(14.dp))
             .border(
                 width = 1.dp,
-                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else Color(0xFFE2E8F0).copy(alpha = 0.8f),
+                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else LearningPalette.AiBorderLight.copy(alpha = 0.8f),
                 shape = RoundedCornerShape(14.dp)
             )
             .padding(4.dp)
@@ -585,7 +586,7 @@ private fun ModeSection(
             modes.forEachIndexed { index, mode ->
                 val isSelected = mode == currentMode
                 val textColor by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)),
+                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else LearningPalette.AiMutedText),
                     animationSpec = tween(180),
                     label = "modeTextColor"
                 )
@@ -688,7 +689,7 @@ private fun DifficultySection(
     val isDark = colorScheme.background.luminance() < 0.5f
     val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorScheme.primary
-    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else Color(0xFFF1F5F9)
+    val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
     val selectedIndex = levels.indexOf(currentLevel).coerceAtLeast(0)
@@ -700,7 +701,7 @@ private fun DifficultySection(
             .background(trackBg, RoundedCornerShape(14.dp))
             .border(
                 width = 1.dp,
-                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else Color(0xFFE2E8F0).copy(alpha = 0.8f),
+                color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else LearningPalette.AiBorderLight.copy(alpha = 0.8f),
                 shape = RoundedCornerShape(14.dp)
             )
             .padding(4.dp)
@@ -733,7 +734,7 @@ private fun DifficultySection(
             levels.forEach { level ->
                 val isSelected = level == currentLevel
                 val textColor by animateColorAsState(
-                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else Color(0xFF64748B)),
+                    targetValue = if (isSelected) Color.White else (if (isDark) colorScheme.onSurfaceVariant else LearningPalette.AiMutedText),
                     animationSpec = tween(180),
                     label = "difficultyTextColor"
                 )
@@ -1022,12 +1023,12 @@ private fun ExerciseContent(
                                     Icons.Rounded.Lightbulb,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp),
-                                    tint = Color(0xFFFBBF24)
+                                    tint = LearningPalette.AiAmberYellow
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "提示: ${exercise.hints.joinToString(", ")}",
+                                text = stringResource(R.string.workshop_hint_prefix, exercise.hints.joinToString(", ")),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 18.sp
@@ -1535,9 +1536,9 @@ private fun WorkshopHardDecodedText(
             letterSpacing = 0.2.sp
         ),
         color = if (isCompleted) {
-            if (isDark) Color.White.copy(alpha = 0.95f) else Color(0xFF0F172A)
+            if (isDark) Color.White.copy(alpha = 0.95f) else LearningPalette.AiSlateText
         } else {
-            if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+            if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight
         },
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,

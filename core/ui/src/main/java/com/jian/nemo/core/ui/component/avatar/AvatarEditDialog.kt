@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -87,13 +88,13 @@ fun AvatarEditDialog(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val avatarInnerBorder = if (isDark) Color(0xFF2C2C2E) else Color.White
+    val avatarInnerBorder = if (isDark) UiPalette.AvatarInnerBorderDark else Color.White
     val avatarOuterBorder = if (isDark) Color.White.copy(alpha = 0.15f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
 
-    val blueColor = if (isDark) Color(0xFF0A84FF) else Color(0xFF007AFF)
-    val greenColor = if (isDark) Color(0xFF30D158) else Color(0xFF34C759)
-    val purpleColor = if (isDark) Color(0xFFBF5AF2) else Color(0xFFAF52DE)
-    val redColor = if (isDark) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val blueColor = if (isDark) UiPalette.AvatarSystemBlueDark else UiPalette.AvatarSystemBlueLight
+    val greenColor = if (isDark) UiPalette.AvatarSystemGreenDark else UiPalette.AvatarSystemGreenLight
+    val purpleColor = if (isDark) UiPalette.AvatarSystemPurpleDark else UiPalette.AvatarSystemPurpleLight
+    val redColor = if (isDark) UiPalette.AvatarSystemRedDark else UiPalette.AvatarSystemRedLight
 
     NemoDialog(
         onDismissRequest = onDismiss,

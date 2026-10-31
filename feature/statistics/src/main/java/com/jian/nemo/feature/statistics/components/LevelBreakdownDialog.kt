@@ -43,7 +43,7 @@ import com.jian.nemo.feature.statistics.OverallPredictionSummary
 import kotlinx.coroutines.delay
 
 /**
- * 等级分布弹窗 (UI/UX Pro Max · 预测时间线版)
+ * 等级分布弹窗
  * 
  * 展示单词/语法的等级占比，支持点击等级卡片展开预测达成日期与3秒自动收起
  */

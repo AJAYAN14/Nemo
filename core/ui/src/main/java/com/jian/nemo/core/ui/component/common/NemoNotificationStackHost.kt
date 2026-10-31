@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -281,20 +282,20 @@ private fun SwipeableNotificationItem(
 private fun getStackGradientColors(type: NemoSnackbarType, isDarkTheme: Boolean): List<Color> {
     return when (type) {
         NemoSnackbarType.INFO -> {
-            if (isDarkTheme) listOf(Color(0xFF3D3A50), Color(0xFF2B2930))
-            else listOf(Color(0xFF0E68FF), Color(0xFF4A90D9))
+            if (isDarkTheme) listOf(UiPalette.NotifyInfoGradStartDark, UiPalette.NotifyInfoGradEndDark)
+            else listOf(UiPalette.NotifyInfoGradStartLight, UiPalette.NotifyInfoGradEndLight)
         }
         NemoSnackbarType.SUCCESS -> {
-            if (isDarkTheme) listOf(Color(0xFF2D4A3D), Color(0xFF1E3A2F))
-            else listOf(Color(0xFF34C759), Color(0xFF28A745))
+            if (isDarkTheme) listOf(UiPalette.NotifySuccessGradStartDark, UiPalette.NotifySuccessGradEndDark)
+            else listOf(UiPalette.NotifySuccessGradStartLight, UiPalette.NotifySuccessGradEndLight)
         }
         NemoSnackbarType.WARNING -> {
-            if (isDarkTheme) listOf(Color(0xFF4A3D2D), Color(0xFF3A2F1E))
-            else listOf(Color(0xFFFF9500), Color(0xFFE68A00))
+            if (isDarkTheme) listOf(UiPalette.NotifyWarnGradStartDark, UiPalette.NotifyWarnGradEndDark)
+            else listOf(UiPalette.NotifyWarnGradStartLight, UiPalette.NotifyWarnGradEndLight)
         }
         NemoSnackbarType.ERROR -> {
-            if (isDarkTheme) listOf(Color(0xFF4A2D2D), Color(0xFF3A1E1E))
-            else listOf(Color(0xFFFF3B30), Color(0xFFE53935))
+            if (isDarkTheme) listOf(UiPalette.NotifyErrorGradStartDark, UiPalette.NotifyErrorGradEndDark)
+            else listOf(UiPalette.NotifyErrorGradStartLight, UiPalette.NotifyErrorGradEndLight)
         }
     }
 }

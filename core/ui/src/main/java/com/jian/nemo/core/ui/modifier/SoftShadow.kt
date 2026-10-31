@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.UiPalette
 
 /**
  * 极简高质感弥散阴影修饰符，效果完全等同于 Flutter/Figma 中的 BoxShadow。
@@ -21,7 +22,7 @@ import androidx.compose.ui.unit.dp
  * @param spread 扩展半径（默认: 0.dp）
  */
 fun Modifier.softShadow(
-    color: Color = Color(0x0D000000),
+    color: Color = UiPalette.ShadowLight,
     borderRadius: Dp = 22.dp,
     blurRadius: Dp = 16.dp,
     offsetY: Dp = 2.dp,
@@ -63,7 +64,7 @@ fun Modifier.softCardShadow(
     borderRadius: Dp = 22.dp,
     isDark: Boolean = false
 ): Modifier {
-    val shadowColor = if (isDark) Color(0x26000000) else Color(0x0D000000)
+    val shadowColor = if (isDark) UiPalette.ShadowDark else UiPalette.ShadowLight
     return this.softShadow(
         color = shadowColor,
         borderRadius = borderRadius,

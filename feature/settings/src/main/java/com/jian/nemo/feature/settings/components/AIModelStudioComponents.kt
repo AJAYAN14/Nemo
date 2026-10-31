@@ -96,6 +96,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.AIPalette
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -130,14 +133,14 @@ import kotlin.math.sin
  * 界面专属中性高级调色板 (全面去 MD3 化，专为深浅色模式物理折射定制)
  */
 object StudioThemePalette {
-    fun cardBackground(isDark: Boolean) = if (isDark) Color(0xFF13171F) else Color(0xFFFFFFFF)
-    fun cardBorder(isDark: Boolean) = if (isDark) Color(0x2294A3B8) else Color(0x140F172A)
-    fun surfacePill(isDark: Boolean) = if (isDark) Color(0xFF1C222C) else Color(0xFFF1F5F9)
-    fun surfacePillBorder(isDark: Boolean) = if (isDark) Color(0x2894A3B8) else Color(0x180F172A)
-    fun textPrimary(isDark: Boolean) = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    fun textSecondary(isDark: Boolean) = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
-    fun textMuted(isDark: Boolean) = if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
-    fun inputBorder(isDark: Boolean) = if (isDark) Color(0x2894A3B8) else Color(0x200F172A)
+    fun cardBackground(isDark: Boolean) = if (isDark) AIPalette.StudioCardBgDark else AIPalette.StudioCardBgLight
+    fun cardBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.13f) else UserPalette.TextSlate900.copy(alpha = 0.08f)
+    fun surfacePill(isDark: Boolean) = if (isDark) AIPalette.StudioPillBgDark else AIPalette.StudioPillBgLight
+    fun surfacePillBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.16f) else UserPalette.TextSlate900.copy(alpha = 0.09f)
+    fun textPrimary(isDark: Boolean) = if (isDark) AIPalette.StudioInputContainerLight else UserPalette.TextSlate900
+    fun textSecondary(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder else UserPalette.TextSlate500
+    fun textMuted(isDark: Boolean) = if (isDark) UserPalette.TextSlate500 else UserPalette.SlatePlaceholder
+    fun inputBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.16f) else UserPalette.TextSlate900.copy(alpha = 0.12f)
 }
 
 /**
@@ -161,7 +164,7 @@ object AIPlatformRegistry {
             id = "deepseek",
             name = "DeepSeek",
             tagline = "深度求索 · V4 旗舰推理与高性价比",
-            brandColor = Color(0xFF0E68FF),
+            brandColor = AIPalette.DeepSeek,
             iconRes = DesignR.drawable.ic_deepseek,
             defaultUrl = "https://api.deepseek.com/v1",
             flagshipModels = listOf("deepseek-v4-pro", "deepseek-v4-flash")
@@ -170,7 +173,7 @@ object AIPlatformRegistry {
             id = "doubao",
             name = "豆包",
             tagline = "字节跳动 · Seed 2.1 旗舰与 Evolving 持续演进",
-            brandColor = Color(0xFF00B4D8),
+            brandColor = AIPalette.Doubao,
             iconRes = DesignR.drawable.ic_doubao,
             defaultUrl = "https://ark.cn-beijing.volces.com/api/v3",
             flagshipModels = listOf("doubao-seed-evolving", "doubao-seed-2-1-pro-260915", "doubao-seed-2-1-lite-260915", "doubao-seed-2-1-turbo-260628")
@@ -179,7 +182,7 @@ object AIPlatformRegistry {
             id = "glm",
             name = "智谱 GLM",
             tagline = "智谱 AI · GLM-5.3 旗舰推理与 Agent 编码",
-            brandColor = Color(0xFF3762FF),
+            brandColor = AIPalette.Glm,
             iconRes = DesignR.drawable.ic_glm,
             defaultUrl = "https://open.bigmodel.cn/api/paas/v4",
             flagshipModels = listOf("glm-5.3", "glm-5.3-flash", "glm-5.2", "glm-5.1", "glm-4.7-flash")
@@ -188,7 +191,7 @@ object AIPlatformRegistry {
             id = "kimi",
             name = "Kimi",
             tagline = "Moonshot AI · K3 旗舰 1M 多模态与长程编程",
-            brandColor = Color(0xFF007AFF),
+            brandColor = AIPalette.Kimi,
             iconRes = DesignR.drawable.ic_kimi,
             defaultUrl = "https://api.moonshot.cn/v1",
             flagshipModels = listOf("kimi-k3", "kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k2.6")
@@ -197,7 +200,7 @@ object AIPlatformRegistry {
             id = "mimo",
             name = "Mimo",
             tagline = "小米大模型 · V2.6 旗舰推理与端云协同",
-            brandColor = Color(0xFFFF6A00),
+            brandColor = AIPalette.Mimo,
             iconRes = DesignR.drawable.ic_mimo,
             defaultUrl = "https://api.xiaomimimo.com/v1",
             flagshipModels = listOf("mimo-v2.6-pro", "mimo-v2.6-flash", "mimo-v2.6-pro-ultraspeed")
@@ -206,7 +209,7 @@ object AIPlatformRegistry {
             id = "qwen",
             name = "通义千问",
             tagline = "阿里云百炼 · qwen3.8-max 旗舰与双轨生态",
-            brandColor = Color(0xFF615CED),
+            brandColor = AIPalette.Qwen,
             iconRes = DesignR.drawable.ic_qwen,
             defaultUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
             flagshipModels = listOf("qwen3.8-max", "qwen3.8-flash", "qwen3.7-max", "qwen-turbo")
@@ -217,7 +220,7 @@ object AIPlatformRegistry {
             id = "claude",
             name = "Claude",
             tagline = "Anthropic · 5.x 旗舰体系与自适应思考链",
-            brandColor = Color(0xFFD97706),
+            brandColor = AIPalette.ClaudeAmber,
             iconRes = DesignR.drawable.ic_claude,
             defaultUrl = "https://api.anthropic.com/v1",
             flagshipModels = listOf("claude-sonnet-5-5", "claude-opus-5-5", "claude-haiku-5-5", "claude-fable-5-1")
@@ -226,7 +229,7 @@ object AIPlatformRegistry {
             id = "openai",
             name = "OpenAI",
             tagline = "GPT-6 旗舰梯队 · Astra 深度推理与 Sol 智能体",
-            brandColor = Color(0xFF10A37F),
+            brandColor = AIPalette.OpenAI,
             iconRes = DesignR.drawable.ic_openai,
             defaultUrl = "https://api.openai.com/v1",
             flagshipModels = listOf("gpt-6-astra", "gpt-6.1-sol", "gpt-6-luna", "chat-latest")
@@ -235,7 +238,7 @@ object AIPlatformRegistry {
             id = "gemini",
             name = "Gemini",
             tagline = "Google DeepMind · Argon 旗舰推理与百万上下文",
-            brandColor = Color(0xFFAF52DE),
+            brandColor = AIPalette.Gemini,
             iconRes = DesignR.drawable.ic_gemini,
             defaultUrl = "https://generativelanguage.googleapis.com/v1beta",
             flagshipModels = listOf("gemini-4-argon", "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview")
@@ -244,7 +247,7 @@ object AIPlatformRegistry {
             id = "custom",
             name = "自定义",
             tagline = "接入任意兼容 OpenAI 协议的接口与模型",
-            brandColor = Color(0xFF8B5CF6),
+            brandColor = AIPalette.CustomPurple,
             iconVector = Icons.Rounded.Cable,
             defaultUrl = "",
             flagshipModels = listOf(
@@ -579,8 +582,8 @@ fun SlotModelPicker(
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = platform.brandColor,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                focusedContainerColor = if (isDark) Color(0xFF141720) else Color(0xFFF8FAFC),
-                                unfocusedContainerColor = if (isDark) Color(0xFF141720) else Color(0xFFF8FAFC)
+                                focusedContainerColor = if (isDark) AIPalette.StudioInputContainerDark else AIPalette.StudioInputContainerLight,
+                                unfocusedContainerColor = if (isDark) AIPalette.StudioInputContainerDark else AIPalette.StudioInputContainerLight
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -609,7 +612,7 @@ fun SlotModelPicker(
                                     platform.brandColor.copy(alpha = if (isDark) 0.16f else 0.10f)
                                 } else {
                                     if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.35f)
-                                    else Color(0xFFF8FAFC)
+                                    else AIPalette.StudioInputContainerLight
                                 },
                                 border = BorderStroke(
                                     width = if (isSelected) 1.2.dp else 0.5.dp,
@@ -1055,16 +1058,16 @@ fun SloshGaugeProbe(
                 shape = RoundedCornerShape(20.dp),
                 color = when {
                     isTesting -> platform.brandColor.copy(alpha = 0.12f)
-                    testResult != null && testResult.success -> Color(0xFF10A37F).copy(alpha = 0.12f)
-                    testResult != null && !testResult.success -> Color(0xFFF43F5E).copy(alpha = 0.12f)
-                    else -> if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f) else Color(0xFFF8FAFC)
+                    testResult != null && testResult.success -> AIPalette.OpenAI.copy(alpha = 0.12f)
+                    testResult != null && !testResult.success -> SettingsPalette.CoralRose.copy(alpha = 0.12f)
+                    else -> if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f) else AIPalette.StudioInputContainerLight
                 },
                 border = BorderStroke(
                     1.dp,
                     when {
                         isTesting -> platform.brandColor
-                        testResult != null && testResult.success -> Color(0xFF10A37F)
-                        testResult != null && !testResult.success -> Color(0xFFF43F5E)
+                        testResult != null && testResult.success -> AIPalette.OpenAI
+                        testResult != null && !testResult.success -> SettingsPalette.CoralRose
                         else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
                     }
                 ),
@@ -1120,7 +1123,7 @@ fun SloshGaugeProbe(
                                 Icon(
                                     imageVector = if (testResult.success) Icons.Rounded.CheckCircle else Icons.Rounded.ErrorOutline,
                                     contentDescription = null,
-                                    tint = if (testResult.success) Color(0xFF10A37F) else Color(0xFFF43F5E),
+                                    tint = if (testResult.success) AIPalette.OpenAI else SettingsPalette.CoralRose,
                                     modifier = Modifier.size(24.dp)
                                 )
                             } else {
@@ -1148,8 +1151,8 @@ fun SloshGaugeProbe(
                                     },
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                     color = when {
-                                        testResult != null && testResult.success -> Color(0xFF10A37F)
-                                        testResult != null && !testResult.success -> Color(0xFFF43F5E)
+                                        testResult != null && testResult.success -> AIPalette.OpenAI
+                                        testResult != null && !testResult.success -> SettingsPalette.CoralRose
                                         else -> StudioThemePalette.textPrimary(isDark)
                                     },
                                     maxLines = 1,

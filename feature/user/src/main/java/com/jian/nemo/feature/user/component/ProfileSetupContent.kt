@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -78,11 +79,11 @@ fun ProfileSetupContent(
     val canStart = !isLoading && isNicknameValid && isPasswordValid
 
     // 配色定义
-    val backgroundColor = if (isDark) Color(0xFF100F14) else MaterialTheme.colorScheme.background
-    val titleTextColor = if (isDark) Color.White else Color(0xFF0F172A)
-    val subtitleTextColor = if (isDark) Color.White.copy(alpha = 0.50f) else Color(0xFF64748B)
-    val labelTextColor = if (isDark) Color.White.copy(alpha = 0.70f) else Color(0xFF334155)
-    val primaryGlassTint = if (isDark) Color(0xFF2563EB) else Color(0xFF0E68FF)
+    val backgroundColor = if (isDark) UserPalette.ProfileSetupBgDark else MaterialTheme.colorScheme.background
+    val titleTextColor = if (isDark) Color.White else UserPalette.TextSlate900
+    val subtitleTextColor = if (isDark) Color.White.copy(alpha = 0.50f) else UserPalette.TextSlate500
+    val labelTextColor = if (isDark) Color.White.copy(alpha = 0.70f) else UserPalette.TextSlate700
+    val primaryGlassTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
 
     Box(
         modifier = Modifier
@@ -147,7 +148,7 @@ fun ProfileSetupContent(
                         text = "跳过",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (isDark) Color.White.copy(alpha = 0.90f) else Color(0xFF1E293B)
+                        color = if (isDark) Color.White.copy(alpha = 0.90f) else UserPalette.TextSlate800
                     )
                 }
             }
@@ -178,7 +179,7 @@ fun ProfileSetupContent(
                 // 头像本体
                 Surface(
                     shape = CircleShape,
-                    border = BorderStroke(2.dp, if (isDark) Color(0xFF1E1D24) else Color.White),
+                    border = BorderStroke(2.dp, if (isDark) UserPalette.AvatarBorderDark else Color.White),
                     shadowElevation = 3.dp,
                     modifier = Modifier.size(104.dp)
                 ) {
@@ -197,7 +198,7 @@ fun ProfileSetupContent(
                         .size(32.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary)
-                        .border(2.dp, if (isDark) Color(0xFF100F14) else Color.White, CircleShape),
+                        .border(2.dp, if (isDark) UserPalette.ProfileSetupBgDark else Color.White, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

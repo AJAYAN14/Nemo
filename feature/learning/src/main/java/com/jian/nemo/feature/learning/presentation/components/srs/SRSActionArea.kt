@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.Composable
@@ -77,17 +78,17 @@ fun SRSActionArea(
     // 浅色模式：600-700 文字色 + 50-100 容器色（高饱和度，高对比）
     // 深色模式：200-300 文字色 + 800-900 容器色（降低饱和度，避免视觉振动）
 
-    val colorRose700 = if (isDarkTheme) Color(0xFFFDA4AF) else Color(0xFFBE123C)      // 浅色700 / 深色300
-    val colorRose100 = if (isDarkTheme) Color(0xFF4C0519) else Color(0xFFFFE4E6)      // 浅色100 / 深色900
+    val colorRose700 = if (isDarkTheme) LearningPalette.SrsRoseTextDark else LearningPalette.SrsRoseTextLight
+    val colorRose100 = if (isDarkTheme) LearningPalette.SrsRoseBgDark else LearningPalette.SrsRoseBgLight
 
-    val colorOrange600 = if (isDarkTheme) Color(0xFFFDBA74) else Color(0xFFEA580C)    // 浅色600 / 深色300
-    val colorOrange50 = if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFF7ED)     // 浅色50 / 深色900
+    val colorOrange600 = if (isDarkTheme) LearningPalette.SrsOrangeTextDark else LearningPalette.SrsOrangeTextLight
+    val colorOrange50 = if (isDarkTheme) LearningPalette.SrsOrangeBgDark else LearningPalette.SrsOrangeBgLight
 
-    val colorBlue600 = if (isDarkTheme) Color(0xFF93C5FD) else Color(0xFF2563EB)      // 浅色600 / 深色300
-    val colorBlue50 = if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFEFF6FF)       // 浅色50 / 深色900
+    val colorBlue600 = if (isDarkTheme) LearningPalette.SrsBlueTextDark else LearningPalette.SrsBlueTextLight
+    val colorBlue50 = if (isDarkTheme) LearningPalette.SrsBlueBgDark else LearningPalette.SrsBlueBgLight
 
-    val colorEmerald600 = if (isDarkTheme) Color(0xFF6EE7B7) else Color(0xFF059669)   // 浅色600 / 深色300
-    val colorEmerald50 = if (isDarkTheme) Color(0xFF064E3B) else Color(0xFFECFDF5)    // 浅色50 / 深色900
+    val colorEmerald600 = if (isDarkTheme) LearningPalette.SrsEmeraldTextDark else LearningPalette.SrsEmeraldTextLight
+    val colorEmerald50 = if (isDarkTheme) LearningPalette.SrsEmeraldBgDark else LearningPalette.SrsEmeraldBgLight
 
     val isDelayActive = isShowAnswerDelayEnabled || showAnswerAvailableAt > 0L
 
@@ -139,7 +140,7 @@ fun SRSActionArea(
     val effectiveEasyColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else colorEmerald600
     val effectiveEasyContainer = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorEmerald50
 
-    val effectiveStarColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFACC15)
+    val effectiveStarColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else LearningPalette.StarAmber
 
     Column(
         modifier = modifier
@@ -168,7 +169,7 @@ fun SRSActionArea(
                                 onShowAnswerBlocked?.invoke(remainingSec)
                             }
                         },
-                        backgroundColor = if (canShowAnswer) Color(0xFF111827) else Color(0xFF6B7280),
+                        backgroundColor = if (canShowAnswer) LearningPalette.ActionDarkBg else LearningPalette.ActionMutedText,
                         shape = RoundedCornerShape(16.dp),
                         elevation = 0.dp,
                         modifier = Modifier

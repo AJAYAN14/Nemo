@@ -7,6 +7,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.UiPalette
 
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
 
@@ -22,7 +24,7 @@ data class DiscoveryOption(
     val label: String,
     val icon: ImageVector? = null,
     val plumpIcon: PlumpIcon? = null,
-    val activeColor: Color = Color(0xFFFF3B30),
+    val activeColor: Color = NemoDanger,
 )
 
 /**
@@ -34,9 +36,9 @@ data class DiscoveryBarStyle(
     /** The background color of the bar components. */
     val backgroundColor: Color = Color.White,
     /** The color of the items when they are not selected. */
-    val inactiveColor: Color = Color(0xFF1C1C1E),
+    val inactiveColor: Color = UiPalette.DialogDarkBg,
     /** The color of the active indicator card. */
-    val indicatorColor: Color = Color(0xFFFF3B30),
+    val indicatorColor: Color = NemoDanger,
     /** The height of the discovery bar. */
     val height: Dp = 56.dp,
     /** The duration of the expansion/contraction animation in milliseconds. */
@@ -66,7 +68,7 @@ data class DiscoveryBarStyle(
     val textStyle: TextStyle = TextStyle(
         fontSize = 16.sp,
         fontWeight = FontWeight.W500,
-        color = Color(0xFF1C1C1E),
+        color = UiPalette.DialogDarkBg,
     ),
     /** The text style for the active option. */
     val activeTextStyle: TextStyle = TextStyle(

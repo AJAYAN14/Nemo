@@ -52,6 +52,7 @@ import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.delay
 import com.airbnb.lottie.compose.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.R as DesignR
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -75,9 +76,8 @@ import com.jian.nemo.feature.learning.presentation.ai.components.AIAuroraBackgro
 import java.text.BreakIterator
 import java.util.Locale
 
-// AIReadingScreen 内部局部红色常量（BentoColors 不含红色，此处独立定义）
-private val ReadingAccentRed = Color(0xFFEF4444)
-private val ReadingIconBgRed = Color(0xFFFEE2E2)
+private val ReadingAccentRed = LearningPalette.ReadingAccentRed
+private val ReadingIconBgRed = LearningPalette.ReadingIconBgRed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -372,8 +372,8 @@ private fun ConfigScreen(
                 icon = Icons.Rounded.Explore,
                 plumpIcon = PlumpIcon.Compass,
                 isoluminantColor = IsoluminantPalette.RoseRuby,
-                accent = Color(0xFFEC4899),
-                iconBg = Color(0xFFFCE7F3)
+                accent = LearningPalette.ReadingAccentPink,
+                iconBg = LearningPalette.ReadingIconBgPink
             ),
             ThemeCardInfo(
                 name = "商务工作",
@@ -381,8 +381,8 @@ private fun ConfigScreen(
                 icon = Icons.Rounded.BusinessCenter,
                 plumpIcon = PlumpIcon.Briefcase,
                 isoluminantColor = IsoluminantPalette.SkyIndigo,
-                accent = Color(0xFF6366F1),
-                iconBg = Color(0xFFEEF2FF)
+                accent = LearningPalette.ReadingAccentIndigo,
+                iconBg = LearningPalette.ReadingIconBgIndigo
             )
         )
     }
@@ -405,7 +405,7 @@ private fun ConfigScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .softShadow(
-                    color = if (isDark) Color(0x26000000) else Color(0x0C000000),
+                    color = if (isDark) LearningPalette.ShadowDark else LearningPalette.ShadowLight,
                     borderRadius = 26.dp,
                     blurRadius = 18.dp,
                     offsetY = 4.dp
@@ -652,7 +652,7 @@ private fun FluidLevelSegmentedPicker(
         } else {
             Brush.verticalGradient(
                 colors = listOf(
-                    Color(0xFFFB923C), // 珊瑚亮橙
+                    LearningPalette.AiCoralOrange,
                     BentoColors.Primary // 元气橘
                 )
             )
@@ -883,7 +883,7 @@ private fun ThemeBentoItem(
     } else {
         BorderStroke(
             0.8.dp,
-            if (isDark) colorScheme.outlineVariant.copy(alpha = 0.18f) else Color(0x0D000000)
+            if (isDark) colorScheme.outlineVariant.copy(alpha = 0.18f) else LearningPalette.ReadingBorderLight
         )
     }
 
@@ -891,7 +891,7 @@ private fun ThemeBentoItem(
     val surfaceColor = if (isDark) {
         if (isSelected) colorScheme.surfaceContainerHigh else colorScheme.surfaceContainer
     } else {
-        if (isSelected) Color.White else Color(0xFFFAFAFB)
+        if (isSelected) Color.White else LearningPalette.AiSlateBg
     }
 
     Surface(
@@ -911,7 +911,7 @@ private fun ThemeBentoItem(
                     )
                 } else {
                     this.softShadow(
-                        color = if (isDark) Color(0x20000000) else Color(0x08000000),
+                        color = if (isDark) LearningPalette.ReadingDarkShadow else LearningPalette.ReadingLightShadow,
                         borderRadius = 22.dp,
                         blurRadius = shadowBlur,
                         offsetY = 2.dp
@@ -1039,9 +1039,9 @@ private fun SpecularCtaButton(
         )
     } else {
         listOf(
-            Color(0xFFFB923C),
+            LearningPalette.AiCoralOrange,
             BentoColors.Primary,
-            Color(0xFFEA580C)
+            LearningPalette.AiDeepOrange
         )
     }
 
@@ -1202,9 +1202,9 @@ private fun HardDecodedText(
             letterSpacing = 0.2.sp
         ),
         color = if (isCompleted) {
-            if (isDark) Color.White.copy(alpha = 0.95f) else Color(0xFF0F172A)
+            if (isDark) Color.White.copy(alpha = 0.95f) else LearningPalette.AiSlateText
         } else {
-            if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+            if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight
         },
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
@@ -1276,10 +1276,10 @@ private fun LoadingScreen() {
         ) {
             Surface(
                 shape = RoundedCornerShape(22.dp),
-                color = if (isDark) Color(0xFF0F172A).copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
+                color = if (isDark) LearningPalette.AiSlateText.copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(
                     1.dp,
-                    if (isDark) Color.White.copy(alpha = 0.14f) else Color(0x18000000)
+                    if (isDark) Color.White.copy(alpha = 0.14f) else LearningPalette.DrawerBorderLight
                 ),
                 shadowElevation = 0.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -1297,17 +1297,17 @@ private fun LoadingScreen() {
                             Icon(
                                 imageVector = Icons.Rounded.AutoAwesome,
                                 contentDescription = null,
-                                tint = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB),
+                                tint = if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = "AI 正在构建智能阅读训练",
+                                text = stringResource(R.string.ai_reading_building_training),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.5.sp
                                 ),
-                                color = if (isDark) Color.White else Color(0xFF0F172A)
+                                color = if (isDark) Color.White else LearningPalette.AiSlateText
                             )
                         }
                     }
@@ -1338,12 +1338,12 @@ private fun LoadingScreen() {
                                                 .padding(top = 2.dp)
                                                 .size(18.dp)
                                                 .clip(CircleShape)
-                                                .background(Color(0xFF10B981)), // 祖母绿实心圆
+                                                .background(LearningPalette.ReadingAccentGreen),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.Check,
-                                                contentDescription = "已完成",
+                                                contentDescription = stringResource(R.string.status_completed),
                                                 tint = Color.White,
                                                 modifier = Modifier.size(12.dp)
                                             )
@@ -1358,7 +1358,7 @@ private fun LoadingScreen() {
                                             CircularProgressIndicator(
                                                 modifier = Modifier.size(14.dp),
                                                 strokeWidth = 2.dp,
-                                                color = if (isDark) Color(0xFF38BDF8) else Color(0xFF2563EB)
+                                                color = if (isDark) LearningPalette.AiSkyBlueDark else LearningPalette.AiRoyalBlueLight
                                             )
                                         }
                                     }
@@ -1483,7 +1483,7 @@ private fun ArticleContentScreen(
                 // 方案一：长按拖选 → 弹出带"翻译"按钮的浮动菜单
                 // 方案二：单击某个词 → 自动识别词边界并翻译
                 // 点击其他位置 → 自动清除选区
-                val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else Color(0xFF2C3E50)
+                val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else LearningPalette.ReadingDarkText
 
                 CompositionLocalProvider(LocalTextToolbar provides customTextToolbar) {
                     BasicTextField(

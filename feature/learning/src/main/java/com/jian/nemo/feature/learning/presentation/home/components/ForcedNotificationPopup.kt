@@ -19,6 +19,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -149,7 +150,7 @@ private fun ForcedNotificationCard(
                     modifier = Modifier
                         .fillMaxSize()
                         .graphicsLayer(scaleX = pingScale, scaleY = pingScale)
-                        .background(Color(0xFFFFEBEE), CircleShape) // Red 50
+                        .background(LearningPalette.AlertRedBg, CircleShape)
                         .graphicsLayer(alpha = pingAlpha)
                 )
                 

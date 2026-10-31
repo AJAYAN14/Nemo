@@ -45,6 +45,8 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -64,6 +66,7 @@ import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
@@ -148,9 +151,9 @@ fun SRSLearningCard(
     val labelTextColor = if (isDarkTheme) NemoNeutrals.DarkTextSecondary else NemoNeutrals.Gray500
 
     // Indigo 标签色 (用于等级徽章)
-    val indigoBg = if (isDarkTheme) Color(0xFF1E1B4B) else Color(0xFFEEF2FF)
-    val indigoBorder = if (isDarkTheme) Color(0xFF3730A3) else Color(0xFFE0E7FF)
-    val indigoText = if (isDarkTheme) Color(0xFFA5B4FC) else Color(0xFF4F46E5)
+    val indigoBg = if (isDarkTheme) LearningPalette.IndigoBgDark else LearningPalette.IndigoBgLight
+    val indigoBorder = if (isDarkTheme) LearningPalette.IndigoBorderDark else LearningPalette.IndigoBorderLight
+    val indigoText = if (isDarkTheme) LearningPalette.IndigoTextDark else LearningPalette.IndigoTextLight
 
     // 跟打按钮颜色 - 根据单词 ID 生成稳定的随机颜色
     val practiceButtonColor = remember(word.id) { getColorForWord(word.id) }
@@ -231,7 +234,7 @@ fun SRSLearningCard(
                     )
                 } else {
                     Text(
-                        text = "思考这个单词的发音和含义...",
+                        text = stringResource(R.string.hint_think_word_pronunciation),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryTextColor.copy(alpha = 0.6f),
@@ -271,24 +274,24 @@ fun SRSLearningCard(
             cardBadge?.let { badge ->
                 val (text, bgColor, textColor) = when (badge) {
                     CardBadge.NEW -> if (isPlumpDuo) {
-                        Triple("新学", IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.SkyIndigo)
+                        Triple(stringResource(R.string.card_badge_new), IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.SkyIndigo)
                     } else {
-                        Triple("新学", if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFFE0EDFF), if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8))
+                        Triple(stringResource(R.string.card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
                     }
                     CardBadge.LEARNING -> if (isPlumpDuo) {
-                        Triple("在学", IsoluminantPalette.LakesideCyan.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.LakesideCyan)
+                        Triple(stringResource(R.string.card_badge_learning), IsoluminantPalette.LakesideCyan.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.LakesideCyan)
                     } else {
-                        Triple("在学", if (isDarkTheme) Color(0xFF083344) else Color(0xFFE0F2FE), if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2))
+                        Triple(stringResource(R.string.card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
                     }
                     CardBadge.REVIEW -> if (isPlumpDuo) {
-                        Triple("复习", IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.EmeraldGreen)
+                        Triple(stringResource(R.string.card_badge_review), IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.EmeraldGreen)
                     } else {
-                        Triple("复习", if (isDarkTheme) Color(0xFF14532D) else Color(0xFFDCFCE7), if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534))
+                        Triple(stringResource(R.string.card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
                     }
                     CardBadge.RELEARN -> if (isPlumpDuo) {
-                        Triple("重学", IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.WarmAmber)
+                        Triple(stringResource(R.string.card_badge_relearn), IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.WarmAmber)
                     } else {
-                        Triple("重学", if (isDarkTheme) Color(0xFF7C2D12) else Color(0xFFFFEDD5), if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412))
+                        Triple(stringResource(R.string.card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
                     }
                 }
 
@@ -461,7 +464,7 @@ fun SRSLearningCard(
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = word.pos ?: "未知",
+                                text = word.pos ?: stringResource(R.string.pos_unknown),
                                 color = labelTextColor,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
@@ -470,7 +473,7 @@ fun SRSLearningCard(
                         }
 
                         Text(
-                            text = "含义",
+                            text = stringResource(R.string.label_word_meaning),
                             color = secondaryTextColor,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium, // Refined from Bold to Medium
@@ -499,7 +502,7 @@ fun SRSLearningCard(
                     // Example
                     Column {
                         Text(
-                            text = "例句",
+                            text = stringResource(R.string.label_word_example),
                             color = secondaryTextColor,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium, // Refined from Bold to Medium
@@ -559,7 +562,7 @@ fun SRSLearningCard(
                             }
                         } else {
                             Text(
-                                text = "暂无例句",
+                                text = stringResource(R.string.label_no_example),
                                 color = secondaryTextColor,
                                 fontSize = 14.sp
                             )
@@ -669,7 +672,7 @@ fun SRSLearningCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Translate,
-                                    contentDescription = "跟打练习",
+                                    contentDescription = stringResource(R.string.btn_practice_typing),
                                     tint = practiceButtonColor,
                                     modifier = Modifier.size(24.dp)
                                 )
@@ -686,7 +689,7 @@ fun SRSLearningCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Edit,
-                                contentDescription = "临时手写板",
+                                contentDescription = stringResource(R.string.btn_temp_whiteboard),
                                 tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
                                 modifier = Modifier.size(24.dp)
                             )

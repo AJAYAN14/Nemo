@@ -567,3 +567,566 @@ object ExpressionCategoryPalette {
     val AmberDark = Color(0xFFFBBF24)
     val PurpleDark = Color(0xFFC084FC)
 }
+
+
+// ============================================================================
+// 排序测验色板 (Sorting Quiz Palette)
+// ============================================================================
+object SortingPalette {
+    val MacaronColors = listOf(
+        Color(0xFF818CF8),
+        Color(0xFFF472B6),
+        Color(0xFFFBBF24),
+        Color(0xFF34D399),
+        Color(0xFF22D3EE),
+        Color(0xFFA78BFA)
+    )
+
+    val BackgroundGradientLight = Color(0xFFF5F8FF)
+    val ContainerBgLight = Color(0xFFE0E7FF)
+    val ContainerBorderLight = Color(0xFFCBD5E1)
+    val PlaceholderText = Color(0xFF312E81)
+    val OptionsTrayBgLight = Color(0xFFF8FAFF)
+}
+
+
+// ============================================================================
+// 统计与活动环色板 (Statistics & Activity Rings Palette)
+// ============================================================================
+object ActivityRingPalette {
+    val MovePink = Color(0xFFFA2D62)
+    val ExerciseGreen = Color(0xFF7BD33A)
+    val StandCyan = Color(0xFF18C6E8)
+    val SurfaceWarmLight = Color(0xFFF5F3EF)
+    val MetricCardBgLight = Color(0xFFF6F4EF)
+}
+
+object HeatmapPalette {
+    val Level0 = Color(0xFFF1F5F9)
+    val Level1 = Color(0xFFFFD7D5)
+    val Level2 = Color(0xFFFFA39E)
+    val Level3 = Color(0xFFFF4D4F)
+    val Level4 = Color(0xFFCF1322)
+
+    val Level0Dark = Color(0xFF1E2430)
+    val Level1Dark = Color(0xFF3F2020)
+    val Level2Dark = Color(0xFF742929)
+    val Level3Dark = Color(0xFFBD3131)
+    val Level4Dark = Color(0xFFF04A4A)
+
+    val DotGlowLight = Color(0xFFFFFFFF)
+    val DotGlowDark = Color(0xFFFFECEB)
+}
+
+object StatisticsPalette {
+    val AlertGold = Color(0xFFFFD60A)
+    val CompositeOrange = Color(0xFFFF9800)
+    val EarlyRed = Color(0xFFEF4444)
+    val DevelopingBlue = Color(0xFF3B82F6)
+    val MatureGreen = Color(0xFF22C55E)
+    val ExpertPurple = Color(0xFF8B5CF6)
+    val GrowthAccentGold = Color(0xFFF4B73F)
+
+    val EmeraldTextLight = Color(0xFF059669)
+    val EmeraldTextDark = Color(0xFF34D399)
+    val EmeraldBgLight = Color(0xFFECFDF5)
+
+    val PosterBgDark = Color(0xFF171827)
+    val PosterBgLight = Color(0xFFF4F6FA)
+    val PosterCardBgDark = Color(0xFF202136)
+    val PosterCardSubtleBgDark = Color(0xFF1A1B2D)
+    val PosterCardBorderDark = Color(0xFF2E2F48)
+    val PosterFlameOrange = Color(0xFFFF7A00)
+
+    val PosterMiniHeatmapDark = listOf(
+        Color(0xFF24253A),
+        Color(0xFF1E3A8A),
+        Color(0xFF2563EB),
+        Color(0xFF60A5FA),
+        Color(0xFF93C5FD)
+    )
+
+    val PosterMiniHeatmapLight = listOf(
+        Color(0xFFE2E8F0),
+        Color(0xFF93C5FD),
+        Color(0xFF3B82F6),
+        Color(0xFF1D4ED8),
+        Color(0xFF172554)
+    )
+}
+
+object BrandPalette {
+    val GoogleYellow = Color(0xFFFBBC05)
+    val GoogleRed = Color(0xFFEA4335)
+    val GoogleGreen = Color(0xFF34A853)
+    val GoogleBlue = Color(0xFF4285F4)
+}
+
+object CaptchaPalette {
+    val DarkColors = listOf(
+        Color(0xFF60A5FA),
+        Color(0xFF34D399),
+        Color(0xFFF472B6),
+        Color(0xFFFBBF24),
+        Color(0xFFA78BFA),
+        Color(0xFF38BDF8),
+        Color(0xFF4ADE80)
+    )
+
+    val LightColors = listOf(
+        Color(0xFF1D4ED8),
+        Color(0xFF047857),
+        Color(0xFFBE185D),
+        Color(0xFFB45309),
+        Color(0xFF6D28D9),
+        Color(0xFF0369A1),
+        Color(0xFF15803D)
+    )
+
+    val QuestionMarkDark = Color(0xFFF87171)
+    val QuestionMarkLight = Color(0xFFDC2626)
+    val EqualSignDark = Color(0xFFFBBF24)
+    val EqualSignLight = Color(0xFFD97706)
+    val OperatorDark = Color(0xFF38BDF8)
+    val OperatorLight = Color(0xFF0284C7)
+
+    val BgDark = Color(0xFF1E1E24)
+    val BgLight = Color(0xFFEEF2F6)
+    val UnfocusedBorderLight = Color(0xFFE2E8F0)
+}
+
+object UserPalette {
+    val AuthBgDark = Color(0xFF0D0C11)
+    val AuthBgLight = Color(0xFFF7F9FC)
+    val ProfileSetupBgDark = Color(0xFF100F14)
+
+    val PrimaryGlassTintDark = Color(0xFF2563EB)
+    val PrimaryGlassTintLight = Color(0xFF0E68FF)
+
+    val FieldContainerDark = Color(0xFF16151B)
+    val FieldBorderSlate = Color(0xFFE2E8F0)
+    val SlatePlaceholder = Color(0xFF94A3B8)
+
+    val TextSlate900 = Color(0xFF0F172A)
+    val TextSlate800 = Color(0xFF1E293B)
+    val TextSlate700 = Color(0xFF334155)
+    val TextSlate500 = Color(0xFF64748B)
+
+    val CapsuleTextDark = Color(0xFF7DD3FC)
+    val CapsuleTextLight = Color(0xFF2563EB)
+
+    val DialogBodyDark = Color(0xFF8E8E93)
+    val DialogBodyLight = Color(0xFF6E6E73)
+    val DialogContainerDark = Color(0xFF1C1C1E)
+    val DialogBorderDark = Color(0xFF3A3A3C)
+    val DialogBorderLight = Color(0xFFC6C6C8)
+
+    val AvatarBorderDark = Color(0xFF1E1D24)
+    val PrimaryBtnBgDark = Color(0xFFF4F4F6)
+}
+
+object SettingsPalette {
+    val AboutPaperBgDark = Color(0xFF131722)
+    val AboutPaperBgLight = Color(0xFFFAF6EE)
+    val AboutLightBeamDark = Color(0xFF38BDF8)
+    val AboutNoiseLight = Color(0xFF6B4527)
+
+    val DialogBgDark = Color(0xFF202020)
+    val DialogCardBgDark = Color(0xFF2A2A2A)
+    val DialogCardBgLight = Color(0xFFF7F8FA)
+
+    val BackupGlassTint = Color(0xFF0088FF)
+    val AlgorithmCardBgDark = Color(0xFF1E2028)
+    val CyanMint = Color(0xFF00C4B5)
+    val CoralRose = Color(0xFFF43F5E)
+
+    val LiquidOrange = Color(0xFFFF8D28)
+    val LiquidCyanGradStart = Color(0xFF00C6FF)
+    val LiquidBlueGradEnd = Color(0xFF0072FF)
+    val LiquidPinkGradStart = Color(0xFFFF2A85)
+    val LiquidPurpleGradEnd = Color(0xFF8A2387)
+    val LiquidAmberGradStart = Color(0xFFFF8008)
+    val LiquidGoldGradEnd = Color(0xFFFFC837)
+    val LiquidGreen = Color(0xFF2ECC71)
+
+    val ThemeElectricCyan = Color(0xFF00E5FF)
+    val ThemeBrightTeal = Color(0xFF1DE9B6)
+    val ThemeBrightOrangeRed = Color(0xFFFF3D00)
+    val ThemeAppleGreen = Color(0xFF4CD964)
+
+    val StudioCardBgDark = Color(0xFF13171F)
+    val StudioBorderDark = Color(0x2294A3B8)
+    val StudioBorderLight = Color(0x140F172A)
+}
+
+object AIPalette {
+    val DeepSeek = Color(0xFF0E68FF)
+    val DeepSeekAlt = Color(0xFF1E88E5)
+    val Doubao = Color(0xFF00B4D8)
+    val Glm = Color(0xFF3762FF)
+    val Kimi = Color(0xFF007AFF)
+    val Mimo = Color(0xFFFF6A00)
+    val MimoAlt = Color(0xFFFF6700)
+    val Qwen = Color(0xFF615CED)
+    val ClaudeAmber = Color(0xFFD97706)
+    val ClaudeRust = Color(0xFFE05C2B)
+    val OpenAI = Color(0xFF10A37F)
+    val Gemini = Color(0xFFAF52DE)
+    val GeminiAlt = Color(0xFF6E56CF)
+    val CustomPurple = Color(0xFF8B5CF6)
+
+    val StudioCardBgDark = Color(0xFF13171F)
+    val StudioCardBgLight = Color(0xFFFFFFFF)
+    val StudioPillBgDark = Color(0xFF1C222C)
+    val StudioPillBgLight = Color(0xFFF1F5F9)
+    val StudioInputContainerDark = Color(0xFF141720)
+    val StudioInputContainerLight = Color(0xFFF8FAFC)
+}
+
+object UiPalette {
+    val ShadowLight = Color(0x0D000000)
+    val ShadowDark = Color(0x26000000)
+    val PureBlack = Color(0xFF000000)
+    val PureWhite = Color(0xFFFFFFFF)
+
+    val DialogDarkBg = Color(0xFF1C1C1E)
+    val DialogAltDarkBg = Color(0xFF1E1E1E)
+    val DialogControlBgDark = Color(0xFF2B2B2E)
+    val DialogControlBgLight = Color(0xFFF1F5F9)
+    val DialogDarkBorder = Color(0xFF383838)
+    val DialogLightBorder = Color(0xFFE2E8F0)
+    val DialogSlateTextDark = Color(0xFF94A3B8)
+    val DialogSlateTextLight = Color(0xFF64748B)
+    val DialogDarkActiveBg = Color(0xFF262626)
+    val DialogBlackText = Color(0xFF18181B)
+    val DialogBlueTintBgDark = Color(0xFF1E293B)
+    val DialogBlueTintBgLight = Color(0xFFEFF6FF)
+
+    val BonusOrange = Color(0xFFFF5500)
+    val BonusWarmBgDark = Color(0xFF332014)
+    val BonusWarmBgLight = Color(0xFFFFF1E6)
+    val BonusCardBgDark = Color(0xFF202024)
+    val BonusAccentCardDark = Color(0xFF2D2520)
+
+    val AvatarInnerBorderDark = Color(0xFF2C2C2E)
+    val AvatarSystemBlueLight = Color(0xFF007AFF)
+    val AvatarSystemBlueDark = Color(0xFF0A84FF)
+    val AvatarSystemGreenLight = Color(0xFF34C759)
+    val AvatarSystemGreenDark = Color(0xFF30D158)
+    val AvatarSystemPurpleLight = Color(0xFFAF52DE)
+    val AvatarSystemPurpleDark = Color(0xFFBF5AF2)
+    val AvatarSystemRedLight = Color(0xFFFF3B30)
+    val AvatarSystemRedDark = Color(0xFFFF453A)
+
+    val NotifyInfoGradStartDark = Color(0xFF3D3A50)
+    val NotifyInfoGradEndDark = Color(0xFF2B2930)
+    val NotifyInfoGradStartLight = Color(0xFF0E68FF)
+    val NotifyInfoGradEndLight = Color(0xFF4A90D9)
+
+    val NotifySuccessGradStartDark = Color(0xFF2D4A3D)
+    val NotifySuccessGradEndDark = Color(0xFF1E3A2F)
+    val NotifySuccessGradStartLight = Color(0xFF34C759)
+    val NotifySuccessGradEndLight = Color(0xFF28A745)
+
+    val NotifyWarnGradStartDark = Color(0xFF4A3D2D)
+    val NotifyWarnGradEndDark = Color(0xFF3A2F1E)
+    val NotifyWarnGradStartLight = Color(0xFFFF9500)
+    val NotifyWarnGradEndLight = Color(0xFFE68A00)
+
+    val NotifyErrorGradStartDark = Color(0xFF4A2D2D)
+    val NotifyErrorGradEndDark = Color(0xFF3A1E1E)
+    val NotifyErrorGradStartLight = Color(0xFFFF3B30)
+    val NotifyErrorGradEndLight = Color(0xFFE53935)
+
+    val LiquidBrandBlue = Color(0xFF0088FF)
+    val LiquidLightAccent = Color(0xFF0091FF)
+    val LiquidPurple = Color(0xFF8B5CF6)
+    val LiquidCyanMint = Color(0xFF00C4B5)
+    val LiquidTabsBgLight = Color(0xFFFAFAFA)
+    val LiquidTabsBgDark = Color(0xFF121212)
+    val LiquidTrackLight = Color(0xFF787878)
+    val LiquidTrackDark = Color(0xFF787880)
+
+    val SplashGlowSky = Color(0xFF0EA5E9)
+    val SplashGlowTeal = Color(0xFF2DD4BF)
+    val SplashGlowLightBlue = Color(0xFF38BDF8)
+    val SplashGlowOrange = Color(0xFFFB923C)
+    val SplashShapeRose = Color(0xFFFB7185)
+    val SplashShapeViolet = Color(0xFFA78BFA)
+    val SplashShapeBlue = Color(0xFF60A5FA)
+    val SplashFgDark = Color(0xFFF5F5F7)
+    val SplashFgLight = Color(0xFF0A0A0A)
+
+    val DefaultAvatarPalette = listOf(
+        Color(0xFFE57373), Color(0xFFF06292), Color(0xFFBA68C8), Color(0xFF9575CD),
+        Color(0xFF7986CB), Color(0xFF5C6BC0), Color(0xFF42A5F5), Color(0xFF29B6F6),
+        Color(0xFF26C6DA), Color(0xFF26A69A), Color(0xFF66BB6A), Color(0xFF8BC34A),
+        Color(0xFFDCE775), Color(0xFFFFEE58), Color(0xFFFFCA28), Color(0xFFFFB74D),
+        Color(0xFFFF8A65), Color(0xFFA1887F), Color(0xFF90A4AE), Color(0xFF78909C)
+    )
+
+    val AvatarGlowGradient = listOf(
+        Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFEC4899),
+        Color(0xFFF59E0B), Color(0xFF10B981), Color(0xFF6366F1)
+    )
+
+    object Presets {
+        val Sunset = listOf(Color(0xFFFF6B6B), Color(0xFFFFAA00), Color(0xFFFFD93D))
+        val Ocean = listOf(Color(0xFF06BEE1), Color(0xFF0B4F6C), Color(0xFF01BAEF))
+        val Forest = listOf(Color(0xFF06D6A0), Color(0xFF118AB2), Color(0xFF073B4C))
+        val Lavender = listOf(Color(0xFF9D4EDD), Color(0xFF7209B7), Color(0xFFC77DFF))
+        val Mint = listOf(Color(0xFF06FFA5), Color(0xFF00D9FF), Color(0xFF00B4D8))
+        val Coral = listOf(Color(0xFFFF6B9D), Color(0xFFC9184A), Color(0xFFFF8FA3))
+        val Golden = listOf(Color(0xFFFFBE0B), Color(0xFFFB5607), Color(0xFFFF006E))
+        val Aurora = listOf(Color(0xFF7209B7), Color(0xFF3A0CA3), Color(0xFF4361EE))
+        val Peach = listOf(Color(0xFFFFB5A7), Color(0xFFFCD5CE), Color(0xFFF8EDEB))
+        val Autumn = listOf(Color(0xFFD00000), Color(0xFFDC2F02), Color(0xFFE85D04))
+        val Sky = listOf(Color(0xFF48CAE4), Color(0xFF00B4D8), Color(0xFF90E0EF))
+        val Lemon = listOf(Color(0xFFFFFF3F), Color(0xFFFFEE32), Color(0xFFFDD835))
+        val Midnight = listOf(Color(0xFF03045E), Color(0xFF023E8A), Color(0xFF0077B6))
+        val Galaxy = listOf(Color(0xFF240046), Color(0xFF3C096C), Color(0xFF5A189A))
+        val Tropical = listOf(Color(0xFFFF006E), Color(0xFFFB5607), Color(0xFFFFBE0B))
+        val Cherry = listOf(Color(0xFFFFB3C6), Color(0xFFFF8FAB), Color(0xFFFFC2D1))
+    }
+}
+
+object PlumpPalette {
+    val SkyIndigo = Color(0xFF4C82F6)    // 晴空蓝 (Hue 255°)
+    val LakesideCyan = Color(0xFF009CB2) // 湖光青 (Hue 195°)
+    val LilacViolet = Color(0xFF906EE8)  // 丁香紫 (Hue 295°)
+    val WarmAmber = Color(0xFFD67700)    // 暖金琥珀 (Hue 70°)
+    val EmeraldGreen = Color(0xFF229E65) // 翡翠竹青 (Hue 145°)
+    val RoseRuby = Color(0xFFE44F6D)     // 蔷薇绯红 (Hue 15°)
+    val SeaMarine = Color(0xFF1D8FDF)    // 蔚蓝海晶 (Hue 225°)
+    val CoralFlame = Color(0xFFDE5545)   // 赤焰珊瑚 (Hue 30°)
+    val GlazeMint = Color(0xFF009F8C)    // 青碧琉璃 (Hue 175°)
+    val OceanBlue = Color(0xFF3B86E8)    // 深海青蓝 (Hue 240°)
+}
+
+object DesignSystemPalette {
+    val StepperOrange = Color(0xFFFF5500)
+    val StepperSlateText = Color(0xFF1E293B)
+    val StepperBtnDark = Color(0xFF262626)
+    val StepperBtnLight = Color(0xFFF1F5F9)
+    val StepperBorderDark = Color(0xFF383838)
+    val StepperBorderLight = Color(0xFFE2E8F0)
+
+    val PickerIndicatorDark = Color(0xFF94A3B8)
+    val PickerIndicatorLight = Color(0xFF64748B)
+    val PickerTickDark = Color(0xFF334155)
+    val PickerTickLight = Color(0xFFCBD5E1)
+    val PickerSubTickDark = Color(0xFF1E293B)
+    val PickerSubTickLight = Color(0xFFE2E8F0)
+}
+
+object LearningPalette {
+    val AuroraClassic1 = Color(0xFF5227FF)
+    val AuroraClassic2 = Color(0xFF7CFF67)
+    val AuroraNordic1 = Color(0xFF6D28D9)
+    val AuroraNordic2 = Color(0xFFEC4899)
+    val AuroraNordic3 = Color(0xFF06B6D4)
+    val AuroraPolar1 = Color(0xFF3A29FF)
+    val AuroraPolar2 = Color(0xFFFF94B4)
+    val AuroraPolar3 = Color(0xFFFF3232)
+    val AuroraGlacier1 = Color(0xFF0EA5E9)
+    val AuroraGlacier2 = Color(0xFF10B981)
+    val AuroraGlacier3 = Color(0xFF6366F1)
+    val AuroraDusk1 = Color(0xFFF43F5E)
+    val AuroraDusk2 = Color(0xFFA855F7)
+    val AuroraDusk3 = Color(0xFF3B82F6)
+
+    val DrawerBgDark = Color(0xFF06060E)
+    val DrawerBorderLight = Color(0x18000000)
+    val SkyLight = Color(0xFF7DD3FC)
+    val AccentRed = Color(0xFFEF4444)
+
+    val SuccessGreen = Color(0xFF4CAF50)
+    val CategoryDarkBg1 = Color(0xFF121212)
+    val CategoryDarkBg2 = Color(0xFF1E1E1E)
+
+    val SrsRoseTextDark = Color(0xFFFDA4AF)
+    val SrsRoseTextLight = Color(0xFFBE123C)
+    val SrsRoseBgDark = Color(0xFF4C0519)
+    val SrsRoseBgLight = Color(0xFFFFE4E6)
+
+    val SrsOrangeTextDark = Color(0xFFFDBA74)
+    val SrsOrangeTextLight = Color(0xFFEA580C)
+    val SrsOrangeBgDark = Color(0xFF7C2D12)
+    val SrsOrangeBgLight = Color(0xFFFFF7ED)
+
+    val SrsBlueTextDark = Color(0xFF93C5FD)
+    val SrsBlueTextLight = Color(0xFF2563EB)
+    val SrsBlueBgDark = Color(0xFF1E3A8A)
+    val SrsBlueBgLight = Color(0xFFEFF6FF)
+
+    val SrsEmeraldTextDark = Color(0xFF6EE7B7)
+    val SrsEmeraldTextLight = Color(0xFF059669)
+    val SrsEmeraldBgDark = Color(0xFF064E3B)
+    val SrsEmeraldBgLight = Color(0xFFECFDF5)
+
+    val StarAmber = Color(0xFFFACC15)
+    val ActionDarkBg = Color(0xFF111827)
+    val ActionMutedText = Color(0xFF6B7280)
+
+    val AlertRedBg = Color(0xFFFFEBEE)
+
+    val BannerOrangeBgDark = Color(0xFF2E1F14)
+    val BannerOrangeBgLight = Color(0xFFFFF7ED)
+    val BannerOrangeBorderDark = Color(0xFF6B3A1E)
+    val BannerOrangeBorderLight = Color(0xFFFFEDD5)
+    val BannerOrangeTextDark = Color(0xFFFF8A50)
+    val BannerOrangeTextLight = Color(0xFFEA580C)
+
+    val IndigoBgDark = Color(0xFF1E1B4B)
+    val IndigoBgLight = Color(0xFFEEF2FF)
+    val IndigoBorderDark = Color(0xFF3730A3)
+    val IndigoBorderLight = Color(0xFFE0E7FF)
+    val IndigoTextDark = Color(0xFFA5B4FC)
+    val IndigoTextLight = Color(0xFF4F46E5)
+
+    val BadgeNewBgDark = Color(0xFF1E3A8A)
+    val BadgeNewBgLight = Color(0xFFE0EDFF)
+    val BadgeNewTextDark = Color(0xFFBFDBFE)
+    val BadgeNewTextLight = Color(0xFF1D4ED8)
+
+    val BadgeLearningBgDark = Color(0xFF083344)
+    val BadgeLearningBgLight = Color(0xFFE0F2FE)
+    val BadgeLearningTextDark = Color(0xFF22D3EE)
+    val BadgeLearningTextLight = Color(0xFF0891B2)
+
+    val BadgeReviewBgDark = Color(0xFF14532D)
+    val BadgeReviewBgLight = Color(0xFFDCFCE7)
+    val BadgeReviewTextDark = Color(0xFFBBF7D0)
+    val BadgeReviewTextLight = Color(0xFF166534)
+
+    val BadgeRelearnBgDark = Color(0xFF7C2D12)
+    val BadgeRelearnBgLight = Color(0xFFFFEDD5)
+    val BadgeRelearnTextDark = Color(0xFFFED7AA)
+    val BadgeRelearnTextLight = Color(0xFF9A3412)
+
+    val YellowTipsBgDark = Color(0xFF713F12)
+    val YellowTipsBgLight = Color(0xFFFEFCE8)
+    val YellowTipsBorderDark = Color(0xFF92400E)
+    val YellowTipsBorderLight = Color(0xFFFEF3C7)
+    val YellowTipsIconDark = Color(0xFFFDE047)
+    val YellowTipsIconLight = Color(0xFFCA8A04)
+    val YellowTipsTextDark = Color(0xFFFEF08A)
+    val YellowTipsTextLight = Color(0xFF92400E)
+
+    val ExampleBoxDark = Color(0xFF2D2D2D)
+
+    val ShareGradTeal = Color(0xFF0F766E)
+    val ShareSlateText = Color(0xFF0F172A)
+    val ShareSubText = Color(0xFF64748B)
+
+    val ReportZinc900 = Color(0xFF18181B)
+    val ReportZinc800 = Color(0xFF27272A)
+    val ReportZinc700 = Color(0xFF3F3F46)
+    val ReportZinc600 = Color(0xFF52525B)
+    val ReportZinc500 = Color(0xFF71717A)
+    val ReportZinc400 = Color(0xFFA1A1AA)
+    val ReportZinc200 = Color(0xFFE4E4E7)
+    val ReportZinc100 = Color(0xFFF4F4F5)
+
+    // 白板笔刷色值 (NemoWhiteboard)
+    val WhiteboardPenPearlWhite = Color(0xFFF8FAFC)
+    val WhiteboardPenNeonRed = Color(0xFFFF5252)
+    val WhiteboardPenNeonBlue = Color(0xFF40C4FF)
+    val WhiteboardPenMintGreen = Color(0xFF69F0AE)
+    val WhiteboardPenInkBlack = Color(0xFF1E1E1E)
+    val WhiteboardPenPureRed = Color(0xFFE53935)
+    val WhiteboardPenLakeBlue = Color(0xFF1E88E5)
+    val WhiteboardPenGrassGreen = Color(0xFF43A047)
+    val WhiteboardIconDark = Color(0xFF333333)
+
+    // 结算完成页面 (LearningFinishedContent)
+    val FinishedDeepOrange = Color(0xFFFF5722)
+    val FinishedWarmBgDark = Color(0xFF2B1F17)
+    val FinishedWarmBgLight = Color(0xFFFFF7ED)
+
+    // 动词变形手册避坑警告色盘 (VerbConjugationHandbookScreen)
+    val VerbBanRedLight = Color(0xFFDC2626)
+    val VerbBanRedDark = Color(0xFFEF4444)
+    val VerbBanBgLight = Color(0xFFFEF2F2)
+    val VerbBanBgDark = Color(0xFF7F1D1D)
+
+    val VerbWarningBgDark = Color(0xFF3B1E1E)
+    val VerbWarningBgLight = Color(0xFFFFF1F2)
+    val VerbWarningBorderDark = Color(0xFF7F1D1D)
+    val VerbWarningBorderLight = Color(0xFFFFE4E6)
+    val VerbWarningChipDark = Color(0xFF4C1D1D)
+    val VerbWarningChipLight = Color(0xFFFFE4E6)
+    val VerbWarningTextDark = Color(0xFFFDA4AF)
+    val VerbWarningTextLight = Color(0xFFBE123C)
+    val VerbWarningRose = Color(0xFF9F1239)
+
+    // 五十音图专供色盘 (KanaChartScreen)
+    val KanaChipBgLight = Color(0xFFDFF4FF)
+    val KanaAccentLight = Color(0xFF0EA5A8)
+    val KanaQuickNavBaseLight = Color(0xFFF3FAFF)
+    val KanaQuickNavSelectedLight = Color(0xFFD7F1FF)
+    val KanaTabBgLight = Color(0xFFEAF6FF)
+    val KanaIndigoAccent = Color(0xFF4F46E5)
+    val KanaPinkAccent = Color(0xFFDB2777)
+    val KanaSlateDark = Color(0xFF334155)
+    val KanaSlateSub = Color(0xFF64748B)
+
+    // AI 系列页面（AIReading / AIReadingHistory / AIWorkshop）
+    val ReadingIconBgRed = Color(0xFFFEE2E2)
+    val ReadingAccentRed = Color(0xFFEF4444)
+    val ReadingIconBgGreen = Color(0xFFD1FAE5)
+    val ReadingAccentGreen = Color(0xFF10B981)
+    val ReadingIconBgOrange = Color(0xFFFEF3C7)
+    val ReadingAccentOrange = Color(0xFFD97706)
+    val ReadingIconBgPink = Color(0xFFFCE7F3)
+    val ReadingAccentPink = Color(0xFFEC4899)
+    val ReadingIconBgIndigo = Color(0xFFEEF2FF)
+    val ReadingAccentIndigo = Color(0xFF6366F1)
+
+    val AiCoralOrange = Color(0xFFFB923C)
+    val AiDeepOrange = Color(0xFFEA580C)
+    val AiAmberYellow = Color(0xFFFBBF24)
+    val AiSkyBlueDark = Color(0xFF38BDF8)
+    val AiRoyalBlueLight = Color(0xFF2563EB)
+    val AiSlateBg = Color(0xFFFAFAFB)
+    val AiTrackBgLight = Color(0xFFF1F5F9)
+    val AiBorderLight = Color(0xFFE2E8F0)
+    val AiSlateText = Color(0xFF0F172A)
+    val AiMutedText = Color(0xFF64748B)
+
+    val ShadowDark = Color(0x26000000)
+    val ShadowLight = Color(0x0C000000)
+    val ReadingBorderLight = Color(0x0D000000)
+    val ReadingDarkShadow = Color(0x20000000)
+    val ReadingLightShadow = Color(0x08000000)
+    val ReadingDarkText = Color(0xFF2C3E50)
+
+    // 学习通用组件 (LearningCommonComponents)
+    val AuroraMaskDark1 = Color(0x33090714)
+    val AuroraMaskDark2 = Color(0x05090714)
+    val AuroraMaskDark3 = Color(0x66090714)
+    val AuroraMaskLight1 = Color(0x66FFFFFF)
+    val AuroraMaskLight2 = Color(0x10FFFFFF)
+    val AuroraMaskLight3 = Color(0x55F8FAFC)
+    val AuroraMaskLight4 = Color(0x88F1F5F9)
+
+    val Slate300 = Color(0xFFCBD5E1)
+    val Slate600 = Color(0xFF475569)
+    val CooldownIndigoDark = Color(0xFF1E1B4B)
+    val CooldownCardBgDark = Color(0xB2120F24)
+    val CooldownCardBgLight = Color(0xEBFFFFFF)
+    val CooldownCardBorderDark = Color(0x38A78BFA)
+    val CooldownCardBorderLight = Color(0x297C3AED)
+    val CooldownPurpleTextDark = Color(0xFFC4B5FD)
+    val CooldownPurpleTextLight = Color(0xFF7C3AED)
+    val CooldownBadgeBg = Color(0x26F59E0B)
+    val CooldownBadgeText = Color(0xFFFBBF24)
+    val CooldownStatBgDark = Color(0x0DFFFFFF)
+    val CooldownStatBgLight = Color(0xF2F1F5F9)
+    val CooldownMutedDark = Color(0xFF94A3B8)
+    val RestButtonSurfaceDark = Color(0xFF262038)
+    val AccentOrange = Color(0xFFF59E0B)
+}
+
+
+

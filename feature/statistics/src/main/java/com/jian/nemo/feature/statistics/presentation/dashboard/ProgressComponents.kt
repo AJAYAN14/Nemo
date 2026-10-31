@@ -37,6 +37,8 @@ import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.ChartColors
 import com.jian.nemo.core.designsystem.theme.Rubik
+import com.jian.nemo.core.designsystem.theme.StatisticsPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -166,7 +168,7 @@ fun LearningSummaryCard(
             title = "成长总览",
             icon = Icons.AutoMirrored.Rounded.TrendingUp,
             plumpIcon = PlumpIcon.TrendingUp,
-            accentColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else Color(0xFFF4B73F),
+            accentColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else StatisticsPalette.GrowthAccentGold,
             main = BentoMetric("总进度", (progress * 100).toInt().toString(), "%"),
             topRight = BentoMetric("累计学习", totalStudyDays.toString(), "天"),
             bottomRight = BentoMetric("本周学习", weekStudyDays.toString(), "天"),
@@ -527,7 +529,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Insights,
-                    color = Color(0xFFAF52DE), // Purple
+                    color = IosColors.Purple,
                     title = "历史统计",
                     subtitle = "查看所有详细的学习统计",
                     onClick = onHistoricalStatisticsClick,

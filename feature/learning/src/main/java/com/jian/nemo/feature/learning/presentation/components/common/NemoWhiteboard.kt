@@ -27,7 +27,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
+import com.jian.nemo.feature.learning.R
 
 // 包含颜色信息的数据类
 data class ColoredPath(
@@ -52,17 +58,17 @@ fun NemoWhiteboard(
     val penColors = remember(isDarkTheme) {
         if (isDarkTheme) {
             listOf(
-                Color(0xFFF8FAFC), // 珍珠白 (默认)
-                Color(0xFFFF5252), // 霓虹红
-                Color(0xFF40C4FF), // 霓虹蓝
-                Color(0xFF69F0AE)  // 薄荷绿
+                LearningPalette.WhiteboardPenPearlWhite, // 珍珠白 (默认)
+                LearningPalette.WhiteboardPenNeonRed,    // 霓虹红
+                LearningPalette.WhiteboardPenNeonBlue,   // 霓虹蓝
+                LearningPalette.WhiteboardPenMintGreen   // 薄荷绿
             )
         } else {
             listOf(
-                Color(0xFF1E1E1E), // 墨黑 (默认)
-                Color(0xFFE53935), // 正红
-                Color(0xFF1E88E5), // 湖蓝
-                Color(0xFF43A047)  // 草绿
+                LearningPalette.WhiteboardPenInkBlack,   // 墨黑 (默认)
+                LearningPalette.WhiteboardPenPureRed,    // 正红
+                LearningPalette.WhiteboardPenLakeBlue,   // 湖蓝
+                LearningPalette.WhiteboardPenGrassGreen  // 草绿
             )
         }
     }
@@ -75,9 +81,9 @@ fun NemoWhiteboard(
     var drawTrigger by remember(wordId) { mutableIntStateOf(0) }
 
     // 背景与工具栏暗色适配
-    val boardBg = if (isDarkTheme) Color(0xFF1C1C1E) else Color.White
-    val toolbarBg = if (isDarkTheme) Color(0xFF2C2C2E).copy(alpha = 0.9f) else Color(0xFFF2F2F7).copy(alpha = 0.9f)
-    val iconTint = if (isDarkTheme) Color(0xFFF2F2F7) else Color(0xFF333333)
+    val boardBg = if (isDarkTheme) NemoSurfaceCardDark else Color.White
+    val toolbarBg = if (isDarkTheme) NemoSurfaceSubcardDark.copy(alpha = 0.9f) else NemoSurfaceBackground.copy(alpha = 0.9f)
+    val iconTint = if (isDarkTheme) NemoSurfaceBackground else LearningPalette.WhiteboardIconDark
     val iconBtnBg = if (isDarkTheme) Color.White.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.08f)
     var isColorPaletteExpanded by remember(wordId) { mutableStateOf(false) }
     
@@ -158,7 +164,7 @@ fun NemoWhiteboard(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
-                    contentDescription = "隐藏画板",
+                    contentDescription = stringResource(R.string.action_hide_whiteboard),
                     tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )
@@ -183,7 +189,7 @@ fun NemoWhiteboard(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.DeleteOutline,
-                    contentDescription = "清空画板",
+                    contentDescription = stringResource(R.string.action_clear_whiteboard),
                     tint = iconTint,
                     modifier = Modifier.size(20.dp)
                 )

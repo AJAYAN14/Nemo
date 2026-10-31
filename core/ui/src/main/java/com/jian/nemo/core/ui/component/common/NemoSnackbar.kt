@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import kotlinx.coroutines.delay
 
 /**
@@ -170,30 +171,30 @@ private fun getGradientColors(type: NemoSnackbarType, isDarkTheme: Boolean): Lis
     return when (type) {
         NemoSnackbarType.INFO -> {
             if (isDarkTheme) {
-                listOf(Color(0xFF3D3A50), Color(0xFF2B2930))
+                listOf(UiPalette.NotifyInfoGradStartDark, UiPalette.NotifyInfoGradEndDark)
             } else {
-                listOf(NemoPrimary, Color(0xFF4A90D9))
+                listOf(NemoPrimary, UiPalette.NotifyInfoGradEndLight)
             }
         }
         NemoSnackbarType.SUCCESS -> {
             if (isDarkTheme) {
-                listOf(Color(0xFF2D4A3D), Color(0xFF1E3A2F))
+                listOf(UiPalette.NotifySuccessGradStartDark, UiPalette.NotifySuccessGradEndDark)
             } else {
-                listOf(Color(0xFF34C759), Color(0xFF28A745))
+                listOf(UiPalette.NotifySuccessGradStartLight, UiPalette.NotifySuccessGradEndLight)
             }
         }
         NemoSnackbarType.WARNING -> {
             if (isDarkTheme) {
-                listOf(Color(0xFF4A3D2D), Color(0xFF3A2F1E))
+                listOf(UiPalette.NotifyWarnGradStartDark, UiPalette.NotifyWarnGradEndDark)
             } else {
-                listOf(Color(0xFFFF9500), Color(0xFFE68A00))
+                listOf(UiPalette.NotifyWarnGradStartLight, UiPalette.NotifyWarnGradEndLight)
             }
         }
         NemoSnackbarType.ERROR -> {
             if (isDarkTheme) {
-                listOf(Color(0xFF4A2D2D), Color(0xFF3A1E1E))
+                listOf(UiPalette.NotifyErrorGradStartDark, UiPalette.NotifyErrorGradEndDark)
             } else {
-                listOf(Color(0xFFFF3B30), Color(0xFFE53935))
+                listOf(UiPalette.NotifyErrorGradStartLight, UiPalette.NotifyErrorGradEndLight)
             }
         }
     }

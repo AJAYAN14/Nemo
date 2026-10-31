@@ -20,6 +20,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.text.PlatformTextStyle
 import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.ui.component.liquid.ClearLiquidGlassButton
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.emptyBackdrop
@@ -126,7 +128,7 @@ import kotlin.math.sin
 @Composable
 fun LiquidMemoryHud(
     targetRetention: Float,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -150,9 +152,9 @@ fun LiquidMemoryHud(
 
     val burdenLevel = remember(targetRetention) {
         when {
-            targetRetention < 0.82f -> "清爽微负荷" to Color(0xFF00C4B5)
-            targetRetention <= 0.91f -> "黄金平衡态" to Color(0xFFAF52DE)
-            else -> "极客高密度" to Color(0xFFFF9F0A)
+            targetRetention < 0.82f -> "清爽微负荷" to SettingsPalette.CyanMint
+            targetRetention <= 0.91f -> "黄金平衡态" to IosColors.Purple
+            else -> "极客高密度" to IosColors.OrangeDark
         }
     }
 
@@ -340,7 +342,7 @@ fun LiquidMemoryHud(
 fun RetentionPrecisionRuler(
     targetRetention: Float,
     onRetentionChange: (Float) -> Unit,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -593,7 +595,7 @@ fun StepPipelineEditor(
     subtitle: String,
     stepsString: String,
     onStepsChange: (String) -> Unit,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     val stepsList = remember(stepsString) {
@@ -832,7 +834,7 @@ fun LeechSentinelCard(
     onThresholdChange: (Int) -> Unit,
     leechAction: String,
     onActionChange: (String) -> Unit,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -895,7 +897,7 @@ fun LeechSentinelCard(
                             .padding(horizontal = 2.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(
-                                if (isDark) Color(0xFF1E2028)
+                                if (isDark) SettingsPalette.AlgorithmCardBgDark
                                 else Color.White
                             )
                             .border(
@@ -1056,7 +1058,7 @@ private fun RubberSegmentToggle(
 fun TemporalHorizonSection(
     limitMinutes: Float,
     onLimitChange: (Float) -> Unit,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     PremiumCard(modifier = modifier) {
@@ -1121,7 +1123,7 @@ fun FloatingLiquidIsland(
     visible: Boolean,
     onApply: () -> Unit,
     backdrop: Backdrop? = null,
-    accentColor: Color = Color(0xFFAF52DE),
+    accentColor: Color = IosColors.Purple,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f

@@ -35,6 +35,11 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.AIReadingHistory
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.feature.learning.R
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import java.text.SimpleDateFormat
@@ -116,7 +121,7 @@ fun AIReadingHistoryScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "阅读历史",
+                title = stringResource(R.string.ai_reading_history_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -133,7 +138,7 @@ fun AIReadingHistoryScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Delete,
-                                contentDescription = "清空所有",
+                                contentDescription = stringResource(R.string.ai_reading_clear_all),
                                 tint = colorScheme.onSurface,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -147,10 +152,10 @@ fun AIReadingHistoryScreen(
     if (showDeleteAllDialog) {
         NemoDialog(
             onDismissRequest = { showDeleteAllDialog = false },
-            title = "确认清空",
-            text = "您确定要清除所有的阅读和答题历史记录吗？此操作无法恢复。",
-            confirmText = "清除",
-            dismissText = "取消",
+            title = stringResource(R.string.ai_reading_confirm_clear_title),
+            text = stringResource(R.string.ai_reading_confirm_clear_desc),
+            confirmText = stringResource(R.string.ai_reading_btn_clear),
+            dismissText = stringResource(R.string.ai_reading_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 viewModel.onEvent(AIReadingEvent.ClearAllHistory)
@@ -272,14 +277,14 @@ private fun HistoryItemCard(
                 val badgeBg = when {
                     isPlumpDuo && isAllCorrect -> IsoluminantPalette.EmeraldGreen.copy(alpha = 0.08f)
                     isPlumpDuo -> IsoluminantPalette.CoralFlame.copy(alpha = 0.08f)
-                    isAllCorrect -> ReadingIconBgGreen
-                    else -> ReadingIconBgRed.copy(alpha = 0.6f)
+                    isAllCorrect -> LearningPalette.ReadingIconBgGreen
+                    else -> LearningPalette.ReadingIconBgRed.copy(alpha = 0.6f)
                 }
                 val badgeTextColor = when {
                     isPlumpDuo && isAllCorrect -> IsoluminantPalette.EmeraldGreen
                     isPlumpDuo -> IsoluminantPalette.CoralFlame
-                    isAllCorrect -> ReadingAccentGreen
-                    else -> ReadingAccentRed
+                    isAllCorrect -> LearningPalette.ReadingAccentGreen
+                    else -> LearningPalette.ReadingAccentRed
                 }
                 Surface(
                     shape = RoundedCornerShape(8.dp),
@@ -287,22 +292,22 @@ private fun HistoryItemCard(
                     modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
                     Text(
-                        text = "得分 $correctCount/$totalQuestions",
+                        text = stringResource(R.string.ai_reading_score_format, correctCount, totalQuestions),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = badgeTextColor,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             } else {
-                val ongoingBg = if (isPlumpDuo) IsoluminantPalette.WarmAmber.copy(alpha = 0.08f) else ReadingIconBgOrange
-                val ongoingTextColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else ReadingAccentOrange
+                val ongoingBg = if (isPlumpDuo) IsoluminantPalette.WarmAmber.copy(alpha = 0.08f) else LearningPalette.ReadingIconBgOrange
+                val ongoingTextColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else LearningPalette.ReadingAccentOrange
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = ongoingBg,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
                     Text(
-                        text = "进行中",
+                        text = stringResource(R.string.ai_reading_status_ongoing),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = ongoingTextColor,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -319,7 +324,7 @@ private fun HistoryItemCard(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Delete,
-                    contentDescription = "删除该历史",
+                    contentDescription = stringResource(R.string.ai_reading_delete_item),
                     tint = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.5f) else BentoColors.TextSub.copy(alpha = 0.7f),
                     modifier = Modifier.size(20.dp)
                 )
@@ -377,7 +382,7 @@ private fun EmptyState(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "暂无阅读历史",
+                text = stringResource(R.string.ai_reading_empty_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface,
@@ -387,7 +392,7 @@ private fun EmptyState(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "在这里记录并恢复您的 AI 日语阅读及答题表现",
+                text = stringResource(R.string.ai_reading_empty_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 maxLines = 2,
@@ -411,7 +416,7 @@ private fun EmptyState(
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
         ) {
             Text(
-                text = "开始阅读",
+                text = stringResource(R.string.ai_reading_btn_start),
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
@@ -420,23 +425,3 @@ private fun EmptyState(
         }
     }
 }
-
-// 补充的局部设计颜色和样式常量
-private object NemoNeutrals {
-    val Gray100 = Color(0xFFF3F4F6)
-    val Gray400 = Color(0xFF9CA3AF)
-}
-
-private object BentoColors {
-    val BgBase = Color(0xFFF9FAFB)
-    val TextMain = Color(0xFF1F2937)
-    val TextSub = Color(0xFF6B7280)
-}
-
-// 级别对应的特殊卡片颜色（在 AIReadingScreen 中定义）
-private val ReadingIconBgRed = Color(0xFFFEE2E2)
-private val ReadingAccentRed = Color(0xFFEF4444)
-private val ReadingIconBgGreen = Color(0xFFD1FAE5)
-private val ReadingAccentGreen = Color(0xFF10B981)
-private val ReadingIconBgOrange = Color(0xFFFEF3C7)
-private val ReadingAccentOrange = Color(0xFFD97706)

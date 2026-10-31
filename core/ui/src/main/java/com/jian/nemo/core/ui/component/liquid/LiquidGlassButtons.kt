@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
@@ -314,14 +315,13 @@ fun FrostedLiquidGlassButton(
 /**
  * 3. 彩色液态玻璃按钮 (Colored / Tinted Liquid Glass Button)
  *
- * 采用 BlendMode.Hue 色相图层注入，呈现如晶莹宝石、极光般的通透彩色流体质感。
- * 默认使用 Demo 原版标准纯正蓝 Color(0xFF0088FF)，可自由传入任意主题色。
+ * 采用 BlendMode.Hue 色相图层注入，呈现通透彩色流体质感。
  */
 @Composable
 fun ColoredLiquidGlassButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    tint: Color = Color(0xFF0088FF),
+    tint: Color = UiPalette.LiquidBrandBlue,
     tintAlpha: Float = 0.75f,
     surfaceColor: Color = Color.Unspecified,
     backdrop: Backdrop? = null,

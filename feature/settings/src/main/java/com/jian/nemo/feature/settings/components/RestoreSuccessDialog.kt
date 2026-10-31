@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
+import com.jian.nemo.core.designsystem.theme.TestResultPalette
 
 /**
  * 恢复成功数据明细
@@ -89,9 +91,9 @@ fun RestoreSuccessDialog(
     onDismiss: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val dialogBgColor = if (isDark) Color(0xFF202020) else Color.White
-    val cardBgColor = if (isDark) Color(0xFF2A2A2A) else Color(0xFFF7F8FA)
-    val successGreen = if (isDark) Color(0xFF81C784) else Color(0xFF2E7D32)
+    val dialogBgColor = if (isDark) SettingsPalette.DialogBgDark else Color.White
+    val cardBgColor = if (isDark) SettingsPalette.DialogCardBgDark else SettingsPalette.DialogCardBgLight
+    val successGreen = if (isDark) TestResultPalette.CorrectCardContentDark else TestResultPalette.CorrectCardContentLight
     val stats = remember(message) { parseRestoreStats(message) }
 
     Dialog(

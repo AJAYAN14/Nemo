@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import com.jian.nemo.feature.user.component.*
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -88,21 +89,21 @@ fun LoginScreen(
     val registerConfirmPasswordRequester = remember { FocusRequester() }
 
     // 主题色彩体系（严格对齐 app.tsx 规范）
-    val pageBgColor = if (isDark) Color(0xFF0D0C11) else Color(0xFFF7F9FC)
-    val titleTextColor = if (isDark) Color.White else Color(0xFF0F172A)
-    val descTextColor = if (isDark) Color.White.copy(alpha = 0.60f) else Color(0xFF64748B)
+    val pageBgColor = if (isDark) UserPalette.AuthBgDark else UserPalette.AuthBgLight
+    val titleTextColor = if (isDark) Color.White else UserPalette.TextSlate900
+    val descTextColor = if (isDark) Color.White.copy(alpha = 0.60f) else UserPalette.TextSlate500
 
-    val primaryBtnBg = if (isDark) Color(0xFFF4F4F6) else Color(0xFF0F172A)
-    val primaryBtnText = if (isDark) Color(0xFF0D0C11) else Color.White
+    val primaryBtnBg = if (isDark) UserPalette.PrimaryBtnBgDark else UserPalette.TextSlate900
+    val primaryBtnText = if (isDark) UserPalette.AuthBgDark else Color.White
 
-    val secondaryBtnBg = if (isDark) Color.White.copy(alpha = 0.08f) else Color(0xFF0F172A).copy(alpha = 0.06f)
-    val secondaryBtnText = if (isDark) Color.White.copy(alpha = 0.90f) else Color(0xFF0F172A)
+    val secondaryBtnBg = if (isDark) Color.White.copy(alpha = 0.08f) else UserPalette.TextSlate900.copy(alpha = 0.06f)
+    val secondaryBtnText = if (isDark) Color.White.copy(alpha = 0.90f) else UserPalette.TextSlate900
 
-    val capsuleBg = if (isDark) Color.White.copy(alpha = 0.10f) else Color(0xFF0F172A).copy(alpha = 0.08f)
-    val capsuleText = if (isDark) Color(0xFF7DD3FC) else Color(0xFF2563EB)
+    val capsuleBg = if (isDark) Color.White.copy(alpha = 0.10f) else UserPalette.TextSlate900.copy(alpha = 0.08f)
+    val capsuleText = if (isDark) UserPalette.CapsuleTextDark else UserPalette.CapsuleTextLight
 
-    val backBtnBg = if (isDark) Color.White.copy(alpha = 0.10f) else Color(0xFF0F172A).copy(alpha = 0.08f)
-    val backBtnTint = if (isDark) Color.White else Color(0xFF0F172A)
+    val backBtnBg = if (isDark) Color.White.copy(alpha = 0.10f) else UserPalette.TextSlate900.copy(alpha = 0.08f)
+    val backBtnTint = if (isDark) Color.White else UserPalette.TextSlate900
 
     // Google 快捷登录鉴权通道
     val googleSignInState = viewModel.supabaseClient.composeAuth.rememberSignInWithGoogle(
@@ -308,7 +309,7 @@ fun LoginScreen(
                             Spacer(modifier = Modifier.height(28.dp))
 
                             // 主操作大按钮：有颜色选用「彩色液态玻璃按钮」
-                            val welcomePrimaryTint = if (isDark) Color(0xFF2563EB) else Color(0xFF0E68FF)
+                            val welcomePrimaryTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
                             ColoredLiquidGlassButton(
                                 onClick = {
                                     stage = AuthStage.LOGIN

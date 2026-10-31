@@ -32,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 
@@ -74,10 +77,10 @@ fun NemoDialog(
     val dialogShape = RoundedRectangle(48.dp)
 
     // 危险红颜色定义
-    val dangerRedColor = if (isAppDark) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val dangerRedColor = if (isAppDark) NemoDangerDark else NemoDanger
 
     // 配色方案：自动对齐 App 主题
-    val containerColor = if (isAppDark) Color(0xFF1E1E1E) else Color.White
+    val containerColor = if (isAppDark) UiPalette.DialogAltDarkBg else Color.White
     val titleColor = if (isDangerous) dangerRedColor else MaterialTheme.colorScheme.onSurface
     val textBodyColor = MaterialTheme.colorScheme.onSurfaceVariant
 

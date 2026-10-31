@@ -64,7 +64,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.ui.text.TextStyle
 
 /**
- * 学习热力图与数据高光专属界面 (Activity Heatmap Pro Max)
+ * 学习热力图与数据高光界面
  */
 @Composable
 fun ActivityHeatmapScreen(
@@ -236,7 +236,7 @@ private fun RichStatsGrid(
                 value = streak.toString(),
                 unit = "天",
                 subLabel = "最长 $longestStreak 天",
-                color = Color(0xFFFF9500), // Vibrant Orange
+                color = IosColors.Orange,
                 modifier = Modifier.weight(1f)
             )
 
@@ -272,7 +272,7 @@ private fun RichStatsGrid(
                 value = bestDayCount.toString(),
                 unit = "项",
                 subLabel = dateStr,
-                color = Color(0xFF34C759), // Success Green
+                color = IosColors.Green,
                 modifier = Modifier.weight(1f)
             )
 
@@ -285,7 +285,7 @@ private fun RichStatsGrid(
                 value = dailyAverage.toString(),
                 unit = "项",
                 subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "超过平均" else "稳步前进",
-                color = Color(0xFF8B5CF6), // Premium Purple
+                color = IosColors.Purple,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -465,8 +465,8 @@ private fun MemoryPanoramaCard(
                             size = 28.dp
                         )
                     } else {
-                        val emeraldTint = if (isDarkTheme) Color(0xFF34D399) else Color(0xFF059669)
-                        val emeraldBackground = if (isDarkTheme) Color(0xFF10B981).copy(alpha = 0.20f) else Color(0xFFECFDF5)
+                        val emeraldTint = if (isDarkTheme) StatisticsPalette.EmeraldTextDark else StatisticsPalette.EmeraldTextLight
+                        val emeraldBackground = if (isDarkTheme) NemoSecondary.copy(alpha = 0.20f) else StatisticsPalette.EmeraldBgLight
 
                         Box(
                             modifier = Modifier
@@ -516,7 +516,7 @@ private fun MemoryPanoramaCard(
                     null
                 } else if (validBuckets.size == 1) {
                     val color = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
-                        .getOrDefault(Color(0xFF10B981))
+                        .getOrDefault(NemoSecondary)
                     Brush.horizontalGradient(listOf(color, color))
                 } else {
                     val totalRatio = validBuckets.sumOf { it.ratio.toDouble() }.toFloat().coerceAtLeast(0.001f)
@@ -526,7 +526,7 @@ private fun MemoryPanoramaCard(
                     for (i in validBuckets.indices) {
                         val bucket = validBuckets[i]
                         val bucketColor = runCatching { Color(android.graphics.Color.parseColor(bucket.color)) }
-                            .getOrDefault(Color(0xFF3B82F6))
+                            .getOrDefault(NemoPrimary)
                         val span = (bucket.ratio / totalRatio).coerceIn(0f, 1f)
                         val startPos = currentProgress
                         val endPos = (currentProgress + span).coerceAtMost(1f)
@@ -562,7 +562,7 @@ private fun MemoryPanoramaCard(
                         Brush.horizontalGradient(colorStops = sanitizedStops.toTypedArray())
                     } else {
                         val fallbackColor = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
-                            .getOrDefault(Color(0xFF10B981))
+                            .getOrDefault(NemoSecondary)
                         Brush.horizontalGradient(listOf(fallbackColor, fallbackColor))
                     }
                 }

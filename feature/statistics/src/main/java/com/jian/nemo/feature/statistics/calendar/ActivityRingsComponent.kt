@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.Rubik
+import com.jian.nemo.core.designsystem.theme.ActivityRingPalette
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.domain.model.StudyRecord
@@ -70,12 +71,12 @@ fun Date.toEpochDay(): Long {
 }
 
 /**
- * #099 专属活动环调色板 (Lucian UX/UI #099 Tokens)
+ * 活动环调色板
  */
 object ActivityRingColors {
-    val MovePink = Color(0xFFFA2D62)      // 外环: 新学单词
-    val ExerciseGreen = Color(0xFF7BD33A) // 中环: 新学语法
-    val StandCyan = Color(0xFF18C6E8)     // 内环: 复习达成
+    val MovePink = ActivityRingPalette.MovePink      // 外环: 新学单词
+    val ExerciseGreen = ActivityRingPalette.ExerciseGreen // 中环: 新学语法
+    val StandCyan = ActivityRingPalette.StandCyan     // 内环: 复习达成
 }
 
 /**
@@ -354,7 +355,7 @@ fun ActivityRingItemRow(
     val surface2 = if (isDark) {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
     } else {
-        Color(0xFFF5F3EF)
+        ActivityRingPalette.SurfaceWarmLight
     }
 
     Box(
@@ -422,7 +423,7 @@ fun ActivityWeekPicker(
     val containerBg = if (isDark) {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
     } else {
-        Color(0xFFF5F3EF)
+        ActivityRingPalette.SurfaceWarmLight
     }
 
     Surface(
@@ -501,7 +502,7 @@ fun ActivityMonthGrid(
     val surfaceBg = if (isDark) {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.20f)
     } else {
-        Color(0xFFF5F3EF)
+        ActivityRingPalette.SurfaceWarmLight
     }
 
     val weekDayLabels = listOf("一", "二", "三", "四", "五", "六", "日")

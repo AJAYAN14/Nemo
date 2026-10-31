@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -724,14 +725,14 @@ private fun NemoArtisticBanner(isDark: Boolean) {
             val h = size.height
 
             // 1. 底层艺术纸张背景色
-            val paperBg = if (isDark) Color(0xFF131722) else Color(0xFFFAF6EE)
+            val paperBg = if (isDark) SettingsPalette.AboutPaperBgDark else SettingsPalette.AboutPaperBgLight
             drawRect(color = paperBg)
 
             // 2. 135° 对角线环境光束漫反射（贯穿卡片高光氛围）
             val lightBeamBrush = Brush.linearGradient(
                 colors = listOf(
                     Color.Transparent,
-                    if (isDark) Color(0xFF38BDF8).copy(alpha = 0.08f) else Color.White.copy(alpha = 0.65f),
+                    if (isDark) SettingsPalette.AboutLightBeamDark.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.65f),
                     Color.Transparent
                 ),
                 start = Offset(0f, h * 0.95f),
@@ -741,7 +742,7 @@ private fun NemoArtisticBanner(isDark: Boolean) {
 
             // 3. 低版本/未开启 AGSL 时的兜底微米纸质颗粒漫射层
             if (runtimeShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                val noiseTint = if (isDark) Color.White.copy(alpha = 0.045f) else Color(0xFF6B4527).copy(alpha = 0.04f)
+                val noiseTint = if (isDark) Color.White.copy(alpha = 0.045f) else SettingsPalette.AboutNoiseLight.copy(alpha = 0.04f)
                 val step = 12f
                 var y = 0f
                 var r = 0

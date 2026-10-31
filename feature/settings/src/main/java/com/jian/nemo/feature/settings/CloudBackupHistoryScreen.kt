@@ -28,6 +28,7 @@ import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.runtime.Composable
@@ -422,7 +423,7 @@ fun CloudBackupHistoryScreen(
                 ColoredLiquidGlassButton(
                     onClick = { onSkipRestore?.invoke() ?: onNavigateBack() },
                     backdrop = backdrop,
-                    tint = Color(0xFF0088FF),
+                    tint = SettingsPalette.BackupGlassTint,
                     shape = Capsule(),
                     isInteractive = true,
                     modifier = Modifier

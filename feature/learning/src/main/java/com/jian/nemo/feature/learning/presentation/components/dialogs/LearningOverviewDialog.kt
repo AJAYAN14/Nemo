@@ -16,11 +16,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
@@ -40,19 +43,19 @@ fun LearningOverviewDialog(
     isDarkTheme: Boolean,
     isPlumpDuo: Boolean
 ) {
-    val modeText = if (learningMode == LearningMode.Word) "单词" else "语法"
+    val modeText = if (learningMode == LearningMode.Word) stringResource(R.string.mode_word) else stringResource(R.string.mode_grammar)
     val percent = if (dailyGoal > 0) ((completedCount.toFloat() / dailyGoal) * 100).toInt() else 0
     val estMinutes = ((remainingCount * 15) / 60).coerceAtLeast(1)
 
-    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
-    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
-    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
-    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
+    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
+    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
+    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
 
     NemoDialog(
         onDismissRequest = onDismissRequest,
-        title = "今日学习概览",
-        confirmText = "继续学习",
+        title = stringResource(R.string.title_learning_overview),
+        confirmText = stringResource(R.string.btn_continue_learning),
         dismissText = null,
         onConfirm = onDismissRequest
     ) {
@@ -74,7 +77,7 @@ fun LearningOverviewDialog(
             ) {
                 Column {
                     Text(
-                        text = "今日目标完成度",
+                        text = stringResource(R.string.overview_target_progress),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -107,7 +110,7 @@ fun LearningOverviewDialog(
                         .padding(12.dp)
                 ) {
                     Text(
-                        text = "待处理剩余",
+                        text = stringResource(R.string.overview_remaining_items),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -128,13 +131,13 @@ fun LearningOverviewDialog(
                         .padding(12.dp)
                 ) {
                     Text(
-                        text = "预估剩余耗时",
+                        text = stringResource(R.string.overview_estimated_time),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = if (remainingCount > 0) "约 $estMinutes 分钟" else "已全部完成",
+                        text = if (remainingCount > 0) stringResource(R.string.overview_estimated_minutes, estMinutes) else stringResource(R.string.overview_all_completed),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -152,7 +155,7 @@ fun LearningOverviewDialog(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "队列卡片分布",
+                    text = stringResource(R.string.overview_queue_distribution),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -161,10 +164,10 @@ fun LearningOverviewDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "新学: $queueNewCount", fontSize = 12.sp, color = newColor, fontWeight = FontWeight.SemiBold)
-                    Text(text = "在学: $queueLearningCount", fontSize = 12.sp, color = learningColor, fontWeight = FontWeight.SemiBold)
-                    Text(text = "复习: $queueReviewCount", fontSize = 12.sp, color = reviewColor, fontWeight = FontWeight.SemiBold)
-                    Text(text = "重学: $queueRelearnCount", fontSize = 12.sp, color = relearnColor, fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.queue_label_new_format, queueNewCount), fontSize = 12.sp, color = newColor, fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.queue_label_learning_format, queueLearningCount), fontSize = 12.sp, color = learningColor, fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.queue_label_review_format, queueReviewCount), fontSize = 12.sp, color = reviewColor, fontWeight = FontWeight.SemiBold)
+                    Text(text = stringResource(R.string.queue_label_relearn_format, queueRelearnCount), fontSize = 12.sp, color = relearnColor, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

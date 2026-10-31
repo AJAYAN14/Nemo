@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.statistics.calendar
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.ActivityRingPalette
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
@@ -64,9 +65,7 @@ import java.util.Date
 import java.util.TimeZone
 
 /**
- * 学习日历界面 (UI/UX Pro Max)
- * 风格统一：Solid Typography, Premium Card, Squircle Icons
- * 结构：Scaffold + CommonHeader 用于保持应用一致性
+ * 学习日历界面
  */
 @Composable
 fun LearningCalendarScreen(
@@ -974,7 +973,7 @@ fun DetailMiniMetricCard(
     val cardBg = if (isDark) {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
     } else {
-        Color(0xFFF6F4EF) // 与 #099 --ux-surface-2 统一
+        ActivityRingPalette.MetricCardBgLight
     }
 
     Surface(

@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
@@ -145,7 +146,7 @@ fun AccountManagementScreen(
                 PremiumSettingsGroup(title = "个人信息", cardBg = cardBg) {
                     PremiumSettingsItem(
                         icon = Icons.Rounded.Badge,
-                        iconTint = Color(0xFF007AFF), // Blue
+                        iconTint = IosColors.Blue,
                         plumpIcon = PlumpIcon.UserPen,
                         plumpColor = IsoluminantPalette.SkyIndigo,
                         title = "修改用户名",
@@ -155,7 +156,7 @@ fun AccountManagementScreen(
                         HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
                         PremiumSettingsItem(
                             icon = Icons.Rounded.MailOutline,
-                            iconTint = Color(0xFF34C759), // Green
+                            iconTint = IosColors.Green,
                             plumpIcon = PlumpIcon.Mail,
                             plumpColor = IsoluminantPalette.EmeraldGreen,
                             title = "修改邮箱",
@@ -170,7 +171,7 @@ fun AccountManagementScreen(
                 PremiumSettingsGroup(title = "安全", cardBg = cardBg) {
                      PremiumSettingsItem(
                         icon = Icons.Rounded.LockReset,
-                        iconTint = Color(0xFFFF9500), // Orange
+                        iconTint = IosColors.Orange,
                         plumpIcon = PlumpIcon.KeyRound,
                         plumpColor = IsoluminantPalette.WarmAmber,
                         title = "重置密码",

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
@@ -68,10 +69,10 @@ fun LiquidSlider(
     accentColor: Color? = null
 ) {
     val isLightTheme = !isSystemInDarkTheme()
-    val actualAccentColor = accentColor ?: if (isLightTheme) Color(0xFF0088FF) else Color(0xFF0091FF)
+    val actualAccentColor = accentColor ?: if (isLightTheme) UiPalette.LiquidBrandBlue else UiPalette.LiquidLightAccent
     val trackColor =
-        if (isLightTheme) Color(0xFF787878).copy(0.2f)
-        else Color(0xFF787880).copy(0.36f)
+        if (isLightTheme) UiPalette.LiquidTrackLight.copy(0.2f)
+        else UiPalette.LiquidTrackDark.copy(0.36f)
     val surfaceColor = MaterialTheme.colorScheme.surface
 
     val trackBackdrop = rememberLayerBackdrop()

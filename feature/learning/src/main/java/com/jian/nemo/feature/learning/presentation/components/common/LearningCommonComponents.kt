@@ -87,6 +87,9 @@ import com.kyant.backdrop.highlight.Highlight
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.feature.learning.R
 import kotlin.math.sin
 import kotlin.math.tanh
 import kotlinx.coroutines.delay
@@ -304,7 +307,7 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 新学 (NEW) - 蓝色
-                    val defaultNewColor = if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
+                    val defaultNewColor = if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
                     val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else defaultNewColor
                     Text(
                         text = "$queueNewCount",
@@ -313,7 +316,7 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 在学 (LEARNING) - 青色
-                    val defaultLearningColor = if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
+                    val defaultLearningColor = if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
                     val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else defaultLearningColor
                     Text(
                         text = "$queueLearningCount",
@@ -322,7 +325,7 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 复习 (REVIEW) - 绿色
-                    val defaultReviewColor = if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
+                    val defaultReviewColor = if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
                     val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else defaultReviewColor
                     Text(
                         text = "$queueReviewCount",
@@ -331,7 +334,7 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 重学 (RELEARN) - 橙色
-                    val defaultRelearnColor = if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+                    val defaultRelearnColor = if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
                     val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else defaultRelearnColor
                     Text(
                         text = "$queueRelearnCount",
@@ -434,15 +437,15 @@ fun WaitingBackground(
                 .background(
                     Brush.verticalGradient(
                         colors = if (isDark) listOf(
-                            Color(0x33090714),
-                            Color(0x05090714),
-                            Color(0x33090714),
-                            Color(0x66090714)
+                            LearningPalette.AuroraMaskDark1,
+                            LearningPalette.AuroraMaskDark2,
+                            LearningPalette.AuroraMaskDark1,
+                            LearningPalette.AuroraMaskDark3
                         ) else listOf(
-                            Color(0x66FFFFFF),
-                            Color(0x10FFFFFF),
-                            Color(0x55F8FAFC),
-                            Color(0x88F1F5F9)
+                            LearningPalette.AuroraMaskLight1,
+                            LearningPalette.AuroraMaskLight2,
+                            LearningPalette.AuroraMaskLight3,
+                            LearningPalette.AuroraMaskLight4
                         )
                     )
                 )
@@ -540,7 +543,7 @@ fun WaitingContent(
 
     // 咖啡休息矢量图标 (Take Rest)
     val coffeeRestIcon = remember(isDark) {
-        val strokeColor = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569)
+        val strokeColor = if (isDark) LearningPalette.Slate300 else LearningPalette.Slate600
         ImageVector.Builder(
             name = "CoffeeRestIcon",
             defaultWidth = 24.dp,
@@ -667,18 +670,18 @@ fun WaitingContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "复习冷却中",
+                            text = stringResource(R.string.cooldown_cooling_title),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 1.5.sp,
-                            color = if (isDark) Color(0xFFE2E8F0) else Color(0xFF475569)
+                            color = if (isDark) LearningPalette.AiBorderLight else LearningPalette.Slate600
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = timeFormatted,
                             fontSize = timeFontSize,
                             fontWeight = FontWeight.ExtraBold,
-                            color = if (isDark) Color.White else Color(0xFF1E1B4B)
+                            color = if (isDark) Color.White else LearningPalette.CooldownIndigoDark
                         )
                     }
                 }
@@ -686,21 +689,21 @@ fun WaitingContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "暂无已到期的卡片",
+                    text = stringResource(R.string.cooldown_no_expired_cards),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isDark) Color.White else Color(0xFF0F172A)
+                    color = if (isDark) Color.White else LearningPalette.AiSlateText
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "当前词已进入短时记忆巩固阶梯。依据记忆曲线规律，稍候再次复习可达到最佳记忆留存效果。",
+                    text = stringResource(R.string.cooldown_desc),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
                     lineHeight = 19.sp,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
+                    color = if (isDark) LearningPalette.CooldownMutedDark else LearningPalette.AiMutedText,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
@@ -717,11 +720,11 @@ fun WaitingContent(
                 Card(
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isDark) Color(0xB2120F24) else Color(0xEBFFFFFF)
+                        containerColor = if (isDark) LearningPalette.CooldownCardBgDark else LearningPalette.CooldownCardBgLight
                     ),
                     border = BorderStroke(
                         width = 1.dp,
-                        color = if (isDark) Color(0x38A78BFA) else Color(0x297C3AED)
+                        color = if (isDark) LearningPalette.CooldownCardBorderDark else LearningPalette.CooldownCardBorderLight
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -742,28 +745,28 @@ fun WaitingContent(
                                 Icon(
                                     imageVector = Icons.Rounded.AccessTime,
                                     contentDescription = null,
-                                    tint = if (isDark) Color(0xFFC4B5FD) else Color(0xFF7C3AED),
+                                    tint = if (isDark) LearningPalette.CooldownPurpleTextDark else LearningPalette.CooldownPurpleTextLight,
                                     modifier = Modifier.size(15.dp)
                                 )
                                 Text(
-                                    text = "本轮学习战报",
+                                    text = stringResource(R.string.cooldown_round_audit),
                                     fontSize = 12.5.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = if (isDark) Color(0xFFC4B5FD) else Color(0xFF0F172A)
+                                    color = if (isDark) LearningPalette.CooldownPurpleTextDark else LearningPalette.AiSlateText
                                 )
                             }
 
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0x26F59E0B))
+                                    .background(LearningPalette.CooldownBadgeBg)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "冷却中 $displayQueue 词",
+                                    text = stringResource(R.string.cooldown_cooling_count, displayQueue),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFFBBF24)
+                                    color = LearningPalette.CooldownBadgeText
                                 )
                             }
                         }
@@ -778,13 +781,13 @@ fun WaitingContent(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isDark) Color(0x0DFFFFFF) else Color(0xF2F1F5F9))
+                                    .background(if (isDark) LearningPalette.CooldownStatBgDark else LearningPalette.CooldownStatBgLight)
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
                                 Text(
-                                    text = "本轮已学",
+                                    text = stringResource(R.string.cooldown_learned_this_round),
                                     fontSize = 11.sp,
-                                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                    color = if (isDark) LearningPalette.CooldownMutedDark else LearningPalette.AiMutedText
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(
@@ -793,16 +796,16 @@ fun WaitingContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "$displayCompleted 词",
+                                        text = stringResource(R.string.cooldown_word_count, displayCompleted),
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
+                                        color = if (isDark) LearningPalette.AiTrackBgLight else LearningPalette.AiSlateText
                                     )
                                     Text(
-                                        text = "已推进",
+                                        text = stringResource(R.string.cooldown_advanced),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF10B981)
+                                        color = LearningPalette.ReadingAccentGreen
                                     )
                                 }
                             }
@@ -812,13 +815,13 @@ fun WaitingContent(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(if (isDark) Color(0x0DFFFFFF) else Color(0xF2F1F5F9))
+                                    .background(if (isDark) LearningPalette.CooldownStatBgDark else LearningPalette.CooldownStatBgLight)
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
                                 Text(
-                                    text = "待巩固卡片",
+                                    text = stringResource(R.string.cooldown_to_consolidate),
                                     fontSize = 11.sp,
-                                    color = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                    color = if (isDark) LearningPalette.CooldownMutedDark else LearningPalette.AiMutedText
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Row(
@@ -827,16 +830,16 @@ fun WaitingContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "$displayQueue 词",
+                                        text = stringResource(R.string.cooldown_word_count, displayQueue),
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (isDark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
+                                        color = if (isDark) LearningPalette.AiTrackBgLight else LearningPalette.AiSlateText
                                     )
                                     Text(
-                                        text = "正在冷却",
+                                        text = stringResource(R.string.cooldown_cooling_status),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = Color(0xFFF59E0B)
+                                        color = LearningPalette.AccentOrange
                                     )
                                 }
                             }
@@ -871,7 +874,7 @@ fun WaitingContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "提前复习",
+                        text = stringResource(R.string.cooldown_btn_review_ahead),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -888,7 +891,7 @@ fun WaitingContent(
                         backdrop = chamberBackdrop,
                         shape = RoundedCornerShape(16.dp),
                         chromaticAberration = true,
-                        surfaceColor = if (isDark) Color(0xFF262038).copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
+                        surfaceColor = if (isDark) LearningPalette.RestButtonSurfaceDark.copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
                         border = null,
                         isInteractive = true,
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
@@ -900,15 +903,15 @@ fun WaitingContent(
                         Icon(
                             imageVector = coffeeRestIcon,
                             contentDescription = null,
-                            tint = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569),
+                            tint = if (isDark) LearningPalette.Slate300 else LearningPalette.Slate600,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "稍后复习，去休息片刻",
+                            text = stringResource(R.string.cooldown_btn_take_rest),
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF475569)
+                            color = if (isDark) LearningPalette.Slate300 else LearningPalette.Slate600
                         )
                     }
                 }

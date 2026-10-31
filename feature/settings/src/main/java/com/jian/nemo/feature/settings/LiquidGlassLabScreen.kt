@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
@@ -176,7 +177,7 @@ fun LiquidGlassLabScreen(
                     ColoredLiquidGlassButton(
                         onClick = {},
                         backdrop = backdrop,
-                        tint = Color(0xFF0088FF),
+                        tint = SettingsPalette.BackupGlassTint,
                         surfaceColor = Color.Unspecified,
                         shape = Capsule(),
                         modifier = Modifier.height(48.dp)
@@ -195,7 +196,7 @@ fun LiquidGlassLabScreen(
                     ColoredLiquidGlassButton(
                         onClick = {},
                         backdrop = backdrop,
-                        tint = Color(0xFFFF8D28),
+                        tint = SettingsPalette.LiquidOrange,
                         surfaceColor = Color.Unspecified,
                         shape = Capsule(),
                         modifier = Modifier.height(48.dp)
@@ -278,8 +279,8 @@ private fun LabBackgroundDecorations() {
                 .background(
                     Brush.radialGradient(
                         listOf(
-                            Color(0xFF00C6FF).copy(alpha = 0.55f),
-                            Color(0xFF0072FF).copy(alpha = 0.35f),
+                            SettingsPalette.LiquidCyanGradStart.copy(alpha = 0.55f),
+                            SettingsPalette.LiquidBlueGradEnd.copy(alpha = 0.35f),
                             Color.Transparent
                         )
                     )
@@ -297,8 +298,8 @@ private fun LabBackgroundDecorations() {
                 .background(
                     Brush.radialGradient(
                         listOf(
-                            Color(0xFFFF2A85).copy(alpha = 0.55f),
-                            Color(0xFF8A2387).copy(alpha = 0.35f),
+                            SettingsPalette.LiquidPinkGradStart.copy(alpha = 0.55f),
+                            SettingsPalette.LiquidPurpleGradEnd.copy(alpha = 0.35f),
                             Color.Transparent
                         )
                     )
@@ -316,8 +317,8 @@ private fun LabBackgroundDecorations() {
                 .background(
                     Brush.radialGradient(
                         listOf(
-                            Color(0xFFFF8008).copy(alpha = 0.5f),
-                            Color(0xFFFFC837).copy(alpha = 0.3f),
+                            SettingsPalette.LiquidAmberGradStart.copy(alpha = 0.5f),
+                            SettingsPalette.LiquidGoldGradEnd.copy(alpha = 0.3f),
                             Color.Transparent
                         )
                     )
@@ -351,7 +352,7 @@ private fun LabBackgroundDecorations() {
                         modifier = Modifier
                             .size(46.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(Brush.linearGradient(listOf(Color(0xFF0072FF), Color(0xFF00C6FF)))),
+                            .background(Brush.linearGradient(listOf(SettingsPalette.LiquidBlueGradEnd, SettingsPalette.LiquidCyanGradStart))),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -419,7 +420,7 @@ private fun LabBackgroundDecorations() {
                         Text(
                             text = "12 dp",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF0072FF)
+                            color = SettingsPalette.LiquidBlueGradEnd
                         )
                         Text(
                             text = "透镜厚度",
@@ -431,7 +432,7 @@ private fun LabBackgroundDecorations() {
                         Text(
                             text = "24 dp",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFFFF8D28)
+                            color = SettingsPalette.LiquidOrange
                         )
                         Text(
                             text = "折射范围",
@@ -443,7 +444,7 @@ private fun LabBackgroundDecorations() {
                         Text(
                             text = "60 fps",
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF2ECC71)
+                            color = SettingsPalette.LiquidGreen
                         )
                         Text(
                             text = "实时帧率",

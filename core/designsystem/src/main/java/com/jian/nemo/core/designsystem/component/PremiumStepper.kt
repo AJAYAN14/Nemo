@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.DesignSystemPalette
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -93,7 +94,7 @@ fun PremiumStepper(
     max: Int = 999,
     step: Int = 1,
     enabled: Boolean = true,
-    accentColor: Color = Color(0xFFFF5500)
+    accentColor: Color = DesignSystemPalette.StepperOrange
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -203,9 +204,9 @@ fun PremiumStepper(
                     contentDescription = "减少",
                     modifier = Modifier.size(28.dp),
                     tint = if (enabled && value - step >= min) {
-                        if (isDark) Color.White else Color(0xFF1E293B)
+                        if (isDark) Color.White else DesignSystemPalette.StepperSlateText
                     } else {
-                        (if (isDark) Color.White else Color(0xFF1E293B)).copy(alpha = 0.35f)
+                        (if (isDark) Color.White else DesignSystemPalette.StepperSlateText).copy(alpha = 0.35f)
                     }
                 )
             }
@@ -342,9 +343,9 @@ fun PremiumStepper(
                     contentDescription = "增加",
                     modifier = Modifier.size(28.dp),
                     tint = if (enabled && value + step <= max) {
-                        if (isDark) Color.White else Color(0xFF1E293B)
+                        if (isDark) Color.White else DesignSystemPalette.StepperSlateText
                     } else {
-                        (if (isDark) Color.White else Color(0xFF1E293B)).copy(alpha = 0.35f)
+                        (if (isDark) Color.White else DesignSystemPalette.StepperSlateText).copy(alpha = 0.35f)
                     }
                 )
             }
@@ -375,8 +376,8 @@ private fun StepperIconButton(
         label = "StepperIconButtonScale"
     )
 
-    val softButtonColor = if (isDark) Color(0xFF262626) else Color(0xFFF1F5F9)
-    val borderColor = if (isDark) Color(0xFF383838) else Color(0xFFE2E8F0)
+    val softButtonColor = if (isDark) DesignSystemPalette.StepperBtnDark else DesignSystemPalette.StepperBtnLight
+    val borderColor = if (isDark) DesignSystemPalette.StepperBorderDark else DesignSystemPalette.StepperBorderLight
 
     Box(
         modifier = modifier

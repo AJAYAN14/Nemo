@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.learning.presentation
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -238,8 +239,8 @@ fun LearningScreen(
                         // 中间：已连续打卡胶囊徽章（HTML 同款设计，橙底暖色）
                         Surface(
                             shape = CircleShape,
-                            color = if (isDarkTheme) Color(0xFF2E1F14) else Color(0xFFFFF7ED),
-                            border = BorderStroke(1.dp, if (isDarkTheme) Color(0xFF6B3A1E) else Color(0xFFFFEDD5))
+                            color = if (isDarkTheme) LearningPalette.BannerOrangeBgDark else LearningPalette.BannerOrangeBgLight,
+                            border = BorderStroke(1.dp, if (isDarkTheme) LearningPalette.BannerOrangeBorderDark else LearningPalette.BannerOrangeBorderLight)
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -251,7 +252,7 @@ fun LearningScreen(
                                     text = "已连续打卡 ${uiState.dailyStreak} 天",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = if (isDarkTheme) Color(0xFFFF8A50) else Color(0xFFEA580C)
+                                    color = if (isDarkTheme) LearningPalette.BannerOrangeTextDark else LearningPalette.BannerOrangeTextLight
                                 )
                             }
                         }

@@ -102,7 +102,7 @@ fun AIExerciseDetailDialog(
                     title = "你的答案",
                     content = history.userAnswer,
                     icon = Icons.Rounded.Translate,
-                    iconColor = Color(0xFF4CAF50), // Success Green
+                    iconColor = LearningPalette.SuccessGreen,
                     plumpIcon = PlumpIcon.Languages,
                     plumpColor = IsoluminantPalette.EmeraldGreen
                 )

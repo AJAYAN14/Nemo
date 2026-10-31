@@ -9,10 +9,6 @@ import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,8 +18,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -31,32 +25,30 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
+import com.jian.nemo.core.designsystem.theme.SortingPalette
 import com.jian.nemo.core.domain.model.ExplanationPayload
 import com.jian.nemo.core.domain.model.SortableChar
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.feature.test.components.QuestionExplanationCard
 import com.jian.nemo.feature.test.TestViewModel
-
-/**
- * Macaron / Morandi Color Palette for chips
- */
-private val MACARON_PALETTE = listOf(
-    Color(0xFF818CF8), // Indigo 400
-    Color(0xFFF472B6), // Pink 400
-    Color(0xFFFBBF24), // Amber 400
-    Color(0xFF34D399), // Emerald 400
-    Color(0xFF22D3EE), // Cyan 400
-    Color(0xFFA78BFA)  // Violet 400
-)
+import kotlin.math.abs
 
 private fun getMacaronColor(index: Int, charId: String): Color {
     val idHash = charId.hashCode()
-    return MACARON_PALETTE[Math.abs(idHash) % MACARON_PALETTE.size]
+    val palette = SortingPalette.MacaronColors
+    return palette[abs(idHash) % palette.size]
 }
 
 enum class ChipStatus { NORMAL, CORRECT, WRONG }
@@ -68,10 +60,12 @@ fun SortingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val questions = uiState.questions
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // Removed the outer Scaffold that caused double-padding/EdgeToEdge loss.
-    // Instead, using a Box with the gradient background as the outermost container.
     val currentQuestion = questions.getOrNull(uiState.currentIndex) as? TestQuestion.Sorting ?: return
+
+    val gradientTopColor = if (isDark) MaterialTheme.colorScheme.surface else SortingPalette.BackgroundGradientLight
+    val gradientBottomColor = if (isDark) MaterialTheme.colorScheme.background else Color.White
 
     Box(
         modifier = Modifier
@@ -79,11 +73,11 @@ fun SortingScreen(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFF5F8FF), // Crystal Blue 50 - High Purity
-                        Color.White
+                        gradientTopColor,
+                        gradientBottomColor
                     ),
                     startY = 0f,
-                    endY = 1200f // Smoother transition
+                    endY = 1200f
                 )
             )
     ) {
@@ -147,7 +141,7 @@ fun SortingScreen(
                             modifier = Modifier.padding(top = 16.dp)
                         )
                         Text(
-                            text = if (isGrammarQuestion) "选择字符，按正确顺序排列" else "选择假名，按正确顺序排列",
+                            text = if (isGrammarQuestion) stringResource(R.string.test_sorting_instruction_grammar) else stringResource(R.string.test_sorting_instruction_word),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -208,7 +202,7 @@ fun SortingScreen(
                     canSubmit = uiState.userAnswerChars.isNotEmpty(),
                     isAnswered = currentQuestion.isAnswered,
                     isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
-                    submitText = "检查",
+                    submitText = stringResource(R.string.test_sorting_btn_check),
                     isAutoAdvancing = uiState.isAutoAdvancing
                 )
             }
@@ -224,21 +218,15 @@ private fun AnswerContainer(
     shakeOffset: Float,
     onDeselect: (SortableChar) -> Unit
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor by animateColorAsState(
         targetValue = when {
             question.isAnswered && question.isCorrect -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
             question.isAnswered && !question.isCorrect -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
-            else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) else Color(0xFFE0E7FF) // Clear Indigo 100
+            else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) else SortingPalette.ContainerBgLight
         },
         label = "answerContainerColor"
     )
-
-    val borderColor = when {
-        question.isAnswered && question.isCorrect -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
-        question.isAnswered && !question.isCorrect -> MaterialTheme.colorScheme.error.copy(alpha = 0.5f)
-        else -> if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFCBD5E1) // Physical Slate 300
-    }
 
     FlowRow(
         modifier = Modifier
@@ -253,8 +241,8 @@ private fun AnswerContainer(
         if (userAnswer.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth().height(60.dp), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "在此处构建答案",
-                    color = Color(0xFF312E81).copy(alpha = 0.3f), // Indigo 900
+                    text = stringResource(R.string.test_sorting_placeholder_build_answer),
+                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f) else SortingPalette.PlaceholderText.copy(alpha = 0.3f),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -302,15 +290,14 @@ private fun OptionsContainer(
     options: List<SortableChar>,
     onSelect: (SortableChar) -> Unit
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
-    
-    // UI/UX PRO MAX: Grounded Tray for Options
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f) 
-                else Color(0xFFF8FAFF), // Crystal Indigo Base
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                else SortingPalette.OptionsTrayBgLight,
                 RoundedCornerShape(32.dp)
             )
             .padding(vertical = 24.dp, horizontal = 12.dp)
@@ -336,7 +323,7 @@ private fun OptionsContainer(
                         isSelected = false,
                         backgroundColor = getMacaronColor(index, char.id),
                         enabled = !char.isSelected,
-                        modifier = Modifier.graphicsLayer { 
+                        modifier = Modifier.graphicsLayer {
                             alpha = animProgress
                             scaleX = 0.5f + animProgress * 0.5f
                             scaleY = 0.5f + animProgress * 0.5f
@@ -360,11 +347,11 @@ private fun SortableChip(
     enabled: Boolean = true
 ) {
     val hapticFeedback = LocalHapticFeedback.current
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val targetBackgroundColor = when {
-        status == ChipStatus.CORRECT -> Color(0xFF4CAF50)
-        status == ChipStatus.WRONG -> Color(0xFFF44336)
+        status == ChipStatus.CORRECT -> if (isDark) NemoSecondaryDark else NemoSecondary
+        status == ChipStatus.WRONG -> if (isDark) NemoDangerDark else NemoDanger
         isSelected -> backgroundColor ?: MaterialTheme.colorScheme.primary
         else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color.White
     }
@@ -376,7 +363,13 @@ private fun SortableChip(
     )
 
     val textColor = if (isSelected || status != ChipStatus.NORMAL) Color.White else MaterialTheme.colorScheme.onSurface
-    val borderColor = if (isSelected || status != ChipStatus.NORMAL) Color.Transparent else if (isDark) Color.White.copy(alpha = 0.1f) else Color(0xFFF1F5F9)
+    val borderColor = if (isSelected || status != ChipStatus.NORMAL) {
+        Color.Transparent
+    } else if (isDark) {
+        Color.White.copy(alpha = 0.1f)
+    } else {
+        NemoNeutrals.Gray100
+    }
 
     val chipShape = RoundedCornerShape(18.dp)
     val borderStroke = if (status == ChipStatus.NORMAL && !isSelected) {
@@ -411,7 +404,6 @@ private fun SortableChip(
         }
     }
 }
-
 
 @Composable
 private fun SortingFeedback(
@@ -458,12 +450,12 @@ private fun SortingFeedback(
             ) {
                 if (question.isCorrect) {
                     Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(48.dp))
-                    Text("回答正确！", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(R.string.test_sorting_feedback_correct), fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.secondary, style = MaterialTheme.typography.titleLarge)
                 } else {
                     Icon(Icons.Filled.Cancel, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(48.dp))
-                    Text("回答错误", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(R.string.test_sorting_feedback_wrong), fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("正确答案", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                    Text(stringResource(R.string.test_sorting_label_correct_answer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                     Text(question.word.hiragana, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Black))
                 }
             }

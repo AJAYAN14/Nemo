@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
+import com.jian.nemo.core.designsystem.theme.IosColors
 
 /**
  * 积压排产与微会话控制卡片 (Backlog & Micro-Session Controller Card)
@@ -39,7 +40,7 @@ fun BacklogControllerCard(
     onMaxReviewsChange: (Int) -> Unit,
     strategy: String,
     onStrategyChange: (String) -> Unit,
-    accentColor: Color = Color(0xFF34C759),
+    accentColor: Color = IosColors.Green,
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f

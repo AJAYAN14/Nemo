@@ -126,16 +126,16 @@ enum class PlumpIcon {
  * 每一个色彩拥有完全相等的视觉重量感（Visual Weight）与能量级，杜绝某些图标刺眼、某些图标发暗的失衡问题。
  */
 object IsoluminantPalette {
-    val SkyIndigo = Color(0xFF4C82F6)    // 晴空蓝 (Hue 255°)
-    val LakesideCyan = Color(0xFF009CB2) // 湖光青 (Hue 195°)
-    val LilacViolet = Color(0xFF906EE8)  // 丁香紫 (Hue 295°)
-    val WarmAmber = Color(0xFFD67700)    // 暖金琥珀 (Hue 70°)
-    val EmeraldGreen = Color(0xFF229E65) // 翡翠竹青 (Hue 145°)
-    val RoseRuby = Color(0xFFE44F6D)     // 蔷薇绯红 (Hue 15°)
-    val SeaMarine = Color(0xFF1D8FDF)    // 蔚蓝海晶 (Hue 225°)
-    val CoralFlame = Color(0xFFDE5545)   // 赤焰珊瑚 (Hue 30°)
-    val GlazeMint = Color(0xFF009F8C)    // 青碧琉璃 (Hue 175°)
-    val OceanBlue = Color(0xFF3B86E8)    // 深海青蓝 (Hue 240°)
+    val SkyIndigo get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.SkyIndigo
+    val LakesideCyan get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.LakesideCyan
+    val LilacViolet get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.LilacViolet
+    val WarmAmber get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.WarmAmber
+    val EmeraldGreen get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.EmeraldGreen
+    val RoseRuby get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.RoseRuby
+    val SeaMarine get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.SeaMarine
+    val CoralFlame get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.CoralFlame
+    val GlazeMint get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.GlazeMint
+    val OceanBlue get() = com.jian.nemo.core.designsystem.theme.PlumpPalette.OceanBlue
 
     /**
      * 根据色相角动态生成感知均匀等亮度色彩 (OKLCH 色彩模型)

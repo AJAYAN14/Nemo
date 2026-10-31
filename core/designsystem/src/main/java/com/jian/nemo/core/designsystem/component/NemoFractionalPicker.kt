@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.DesignSystemPalette
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -164,7 +165,7 @@ fun NemoFractionalPicker(
         }
     }
 
-    val indicatorColor = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+    val indicatorColor = if (isDark) DesignSystemPalette.PickerIndicatorDark else DesignSystemPalette.PickerIndicatorLight
     // 内阴影颜色：深色模式用黑色，浅色模式用深灰
     val innerShadowColor = if (isDark) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
     // 边缘渐变遮罩：从弹窗表面色渐变到透明
@@ -261,7 +262,7 @@ fun NemoFractionalPicker(
                                 color = if (isSelected) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
-                                    if (isDark) Color(0xFF64748B) else Color(0xFF94A3B8)
+                                    if (isDark) DesignSystemPalette.PickerIndicatorLight else DesignSystemPalette.PickerIndicatorDark
                                 },
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.height(36.dp)
@@ -273,7 +274,7 @@ fun NemoFractionalPicker(
                             val tickColor = if (isSelected) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)
+                                if (isDark) DesignSystemPalette.PickerTickDark else DesignSystemPalette.PickerTickLight
                             }
                             Canvas(
                                 modifier = Modifier
@@ -291,7 +292,7 @@ fun NemoFractionalPicker(
 
                                 // 子刻度虚线/细线 (在刻度之间绘制微小的阻尼刻度点)
                                 if (index < totalItems - 1) {
-                                    val subTickColor = if (isDark) Color(0xFF1E293B) else Color(0xFFE2E8F0)
+                                    val subTickColor = if (isDark) DesignSystemPalette.PickerSubTickDark else DesignSystemPalette.PickerSubTickLight
                                     val subX = centerX + size.width / 2f
                                     drawLine(
                                         color = subTickColor,

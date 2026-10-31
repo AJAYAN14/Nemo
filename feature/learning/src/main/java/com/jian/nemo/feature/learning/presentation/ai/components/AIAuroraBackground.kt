@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 
@@ -32,41 +33,41 @@ val AuroraPresets = listOf(
     AuroraPreset(
         id = "classic",
         name = "经典极光",
-        color1 = Color(0xFF5227FF),
-        color2 = Color(0xFF7CFF67),
-        color3 = Color(0xFF5227FF)
+        color1 = LearningPalette.AuroraClassic1,
+        color2 = LearningPalette.AuroraClassic2,
+        color3 = LearningPalette.AuroraClassic1
     ),
     // 2. 霓虹天际 (Nordic Sky) - React Bits 官方精选 (深紫/樱花洋红/晴空青)
     AuroraPreset(
         id = "nordic",
         name = "霓虹天际",
-        color1 = Color(0xFF6D28D9),
-        color2 = Color(0xFFEC4899),
-        color3 = Color(0xFF06B6D4)
+        color1 = LearningPalette.AuroraNordic1,
+        color2 = LearningPalette.AuroraNordic2,
+        color3 = LearningPalette.AuroraNordic3
     ),
     // 3. 极昼破晓 (Polar Dawn) - 皇家深蓝/晨曦柔粉/破晓赤红
     AuroraPreset(
         id = "polar_dawn",
         name = "极昼破晓",
-        color1 = Color(0xFF3A29FF),
-        color2 = Color(0xFFFF94B4),
-        color3 = Color(0xFFFF3232)
+        color1 = LearningPalette.AuroraPolar1,
+        color2 = LearningPalette.AuroraPolar2,
+        color3 = LearningPalette.AuroraPolar3
     ),
     // 4. 冰川青碧 (Glacier Turquoise) - 冰川天蓝/薄荷翡翠/琉璃靛蓝
     AuroraPreset(
         id = "glacier",
         name = "冰川青碧",
-        color1 = Color(0xFF0EA5E9),
-        color2 = Color(0xFF10B981),
-        color3 = Color(0xFF6366F1)
+        color1 = LearningPalette.AuroraGlacier1,
+        color2 = LearningPalette.AuroraGlacier2,
+        color3 = LearningPalette.AuroraGlacier3
     ),
     // 5. 暮色紫霞 (Dusk Sunset) - 绚丽玫红/梦幻罗兰/深海蔚蓝
     AuroraPreset(
         id = "dusk",
         name = "暮色紫霞",
-        color1 = Color(0xFFF43F5E),
-        color2 = Color(0xFFA855F7),
-        color3 = Color(0xFF3B82F6)
+        color1 = LearningPalette.AuroraDusk1,
+        color2 = LearningPalette.AuroraDusk2,
+        color3 = LearningPalette.AuroraDusk3
     )
 )
 

@@ -31,6 +31,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
@@ -250,10 +254,10 @@ private fun VerbConjugationHandbookContent(
                 title = "禁止形",
                 usage = "强硬地命令他人“不准做某事”。",
                 plumpColor = IsoluminantPalette.fromOklch(20f),
-                colorLight = Color(0xFFDC2626),
-                colorDark = Color(0xFFEF4444),
-                bgColorLight = Color(0xFFFEF2F2),
-                bgColorDark = Color(0xFF7F1D1D).copy(alpha = 0.3f),
+                colorLight = LearningPalette.VerbBanRedLight,
+                colorDark = LearningPalette.VerbBanRedDark,
+                bgColorLight = LearningPalette.VerbBanBgLight,
+                bgColorDark = LearningPalette.VerbBanBgDark.copy(alpha = 0.3f),
                 rules = listOf(
                     GrammarRule("所有动词", "直接在【辞书形 (原形)】后 + な。", listOf("書く → 書くな (かくな)", "食べる → 食べるな (たべるな)", "する → するな", "来る → 来るな (くるな)"))
                 )
@@ -404,7 +408,7 @@ private fun VerbConjugationHandbookContent(
                         }
                         // NotoSerifJP 排版美学：主卡片标题增强易读性字重与字号 (18.sp)
                         Text(
-                            text = "必读：动词三大分类",
+                            text = stringResource(R.string.verb_handbook_intro_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontFamily = NotoSerifJP,
                                 fontSize = 18.sp,
@@ -414,7 +418,7 @@ private fun VerbConjugationHandbookContent(
                         )
                     }
                     Text(
-                        text = "所有的变形规则都是基于这三类动词划分的，学习前必须熟记：",
+                        text = stringResource(R.string.verb_handbook_intro_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color = textSub,
                         modifier = Modifier.padding(bottom = 16.dp),
@@ -431,24 +435,24 @@ private fun VerbConjugationHandbookContent(
                     ) {
                         VerbGroupItem(
                             number = "1",
-                            title = "一类动词 (五段)：",
-                            desc = "词尾是「う」段假名。(如: 買う, 書く)",
+                            title = stringResource(R.string.verb_group_1_title),
+                            desc = stringResource(R.string.verb_group_1_desc),
                             tintColor = group1Color,
                             isDark = isDark,
                             isPlumpDuo = isPlumpDuo
                         )
                         VerbGroupItem(
                             number = "2",
-                            title = "二类动词 (一段)：",
-                            desc = "词尾是「る」，且倒数第二音在い或え段。(如: 食べる, 見る)",
+                            title = stringResource(R.string.verb_group_2_title),
+                            desc = stringResource(R.string.verb_group_2_desc),
                             tintColor = group2Color,
                             isDark = isDark,
                             isPlumpDuo = isPlumpDuo
                         )
                         VerbGroupItem(
                             number = "3",
-                            title = "三类动词 (不规则)：",
-                            desc = "只有两个词：する (做), 来る (来)。",
+                            title = stringResource(R.string.verb_group_3_title),
+                            desc = stringResource(R.string.verb_group_3_desc),
                             tintColor = group3Color,
                             isDark = isDark,
                             isPlumpDuo = isPlumpDuo
@@ -461,22 +465,22 @@ private fun VerbConjugationHandbookContent(
                     val warningBg = if (isPlumpDuo) {
                         warningColor.copy(alpha = if (isDark) 0.12f else 0.06f)
                     } else {
-                        if (isDark) Color(0xFF3B1E1E) else Color(0xFFFFF1F2)
+                        if (isDark) LearningPalette.VerbWarningBgDark else LearningPalette.VerbWarningBgLight
                     }
                     val warningBorder = if (isPlumpDuo) {
                         warningColor.copy(alpha = if (isDark) 0.25f else 0.18f)
                     } else {
-                        if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.5f) else Color(0xFFFFE4E6)
+                        if (isDark) LearningPalette.VerbWarningBorderDark.copy(alpha = 0.5f) else LearningPalette.VerbWarningBorderLight
                     }
                     val innerChipBg = if (isPlumpDuo) {
                         warningColor.copy(alpha = if (isDark) 0.18f else 0.08f)
                     } else {
-                        if (isDark) Color(0xFF4C1D1D) else Color(0xFFFFE4E6).copy(alpha = 0.5f)
+                        if (isDark) LearningPalette.VerbWarningChipDark else LearningPalette.VerbWarningChipLight.copy(alpha = 0.5f)
                     }
                     val innerTextColor = if (isPlumpDuo) {
                         warningColor
                     } else {
-                        if (isDark) Color(0xFFFDA4AF) else Color(0xFFBE123C)
+                        if (isDark) LearningPalette.VerbWarningTextDark else LearningPalette.VerbWarningTextLight
                     }
 
                     Box(
@@ -500,7 +504,7 @@ private fun VerbConjugationHandbookContent(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = "避坑警告：特殊一类动词",
+                                    text = stringResource(R.string.verb_handbook_warning_title),
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         fontFamily = NotoSerifJP,
                                         fontWeight = FontWeight.ExtraBold
@@ -509,9 +513,9 @@ private fun VerbConjugationHandbookContent(
                                 )
                             }
                             Text(
-                                text = "有极少数动词长着“二类动词”的脸（以「る」结尾且倒数第二音在「い/え」段），但它们其实是 一类动词！必须死记，否则变形全错。",
+                                text = stringResource(R.string.verb_handbook_warning_desc),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (isDark) NemoNeutrals.DarkTextSecondary else (if (isPlumpDuo) warningColor.copy(alpha = 0.85f) else Color(0xFF9F1239)),
+                                color = if (isDark) NemoNeutrals.DarkTextSecondary else (if (isPlumpDuo) warningColor.copy(alpha = 0.85f) else LearningPalette.VerbWarningRose),
                                 lineHeight = 16.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -523,7 +527,7 @@ private fun VerbConjugationHandbookContent(
                                     .padding(8.dp)
                             ) {
                                 Text(
-                                    text = "常见：帰る(回家)、切る(切)、知る(知道)、入る(进入)、走る(跑)",
+                                    text = stringResource(R.string.verb_handbook_warning_common),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = innerTextColor
@@ -656,7 +660,7 @@ private fun VerbConjugationHandbookContent(
                                 ) {
                                     Icon(
                                         imageVector = if (isExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                                        contentDescription = if (isExpanded) "收起" else "展开",
+                                        contentDescription = if (isExpanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand),
                                         tint = arrowTint,
                                         modifier = Modifier.size(18.dp)
                                     )

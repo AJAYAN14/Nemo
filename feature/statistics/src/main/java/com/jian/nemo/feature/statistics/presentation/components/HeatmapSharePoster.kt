@@ -21,6 +21,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.StatisticsPalette
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.statistics.ActivityHeatmapUiState
@@ -41,13 +46,13 @@ fun HeatmapSharePoster(
     isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = if (isDarkTheme) Color(0xFF171827) else Color(0xFFF4F6FA)
-    val cardBg = if (isDarkTheme) Color(0xFF202136) else Color.White
-    val cardSubtleBg = if (isDarkTheme) Color(0xFF1A1B2D) else Color(0xFFF8FAFC)
-    val cardBorder = if (isDarkTheme) Color(0xFF2E2F48) else Color(0xFFE2E8F0).copy(alpha = 0.7f)
-    val textPrimary = if (isDarkTheme) Color(0xFFF8FAFC) else Color(0xFF0F172A)
-    val textSecondary = if (isDarkTheme) Color(0xFF94A3B8) else Color(0xFF475569)
-    val textMuted = if (isDarkTheme) Color(0xFF64748B) else Color(0xFF94A3B8)
+    val backgroundColor = if (isDarkTheme) StatisticsPalette.PosterBgDark else StatisticsPalette.PosterBgLight
+    val cardBg = if (isDarkTheme) StatisticsPalette.PosterCardBgDark else Color.White
+    val cardSubtleBg = if (isDarkTheme) StatisticsPalette.PosterCardSubtleBgDark else NemoNeutrals.Gray50
+    val cardBorder = if (isDarkTheme) StatisticsPalette.PosterCardBorderDark else NemoNeutrals.Gray200.copy(alpha = 0.7f)
+    val textPrimary = if (isDarkTheme) NemoNeutrals.Gray50 else NemoNeutrals.Gray900
+    val textSecondary = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray600
+    val textMuted = if (isDarkTheme) NemoNeutrals.Gray500 else NemoNeutrals.Gray400
 
     Column(
         modifier = modifier
@@ -74,7 +79,7 @@ fun HeatmapSharePoster(
                         .size(24.dp)
                         .background(
                             brush = Brush.linearGradient(
-                                listOf(Color(0xFF0E68FF), Color(0xFF3B82F6))
+                                listOf(NemoPrimary, IosColors.Blue)
                             ),
                             shape = RoundedCornerShape(7.dp)
                         ),
@@ -137,7 +142,7 @@ fun HeatmapSharePoster(
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                Color(0xFFFF9500).copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
+                                IosColors.Orange.copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
                                 Color.Transparent
                             )
                         ),
@@ -149,7 +154,7 @@ fun HeatmapSharePoster(
             Surface(
                 shape = RoundedCornerShape(18.dp),
                 color = cardBg,
-                border = BorderStroke(1.dp, Color(0xFFFF9500).copy(alpha = 0.25f)),
+                border = BorderStroke(1.dp, IosColors.Orange.copy(alpha = 0.25f)),
                 modifier = Modifier
                     .size(54.dp)
                     .softCardShadow(borderRadius = 18.dp, isDark = isDarkTheme)
@@ -161,7 +166,7 @@ fun HeatmapSharePoster(
                     Icon(
                         imageVector = Icons.Rounded.LocalFireDepartment,
                         contentDescription = null,
-                        tint = Color(0xFFFF7A00),
+                        tint = StatisticsPalette.PosterFlameOrange,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -205,7 +210,7 @@ fun HeatmapSharePoster(
                 Icon(
                     imageVector = Icons.Rounded.Star,
                     contentDescription = null,
-                    tint = Color(0xFFFF9500),
+                    tint = IosColors.Orange,
                     modifier = Modifier.size(13.dp)
                 )
                 Text(
@@ -247,7 +252,7 @@ fun HeatmapSharePoster(
                         modifier = Modifier
                             .size(32.dp)
                             .background(
-                                Color(0xFFFF9500).copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
+                                IosColors.Orange.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
                                 RoundedCornerShape(9.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -255,7 +260,7 @@ fun HeatmapSharePoster(
                         Icon(
                             imageVector = Icons.Rounded.LocalFireDepartment,
                             contentDescription = null,
-                            tint = Color(0xFFFF9500),
+                            tint = IosColors.Orange,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -291,7 +296,7 @@ fun HeatmapSharePoster(
 
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF10B981).copy(alpha = if (isDarkTheme) 0.2f else 0.12f)
+                    color = NemoSecondary.copy(alpha = if (isDarkTheme) 0.2f else 0.12f)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -301,14 +306,14 @@ fun HeatmapSharePoster(
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
-                            tint = Color(0xFF10B981),
+                            tint = NemoSecondary,
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
                             text = "已达标",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF10B981)
+                            color = NemoSecondary
                         )
                     }
                 }
@@ -347,7 +352,7 @@ fun HeatmapSharePoster(
                 unit = "项",
                 label = "单日最高",
                 tag = "$bestDayStr 巅峰",
-                color = Color(0xFF34C759),
+                color = IosColors.Green,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
                 textPrimary = textPrimary,
@@ -369,7 +374,7 @@ fun HeatmapSharePoster(
                 unit = "项/天",
                 label = "日均稳步",
                 tag = "稳步向前",
-                color = Color(0xFF8B5CF6),
+                color = IosColors.Purple,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
                 textPrimary = textPrimary,
@@ -383,7 +388,7 @@ fun HeatmapSharePoster(
                 unit = "%",
                 label = "记忆留存",
                 tag = "FSRS 算法",
-                color = Color(0xFFEF4444),
+                color = NemoDanger,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
                 textPrimary = textPrimary,
@@ -658,7 +663,7 @@ private fun PosterMemoryPanorama(
                     .clip(RoundedCornerShape(5.dp))
                     .background(
                         if (isDarkTheme) Color.White.copy(alpha = 0.08f)
-                        else Color(0xFFE2E8F0)
+                        else NemoNeutrals.Gray200
                     )
             ) {
                 Row(modifier = Modifier.fillMaxSize()) {
@@ -765,7 +770,7 @@ private fun PosterMicroHeatmap(
                     text = "🔥 持续点亮",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF10B981)
+                    color = NemoSecondary
                 )
             }
 
@@ -794,12 +799,10 @@ private fun PosterMicroHeatmap(
                 pattern.forEach { col ->
                     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         col.forEach { level ->
-                            val dotColor = when (level) {
-                                1 -> if (isDarkTheme) Color(0xFF1E3A8A) else Color(0xFF93C5FD)
-                                2 -> if (isDarkTheme) Color(0xFF2563EB) else Color(0xFF3B82F6)
-                                3 -> if (isDarkTheme) Color(0xFF60A5FA) else Color(0xFF1D4ED8)
-                                4 -> if (isDarkTheme) Color(0xFF93C5FD) else Color(0xFF172554)
-                                else -> if (isDarkTheme) Color(0xFF24253A) else Color(0xFFE2E8F0)
+                            val dotColor = if (isDarkTheme) {
+                                StatisticsPalette.PosterMiniHeatmapDark.getOrElse(level) { StatisticsPalette.PosterMiniHeatmapDark[0] }
+                            } else {
+                                StatisticsPalette.PosterMiniHeatmapLight.getOrElse(level) { StatisticsPalette.PosterMiniHeatmapLight[0] }
                             }
                             Box(
                                 modifier = Modifier

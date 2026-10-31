@@ -35,6 +35,7 @@ import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.kyant.backdrop.Backdrop
+import com.jian.nemo.core.designsystem.theme.UserPalette
 
 /**
  * 当前获得输入焦点的表单输入框类型枚举
@@ -67,12 +68,12 @@ fun AppStyleTextField(
     isError: Boolean = false,
     enabled: Boolean = true
 ) {
-    val containerBg = if (isDark) Color(0xFF16151B) else Color.White
-    val focusedBorder = if (isDark) Color.White.copy(alpha = 0.65f) else Color(0xFF0F172A)
-    val unfocusedBorder = if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFE2E8F0)
-    val textColor = if (isDark) Color.White else Color(0xFF0F172A)
-    val placeholderColor = if (isDark) Color.White.copy(alpha = 0.40f) else Color(0xFF94A3B8)
-    val iconColor = if (isDark) Color.White.copy(alpha = 0.50f) else Color(0xFF94A3B8)
+    val containerBg = if (isDark) UserPalette.FieldContainerDark else Color.White
+    val focusedBorder = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate900
+    val unfocusedBorder = if (isDark) Color.White.copy(alpha = 0.15f) else UserPalette.FieldBorderSlate
+    val textColor = if (isDark) Color.White else UserPalette.TextSlate900
+    val placeholderColor = if (isDark) Color.White.copy(alpha = 0.40f) else UserPalette.SlatePlaceholder
+    val iconColor = if (isDark) Color.White.copy(alpha = 0.50f) else UserPalette.SlatePlaceholder
 
     OutlinedTextField(
         value = value,
@@ -161,13 +162,13 @@ fun AppLoginForm(
     onFocusFieldChange: (FocusedAuthField?) -> Unit = {},
     backdrop: Backdrop? = null
 ) {
-    val primaryGlassTint = if (isDark) Color(0xFF2563EB) else Color(0xFF0E68FF)
+    val primaryGlassTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
 
-    val secondaryBtnText = if (isDark) Color.White.copy(alpha = 0.90f) else Color(0xFF1E293B)
-    val googleBtnText = if (isDark) Color.White else Color(0xFF1E293B)
+    val secondaryBtnText = if (isDark) Color.White.copy(alpha = 0.90f) else UserPalette.TextSlate800
+    val googleBtnText = if (isDark) Color.White else UserPalette.TextSlate800
 
-    val dividerColor = if (isDark) Color.White.copy(alpha = 0.10f) else Color(0xFFE2E8F0)
-    val dividerTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color(0xFF94A3B8)
+    val dividerColor = if (isDark) Color.White.copy(alpha = 0.10f) else UserPalette.FieldBorderSlate
+    val dividerTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else UserPalette.SlatePlaceholder
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -377,11 +378,11 @@ fun AppRegisterForm(
     onFocusFieldChange: (FocusedAuthField?) -> Unit = {},
     backdrop: Backdrop? = null
 ) {
-    val primaryGlassTint = if (isDark) Color(0xFF2563EB) else Color(0xFF0E68FF)
-    val googleBtnText = if (isDark) Color.White else Color(0xFF1E293B)
+    val primaryGlassTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
+    val googleBtnText = if (isDark) Color.White else UserPalette.TextSlate800
 
-    val dividerColor = if (isDark) Color.White.copy(alpha = 0.10f) else Color(0xFFE2E8F0)
-    val dividerTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else Color(0xFF94A3B8)
+    val dividerColor = if (isDark) Color.White.copy(alpha = 0.10f) else UserPalette.FieldBorderSlate
+    val dividerTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else UserPalette.SlatePlaceholder
 
     Column(
         modifier = Modifier.fillMaxWidth(),

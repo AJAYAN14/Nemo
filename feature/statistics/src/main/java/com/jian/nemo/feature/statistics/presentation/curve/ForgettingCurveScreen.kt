@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.ChartColors
+import com.jian.nemo.core.designsystem.theme.StatisticsPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
@@ -326,7 +328,7 @@ private fun CurveLegend(
         selectedStage.themeColor
     }
     val stdColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
-    val alertColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFFD60A)
+    val alertColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
     val thresholdPercent = (alertThreshold * 100).roundToInt()
     Column(
         modifier = modifier,
@@ -470,10 +472,10 @@ private fun CurveAlertCard(
                     val actualPercent = (actual * 100).roundToInt()
                     val (label, color) = when {
                         abs(delta) <= 0.02f -> "表现平稳" to ChartColors.FreshGreen
-                        delta > 0.02f && target <= 0.90f -> "负荷偏高" to Color(0xFFFF9800)
-                        target >= 0.92f && actual < target -> "强化监控" to Color(0xFFEF4444)
+                        delta > 0.02f && target <= 0.90f -> "负荷偏高" to StatisticsPalette.CompositeOrange
+                        target >= 0.92f && actual < target -> "强化监控" to StatisticsPalette.EarlyRed
                         actual - target > 0.02f -> "掌握扎实" to ChartColors.FreshGreen
-                        target <= 0.85f -> "轻量维护" to Color(0xFF3B82F6)
+                        target <= 0.85f -> "轻量维护" to StatisticsPalette.DevelopingBlue
                         else -> "自适应微调" to MaterialTheme.colorScheme.primary
                     }
                     Triple("目标保留率: ${targetPercent}%  |  实际回忆率: ${actualPercent}%", label, color)
@@ -601,15 +603,15 @@ private fun TimeRangeSelector(
             )
         } else {
             mapOf(
-                CurveTimeRange.SHORT to Color(0xFF007AFF),   // 7天: 经典蓝
-                CurveTimeRange.MEDIUM to Color(0xFF34C759),  // 30天: 鲜活绿
-                CurveTimeRange.LONG to Color(0xFFFF9500),    // 90天: 活力橙
-                CurveTimeRange.EXTENDED to Color(0xFFAF52DE) // 365天: 高级紫
+                CurveTimeRange.SHORT to IosColors.Blue,   // 7天: 经典蓝
+                CurveTimeRange.MEDIUM to IosColors.Green,  // 30天: 鲜活绿
+                CurveTimeRange.LONG to IosColors.Orange,    // 90天: 活力橙
+                CurveTimeRange.EXTENDED to IosColors.Purple // 365天: 高级紫
             )
         }
     }
 
-    val currentActiveColor = rangeColors[selectedRange] ?: (if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else Color(0xFF34C759))
+    val currentActiveColor = rangeColors[selectedRange] ?: (if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else IosColors.Green)
     val inactiveTextColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
     val barHeight = 56.dp
@@ -665,7 +667,7 @@ private fun TimeRangeSelector(
             ) {
                 ranges.forEachIndexed { index, range ->
                     val isSelected = range == selectedRange
-                    val itemColor = rangeColors[range] ?: Color(0xFF34C759)
+                    val itemColor = rangeColors[range] ?: IosColors.Green
 
                     val textColor by animateColorAsState(
                         targetValue = if (isSelected) itemColor else inactiveTextColor,

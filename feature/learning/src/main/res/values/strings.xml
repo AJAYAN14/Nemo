@@ -50,4 +50,161 @@
     <string name="kana_section_sokuon_katakana">小写ッ</string>
     <string name="kana_desc_sokuon">双写辅音：后面的辅音要加倍发音</string>
     <string name="kana_section_chouon">长元音</string>
+    <!-- SRS 学习卡片与语法卡片通用文本 -->
+    <string name="card_badge_new">新学</string>
+    <string name="card_badge_learning">在学</string>
+    <string name="card_badge_review">复习</string>
+    <string name="card_badge_relearn">重学</string>
+    <string name="hint_think_word_pronunciation">思考这个单词的发音和含义...</string>
+    <string name="hint_think_grammar_usage">思考这个语法的用法...</string>
+    <string name="pos_unknown">未知</string>
+    <string name="label_word_meaning">含义</string>
+    <string name="label_word_example">例句</string>
+    <string name="label_no_example">暂无例句</string>
+    <string name="btn_practice_typing">跟打练习</string>
+    <string name="btn_temp_whiteboard">临时手写板</string>
+    <string name="grammar_label_usage_prefix">用法%s</string>
+    <string name="action_collapse">收起</string>
+    <string name="action_expand">展开</string>
+    <string name="grammar_label_connection">接续</string>
+    <string name="grammar_label_explanation">说明</string>
+    <string name="grammar_tips_prefix">TIPS: %s</string>
+
+    <!-- DailyAchievementShareDialog -->
+    <string name="daily_streak_format">已连续打卡 %d 天</string>
+    <string name="today_mastered_words">今日掌握词汇</string>
+    <string name="unit_words_jp">語</string>
+    <string name="max_combo_format">⚡ 最高连击: %d 次</string>
+    <string name="focus_duration_format">⏱ 专注用时: %s</string>
+    <string name="proverb_quote_cn">不积跬步，无以至千里</string>
+    <string name="proverb_quote_jp">「継続は力なり」</string>
+    <string name="btn_save_poster">保存图片</string>
+    <string name="btn_share_poster">分享海报</string>
+    <string name="toast_saved_to_gallery">已保存海报到相册</string>
+    <string name="toast_save_failed">保存失败</string>
+    <string name="toast_save_failed_msg">保存失败: %s</string>
+    <string name="toast_share_failed_msg">分享失败: %s</string>
+    <string name="action_close">关闭</string>
+
+    <!-- LearningOverviewDialog -->
+    <string name="title_learning_overview">今日学习概览</string>
+    <string name="overview_target_progress">今日目标完成度</string>
+    <string name="overview_remaining_items">待处理剩余</string>
+    <string name="overview_estimated_time">预估剩余耗时</string>
+    <string name="overview_estimated_minutes">约 %d 分钟</string>
+    <string name="overview_all_completed">已全部完成</string>
+    <string name="overview_queue_distribution">队列卡片分布</string>
+    <string name="queue_label_new_format">新学: %d</string>
+    <string name="queue_label_learning_format">在学: %d</string>
+    <string name="queue_label_review_format">复习: %d</string>
+    <string name="queue_label_relearn_format">重学: %d</string>
+
+    <!-- QueueExplanationDialog -->
+    <string name="title_queue_explanation">学习队列说明</string>
+    <string name="btn_i_know">我知道了</string>
+    <string name="desc_queue_explanation_intro">系统依据记忆算法将卡片分为四个学习阶段：</string>
+    <string name="queue_stage_new_title">新学 (NEW)</string>
+    <string name="queue_stage_new_desc">今日新增待学卡片，首次接触学习</string>
+    <string name="queue_stage_learning_title">在学 (LEARNING)</string>
+    <string name="queue_stage_learning_desc">新词初记阶段，处于短时间步长强化中</string>
+    <string name="queue_stage_review_title">复习 (REVIEW)</string>
+    <string name="queue_stage_review_desc">已掌握卡片，依据记忆算法在今日到期巩固</string>
+    <string name="queue_stage_relearn_title">重学 (RELEARN)</string>
+    <string name="queue_stage_relearn_desc">复习时遗忘的卡片，重新进入短时间强化</string>
+
+    <!-- ContentReportDialog -->
+    <string name="title_content_report">报告内容错误</string>
+    <string name="btn_confirm_feedback">确认反馈</string>
+    <string name="btn_think_again">我再想想</string>
+    <string name="desc_select_error_type">请选择当前%s内容的错误类型：</string>
+    <string name="report_err_meaning">释义错误</string>
+    <string name="report_err_explanation">解释错误</string>
+    <string name="report_err_connection">接续错误</string>
+    <string name="report_err_furigana">注音错误</string>
+    <string name="report_err_example">例句错误</string>
+    <string name="report_err_spelling">拼写错误</string>
+    <string name="report_err_pos">词性错误</string>
+    <string name="report_err_level">级别错误</string>
+    <string name="report_err_other">其他问题</string>
+    <string name="report_other_desc_required">请详细描述错误内容（必填，100字以内）</string>
+    <string name="report_other_desc_placeholder">补充具体错误细节（选填，100字以内）</string>
+
+    <!-- NemoWhiteboard -->
+    <string name="action_hide_whiteboard">隐藏画板</string>
+    <string name="action_clear_whiteboard">清空画板</string>
+
+    <!-- LearningFinishedContent -->
+    <string name="finish_avg_seconds_format">平均每词 %s 秒</string>
+    <string name="finish_today_word_count">今日词量</string>
+    <string name="finish_100_percent_mastered">100% 掌握</string>
+    <string name="finish_old_words_consolidate">旧词巩固</string>
+    <string name="finish_unit_words">词</string>
+    <string name="finish_new_words_expand">新词拓展</string>
+    <string name="finish_relearn_conquer">攻克</string>
+    <string name="finish_max_combo">最高连击</string>
+    <string name="finish_unit_times">次</string>
+    <string name="finish_focus_duration">专注用时</string>
+    <string name="finish_unit_minute">分</string>
+    <string name="finish_unit_second">秒</string>
+    <string name="finish_today_due_review">今日待复习词量</string>
+    <string name="finish_tomorrow_review_forecast">明日自然到期预估</string>
+    <string name="finish_bonus_title">今日加餐</string>
+    <string name="finish_bonus_subtitle">突破常规，设定追加练习目标</string>
+    <string name="finish_btn_go_bonus">去加餐</string>
+    <string name="finish_btn_complete_today">完成今日学习</string>
+    <string name="finish_btn_learn_next_group">学习下一组</string>
+
+    <!-- VerbConjugationHandbookScreen -->
+    <string name="verb_handbook_warning_title">避坑警告：特殊一类动词</string>
+    <string name="verb_handbook_warning_desc">有极少数动词长着“二类动词”的脸（以「る」结尾且倒数第二音在「い/え」段），但它们其实是 一类动词！必须死记，否则变形全错。</string>
+    <string name="verb_handbook_warning_common">常见：帰る(回家)、切る(切)、知る(知道)、入る(进入)、走る(跑)</string>
+    <string name="verb_handbook_intro_title">必读：动词三大分类</string>
+    <string name="verb_handbook_intro_desc">所有的变形规则都是基于这三类动词划分的，学习前必须熟记：</string>
+    <string name="verb_group_1_title">一类动词 (五段)：</string>
+    <string name="verb_group_1_desc">词尾是「う」段假名。(如: 買う, 書く)</string>
+    <string name="verb_group_2_title">二类动词 (一段)：</string>
+    <string name="verb_group_2_desc">词尾是「る」，且倒数第二音在い或え段。(如: 食べる, 見る)</string>
+    <string name="verb_group_3_title">三类动词 (不规则)：</string>
+    <string name="verb_group_3_desc">只有两个词：する (做), 来る (来)。</string>
+
+    <!-- KanaChartScreen -->
+    <string name="kana_btn_toggle_type">切换假名类型</string>
+
+    <!-- AIReadingHistoryScreen -->
+    <string name="ai_reading_history_title">阅读历史</string>
+    <string name="ai_reading_clear_all">清空所有</string>
+    <string name="ai_reading_confirm_clear_title">确认清空</string>
+    <string name="ai_reading_confirm_clear_desc">您确定要清除所有的阅读和答题历史记录吗？此操作无法恢复。</string>
+    <string name="ai_reading_btn_clear">清除</string>
+    <string name="ai_reading_btn_cancel">取消</string>
+    <string name="ai_reading_score_format">得分 %1$d/%2$d</string>
+    <string name="ai_reading_status_ongoing">进行中</string>
+    <string name="ai_reading_delete_item">删除该历史</string>
+    <string name="ai_reading_empty_title">暂无阅读历史</string>
+    <string name="ai_reading_empty_desc">在这里记录并恢复您的 AI 日语阅读及答题表现</string>
+    <string name="ai_reading_btn_start">开始阅读</string>
+
+    <!-- AIWorkshopScreen -->
+    <string name="workshop_mode_free">自由模式</string>
+    <string name="workshop_mode_grammar">语法专项</string>
+    <string name="workshop_ai_generating">AI 正在生成例文与场景运用</string>
+    <string name="status_completed">已完成</string>
+    <string name="workshop_hint_prefix">提示: %s</string>
+
+    <!-- AIReadingScreen -->
+    <string name="ai_reading_building_training">AI 正在构建智能阅读训练</string>
+
+    <!-- LearningCommonComponents -->
+    <string name="cooldown_cooling_title">复习冷却中</string>
+    <string name="cooldown_no_expired_cards">暂无已到期的卡片</string>
+    <string name="cooldown_desc">当前词已进入短时记忆巩固阶梯。依据记忆曲线规律，稍候再次复习可达到最佳记忆留存效果。</string>
+    <string name="cooldown_round_audit">本轮学习战报</string>
+    <string name="cooldown_cooling_count">冷却中 %d 词</string>
+    <string name="cooldown_learned_this_round">本轮已学</string>
+    <string name="cooldown_word_count">%d 词</string>
+    <string name="cooldown_advanced">已推进</string>
+    <string name="cooldown_to_consolidate">待巩固卡片</string>
+    <string name="cooldown_cooling_status">正在冷却</string>
+    <string name="cooldown_btn_review_ahead">提前复习</string>
+    <string name="cooldown_btn_take_rest">稍后复习，去休息片刻</string>
 </resources>

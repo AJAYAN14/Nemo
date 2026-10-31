@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.theme.UserPalette
 
 @Composable
 fun SettingsItem(
@@ -59,7 +60,7 @@ fun SettingsItem(
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
             contentDescription = null,
-            tint = if (isDarkTheme) Color(0xFF8E8E93) else Color(0xFFC6C6C8),
+            tint = if (isDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBorderLight,
             modifier = Modifier.size(16.dp)
         )
     }

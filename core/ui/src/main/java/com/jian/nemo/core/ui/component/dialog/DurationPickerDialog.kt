@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -165,13 +166,13 @@ fun DurationPickerDialog(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(if (isDark) Color(0xFF2B2B2E) else Color(0xFFF1F5F9))
+                        .background(if (isDark) UiPalette.DialogControlBgDark else UiPalette.DialogControlBgLight)
                         .align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "关闭",
-                        tint = if (isDark) Color.White else Color(0xFF64748B),
+                        tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -188,7 +189,7 @@ fun DurationPickerDialog(
                         modifier = Modifier
                             .size(52.dp)
                             .clip(RoundedCornerShape(18.dp))
-                            .background(if (isDark) Color(0xFF1E293B) else Color(0xFFEFF6FF)),
+                            .background(if (isDark) UiPalette.DialogBlueTintBgDark else UiPalette.DialogBlueTintBgLight),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -261,12 +262,12 @@ fun DurationPickerDialog(
                             val chipBg = if (isSelected) {
                                 MaterialTheme.colorScheme.primary
                             } else {
-                                if (isDark) Color(0xFF2B2B2E) else Color(0xFFF1F5F9)
+                                if (isDark) UiPalette.DialogControlBgDark else UiPalette.DialogControlBgLight
                             }
                             val chipTextColor = if (isSelected) {
                                 Color.White
                             } else {
-                                if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B)
+                                if (isDark) UiPalette.DialogSlateTextDark else UiPalette.DialogSlateTextLight
                             }
 
                             Box(

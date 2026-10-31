@@ -20,11 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.feature.learning.R
 
 /**
  * 学习队列状态说明弹窗
@@ -39,15 +42,15 @@ fun QueueExplanationDialog(
     isDarkTheme: Boolean,
     isPlumpDuo: Boolean
 ) {
-    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) Color(0xFFBFDBFE) else Color(0xFF1D4ED8)
-    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) Color(0xFF22D3EE) else Color(0xFF0891B2)
-    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) Color(0xFFBBF7D0) else Color(0xFF166534)
-    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) Color(0xFFFED7AA) else Color(0xFF9A3412)
+    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
+    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
+    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
+    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
 
     NemoDialog(
         onDismissRequest = onDismissRequest,
-        title = "学习队列说明",
-        confirmText = "我知道了",
+        title = stringResource(R.string.title_queue_explanation),
+        confirmText = stringResource(R.string.btn_i_know),
         dismissText = null,
         onConfirm = onDismissRequest
     ) {
@@ -58,34 +61,34 @@ fun QueueExplanationDialog(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "系统依据记忆算法将卡片分为四个学习阶段：",
+                text = stringResource(R.string.desc_queue_explanation_intro),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             QueueExplanationItem(
-                title = "新学 (NEW)",
+                title = stringResource(R.string.queue_stage_new_title),
                 count = queueNewCount,
                 color = newColor,
-                description = "今日新增待学卡片，首次接触学习"
+                description = stringResource(R.string.queue_stage_new_desc)
             )
             QueueExplanationItem(
-                title = "在学 (LEARNING)",
+                title = stringResource(R.string.queue_stage_learning_title),
                 count = queueLearningCount,
                 color = learningColor,
-                description = "新词初记阶段，处于短时间步长强化中"
+                description = stringResource(R.string.queue_stage_learning_desc)
             )
             QueueExplanationItem(
-                title = "复习 (REVIEW)",
+                title = stringResource(R.string.queue_stage_review_title),
                 count = queueReviewCount,
                 color = reviewColor,
-                description = "已掌握卡片，依据记忆算法在今日到期巩固"
+                description = stringResource(R.string.queue_stage_review_desc)
             )
             QueueExplanationItem(
-                title = "重学 (RELEARN)",
+                title = stringResource(R.string.queue_stage_relearn_title),
                 count = queueRelearnCount,
                 color = relearnColor,
-                description = "复习时遗忘的卡片，重新进入短时间强化"
+                description = stringResource(R.string.queue_stage_relearn_desc)
             )
         }
     }

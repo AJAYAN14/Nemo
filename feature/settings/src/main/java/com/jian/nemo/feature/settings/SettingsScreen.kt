@@ -373,7 +373,7 @@ fun SettingsScreen(
                         SquircleSettingItem(
                             icon = Icons.AutoMirrored.Rounded.VolumeUp,
                             plumpIcon = PlumpIcon.AudioVolume,
-                            iconColor = Color(0xFFFF2D55), // NemoRed/Pink
+                            iconColor = IosColors.Pink,
                             plumpColor = IsoluminantPalette.RoseRuby,
                             title = "语音参数",
                             subtitle = "调节语速和音调",

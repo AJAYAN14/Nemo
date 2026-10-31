@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
@@ -118,8 +119,8 @@ fun CategoryCardBrowseScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            if (isDarkTheme) Color(0xFF121212) else fixedThemeColor.copy(alpha = 0.05f),
-                            if (isDarkTheme) Color(0xFF1E1E1E) else fixedThemeColor.copy(alpha = 0.15f)
+                            if (isDarkTheme) LearningPalette.CategoryDarkBg1 else fixedThemeColor.copy(alpha = 0.05f),
+                            if (isDarkTheme) LearningPalette.CategoryDarkBg2 else fixedThemeColor.copy(alpha = 0.15f)
                         )
                     )
                 )

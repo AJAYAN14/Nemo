@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
@@ -40,8 +42,8 @@ fun AccountResetPasswordDialog(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
+    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
@@ -53,7 +55,7 @@ fun AccountResetPasswordDialog(
         },
         confirmText = if (stage == 2) "重置密码" else "下一步",
         dismissText = "取消",
-        confirmButtonColor = if (useDarkTheme) Color(0xFFFF9F0A) else Color(0xFFFF9500),
+        confirmButtonColor = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
         isLoading = isLoading,
         onConfirm = {
             errorMessage = null
@@ -209,15 +211,15 @@ fun AccountUpdateUsernameDialog(
     var newUsername by remember { mutableStateOf(currentUsername) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
+    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
         title = "修改用户名",
         confirmText = "确认修改",
         dismissText = "取消",
-        confirmButtonColor = if (useDarkTheme) Color(0xFF0A84FF) else Color(0xFF007AFF),
+        confirmButtonColor = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
         confirmEnabled = newUsername.trim().isNotEmpty() && newUsername.trim().length <= 16 && newUsername.trim() != currentUsername,
         isLoading = isLoading,
         onConfirm = {
@@ -302,15 +304,15 @@ fun AccountUpdateEmailDialog(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
-    val errorColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
+    val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
+    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
         title = if (stage == 0) "修改邮箱" else "输入验证码",
         confirmText = if (stage == 0) "下一步" else "确认修改",
         dismissText = "取消",
-        confirmButtonColor = if (useDarkTheme) Color(0xFF30D158) else Color(0xFF34C759),
+        confirmButtonColor = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
         isLoading = isLoading,
         onConfirm = {
             errorMessage = null
@@ -421,8 +423,8 @@ fun DeleteAccountDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showFinalConfirm by remember { mutableStateOf(false) }
 
-    val primaryColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
+    val primaryColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = {
@@ -542,14 +544,13 @@ fun DeleteAccountDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showFinalConfirm by remember { mutableStateOf(false) }
 
-    // UI/UX Pro Max Colors & Styles (Red Theme for Delete Account)
-    val primaryColor = if (useDarkTheme) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val containerColor = if (useDarkTheme) Color(0xFF1C1C1E) else Color(0xFFFFFFFF)
+    val primaryColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val containerColor = if (useDarkTheme) UserPalette.DialogContainerDark else Color.White
     val titleColor = if (useDarkTheme) Color.White else Color.Black
-    val bodyColor = if (useDarkTheme) Color(0xFF8E8E93) else Color(0xFF6E6E73)
+    val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
     val focusedBorderColor = primaryColor
-    val unfocusedBorderColor = if (useDarkTheme) Color(0xFF3A3A3C) else Color(0xFFC6C6C8)
-    val errorColor = primaryColor // Red for error too
+    val unfocusedBorderColor = if (useDarkTheme) UserPalette.DialogBorderDark else UserPalette.DialogBorderLight
+    val errorColor = primaryColor
     val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
         handleColor = primaryColor,
         backgroundColor = primaryColor.copy(alpha = 0.4f)

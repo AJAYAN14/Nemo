@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,8 +75,8 @@ private fun SRSRatingButtonPreview() {
         SRSRatingButton(
             label = "完全忘记",
             time = "< 1m",
-            color = Color(0xFFBE123C),
-            containerColor = Color(0xFFFFE4E6),
+            color = LearningPalette.SrsRoseTextLight,
+            containerColor = LearningPalette.SrsRoseBgLight,
             onClick = {}
         )
     }

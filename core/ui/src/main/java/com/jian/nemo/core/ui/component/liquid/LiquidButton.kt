@@ -37,6 +37,7 @@ import androidx.compose.foundation.border
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import com.jian.nemo.core.ui.modifier.softCardShadow
 
 /**
@@ -48,7 +49,7 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 fun LiquidButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFF0088FF),
+    backgroundColor: Color = UiPalette.LiquidBrandBlue,
     shape: Shape = CircleShape,
     border: BorderStroke? = null,
     elevation: Dp = 6.dp,
@@ -143,7 +144,7 @@ fun LiquidButton(
 fun PureLiquidButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFF0088FF),
+    backgroundColor: Color = UiPalette.LiquidBrandBlue,
     shape: Shape = CircleShape,
     isInteractive: Boolean = true,
     content: @Composable RowScope.() -> Unit
@@ -175,7 +176,7 @@ fun PureLiquidButton(
 fun PureLiquidIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color(0xFF8B5CF6),
+    backgroundColor: Color = UiPalette.LiquidPurple,
     size: Dp = 56.dp,
     isInteractive: Boolean = true,
     content: @Composable BoxScope.() -> Unit

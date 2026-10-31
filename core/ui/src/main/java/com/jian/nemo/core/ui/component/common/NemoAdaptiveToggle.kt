@@ -3,6 +3,7 @@ package com.jian.nemo.core.ui.component.common
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.domain.repository.ToggleStyle
 import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 
@@ -27,7 +28,7 @@ fun NemoAdaptiveToggle(
     modifier: Modifier = Modifier,
     style: ToggleStyle = ToggleStyle.LIQUID_GLASS,
     enabled: Boolean = true,
-    activeColor: Color = Color(0xFF0E68FF)
+    activeColor: Color = NemoPrimary
 ) {
     when (style) {
         ToggleStyle.LIQUID_GLASS -> {

@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -114,7 +115,7 @@ fun BonusStudyDialog(
 
     // 6 个常见标准预设阶梯（整十规范进阶）
     val presets = listOf(10, 20, 30, 40, 50, 100)
-    val accentOrange = Color(0xFFFF5500)
+    val accentOrange = UiPalette.BonusOrange
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -175,13 +176,13 @@ fun BonusStudyDialog(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(if (isDark) Color(0xFF2B2B2E) else Color(0xFFF1F5F9))
+                        .background(if (isDark) UiPalette.DialogControlBgDark else UiPalette.DialogControlBgLight)
                         .align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "关闭",
-                        tint = if (isDark) Color.White else Color(0xFF64748B),
+                        tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -198,7 +199,7 @@ fun BonusStudyDialog(
                         modifier = Modifier
                             .size(54.dp)
                             .clip(RoundedCornerShape(18.dp))
-                            .background(if (isDark) Color(0xFF332014) else Color(0xFFFFF1E6)),
+                            .background(if (isDark) UiPalette.BonusWarmBgDark else UiPalette.BonusWarmBgLight),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -236,7 +237,7 @@ fun BonusStudyDialog(
                             .fillMaxWidth()
                             .height(44.dp)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(if (isDark) Color(0xFF202024) else Color(0xFFF1F5F9))
+                            .background(if (isDark) UiPalette.BonusCardBgDark else UiPalette.DialogControlBgLight)
                             .padding(4.dp)
                     ) {
                         val segmentWidth = (maxWidth - 8.dp) / 2
@@ -266,7 +267,7 @@ fun BonusStudyDialog(
                                     ambientColor = Color.Black.copy(alpha = if (isDark) 0.20f else 0.04f)
                                 )
                                 .clip(RoundedCornerShape(10.dp))
-                                .background(if (isDark) Color(0xFF2D2520) else Color.White)
+                                .background(if (isDark) UiPalette.BonusAccentCardDark else Color.White)
                         )
 
                         // 选项文本交互层
@@ -362,9 +363,9 @@ fun BonusStudyDialog(
                                     val isSelected = selectedValue == preset
                                     val chipBgColor by animateColorAsState(
                                         targetValue = if (isSelected) {
-                                            if (isDark) Color.White else Color(0xFF18181B)
+                                            if (isDark) Color.White else UiPalette.DialogBlackText
                                         } else {
-                                            if (isDark) Color(0xFF262626) else Color.Transparent
+                                            if (isDark) UiPalette.DialogDarkActiveBg else Color.Transparent
                                         },
                                         label = "ChipBgColor"
                                     )
@@ -379,7 +380,7 @@ fun BonusStudyDialog(
                                     val chipBorderColor = if (isSelected) {
                                         Color.Transparent
                                     } else {
-                                        if (isDark) Color(0xFF383838) else Color(0xFFE2E8F0)
+                                        if (isDark) UiPalette.DialogDarkBorder else UiPalette.DialogLightBorder
                                     }
 
                                     Box(

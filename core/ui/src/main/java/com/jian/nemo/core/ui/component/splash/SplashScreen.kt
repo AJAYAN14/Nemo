@@ -42,6 +42,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
@@ -76,8 +77,8 @@ fun SplashScreen(
     onTimeout: () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
-    val bgColor = if (isDark) Color(0xFF000000) else Color(0xFFFFFFFF)
-    val fgColor = if (isDark) Color(0xFFF5F5F7) else Color(0xFF0A0A0A)
+    val bgColor = if (isDark) UiPalette.PureBlack else UiPalette.PureWhite
+    val fgColor = if (isDark) UiPalette.SplashFgDark else UiPalette.SplashFgLight
 
     var animationFinished by remember { mutableStateOf(false) }
 
@@ -289,11 +290,11 @@ fun SplashScreen(
                     drawCircle(
                         brush = Brush.radialGradient(
                             colorStops = arrayOf(
-                                0.00f to Color(0xFF0EA5E9).copy(alpha = glowAlpha * 0.95f),
-                                0.22f to Color(0xFF0EA5E9).copy(alpha = glowAlpha * 0.60f),
-                                0.45f to Color(0xFF0EA5E9).copy(alpha = glowAlpha * 0.28f),
-                                0.70f to Color(0xFF0EA5E9).copy(alpha = glowAlpha * 0.08f),
-                                0.88f to Color(0xFF0EA5E9).copy(alpha = glowAlpha * 0.02f),
+                                0.00f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.95f),
+                                0.22f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.60f),
+                                0.45f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.28f),
+                                0.70f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.08f),
+                                0.88f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.02f),
                                 1.00f to Color.Transparent
                             ),
                             center = Offset(w * 0.42f, h * 0.42f),
@@ -303,11 +304,11 @@ fun SplashScreen(
                     drawCircle(
                         brush = Brush.radialGradient(
                             colorStops = arrayOf(
-                                0.00f to Color(0xFF2DD4BF).copy(alpha = glowAlpha * 0.75f),
-                                0.22f to Color(0xFF2DD4BF).copy(alpha = glowAlpha * 0.48f),
-                                0.45f to Color(0xFF2DD4BF).copy(alpha = glowAlpha * 0.22f),
-                                0.70f to Color(0xFF2DD4BF).copy(alpha = glowAlpha * 0.06f),
-                                0.88f to Color(0xFF2DD4BF).copy(alpha = glowAlpha * 0.015f),
+                                0.00f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.75f),
+                                0.22f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.48f),
+                                0.45f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.22f),
+                                0.70f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.06f),
+                                0.88f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.015f),
                                 1.00f to Color.Transparent
                             ),
                             center = Offset(w * 0.58f, h * 0.58f),
@@ -319,11 +320,11 @@ fun SplashScreen(
                     drawCircle(
                         brush = Brush.radialGradient(
                             colorStops = arrayOf(
-                                0.00f to Color(0xFF38BDF8).copy(alpha = glowAlpha * 0.90f),
-                                0.20f to Color(0xFF38BDF8).copy(alpha = glowAlpha * 0.55f),
-                                0.45f to Color(0xFF38BDF8).copy(alpha = glowAlpha * 0.25f),
-                                0.70f to Color(0xFF38BDF8).copy(alpha = glowAlpha * 0.08f),
-                                0.88f to Color(0xFF38BDF8).copy(alpha = glowAlpha * 0.02f),
+                                0.00f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.90f),
+                                0.20f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.55f),
+                                0.45f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.25f),
+                                0.70f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.08f),
+                                0.88f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.02f),
                                 1.00f to Color.Transparent
                             ),
                             center = Offset(w * 0.40f, h * 0.42f),
@@ -333,11 +334,11 @@ fun SplashScreen(
                     drawCircle(
                         brush = Brush.radialGradient(
                             colorStops = arrayOf(
-                                0.00f to Color(0xFFFB923C).copy(alpha = glowAlpha * 0.78f),
-                                0.20f to Color(0xFFFB923C).copy(alpha = glowAlpha * 0.48f),
-                                0.45f to Color(0xFFFB923C).copy(alpha = glowAlpha * 0.20f),
-                                0.70f to Color(0xFFFB923C).copy(alpha = glowAlpha * 0.06f),
-                                0.88f to Color(0xFFFB923C).copy(alpha = glowAlpha * 0.015f),
+                                0.00f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.78f),
+                                0.20f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.48f),
+                                0.45f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.20f),
+                                0.70f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.06f),
+                                0.88f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.015f),
                                 1.00f to Color.Transparent
                             ),
                             center = Offset(w * 0.60f, h * 0.58f),
@@ -362,7 +363,7 @@ fun SplashScreen(
                     rotation = shapeRotations[0].value + shapeFloats[0].rotation,
                     floatTranslateY = shapeFloats[0].translateY
                 ) {
-                    drawHeart(color = Color(0xFFFB7185), isFilled = true)
+                    drawHeart(color = UiPalette.SplashShapeRose, isFilled = true)
                 }
 
                 // Shape 2: 右上浅蓝空心三角
@@ -375,7 +376,7 @@ fun SplashScreen(
                     rotation = shapeRotations[1].value + shapeFloats[1].rotation,
                     floatTranslateY = shapeFloats[1].translateY
                 ) {
-                    drawTriangle(color = Color(0xFF38BDF8), isFilled = false, strokeWidth = 2.6f)
+                    drawTriangle(color = UiPalette.SplashGlowLightBlue, isFilled = false, strokeWidth = 2.6f)
                 }
 
                 // Shape 3: 左下橙色圆角线框
@@ -388,7 +389,7 @@ fun SplashScreen(
                     rotation = shapeRotations[2].value + shapeFloats[2].rotation,
                     floatTranslateY = shapeFloats[2].translateY
                 ) {
-                    drawRoundedRect(color = Color(0xFFFB923C), isFilled = false, strokeWidth = 2.6f, cornerRadius = 4.5f)
+                    drawRoundedRect(color = UiPalette.SplashGlowOrange, isFilled = false, strokeWidth = 2.6f, cornerRadius = 4.5f)
                 }
 
                 // Shape 4: 右下青色实心三角
@@ -401,7 +402,7 @@ fun SplashScreen(
                     rotation = shapeRotations[3].value + shapeFloats[3].rotation,
                     floatTranslateY = shapeFloats[3].translateY
                 ) {
-                    drawTriangle(color = Color(0xFF2DD4BF), isFilled = true, strokeWidth = 0f)
+                    drawTriangle(color = UiPalette.SplashGlowTeal, isFilled = true, strokeWidth = 0f)
                 }
 
                 // Shape 5: 顶部偏右浅紫空心心形
@@ -414,7 +415,7 @@ fun SplashScreen(
                     rotation = shapeRotations[4].value + shapeFloats[4].rotation,
                     floatTranslateY = shapeFloats[4].translateY
                 ) {
-                    drawHeart(color = Color(0xFFA78BFA), isFilled = false, strokeWidth = 2.6f)
+                    drawHeart(color = UiPalette.SplashShapeViolet, isFilled = false, strokeWidth = 2.6f)
                 }
 
                 // Shape 6: 底部偏左蓝色实心圆角方块
@@ -427,7 +428,7 @@ fun SplashScreen(
                     rotation = shapeRotations[5].value + shapeFloats[5].rotation,
                     floatTranslateY = shapeFloats[5].translateY
                 ) {
-                    drawRoundedRect(color = Color(0xFF60A5FA), isFilled = true, strokeWidth = 0f, cornerRadius = 5f)
+                    drawRoundedRect(color = UiPalette.SplashShapeBlue, isFilled = true, strokeWidth = 0f, cornerRadius = 5f)
                 }
             }
 

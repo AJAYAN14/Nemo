@@ -47,6 +47,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.OceanTheme
+import com.jian.nemo.core.designsystem.theme.UiPalette
+import com.jian.nemo.feature.learning.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -122,10 +129,10 @@ fun LearningFinishedContent(
     val textSecondary = MaterialTheme.colorScheme.onSurfaceVariant
 
     // 构成明细配色系统
-    val accentGreen = Color(0xFF10B981) // 旧词巩固（复习）
-    val accentBlue = Color(0xFF3B82F6)  // 新词拓展（新知）
-    val accentGold = Color(0xFFF59E0B)  // 反复攻克 / 最高连击金
-    val bonusOrange = Color(0xFFFF5500) // 原版加餐专属橙
+    val accentGreen = BentoColors.AccentGreen // 旧词巩固（复习）
+    val accentBlue = BentoColors.AccentBlue  // 新词拓展（新知）
+    val accentGold = BentoColors.AccentOrange  // 反复攻克 / 最高连击金
+    val bonusOrange = UiPalette.BonusOrange // 原版加餐专属橙
 
     // 互斥三分类计算：旧词总数拆解为「顺畅巩固」与「反复攻克」，杜绝一词两算
     val smoothReviewCount = (sessionReviewCount - sessionRelearnCount).coerceAtLeast(0)
@@ -249,7 +256,7 @@ fun LearningFinishedContent(
                 // 专注度或副标题动态激励反馈（HTML 同款极简耗时文案）
                 val feedbackText = if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
                     val avgSeconds = String.format(Locale.getDefault(), "%.1f", sessionDurationSeconds.toFloat() / sessionTotalCount)
-                    "平均每词 $avgSeconds 秒"
+                    stringResource(R.string.finish_avg_seconds_format, avgSeconds)
                 } else {
                     subtitle
                 }
@@ -293,7 +300,7 @@ fun LearningFinishedContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "今日词量",
+                            text = stringResource(R.string.finish_today_word_count),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             color = textPrimary
@@ -301,10 +308,10 @@ fun LearningFinishedContent(
 
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFFECFDF5).copy(alpha = if (isDark) 0.22f else 1f)
+                            color = LearningPalette.SrsEmeraldBgLight.copy(alpha = if (isDark) 0.22f else 1f)
                         ) {
                             Text(
-                                text = "100% 掌握",
+                                text = stringResource(R.string.finish_100_percent_mastered),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = accentGreen,
@@ -403,7 +410,7 @@ fun LearningFinishedContent(
                                         .background(accentGreen)
                                 )
                                 Text(
-                                    text = "旧词巩固",
+                                    text = stringResource(R.string.finish_old_words_consolidate),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textSecondary
@@ -421,7 +428,7 @@ fun LearningFinishedContent(
                                     lineHeight = 22.sp
                                 )
                                 Text(
-                                    text = "词",
+                                    text = stringResource(R.string.finish_unit_words),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -432,7 +439,7 @@ fun LearningFinishedContent(
                                     text = "$reviewPercent%",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF94A3B8),
+                                    color = BentoColors.TextMuted,
                                     modifier = Modifier.padding(bottom = 2.dp)
                                 )
                             }
@@ -464,7 +471,7 @@ fun LearningFinishedContent(
                                         .background(accentBlue)
                                 )
                                 Text(
-                                    text = "新词拓展",
+                                    text = stringResource(R.string.finish_new_words_expand),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textSecondary
@@ -482,7 +489,7 @@ fun LearningFinishedContent(
                                     lineHeight = 22.sp
                                 )
                                 Text(
-                                    text = "词",
+                                    text = stringResource(R.string.finish_unit_words),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -493,7 +500,7 @@ fun LearningFinishedContent(
                                     text = "$newPercent%",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF94A3B8),
+                                    color = BentoColors.TextMuted,
                                     modifier = Modifier.padding(bottom = 2.dp)
                                 )
                             }
@@ -504,9 +511,9 @@ fun LearningFinishedContent(
                             // 垂直细分割线 2
                             Box(
                                 modifier = Modifier
-                                    .width(1.dp)
-                                    .height(28.dp)
-                                    .background(cardBorder.copy(alpha = 0.6f))
+                                .width(1.dp)
+                                .height(28.dp)
+                                .background(cardBorder.copy(alpha = 0.6f))
                             )
 
                             Column(
@@ -526,7 +533,7 @@ fun LearningFinishedContent(
                                             .background(accentGold)
                                     )
                                     Text(
-                                        text = "攻克",
+                                        text = stringResource(R.string.finish_relearn_conquer),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = textSecondary
@@ -544,7 +551,7 @@ fun LearningFinishedContent(
                                         lineHeight = 22.sp
                                     )
                                     Text(
-                                        text = "词",
+                                        text = stringResource(R.string.finish_unit_words),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = textPrimary,
@@ -555,7 +562,7 @@ fun LearningFinishedContent(
                                         text = "$relearnPercent%",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF94A3B8),
+                                        color = BentoColors.TextMuted,
                                         modifier = Modifier.padding(bottom = 2.dp)
                                     )
                                 }
@@ -605,11 +612,11 @@ fun LearningFinishedContent(
                             Icon(
                                 imageVector = Icons.Rounded.Whatshot,
                                 contentDescription = null,
-                                tint = Color(0xFFFF5722),
+                                tint = LearningPalette.FinishedDeepOrange,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = "最高连击",
+                                text = stringResource(R.string.finish_max_combo),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -628,7 +635,7 @@ fun LearningFinishedContent(
                                 lineHeight = 24.sp
                             )
                             Text(
-                                text = "次",
+                                text = stringResource(R.string.finish_unit_times),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -659,11 +666,11 @@ fun LearningFinishedContent(
                             Icon(
                                 imageVector = Icons.Rounded.AccessTime,
                                 contentDescription = null,
-                                tint = Color(0xFF2563EB),
+                                tint = NemoNeutrals.Blue600,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = "专注用时",
+                                text = stringResource(R.string.finish_focus_duration),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -684,7 +691,7 @@ fun LearningFinishedContent(
                                     lineHeight = 24.sp
                                 )
                                 Text(
-                                    text = "分",
+                                    text = stringResource(R.string.finish_unit_minute),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -699,7 +706,7 @@ fun LearningFinishedContent(
                                 lineHeight = 24.sp
                             )
                             Text(
-                                text = if (sessionDurationSeconds > 0) "秒" else "分",
+                                text = if (sessionDurationSeconds > 0) stringResource(R.string.finish_unit_second) else stringResource(R.string.finish_unit_minute),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -750,11 +757,11 @@ fun LearningFinishedContent(
                             Icon(
                                 imageVector = Icons.Rounded.Autorenew,
                                 contentDescription = null,
-                                tint = Color(0xFFF97316),
+                                tint = BentoColors.Primary,
                                 modifier = Modifier.size(17.dp)
                             )
                             Text(
-                                text = "今日待复习词量",
+                                text = stringResource(R.string.finish_today_due_review),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -771,7 +778,7 @@ fun LearningFinishedContent(
                                 color = textPrimary
                             )
                             Text(
-                                text = "词",
+                                text = stringResource(R.string.finish_unit_words),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -802,11 +809,11 @@ fun LearningFinishedContent(
                             Icon(
                                 imageVector = Icons.Rounded.CalendarToday,
                                 contentDescription = null,
-                                tint = Color(0xFF0284C7),
+                                tint = OceanTheme.Primary,
                                 modifier = Modifier.size(17.dp)
                             )
                             Text(
-                                text = "明日自然到期预估",
+                                text = stringResource(R.string.finish_tomorrow_review_forecast),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -823,7 +830,7 @@ fun LearningFinishedContent(
                                 color = textPrimary
                             )
                             Text(
-                                text = "词",
+                                text = stringResource(R.string.finish_unit_words),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -843,7 +850,7 @@ fun LearningFinishedContent(
                 Surface(
                     onClick = { showBonusDialog = true },
                     shape = RoundedCornerShape(24.dp),
-                    color = if (isDark) Color(0xFF2B1F17) else Color(0xFFFFF7ED),
+                    color = if (isDark) LearningPalette.FinishedWarmBgDark else LearningPalette.FinishedWarmBgLight,
                     border = BorderStroke(
                         width = 1.dp,
                         color = bonusOrange.copy(alpha = if (isDark) 0.35f else 0.20f)
@@ -901,13 +908,13 @@ fun LearningFinishedContent(
                                 verticalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
                                 Text(
-                                    text = "今日加餐",
+                                    text = stringResource(R.string.finish_bonus_title),
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary
                                 )
                                 Text(
-                                    text = "突破常规，设定追加练习目标",
+                                    text = stringResource(R.string.finish_bonus_subtitle),
                                     fontSize = 13.sp,
                                     color = textSecondary
                                 )
@@ -921,7 +928,7 @@ fun LearningFinishedContent(
                             contentColor = Color.White
                         ) {
                             Text(
-                                text = "去加餐",
+                                text = stringResource(R.string.finish_btn_go_bonus),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
@@ -963,7 +970,7 @@ fun LearningFinishedContent(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "完成今日学习",
+                            text = stringResource(R.string.finish_btn_complete_today),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -980,7 +987,7 @@ fun LearningFinishedContent(
                             .fillMaxHeight()
                     ) {
                         Text(
-                            text = "学习下一组",
+                            text = stringResource(R.string.finish_btn_learn_next_group),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -1005,7 +1012,7 @@ fun LearningFinishedContent(
                         .height(52.dp)
                 ) {
                     Text(
-                        text = "完成今日学习",
+                        text = stringResource(R.string.finish_btn_complete_today),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

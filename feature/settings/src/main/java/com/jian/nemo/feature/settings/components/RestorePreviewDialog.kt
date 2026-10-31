@@ -23,6 +23,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.data.manager.ImportPreview
 import com.jian.nemo.core.data.manager.ImportStrategy
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
 
 @Composable
 fun RestorePreviewDialog(
@@ -32,7 +33,7 @@ fun RestorePreviewDialog(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     // 浅色纯白，深色纯净深灰，避免 MD3 默认自带的 primary tint
-    val dialogBgColor = if (isDark) Color(0xFF202020) else Color.White
+    val dialogBgColor = if (isDark) SettingsPalette.DialogBgDark else Color.White
     val haptic = LocalHapticFeedback.current
 
     Dialog(

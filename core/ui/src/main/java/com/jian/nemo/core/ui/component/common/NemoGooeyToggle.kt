@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
 
 /**
  * 高保真液态拉伸开关 (Gooey Stretch Toggle)
@@ -34,8 +36,8 @@ fun NemoGooeyToggle(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    activeColor: Color = Color(0xFF0E68FF), // 默认使用 Nemo 品牌蓝 (#0E68FF)
-    inactiveColor: Color = Color(0xFFE5E7EB) // 默认使用浅灰色 (#E5E7EB)
+    activeColor: Color = NemoPrimary,
+    inactiveColor: Color = NemoNeutrals.Gray200
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val transition = updateTransition(checked, label = "GooeyToggleTransition")

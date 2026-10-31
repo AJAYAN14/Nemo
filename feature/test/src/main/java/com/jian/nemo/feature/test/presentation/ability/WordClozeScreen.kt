@@ -49,9 +49,20 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
 import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
+import com.jian.nemo.core.designsystem.theme.NemoWarning
+import com.jian.nemo.core.designsystem.theme.NemoWarningDark
+import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -76,7 +87,7 @@ fun WordClozeScreen(
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val qCardBg = if (isDark) IosColors.Orange.copy(alpha = 0.15f) else Color(0xFFFFF7EB)
+    val qCardBg = if (isDark) IosColors.Orange.copy(alpha = 0.15f) else IosColors.Orange.copy(alpha = 0.08f)
     val qCardBorderColor = if (isDark) IosColors.Orange.copy(alpha = 0.2f) else IosColors.Orange.copy(alpha = 0.1f)
 
     var showHistoryView by remember { mutableStateOf(false) }
@@ -101,7 +112,7 @@ fun WordClozeScreen(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "单词填空",
+                title = stringResource(R.string.test_cloze_header_title),
                 onBack = {
                     if (uiState is ClozeUiState.Ready) {
                         showExitDialog = true
@@ -114,7 +125,7 @@ fun WordClozeScreen(
                         IconButton(onClick = { viewModel.forceRegenerate() }) {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "重新换一批",
+                                contentDescription = stringResource(R.string.test_cloze_cd_refresh),
                                 tint = textMain
                             )
                         }
@@ -122,7 +133,7 @@ fun WordClozeScreen(
                     IconButton(onClick = { showHelpDialog = true }) {
                         Icon(
                             imageVector = Icons.Rounded.Help,
-                            contentDescription = "输入指南",
+                            contentDescription = stringResource(R.string.test_cloze_cd_guide),
                             tint = textMain
                         )
                     }
@@ -212,8 +223,8 @@ fun WordClozeScreen(
 
     AbilityExitDialog(
         show = showExitDialog,
-        title = "退出单词填空",
-        message = "是否保留当前答题进度？保留后可下次继续作答，清空则删除当前进度。",
+        title = stringResource(R.string.test_cloze_exit_dialog_title),
+        message = stringResource(R.string.test_cloze_exit_dialog_message),
         themeColor = IosColors.Orange,
         isDark = isDark,
         textMain = textMain,
@@ -240,11 +251,11 @@ private fun LevelSelectionView(
     onSelectLevel: (String) -> Unit
 ) {
     val levels = listOf(
-        Triple("N5", "初级基础词汇填空", Color(0xFF10B981)),
-        Triple("N4", "常用社交词汇填空", Color(0xFF3B82F6)),
-        Triple("N3", "中级日常词汇填空", Color(0xFFF59E0B)),
-        Triple("N2", "中高级书面词汇填空", Color(0xFFF97316)),
-        Triple("N1", "高级专业词汇填空", Color(0xFFEF4444))
+        Triple("N5", stringResource(R.string.test_cloze_level_n5_desc), if (isDark) NemoSecondaryDark else NemoSecondary),
+        Triple("N4", stringResource(R.string.test_cloze_level_n4_desc), if (isDark) NemoPrimaryDark else NemoPrimary),
+        Triple("N3", stringResource(R.string.test_cloze_level_n3_desc), if (isDark) NemoWarningDark else NemoWarning),
+        Triple("N2", stringResource(R.string.test_cloze_level_n2_desc), BentoColors.Primary),
+        Triple("N1", stringResource(R.string.test_cloze_level_n1_desc), if (isDark) NemoDangerDark else NemoDanger)
     )
 
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
@@ -259,7 +270,7 @@ private fun LevelSelectionView(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "选择单词填空等级",
+            text = stringResource(R.string.test_cloze_title_level_selection),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = textMain
@@ -268,7 +279,7 @@ private fun LevelSelectionView(
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "从本地词库精选单词，智能生成平假名挖空，通过英文键盘直输罗马音完成检验！",
+            text = stringResource(R.string.test_cloze_desc_level_selection),
             style = MaterialTheme.typography.bodyMedium,
             color = textSub,
             textAlign = TextAlign.Center,
@@ -418,7 +429,7 @@ private fun ReadyView(
     // 拼对瞬间卡片的淡绿呼吸变色与微缩放动效
     val cardBgColor by animateColorAsState(
         targetValue = if (isCurrentQCorrect) {
-            if (isDark) Color(0xFF14532D) else Color(0xFFF0FDF4)
+            if (isDark) TestResultPalette.CorrectCardBgDark else TestResultPalette.CorrectCardBgLight
         } else {
             wordCardBg
         },
@@ -594,13 +605,13 @@ private fun ReadyView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "进度: ${state.currentIndex + 1} / ${state.questions.size}",
+                    text = stringResource(R.string.test_cloze_progress_format, state.currentIndex + 1, state.questions.size),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = textSub
                 )
                 Text(
-                    text = "正确数: ${state.correctCount}",
+                    text = stringResource(R.string.test_cloze_correct_format, state.correctCount),
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
@@ -636,7 +647,7 @@ private fun ReadyView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // 中文大字释义 (还原 H5 设计)
+                    // 中文释义展示
                     Text(
                         text = q.chinese,
                         style = TextStyle(
@@ -647,7 +658,7 @@ private fun ReadyView(
                             lineHeight = 32.sp
                         ),
                         color = if (isCurrentQCorrect) {
-                            if (isDark) Color(0xFF4ADE80) else Color(0xFF166534)
+                            if (isDark) NemoSecondaryDark else NemoSecondary
                         } else textMain
                     )
 
@@ -688,22 +699,22 @@ private fun ReadyView(
                                     val isCursorInCell = isActive && !isCurrentQCorrect && globalInput.value.selection.collapsed && currentComposition == null
 
                                     val boxBg = if (isCurrentQCorrect) {
-                                        if (isDark) Color(0xFF14532D) else Color(0xFFF0FDF4)
+                                        if (isDark) TestResultPalette.CorrectCardBgDark else TestResultPalette.CorrectCardBgLight
                                     } else {
                                         if (hasError) {
-                                            if (isDark) Color(0xFF450A0A) else Color(0xFFFEF2F2)
+                                            if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight
                                         } else if (isActive && isGlobalFocused) {
                                             if (isDark) NemoNeutrals.Gray800 else Color.White
                                         } else {
-                                            if (isDark) Color(0xFF334155) else Color(0xFFF1F5F9)
+                                            if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100
                                         }
                                     }
 
                                     val boxBorderColor = if (isCurrentQCorrect) {
-                                        Color(0xFF22C55E)
+                                        if (isDark) NemoSecondaryDark else NemoSecondary
                                     } else {
                                         if (hasError) {
-                                            Color(0xFFEF4444)
+                                            if (isDark) NemoDangerDark else NemoDanger
                                         } else if (isActive && isGlobalFocused) {
                                             IosColors.Orange
                                         } else {
@@ -712,10 +723,10 @@ private fun ReadyView(
                                     }
 
                                     val fontColor = if (isCurrentQCorrect) {
-                                        Color(0xFF22C55E)
+                                        if (isDark) NemoSecondaryDark else NemoSecondary
                                     } else {
                                         if (hasError) {
-                                            Color(0xFFEF4444)
+                                            if (isDark) NemoDangerDark else NemoDanger
                                         } else {
                                             if (isDark) Color.White else NemoNeutrals.Gray800
                                         }
@@ -803,7 +814,7 @@ private fun ReadyView(
                                         }
                                     }
                                 } else {
-                                    // 该假名未挖空，以静态不可交互卡片展示 (还原 H5 style)
+                                    // 该假名未挖空，以静态不可交互卡片展示
                                     Box(
                                         modifier = Modifier
                                             .size(width = 52.dp, height = 64.dp)
@@ -848,12 +859,12 @@ private fun ReadyView(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.DeleteSweep,
-                                    contentDescription = "清空输入",
+                                    contentDescription = stringResource(R.string.test_cloze_btn_clear),
                                     tint = textSub,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = "清空输入",
+                                    text = stringResource(R.string.test_cloze_btn_clear),
                                     style = TextStyle(
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
@@ -887,7 +898,7 @@ private fun ReadyView(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.ChevronLeft,
-                        contentDescription = "上一题",
+                        contentDescription = stringResource(R.string.test_cloze_cd_prev_question),
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -912,7 +923,7 @@ private fun ReadyView(
                         .padding(horizontal = 16.dp)
                 ) {
                     Text(
-                        text = if (isCurrentQCorrect) "下一题" else "提交",
+                        text = if (isCurrentQCorrect) stringResource(R.string.test_cloze_btn_next) else stringResource(R.string.test_cloze_btn_submit),
                         style = TextStyle(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -931,7 +942,7 @@ private fun ReadyView(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.ChevronRight,
-                        contentDescription = "下一题",
+                        contentDescription = stringResource(R.string.test_cloze_cd_next_question),
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -940,7 +951,7 @@ private fun ReadyView(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // 悬浮式毛玻璃解析 Overlay 浮层卡片 (100% 像素级高度还原 H5 覆盖层)
+        // 悬浮式毛玻璃解析 Overlay 浮层卡片
         AnimatedVisibility(
             visible = state.showExplanation,
             enter = slideInVertically(
@@ -980,7 +991,7 @@ private fun ReadyView(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
-                            contentDescription = "关闭",
+                            contentDescription = stringResource(R.string.test_cloze_cd_close),
                             tint = textSub,
                             modifier = Modifier.size(16.dp)
                         )
@@ -991,7 +1002,7 @@ private fun ReadyView(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "答案解析",
+                            text = stringResource(R.string.test_cloze_title_explanation),
                             style = TextStyle(
                                 fontSize = 13.sp, 
                                 fontWeight = FontWeight.Bold, 
@@ -999,7 +1010,7 @@ private fun ReadyView(
                             )
                         )
                         
-                        // 大字日语原文与假名读音排布 (HTML同款设计)
+                        // 日语原文与假名读音排布
                         Row(
                             verticalAlignment = Alignment.Bottom,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -1078,7 +1089,7 @@ private fun ResultView(
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "测试挑战完成！",
+            text = stringResource(R.string.test_cloze_title_challenge_completed),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = textMain
@@ -1120,7 +1131,7 @@ private fun ResultView(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "正确率",
+                    text = stringResource(R.string.test_cloze_label_accuracy),
                     style = MaterialTheme.typography.bodySmall,
                     color = textSub,
                     fontWeight = FontWeight.Bold
@@ -1146,9 +1157,9 @@ private fun ResultView(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(text = "答对题数", style = MaterialTheme.typography.bodyMedium, color = textSub)
+                    Text(text = stringResource(R.string.test_cloze_label_correct_count), style = MaterialTheme.typography.bodyMedium, color = textSub)
                     Text(
-                        text = "$correctCount / $totalCount 题",
+                        text = stringResource(R.string.test_cloze_score_count_format, correctCount, totalCount),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         color = textMain
@@ -1172,7 +1183,7 @@ private fun ResultView(
             Icon(Icons.Rounded.Replay, contentDescription = null, tint = Color.White)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "再来一局",
+                text = stringResource(R.string.test_cloze_btn_regenerate),
                 style = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Bold, color = Color.White)
             )
         }
@@ -1190,7 +1201,7 @@ private fun ResultView(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "换个等级",
+                    text = stringResource(R.string.test_cloze_btn_restart),
                     style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.Orange)
                 )
             }
@@ -1206,7 +1217,7 @@ private fun ResultView(
                     .height(56.dp)
             ) {
                 Text(
-                    text = "退出挑战",
+                    text = stringResource(R.string.test_cloze_btn_exit),
                     style = TextStyle(
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
@@ -1235,7 +1246,7 @@ private fun ClozeHistoryView(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "练习历史",
+                title = stringResource(R.string.test_cloze_history_title),
                 onBack = onBack
             )
         },
@@ -1259,7 +1270,7 @@ private fun ClozeHistoryView(
                         modifier = Modifier.size(64.dp)
                     )
                     Text(
-                        text = "暂无练习历史，快去挑战一局吧！",
+                        text = stringResource(R.string.test_cloze_history_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = NemoNeutrals.Gray400
                     )
@@ -1315,7 +1326,7 @@ private fun ClozeHistoryView(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text(
-                                    text = "测试结果：答对 ${record.correctAnswers} / ${record.totalQuestions} 题",
+                                    text = stringResource(R.string.test_cloze_history_record_format, record.correctAnswers, record.totalQuestions),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = textColor
@@ -1375,7 +1386,7 @@ private fun ClozeErrorView(
                 colors = ButtonDefaults.buttonColors(containerColor = IosColors.Orange),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text(text = "重新加载", color = Color.White)
+                Text(text = stringResource(R.string.test_cloze_btn_reload), color = Color.White)
             }
         }
     }
@@ -1413,9 +1424,9 @@ private fun JapaneseInputGuideDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        val bg = if (isDark) Color(0xFF1E293B) else Color.White
-        val cardBg = if (isDark) Color(0xFF334155) else Color(0xFFF8FAFC)
-        val keyBg = if (isDark) Color(0xFF475569) else Color(0xFFE2E8F0)
+        val bg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+        val cardBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
+        val keyBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else NemoNeutrals.Gray200
         
         Surface(
             modifier = Modifier
@@ -1427,7 +1438,7 @@ private fun JapaneseInputGuideDialog(
             color = bg,
             border = BorderStroke(
                 width = 1.dp,
-                color = if (isDark) Color(0xFF334155) else Color(0xFFE2E8F0)
+                color = if (isDark) MaterialTheme.colorScheme.outlineVariant else NemoNeutrals.Gray200
             )
         ) {
             Column(
@@ -1453,14 +1464,14 @@ private fun JapaneseInputGuideDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Info,
-                            contentDescription = "提示",
+                            contentDescription = stringResource(R.string.test_cloze_cd_tip),
                             tint = IosColors.Orange,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = "日语输入指南",
+                        text = stringResource(R.string.test_cloze_title_guide),
                         style = TextStyle(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
@@ -1475,7 +1486,7 @@ private fun JapaneseInputGuideDialog(
                 var selectedTab by remember { mutableStateOf(0) }
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (isDark) Color(0xFF334155) else Color(0xFFF1F5F9),
+                    color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp)
@@ -1485,14 +1496,14 @@ private fun JapaneseInputGuideDialog(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         TabButton(
-                            text = "基础拼写",
+                            text = stringResource(R.string.test_cloze_guide_tab_basic),
                             isSelected = selectedTab == 0,
                             modifier = Modifier.weight(1f),
                             isDark = isDark,
                             onClick = { selectedTab = 0 }
                         )
                         TabButton(
-                            text = "进阶技巧",
+                            text = stringResource(R.string.test_cloze_guide_tab_advanced),
                             isSelected = selectedTab == 1,
                             modifier = Modifier.weight(1f),
                             isDark = isDark,
@@ -1531,9 +1542,9 @@ private fun JapaneseInputGuideDialog(
                             if (tabIndex == 0) {
                                 // 基础篇
                                 GuideItemCard(
-                                    title = "促音连打 (っ)",
-                                    method = "双写后辅音",
-                                    example = "示例: きって -> ki tte",
+                                    title = stringResource(R.string.test_cloze_guide_tsu_double_title),
+                                    method = stringResource(R.string.test_cloze_guide_tsu_double_method),
+                                    example = stringResource(R.string.test_cloze_guide_tsu_double_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1541,9 +1552,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "拨音 (ん)",
-                                    method = "双写 'nn'",
-                                    example = "注意: n+元音会变 (如n+a->な,需输入nn)",
+                                    title = stringResource(R.string.test_cloze_guide_n_title),
+                                    method = stringResource(R.string.test_cloze_guide_n_method),
+                                    example = stringResource(R.string.test_cloze_guide_n_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1551,9 +1562,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "片假名长音 (ー)",
-                                    method = "英文减号键 '-'",
-                                    example = "示例: ケーキ -> ke - ki",
+                                    title = stringResource(R.string.test_cloze_guide_katakana_chouon_title),
+                                    method = stringResource(R.string.test_cloze_guide_katakana_chouon_method),
+                                    example = stringResource(R.string.test_cloze_guide_katakana_chouon_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1561,9 +1572,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "平假名长音",
-                                    method = "直接双写元音",
-                                    example = "示例: おばあさん -> obaasan",
+                                    title = stringResource(R.string.test_cloze_guide_hiragana_chouon_title),
+                                    method = stringResource(R.string.test_cloze_guide_hiragana_chouon_method),
+                                    example = stringResource(R.string.test_cloze_guide_hiragana_chouon_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1571,9 +1582,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "常用拗音 (如 しゅ/ちょ)",
-                                    method = "直接使用组合拼写",
-                                    example = "示例: しゅ -> shu, ちょ -> cho",
+                                    title = stringResource(R.string.test_cloze_guide_youon_title),
+                                    method = stringResource(R.string.test_cloze_guide_youon_method),
+                                    example = stringResource(R.string.test_cloze_guide_youon_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1583,9 +1594,9 @@ private fun JapaneseInputGuideDialog(
                             } else {
                                 // 进阶篇
                                 GuideItemCard(
-                                    title = "促音单打 (っ)",
-                                    method = "输入 'ltu' 或 'xtu'",
-                                    example = "单独出现时输入 ltu / xtu",
+                                    title = stringResource(R.string.test_cloze_guide_tsu_single_title),
+                                    method = stringResource(R.string.test_cloze_guide_tsu_single_method),
+                                    example = stringResource(R.string.test_cloze_guide_tsu_single_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1593,9 +1604,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "特殊浊音 (ぢ/づ)",
-                                    method = "ぢ->di, づ->du",
-                                    example = "注意: じ为ji/zi, ず为zu",
+                                    title = stringResource(R.string.test_cloze_guide_special_dakuon_title),
+                                    method = stringResource(R.string.test_cloze_guide_special_dakuon_method),
+                                    example = stringResource(R.string.test_cloze_guide_special_dakuon_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1603,9 +1614,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "外来语组合 (ティ/ファ)",
-                                    method = "组合拼写 thi/fa",
-                                    example = "示例: ティ -> thi / ti, ファ -> fa",
+                                    title = stringResource(R.string.test_cloze_guide_foreign_combo_title),
+                                    method = stringResource(R.string.test_cloze_guide_foreign_combo_method),
+                                    example = stringResource(R.string.test_cloze_guide_foreign_combo_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1613,9 +1624,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "特殊假名 (ヴ)",
-                                    method = "输入 'vu'",
-                                    example = "示例: ヴァ -> va, ヴ -> vu",
+                                    title = stringResource(R.string.test_cloze_guide_special_kana_title),
+                                    method = stringResource(R.string.test_cloze_guide_special_kana_method),
+                                    example = stringResource(R.string.test_cloze_guide_special_kana_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1623,9 +1634,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "小假名 (如 ぃ/ょ)",
-                                    method = "前加 'l' 或 'x'",
-                                    example = "示例: ぃ -> li / xi, ょ -> lyo / xyo",
+                                    title = stringResource(R.string.test_cloze_guide_small_kana_title),
+                                    method = stringResource(R.string.test_cloze_guide_small_kana_method),
+                                    example = stringResource(R.string.test_cloze_guide_small_kana_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1633,9 +1644,9 @@ private fun JapaneseInputGuideDialog(
                                     isDark = isDark
                                 )
                                 GuideItemCard(
-                                    title = "输入法兼容",
-                                    method = "支持多种拼写",
-                                    example = "し(si/shi), つ(tu/tsu), ふ(hu/fu)",
+                                    title = stringResource(R.string.test_cloze_guide_ime_compat_title),
+                                    method = stringResource(R.string.test_cloze_guide_ime_compat_method),
+                                    example = stringResource(R.string.test_cloze_guide_ime_compat_example),
                                     keyBg = keyBg,
                                     cardBg = cardBg,
                                     textMain = textMain,
@@ -1663,7 +1674,7 @@ private fun JapaneseInputGuideDialog(
                     shape = RoundedCornerShape(24.dp)
                 ) {
                     Text(
-                        text = "我知道了",
+                        text = stringResource(R.string.test_cloze_guide_btn_confirm),
                         style = TextStyle(
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
@@ -1688,7 +1699,7 @@ private fun TabButton(
     onClick: () -> Unit
 ) {
     val bg = if (isSelected) {
-        if (isDark) Color(0xFF475569) else Color.White
+        if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else Color.White
     } else {
         Color.Transparent
     }
@@ -1735,7 +1746,7 @@ private fun GuideItemCard(
         color = cardBg,
         border = BorderStroke(
             width = 1.dp,
-            color = if (isDark) Color(0xFF334155) else Color(0xFFEDF2F7)
+            color = if (isDark) MaterialTheme.colorScheme.outlineVariant else NemoNeutrals.Gray200
         ),
         modifier = Modifier.fillMaxWidth()
     ) {

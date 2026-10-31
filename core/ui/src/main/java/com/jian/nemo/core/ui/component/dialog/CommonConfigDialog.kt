@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -165,13 +166,13 @@ fun CommonConfigDialog(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
-                        .background(if (isDark) Color(0xFF2B2B2E) else Color(0xFFF1F5F9))
+                        .background(if (isDark) UiPalette.DialogControlBgDark else UiPalette.DialogControlBgLight)
                         .align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "关闭",
-                        tint = if (isDark) Color.White else Color(0xFF64748B),
+                        tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -249,9 +250,9 @@ fun CommonConfigDialog(
                                     val isSelected = selectedValue == preset
                                     val chipBgColor by animateColorAsState(
                                         targetValue = if (isSelected) {
-                                            if (isDark) Color.White else Color(0xFF18181B)
+                                            if (isDark) Color.White else UiPalette.DialogBlackText
                                         } else {
-                                            if (isDark) Color(0xFF262626) else Color.Transparent
+                                            if (isDark) UiPalette.DialogDarkActiveBg else Color.Transparent
                                         },
                                         label = "ChipBgColor"
                                     )
@@ -266,7 +267,7 @@ fun CommonConfigDialog(
                                     val chipBorderColor = if (isSelected) {
                                         Color.Transparent
                                     } else {
-                                        if (isDark) Color(0xFF383838) else Color(0xFFE2E8F0)
+                                        if (isDark) UiPalette.DialogDarkBorder else UiPalette.DialogLightBorder
                                     }
 
                                     Box(

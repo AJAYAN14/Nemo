@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.StatisticsPalette
 
 /**
  * 记忆分层阶段
@@ -10,11 +11,11 @@ enum class CurveStage(
     val themeColor: Color,
     val description: String
 ) {
-    COMPOSITE("全库综合", Color(0xFFFF9800), "全量已学项目的综合记忆抗遗忘水平"),
-    YOUNG_EARLY("初识新词", Color(0xFFEF4444), "刚学习1~2次，海马体临时印记，极易遗忘"),
-    YOUNG_DEVELOPING("发展巩固", Color(0xFF3B82F6), "建立初步记忆突触，处于快速生长期"),
-    MATURE("深度稳固", Color(0xFF22C55E), "已进入长时记忆区，具备极高抗遗忘韧性"),
-    EXPERT("永久长效", Color(0xFF8B5CF6), "深度固化为直觉记忆，接近母语级永久留存")
+    COMPOSITE("全库综合", StatisticsPalette.CompositeOrange, "全量已学项目的综合记忆抗遗忘水平"),
+    YOUNG_EARLY("初识新词", StatisticsPalette.EarlyRed, "刚学习1~2次，海马体临时印记，极易遗忘"),
+    YOUNG_DEVELOPING("发展巩固", StatisticsPalette.DevelopingBlue, "建立初步记忆突触，处于快速生长期"),
+    MATURE("深度稳固", StatisticsPalette.MatureGreen, "已进入长时记忆区，具备极高抗遗忘韧性"),
+    EXPERT("永久长效", StatisticsPalette.ExpertPurple, "深度固化为直觉记忆，接近母语级永久留存")
 }
 
 /**

@@ -1,6 +1,7 @@
 package com.jian.nemo.core.ui.util
 
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.UiPalette
 
 /**
  * 预设头像管理器
@@ -30,41 +31,25 @@ object PresetAvatars {
         PresetAvatar(
             id = "sunset",
             name = "日落",
-            colors = listOf(
-                Color(0xFFFF6B6B),  // 红
-                Color(0xFFFFAA00),  // 橙
-                Color(0xFFFFD93D)   // 黄
-            ),
+            colors = UiPalette.Presets.Sunset,
             emoji = "🌅"
         ),
         PresetAvatar(
             id = "ocean",
             name = "海洋",
-            colors = listOf(
-                Color(0xFF06BEE1),  // 青
-                Color(0xFF0B4F6C),  // 深蓝
-                Color(0xFF01BAEF)   // 浅蓝
-            ),
+            colors = UiPalette.Presets.Ocean,
             emoji = "🌊"
         ),
         PresetAvatar(
             id = "forest",
             name = "森林",
-            colors = listOf(
-                Color(0xFF06D6A0),  // 绿
-                Color(0xFF118AB2),  // 蓝绿
-                Color(0xFF073B4C)   // 深绿
-            ),
+            colors = UiPalette.Presets.Forest,
             emoji = "🌲"
         ),
         PresetAvatar(
             id = "lavender",
             name = "薰衣草",
-            colors = listOf(
-                Color(0xFF9D4EDD),  // 紫
-                Color(0xFF7209B7),  // 深紫
-                Color(0xFFC77DFF)   // 浅紫
-            ),
+            colors = UiPalette.Presets.Lavender,
             emoji = "💜"
         ),
 
@@ -72,41 +57,25 @@ object PresetAvatars {
         PresetAvatar(
             id = "mint",
             name = "薄荷",
-            colors = listOf(
-                Color(0xFF06FFA5),  // 薄荷绿
-                Color(0xFF00D9FF),  // 青
-                Color(0xFF00B4D8)   // 蓝
-            ),
+            colors = UiPalette.Presets.Mint,
             emoji = "🍃"
         ),
         PresetAvatar(
             id = "coral",
             name = "珊瑚",
-            colors = listOf(
-                Color(0xFFFF6B9D),  // 粉红
-                Color(0xFFC9184A),  // 深粉
-                Color(0xFFFF8FA3)   // 浅粉
-            ),
+            colors = UiPalette.Presets.Coral,
             emoji = "🪸"
         ),
         PresetAvatar(
             id = "golden",
             name = "金色",
-            colors = listOf(
-                Color(0xFFFFBE0B),  // 金黄
-                Color(0xFFFB5607),  // 橙红
-                Color(0xFFFF006E)   // 品红
-            ),
+            colors = UiPalette.Presets.Golden,
             emoji = "✨"
         ),
         PresetAvatar(
             id = "aurora",
             name = "极光",
-            colors = listOf(
-                Color(0xFF7209B7),  // 紫
-                Color(0xFF3A0CA3),  // 蓝紫
-                Color(0xFF4361EE)   // 蓝
-            ),
+            colors = UiPalette.Presets.Aurora,
             emoji = "🌌"
         ),
 
@@ -114,21 +83,13 @@ object PresetAvatars {
         PresetAvatar(
             id = "peach",
             name = "蜜桃",
-            colors = listOf(
-                Color(0xFFFFB5A7),  // 蜜桃色
-                Color(0xFFFCD5CE),  // 浅粉
-                Color(0xFFF8EDEB)   // 米白
-            ),
+            colors = UiPalette.Presets.Peach,
             emoji = "🍑"
         ),
         PresetAvatar(
             id = "autumn",
             name = "秋叶",
-            colors = listOf(
-                Color(0xFFD00000),  // 红
-                Color(0xFFDC2F02),  // 橙红
-                Color(0xFFE85D04)   // 橙
-            ),
+            colors = UiPalette.Presets.Autumn,
             emoji = "🍂"
         ),
 
@@ -136,21 +97,13 @@ object PresetAvatars {
         PresetAvatar(
             id = "sky",
             name = "天空",
-            colors = listOf(
-                Color(0xFF48CAE4),  // 天蓝
-                Color(0xFF00B4D8),  // 深天蓝
-                Color(0xFF90E0EF)   // 浅天蓝
-            ),
+            colors = UiPalette.Presets.Sky,
             emoji = "☁️"
         ),
         PresetAvatar(
             id = "lemon",
             name = "柠檬",
-            colors = listOf(
-                Color(0xFFFFFF3F),  // 柠檬黄
-                Color(0xFFFFEE32),  // 黄
-                Color(0xFFFDD835)   // 深黄
-            ),
+            colors = UiPalette.Presets.Lemon,
             emoji = "🍋"
         ),
 
@@ -158,21 +111,13 @@ object PresetAvatars {
         PresetAvatar(
             id = "midnight",
             name = "午夜",
-            colors = listOf(
-                Color(0xFF03045E),  // 深蓝
-                Color(0xFF023E8A),  // 蓝
-                Color(0xFF0077B6)   // 浅蓝
-            ),
+            colors = UiPalette.Presets.Midnight,
             emoji = "🌙"
         ),
         PresetAvatar(
             id = "galaxy",
             name = "星系",
-            colors = listOf(
-                Color(0xFF240046),  // 深紫
-                Color(0xFF3C096C),  // 紫
-                Color(0xFF5A189A)   // 浅紫
-            ),
+            colors = UiPalette.Presets.Galaxy,
             emoji = "🌟"
         ),
 
@@ -180,21 +125,13 @@ object PresetAvatars {
         PresetAvatar(
             id = "tropical",
             name = "热带",
-            colors = listOf(
-                Color(0xFFFF006E),  // 品红
-                Color(0xFFFB5607),  // 橙
-                Color(0xFFFFBE0B)   // 黄
-            ),
+            colors = UiPalette.Presets.Tropical,
             emoji = "🏖️"
         ),
         PresetAvatar(
             id = "cherry",
             name = "樱花",
-            colors = listOf(
-                Color(0xFFFFB3C6),  // 樱花粉
-                Color(0xFFFF8FAB),  // 粉
-                Color(0xFFFFC2D1)   // 浅粉
-            ),
+            colors = UiPalette.Presets.Cherry,
             emoji = "🌸"
         )
     )

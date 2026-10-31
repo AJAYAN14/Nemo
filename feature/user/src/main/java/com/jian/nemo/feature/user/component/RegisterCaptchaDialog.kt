@@ -31,6 +31,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.designsystem.theme.CaptchaPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import kotlin.random.Random
 
 /**
@@ -118,35 +121,15 @@ fun generateCaptchaData(isDark: Boolean): CaptchaData {
     val equationStr = "${problem.num1} ${problem.op} ${problem.num2} = ?"
     val answerStr = problem.answer.toString()
 
-    val darkColors = listOf(
-        Color(0xFF60A5FA),
-        Color(0xFF34D399),
-        Color(0xFFF472B6),
-        Color(0xFFFBBF24),
-        Color(0xFFA78BFA),
-        Color(0xFF38BDF8),
-        Color(0xFF4ADE80)
-    )
-
-    val lightColors = listOf(
-        Color(0xFF1D4ED8),
-        Color(0xFF047857),
-        Color(0xFFBE185D),
-        Color(0xFFB45309),
-        Color(0xFF6D28D9),
-        Color(0xFF0369A1),
-        Color(0xFF15803D)
-    )
-
-    val colorPalette = if (isDark) darkColors else lightColors
+    val colorPalette = if (isDark) CaptchaPalette.DarkColors else CaptchaPalette.LightColors
 
     val chars = equationStr.map { char ->
         CaptchaChar(
             char = char,
             color = when (char) {
-                '?' -> if (isDark) Color(0xFFF87171) else Color(0xFFDC2626)
-                '=' -> if (isDark) Color(0xFFFBBF24) else Color(0xFFD97706)
-                '+', '-', '×', '÷' -> if (isDark) Color(0xFF38BDF8) else Color(0xFF0284C7)
+                '?' -> if (isDark) CaptchaPalette.QuestionMarkDark else CaptchaPalette.QuestionMarkLight
+                '=' -> if (isDark) CaptchaPalette.EqualSignDark else CaptchaPalette.EqualSignLight
+                '+', '-', '×', '÷' -> if (isDark) CaptchaPalette.OperatorDark else CaptchaPalette.OperatorLight
                 else -> colorPalette[Random.nextInt(colorPalette.size)]
             },
             rotation = if (char == ' ' || char == '=') 0f else (Random.nextFloat() * 12f - 6f),
@@ -192,7 +175,7 @@ fun CaptchaCanvas(
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = if (isDark) Color(0xFF1E1E24) else Color(0xFFEEF2F6)
+    val bgColor = if (isDark) CaptchaPalette.BgDark else CaptchaPalette.BgLight
     val borderColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
 
     Canvas(
@@ -273,9 +256,9 @@ fun RegisterCaptchaDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
 
-    val primaryTint = if (isDark) Color(0xFF2563EB) else Color(0xFF0E68FF)
-    val errorColor = if (isDark) Color(0xFFFF453A) else Color(0xFFFF3B30)
-    val descTextColor = if (isDark) Color.White.copy(alpha = 0.65f) else Color(0xFF64748B)
+    val primaryTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
+    val errorColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val descTextColor = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate500
 
     fun refreshCaptcha() {
         captchaData = generateCaptchaData(isDark)
@@ -400,7 +383,7 @@ fun RegisterCaptchaDialog(
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryTint,
-                    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color(0xFFE2E8F0),
+                    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.15f) else CaptchaPalette.UnfocusedBorderLight,
                     cursorColor = primaryTint
                 )
             )

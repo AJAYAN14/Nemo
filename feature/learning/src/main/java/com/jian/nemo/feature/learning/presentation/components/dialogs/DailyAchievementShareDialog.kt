@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -152,7 +154,7 @@ fun DailyAchievementShareDialog(
                                         colors = listOf(
                                             themePrimary,
                                             themePrimary.copy(alpha = 0.88f),
-                                            Color(0xFF0F766E)
+                                            LearningPalette.ShareGradTeal
                                         )
                                     )
                                 )
@@ -179,7 +181,7 @@ fun DailyAchievementShareDialog(
                                         ) {
                                             Text(text = "🔥", fontSize = 11.sp)
                                             Text(
-                                                text = "已连续打卡 ${dailyStreak} 天",
+                                                text = stringResource(R.string.daily_streak_format, dailyStreak),
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White
@@ -199,7 +201,7 @@ fun DailyAchievementShareDialog(
 
                                 // 中部：今日掌握词汇大字（中文保持不变，单位换为日文量词：語）
                                 Text(
-                                    text = "今日掌握词汇",
+                                    text = stringResource(R.string.today_mastered_words),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color.White.copy(alpha = 0.85f)
@@ -218,7 +220,7 @@ fun DailyAchievementShareDialog(
                                         lineHeight = 48.sp
                                     )
                                     Text(
-                                        text = "語",
+                                        text = stringResource(R.string.unit_words_jp),
                                         fontSize = 17.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White.copy(alpha = 0.9f),
@@ -237,13 +239,13 @@ fun DailyAchievementShareDialog(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "⚡ 最高连击: ${sessionMaxCombo} 次",
+                                        text = stringResource(R.string.max_combo_format, sessionMaxCombo),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color.White.copy(alpha = 0.95f)
                                     )
                                     Text(
-                                        text = "⏱ 专注用时: $timeStr",
+                                        text = stringResource(R.string.focus_duration_format, timeStr),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color.White.copy(alpha = 0.95f)
@@ -263,17 +265,17 @@ fun DailyAchievementShareDialog(
                         ) {
                             Column {
                                 Text(
-                                    text = "不积跬步，无以至千里",
+                                    text = stringResource(R.string.proverb_quote_cn),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0F172A)
+                                    color = LearningPalette.ShareSlateText
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "「継続は力なり」",
+                                    text = stringResource(R.string.proverb_quote_jp),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF64748B)
+                                    color = LearningPalette.ShareSubText
                                 )
                             }
 
@@ -294,7 +296,7 @@ fun DailyAchievementShareDialog(
                                     text = "Nemo",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0F172A),
+                                    color = LearningPalette.ShareSlateText,
                                     letterSpacing = (-0.3).sp,
                                     lineHeight = 12.sp
                                 )
@@ -323,14 +325,14 @@ fun DailyAchievementShareDialog(
                                 val success = saveBitmapToGallery(context, bitmap)
                                 Toast.makeText(
                                     context,
-                                    if (success) "已保存海报到相册" else "保存失败",
+                                    if (success) context.getString(R.string.toast_saved_to_gallery) else context.getString(R.string.toast_save_failed),
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 if (success) {
                                     onDismissRequest()
                                 }
                             } catch (e: Exception) {
-                                Toast.makeText(context, "保存失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.toast_save_failed_msg, e.message ?: ""), Toast.LENGTH_SHORT).show()
                             } finally {
                                 isSaving = false
                             }
@@ -364,7 +366,7 @@ fun DailyAchievementShareDialog(
                                 tint = Color.White
                             )
                             Text(
-                                text = "保存图片",
+                                text = stringResource(R.string.btn_save_poster),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White
@@ -384,7 +386,7 @@ fun DailyAchievementShareDialog(
                                 shareBitmapImage(context, bitmap)
                                 onDismissRequest()
                             } catch (e: Exception) {
-                                Toast.makeText(context, "分享失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.toast_share_failed_msg, e.message ?: ""), Toast.LENGTH_SHORT).show()
                             } finally {
                                 isSharing = false
                             }
@@ -415,7 +417,7 @@ fun DailyAchievementShareDialog(
                                 tint = Color.White
                             )
                             Text(
-                                text = "分享海报",
+                                text = stringResource(R.string.btn_share_poster),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -439,7 +441,7 @@ fun DailyAchievementShareDialog(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
-                    contentDescription = "关闭",
+                    contentDescription = stringResource(R.string.action_close),
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )

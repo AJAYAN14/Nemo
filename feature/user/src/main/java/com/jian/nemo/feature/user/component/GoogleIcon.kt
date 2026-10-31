@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.BrandPalette
 
 val GoogleIcon: ImageVector
     get() {
@@ -22,7 +23,7 @@ val GoogleIcon: ImageVector
             viewportHeight = 1024f
         ).apply {
             path(
-                fill = SolidColor(Color(0xFFFBBC05)),
+                fill = SolidColor(BrandPalette.GoogleYellow),
                 fillAlpha = 1.0f,
                 stroke = null,
                 strokeAlpha = 1.0f,
@@ -41,7 +42,7 @@ val GoogleIcon: ImageVector
                 curveToRelative(-10.24f, -30.72f, -15.437f, -62.9f, -15.463f, -95.283f)
             }
             path(
-                fill = SolidColor(Color(0xFFEA4335)),
+                fill = SolidColor(BrandPalette.GoogleRed),
                 fillAlpha = 1.0f,
                 stroke = null,
                 strokeAlpha = 1.0f,
@@ -60,7 +61,7 @@ val GoogleIcon: ImageVector
                 curveToRelative(40.397f, -121.498f, 155.597f, -208.87f, 292.352f, -208.87f)
             }
             path(
-                fill = SolidColor(Color(0xFF34A853)),
+                fill = SolidColor(BrandPalette.GoogleGreen),
                 fillAlpha = 1.0f,
                 stroke = null,
                 strokeAlpha = 1.0f,
@@ -79,7 +80,7 @@ val GoogleIcon: ImageVector
                 curveToRelative(-47.18f, 29.108f, -106.65f, 44.8f, -173.952f, 44.8f)
             }
             path(
-                fill = SolidColor(Color(0xFF4285F4)),
+                fill = SolidColor(BrandPalette.GoogleBlue),
                 fillAlpha = 1.0f,
                 stroke = null,
                 strokeAlpha = 1.0f,

@@ -36,6 +36,9 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.draw.clip
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.AIPalette
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
+import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
@@ -248,7 +251,7 @@ fun AISettingsScreen(
                         Icon(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = "新建配置",
-                            tint = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A),
+                            tint = if (isDark) AIPalette.StudioInputContainerLight else UserPalette.TextSlate900,
                             modifier = Modifier.size(30.dp)
                         )
                     }
@@ -352,7 +355,7 @@ fun SwipeableActionTile(
                     onDelete()
                 },
                 shape = CircleShape,
-                color = Color(0xFFF43F5E),
+                color = SettingsPalette.CoralRose,
                 shadowElevation = if (progress > 0.5f) 4.dp else 0.dp,
                 modifier = Modifier
                     .padding(end = 4.dp)
@@ -442,16 +445,16 @@ fun AIConfigCard(
 ) {
     val haptic = LocalHapticFeedback.current
     val platformColor = when (config.platform) {
-        "deepseek" -> Color(0xFF0E68FF)
-        "doubao" -> Color(0xFF00B4D8)
-        "glm" -> Color(0xFF3762FF)
-        "kimi" -> Color(0xFF007AFF)
-        "mimo" -> Color(0xFFFF6A00)
-        "qwen" -> Color(0xFF615CED)
-        "claude" -> Color(0xFFD97706)
-        "openai" -> Color(0xFF10A37F)
-        "gemini" -> Color(0xFFAF52DE)
-        else -> Color(0xFF8B5CF6)
+        "deepseek" -> AIPalette.DeepSeek
+        "doubao" -> AIPalette.Doubao
+        "glm" -> AIPalette.Glm
+        "kimi" -> AIPalette.Kimi
+        "mimo" -> AIPalette.Mimo
+        "qwen" -> AIPalette.Qwen
+        "claude" -> AIPalette.ClaudeAmber
+        "openai" -> AIPalette.OpenAI
+        "gemini" -> AIPalette.Gemini
+        else -> AIPalette.CustomPurple
     }
     
     val platformName = when (config.platform) {
@@ -650,15 +653,15 @@ fun AIConfigCard(
                     onEdit()
                 },
                 shape = CircleShape,
-                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.65f) else Color(0xFFF1F5F9),
-                border = BorderStroke(0.5.dp, if (isDark) Color(0xFF334155) else Color(0xFFCBD5E1)),
+                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.65f) else AIPalette.StudioPillBgLight,
+                border = BorderStroke(0.5.dp, if (isDark) UserPalette.TextSlate700 else UserPalette.FieldBorderSlate),
                 modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.Edit,
                         contentDescription = "编辑配置",
-                        tint = if (isDark) Color(0xFF94A3B8) else Color(0xFF64748B),
+                        tint = if (isDark) UserPalette.SlatePlaceholder else UserPalette.TextSlate500,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -759,9 +762,9 @@ fun PlatformDropdownSelector(
                     )
                 } else if (icon is androidx.compose.ui.graphics.vector.ImageVector) {
                     val color = when (currentPlatform.first) {
-                        "claude" -> Color(0xFFE05C2B)
-                        "doubao" -> Color(0xFF00B4D8)
-                        "mimo" -> Color(0xFFFF6700)
+                        "claude" -> AIPalette.ClaudeRust
+                        "doubao" -> AIPalette.Doubao
+                        "mimo" -> AIPalette.MimoAlt
                         else -> MaterialTheme.colorScheme.primary
                     }
                     Icon(
@@ -795,9 +798,9 @@ fun PlatformDropdownSelector(
                                 )
                             } else if (icon is androidx.compose.ui.graphics.vector.ImageVector) {
                                 val color = when (id) {
-                                    "claude" -> Color(0xFFE05C2B)
-                                    "doubao" -> Color(0xFF00B4D8)
-                                    "mimo" -> Color(0xFFFF6700)
+                                    "claude" -> AIPalette.ClaudeRust
+                                    "doubao" -> AIPalette.Doubao
+                                    "mimo" -> AIPalette.MimoAlt
                                     else -> MaterialTheme.colorScheme.onSurfaceVariant
                                 }
                                 Icon(
@@ -840,12 +843,12 @@ fun RecommendedModelChips(
     }
 
     val platformColor = when (platform) {
-        "gemini" -> Color(0xFF6E56CF)
-        "deepseek" -> Color(0xFF1E88E5)
-        "openai" -> Color(0xFF10A37F)
-        "claude" -> Color(0xFFE05C2B)
-        "doubao" -> Color(0xFF00B4D8)
-        "mimo" -> Color(0xFFFF6700)
+        "gemini" -> AIPalette.GeminiAlt
+        "deepseek" -> AIPalette.DeepSeekAlt
+        "openai" -> AIPalette.OpenAI
+        "claude" -> AIPalette.ClaudeRust
+        "doubao" -> AIPalette.Doubao
+        "mimo" -> AIPalette.MimoAlt
         else -> MaterialTheme.colorScheme.primary
     }
 

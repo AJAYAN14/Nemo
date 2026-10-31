@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
@@ -172,7 +173,7 @@ private fun TranslationLoadingContent(
         label = "textAlpha"
     )
 
-    val drawerBg = if (isDark) Color(0xFF06060E) else Color(0xFFFFFFFF)
+    val drawerBg = if (isDark) LearningPalette.DrawerBgDark else Color.White
     val handleBg = if (isDark) Color.White.copy(alpha = 0.28f) else Color.Black.copy(alpha = 0.18f)
 
     Box(
@@ -210,7 +211,7 @@ private fun TranslationLoadingContent(
                 color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(
                     1.dp,
-                    if (isDark) Color.White.copy(alpha = 0.18f) else Color(0x18000000)
+                    if (isDark) Color.White.copy(alpha = 0.18f) else LearningPalette.DrawerBorderLight
                 ),
                 shadowElevation = 0.dp
             ) {
@@ -221,7 +222,7 @@ private fun TranslationLoadingContent(
                     Icon(
                         imageVector = Icons.Rounded.Search,
                         contentDescription = null,
-                        tint = if (isDark) Color(0xFF7DD3FC) else BentoColors.Primary,
+                        tint = if (isDark) LearningPalette.SkyLight else BentoColors.Primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
@@ -251,7 +252,7 @@ private fun TranslationLoadingContent(
                     .size(8.dp)
                     .clip(CircleShape)
                     .background(
-                        (if (isDark) Color(0xFF7DD3FC) else BentoColors.Primary).copy(alpha = textAlpha)
+                        (if (isDark) LearningPalette.SkyLight else BentoColors.Primary).copy(alpha = textAlpha)
                     )
             )
             Spacer(Modifier.width(8.dp))
@@ -282,7 +283,7 @@ private fun TranslationErrorContent(errorMsg: String, isDark: Boolean) {
         Icon(
             imageVector = Icons.Rounded.ErrorOutline,
             contentDescription = null,
-            tint = Color(0xFFEF4444),
+            tint = LearningPalette.AccentRed,
             modifier = Modifier.size(40.dp)
         )
 

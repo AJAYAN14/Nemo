@@ -27,7 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
@@ -66,14 +66,14 @@ fun LiquidBottomTabs(
     backdrop: Backdrop,
     tabsCount: Int,
     modifier: Modifier = Modifier,
-    accentColor: Color = Color(0xFF00C4B5),
+    accentColor: Color = UiPalette.LiquidCyanMint,
     isDarkTheme: Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f,
     content: @Composable RowScope.() -> Unit
 ) {
     val isLightTheme = !isDarkTheme
     val containerColor =
-        if (isLightTheme) Color(0xFFFAFAFA).copy(0.4f)
-        else Color(0xFF121212).copy(0.4f)
+        if (isLightTheme) UiPalette.LiquidTabsBgLight.copy(0.4f)
+        else UiPalette.LiquidTabsBgDark.copy(0.4f)
 
     val tabsBackdrop = rememberLayerBackdrop()
 

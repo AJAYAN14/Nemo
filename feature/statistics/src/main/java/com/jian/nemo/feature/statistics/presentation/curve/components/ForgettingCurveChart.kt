@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.ChartColors
+import com.jian.nemo.core.designsystem.theme.StatisticsPalette
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import kotlin.math.roundToInt
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
@@ -77,7 +78,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 /**
- * 遗忘曲线对比折线图组件 (Pro Max 高级增强版)
+ * 遗忘曲线对比折线图组件
  *
  * 核心优化：
  * - 引入 Animatable 实现平滑形变和线型生长效果
@@ -284,7 +285,7 @@ fun ForgettingCurveChart(
             // ========== 绘制三元自适应记忆警戒线 ==========
             val yThresholdRatio = animatedThreshold.coerceIn(0f, 1f)
             val yThreshold = chartBottom - yThresholdRatio * chartHeight
-            val alertLineColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFFD60A)
+            val alertLineColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
             drawLine(
                 color = alertLineColor.copy(alpha = 0.75f),
                 start = Offset(chartLeft, yThreshold),
@@ -299,7 +300,7 @@ fun ForgettingCurveChart(
                 color = if (isPlumpDuo) {
                     if (isDark) alertLineColor else NemoNeutrals.Gray800
                 } else {
-                    Color(0xFFFFD60A).copy(alpha = 0.9f)
+                    StatisticsPalette.AlertGold.copy(alpha = 0.9f)
                 },
                 fontSize = 9.sp,
                 fontWeight = FontWeight.SemiBold
@@ -500,7 +501,7 @@ private fun CurveLiquidTooltip(
     }
 
     val stdPointColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
-    val alertPointColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else Color(0xFFFFD60A)
+    val alertPointColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
 
     Box(
         modifier = Modifier
@@ -529,7 +530,7 @@ private fun CurveLiquidTooltip(
                 Text(
                     text = "第 ${info.day} 天",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isDark) Color(0xFFF8FAFC) else Color(0xFF0F172A)
+                    color = if (isDark) NemoNeutrals.Gray50 else NemoNeutrals.Gray900
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
@@ -541,7 +542,7 @@ private fun CurveLiquidTooltip(
                     Text(
                         text = "${stageLabel}留存: ${(info.userRate * 100).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                        color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -554,7 +555,7 @@ private fun CurveLiquidTooltip(
                     Text(
                         text = "标准参考: ${(info.stdRate * 100).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                        color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -567,7 +568,7 @@ private fun CurveLiquidTooltip(
                     Text(
                         text = "动态警戒: ${(info.alertThreshold * 100).toInt()}%",
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (isDark) Color(0xFFCBD5E1) else Color(0xFF334155)
+                        color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
                 }
             }
