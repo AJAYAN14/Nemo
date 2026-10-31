@@ -754,7 +754,9 @@ enum class SettingIconStyle {
  */
 enum class AppIconStyle {
     DEFAULT,     // 默认版
-    MONOCHROME   // 黑白版
+    MONOCHROME,  // 黑白版
+    FROG_CHEER,  // 仰头小青蛙
+    FROG_NINJA   // 忍者小青蛙
 }
 
 /**

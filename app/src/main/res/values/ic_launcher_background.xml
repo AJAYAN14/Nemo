@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#0E68FF</color>
+    <color name="ic_launcher_frog_cheer_background">#FEFAEC</color>
+    <color name="ic_launcher_frog_ninja_background">#FEF9F1</color>
 </resources>

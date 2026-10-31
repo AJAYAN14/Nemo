@@ -922,19 +922,33 @@ private fun AppIconSelectionGrid(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppIconOption(
             drawableRes = DesignR.drawable.ic_launcher_default_foreground,
             isSelected = selectedStyle == AppIconStyle.DEFAULT,
+            imageScale = 1.5f,
             onClick = { onStyleSelected(AppIconStyle.DEFAULT) }
         )
         AppIconOption(
             drawableRes = DesignR.drawable.ic_launcher_monochrome_foreground,
             isSelected = selectedStyle == AppIconStyle.MONOCHROME,
+            imageScale = 1.5f,
             onClick = { onStyleSelected(AppIconStyle.MONOCHROME) }
+        )
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_frog_cheer_foreground,
+            isSelected = selectedStyle == AppIconStyle.FROG_CHEER,
+            imageScale = 1.55f,
+            onClick = { onStyleSelected(AppIconStyle.FROG_CHEER) }
+        )
+        AppIconOption(
+            drawableRes = DesignR.drawable.ic_launcher_frog_ninja_foreground,
+            isSelected = selectedStyle == AppIconStyle.FROG_NINJA,
+            imageScale = 1.55f,
+            onClick = { onStyleSelected(AppIconStyle.FROG_NINJA) }
         )
     }
 }
@@ -943,6 +957,7 @@ private fun AppIconSelectionGrid(
 private fun AppIconOption(
     @androidx.annotation.DrawableRes drawableRes: Int,
     isSelected: Boolean,
+    imageScale: Float = 1.0f,
     onClick: () -> Unit
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -969,7 +984,7 @@ private fun AppIconOption(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            // 图标容器：64dp 尺寸，通过将内部图像居中放大 1.45 倍，使主体海马充盈饱满，消除多余空白
+            // 图标容器：64dp 尺寸，按指定缩放比例渲染
             Box(
                 modifier = Modifier
                     .size(64.dp)
@@ -987,7 +1002,7 @@ private fun AppIconOption(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
-                        .graphicsLayer(scaleX = 1.5f, scaleY = 1.5f)
+                        .graphicsLayer(scaleX = imageScale, scaleY = imageScale)
                 )
             }
         }
