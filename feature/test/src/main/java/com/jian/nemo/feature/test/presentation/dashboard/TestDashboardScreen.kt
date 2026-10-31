@@ -40,11 +40,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.NemoIndigo
 import com.jian.nemo.core.designsystem.theme.NemoOrange
+import com.jian.nemo.core.designsystem.theme.NemoWarningDark
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.designsystem.theme.NemoPurple
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
 import com.jian.nemo.core.designsystem.theme.NemoTeal
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
@@ -74,6 +77,11 @@ fun TestDashboardScreen(
 
     val colorScheme = MaterialTheme.colorScheme
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+
+    val isDark = colorScheme.background.luminance() < 0.5f
+    val dangerColor = if (isDark) NemoDangerDark else NemoDanger
+    val secondaryColor = if (isDark) NemoSecondaryDark else NemoSecondary
+    val warningColor = if (isDark) NemoWarningDark else NemoOrange
 
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
@@ -119,7 +127,7 @@ fun TestDashboardScreen(
                     title = "我的错题",
                     subtitle = "${uiState.wrongWordsCount} 个",
                     icon = Icons.Rounded.Cancel,
-                    color = NemoDanger,
+                    color = dangerColor,
                     onClick = onNavigateToMistakes,
                     plumpIcon = PlumpIcon.CircleX,
                     paletteColor = IsoluminantPalette.CoralFlame
@@ -134,7 +142,7 @@ fun TestDashboardScreen(
                     title = "我的收藏",
                     subtitle = "${uiState.favoriteWordsCount} 个",
                     icon = Icons.Rounded.Star,
-                    color = NemoOrange,
+                    color = warningColor,
                     onClick = onNavigateToFavorites,
                     plumpIcon = PlumpIcon.Star,
                     paletteColor = IsoluminantPalette.WarmAmber
@@ -159,7 +167,7 @@ fun TestDashboardScreen(
                         title = "选择题",
                         subtitle = "快速认知",
                         icon = Icons.AutoMirrored.Rounded.Assignment,
-                        color = NemoSecondary,
+                        color = secondaryColor,
                         onClick = { onNavigateToTestSettings("multiple_choice") },
                         plumpIcon = PlumpIcon.ListChecks,
                         paletteColor = IsoluminantPalette.EmeraldGreen
@@ -263,6 +271,8 @@ private fun StatsPager(
         val useSoftRingColor: Boolean = false
     )
 
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     fun ringColorByAccuracy(accuracyPercent: Int): Color {
         return if (isPlumpDuo) {
             when {
@@ -272,14 +282,12 @@ private fun StatsPager(
             }
         } else {
             when {
-                accuracyPercent < 60 -> NemoDanger
-                accuracyPercent < 85 -> NemoOrange
-                else -> NemoSecondary
+                accuracyPercent < 60 -> if (isDark) NemoDangerDark else NemoDanger
+                accuracyPercent < 85 -> if (isDark) NemoWarningDark else NemoOrange
+                else -> if (isDark) NemoSecondaryDark else NemoSecondary
             }
         }
     }
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val pageCount = 10000
     val pagerState = rememberPagerState(
         initialPage = pageCount / 2,

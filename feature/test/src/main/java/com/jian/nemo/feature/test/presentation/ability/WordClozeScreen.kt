@@ -85,7 +85,7 @@ fun WordClozeScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
     val qCardBg = if (isDark) IosColors.Orange.copy(alpha = 0.15f) else IosColors.Orange.copy(alpha = 0.08f)
     val qCardBorderColor = if (isDark) IosColors.Orange.copy(alpha = 0.2f) else IosColors.Orange.copy(alpha = 0.1f)
@@ -254,7 +254,7 @@ private fun LevelSelectionView(
         Triple("N5", stringResource(R.string.test_cloze_level_n5_desc), if (isDark) NemoSecondaryDark else NemoSecondary),
         Triple("N4", stringResource(R.string.test_cloze_level_n4_desc), if (isDark) NemoPrimaryDark else NemoPrimary),
         Triple("N3", stringResource(R.string.test_cloze_level_n3_desc), if (isDark) NemoWarningDark else NemoWarning),
-        Triple("N2", stringResource(R.string.test_cloze_level_n2_desc), BentoColors.Primary),
+        Triple("N2", stringResource(R.string.test_cloze_level_n2_desc), if (isDark) NemoWarningDark else NemoWarning),
         Triple("N1", stringResource(R.string.test_cloze_level_n1_desc), if (isDark) NemoDangerDark else NemoDanger)
     )
 
@@ -1241,7 +1241,7 @@ private fun ClozeHistoryView(
     isDark: Boolean
 ) {
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     
     Scaffold(
         topBar = {

@@ -13,7 +13,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
@@ -75,12 +74,10 @@ fun PremiumCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.08f) else NemoNeutrals.Gray100
 
     Surface(
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
-        border = BorderStroke(1.dp, borderColor),
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         modifier = modifier
@@ -272,10 +269,9 @@ fun SquircleSettingItem(
         }
 
         if (showDivider) {
-            val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
             HorizontalDivider(
                 modifier = Modifier.padding(start = 74.dp), // Align with text start
-                color = if (isDark) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
                 thickness = 0.5.dp
             )
         }

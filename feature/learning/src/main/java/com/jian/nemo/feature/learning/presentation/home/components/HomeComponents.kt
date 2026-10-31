@@ -2,7 +2,7 @@ package com.jian.nemo.feature.learning.presentation.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -103,14 +103,14 @@ fun PremiumCard(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+
 
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor), // Add ultra-fine border
+
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 26.dp, isDark = isDark)

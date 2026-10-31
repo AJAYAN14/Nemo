@@ -30,7 +30,7 @@ fun LevelHeader(
     count: Int,
     isExpanded: Boolean,
     onClick: () -> Unit,
-    containerColor: Color = Color.White, // 修正默认背景色
+    containerColor: Color = Color.Unspecified,
     itemType: String = "单词"
 ) {
     Card(
@@ -43,7 +43,7 @@ fun LevelHeader(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(15.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
+        colors = CardDefaults.cardColors(containerColor = if (containerColor != Color.Unspecified) containerColor else MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(

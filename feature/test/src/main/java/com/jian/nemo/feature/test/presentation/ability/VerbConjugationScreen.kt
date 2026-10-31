@@ -62,7 +62,7 @@ fun VerbConjugationScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
     val qCardBg = if (isDark) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue.copy(alpha = 0.08f)
     val qCardBorderColor = if (isDark) IosColors.Blue.copy(alpha = 0.2f) else IosColors.Blue.copy(alpha = 0.1f)
@@ -153,7 +153,7 @@ fun HistoryView(
     isDark: Boolean
 ) {
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     
     Scaffold(
         topBar = {
@@ -235,7 +235,7 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
         Triple("N5", "初级基础", if (isDark) NemoSecondaryDark else NemoSecondary),
         Triple("N4", "初级进阶", if (isDark) NemoPrimaryDark else NemoPrimary),
         Triple("N3", "中级应用", if (isDark) NemoWarningDark else NemoWarning),
-        Triple("N2", "中高级进阶", BentoColors.Primary),
+        Triple("N2", "中高级进阶", if (isDark) NemoWarningDark else NemoWarning),
         Triple("N1", "高级熟练", if (isDark) NemoDangerDark else NemoDanger)
     )
     Column(

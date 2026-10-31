@@ -160,8 +160,9 @@ fun SettingsScreen(
                                 onClick = onNavigateToLogin
                             )
                             HorizontalDivider(
-                                modifier = Modifier.padding(start = 72.dp, end = 16.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                modifier = Modifier.padding(start = 74.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                                thickness = 0.5.dp
                             )
                         } else {
                             // 未登录
@@ -335,7 +336,7 @@ fun SettingsScreen(
                             title = "记忆算法配置",
                             subtitle = "步进、提前复习与 Leech 策略",
                             onClick = onNavigateToAdvancedLearning,
-                            showDivider = false,
+                            showDivider = true,
                             trailing = {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,

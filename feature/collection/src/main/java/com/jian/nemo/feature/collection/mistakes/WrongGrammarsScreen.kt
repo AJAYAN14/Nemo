@@ -299,10 +299,7 @@ private fun WrongGrammarCard(
             ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) accentBlue else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-        ),
+        border = if (isSelected) BorderStroke(2.dp, accentBlue) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
@@ -385,8 +382,7 @@ private fun WrongGrammarCard(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

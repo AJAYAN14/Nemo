@@ -390,11 +390,7 @@ private fun WrongWordItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface // Clean surface
         ),
-        // Subtle border for definition, highlighted when selected
-        border = BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-        ),
+        border = if (isSelected) BorderStroke(2.dp, accentColor) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(

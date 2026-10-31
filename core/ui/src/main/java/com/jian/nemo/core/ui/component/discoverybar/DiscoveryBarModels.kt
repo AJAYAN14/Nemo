@@ -34,7 +34,7 @@ data class DiscoveryOption(
  */
 data class DiscoveryBarStyle(
     /** The background color of the bar components. */
-    val backgroundColor: Color = Color.White,
+    val backgroundColor: Color = Color.Unspecified,
     /** The color of the items when they are not selected. */
     val inactiveColor: Color = UiPalette.DialogDarkBg,
     /** The color of the active indicator card. */

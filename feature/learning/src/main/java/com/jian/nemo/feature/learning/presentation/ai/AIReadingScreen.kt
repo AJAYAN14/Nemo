@@ -98,7 +98,7 @@ fun AIReadingScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backdrop = rememberLayerBackdrop()
-    val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
+    val containerBg = colorScheme.background
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -1221,7 +1221,7 @@ private fun HardDecodedText(
 private fun LoadingScreen() {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val containerBg = if (isDark) colorScheme.background else BentoColors.BgBase
+    val containerBg = colorScheme.background
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
     val visibleSteps = remember { mutableStateListOf<ThinkingStepItem>() }

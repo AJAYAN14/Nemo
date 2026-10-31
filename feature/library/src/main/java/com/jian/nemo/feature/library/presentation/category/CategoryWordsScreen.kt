@@ -5,7 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -476,14 +476,14 @@ private fun PremiumCard(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+
 
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
         shape = RoundedCornerShape(22.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
+
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 22.dp, isDark = isDark)

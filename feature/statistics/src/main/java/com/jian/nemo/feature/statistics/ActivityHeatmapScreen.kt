@@ -3,7 +3,7 @@ package com.jian.nemo.feature.statistics
 import com.jian.nemo.core.designsystem.theme.screenBackground
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -306,12 +306,12 @@ private fun RichStatItem(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+
 
     Surface(
         shape = RoundedCornerShape(22.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
+
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 22.dp, isDark = isDark)
@@ -437,12 +437,12 @@ private fun MemoryPanoramaCard(
     isDarkTheme: Boolean
 ) {
     val containerColor = if (isDarkTheme) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+
 
     Surface(
         shape = RoundedCornerShape(26.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
+
         modifier = Modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)

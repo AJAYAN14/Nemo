@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.ui.component.text.FuriganaText
@@ -392,6 +393,7 @@ private fun ExampleSentence(
  * 优先使用 categoryId，如果为空则回退到 pos
  */
 fun getThemeColorForCategory(categoryId: String?, pos: String?, isDark: Boolean): Color {
+    val fallbackColor = if (isDark) NemoPrimaryDark else NemoPrimary
     // 1. 优先从分类 ID 映射 (对应 CategoryClassificationScreen 中的 id)
     if (!categoryId.isNullOrBlank()) {
         val colors = NemoCategoryColors
@@ -408,12 +410,12 @@ fun getThemeColorForCategory(categoryId: String?, pos: String?, isDark: Boolean)
             "suffix" -> if (isDark) colors.CardSoundTextDark else colors.CardSoundTextLight
             "expression" -> if (isDark) colors.CardKeigoTextDark else colors.CardKeigoTextLight
             "exclam" -> if (isDark) colors.CardIdiomTextDark else colors.CardIdiomTextLight
-            else -> NemoPrimary
+            else -> fallbackColor
         }
     }
 
     // 2. 回退到基于词性字符串的模糊匹配
-    if (pos == null) return NemoPrimary
+    if (pos == null) return fallbackColor
     
     val p = pos.trim()
     val colors = NemoCategoryColors
@@ -466,7 +468,7 @@ fun getThemeColorForCategory(categoryId: String?, pos: String?, isDark: Boolean)
         p.contains("固定") || p.contains("句") -> 
             if (isDark) colors.CardFixTextDark else colors.CardFixTextLight
             
-        else -> NemoPrimary
+        else -> fallbackColor
     }
 }
 

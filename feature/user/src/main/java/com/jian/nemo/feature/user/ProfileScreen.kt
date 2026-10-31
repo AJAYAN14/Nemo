@@ -33,12 +33,13 @@ fun ProfileScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.user_profile_title_screen)) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 )
             )
         }

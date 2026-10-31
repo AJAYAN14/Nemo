@@ -113,7 +113,7 @@ private fun VerbConjugationHandbookContent(
 
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     val cardBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     
     // Pro Max 玻璃反射微边框规范：浅色采用柔和灰，深色采用微弱的白反光

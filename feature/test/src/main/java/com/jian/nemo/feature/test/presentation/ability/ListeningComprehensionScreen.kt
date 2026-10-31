@@ -66,7 +66,7 @@ fun ListeningComprehensionScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
     val qCardBg = if (isDark) IosColors.Indigo.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.08f)
     val qCardBorderColor = if (isDark) IosColors.Indigo.copy(alpha = 0.2f) else IosColors.Indigo.copy(alpha = 0.1f)
@@ -178,7 +178,7 @@ private fun ListeningHistoryView(
     isDark: Boolean
 ) {
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
-    val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
+    val containerColor = MaterialTheme.colorScheme.background
 
     Scaffold(
         topBar = {
@@ -227,7 +227,7 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
         Triple("N5", "初级基础词汇听辨", if (isDark) NemoSecondaryDark else NemoSecondary),
         Triple("N4", "常用社交词汇听辨", if (isDark) NemoPrimaryDark else NemoPrimary),
         Triple("N3", "中级日常词汇听辨", if (isDark) NemoWarningDark else NemoWarning),
-        Triple("N2", "中高级书面词汇听辨", BentoColors.Primary),
+        Triple("N2", "中高级书面词汇听辨", if (isDark) NemoWarningDark else NemoWarning),
         Triple("N1", "高级专业词汇听辨", if (isDark) NemoDangerDark else NemoDanger)
     )
     

@@ -18,9 +18,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.theme.LearningCardBackgroundDark
-import com.jian.nemo.core.designsystem.theme.LearningScreenBackground
-import com.jian.nemo.core.designsystem.theme.LearningScreenBackgroundDark
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 /**
@@ -48,8 +45,8 @@ fun <T> GenericExpandableListScreen(
     noResultsDescription: String = ""
 ) {
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val backgroundColor = if (isDarkTheme) LearningScreenBackgroundDark else LearningScreenBackground
-    val cardColor = if (isDarkTheme) LearningCardBackgroundDark else Color.White
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val cardColor = MaterialTheme.colorScheme.surface
 
     var showSearch by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }

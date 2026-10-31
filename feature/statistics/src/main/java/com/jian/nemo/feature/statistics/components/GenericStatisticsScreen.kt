@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.theme.LearningCardBackgroundDark
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.core.ui.component.list.LevelHeader
 import com.jian.nemo.core.ui.component.card.CommonGrammarCard
@@ -100,7 +99,7 @@ private fun StatisticsContent(
     val groupedItems = items.groupBy { it.level }
     val expandedState = remember { mutableStateMapOf<String, Boolean>() }
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val cardColor = if (isDarkTheme) LearningCardBackgroundDark else Color.White
+    val cardColor = MaterialTheme.colorScheme.surface
 
     if (items.isEmpty()) {
         Box(

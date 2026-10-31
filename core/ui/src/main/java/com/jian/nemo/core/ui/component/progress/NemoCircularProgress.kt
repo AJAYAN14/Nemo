@@ -63,10 +63,14 @@ fun NemoCircularProgress(
         val gapAngleDegrees = if (radius > 0) (1.5f * strokeWidthPx / radius) * (180f / PI.toFloat()) else 0f
         val progressSweep = animatedProgress * 360f
 
+        // 平滑渐隐因子：在极小进度（< 4%）时使端点圆球与避让缺口平滑过渡，消除硬截断跳变
+        val fadeAlpha = (animatedProgress / 0.04f).coerceIn(0f, 1f)
+        val dynamicGapDegrees = gapAngleDegrees * fadeAlpha
+
         // 1. 绘制进度条 (Progress)
-        if (progressSweep > 0.1f) {
+        if (progressSweep > 0.1f && fadeAlpha > 0.01f) {
             drawArc(
-                color = color,
+                color = color.copy(alpha = color.alpha * fadeAlpha),
                 startAngle = -90f,
                 sweepAngle = progressSweep,
                 useCenter = false,
@@ -76,16 +80,16 @@ fun NemoCircularProgress(
             )
         }
 
-        // 2. 绘制底轨 (Track) - 包含动态避让缺口逻辑
-        val trackSweepAngle = if (progressSweep > 0.1f) {
-            (360f - progressSweep - 2 * gapAngleDegrees).coerceAtLeast(0f)
+        // 2. 绘制底轨 (Track) - 包含动态平滑避让缺口逻辑
+        val trackSweepAngle = if (progressSweep > 0.1f && fadeAlpha > 0.01f) {
+            (360f - progressSweep - 2 * dynamicGapDegrees).coerceAtLeast(0f)
         } else {
             360f
         }
 
         if (trackSweepAngle > 1f) {
-            val trackStartAngle = if (progressSweep > 0.1f) {
-                -90f + progressSweep + gapAngleDegrees
+            val trackStartAngle = if (progressSweep > 0.1f && fadeAlpha > 0.01f) {
+                -90f + progressSweep + dynamicGapDegrees
             } else {
                 -90f
             }
@@ -99,7 +103,7 @@ fun NemoCircularProgress(
                 size = Size(rect.width, rect.height),
                 style = Stroke(
                     width = strokeWidthPx, 
-                    cap = if (progressSweep > 0.1f) StrokeCap.Round else StrokeCap.Butt
+                    cap = if (progressSweep > 0.1f && fadeAlpha > 0.5f) StrokeCap.Round else StrokeCap.Butt
                 )
             )
         }

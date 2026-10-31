@@ -340,16 +340,17 @@ fun HomeScreen(
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Box(contentAlignment = Alignment.Center) {
+                                    val progressColor = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
+                                        if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
+                                    } else {
+                                        if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
+                                    }
                                     NemoCircularProgress(
                                         progress = uiState.progressFraction,
                                         isLoading = showLoadingRing,
                                         modifier = Modifier.size(100.dp),
-                                        color = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                            if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
-                                        } else {
-                                            if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
-                                        },
-                                        trackColor = dividerColor
+                                        color = progressColor,
+                                        trackColor = progressColor.copy(alpha = if (isDark) 0.15f else 0.12f)
                                     )
                                     
                                     // 数字只有在非加载状态下淡入显示

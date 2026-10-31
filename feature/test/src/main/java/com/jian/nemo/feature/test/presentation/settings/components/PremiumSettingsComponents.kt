@@ -1,6 +1,6 @@
 package com.jian.nemo.feature.test.presentation.settings.components
 
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,12 +41,12 @@ fun PremiumGroupCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+
 
     Surface(
         shape = RoundedCornerShape(24.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
+
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 24.dp, isDark = isDark)

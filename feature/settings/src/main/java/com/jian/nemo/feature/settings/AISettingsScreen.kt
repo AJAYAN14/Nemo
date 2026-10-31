@@ -681,7 +681,7 @@ fun FormSectionCard(
     } else {
         NemoNeutrals.Gray50.copy(alpha = 0.7f)
     }
-    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.12f else 0.18f)
+
 
     Column {
         Text(
@@ -695,10 +695,11 @@ fun FormSectionCard(
         )
 
         Surface(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .softCardShadow(borderRadius = 18.dp, isDark = isDark),
             shape = RoundedCornerShape(18.dp),
-            color = containerColor,
-            border = BorderStroke(1.dp, borderColor)
+            color = containerColor
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),

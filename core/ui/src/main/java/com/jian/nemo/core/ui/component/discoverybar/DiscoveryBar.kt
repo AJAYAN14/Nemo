@@ -125,6 +125,7 @@ fun DiscoveryBar(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val searchIconTint = if (isDark) Color.White else Color.Black
+    val effectiveBgColor = if (style.backgroundColor != Color.Unspecified) style.backgroundColor else if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     BoxWithConstraints(
         modifier = modifier
@@ -157,7 +158,7 @@ fun DiscoveryBar(
         MorphingContainer(
             width = searchWidth,
             height = style.height,
-            backgroundColor = style.backgroundColor,
+            backgroundColor = effectiveBgColor,
             modifier = Modifier.align(Alignment.CenterStart),
         ) {
             TapPulseWrapper(
@@ -243,7 +244,7 @@ fun DiscoveryBar(
         MorphingContainer(
             width = discoveryWidth,
             height = style.height,
-            backgroundColor = style.backgroundColor,
+            backgroundColor = effectiveBgColor,
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             AnimatedContent(

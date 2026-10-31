@@ -413,7 +413,7 @@ fun PremiumSettingsGroup(
             shape = RoundedCornerShape(26.dp),
             colors = CardDefaults.cardColors(containerColor = cardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 26.dp, isDark = useDarkTheme)

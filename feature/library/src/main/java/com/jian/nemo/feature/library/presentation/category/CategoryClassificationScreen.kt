@@ -4,7 +4,7 @@ import com.jian.nemo.core.designsystem.theme.screenBackground
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -359,14 +359,14 @@ private fun CategoryCard(
     val isDark = MaterialTheme.colorScheme.background.luminance < 0.5f // Use standard check
 
     val containerColor = themeColors.containerColor
-    val borderColor = if (isDark) themeColors.contentColor.copy(alpha = 0.2f) else themeColors.contentColor.copy(alpha = 0.12f)
+
     val iconContainerColor = if (isDark) themeColors.contentColor.copy(alpha = 0.15f) else Color.White
 
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         color = containerColor,
-        border = BorderStroke(0.5.dp, borderColor),
+
         modifier = modifier
             .height(76.dp)
             .softCardShadow(borderRadius = 20.dp, isDark = isDark)
