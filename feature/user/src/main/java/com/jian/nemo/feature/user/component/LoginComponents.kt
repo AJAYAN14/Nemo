@@ -566,7 +566,7 @@ fun AppRegisterForm(
 }
 
 /**
- * 兼容旧接口的 LoginForm 与 RegisterForm
+ * 登录表单与注册表单组件
  */
 @Composable
 fun LoginForm(

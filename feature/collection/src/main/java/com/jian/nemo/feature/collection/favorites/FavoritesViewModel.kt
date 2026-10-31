@@ -22,11 +22,7 @@ import javax.inject.Inject
 /**
  * 收藏列表ViewModel
  *
- * 参考：
- * - _reference/old-nemo/app/src/main/java/com/jian/nemo/ui/viewmodel/FavoriteWordsViewModel.kt
- * - 错误处理规范.md
- * - rules.md (MVVM + MVI模式)
- *
+
  * 设计模式：
  * - 使用StateFlow暴露UI状态
  * - 使用Hilt依赖注入

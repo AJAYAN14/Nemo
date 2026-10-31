@@ -21,9 +21,9 @@ import com.jian.nemo.feature.test.components.TestHeaderActions
 
 /**
  * 选择题界面
- * 完全复刻旧项目 com.jian.nemo.ui.screen.test.MultipleChoiceScreen
+ * 呈现单选测验题型与交互操作
  *
- * 依据：E:\AndroidProjects\Nemo\_reference\old-nemo\app\src\main\java\com\jian\nemo\ui\screen\test\MultipleChoiceScreen.kt
+
  */
 @OptIn(ExperimentalAnimationApi::class)
 @Suppress("UnusedContentLambdaTargetStateParameter")
@@ -32,7 +32,7 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val currentQuestion = uiState.currentQuestion as? TestQuestion.MultipleChoice ?: return
 
-    // 使用 AnimatedContent 为选择题切换添加动画效果（复刻旧项目 L41-55）
+    // 使用 AnimatedContent 为选择题切换添加动画效果
     UnifiedTestScreen(
         headerContent = {
             CommonHeader(
@@ -92,7 +92,7 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
                 onSubmit = { viewModel.submitAnswer() },
                 onFinish = { viewModel.finishTest() },
                 canGoPrev = uiState.currentIndex > 0,
-                // 未回答时必须选择选项才能提交，已回答后可以提交（用于下一题按钮）（复刻旧项目 L93-96）
+                // 未回答时必须选择选项才能提交，已回答后可以提交（用于下一题按钮）
                 canSubmit = if (!currentQuestion.isAnswered) {
                     uiState.selectedOptionIndex >= 0 && uiState.selectedOptionIndex < currentQuestion.options.size
                 } else {

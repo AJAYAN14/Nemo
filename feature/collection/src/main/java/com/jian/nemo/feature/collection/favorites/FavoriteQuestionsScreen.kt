@@ -1,6 +1,12 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -65,10 +71,10 @@ fun FavoriteQuestionsScreen(
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
-    // Premium Flat Colors (默认方案完整保留原有配色)
-    val premiumRed = Color(0xFFFF3B30)
-    val premiumBlue = Color(0xFF007AFF)
-    val premiumGreen = Color(0xFF34C759)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
+    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
+    val premiumGreen = if (isDark) NemoSecondaryDark else NemoSecondary
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色

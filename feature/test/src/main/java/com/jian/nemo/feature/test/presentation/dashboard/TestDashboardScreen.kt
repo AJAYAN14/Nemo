@@ -437,7 +437,7 @@ private fun StatsPager(
                                     progress = pageData.ringValue / 100f,
                                     modifier = Modifier.fillMaxSize(),
                                     color = ringColor,
-                                    trackColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else Color(0xFFEFF3F8),
+                                    trackColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceVariant,
                                     strokeWidth = 10.dp
                                 )
                                 Row(
@@ -514,7 +514,7 @@ private fun CompactStatItem(
 ) {
     Surface(
         shape = RoundedCornerShape(24.dp),
-        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color(0xFFF8FAFC),
+        color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(

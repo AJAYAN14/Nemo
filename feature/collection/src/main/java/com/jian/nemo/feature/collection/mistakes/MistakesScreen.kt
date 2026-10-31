@@ -42,16 +42,14 @@ import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoOrange
+import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
-
-// 临时本地定义 (对应 Color.kt 中的值)，解决模块间引用编译问题
-private val NemoSecondary = Color(0xFF4CAF50)
-private val NemoOrange = Color(0xFFFF9500) // IosColors.Orange
-private val NemoDanger = Color(0xFFE53935)
+import com.jian.nemo.core.ui.animation.containerTransform
 
 /**
  * 我的错题界面 - UI/UX Pro Max 风格
@@ -109,8 +107,8 @@ fun MistakesScreen(
                 .layerBackdrop(backdrop)
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    start = 20.dp,
-                    end = 20.dp,
+                    start = 16.dp,
+                    end = 16.dp,
                     top = statusBarTop + 60.dp + 16.dp,
                     bottom = navBarBottom + 24.dp
                 )
@@ -430,7 +428,7 @@ private fun PremiumCard(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val containerColor = MaterialTheme.colorScheme.surface
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
 
     Surface(

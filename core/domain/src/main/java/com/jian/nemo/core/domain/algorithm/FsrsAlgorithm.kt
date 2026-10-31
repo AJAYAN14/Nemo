@@ -47,12 +47,12 @@ data class ItemState(
 /**
  * FSRS 6 核心算法
  *
- * 纯 Kotlin 实现，参考 Anki Rust 后端 (fsrs-rs v5.1.0)
+ * 纯 Kotlin 实现，包含完整的 21 参数模型
  * 包含完整的 21 参数模型
  *
- * 参考:
- * - https://github.com/open-spaced-repetition/fsrs-rs/blob/main/src/model.rs
- * - https://github.com/open-spaced-repetition/fsrs-rs/blob/main/src/inference.rs
+
+
+
  */
 class FsrsAlgorithm(
     private val parameters: FloatArray = DEFAULT_PARAMETERS.clone(),

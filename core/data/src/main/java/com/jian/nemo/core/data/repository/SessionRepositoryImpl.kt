@@ -18,7 +18,7 @@ import javax.inject.Singleton
  *
  * 管理学习会话的持久化状态，支持会话恢复
  *
- * 参考: 实施计划 04-DataStore配置管理.md 第272-363行
+
  */
 @Singleton
 class SessionRepositoryImpl @Inject constructor(

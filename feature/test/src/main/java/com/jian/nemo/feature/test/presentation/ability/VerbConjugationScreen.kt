@@ -25,6 +25,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
+import com.jian.nemo.core.designsystem.theme.NemoWarning
+import com.jian.nemo.core.designsystem.theme.NemoWarningDark
+import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -54,7 +63,7 @@ fun VerbConjugationScreen(
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val containerColor = if (isDark) MaterialTheme.colorScheme.background else BentoColors.BgBase
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val qCardBg = if (isDark) IosColors.Blue.copy(alpha = 0.15f) else Color(0xFFF0F4FF)
+    val qCardBg = if (isDark) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue.copy(alpha = 0.08f)
     val qCardBorderColor = if (isDark) IosColors.Blue.copy(alpha = 0.2f) else IosColors.Blue.copy(alpha = 0.1f)
 
     var showHistoryView by remember { mutableStateOf(false) }
@@ -220,12 +229,13 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
 
 @Composable
 private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val levels = listOf(
-        Triple("N5", "初级基础", Color(0xFF10B981)), // 绿
-        Triple("N4", "初级进阶", Color(0xFF3B82F6)), // 蓝
-        Triple("N3", "中级应用", Color(0xFFF59E0B)), // 黄
-        Triple("N2", "中高级进阶", Color(0xFFF97316)), // 橙
-        Triple("N1", "高级熟练", Color(0xFFEF4444))  // 红
+        Triple("N5", "初级基础", if (isDark) NemoSecondaryDark else NemoSecondary),
+        Triple("N4", "初级进阶", if (isDark) NemoPrimaryDark else NemoPrimary),
+        Triple("N3", "中级应用", if (isDark) NemoWarningDark else NemoWarning),
+        Triple("N2", "中高级进阶", BentoColors.Primary),
+        Triple("N1", "高级熟练", if (isDark) NemoDangerDark else NemoDanger)
     )
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -571,9 +581,9 @@ private fun ReadyView(
             onDismissRequest = { /* 必须点击继续 */ },
             sheetState = sheetState,
             containerColor = if (isCorrect) {
-                if (isDark) Color(0xFF14532D).copy(alpha = 0.9f) else Color(0xFFF0FDF4)
+                if (isDark) TestResultPalette.CorrectCardBgDark else TestResultPalette.CorrectCardBgLight
             } else {
-                if (isDark) Color(0xFF7F1D1D).copy(alpha = 0.9f) else Color(0xFFFEF2F2)
+                if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight
             },
             dragHandle = null,
             shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -585,9 +595,9 @@ private fun ReadyView(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = if (isCorrect) {
-                        if (isDark) Color(0xFF4ADE80) else Color(0xFF166534)
+                        if (isDark) NemoSecondaryDark else NemoSecondary
                     } else {
-                        if (isDark) Color(0xFFFCA5A5) else Color(0xFF991B1B)
+                        if (isDark) NemoDangerDark else NemoDanger
                     }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -595,9 +605,9 @@ private fun ReadyView(
                     text = currentQuestion.explanation,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (isCorrect) {
-                        if (isDark) Color(0xFF86EFAC) else Color(0xFF15803D)
+                        if (isDark) TestResultPalette.CorrectCardContentDark else TestResultPalette.CorrectCardContentLight
                     } else {
-                        if (isDark) Color(0xFFFCA5A5) else Color(0xFFB91C1C)
+                        if (isDark) TestResultPalette.WrongCardContentDark else TestResultPalette.WrongCardContentLight
                     },
                     lineHeight = 22.sp
                 )

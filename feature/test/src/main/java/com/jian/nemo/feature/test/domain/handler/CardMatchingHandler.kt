@@ -39,8 +39,8 @@ data class CardInitializationResult(
  * 卡片配对题处理器
  *
  * 职责：处理卡片的选择、配对验证、初始化等逻辑
- * 提取自：TestViewModel.kt 行850-1167
- * 参考：旧项目 TestViewModel.kt 行420-651
+
+
  */
 @Singleton
 class CardMatchingHandler @Inject constructor() {
@@ -123,7 +123,7 @@ class CardMatchingHandler @Inject constructor() {
      * @param question 卡片配对题
      * @return 初始化好的左右两列卡片
      *
-     * 参考: 旧项目 TestManager.kt 行1393-1407
+
      */
     fun initializeCards(question: TestQuestion.CardMatching): CardInitializationResult {
         // 生成左列卡片（混合汉字和假名）

@@ -73,17 +73,17 @@ data class Grammar(
         return isLearned && nextReviewDate <= today && !isSkipped
     }
 
-    // ========== 向后兼容方法（用于不需要修改的旧代码）==========
+    // ========== 辅助快捷方法 ==========
 
     /**
      * 获取第一个用法的接续方式
-     * 兼容旧代码
+
      */
     fun getFirstConjunction(): String? = usages.firstOrNull()?.connection
 
     /**
      * 获取所有接续方式
-     * 兼容旧代码
+
      */
     fun getAllConjunctions(): List<String> {
         return usages.map { it.connection }.distinct()
@@ -91,13 +91,13 @@ data class Grammar(
 
     /**
      * 获取第一个用法的说明
-     * 兼容旧代码
+
      */
     fun getFirstExplanation(): String = usages.firstOrNull()?.explanation ?: ""
 
     /**
      * 获取所有例句（扁平化）
-     * 兼容旧代码
+
      * @return 例句和翻译的配对列表
      */
     fun getAllExamples(): List<Pair<String, String>> {
@@ -110,7 +110,7 @@ data class Grammar(
 
     /**
      * 获取第一个用法的注意事项
-     * 兼容旧代码
+
      */
     fun getFirstAttention(): String? = usages.firstOrNull()?.notes
 }

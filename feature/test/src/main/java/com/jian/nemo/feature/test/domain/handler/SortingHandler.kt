@@ -23,7 +23,7 @@ data class SortingAnswerState(
 @Singleton
 class SortingHandler @Inject constructor() {
 
-    // 防抖机制（复刻旧项目 QuestionLogic.kt 行36-37）
+    // 点击防抖机制
     private val lastClickTime = AtomicLong(0)
     private val clickDelay = 300L
 

@@ -13,11 +13,6 @@ import javax.inject.Inject
  * 1. 获取指定等级的新单词
  * 2. 计算今日已学习数量
  * 3. 根据每日目标返回应学习的单词列表
- *
- * 简化版本:不包含会话持久化(SessionRepository)
- * 会话管理在ViewModel层处理
- *
- * 参考: 旧项目StartLearningSessionUseCase (第31-34行, 第113行)
  */
 class StartLearningSessionUseCase @Inject constructor(
     private val wordRepository: WordRepository,

@@ -67,7 +67,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
  *
  * 全新重构架构：
  * 1. 深度融合 Nemo 标志性的「底层贯穿录制 + 悬浮液态玻璃顶栏 + 柔和多阶垂直渐变遮罩 (Backdrop Lens + Gradient Mask)」；
- * 2. 彻底推翻旧版单列办证表单与半屏弹窗，采用 Bento 模块化卡片（平台坞 + 老虎机滚轮 + API 密钥加密插槽 + 流体网络测速沙盘）；
+ * 2. 采用 Bento 模块化卡片（平台坞 + 老虎机滚轮 + API 密钥加密插槽 + 流体网络测速沙盘）；
  * 3. 悬浮操作岛使用全透明无底色液态玻璃外壳与彩色液态应用按钮（ColoredLiquidGlassButton）；
  * 4. 具备 BackHandler 拦截退出保护与未保存确认弹窗。
  */

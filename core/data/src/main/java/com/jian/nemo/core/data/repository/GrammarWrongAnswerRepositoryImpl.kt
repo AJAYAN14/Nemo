@@ -23,7 +23,7 @@ import javax.inject.Singleton
  * 3. 异常处理
  * 4. 日志记录
  *
- * 参考：错误处理规范.md
+
  */
 @Singleton
 class GrammarWrongAnswerRepositoryImpl @Inject constructor(

@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
  * 通用统计界面
  *
  * 用于今日统计和历史统计，显示学习的单词和语法列表
- * 参考旧项目: old-nemo/ui/component/statistics/GenericStatisticsScreen.kt
+
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable

@@ -20,7 +20,7 @@ import javax.inject.Inject
 /**
  * 收藏语法列表ViewModel
  *
- * 参考：_reference/old-nemo/app/src/main/java/com/jian/nemo/ui/viewmodel/FavoriteGrammarsViewModel.kt
+
  */
 @HiltViewModel
 class FavoriteGrammarsViewModel @Inject constructor(

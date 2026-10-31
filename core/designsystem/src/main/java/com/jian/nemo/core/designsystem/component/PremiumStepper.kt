@@ -353,7 +353,7 @@ fun PremiumStepper(
 }
 
 /**
- * 参考图大号 58.dp 软灰色按压缩放按钮
+ * 58.dp 软灰色按压缩放按钮
  */
 @Composable
 private fun StepperIconButton(

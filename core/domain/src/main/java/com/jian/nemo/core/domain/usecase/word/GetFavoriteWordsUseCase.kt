@@ -12,10 +12,6 @@ import javax.inject.Inject
  *
  * 业务规则:
  * 1. 返回所有收藏的单词 (isFavorite = true)
- *
- * 参考:
- * - 旧项目: WordRepository.kt getFavoriteWords() (第495-497行)
- * - 实施计划: 06-单词Domain层.md Use Cases列表
  */
 class GetFavoriteWordsUseCase @Inject constructor(
     private val wordRepository: WordRepository

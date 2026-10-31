@@ -8,7 +8,7 @@ import com.jian.nemo.core.domain.model.WrongAnswer
  * WrongAnswer Mapper
  *
  * Entity ↔ Domain Model 转换
- * 参考：错误处理规范.md
+
  */
 object WrongAnswerMapper {
 

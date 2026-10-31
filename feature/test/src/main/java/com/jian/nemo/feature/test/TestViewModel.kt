@@ -65,10 +65,10 @@ class TestViewModel @Inject constructor(
 
 
 
-    // 防重复提交标志位（复刻旧项目逻辑）
+    // 防重复提交标志位
     private val isSubmitting = java.util.concurrent.atomic.AtomicBoolean(false)
 
-    // 防止快速切换题目标志位（复刻旧项目changeQuestion防抖）
+    // 防止快速切换题目标志位（防抖）
     private val isChangingQuestion = java.util.concurrent.atomic.AtomicBoolean(false)
 
     // 所有等级列表 (N1-N5)
@@ -381,18 +381,18 @@ class TestViewModel @Inject constructor(
     }
 
     /**
-     * 提交答案
-     * 完全复刻旧项目的submitAnswer逻辑，包括防重复提交和状态保护
+     * 提交答案，包括防重复提交和状态保护
+
      *
-     * 依据：E:\AndroidProjects\Nemo\_reference\old-nemo\app\src\main\java\com\jian\nemo\ui\viewmodel\logic\QuestionLogic.kt (L41-438)
+
      */
     fun submitAnswer() {
-        // 1. 防重复提交（复刻旧项目L43）
+        // 1. 防重复提交
         if (!isSubmitting.compareAndSet(false, true)) return
 
         val state = _uiState.value
 
-        // 2. 检查测试是否激活（复刻旧项目L48）
+        // 2. 检查测试是否激活
         if (!state.isTestActive) {
             isSubmitting.set(false)
             return
@@ -400,7 +400,7 @@ class TestViewModel @Inject constructor(
 
         val question = state.currentQuestion
 
-        // 3. 状态检查（复刻旧项目L47-65）
+        // 3. 状态检查
         if (question == null || question.isAnswered) {
             isSubmitting.set(false)
             return
@@ -409,7 +409,7 @@ class TestViewModel @Inject constructor(
         // 4. 答案判定
         val updatedQuestion = when (question) {
             is TestQuestion.MultipleChoice -> {
-                // 验证索引有效性（复刻旧项目L75-79）
+                // 验证索引有效性
                 if (state.selectedOptionIndex < 0 || state.selectedOptionIndex >= question.options.size) {
                     isSubmitting.set(false)
                     return
@@ -425,7 +425,7 @@ class TestViewModel @Inject constructor(
                 )
             }
             is TestQuestion.Typing -> {
-                // 根据不同的题型验证答案（复刻旧项目QuestionLogic.kt L89-130）
+                // 根据不同的题型验证答案
                 val trimmedInput = state.userTypingInput.trim()
                 if (trimmedInput.isEmpty()) {
                     isSubmitting.set(false)
@@ -459,7 +459,7 @@ class TestViewModel @Inject constructor(
                         question.word.chinese.equals(trimmedInput, ignoreCase = true)
                     }
                     else -> {
-                        // 默认情况（兼容旧数据）
+                        // 默认兜底比较假名
                         question.word.hiragana.equals(trimmedInput, ignoreCase = true)
                     }
                 }
@@ -471,7 +471,7 @@ class TestViewModel @Inject constructor(
                 )
             }
             is TestQuestion.Sorting -> {
-                // 排序题判题逻辑（复刻旧项目QuestionLogic.kt行134-139）
+                // 排序题判题逻辑
                 val userAnswerText = state.userAnswerChars.joinToString("") { it.char.toString() }
                 val isCorrect = userAnswerText == question.word.hiragana
 
@@ -500,7 +500,7 @@ class TestViewModel @Inject constructor(
             }
         }
 
-        // 6. 播放音效与震动（仅错误震动）（复刻旧项目L330-343）
+        // 6. 播放音效与震动（仅错误震动）
         viewModelScope.launch {
             if (updatedQuestion.isCorrect) {
                 _effect.emit(TestEffect.PlaySound(isCorrect = true))
@@ -532,7 +532,7 @@ class TestViewModel @Inject constructor(
             }
         }
 
-        // 8. 自动跳转逻辑（答对且不是最后一题）（复刻旧项目L392-437）
+        // 8. 自动跳转逻辑（答对且不是最后一题）
         if (updatedQuestion.isCorrect && !state.isLastQuestion) {
             viewModelScope.launch {
                 // 检查自动跳转设置
@@ -546,10 +546,10 @@ class TestViewModel @Inject constructor(
                 _uiState.update { it.copy(isAutoAdvancing = true) }
                 kotlinx.coroutines.delay(500)
 
-                // 重新获取状态，避免闭包问题（复刻旧项目L398）
+                // 重新获取状态，避免闭包问题
                 val currentState = _uiState.value
 
-                // 状态检查（复刻旧项目L401-422）
+                // 状态检查
                 if (currentState.showResult) {
                     isSubmitting.set(false)
                     _uiState.update { it.copy(isAutoAdvancing = false) }
@@ -574,13 +574,13 @@ class TestViewModel @Inject constructor(
                 _uiState.update { it.copy(isAutoAdvancing = false) }
             }
         } else {
-            // 没有自动跳转，立即重置提交状态（复刻旧项目L435）
+            // 没有自动跳转，立即重置提交状态
             isSubmitting.set(false)
         }
     }
 
     /**
-     * 下一题（添加防抖保护，复刻旧项目changeQuestion逻辑）
+     * 下一题（添加防抖保护）
      */
     fun nextQuestion() {
         // 防抖：如果正在切换题目，忽略此次请求
@@ -622,7 +622,7 @@ class TestViewModel @Inject constructor(
     }
 
     /**
-     * 上一题（添加防抖保护，复刻旧项目changeQuestion逻辑）
+     * 上一题（添加防抖保护）
      */
     fun previousQuestion() {
         // 防抖：如果正在切换题目，忽略此次请求
@@ -697,10 +697,10 @@ class TestViewModel @Inject constructor(
                 )
                 wordRepository.saveTestRecord(record)
 
-                // 更新连续测试天数 (复刻旧项目)
+                // 更新连续测试天数
                 settingsRepository.updateTestStreak()
 
-                // 更新学习记录中的测试次数 (复刻旧项目)
+                // 更新学习记录中的测试次数
                 studyRecordRepository.incrementTestCount(1)
 
 
@@ -844,14 +844,14 @@ class TestViewModel @Inject constructor(
     }
 
     /**
-     * 显示退出确认对话框（复刻旧项目TestScreen.kt L107-109）
+     * 显示退出确认对话框
      */
     fun confirmExitTest() {
         _uiState.update { it.copy(showExitConfirmation = true) }
     }
 
     /**
-     * 取消退出，关闭对话框（复刻旧项目TestScreen.kt L98）
+     * 取消退出，关闭对话框
      */
     fun cancelExitTest() {
         _uiState.update { it.copy(showExitConfirmation = false) }
@@ -894,7 +894,7 @@ class TestViewModel @Inject constructor(
         }
     }
 
-    // ========== 卡片题相关方法 (参考旧项目 TestViewModel.kt 行420-651) ==========
+    // ========== 卡片题相关方法 ==========
 
     /**
      * 选择卡片
@@ -921,7 +921,7 @@ class TestViewModel @Inject constructor(
 
     /**
      * 处理卡片配对
-     * 参考: 旧项目 TestViewModel.kt 行465-487
+
      */
     // Logic delegated to CardMatchingOrchestrator
 
@@ -1004,9 +1004,9 @@ data class TestUiState(
     val error: String? = null,
     val testStartTimeMs: Long = 0L,
     val wpm: Int = 0,
-    val isAutoAdvancing: Boolean = false,  // 是否正在自动跳转（复刻旧项目状态）
-    val isTestActive: Boolean = false,     // 测试是否激活（复刻旧项目状态）
-    val showExitConfirmation: Boolean = false,  // 是否显示退出确认对话框（复刻旧项目）
+    val isAutoAdvancing: Boolean = false,  // 是否正在自动跳转
+    val isTestActive: Boolean = false,     // 测试是否激活
+    val showExitConfirmation: Boolean = false,  // 是否显示退出确认对话框
     val showPauseDialog: Boolean = false,  // 是否显示暂停对话框
 
     // 统计数据
@@ -1015,7 +1015,7 @@ data class TestUiState(
     val wrongWordsCount: Int = 0,
     val favoriteWordsCount: Int = 0,
 
-    // 轮播统计数据 (复刻旧项目)
+    // 轮播统计数据
     val consecutiveTestDays: Int = 0,
     val totalTestCount: Int = 0,
     val overallAccuracy: Float = 0f,
@@ -1025,7 +1025,7 @@ data class TestUiState(
     val timeLimitSeconds: Int = 0, // 0表示无限制
     val timeRemainingSeconds: Int = 0,
 
-    // 卡片题相关状态 (参考旧项目 TestModels.kt 行193-246)
+    // 卡片题相关状态
     val termCards: List<com.jian.nemo.core.domain.model.MatchableCard> = emptyList(),       // 左列卡片(日文/假名)
     val definitionCards: List<com.jian.nemo.core.domain.model.MatchableCard> = emptyList(), // 右列卡片(中文)
     val selectedCard: com.jian.nemo.core.domain.model.MatchableCard? = null,                // 当前选中的卡片
@@ -1035,7 +1035,7 @@ data class TestUiState(
     val feedbackPanelState: com.jian.nemo.core.domain.model.FeedbackPanelState =
         com.jian.nemo.core.domain.model.FeedbackPanelState.HIDDEN,
 
-    // 排序题相关状态 (参考旧项目 TestModels.kt + QuestionLogic.kt)
+    // 排序题相关状态
     val userAnswerChars: List<com.jian.nemo.core.domain.model.SortableChar> = emptyList()  // 排序题用户答案
 
 ) {

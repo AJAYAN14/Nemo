@@ -51,7 +51,7 @@ object WordMapper {
     }
 
     /**
-     * 兼容旧版调用 (仅从 Entity 转换，通常用于没有任何学习记录的生词)
+     * 单实体转换快捷重载 (仅从 Entity 转换，通常用于没有任何学习记录的生词)
      * ⚠️ 注意：此方法返回的 Word 进度字段均为默认值
      */
     fun WordEntity.toDomainModel(): Word = toDomainModel(this, null)

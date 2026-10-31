@@ -1082,7 +1082,7 @@ fun AISettingTextField(
 }
 
 /**
- * 与复学清单/错题本保持一致的高级空状态设计
+ * 空状态展示视图
  */
 @Composable
 private fun EmptyAIConfigView(

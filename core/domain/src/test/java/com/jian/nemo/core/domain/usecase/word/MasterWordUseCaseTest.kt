@@ -23,7 +23,7 @@ import org.junit.Test
  * - 学习记录统计
  * - 首次学习 vs 复习区分
  *
- * 参考: 旧项目 MasterWordUseCase.kt 测试要求
+
  */
 class MasterWordUseCaseTest {
 

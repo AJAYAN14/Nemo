@@ -26,7 +26,7 @@ data class ExampleDto(
 /**
  * 单词 JSON 数据传输对象
  *
- * 参考: 新数据格式 N1.json ~ N5.json
+
  * 用于从 assets 文件解析 JSON
  */
 @Serializable

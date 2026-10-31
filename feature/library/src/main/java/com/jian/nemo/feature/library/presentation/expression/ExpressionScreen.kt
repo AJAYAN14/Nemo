@@ -47,28 +47,22 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.activity.compose.BackHandler
 import com.jian.nemo.core.domain.model.Expression
+import com.jian.nemo.core.designsystem.theme.ExpressionCategoryPalette
 import com.jian.nemo.core.domain.model.ExpressionCategory
 import com.jian.nemo.core.domain.model.ExpressionExample
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
-// 6 大分类精致扁平色彩系统
-private val CategoryOrange = Color(0xFFFF6B4A)
-private val CategoryEmerald = Color(0xFF10B981)
-private val CategoryPink = Color(0xFFEC4899)
-private val CategoryCyan = Color(0xFF06B6D4)
-private val CategoryAmber = Color(0xFFF59E0B)
-private val CategoryPurple = Color(0xFFA855F7)
-
 @Composable
 private fun getCategoryColor(key: String): Color {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     return when (key) {
-        "collocation" -> CategoryOrange
-        "sentence_pattern" -> CategoryEmerald
-        "idiom" -> CategoryPink
-        "four_character_idiom" -> CategoryCyan
-        "semi_fixed_template" -> CategoryAmber
-        "collocation_group" -> CategoryPurple
+        "collocation" -> if (isDark) ExpressionCategoryPalette.OrangeDark else ExpressionCategoryPalette.OrangeLight
+        "sentence_pattern" -> if (isDark) ExpressionCategoryPalette.EmeraldDark else ExpressionCategoryPalette.EmeraldLight
+        "idiom" -> if (isDark) ExpressionCategoryPalette.PinkDark else ExpressionCategoryPalette.PinkLight
+        "four_character_idiom" -> if (isDark) ExpressionCategoryPalette.CyanDark else ExpressionCategoryPalette.CyanLight
+        "semi_fixed_template" -> if (isDark) ExpressionCategoryPalette.AmberDark else ExpressionCategoryPalette.AmberLight
+        "collocation_group" -> if (isDark) ExpressionCategoryPalette.PurpleDark else ExpressionCategoryPalette.PurpleLight
         else -> MaterialTheme.colorScheme.primary
     }
 }

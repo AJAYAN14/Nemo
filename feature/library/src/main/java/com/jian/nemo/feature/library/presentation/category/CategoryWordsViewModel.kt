@@ -19,7 +19,7 @@ import javax.inject.Inject
  * 分类单词列表 ViewModel
  *
  * 管理特定分类下的单词数据
- * 参考旧项目: old-nemo/ui/viewmodel/CategoryWordsViewModel.kt
+
  */
 @HiltViewModel
 class CategoryWordsViewModel @Inject constructor(

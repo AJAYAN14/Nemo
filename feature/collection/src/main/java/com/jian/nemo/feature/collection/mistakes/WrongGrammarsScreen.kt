@@ -1,6 +1,12 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -53,10 +59,10 @@ fun WrongGrammarsScreen(
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
-    // Custom Premium Colors (默认方案完整保留原有配色)
-    val premiumBlue = Color(0xFF007AFF)
-    val premiumRed = Color(0xFFFF3B30)
-    val premiumGray = Color(0xFF8E8E93)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
+    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
+    val premiumGray = MaterialTheme.colorScheme.onSurfaceVariant
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
@@ -180,7 +186,7 @@ fun WrongGrammarsScreen(
                             } else {
                                 Surface(shape = RoundedCornerShape(32.dp), color = premiumGray.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
                                     Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = Color(0xFF34C759).copy(alpha = 0.5f))
+                                        Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = (if (isDark) NemoSecondaryDark else NemoSecondary).copy(alpha = 0.5f))
                                     }
                                 }
                             }
@@ -242,6 +248,7 @@ fun WrongGrammarsScreen(
 /**
  * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
  */
+@Composable
 private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
     return if (isPlumpDuo) {
         when (level.uppercase()) {
@@ -253,7 +260,7 @@ private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
             else -> IsoluminantPalette.SkyIndigo
         }
     } else {
-        Color(0xFF007AFF) // premiumBlue
+        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) NemoPrimaryDark else NemoPrimary
     }
 }
 
@@ -269,10 +276,10 @@ private fun WrongGrammarCard(
     onLongClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val premiumRed = Color(0xFFFF3B30)
-    val premiumGreen = Color(0xFF34C759)
-    val premiumBlue = Color(0xFF007AFF)
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
+    val premiumGreen = if (isDark) NemoSecondaryDark else NemoSecondary
+    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
 
     // 双方案色彩分流：Plump Duo 对应等亮度色，MD3 100% 保持原色
     val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue

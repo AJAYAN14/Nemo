@@ -18,7 +18,7 @@ import javax.inject.Singleton
 /**
  * Grammar Repository 实现
  *
- * 参考: _reference/old-nemo/.../GrammarDao.kt
+
  *
  * 职责:
  * 1. 调用GrammarDao获取数据

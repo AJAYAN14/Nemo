@@ -1,6 +1,10 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoOrange
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -76,11 +80,12 @@ fun FavoriteWordsScreen(
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
-    // Custom Premium Colors (Shared Palette) - 默认方案完整保留原有配色
-    val premiumRed = Color(0xFFFF3B30)
-    val premiumBlue = Color(0xFF007AFF)
-    val premiumOrange = Color(0xFFFF9500)
-    val premiumGray = Color(0xFF8E8E93)
+    // 标准语义色彩分配
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
+    val premiumBlue = MaterialTheme.colorScheme.primary
+    val premiumOrange = NemoOrange
+    val premiumGray = MaterialTheme.colorScheme.onSurfaceVariant
 
     // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
     val heartColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else premiumRed
@@ -349,7 +354,7 @@ private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
             else -> IsoluminantPalette.SkyIndigo
         }
     } else {
-        Color(0xFF007AFF) // premiumBlue
+        NemoPrimary
     }
 }
 

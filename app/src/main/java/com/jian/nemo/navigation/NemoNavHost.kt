@@ -165,9 +165,6 @@ object HorizontalNavTransition {
 
 /**
  * Nemo应用导航配置
- *
- * 更新: 集成新的 feature:learning 模块
- * 更新: 移植旧版导航动画 (BottomNavTransition + NemoNavigationAnimations)
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable

@@ -21,9 +21,9 @@ import com.jian.nemo.feature.test.components.TestHeaderActions
 
 /**
  * 手打题界面
- * 完全复刻旧项目 com.jian.nemo.ui.screen.test.TypingScreen
+ * 呈现手打题测验题型与交互操作
  *
- * 依据：E:\AndroidProjects\Nemo\_reference\old-nemo\app\src\main\java\com\jian\nemo\ui\screen\test\TypingScreen.kt
+
  */
 @OptIn(ExperimentalAnimationApi::class)
 @Suppress("UnusedContentLambdaTargetStateParameter")
@@ -32,7 +32,7 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val question = uiState.currentQuestion as? TestQuestion.Typing ?: return
 
-    // 使用 AnimatedContent 为手打题切换添加动画效果（复刻旧项目 L29-44）
+    // 使用 AnimatedContent 为手打题切换添加动画效果
     UnifiedTestScreen(
         headerContent = {
             CommonHeader(

@@ -2,8 +2,6 @@ package com.jian.nemo.core.domain.model
 
 /**
  * 卡片类型
- *
- * 参考: 旧项目 TestModels.kt 行152
  */
 enum class CardType {
     /** 日文汉字 */
@@ -16,8 +14,6 @@ enum class CardType {
 
 /**
  * 卡片状态
- *
- * 参考: 旧项目 TestModels.kt 行157
  */
 enum class CardState {
     /** 未选中 */
@@ -35,8 +31,6 @@ enum class CardState {
 /**
  * 可匹配卡片
  *
- * 参考: 旧项目 TestModels.kt 行142-147
- *
  * @param id 单词ID，用于配对判断（相同ID表示可以配对）
  * @param text 卡片显示文本
  * @param type 卡片类型
@@ -51,8 +45,6 @@ data class MatchableCard(
 
 /**
  * 反馈面板状态
- *
- * 参考: 旧项目 TestModels.kt 行162
  */
 enum class FeedbackPanelState {
     /** 隐藏 */

@@ -8,7 +8,7 @@ import javax.inject.Inject
 /**
  * 切换语法收藏状态 Use Case
  *
- * 参考: ToggleWordFavoriteUseCase
+
  */
 class ToggleGrammarFavoriteUseCase @Inject constructor(
     private val grammarRepository: GrammarRepository

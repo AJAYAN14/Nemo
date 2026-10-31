@@ -29,7 +29,7 @@ data class WrongWordsUiState(
 /**
  * 错误单词列表ViewModel
  *
- * 参考：_reference/old-nemo/app/src/main/java/com/jian/nemo/ui/viewmodel/WrongWordsViewModel.kt
+
  */
 @HiltViewModel
 class WrongWordsViewModel @Inject constructor(

@@ -313,7 +313,7 @@ class SettingsRepositoryImpl @Inject constructor(
      * 2. 如果昨天有学习，streak +1
      * 3. 如果超过1天没学习，streak重置为1
      *
-     * 参考: 实施计划 04-DataStore配置管理.md 第201-242行
+
      */
     override suspend fun updateDailyStreak() {
         val resetHour = learningDayResetHourFlow.first()

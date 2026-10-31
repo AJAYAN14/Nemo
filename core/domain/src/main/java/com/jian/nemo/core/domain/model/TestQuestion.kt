@@ -3,7 +3,7 @@ package com.jian.nemo.core.domain.model
 /**
  * 测试题目
  *
- * 参考: 旧项目 TestQuestion (sealed class)
+
  */
 sealed class TestQuestion {
     abstract val id: Int
@@ -70,7 +70,7 @@ sealed class TestQuestion {
     /**
      * 卡片匹配题
      *
-     * 参考: 旧项目 TestModels.kt 行100-104
+    
      *
      * @param pairs 5个单词对象的列表
      */
@@ -87,7 +87,7 @@ sealed class TestQuestion {
     /**
      * 排序题
      *
-     * 参考: 旧项目 TestModels.kt 行114-120
+    
      *
      * @param word 单词对象
      * @param options 可排序字符列表
@@ -135,7 +135,7 @@ fun Word.toWordExplanationPayload(): ExplanationPayload.WordSummary {
 /**
  * 可排序字符数据类
  *
- * 参考: 旧项目 TestModels.kt 行129-133
+
  *
  * @param char 字符
  * @param id 唯一ID（用于处理重复字符）

@@ -77,7 +77,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
             )
         """)
 
-        // 3.2 迁移数据（实际上已清空，此步骤保留用于参考）
+        // 3.2 迁移数据
         database.execSQL("""
             INSERT INTO grammars_new (
                 id, grammar, grammar_level, repetitionCount, interval,

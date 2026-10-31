@@ -74,7 +74,7 @@ class AISettingsViewModel @Inject constructor(
                     settingsRepository.setAiActiveConfigId("")
                 }
 
-                // 兼容性迁移：如果列表为空，且旧版存储中存在有效的 API Key 时才创建初始配置
+                // 数据平滑迁移：如果配置列表为空，且本地存储中存在有效的 API Key 时自动初始化配置
                 if (configs.isEmpty()) {
                     val oldKey = settingsRepository.aiApiKeyFlow.first()
                     if (oldKey.isNotBlank()) {

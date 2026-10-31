@@ -505,13 +505,13 @@ private fun DeviceMockup(
     isSelected: Boolean
 ) {
     val borderColor = when (mode) {
-        DarkModeOption.DARK -> Color(0xFF3A3A3C)
-        else -> Color(0xFFE5E5EA)
+        DarkModeOption.DARK -> Color(0xFF38383A)
+        else -> Color(0xFFC6C6C8)
     }
 
     val mockupBackground = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF1C1C1E))
-        else -> Modifier.background(Color.White)
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF000000))
+        else -> Modifier.background(Color(0xFFF2F2F7))
     }
 
     val mockupWidth = 78.dp
@@ -564,7 +564,7 @@ private fun DeviceMockup(
 @Composable
 private fun MockupNav(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
         else -> Modifier.background(Color(0xFFE5E5EA))
     }
     Box(
@@ -578,8 +578,8 @@ private fun MockupNav(mode: DarkModeOption) {
 @Composable
 private fun MockupCard(mode: DarkModeOption) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
-        else -> Modifier.background(Color(0xFFF2F2F7))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF1C1C1E))
+        else -> Modifier.background(Color.White)
     }
     Box(
         modifier = Modifier
@@ -592,7 +592,7 @@ private fun MockupCard(mode: DarkModeOption) {
 @Composable
 private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
     val modifier = when (mode) {
-        DarkModeOption.DARK -> Modifier.background(Color(0xFF3A3A3C))
+        DarkModeOption.DARK -> Modifier.background(Color(0xFF2C2C2E))
         else -> Modifier.background(Color(0xFFE5E5EA))
     }
     Box(

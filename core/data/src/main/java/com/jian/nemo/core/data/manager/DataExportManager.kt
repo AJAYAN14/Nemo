@@ -91,7 +91,7 @@ data class ImportPreview(
 /**
  * 数据导出/导入管理器
  *
- * 负责将本地数据库数据导出为 JSON 格式（兼容旧版 Nemo），
+ * 负责将本地数据库数据导出为 JSON 格式，
  * 以及从 JSON 文件导入数据并恢复到本地数据库。
  */
 @Singleton

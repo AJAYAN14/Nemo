@@ -108,59 +108,55 @@ fun StatisticsScreen(
 
             // 1. 单词列表
             item {
-                StatisticsSectionTitle("单词 (${words.size})")
-            }
-
-            if (words.isNotEmpty()) {
-                item {
-                    StatisticsListCard(
-                        items = words,
-                        onItemClick = { wordId ->
-                            DetailContextHolder.setWordContext(words.map { it.id })
-                            onNavigateToWordDetail(wordId)
-                        },
-                        isWord = true
-                    )
-                }
-            } else {
-                item {
-                    EmptyStatisticsState(
-                        message = "该日期没有学习任何单词",
-                        subtitle = "完成新学或复习后会在此展示",
-                        icon = Icons.Rounded.Translate,
-                        plumpIcon = PlumpIcon.Languages,
-                        accentColor = NemoSecondary,
-                        isoluminantColor = IsoluminantPalette.EmeraldGreen
-                    )
+                Column {
+                    StatisticsSectionTitle("单词 (${words.size})")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (words.isNotEmpty()) {
+                        StatisticsListCard(
+                            items = words,
+                            onItemClick = { wordId ->
+                                DetailContextHolder.setWordContext(words.map { it.id })
+                                onNavigateToWordDetail(wordId)
+                            },
+                            isWord = true
+                        )
+                    } else {
+                        EmptyStatisticsState(
+                            message = "该日期没有学习任何单词",
+                            subtitle = "完成新学或复习后会在此展示",
+                            icon = Icons.Rounded.Translate,
+                            plumpIcon = PlumpIcon.Languages,
+                            accentColor = NemoSecondary,
+                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                        )
+                    }
                 }
             }
 
             // 2. 语法列表
             item {
-                StatisticsSectionTitle("语法 (${grammars.size})")
-            }
-
-            if (grammars.isNotEmpty()) {
-                item {
-                    StatisticsListCard(
-                        items = grammars,
-                        onItemClick = { grammarId ->
-                            DetailContextHolder.setGrammarContext(grammars.map { it.id })
-                            onNavigateToGrammarDetail(grammarId)
-                        },
-                        isWord = false
-                    )
-                }
-            } else {
-                item {
-                    EmptyStatisticsState(
-                        message = "该日期没有学习任何语法",
-                        subtitle = "完成语法学习后会在此展示",
-                        icon = Icons.Rounded.Checklist,
-                        plumpIcon = PlumpIcon.ListChecks,
-                        accentColor = NemoSecondary,
-                        isoluminantColor = IsoluminantPalette.EmeraldGreen
-                    )
+                Column {
+                    StatisticsSectionTitle("语法 (${grammars.size})")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (grammars.isNotEmpty()) {
+                        StatisticsListCard(
+                            items = grammars,
+                            onItemClick = { grammarId ->
+                                DetailContextHolder.setGrammarContext(grammars.map { it.id })
+                                onNavigateToGrammarDetail(grammarId)
+                            },
+                            isWord = false
+                        )
+                    } else {
+                        EmptyStatisticsState(
+                            message = "该日期没有学习任何语法",
+                            subtitle = "完成语法学习后会在此展示",
+                            icon = Icons.Rounded.Checklist,
+                            plumpIcon = PlumpIcon.ListChecks,
+                            accentColor = NemoSecondary,
+                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                        )
+                    }
                 }
             }
         }
@@ -227,7 +223,7 @@ private val PlumpAvatarColors = listOf(
 @Composable
 fun StatisticsSectionTitle(
     text: String,
-    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
@@ -616,7 +612,7 @@ private fun PremiumCard(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val containerColor = MaterialTheme.colorScheme.surface
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
     val shadowElevation = if (isDark) 2.dp else 10.dp
     val shadowColor = if (isDark) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.04f)

@@ -72,12 +72,16 @@ val OutlineVariantDark = Color(0xFF49454F)
 // Nemo 品牌语义色彩 (Semantic Colors)
 // ============================================================================
 
-val NemoPrimary = Color(0xFF0E68FF)          // 主题蓝色
-val NemoSecondary = Color(0xFF4CAF50)        // 辅助绿色
-val NemoText = Color(0xFF333333)             // 主文本颜色
-val NemoTextLight = Color(0xFF888888)        // 浅文本颜色
-val NemoDanger = Color(0xFFE53935)           // 危险/错误色
-val NemoWarning = Color(0xFFFBC02D)          // 警告色
+val NemoPrimary = Color(0xFF007AFF)          // 主题经典蓝 (浅色规范交互色)
+val NemoPrimaryDark = Color(0xFF0A84FF)      // 主题自发光蓝 (深色明度补偿发光色)
+val NemoSecondary = Color(0xFF34C759)        // 辅助绿色 (规范绿)
+val NemoSecondaryDark = Color(0xFF30D158)    // 辅助绿色 (深色高荧光绿)
+val NemoText = Color(0xFF000000)             // 主文本颜色 (规范 Level 1: 100% 对比度)
+val NemoTextLight = Color(0xFF8A8A8E)        // 浅文本颜色 (规范 Level 2: 60% 对比度)
+val NemoDanger = Color(0xFFFF3B30)           // 危险/错误色 (规范红)
+val NemoDangerDark = Color(0xFFFF453A)       // 危险/错误色 (深色自发光红)
+val NemoWarning = Color(0xFFFF9500)          // 警告/提示橙 (规范橙)
+val NemoWarningDark = Color(0xFFFF9F0A)      // 警告/提示橙 (深色琥珀橙)
 val NemoGold = Color(0xFFFFD700)             // 金色/高亮色
 val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
 
@@ -216,13 +220,18 @@ object LavenderTheme : NemoTheme {
     override val Accent = Color(0xFF7C3AED)      // 选中状态边框/指示器 (紫罗兰)
 }
 
-// 容器与表面语义 (重命名自原有的 Learning/Test/App 专用色)
-val NemoSurfaceBackground = Color(0xFFF7F8FA)   // 语义化的页面背景
-val NemoSurfaceCard = Color(0xFFFFFFFF)         // 语义化的卡片容器
-val NemoSurfaceBorder = Color(0xFFE0E0E0)       // 语义化的边框颜色
+// 容器与表面语义 (对齐 Dynamic Color System 规范 Level 0 ~ Level 3)
+val NemoSurfaceBackground = Color(0xFFF2F2F7)       // 语义化页面背景 (Level 0: 微暖浅灰沉底)
+val NemoSurfaceCard = Color(0xFFFFFFFF)             // 语义化卡片容器 (Level 1: 绝对纯白上浮)
+val NemoSurfaceSubcard = Color(0xFFE5E5EA)          // 语义化二级表面 (Level 2: 下凹微灰)
+val NemoSurfaceElevated = Color(0xFFD1D1D6)         // 语义化三级表面 (Level 3: 激活态/微型部件)
+val NemoSurfaceBorder = Color(0xFFC6C6C8)           // 语义化边框/分割线 (规范标准发丝线)
 
-val NemoSurfaceBackgroundDark = Color(0xFF1C1B1F) // 深色页面背景
-val NemoSurfaceCardDark = Color(0xFF2B2930)       // 深色卡片容器
+val NemoSurfaceBackgroundDark = Color(0xFF000000)   // 深色页面背景 (Level 0: OLED 纯黑 0% 亮度)
+val NemoSurfaceCardDark = Color(0xFF1C1C1E)         // 深色卡片容器 (Level 1: 深石板灰 ~11% 亮度)
+val NemoSurfaceSubcardDark = Color(0xFF2C2C2E)      // 深色二级表面 (Level 2: 浮动石板灰 ~17% 亮度)
+val NemoSurfaceElevatedDark = Color(0xFF3A3A3C)     // 深色三级表面 (Level 3: 高亮浮层/激活态 ~23% 亮度)
+val NemoSurfaceBorderDark = Color(0xFF38383A)       // 深色边框/分割线 (规范微光灰)
 
 // Rating Guide Screen (HTML restore)
 val RatingGuideTitleText = Color(0xFF0F172A)
@@ -511,4 +520,50 @@ object FlatUiColors {
     val Orange = Color(0xFFE67E22)
     val Dark = Color(0xFF34495E)
     val Background = Color(0xFFECF0F1)
+}
+
+// ============================================================================
+// 卡片配对与测验色板 (Card Matching Palette)
+// ============================================================================
+object CardMatchingPalette {
+    val PairLight = listOf(
+        Color(0xFFF97316), // 珊瑚橙
+        Color(0xFF10B981), // 翡翠绿
+        Color(0xFF3B82F6), // 湛蓝
+        Color(0xFFF59E0B), // 琥珀黄
+        Color(0xFF8B5CF6), // 亮紫
+        Color(0xFF06B6D4), // 青空蓝
+        Color(0xFFEC4899), // 玫瑰粉
+        Color(0xFF14B8A6)  // 绿松石
+    )
+
+    val PairDark = listOf(
+        Color(0xFFFB923C), // 珊瑚橙
+        Color(0xFF34D399), // 翡翠绿
+        Color(0xFF60A5FA), // 湛蓝
+        Color(0xFFFBBF24), // 琥珀黄
+        Color(0xFFA78BFA), // 亮紫
+        Color(0xFF22D3EE), // 青空蓝
+        Color(0xFFF472B6), // 玫瑰粉
+        Color(0xFF2DD4BF)  // 绿松石
+    )
+}
+
+// ============================================================================
+// 表达与惯用句分类色板 (Expression Category Palette)
+// ============================================================================
+object ExpressionCategoryPalette {
+    val OrangeLight = Color(0xFFFF6B4A)
+    val EmeraldLight = Color(0xFF10B981)
+    val PinkLight = Color(0xFFEC4899)
+    val CyanLight = Color(0xFF06B6D4)
+    val AmberLight = Color(0xFFF59E0B)
+    val PurpleLight = Color(0xFFA855F7)
+
+    val OrangeDark = Color(0xFFFF8A65)
+    val EmeraldDark = Color(0xFF34D399)
+    val PinkDark = Color(0xFFF472B6)
+    val CyanDark = Color(0xFF22D3EE)
+    val AmberDark = Color(0xFFFBBF24)
+    val PurpleDark = Color(0xFFC084FC)
 }

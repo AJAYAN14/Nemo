@@ -24,6 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +71,7 @@ fun AbilityExitDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                val dangerColor = if (isDark) NemoDangerDark else NemoDanger
                 Button(
                     onClick = onDestroyAndExit,
                     modifier = Modifier
@@ -76,8 +79,8 @@ fun AbilityExitDialog(
                         .height(44.dp),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF3B30).copy(alpha = 0.12f),
-                        contentColor = Color(0xFFFF3B30)
+                        containerColor = dangerColor.copy(alpha = 0.12f),
+                        contentColor = dangerColor
                     ),
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {

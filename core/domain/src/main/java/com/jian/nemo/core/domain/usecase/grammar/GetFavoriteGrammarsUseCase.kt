@@ -14,7 +14,7 @@ import javax.inject.Inject
  * 1. 只返回isFavorite = true的语法
  * 2. 按ID排序
  *
- * 参考: GetFavoriteWordsUseCase
+
  */
 class GetFavoriteGrammarsUseCase @Inject constructor(
     private val grammarRepository: GrammarRepository

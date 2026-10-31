@@ -7,9 +7,10 @@
 ## 活跃经验清单
 
 | 序号 | 经验文档 | 涉及模块 / 关键词 | 核心原则与收获 | 状态 |
-| :---: | :--- | :--- | :--- | :---: |
+| :---: | :--- | :--- | :--- | :--- |
 | 01 | [会话结算统计重复计算与互斥三分类修复](file:///e:/Android/Nemo/docs/experience/01-会话结算统计重复计算与互斥三分类修复.md) | `StatsTimerDelegate`, `LearningFinishedContent`, `LearningUiState` / 结算统计、重学去重、一词两算 | **互斥分类原则**：包含关系子集必须做互斥划分，杜绝重复计算；派生统计统一收敛在 UiState 作为单一数据源。 | 活跃 |
 | 02 | [自适应应用图标扩展与SVG转换避坑](file:///e:/Android/Nemo/docs/experience/02-自适应应用图标扩展与SVG转换避坑.md) | `AppIconManager`, `ThemeSettingsScreen`, `VectorDrawable` / 自适应图标、SVG转换、动态别名切换 | **纯净矢量与原子替换原则**：SVG统一收敛为绝对坐标pathData；别名切换先起后禁以锁住桌面位置。 | 活跃 |
+| 03 | [动态色彩架构与深浅模式明度阶梯优化避坑](file:///e:/Android/Nemo/docs/experience/03-动态色彩架构与深浅模式明度阶梯优化避坑.md) | `Theme.kt`, `Color.kt`, `MainActivity.kt` / OLED纯黑、明度阶梯、光学补偿、窗口底色 | **OLED纯黑底色与表面亮度阶梯公理**：纯黑为底逐级提亮表达纵深，深浅模式强调色光学明度补偿，窗口与画布底色一体化。 | 活跃 |
 
 ---
 

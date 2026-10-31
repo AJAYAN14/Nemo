@@ -55,7 +55,7 @@ class GetLearningStatsUseCase @Inject constructor(
                 LearningActivityData(streak, totalDays)
             }
 
-            // 2. 本周学习天数 Flow (逻辑移植自 MainViewModel)
+            // 2. 本周学习天数 Flow
             val weekStudyDaysFlow = flow {
                 // 基于逻辑学习日 (EpochDay) 反推 LocalDate，确保周统计同步
                 val logicalLocalDate = java.time.LocalDate.ofEpochDay(today)
@@ -181,7 +181,7 @@ class GetLearningStatsUseCase @Inject constructor(
     private fun calculateCurrentStreak(dates: Set<Long>, today: Long): Int {
         if (dates.isEmpty()) return 0
 
-        // 与旧行为保持一致：若今天还未学习但昨天学了，连续天数仍维持到昨天。
+        // 连续天数计算：若今天还未学习但昨天学了，连续天数仍维持到昨天。
         var cursor = when {
             dates.contains(today) -> today
             dates.contains(today - 1) -> today - 1

@@ -4,8 +4,8 @@ package com.jian.nemo.core.domain.model
  * 测试结果
  * 包含测试的统计信息
  *
- * 参考: 旧项目 TestUiState
- * 参考: 阶段11文档
+
+
  */
 data class TestResult(
     /** 总题目数 */
@@ -26,10 +26,10 @@ data class TestResult(
     /** 测试耗时(毫秒) */
     val timeSpentMs: Long,
 
-    /** 测试开始时间戳（复刻旧项目） */
+    /** 测试开始时间戳 */
     val startTimeMs: Long = 0L,
 
-    /** 测试结束时间戳（复刻旧项目） */
+    /** 测试结束时间戳 */
     val endTimeMs: Long = 0L,
 
     /** 完整的题目列表 (包含用户答案) */

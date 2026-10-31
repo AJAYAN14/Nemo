@@ -114,73 +114,71 @@ fun HistoricalStatisticsScreen(
         ) {
             // 1. 汇总卡片
             item {
-                StatisticsSectionTitle("累计学习")
-                HistoricalSummaryCard(
-                    totalWords = words.size,
-                    totalGrammars = grammars.size,
-                    onWordsClick = { if (words.isNotEmpty()) showWordDialog = true },
-                    onGrammarsClick = { if (grammars.isNotEmpty()) showGrammarDialog = true }
-                )
+                Column {
+                    StatisticsSectionTitle("累计学习")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    HistoricalSummaryCard(
+                        totalWords = words.size,
+                        totalGrammars = grammars.size,
+                        onWordsClick = { if (words.isNotEmpty()) showWordDialog = true },
+                        onGrammarsClick = { if (grammars.isNotEmpty()) showGrammarDialog = true }
+                    )
+                }
             }
 
             // 2. 单词列表 (复用 StatisticsListCard)
             item {
-                StatisticsSectionTitle("已学单词 (${words.size})")
-            }
-
-            if (words.isNotEmpty()) {
-                item {
-                    // Reuse the public component from StatisticsScreen.kt
-                    StatisticsListCard(
-                        items = words,
-                        onItemClick = { wordId ->
-                            DetailContextHolder.setWordContext(words.map { it.id })
-                            onNavigateToWordDetail(wordId)
-                        },
-                        isWord = true,
-                        showSourceBadge = false
-                    )
-                }
-            } else {
-                item {
-                    EmptyStatisticsState(
-                        message = "暂无单词学习记录",
-                        subtitle = "去学习词汇，积累你的专属词库吧",
-                        icon = Icons.Rounded.Translate,
-                        plumpIcon = PlumpIcon.Languages,
-                        accentColor = NemoSecondary,
-                        isoluminantColor = IsoluminantPalette.EmeraldGreen
-                    )
+                Column {
+                    StatisticsSectionTitle("已学单词 (${words.size})")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (words.isNotEmpty()) {
+                        StatisticsListCard(
+                            items = words,
+                            onItemClick = { wordId ->
+                                DetailContextHolder.setWordContext(words.map { it.id })
+                                onNavigateToWordDetail(wordId)
+                            },
+                            isWord = true,
+                            showSourceBadge = false
+                        )
+                    } else {
+                        EmptyStatisticsState(
+                            message = "暂无单词学习记录",
+                            subtitle = "去学习词汇，积累你的专属词库吧",
+                            icon = Icons.Rounded.Translate,
+                            plumpIcon = PlumpIcon.Languages,
+                            accentColor = NemoSecondary,
+                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                        )
+                    }
                 }
             }
 
             // 3. 语法列表 (复用 StatisticsListCard)
             item {
-                StatisticsSectionTitle("已学语法 (${grammars.size})")
-            }
-
-            if (grammars.isNotEmpty()) {
-                item {
-                    StatisticsListCard(
-                        items = grammars,
-                        onItemClick = { grammarId ->
-                            DetailContextHolder.setGrammarContext(grammars.map { it.id })
-                            onNavigateToGrammarDetail(grammarId)
-                        },
-                        isWord = false,
-                        showSourceBadge = false
-                    )
-                }
-            } else {
-                item {
-                    EmptyStatisticsState(
-                        message = "暂无语法学习记录",
-                        subtitle = "去学习语法，掌握核心句型表达吧",
-                        icon = Icons.Rounded.Checklist,
-                        plumpIcon = PlumpIcon.ListChecks,
-                        accentColor = NemoSecondary,
-                        isoluminantColor = IsoluminantPalette.EmeraldGreen
-                    )
+                Column {
+                    StatisticsSectionTitle("已学语法 (${grammars.size})")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (grammars.isNotEmpty()) {
+                        StatisticsListCard(
+                            items = grammars,
+                            onItemClick = { grammarId ->
+                                DetailContextHolder.setGrammarContext(grammars.map { it.id })
+                                onNavigateToGrammarDetail(grammarId)
+                            },
+                            isWord = false,
+                            showSourceBadge = false
+                        )
+                    } else {
+                        EmptyStatisticsState(
+                            message = "暂无语法学习记录",
+                            subtitle = "去学习语法，掌握核心句型表达吧",
+                            icon = Icons.Rounded.Checklist,
+                            plumpIcon = PlumpIcon.ListChecks,
+                            accentColor = NemoSecondary,
+                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                        )
+                    }
                 }
             }
         }
@@ -345,9 +343,6 @@ fun StatItem(
     }
 }
 
-/**
- * Premium Card (Local Copy for independence)
- */
 @Composable
 private fun PremiumCard(
     onClick: (() -> Unit)? = null,
@@ -367,7 +362,7 @@ private fun PremiumCard(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val containerColor = MaterialTheme.colorScheme.surface
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
 
     Surface(

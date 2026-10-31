@@ -19,7 +19,7 @@ import javax.inject.Inject
  * - MasterWordUseCase: 首次学习，quality固定为3
  * - ReviewWordUseCase: 复习，quality由用户选择(0-5)
  *
- * 参考: 阶段09文档第394-442行
+
  */
 class ReviewWordUseCase @Inject constructor(
     private val wordRepository: WordRepository,

@@ -21,7 +21,7 @@ import javax.inject.Inject
  * 3. 更新数据库
  * 4. 更新今日学习记录
  *
- * 参考: MasterWordUseCase
+
  */
 class MasterGrammarUseCase @Inject constructor(
     private val grammarRepository: GrammarRepository,

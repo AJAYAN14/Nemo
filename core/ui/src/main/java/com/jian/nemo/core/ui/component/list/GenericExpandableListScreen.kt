@@ -27,7 +27,7 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
  * 通用可展开列表界面
  *
  * 用于单词列表、语法列表、跳过词列表等按等级分组显示的界面
- * 参考旧项目: old-nemo/ui/component/lists/GenericExpandableListScreen.kt
+
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

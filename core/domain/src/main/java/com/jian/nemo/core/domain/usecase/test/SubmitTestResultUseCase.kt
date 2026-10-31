@@ -15,8 +15,8 @@ import javax.inject.Inject
  *
  * 将错题记录到错题本
  *
- * 参考: 旧项目 QuestionLogic.kt submitAnswer()
- * 参考: 阶段11文档
+
+
  */
 class SubmitTestResultUseCase @Inject constructor(
     private val wrongAnswerRepository: WrongAnswerRepository,

@@ -109,8 +109,8 @@ fun FavoritesScreen(
                 .layerBackdrop(backdrop)
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    start = 20.dp,
-                    end = 20.dp,
+                    start = 16.dp,
+                    end = 16.dp,
                     top = statusBarTop + 60.dp + 16.dp,
                     bottom = navBarBottom + 24.dp
                 )
@@ -307,9 +307,6 @@ fun FavoriteCategoryCard(
     }
 }
 
-/**
- * Premium Card Composable (Copied for consistency with MistakesScreen)
- */
 @Composable
 private fun PremiumCard(
     onClick: (() -> Unit)? = null,
@@ -329,7 +326,7 @@ private fun PremiumCard(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val containerColor = MaterialTheme.colorScheme.surface
     val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
 
     Surface(

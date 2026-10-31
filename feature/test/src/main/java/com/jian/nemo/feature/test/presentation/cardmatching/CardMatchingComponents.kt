@@ -46,22 +46,16 @@ import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import com.jian.nemo.core.designsystem.theme.CardMatchingPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 
 
-private val DISTINCT_PAIR_PALETTE = listOf(
-    Color(0xFFF97316), // 1. 珊瑚橙 (Orange)
-    Color(0xFF10B981), // 2. 翡翠亮绿 (Green)
-    Color(0xFF3B82F6), // 3. 湛蓝色 (Blue)
-    Color(0xFFF59E0B), // 4. 琥珀金黄 (Yellow/Orange)
-    Color(0xFF8B5CF6), // 5. 亮罗兰紫 (Purple)
-    Color(0xFF06B6D4), // 6. 青空蓝 (Cyan)
-    Color(0xFFEC4899), // 7. 玫瑰粉 (Pink)
-    Color(0xFF14B8A6)  // 8. 绿松石 (Teal)
-)
-
+@Composable
 private fun getPairColor(pairIndex: Int): Color {
-    return DISTINCT_PAIR_PALETTE[Math.abs(pairIndex) % DISTINCT_PAIR_PALETTE.size]
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val palette = if (isDark) CardMatchingPalette.PairDark else CardMatchingPalette.PairLight
+    return palette[Math.abs(pairIndex) % palette.size]
 }
 
 /**

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * 语法 JSON 数据传输对象（新格式）
  *
  * 基于新的分级语法数据结构
- * 参考: app/src/main/assets/grammar/N1.json ~ N5.json
+
  */
 @Serializable
 data class GrammarDto(

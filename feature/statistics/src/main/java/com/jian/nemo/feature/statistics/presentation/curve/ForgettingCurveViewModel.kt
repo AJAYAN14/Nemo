@@ -157,7 +157,7 @@ class ForgettingCurveViewModel @Inject constructor(
                         if (grammar.stability > 0f) allStabilities.add(grammar.stability)
                     }
 
-                    // 与 ActivityHeatmap 严格保持一致的四级分桶
+                    // 四级分桶计算
                     val youngEarly = allStabilities.filter { it < 3.0f }
                     val youngDev = allStabilities.filter { it in 3.0f..<21.0f }
                     val mature = allStabilities.filter { it in 21.0f..<90.0f }

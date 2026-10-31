@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * - 数据库列名保持下划线格式(与旧项目一致)，Kotlin属性使用驼峰命名
+ * - 数据库列名使用下划线格式，Kotlin属性使用驼峰命名
  * - 使用 @ColumnInfo 映射数据库列名，如: example_1 → example1
  */
 @Entity(

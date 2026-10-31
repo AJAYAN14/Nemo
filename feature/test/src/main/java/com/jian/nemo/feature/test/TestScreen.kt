@@ -108,7 +108,7 @@ fun TestScreen(
         )
     }
 
-    // 处理系统返回键（复刻旧项目TestScreen.kt L107-109）
+    // 处理系统返回键
     androidx.activity.compose.BackHandler(
         enabled = uiState.isTestActive && !uiState.showExitConfirmation && !uiState.showPauseDialog
     ) {

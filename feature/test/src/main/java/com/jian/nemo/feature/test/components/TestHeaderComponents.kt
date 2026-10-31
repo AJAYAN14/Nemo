@@ -25,6 +25,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
@@ -35,7 +38,7 @@ import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.feature.test.presentation.theme.TestDanger
+import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.kyant.backdrop.Backdrop
 
 import androidx.compose.ui.graphics.lerp
@@ -71,8 +74,8 @@ fun TestHeaderCenterContent(
     }
 
     // 同色系目标颜色 (Red Tonal Scale：浅红半透背景 + 深红文字，兼顾警报与宝石通透质感)
-    val targetBg = if (isDarkTheme) Color(0xFF450A0A).copy(alpha = 0.45f) else Color(0xFFFEE2E2).copy(alpha = 0.65f)
-    val targetTextColor = if (isDarkTheme) Color(0xFFFCA5A5) else Color(0xFF991B1B)
+    val targetBg = if (isDarkTheme) TestResultPalette.WrongCardBgDark.copy(alpha = 0.45f) else TestResultPalette.WrongCardBgLight.copy(alpha = 0.65f)
+    val targetTextColor = if (isDarkTheme) NemoDangerDark else NemoDanger
 
     // 动态平滑插值
     val animatedBgColor = lerp(defaultBg, targetBg, alertFraction)

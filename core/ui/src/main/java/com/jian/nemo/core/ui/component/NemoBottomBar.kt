@@ -85,8 +85,8 @@ fun NemoBottomBar(
     // 根据主题判断深色/浅色模式
     val isDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5
     
-    // 原版 LiquidGlass accentColor
-    val accentColor = if (isDarkTheme) Color(0xFF0091FF) else Color(0xFF0088FF)
+    // 原版 LiquidGlass accentColor 对齐规范动态蓝 (浅色 #007AFF, 深色 #0A84FF)
+    val accentColor = MaterialTheme.colorScheme.primary
     
     // 胶囊容器背景色设置 (对齐原版 LiquidGlass)
     val containerColor = if (isDarkTheme) 
@@ -94,9 +94,9 @@ fun NemoBottomBar(
     else 
         Color(0xFFFAFAFA).copy(alpha = 0.4f)
         
-    // 边框描边颜色
+    // 边框描边颜色 (规范 5.2 微光发丝线)
     val borderColor = if (isDarkTheme)
-        Color.White.copy(alpha = 0.12f)
+        Color.White.copy(alpha = 0.10f)
     else
         Color.White.copy(alpha = 0.45f)
 

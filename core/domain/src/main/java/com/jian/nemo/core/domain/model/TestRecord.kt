@@ -4,7 +4,7 @@ package com.jian.nemo.core.domain.model
  * 测试记录
  *
  * 对应: TestRecordEntity
- * 参考: 旧项目 TestRecord
+
  */
 data class TestRecord(
     val id: Int = 0,

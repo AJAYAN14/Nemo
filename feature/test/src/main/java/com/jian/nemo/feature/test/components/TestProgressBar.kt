@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.feature.test.presentation.theme.TestPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
 
 @Composable
 fun TestProgressBar(progress: Float, text: String) {
@@ -25,7 +25,7 @@ fun TestProgressBar(progress: Float, text: String) {
                 .fillMaxWidth()
                 .height(10.dp) // 10dp height
                 .clip(RoundedCornerShape(5.dp)), // Rounded edges
-            color = TestPrimary,
+            color = NemoPrimary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
         Spacer(modifier = Modifier.height(4.dp))

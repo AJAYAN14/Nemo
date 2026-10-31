@@ -41,7 +41,7 @@ data class LearningUiState(
 
     // 学习设置
     val selectedLevel: String = "GLOBAL",
-    val dailyGoal: Int = 20,  // 默认值改为20，与旧项目保持一致
+    val dailyGoal: Int = 20,  // 每日目标默认值 20
     val completedToday: Int = 0,
 
     // SRS State

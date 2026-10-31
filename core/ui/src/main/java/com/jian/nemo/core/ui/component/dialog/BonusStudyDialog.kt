@@ -445,7 +445,7 @@ fun BonusStudyDialog(
 }
 
 /**
- * 兼容旧调用的单参数重载
+ * 预设奖励学习弹窗单回调重载
  */
 @Composable
 fun BonusStudyDialog(

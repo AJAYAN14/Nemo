@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.feature.test.presentation.theme.TestDanger
+import com.jian.nemo.core.designsystem.theme.NemoDanger
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -38,7 +38,7 @@ import com.jian.nemo.core.ui.component.common.NemoMenuItem
 
 /**
  * 测试头部组件（包含返回按钮、倒计时和收藏按钮）
- * 复刻旧项目 com.jian.nemo.ui.screen.test.components.TestHeader
+
  */
 import com.jian.nemo.core.domain.model.Grammar
 
@@ -79,7 +79,7 @@ fun TestHeader(
             val isRunningOut = timeRemainingSeconds < 60
             Text(
                 text = "%02d:%02d".format(minutes, seconds),
-                color = if (isRunningOut) TestDanger else MaterialTheme.colorScheme.onBackground,
+                color = if (isRunningOut) NemoDanger else MaterialTheme.colorScheme.onBackground,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 8.dp),
                 fontFamily = FontFamily.Monospace

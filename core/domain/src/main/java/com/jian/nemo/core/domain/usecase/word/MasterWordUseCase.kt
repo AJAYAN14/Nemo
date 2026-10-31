@@ -20,11 +20,6 @@ import javax.inject.Inject
  * 2. 调用 SRS 算法计算新状态（基于重置时间确定的“学习日”）
  * 3. 更新数据库
  * 4. 更新今日学习记录
- *
- * 参考:
- * - 旧项目: MasterWordUseCase.kt (第16-55行)
- * - 实施计划: 06-单词Domain层.md (第291-351行)
- * - 架构规范: rules.md (第248-267行)
  */
 class MasterWordUseCase @Inject constructor(
     private val wordRepository: WordRepository,
@@ -55,8 +50,7 @@ class MasterWordUseCase @Inject constructor(
             val today = DateTimeUtils.getLearningDay(resetHour)
             val srsResult = srsCalculator.calculate(word, quality, today)
 
-            // 3. 更新单词状态
-            // 参考: 旧项目 MasterWordUseCase.kt 第29-32行 - 移除跳过标记
+            // 3. 更新单词状态（掌握后取消跳过标记）
             val updatedWord = word.copy(
                 repetitionCount = srsResult.repetitionCount,
                 stability = srsResult.stability,
@@ -65,19 +59,16 @@ class MasterWordUseCase @Inject constructor(
                 nextReviewDate = srsResult.nextReviewDate,
                 lastReviewedDate = srsResult.lastReviewedDate,
                 firstLearnedDate = srsResult.firstLearnedDate ?: word.firstLearnedDate,
-                isSkipped = false,  // 掌握后取消跳过标记
+                isSkipped = false,
                 lastModifiedTime = DateTimeUtils.getCurrentCompensatedMillis()
             )
 
             // 4. 保存到数据库
             wordRepository.updateWord(updatedWord).onSuccess {
-                // 5. 更新学习记录（这里 repository 内部已经处理了日期统一）
-                // 参考: 旧项目 MasterWordUseCase.kt 第38行
+                // 5. 更新学习记录（Repository 内部已处理日期统一）
                 if (word.repetitionCount == 0 && updatedWord.repetitionCount > 0) {
-                    // 首次学习
                     studyRecordRepository.incrementLearnedWords()
                 } else {
-                    // 复习
                     studyRecordRepository.incrementReviewedWords()
                 }
             }
@@ -85,7 +76,6 @@ class MasterWordUseCase @Inject constructor(
             Result.Success(updatedWord)
 
         } catch (e: Exception) {
-            // TODO: 使用结构化日志框架记录异常
             Result.Error(e)
         }
     }

@@ -174,7 +174,6 @@ class MainActivity : ComponentActivity() {
 
             NemoTheme(
                 darkTheme = isDarkTheme,
-                dynamicColor = false, // 禁用动态取色以强制使用品牌色
                 themeColor = themeColorLong?.let { Color(it.toULong()) }
             ) {
                 androidx.compose.runtime.CompositionLocalProvider(
@@ -427,6 +426,11 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
 
             // 沉浸式：导航栏透明，控制图标外观
             insetsController.isAppearanceLightNavigationBars = useDarkIcons
+
+            // 同步窗口原生底色 (Level 0: 浅色 #F2F2F7 / 深色 #000000)，消除滑动边缘与冷启动穿帮
+            val isDark = backgroundColor.luminance() < 0.5f
+            val windowBg = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.rgb(242, 242, 247)
+            it.decorView.setBackgroundColor(windowBg)
         }
 
         activity?.let {

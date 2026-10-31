@@ -17,10 +17,6 @@ import javax.inject.Inject
  * 业务规则:
  * 1. 统计今日首次学习的单词数量
  * 2. 这里的“今日”遵循设置中的重置时间（例如凌晨4点之前仍算作前一天）
- *
- * 参考:
- * - 旧项目: 在MasterWordUseCase.kt中使用 getTodayLearnedWordsCount() (第63行)
- * - 实施计划: 06-单词Domain层.md Use Cases列表
  */
 class GetTodayLearnedWordsCountUseCase @Inject constructor(
     private val wordRepository: WordRepository,

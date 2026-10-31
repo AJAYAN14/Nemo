@@ -5,9 +5,9 @@ import com.jian.nemo.core.domain.model.Word
 
 /**
  * 手打题生成器
- * 完全复刻旧项目 com.jian.nemo.ui.viewmodel.logic.TestManager.generateTypingQuestions
+ * 负责将单词数据转化为打字评测题型
  *
- * 依据：E:\AndroidProjects\Nemo\_reference\old-nemo\app\src\main\java\com\jian\nemo\ui\viewmodel\logic\TestManager.kt (L1745-1818)
+
  *
  * 支持6种题型组合：
  *   1: 题目=释义, 答案=假名
@@ -36,7 +36,7 @@ class TypingQuestionGenerator {
         val shuffledWords = words.shuffled()
 
         for (word in shuffledWords.take(count)) {
-            // 随机选择题型（复刻旧项目 L1757）
+            // 随机选择题型
             val questionType = questionTypes.random()
 
             // 根据题型获取题目文本和正确答案
@@ -58,7 +58,7 @@ class TypingQuestionGenerator {
 
     /**
      * 根据题型获取题目文本和正确答案
-     * 复刻旧项目 L1760-1813 的逻辑
+
      *
      * @param word 单词对象
      * @param questionType 题型（1-6）

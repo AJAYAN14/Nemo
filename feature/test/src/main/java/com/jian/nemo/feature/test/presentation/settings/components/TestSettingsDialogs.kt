@@ -5,6 +5,8 @@ import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
 
 /**
@@ -26,9 +28,9 @@ fun CustomQuestionCountDialog(
 
     CommonConfigDialog(
         headerIcon = Icons.Rounded.FormatListNumbered,
-        headerIconTint = Color(0xFF0088FF),
-        headerIconBgColor = Color(0xFFE6F4FF),
-        headerIconBgColorDark = Color(0xFF102A45),
+        headerIconTint = NemoPrimary,
+        headerIconBgColor = NemoCategoryColors.CardVerbBgLight,
+        headerIconBgColorDark = NemoCategoryColors.CardVerbBgDark,
         title = "自定义题数",
         subtitle = "设置本次测试的题目数量",
         initialValue = initialValue,
@@ -37,7 +39,7 @@ fun CustomQuestionCountDialog(
         presets = listOf(5, 10, 15, 20, 30, 50),
         presetLabelFormatter = { "${it}题" },
         confirmText = "保存配置",
-        confirmButtonColor = Color(0xFF0088FF),
+        confirmButtonColor = NemoPrimary,
         onDismissRequest = onDismiss,
         onConfirm = onConfirm
     )
@@ -57,9 +59,9 @@ fun CustomTimeLimitDialog(
 
     CommonConfigDialog(
         headerIcon = Icons.Rounded.Timer,
-        headerIconTint = Color(0xFF8B5CF6),
-        headerIconBgColor = Color(0xFFF3E8FF),
-        headerIconBgColorDark = Color(0xFF2E1065),
+        headerIconTint = NemoCategoryColors.CardNounTextLight,
+        headerIconBgColor = NemoCategoryColors.CardNounBgLight,
+        headerIconBgColorDark = NemoCategoryColors.CardNounBgDark,
         title = "自定义时长",
         subtitle = "设置测试时间限制 (分钟)，0为不限时",
         initialValue = initialValue,
@@ -68,7 +70,7 @@ fun CustomTimeLimitDialog(
         presets = listOf(5, 10, 15, 20, 30, 60),
         presetLabelFormatter = { if (it == 0) "不限时" else "${it}分钟" },
         confirmText = "保存配置",
-        confirmButtonColor = Color(0xFF8B5CF6),
+        confirmButtonColor = NemoCategoryColors.CardNounTextLight,
         onDismissRequest = onDismiss,
         onConfirm = onConfirm
     )

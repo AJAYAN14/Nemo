@@ -122,11 +122,11 @@ fun HomeScreen(
     val isDark = colorScheme.background.luminance() < 0.5f
     
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else BentoColors.Surface
-    val textMain = if (isDark) colorScheme.onSurface else BentoColors.TextMain
-    val textSub = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
-    val textMuted = if (isDark) colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else BentoColors.TextMuted
-    val dividerColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else BentoColors.BgBase
+    val surfaceColor = colorScheme.surface
+    val textMain = colorScheme.onSurface
+    val textSub = colorScheme.onSurfaceVariant
+    val textMuted = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val dividerColor = colorScheme.outlineVariant.copy(alpha = 0.2f)
     val iconBgOrange = if (isDark) BentoColors.AccentOrange.copy(alpha = 0.15f) else BentoColors.IconBgOrange
     val iconBgGreen = if (isDark) BentoColors.AccentGreen.copy(alpha = 0.15f) else BentoColors.IconBgGreen
     val iconBgBlue = if (isDark) BentoColors.AccentBlue.copy(alpha = 0.15f) else BentoColors.IconBgBlue
@@ -215,8 +215,7 @@ fun HomeScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                        .padding(bottom = 20.dp),
+                        .padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -284,8 +283,8 @@ fun HomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val badgeBgColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else BentoColors.BgBase
-                            val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else BentoColors.TextMain
+                            val badgeBgColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant
+                            val textColor = MaterialTheme.colorScheme.onSurface
                             
                             StreakBadgeWithEasterEgg(
                                 streakDays = uiState.stats.dailyStreak,

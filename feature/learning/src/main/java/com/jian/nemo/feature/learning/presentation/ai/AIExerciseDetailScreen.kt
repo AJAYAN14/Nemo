@@ -39,7 +39,7 @@ import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 /**
  * AI 练习详情全屏组件
  * 采用全屏 Surface 覆盖层实现，以获得完美的 Edge-to-Edge 沉浸式效果。
- * 设计参考 RatingGuideScreen。
+
  */
 @Composable
 fun AIExerciseDetailDialog(

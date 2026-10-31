@@ -17,7 +17,7 @@ import androidx.compose.material3.MaterialTheme
  * JLPT标签组件
  *
  * 用于显示单词或语法的等级标签
- * 参考旧项目: old-nemo/ui/component/tags/Tags.kt
+
  */
 @Composable
 fun JlptTag(level: String) {

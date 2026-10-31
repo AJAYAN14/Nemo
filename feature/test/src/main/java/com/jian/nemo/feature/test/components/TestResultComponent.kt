@@ -42,6 +42,14 @@ import android.annotation.SuppressLint
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
+import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.NemoDangerDark
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
+import com.jian.nemo.core.designsystem.theme.NemoSecondary
+import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
+import com.jian.nemo.core.designsystem.theme.NemoWarning
+import com.jian.nemo.core.designsystem.theme.NemoWarningDark
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import androidx.compose.ui.unit.sp
 import nl.dionsegijn.konfetti.compose.KonfettiView
@@ -145,7 +153,7 @@ fun TestResultComponent(
             )
 
             // 右下角辅助光晕 (紫色或蓝色，用来丰富背景层的冷暖对比与空间通透感)
-            val secondaryAuraColor = if (isDark) Color(0xFF8B5CF6) else Color(0xFF60A5FA)
+            val secondaryAuraColor = if (isDark) TestResultPalette.GrammarAccentDark else TestResultPalette.WordAccentDark
             drawCircle(
                 brush = androidx.compose.ui.graphics.Brush.radialGradient(
                     colors = listOf(secondaryAuraColor.copy(alpha = if (isDark) 0.25f else 0.15f), Color.Transparent),
@@ -317,9 +325,9 @@ fun TestResultComponent(
         }
 
         // 底部操作按钮 - 使用项目通用 LiquidButton 液态按钮
-        val indigo600 = Color(0xFF4F46E5)
-        val slate700 = Color(0xFF334155)
-        val slate200 = Color(0xFFE2E8F0)
+
+
+
         val buttonShape = RoundedCornerShape(24.dp)
 
         Row(
@@ -333,14 +341,14 @@ fun TestResultComponent(
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp),
-                backgroundColor = if (isDark) Color(0xFF334155) else slate200,
+                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant,
                 shape = buttonShape,
                 isInteractive = true,
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "返回菜单",
-                    color = if (isDark) Color.White else slate700,
+                    color = if (isDark) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
                 )
@@ -351,7 +359,7 @@ fun TestResultComponent(
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp),
-                backgroundColor = indigo600,
+                backgroundColor = if (isDark) NemoPrimaryDark else NemoPrimary,
                 shape = buttonShape,
                 isInteractive = true,
                 contentAlignment = Alignment.Center
@@ -449,7 +457,7 @@ fun CircularProgressBar(
 
 /**
  * 统计卡片组件
- * 完全复刻旧项目 StatCard
+ * 统计卡片组件展示
  */
 @Composable
 fun StatCard(
@@ -656,12 +664,12 @@ fun TodaySummarySection(
  */
 @Composable
 fun getAccuracyColor(accuracy: Int): Color {
-    // 使用更高饱和度与明度来解决原先暗淡的问题
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     return when {
-        accuracy >= 90 -> Color(0xFF10B981) // 翡翠绿 (Emerald 500)
-        accuracy >= 80 -> Color(0xFF34D399) // 翠绿 (Emerald 400)
-        accuracy >= 60 -> Color(0xFFFBBF24) // 琥珀黄 (Amber 400)
-        else -> Color(0xFFEF4444) // 警示红 (Red 500)
+        accuracy >= 90 -> if (isDark) NemoSecondaryDark else NemoSecondary
+        accuracy >= 80 -> if (isDark) NemoSecondaryDark else NemoSecondary
+        accuracy >= 60 -> if (isDark) NemoWarningDark else NemoWarning
+        else -> if (isDark) NemoDangerDark else NemoDanger
     }
 }
 

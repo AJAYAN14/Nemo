@@ -3,7 +3,7 @@ package com.jian.nemo.core.domain.model
 /**
  * 学习记录领域模型
  *
- * 参考: _reference/old-nemo/.../StudyRecord.kt
+
  *
  * 用于记录用户每日的学习情况
  */

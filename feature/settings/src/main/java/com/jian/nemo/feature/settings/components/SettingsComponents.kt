@@ -75,7 +75,7 @@ fun PremiumCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val borderColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.08f) else NemoNeutrals.Gray100
 
     Surface(
         shape = RoundedCornerShape(24.dp),
@@ -272,9 +272,10 @@ fun SquircleSettingItem(
         }
 
         if (showDivider) {
+            val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
             HorizontalDivider(
                 modifier = Modifier.padding(start = 74.dp), // Align with text start
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                color = if (isDark) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                 thickness = 0.5.dp
             )
         }
