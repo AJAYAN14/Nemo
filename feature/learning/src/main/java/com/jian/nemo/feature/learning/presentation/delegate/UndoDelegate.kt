@@ -1,5 +1,8 @@
 package com.jian.nemo.feature.learning.presentation.delegate
 
+import android.content.Context
+import androidx.annotation.StringRes
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
@@ -36,7 +39,14 @@ class UndoDelegate(
     private val stateUpdater: StateUpdater,
     private val scope: CoroutineScope,
     private val queueNavigationDelegate: QueueNavigationDelegate,
+    private val context: Context? = null,
 ) {
+    private fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+        return context?.getString(resId, *formatArgs) ?: when (resId) {
+            R.string.learning_undo_err_format -> "\u64a4\u9500\u5931\u8d25: ${formatArgs[0]}"
+            else -> ""
+        }
+    }
 
     /** 保存评分前快照（原 VM.saveUndoSnapshot） */
     fun saveUndoSnapshot() {
@@ -157,7 +167,7 @@ class UndoDelegate(
                 stateUpdater.update {
                     it.copy(
                         status = LearningStatus.Learning,
-                        error = "撤销失败: ${e.message}"
+                        error = getString(R.string.learning_undo_err_format, e.message ?: "")
                     )
                 }
                 syncUndoAvailability()

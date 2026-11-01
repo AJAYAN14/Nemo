@@ -11,7 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
@@ -362,7 +363,7 @@ private fun ReadyView(
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             colors = CardDefaults.cardColors(containerColor = wordCardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
@@ -409,7 +410,7 @@ private fun ReadyView(
                             modifier = Modifier
                                 .width(6.dp)
                                 .fillMaxHeight(activeScale)
-                                .clip(RoundedCornerShape(3.dp))
+                                .clip(RoundedRectangle(3.dp))
                                 .background(
                                     Brush.verticalGradient(
                                         colors = listOf(IosColors.Indigo, IosColors.Teal)
@@ -514,7 +515,7 @@ private fun ReadyView(
                 // 3. 题目专注防作弊卡片 (作弊锁)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedRectangle(24.dp),
                     colors = CardDefaults.cardColors(containerColor = qCardBg),
                     border = BorderStroke(1.dp, qCardBorderColor)
                 ) {
@@ -584,7 +585,7 @@ private fun ReadyView(
                 onClick = { viewModel.previousQuestion() },
                 enabled = !isFirst,
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 border = BorderStroke(
                     1.dp,
                     if (isFirst) {
@@ -612,7 +613,7 @@ private fun ReadyView(
                 onClick = { viewModel.nextQuestion() },
                 enabled = isAnswered,
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isLast) IosColors.Green else IosColors.Indigo,
                     disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray200
@@ -655,7 +656,7 @@ private fun ReadyView(
                 if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight
             },
             dragHandle = null,
-            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+            shape = UnevenRoundedRectangle(topStart = 32.dp, topEnd = 32.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp).navigationBarsPadding()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -718,7 +719,7 @@ private fun ReadyView(
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isCorrect) IosColors.Green else IosColors.Red
                     )
@@ -762,9 +763,9 @@ private fun OptionButton(
         modifier = modifier
             .height(72.dp)
             .softCardShadow(borderRadius = 18.dp, isDark = isDark)
-            .clip(RoundedCornerShape(18.dp))
+            .clip(RoundedRectangle(18.dp))
             .clickable(enabled = !isAnswered) { onClick() }
-            .border(2.dp, borderColor, RoundedCornerShape(18.dp)),
+            .border(2.dp, borderColor, RoundedRectangle(18.dp)),
         color = bgColor,
         shadowElevation = 0.dp
     ) {
@@ -832,7 +833,7 @@ private fun ResultView(
         Button(
             onClick = onRegenerate,
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedRectangle(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IosColors.Indigo)
         ) {
             Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -843,7 +844,7 @@ private fun ResultView(
         OutlinedButton(
             onClick = onRestart,
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
-            shape = RoundedCornerShape(28.dp)
+            shape = RoundedRectangle(28.dp)
         ) {
             Text(stringResource(R.string.test_listening_btn_back_to_levels), fontSize = 16.sp)
         }

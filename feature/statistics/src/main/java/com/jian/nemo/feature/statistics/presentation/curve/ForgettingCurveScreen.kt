@@ -15,7 +15,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,9 +36,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.designsystem.theme.ChartColors
+import com.jian.nemo.core.designsystem.theme.ActivityRingPalette
 import com.jian.nemo.core.designsystem.theme.StatisticsPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
@@ -265,7 +264,7 @@ private fun CurveStageSelector(
                         view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
                     }
                 },
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedRectangle(18.dp),
                 color = backgroundColor,
                 border = BorderStroke(1.dp, borderColor),
                 enabled = isAvailable,
@@ -329,7 +328,7 @@ private fun CurveLegend(
     } else {
         selectedStage.themeColor
     }
-    val stdColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
+    val stdColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen
     val alertColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
     val thresholdPercent = (alertThreshold * 100).roundToInt()
     Column(
@@ -391,7 +390,7 @@ private fun LegendItem(
                 modifier = Modifier
                     .width(20.dp)
                     .height(2.dp)
-                    .background(color, RoundedCornerShape(1.dp))
+                    .background(color, RoundedRectangle(1.dp))
             )
         }
         Text(
@@ -412,14 +411,14 @@ private fun CurveAlertCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val tipBgColor = if (isDark) {
-        NemoNeutrals.Gray800
+        MaterialTheme.colorScheme.surfaceContainer
     } else {
-        NemoNeutrals.Gray100
+        ActivityRingPalette.SurfaceWarmLight
     }
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = tipBgColor
     ) {
         if (alertInsight != null) {
@@ -446,7 +445,7 @@ private fun CurveAlertCard(
                     // 跌破动态临界天数徽标
                     val thresholdPercent = (alertInsight.alertThreshold * 100).roundToInt()
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedRectangle(8.dp),
                         color = alertInsight.color.copy(alpha = 0.12f)
                     ) {
                         Text(
@@ -473,10 +472,10 @@ private fun CurveAlertCard(
                     val delta = target - actual
                     val actualPercent = (actual * 100).roundToInt()
                     val (label, color) = when {
-                        abs(delta) <= 0.02f -> stringResource(R.string.stats_curve_status_stable) to ChartColors.FreshGreen
+                        abs(delta) <= 0.02f -> stringResource(R.string.stats_curve_status_stable) to StatisticsPalette.MatureGreen
                         delta > 0.02f && target <= 0.90f -> stringResource(R.string.stats_curve_status_high_load) to StatisticsPalette.CompositeOrange
                         target >= 0.92f && actual < target -> stringResource(R.string.stats_curve_status_monitoring) to StatisticsPalette.EarlyRed
-                        actual - target > 0.02f -> stringResource(R.string.stats_curve_status_solid) to ChartColors.FreshGreen
+                        actual - target > 0.02f -> stringResource(R.string.stats_curve_status_solid) to StatisticsPalette.MatureGreen
                         target <= 0.85f -> stringResource(R.string.stats_curve_status_light_maintenance) to StatisticsPalette.DevelopingBlue
                         else -> stringResource(R.string.stats_curve_status_adaptive_tuning) to MaterialTheme.colorScheme.primary
                     }
@@ -486,7 +485,7 @@ private fun CurveAlertCard(
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedRectangle(10.dp),
                     color = if (isDark) Color.White.copy(alpha = 0.06f) else Color.Black.copy(alpha = 0.04f),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -505,7 +504,7 @@ private fun CurveAlertCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
+                            shape = RoundedRectangle(6.dp),
                             color = statusColor.copy(alpha = 0.15f)
                         ) {
                             Text(
@@ -594,7 +593,7 @@ private fun TimeRangeSelector(
     val ranges = remember { CurveTimeRange.entries }
     val selectedIndex = ranges.indexOf(selectedRange).coerceAtLeast(0)
 
-    // 4 档时间跨度色彩映射
+    // 4 档时间跨度色彩映射（严格对齐 docs/design/color-palette 系统动态色彩：蓝/绿/橙/紫）
     val rangeColors = remember(isPlumpDuo) {
         if (isPlumpDuo) {
             mapOf(
@@ -605,15 +604,15 @@ private fun TimeRangeSelector(
             )
         } else {
             mapOf(
-                CurveTimeRange.SHORT to IosColors.Blue,   // 7天: 经典蓝
-                CurveTimeRange.MEDIUM to IosColors.Green,  // 30天: 鲜活绿
-                CurveTimeRange.LONG to IosColors.Orange,    // 90天: 活力橙
-                CurveTimeRange.EXTENDED to IosColors.Purple // 365天: 高级紫
+                CurveTimeRange.SHORT to StatisticsPalette.DevelopingBlue,   // 7天: 系统蓝 (#007AFF)
+                CurveTimeRange.MEDIUM to StatisticsPalette.MatureGreen,     // 30天: 系统绿 (#34C759)
+                CurveTimeRange.LONG to StatisticsPalette.CompositeOrange,   // 90天: 系统橙 (#FF9500)
+                CurveTimeRange.EXTENDED to StatisticsPalette.ExpertPurple   // 365天: 系统紫 (#AF52DE)
             )
         }
     }
 
-    val currentActiveColor = rangeColors[selectedRange] ?: (if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else IosColors.Green)
+    val currentActiveColor = rangeColors[selectedRange] ?: (if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen)
     val inactiveTextColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
     val barHeight = 56.dp
@@ -624,7 +623,7 @@ private fun TimeRangeSelector(
             .fillMaxWidth()
             .height(barHeight)
             .softCardShadow(borderRadius = cornerRadius, isDark = isDark)
-            .clip(RoundedCornerShape(cornerRadius))
+            .clip(RoundedRectangle(cornerRadius))
             .background(containerBgColor)
     ) {
         BoxWithConstraints(
@@ -658,7 +657,7 @@ private fun TimeRangeSelector(
                     .width(optionWidth - indicatorPadding * 2)
                     .fillMaxHeight()
                     .padding(vertical = indicatorPadding)
-                    .clip(RoundedCornerShape(cornerRadius - indicatorPadding))
+                    .clip(RoundedRectangle(cornerRadius - indicatorPadding))
                     .background(indicatorBgColor)
             )
 
@@ -669,7 +668,7 @@ private fun TimeRangeSelector(
             ) {
                 ranges.forEachIndexed { index, range ->
                     val isSelected = range == selectedRange
-                    val itemColor = rangeColors[range] ?: IosColors.Green
+                    val itemColor = rangeColors[range] ?: StatisticsPalette.MatureGreen
 
                     val textColor by animateColorAsState(
                         targetValue = if (isSelected) itemColor else inactiveTextColor,

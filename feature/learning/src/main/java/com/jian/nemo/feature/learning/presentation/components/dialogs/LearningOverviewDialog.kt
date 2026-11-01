@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,8 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -40,17 +39,17 @@ fun LearningOverviewDialog(
     queueLearningCount: Int,
     queueReviewCount: Int,
     queueRelearnCount: Int,
-    isDarkTheme: Boolean,
-    isPlumpDuo: Boolean
+    isDarkTheme: Boolean
+
 ) {
     val modeText = if (learningMode == LearningMode.Word) stringResource(R.string.mode_word) else stringResource(R.string.mode_grammar)
     val percent = if (dailyGoal > 0) ((completedCount.toFloat() / dailyGoal) * 100).toInt() else 0
     val estMinutes = ((remainingCount * 15) / 60).coerceAtLeast(1)
 
-    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
-    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
-    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
-    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
+    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
 
     NemoDialog(
         onDismissRequest = onDismissRequest,
@@ -69,7 +68,7 @@ fun LearningOverviewDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedRectangle(14.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     .padding(14.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -105,7 +104,7 @@ fun LearningOverviewDialog(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedRectangle(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                         .padding(12.dp)
                 ) {
@@ -126,7 +125,7 @@ fun LearningOverviewDialog(
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedRectangle(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
                         .padding(12.dp)
                 ) {
@@ -149,7 +148,7 @@ fun LearningOverviewDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedRectangle(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
                     .padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)

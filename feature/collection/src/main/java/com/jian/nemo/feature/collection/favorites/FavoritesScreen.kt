@@ -14,10 +14,10 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Checklist
@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
@@ -39,11 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.designsystem.theme.NemoSecondary
-import com.jian.nemo.core.designsystem.theme.NemoOrange
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
@@ -94,7 +89,7 @@ fun FavoritesScreen(
                 .background(backgroundColor)
                 .containerTransform(
                     key = "container_favorites",
-                    shape = RoundedCornerShape(0.dp)
+                    shape = RoundedRectangle(0.dp)
                 )
         ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
@@ -197,10 +192,8 @@ fun FavoritesList(
             subtitle = stringResource(R.string.collection_favorites_words_subtitle),
             count = favoriteWordsCount,
             icon = Icons.Rounded.Translate,
-            iconColor = NemoSecondary,
-            onClick = onWordFavoritesClick,
-            plumpIcon = PlumpIcon.Languages,
-            paletteColor = IsoluminantPalette.WarmAmber     // 70° 暖色系 = 词汇/收藏语义
+            iconColor = IosColors.Yellow,
+            onClick = onWordFavoritesClick
         )
 
         FavoriteCategoryCard(
@@ -208,10 +201,8 @@ fun FavoritesList(
             subtitle = stringResource(R.string.collection_favorites_questions_subtitle),
             count = favoriteGrammarsCount,
             icon = Icons.Rounded.Checklist,
-            iconColor = NemoOrange,
-            onClick = onGrammarFavoritesClick,
-            plumpIcon = PlumpIcon.ListChecks,
-            paletteColor = IsoluminantPalette.EmeraldGreen  // 145° 清爽系 = 题目/语法语义
+            iconColor = IosColors.Green,
+            onClick = onGrammarFavoritesClick
         )
     }
 }
@@ -223,48 +214,32 @@ fun FavoriteCategoryCard(
     count: Int,
     icon: ImageVector,
     iconColor: Color,
-    onClick: () -> Unit,
-    plumpIcon: PlumpIcon? = null,
-    paletteColor: Color? = null
+    onClick: () -> Unit
 ) {
-    // 双风格判定（通过 LocalSettingIconStyle 判断）
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else iconColor
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
+    val iconTint = if (isSoftTranslucent) iconColor else Color.White
 
     PremiumCard(onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标容器：MD3 保留 Squircle 色块底；Plump Duo 彻底取消背景方块（规范铁律）
+            // 图标容器：严格遵守 2:3 黄金尺寸比例公理 (42dp 底框 x 28dp 图标，四周 7dp 留白)
+            // G2 连续平滑曲率 RoundedRectangle(12.dp)
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .then(
-                        if (!isPlumpDuo) {
-                            Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(effectiveColor.copy(alpha = 0.1f))
-                        } else {
-                            Modifier
-                        }
-                    ),
+                    .size(42.dp)
+                    .background(containerBgColor, RoundedRectangle(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (isPlumpDuo && plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = effectiveColor,
-                        size = 28.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = effectiveColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -296,9 +271,9 @@ fun FavoriteCategoryCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                     contentDescription = null,
-                    modifier = Modifier.rotate(180f).size(20.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
@@ -331,7 +306,7 @@ private fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
 
         modifier = modifier

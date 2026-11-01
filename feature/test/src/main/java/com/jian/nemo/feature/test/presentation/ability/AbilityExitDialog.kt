@@ -11,7 +11,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExitToApp
 import androidx.compose.material3.*
@@ -79,7 +79,7 @@ fun AbilityExitDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(44.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+                    shape = RoundedRectangle(22.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = dangerColor.copy(alpha = 0.12f),
                         contentColor = dangerColor

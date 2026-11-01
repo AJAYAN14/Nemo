@@ -1,7 +1,7 @@
 package com.jian.nemo.core.ui.component.srs
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Schedule
@@ -51,7 +51,7 @@ fun SrsStatusChip(
         onClick = { onClick?.invoke() },
         backdrop = backdrop,
         surfaceColor = containerColor,
-        shape = RoundedCornerShape(50),
+        shape = Capsule(),
         isInteractive = true,
         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
         modifier = modifier.height(30.dp)

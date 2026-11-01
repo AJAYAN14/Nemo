@@ -4,7 +4,7 @@ import android.os.Build
 import android.view.WindowManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -74,7 +74,7 @@ fun RestorePreviewDialog(
             modifier = Modifier
                 .widthIn(min = 280.dp, max = 340.dp)
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp), // 现代大圆角
+            shape = RoundedRectangle(24.dp), // 现代大圆角
             color = dialogBgColor,
             tonalElevation = 0.dp,
             shadowElevation = 8.dp

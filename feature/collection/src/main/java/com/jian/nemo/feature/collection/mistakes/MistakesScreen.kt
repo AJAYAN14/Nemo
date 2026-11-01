@@ -12,10 +12,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.AccountTree
 import androidx.compose.material.icons.rounded.Spellcheck
@@ -27,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
@@ -39,14 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.designsystem.theme.NemoSecondary
-import com.jian.nemo.core.designsystem.theme.NemoOrange
-import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -95,7 +90,7 @@ fun MistakesScreen(
                 .background(backgroundColor)
                 .containerTransform(
                     key = "container_mistakes",
-                    shape = RoundedCornerShape(0.dp)
+                    shape = RoundedRectangle(0.dp)
                 )
         ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
@@ -217,21 +212,11 @@ fun StatsOverviewCard(
         else -> stringResource(R.string.collection_mistakes_encouragement_critical)
     }
 
-    // 颜色状态 (仅影响文字和装饰，不影响Card背景)
-    // 双风格自适应：Plump Duo 下状态色联动切换为等亮度调色板；MD3 保留原生色彩（100% 向下兼容）
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val stateColor = if (isPlumpDuo) {
-        when {
-            gapRate <= 5 -> IsoluminantPalette.EmeraldGreen   // 良好（翡翠竹青 145°）
-            gapRate <= 15 -> IsoluminantPalette.WarmAmber     // 注意（暖金琥珀 70°）
-            else -> IsoluminantPalette.CoralFlame             // 危险（赤焰珊瑚 30°）
-        }
-    } else {
-        when {
-            gapRate <= 5 -> NemoSecondary
-            gapRate <= 15 -> NemoOrange
-            else -> NemoDanger
-        }
+    // 颜色状态 (遵循设计调色盘标准系统色)
+    val stateColor = when {
+        gapRate <= 5 -> IosColors.Green
+        gapRate <= 15 -> IosColors.Orange
+        else -> IosColors.Red
     }
 
     PremiumCard {
@@ -295,28 +280,24 @@ fun WrongAnswersList(
     onWordMistakesClick: () -> Unit,
     onGrammarMistakesClick: () -> Unit
 ) {
-    // 与其把两个放在一个Card，不如拆分成两个Premium Card，视觉更强
+    // 拆分成两个 Premium Card，保持视觉规范统一
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         WrongAnswerCategoryCard(
             title = stringResource(R.string.collection_mistakes_words_title),
             subtitle = stringResource(R.string.collection_mistakes_words_subtitle),
             count = wrongWordsCount,
             icon = Icons.Rounded.Spellcheck,
-            iconColor = NemoSecondary,
-            onClick = onWordMistakesClick,
-            plumpIcon = PlumpIcon.SpellCheck,
-            paletteColor = IsoluminantPalette.WarmAmber     // 70° 暖色系 = 词汇语义
+            iconColor = IosColors.Red,
+            onClick = onWordMistakesClick
         )
 
         WrongAnswerCategoryCard(
             title = stringResource(R.string.collection_mistakes_grammars_title),
             subtitle = stringResource(R.string.collection_mistakes_grammars_subtitle),
             count = wrongGrammarsCount,
-            icon = Icons.Rounded.AccountTree,
-            iconColor = NemoOrange,
-            onClick = onGrammarMistakesClick,
-            plumpIcon = PlumpIcon.GrammarLayers,
-            paletteColor = IsoluminantPalette.EmeraldGreen  // 145° 清爽系 = 语法语义
+            icon = Icons.AutoMirrored.Rounded.MenuBook,
+            iconColor = IosColors.Orange,
+            onClick = onGrammarMistakesClick
         )
     }
 }
@@ -328,49 +309,32 @@ fun WrongAnswerCategoryCard(
     count: Int,
     icon: ImageVector,
     iconColor: Color,
-    onClick: () -> Unit,
-    plumpIcon: PlumpIcon? = null,
-    paletteColor: Color? = null
+    onClick: () -> Unit
 ) {
-    // 双风格判定（与 SquircleListItem / DashboardTile 标准模式一致）
     val iconStyle = LocalSettingIconStyle.current
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
-    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else iconColor
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
+    val iconTint = if (isSoftTranslucent) iconColor else Color.White
 
     PremiumCard(onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标容器：MD3 保留 Squircle 色块底；Plump Duo 彻底取消背景方块（规范铁律）
+            // 图标容器：严格遵守 2:3 黄金尺寸比例公理 (42dp 底框 x 28dp 图标，四周 7dp 留白)
+            // G2 连续平滑曲率 RoundedRectangle(12.dp)
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .then(
-                        if (!isPlumpDuo) {
-                            Modifier
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(effectiveColor.copy(alpha = 0.1f))
-                        } else {
-                            Modifier
-                        }
-                    ),
+                    .size(42.dp)
+                    .background(containerBgColor, RoundedRectangle(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (isPlumpDuo && plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = effectiveColor,
-                        size = 28.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = effectiveColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -398,9 +362,9 @@ fun WrongAnswerCategoryCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                     contentDescription = null,
-                    modifier = Modifier.rotate(180f).size(20.dp),
+                    modifier = Modifier.size(16.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                 )
             }
@@ -436,7 +400,7 @@ private fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
 
         modifier = modifier

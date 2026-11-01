@@ -32,19 +32,20 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.stringArrayResource
 import com.jian.nemo.feature.learning.R
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,16 +67,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import androidx.compose.runtime.remember
@@ -116,9 +113,6 @@ fun SRSGrammarCard(
 
     val scope = rememberCoroutineScope()
 
-    // 检测图标风格
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
@@ -128,16 +122,14 @@ fun SRSGrammarCard(
     val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
     val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
 
-    // Indigo 标签色
-    val indigoBg = if (isDarkTheme) LearningPalette.IndigoBgDark else LearningPalette.IndigoBgLight
-    val indigoBorder = if (isDarkTheme) LearningPalette.IndigoBorderDark else LearningPalette.IndigoBorderLight
-    val indigoText = if (isDarkTheme) LearningPalette.IndigoTextDark else LearningPalette.IndigoTextLight
+    // 标准调色盘统一色彩系统
+    val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+    val levelBg = indigoColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+    val levelText = indigoColor
 
-    // Yellow 提示色
-    val yellowBg = if (isDarkTheme) LearningPalette.YellowTipsBgDark else LearningPalette.YellowTipsBgLight
-    val yellowBorder = if (isDarkTheme) LearningPalette.YellowTipsBorderDark else LearningPalette.YellowTipsBorderLight
-    val yellowIcon = if (isDarkTheme) LearningPalette.YellowTipsIconDark else LearningPalette.YellowTipsIconLight
-    val yellowText = if (isDarkTheme) LearningPalette.YellowTipsTextDark else LearningPalette.YellowTipsTextLight
+    val whiteboardColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val whiteboardBg = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+    val whiteboardTint = if (showBackWhiteboard) Color.White else whiteboardColor
 
     Column(
         modifier = modifier
@@ -151,8 +143,8 @@ fun SRSGrammarCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(24.dp))
-                .background(cardBackground, RoundedCornerShape(24.dp))
+                .clip(RoundedRectangle(24.dp))
+                .background(cardBackground, RoundedRectangle(24.dp))
         ) {
             // 顶部自动翻面进度条
             if (autoRevealProgress != null) {
@@ -161,9 +153,9 @@ fun SRSGrammarCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(4.dp)
-                        .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                        .clip(UnevenRoundedRectangle(topStart = 24.dp, topEnd = 24.dp))
                         .align(Alignment.TopCenter),
-                    color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    color = (if (isDarkTheme) IosColors.BlueDark else IosColors.Blue).copy(alpha = 0.6f),
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -184,25 +176,14 @@ fun SRSGrammarCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 等级标签
-                    val effectiveLevelBg = if (isPlumpDuo) {
-                        IsoluminantPalette.LilacViolet.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-                    } else {
-                        indigoBg
-                    }
-                    val effectiveLevelText = if (isPlumpDuo) {
-                        IsoluminantPalette.LilacViolet
-                    } else {
-                        indigoText
-                    }
-
                     Box(
                         modifier = Modifier
-                            .background(effectiveLevelBg, CircleShape)
+                            .background(levelBg, CircleShape)
                             .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
                         Text(
                             text = grammar.grammarLevel,
-                            color = effectiveLevelText,
+                            color = levelText,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
                             letterSpacing = 1.2.sp
@@ -212,42 +193,20 @@ fun SRSGrammarCard(
                     // 顶部手写白板按钮 (仅在背面且 isAnswerShown 为 true 时显示，避免错位和重叠)
                     if (isAnswerShown) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        if (isPlumpDuo) {
-                            val whiteboardColor = IsoluminantPalette.WarmAmber
-                            val buttonBgColor = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-                            val buttonTextColor = if (showBackWhiteboard) Color.White else whiteboardColor
-                            Box(
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .clip(CircleShape)
-                                    .background(buttonBgColor)
-                                    .clickable { showBackWhiteboard = !showBackWhiteboard },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.UserPen,
-                                    color = buttonTextColor,
-                                    size = 18.dp
-                                )
-                            }
-                        } else {
-                            val buttonBgColor = if (showBackWhiteboard) MaterialTheme.colorScheme.primary else (if (isDarkTheme) Color.White.copy(alpha = 0.1f) else Color.Black.copy(alpha = 0.05f))
-                            val buttonTextColor = if (showBackWhiteboard) Color.White else (if (isDarkTheme) Color.White.copy(alpha = 0.8f) else Color.Black.copy(alpha = 0.6f))
-                            Box(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                                    .background(buttonBgColor)
-                                    .clickable { showBackWhiteboard = !showBackWhiteboard },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Edit,
-                                    contentDescription = stringResource(R.string.learn_grammar_card_btn_whiteboard),
-                                    tint = buttonTextColor,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                            }
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(whiteboardBg)
+                                .clickable { showBackWhiteboard = !showBackWhiteboard },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = stringResource(R.string.learn_grammar_card_btn_whiteboard),
+                                tint = whiteboardTint,
+                                modifier = Modifier.size(20.dp) // 30 * 2/3 = 20dp 严格黄金比例
+                            )
                         }
                     }
                 }
@@ -280,23 +239,30 @@ fun SRSGrammarCard(
             }
 
             cardBadge?.let { badge ->
-                val (text, bgColor, textColor) = when (badge) {
-                    CardBadge.NEW -> Triple(stringResource(R.string.learn_grammar_card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
-                    CardBadge.LEARNING -> Triple(stringResource(R.string.learn_grammar_card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
-                    CardBadge.REVIEW -> Triple(stringResource(R.string.learn_grammar_card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
-                    CardBadge.RELEARN -> Triple(stringResource(R.string.learn_grammar_card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
+                val badgeColor = when (badge) {
+                    CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+                    CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+                    CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+                    CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
                 }
+                val badgeText = when (badge) {
+                    CardBadge.NEW -> stringResource(R.string.learn_grammar_card_badge_new)
+                    CardBadge.LEARNING -> stringResource(R.string.learn_grammar_card_badge_learning)
+                    CardBadge.REVIEW -> stringResource(R.string.learn_grammar_card_badge_review)
+                    CardBadge.RELEARN -> stringResource(R.string.learn_grammar_card_badge_relearn)
+                }
+                val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(top = 32.dp, end = 32.dp)
-                        .background(bgColor, CircleShape)
+                        .background(badgeBg, CircleShape)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = text,
-                        color = textColor,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.2.sp
@@ -341,12 +307,12 @@ fun SRSGrammarCard(
                                 .fillMaxWidth()
                                 .height(440.dp)
                                 .softCardShadow(borderRadius = 24.dp, isDark = isDarkTheme)
-                                .clip(RoundedCornerShape(24.dp))
+                                .clip(RoundedRectangle(24.dp))
                                 .background(cardBackground.copy(alpha = if (isDarkTheme) 0.85f else 0.95f))
                                 .border(
                                     width = 0.8.dp,
                                     color = borderColor,
-                                    shape = RoundedCornerShape(24.dp)
+                                    shape = RoundedRectangle(24.dp)
                                 )
                                 .drawBehind {
                                     val dotSpacing = 18.dp.toPx()
@@ -391,20 +357,12 @@ fun SRSGrammarCard(
                                 .padding(vertical = 42.dp, horizontal = 20.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (isPlumpDuo) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.Lightbulb,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    size = 96.dp
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Lightbulb,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(96.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Lightbulb,
+                                contentDescription = null,
+                                modifier = Modifier.size(96.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
@@ -488,9 +446,9 @@ fun SRSGrammarCard(
                                     .fillMaxWidth()
                                     .background(
                                         color = headerBgColor,
-                                        shape = RoundedCornerShape(12.dp)
+                                        shape = RoundedRectangle(12.dp)
                                     )
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedRectangle(12.dp))
                                     .clickable {
                                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         val nextState = !isExpanded
@@ -505,26 +463,23 @@ fun SRSGrammarCard(
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                            val effectiveUsageBg = if (isPlumpDuo) {
-                                IsoluminantPalette.LilacViolet.copy(alpha = if (isExpanded) (if (isDarkTheme) 0.16f else 0.10f) else (if (isDarkTheme) 0.08f else 0.05f))
+                            val effectiveUsageColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+                            val effectiveUsageBg = if (isExpanded) {
+                                effectiveUsageColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
                             } else {
-                                if (isExpanded) indigoBg else indigoBg.copy(alpha = 0.5f)
+                                effectiveUsageColor.copy(alpha = if (isDarkTheme) 0.08f else 0.05f)
                             }
-                            val effectiveUsageText = if (isPlumpDuo) {
-                                if (isExpanded) IsoluminantPalette.LilacViolet else IsoluminantPalette.LilacViolet.copy(alpha = 0.7f)
-                            } else {
-                                if (isExpanded) indigoText else indigoText.copy(alpha = 0.7f)
-                            }
+                            val effectiveUsageText = if (isExpanded) effectiveUsageColor else effectiveUsageColor.copy(alpha = 0.7f)
 
                             Box(
                                 modifier = Modifier
                                     .background(
                                         effectiveUsageBg,
-                                        RoundedCornerShape(8.dp)
+                                        RoundedRectangle(8.dp)
                                     )
                                     .padding(horizontal = 12.dp, vertical = 4.dp)
                             ) {
-                                val chineseNumbers = listOf("一", "二", "三", "四", "五", "六", "七", "八", "九", "十")
+                                val chineseNumbers = stringArrayResource(R.array.learning_grammar_card_chinese_numbers)
                                 val label = chineseNumbers.getOrNull(usageIndex) ?: (usageIndex + 1).toString()
                                 Text(
                                     text = stringResource(R.string.learn_grammar_card_label_usage_prefix, label),
@@ -591,7 +546,7 @@ fun SRSGrammarCard(
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(cardBackground, RoundedCornerShape(24.dp))
+                                        .background(cardBackground, RoundedRectangle(24.dp))
                                         .padding(24.dp)
                                 ) {
                                     // 标题
@@ -600,7 +555,7 @@ fun SRSGrammarCard(
                                         modifier = Modifier.padding(bottom = 16.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Link,
+                                            imageVector = Icons.Rounded.Link,
                                             contentDescription = null,
                                             tint = secondaryTextColor,
                                             modifier = Modifier.size(20.dp)
@@ -630,7 +585,7 @@ fun SRSGrammarCard(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(cardBackground, RoundedCornerShape(24.dp))
+                                    .background(cardBackground, RoundedRectangle(24.dp))
                                     .padding(24.dp)
                             ) {
                                 // 标题
@@ -638,27 +593,19 @@ fun SRSGrammarCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(bottom = 16.dp)
                                 ) {
-                                    val effectiveExplanationColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else indigoText
-                                    if (isPlumpDuo) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.Lightbulb,
-                                            color = effectiveExplanationColor,
-                                            size = 20.dp
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Default.Lightbulb,
-                                            contentDescription = null,
-                                            tint = effectiveExplanationColor,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
+                                    val explanationColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+                                    Icon(
+                                        imageVector = Icons.Rounded.Lightbulb,
+                                        contentDescription = null,
+                                        tint = explanationColor,
+                                        modifier = Modifier.size(20.dp)
+                                    )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = stringResource(R.string.learn_grammar_card_label_explanation),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = effectiveExplanationColor,
+                                        color = explanationColor,
                                         letterSpacing = 1.sp
                                     )
                                 }
@@ -678,7 +625,7 @@ fun SRSGrammarCard(
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(cardBackground, RoundedCornerShape(24.dp))
+                                        .background(cardBackground, RoundedRectangle(24.dp))
                                         .padding(24.dp)
                                 ) {
                                     // 标题
@@ -687,7 +634,7 @@ fun SRSGrammarCard(
                                         modifier = Modifier.padding(bottom = 16.dp)
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Book,
+                                            imageVector = Icons.Rounded.MenuBook,
                                             contentDescription = null,
                                             tint = secondaryTextColor,
                                             modifier = Modifier.size(20.dp)
@@ -708,7 +655,7 @@ fun SRSGrammarCard(
                                             .fillMaxWidth()
                                             .background(
                                                 if (isDarkTheme) LearningPalette.ExampleBoxDark else Color.White,
-                                                RoundedCornerShape(16.dp)
+                                                RoundedRectangle(16.dp)
                                             )
                                             .padding(horizontal = 12.dp)
                                     ) {
@@ -778,42 +725,28 @@ fun SRSGrammarCard(
 
                             // TIPS卡片（如果存在）
                             if (!usage.notes.isNullOrBlank()) {
-                                val effectiveTipsBg = if (isPlumpDuo) {
-                                    IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-                                } else {
-                                    yellowBg
-                                }
-                                val effectiveTipsIcon = if (isPlumpDuo) IsoluminantPalette.WarmAmber else yellowIcon
-                                val effectiveTipsText = if (isPlumpDuo) IsoluminantPalette.WarmAmber else yellowText
+                                val tipsColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                                val tipsBg = tipsColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(effectiveTipsBg, RoundedCornerShape(16.dp))
+                                        .background(tipsBg, RoundedRectangle(16.dp))
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.Top
                                 ) {
-                                    if (isPlumpDuo) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.Sparkles,
-                                            color = effectiveTipsIcon,
-                                            size = 18.dp,
-                                            modifier = Modifier.padding(top = 2.dp)
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Default.AutoAwesome,
-                                            contentDescription = null,
-                                            tint = effectiveTipsIcon,
-                                            modifier = Modifier.size(18.dp).padding(top = 2.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Rounded.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = tipsColor,
+                                        modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                                    )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = stringResource(R.string.learn_grammar_card_tips_prefix, usage.notes ?: ""),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
-                                        color = effectiveTipsText,
+                                        color = tipsColor,
                                         lineHeight = 24.sp
                                     )
                                 }

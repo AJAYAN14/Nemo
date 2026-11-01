@@ -8,7 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -157,7 +157,7 @@ private fun ScoreCard(score: Int, difficulty: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = scoreColor.copy(alpha = 0.08f),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         border = BorderStroke(1.dp, scoreColor.copy(alpha = 0.15f))
     ) {
         Row(
@@ -220,7 +220,7 @@ private fun DetailSectionCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = if (isDark) colorScheme.surfaceContainerLow else Color.White,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         border = BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.15f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {

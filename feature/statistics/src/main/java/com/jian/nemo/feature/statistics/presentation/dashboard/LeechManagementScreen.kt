@@ -1,7 +1,5 @@
 package com.jian.nemo.feature.statistics.presentation.dashboard
 
-import com.jian.nemo.core.designsystem.theme.screenBackground
-
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -13,46 +11,66 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Restore
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
-import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.modifier.softShadow
+import com.jian.nemo.feature.statistics.R
 
 /**
- * 复学清单 (Leech Management) - Hybrid Design
- *
- * 结合了用户喜爱的设计元素：
- * 1. Tabs: Floating Liquid Pills (Clean & Airy with Soft Shadow)
- * 2. Cards: Premium Shadow (Consistent with App)
+ * 复学清单 (Leech Management)
  */
 @Composable
 fun LeechManagementScreen(
@@ -64,7 +82,6 @@ fun LeechManagementScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Background color
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     LaunchedEffect(uiState.successMessage, uiState.error) {
@@ -79,10 +96,8 @@ fun LeechManagementScreen(
     }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
-        val isPlumpDuo = uiState.settingIconStyle == SettingIconStyle.PLUMP_DUO
-        val wordAccentColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else MaterialTheme.colorScheme.primary
-        val grammarAccentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
-        val currentAccentColor = if (uiState.selectedTab == LeechTab.Word) wordAccentColor else grammarAccentColor
+        val wordAccentColor = IosColors.Orange
+        val grammarAccentColor = IosColors.Green
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -100,92 +115,89 @@ fun LeechManagementScreen(
                     .padding(paddingValues)
                     .fillMaxSize()
             ) {
+                // 1. Floating Liquid Pill Tabs
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    LeechPillTab(
+                        title = stringResource(R.string.stats_leech_tab_words),
+                        count = uiState.skippedWords.size,
+                        isSelected = uiState.selectedTab == LeechTab.Word,
+                        selectedColor = wordAccentColor,
+                        onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Word)) }
+                    )
 
-            // 1. Floating Liquid Pill Tabs
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                LeechPillTab(
-                    title = stringResource(R.string.stats_leech_tab_words),
-                    count = uiState.skippedWords.size,
-                    isSelected = uiState.selectedTab == LeechTab.Word,
-                    selectedColor = wordAccentColor,
-                    onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Word)) }
-                )
-
-                LeechPillTab(
-                    title = stringResource(R.string.stats_leech_tab_grammars),
-                    count = uiState.skippedGrammars.size,
-                    isSelected = uiState.selectedTab == LeechTab.Grammar,
-                    selectedColor = grammarAccentColor,
-                    onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Grammar)) }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // 2. Content Area
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    NemoChasingDotsLoader()
+                    LeechPillTab(
+                        title = stringResource(R.string.stats_leech_tab_grammars),
+                        count = uiState.skippedGrammars.size,
+                        isSelected = uiState.selectedTab == LeechTab.Grammar,
+                        selectedColor = grammarAccentColor,
+                        onClick = { viewModel.onEvent(LeechEvent.TabChanged(LeechTab.Grammar)) }
+                    )
                 }
-            } else {
-                AnimatedContent(
-                    targetState = uiState.selectedTab,
-                    transitionSpec = {
-                        fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) togetherWith
-                                fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
-                    },
-                    label = "LeechListTransition"
-                ) { targetTab ->
-                    when (targetTab) {
-                        LeechTab.Word -> {
-                            LeechList(
-                                items = uiState.skippedWords,
-                                emptyTitle = stringResource(R.string.stats_leech_empty_words_title),
-                                emptySubtitle = stringResource(R.string.stats_leech_empty_words_desc),
-                                onItemKey = { it.id },
-                                isPlumpDuo = isPlumpDuo,
-                                accentColor = wordAccentColor,
-                                itemContent = { word, onRecover ->
-                                    LeechWordCard(
-                                        word = word, 
-                                        tagColor = wordAccentColor,
-                                        onRecover = onRecover,
-                                        onClick = { onNavigateToWordDetail(word.id) }
-                                    )
-                                },
-                                onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverWord(id)) }
-                            )
-                        }
-                        LeechTab.Grammar -> {
-                            LeechList(
-                                items = uiState.skippedGrammars,
-                                emptyTitle = stringResource(R.string.stats_leech_empty_grammars_title),
-                                emptySubtitle = stringResource(R.string.stats_leech_empty_grammars_desc),
-                                onItemKey = { it.id },
-                                isPlumpDuo = isPlumpDuo,
-                                accentColor = grammarAccentColor,
-                                itemContent = { grammar, onRecover ->
-                                    LeechGrammarCard(
-                                        grammar = grammar, 
-                                        tagColor = grammarAccentColor,
-                                        onRecover = onRecover,
-                                        onClick = { onNavigateToGrammarDetail(grammar.id) }
-                                    )
-                                },
-                                onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverGrammar(id)) }
-                            )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // 2. Content Area
+                if (uiState.isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        NemoChasingDotsLoader()
+                    }
+                } else {
+                    AnimatedContent(
+                        targetState = uiState.selectedTab,
+                        transitionSpec = {
+                            fadeIn(animationSpec = spring(stiffness = Spring.StiffnessLow)) togetherWith
+                                    fadeOut(animationSpec = spring(stiffness = Spring.StiffnessLow))
+                        },
+                        label = "LeechListTransition"
+                    ) { targetTab ->
+                        when (targetTab) {
+                            LeechTab.Word -> {
+                                LeechList(
+                                    items = uiState.skippedWords,
+                                    emptyTitle = stringResource(R.string.stats_leech_empty_words_title),
+                                    emptySubtitle = stringResource(R.string.stats_leech_empty_words_desc),
+                                    onItemKey = { it.id },
+                                    accentColor = wordAccentColor,
+                                    itemContent = { word, onRecover ->
+                                        LeechWordCard(
+                                            word = word,
+                                            tagColor = wordAccentColor,
+                                            onRecover = onRecover,
+                                            onClick = { onNavigateToWordDetail(word.id) }
+                                        )
+                                    },
+                                    onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverWord(id)) }
+                                )
+                            }
+                            LeechTab.Grammar -> {
+                                LeechList(
+                                    items = uiState.skippedGrammars,
+                                    emptyTitle = stringResource(R.string.stats_leech_empty_grammars_title),
+                                    emptySubtitle = stringResource(R.string.stats_leech_empty_grammars_desc),
+                                    onItemKey = { it.id },
+                                    accentColor = grammarAccentColor,
+                                    itemContent = { grammar, onRecover ->
+                                        LeechGrammarCard(
+                                            grammar = grammar,
+                                            tagColor = grammarAccentColor,
+                                            onRecover = onRecover,
+                                            onClick = { onNavigateToGrammarDetail(grammar.id) }
+                                        )
+                                    },
+                                    onRecover = { id -> viewModel.onEvent(LeechEvent.RecoverGrammar(id)) }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
 }
 
 /**
@@ -200,40 +212,39 @@ private fun RowScope.LeechPillTab(
     onClick: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    val containerColor = if (isSelected) {
-        selectedColor
+    val shadowColor = if (isSelected) {
+        if (isDark) selectedColor.copy(alpha = 0.35f) else selectedColor.copy(alpha = 0.28f)
     } else {
-        if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+        if (isDark) Color.Black.copy(alpha = 0.15f) else Color.Black.copy(alpha = 0.04f)
     }
-    val contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-    val borderColor = if (isSelected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
 
-    LiquidButton(
+    ColoredLiquidGlassButton(
         onClick = onClick,
         modifier = Modifier
             .weight(1f)
-            .height(44.dp),
-        backgroundColor = containerColor,
-        shape = RoundedCornerShape(22.dp),
-        border = borderColor,
-        elevation = if (isSelected) 6.dp else 2.dp,
-        useSoftShadow = true
+            .height(44.dp)
+            .softShadow(
+                color = shadowColor,
+                borderRadius = 22.dp,
+                blurRadius = if (isSelected) 14.dp else 8.dp,
+                offsetY = if (isSelected) 3.dp else 1.dp
+            ),
+        tint = if (isSelected) selectedColor else Color.Unspecified,
+        tintAlpha = 0.85f,
+        surfaceColor = if (isSelected) Color.Unspecified else if (isDark) MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.65f),
+        shape = Capsule(),
+        border = if (isSelected) null else BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = stringResource(R.string.stats_leech_tab_count_format, title, count),
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                ),
-                color = contentColor
-            )
-        }
+        Text(
+            text = stringResource(R.string.stats_leech_tab_count_format, title, count),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+            ),
+            color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
-
 
 /**
  * 通用复学列表
@@ -244,7 +255,6 @@ private fun <T> LeechList(
     emptyTitle: String,
     emptySubtitle: String,
     onItemKey: (T) -> Int,
-    isPlumpDuo: Boolean = false,
     accentColor: Color = MaterialTheme.colorScheme.primary,
     itemContent: @Composable (T, () -> Unit) -> Unit,
     onRecover: (Int) -> Unit
@@ -253,20 +263,18 @@ private fun <T> LeechList(
         EmptyLeechView(
             title = emptyTitle,
             subtitle = emptySubtitle,
-            isPlumpDuo = isPlumpDuo,
             accentColor = accentColor
         )
     } else {
         LazyColumn(
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp), // More horizontal padding
-            verticalArrangement = Arrangement.spacedBy(16.dp), // More spacing for airy feel
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
             items(
                 items = items,
                 key = { onItemKey(it) }
             ) { item ->
-                // Item Entrance Animation
                 var isVisible by remember { mutableStateOf(false) }
                 LaunchedEffect(Unit) { isVisible = true }
 
@@ -321,7 +329,7 @@ private fun LeechGrammarCard(
 }
 
 /**
- * 基础卡片 UI (Premium Style: Consistent with App)
+ * 基础卡片 UI
  */
 @Composable
 private fun LeechItemCardBase(
@@ -332,7 +340,6 @@ private fun LeechItemCardBase(
     onClick: () -> Unit = {}
 ) {
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
-    // Premium Style Colors match ProgressComponents / WordList
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val contentColor = MaterialTheme.colorScheme.onSurface
 
@@ -343,17 +350,16 @@ private fun LeechItemCardBase(
         modifier = Modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
         contentColor = contentColor
     ) {
         Row(
             modifier = Modifier
-                .padding(20.dp) // Premium cards usually have slightly more padding
+                .padding(20.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Pill Indicator (Preserved from V2 as it's cleaner)
             Box(
                 modifier = Modifier
                     .width(4.dp)
@@ -363,7 +369,6 @@ private fun LeechItemCardBase(
 
             Spacer(modifier = Modifier.width(20.dp))
 
-            // Text
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -379,9 +384,12 @@ private fun LeechItemCardBase(
                 )
             }
 
-            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+            // 单容器计算属性架构：紧凑级 36dp 底块搭配 24dp 图标 (严格 2:3 黄金比例)
+            val iconStyle = LocalSettingIconStyle.current
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val containerBg = if (isSoftTranslucent) tagColor.copy(alpha = 0.15f) else tagColor
+            val iconTint = if (isSoftTranslucent) tagColor else Color.White
 
-            // Recover Button
             IconButton(
                 onClick = {
                     isRecovering = true
@@ -389,34 +397,18 @@ private fun LeechItemCardBase(
                 },
                 enabled = !isRecovering,
                 modifier = Modifier
-                    .then(
-                        if (!isPlumpDuo) {
-                            Modifier.background(
-                                color = tagColor.copy(alpha = 0.1f),
-                                shape = CircleShape
-                            )
-                        } else {
-                            Modifier
-                        }
-                    )
+                    .size(36.dp)
+                    .background(containerBg, RoundedRectangle(10.dp))
             ) {
                 if (isRecovering) {
                     NemoChasingDotsLoader(size = 20.dp)
                 } else {
-                    if (isPlumpDuo) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.RotateCcw,
-                            color = tagColor,
-                            size = 20.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.Restore,
-                            contentDescription = stringResource(R.string.stats_leech_btn_recover),
-                            tint = tagColor,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Restore,
+                        contentDescription = stringResource(R.string.stats_leech_btn_recover),
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
             }
         }
@@ -424,15 +416,18 @@ private fun LeechItemCardBase(
 }
 
 /**
- * Premium Empty State (Consistent with Favorites / Collection)
+ * 空状态视图 (单容器计算属性 + 情感化占位容器)
  */
 @Composable
 private fun EmptyLeechView(
     title: String,
     subtitle: String,
-    isPlumpDuo: Boolean = false,
     accentColor: Color = MaterialTheme.colorScheme.primary
 ) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor.copy(alpha = 0.2f)
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -441,34 +436,20 @@ private fun EmptyLeechView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (isPlumpDuo) {
-                // Plump Duo 规范：彻底取消外层纯色方块/圆角底框，采用纯透明对齐容器，图标通透居中呈现
-                Box(
-                    modifier = Modifier.size(72.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PlumpDuoIcon(
-                        icon = PlumpIcon.Flame,
-                        color = accentColor,
-                        size = 56.dp
-                    )
-                }
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(containerBg, RoundedRectangle(28.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = accentColor
+                )
             }
+
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = title,

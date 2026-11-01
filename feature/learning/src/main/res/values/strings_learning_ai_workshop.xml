@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AI 题目生成工坊：思维链动态假名硬解码步骤 -->
+    <string name="learning_ai_workshop_label_step_parse_requirements">解析练习要求：明确目标日语等级与句型考察重点</string>
+    <string name="learning_ai_workshop_label_step_search_context">检索例句语境：匹配地道贴切的日式生活表达场景</string>
+    <string name="learning_ai_workshop_label_step_build_skeleton">构建句子骨架：确立谓语动词时态与助词搭配网络</string>
+    <string name="learning_ai_workshop_label_step_check_conjugation">梳理接续规则：校验形容词、副词与动词连用变形</string>
+    <string name="learning_ai_workshop_label_step_generate_candidates">生成候选译句：兼顾敬体与简体的自然语感表达</string>
+    <string name="learning_ai_workshop_label_step_optimize_grammar">优化语法表达：消除中式日语痕迹，提升文段地道度</string>
+    <string name="learning_ai_workshop_label_step_build_translation">构建对照译文：生成精准贴合语境的中文参考翻译</string>
+    <string name="learning_ai_workshop_label_step_draft_analysis">拟定重点解析：提炼关键语法条目、用法与辨析要点</string>
+    <string name="learning_ai_workshop_label_step_prepare_scoring">准备评分模型：建立多维度语法准确度与流利度基准</string>
+    <string name="learning_ai_workshop_label_step_assemble_exercise">完成题目装配：格式化题目与交互结构，准备呈现</string>
+
+    <!-- AI 题目生成工坊：错误与配置状态提示 -->
+    <string name="learning_ai_workshop_label_error_no_model_config">请先在配置中心添加 AI 模型</string>
+    <string name="learning_ai_workshop_label_error_single_config">只有一个配置，无法切换</string>
+    <string name="learning_ai_workshop_label_error_no_api_key">请先在设置中配置 API Key</string>
+    <string name="learning_ai_workshop_format_error_no_grammar_data">本地暂无 %1$s 等级的语法数据，请先同步或切换到自由模式</string>
+    <string name="learning_ai_workshop_format_error_fetch_exercise_failed">获取题目失败: %1$s</string>
+    <string name="learning_ai_workshop_format_error_grade_failed">评分失败: %1$s</string>
+
+    <!-- AI 极光背景动效：色彩预设主题名称 -->
+    <string name="learning_ai_aurora_label_preset_classic">经典极光</string>
+    <string name="learning_ai_aurora_label_preset_nordic">霓虹天际</string>
+    <string name="learning_ai_aurora_label_preset_polar_dawn">极昼破晓</string>
+    <string name="learning_ai_aurora_label_preset_glacier">冰川青碧</string>
+    <string name="learning_ai_aurora_label_preset_dusk">暮色紫霞</string>
+</resources>

@@ -3,7 +3,7 @@ package com.jian.nemo.feature.user.component
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -86,7 +86,7 @@ fun AppStyleTextField(
         enabled = enabled,
         singleLine = true,
         isError = isError,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedRectangle(14.dp),
         textStyle = TextStyle(
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
@@ -231,7 +231,7 @@ fun AppLoginForm(
                 onClick = { if (!isLoading) onForgotPasswordClick() },
                 backdrop = backdrop,
                 isInteractive = !isLoading,
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedRectangle(15.dp),
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier
                     .weight(1f)
@@ -256,7 +256,7 @@ fun AppLoginForm(
                 backdrop = backdrop,
                 tint = primaryGlassTint,
                 isInteractive = !isLoading,
-                shape = RoundedCornerShape(15.dp),
+                shape = RoundedRectangle(15.dp),
                 contentPadding = PaddingValues(0.dp),
                 modifier = Modifier
                     .weight(1.35f)
@@ -319,7 +319,7 @@ fun AppLoginForm(
             onClick = { if (!isLoading) onGoogleLoginClick() },
             backdrop = backdrop,
             isInteractive = !isLoading,
-            shape = RoundedCornerShape(15.dp),
+            shape = RoundedRectangle(15.dp),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -477,7 +477,7 @@ fun AppRegisterForm(
             backdrop = backdrop,
             tint = primaryGlassTint,
             isInteractive = !isLoading,
-            shape = RoundedCornerShape(15.dp),
+            shape = RoundedRectangle(15.dp),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -539,7 +539,7 @@ fun AppRegisterForm(
             onClick = { if (!isLoading) onGoogleLoginClick() },
             backdrop = backdrop,
             isInteractive = !isLoading,
-            shape = RoundedCornerShape(15.dp),
+            shape = RoundedRectangle(15.dp),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
                 .fillMaxWidth()

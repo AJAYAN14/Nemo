@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -219,7 +219,7 @@ fun PremiumStepper(
             modifier = Modifier
                 .width(130.dp)
                 .height(64.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedRectangle(16.dp))
                 .background(
                     if (isEditing) {
                         if (isDark) accentColor.copy(alpha = 0.16f) else accentColor.copy(alpha = 0.08f)
@@ -231,7 +231,7 @@ fun PremiumStepper(
                     if (isEditing) {
                         Modifier.border(
                             BorderStroke(1.5.dp, accentColor),
-                            RoundedCornerShape(16.dp)
+                            RoundedRectangle(16.dp)
                         )
                     } else {
                         Modifier

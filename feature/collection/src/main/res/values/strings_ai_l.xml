@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 语法收藏异常提示 -->
+    <string name="collection_favorite_grammars_format_load_failed">加载失败: %1$s</string>
+    <string name="collection_favorite_grammars_format_batch_unfavorite_failed">批量取消收藏失败: %1$s</string>
+
+    <!-- 收藏综合列表异常提示 -->
+    <string name="collection_favorites_format_load_failed">加载失败: %1$s</string>
+    <string name="collection_favorites_format_unfavorite_failed">取消收藏失败: %1$s</string>
+    <string name="collection_favorites_format_batch_unfavorite_failed">批量取消收藏失败: %1$s</string>
+
+    <!-- 错题本综合异常提示 -->
+    <string name="collection_mistakes_format_load_word_mistakes_failed">加载单词错题失败: %1$s</string>
+    <string name="collection_mistakes_format_delete_failed">删除失败: %1$s</string>
+    <string name="collection_mistakes_format_clear_failed">清空失败: %1$s</string>
+
+    <!-- 错题语法列表异常提示 -->
+    <string name="collection_wrong_grammars_format_load_failed">加载失败: %1$s</string>
+    <string name="collection_wrong_grammars_format_delete_failed">删除失败: %1$s</string>
+
+    <!-- 错题单词列表异常提示 -->
+    <string name="collection_wrong_words_format_load_failed">加载失败: %1$s</string>
+    <string name="collection_wrong_words_format_delete_failed">删除失败: %1$s</string>
+</resources>

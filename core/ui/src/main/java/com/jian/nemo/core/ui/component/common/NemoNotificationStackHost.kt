@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -211,8 +211,8 @@ private fun SwipeableNotificationItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp)
-                    .shadow(8.dp, RoundedCornerShape(16.dp))
-                    .clip(RoundedCornerShape(16.dp))
+                    .shadow(8.dp, RoundedRectangle(16.dp))
+                    .clip(RoundedRectangle(16.dp))
                     .background(Brush.horizontalGradient(gradientColors))
                     .then(
                         if (item.onClick != null) {

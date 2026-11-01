@@ -13,19 +13,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -159,47 +157,24 @@ fun CategoryWordsScreen(
         val tabLearnedText = stringResource(R.string.lib_category_words_tab_learned)
         val tabUnlearnedText = stringResource(R.string.lib_category_words_tab_unlearned)
 
-        val options = remember(iconStyle, tabAllText, tabLearnedText, tabUnlearnedText) {
-            if (iconStyle == SettingIconStyle.PLUMP_DUO) {
-                listOf(
-                    DiscoveryOption(
-                        label = tabAllText,
-                        icon = Icons.Default.Book,
-                        plumpIcon = PlumpIcon.BookOpen,
-                        activeColor = IsoluminantPalette.SkyIndigo,
-                    ),
-                    DiscoveryOption(
-                        label = tabLearnedText,
-                        icon = Icons.Default.CheckCircle,
-                        plumpIcon = PlumpIcon.BadgeCheck,
-                        activeColor = IsoluminantPalette.EmeraldGreen,
-                    ),
-                    DiscoveryOption(
-                        label = tabUnlearnedText,
-                        icon = Icons.Default.Error,
-                        plumpIcon = PlumpIcon.Flame,
-                        activeColor = IsoluminantPalette.WarmAmber,
-                    ),
-                )
-            } else {
-                listOf(
-                    DiscoveryOption(
-                        label = tabAllText,
-                        icon = Icons.Default.Book,
-                        activeColor = NemoIndigo,
-                    ),
-                    DiscoveryOption(
-                        label = tabLearnedText,
-                        icon = Icons.Default.CheckCircle,
-                        activeColor = NemoSecondary,
-                    ),
-                    DiscoveryOption(
-                        label = tabUnlearnedText,
-                        icon = Icons.Default.Error,
-                        activeColor = NemoOrange,
-                    ),
-                )
-            }
+        val options = remember(tabAllText, tabLearnedText, tabUnlearnedText) {
+            listOf(
+                DiscoveryOption(
+                    label = tabAllText,
+                    icon = Icons.AutoMirrored.Rounded.MenuBook,
+                    activeColor = IosColors.Indigo,
+                ),
+                DiscoveryOption(
+                    label = tabLearnedText,
+                    icon = Icons.Rounded.CheckCircle,
+                    activeColor = IosColors.Green,
+                ),
+                DiscoveryOption(
+                    label = tabUnlearnedText,
+                    icon = Icons.Rounded.HourglassEmpty,
+                    activeColor = IosColors.Orange,
+                ),
+            )
         }
         val selectedIndex = when (filterState) {
             StudyFilter.ALL -> 0
@@ -283,8 +258,6 @@ fun CategoryWordsScreen(
                         ) {
                             val emptyIcon: androidx.compose.ui.graphics.vector.ImageVector =
                                 if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Inbox
-                            val emptyPlumpIcon: PlumpIcon =
-                                if (searchQuery.isNotEmpty()) PlumpIcon.SearchX else PlumpIcon.Globe
                             val emptyMessage = when {
                                 searchQuery.isNotEmpty() -> stringResource(R.string.lib_category_words_empty_search)
                                 selectedLevel != "ALL" -> stringResource(R.string.lib_category_words_empty_level)
@@ -292,8 +265,7 @@ fun CategoryWordsScreen(
                             }
                             EmptyState(
                                 message = emptyMessage,
-                                icon = emptyIcon,
-                                plumpIcon = emptyPlumpIcon
+                                icon = emptyIcon
                             )
                         }
                     }
@@ -362,10 +334,8 @@ private fun WordListItemPremium(
     word: Word,
     onClick: () -> Unit
 ) {
-    val iconStyle = LocalSettingIconStyle.current
-    val avatarColors = if (iconStyle == SettingIconStyle.PLUMP_DUO) PlumpAvatarColors else Md3AvatarColors
-    val colorIndex = kotlin.math.abs(word.id.hashCode()) % avatarColors.size
-    val avatarColor = avatarColors[colorIndex]
+    val colorIndex = kotlin.math.abs(word.id.hashCode()) % AvatarColors.size
+    val avatarColor = AvatarColors[colorIndex]
 
     PremiumCard(onClick = onClick) {
         Row(
@@ -377,7 +347,7 @@ private fun WordListItemPremium(
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(avatarColor.copy(alpha = 0.12f), RoundedCornerShape(16.dp)),
+                    .background(avatarColor.copy(alpha = 0.12f), RoundedRectangle(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -447,7 +417,7 @@ private fun WordListItemPremium(
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedRectangle(8.dp))
                         .background(levelColor.copy(alpha = 0.12f))
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
@@ -490,7 +460,7 @@ private fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedRectangle(22.dp),
         color = containerColor,
 
         modifier = modifier
@@ -508,31 +478,25 @@ private fun PremiumCard(
 @Composable
 private fun EmptyState(
     message: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox,
-    plumpIcon: PlumpIcon? = null
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.surfaceVariant
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val accentColor = IosColors.Blue
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.12f) else accentColor.copy(alpha = 0.2f)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        if (isPlumpDuo && plumpIcon != null) {
-            Box(
-                modifier = Modifier.size(72.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                PlumpDuoIcon(
-                    icon = plumpIcon,
-                    color = IsoluminantPalette.SkyIndigo,
-                    size = 56.dp
-                )
-            }
-        } else {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(containerBg, RoundedRectangle(28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = accentColor,
-                modifier = Modifier.size(64.dp)
+                modifier = Modifier.size(56.dp)
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -544,48 +508,24 @@ private fun EmptyState(
     }
 }
 
-@Composable
 private fun getLevelColor(level: String): Color {
-    val iconStyle = LocalSettingIconStyle.current
-    return if (iconStyle == SettingIconStyle.PLUMP_DUO) {
-        when (level.uppercase()) {
-            "N5" -> IsoluminantPalette.EmeraldGreen
-            "N4" -> IsoluminantPalette.LakesideCyan
-            "N3" -> IsoluminantPalette.SkyIndigo
-            "N2" -> IsoluminantPalette.WarmAmber
-            "N1" -> IsoluminantPalette.RoseRuby
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        when (level.uppercase()) {
-            "N5" -> NemoSecondary
-            "N4" -> NemoCyan
-            "N3" -> NemoPrimary
-            "N2" -> NemoOrange
-            "N1" -> IosColors.Pink
-            else -> NemoPrimary
-        }
+    return when (level.uppercase()) {
+        "N5" -> IosColors.Green
+        "N4" -> IosColors.Cyan
+        "N3" -> IosColors.Blue
+        "N2" -> IosColors.Orange
+        "N1" -> IosColors.Pink
+        else -> IosColors.Blue
     }
 }
 
-private val Md3AvatarColors = listOf(
-    NemoPrimary,
-    NemoOrange,
-    NemoSecondary,
-    NemoIndigo,
-    NemoTeal,
-    NemoPurple,
+private val AvatarColors = listOf(
+    IosColors.Blue,
+    IosColors.Orange,
+    IosColors.Green,
+    IosColors.Indigo,
+    IosColors.Teal,
+    IosColors.Purple,
     IosColors.Pink,
-    NemoCyan
-)
-
-private val PlumpAvatarColors = listOf(
-    IsoluminantPalette.SkyIndigo,     // 255°
-    IsoluminantPalette.LakesideCyan,  // 195°
-    IsoluminantPalette.EmeraldGreen,  // 145°
-    IsoluminantPalette.WarmAmber,     // 70°
-    IsoluminantPalette.CoralFlame,    // 30°
-    IsoluminantPalette.RoseRuby,      // 15°
-    IsoluminantPalette.LilacViolet,   // 295°
-    IsoluminantPalette.GlazeMint      // 175°
+    IosColors.Cyan
 )

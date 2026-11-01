@@ -41,7 +41,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -54,7 +54,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -63,9 +63,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.derivedStateOf
@@ -135,18 +133,38 @@ private val PremiumCategoryPalette = listOf(
     KanaCardColorPair(NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight)
 )
 
-private val IsoluminantCategoryColors = listOf(
-    IsoluminantPalette.SkyIndigo,     // あ行 (255°)
-    IsoluminantPalette.EmeraldGreen,  // か行 (145°)
-    IsoluminantPalette.WarmAmber,     // さ行 (70°)
-    IsoluminantPalette.LilacViolet,   // た行 (295°)
-    IsoluminantPalette.LakesideCyan,  // な行 (195°)
-    IsoluminantPalette.RoseRuby,      // は行 (15°)
-    IsoluminantPalette.SeaMarine,     // ま行 (225°)
-    IsoluminantPalette.CoralFlame,    // や行 (30°)
-    IsoluminantPalette.GlazeMint,     // ら行 (175°)
-    IsoluminantPalette.OceanBlue      // わ行 (240°)
+private val CategoryRowColors = listOf(
+    IosColors.Indigo,  // あ行
+    IosColors.Green,   // か行
+    IosColors.Orange,  // さ行
+    IosColors.Purple,  // た行
+    IosColors.Cyan,    // な行
+    IosColors.Pink,    // は行
+    IosColors.Blue,    // ま行
+    IosColors.Yellow,  // や行
+    IosColors.Mint,    // ら行
+    IosColors.Teal     // わ行
 )
+
+private fun getCategoryRowColor(rowIndex: Int, isDark: Boolean): Color {
+    val index = rowIndex % CategoryRowColors.size
+    return if (isDark) {
+        when (index) {
+            0 -> IosColors.IndigoDark
+            1 -> IosColors.GreenDark
+            2 -> IosColors.OrangeDark
+            3 -> IosColors.PurpleDark
+            4 -> IosColors.CyanDark
+            5 -> IosColors.Pink
+            6 -> IosColors.BlueDark
+            7 -> IosColors.Yellow
+            8 -> IosColors.Mint
+            else -> IosColors.TealDark
+        }
+    } else {
+        CategoryRowColors[index]
+    }
+}
 
 private val EP = KanaCell("", "", "", isEmpty = true)
 
@@ -167,7 +185,6 @@ fun KanaChartScreen(
     viewModel: KanaChartViewModel = hiltViewModel()
 ) {
     val iconStyle by viewModel.iconStyle.collectAsState()
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
@@ -182,14 +199,10 @@ fun KanaChartScreen(
     var currentSection by remember { mutableStateOf("seion") }
     val isKatakana = currentType == 1
 
-    val accentColor = if (isPlumpDuo) {
-        when (currentSection) {
-            "dakuon" -> IsoluminantPalette.EmeraldGreen
-            "yoon" -> IsoluminantPalette.LilacViolet
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        if (isDark) colorScheme.primary.copy(alpha = 0.7f) else LightAccent
+    val accentColor = when (currentSection) {
+        "dakuon" -> if (isDark) IosColors.GreenDark else IosColors.Green
+        "yoon" -> if (isDark) IosColors.PurpleDark else IosColors.Purple
+        else -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
     }
     val tabContainerColor = if (isDark) colorScheme.surfaceContainer else LearningPalette.KanaTabBgLight
     val tabSelectedColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White
@@ -238,15 +251,14 @@ fun KanaChartScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
-                    Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
+                    Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
 
                     when (section) {
                         "seion" -> {
                             SectionTitle(
                                 text = stringResource(R.string.kana_section_seion),
                                 accentColor = accentColor,
-                                textMain = textMain,
-                                flashing = false
+                                textMain = textMain
                             )
                             KanaGrid(
                                 cells = seionData,
@@ -266,8 +278,7 @@ fun KanaChartScreen(
                             SectionTitle(
                                 text = stringResource(R.string.kana_section_dakuon),
                                 accentColor = accentColor,
-                                textMain = textMain,
-                                flashing = false
+                                textMain = textMain
                             )
                             SectionSubtitle(text = stringResource(R.string.kana_desc_dakuon), textSub = textSub)
                             KanaGrid(
@@ -288,8 +299,7 @@ fun KanaChartScreen(
                             SectionTitle(
                                 text = stringResource(R.string.kana_section_yoon),
                                 accentColor = accentColor,
-                                textMain = textMain,
-                                flashing = false
+                                textMain = textMain
                             )
                             SectionSubtitle(text = stringResource(R.string.kana_desc_yoon), textSub = textSub)
                             KanaGrid(
@@ -319,26 +329,26 @@ fun KanaChartScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            backgroundColor.copy(alpha = 0.98f),
-                            backgroundColor.copy(alpha = 0.88f),
-                            backgroundColor.copy(alpha = 0.55f),
-                            backgroundColor.copy(alpha = 0.20f),
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
                             Color.Transparent
                         )
                     )
                 )
-                .padding(bottom = 16.dp)
+                .padding(bottom = 8.dp)
         ) {
             CommonHeader(
                 title = stringResource(R.string.kana_chart_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
+                backButtonSize = 48.dp,
                 actions = {
-                    val toggleFg = if (isPlumpDuo) {
-                        if (currentType == 0) IsoluminantPalette.SkyIndigo else IsoluminantPalette.RoseRuby
+                    val toggleFg = if (currentType == 0) {
+                        if (isDark) IosColors.IndigoDark else IosColors.Indigo
                     } else {
-                        if (currentType == 0) LearningPalette.KanaIndigoAccent else LearningPalette.KanaPinkAccent
+                        if (isDark) IosColors.Pink else IosColors.Pink
                     }
                     FrostedLiquidGlassButton(
                         onClick = {
@@ -355,20 +365,12 @@ fun KanaChartScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            if (isPlumpDuo) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.RandomShuffle,
-                                    color = toggleFg,
-                                    size = 18.dp
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.SwapHoriz,
-                                    contentDescription = stringResource(R.string.kana_btn_toggle_type),
-                                    modifier = Modifier.size(20.dp),
-                                    tint = toggleFg
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.SwapHoriz,
+                                contentDescription = stringResource(R.string.kana_btn_toggle_type),
+                                modifier = Modifier.size(20.dp),
+                                tint = toggleFg
+                            )
                             Text(
                                 text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
@@ -389,16 +391,16 @@ fun KanaChartScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val sections = listOf(
-                Triple("seion", stringResource(R.string.kana_quick_nav_seion), IsoluminantPalette.SkyIndigo),
-                Triple("dakuon", stringResource(R.string.kana_quick_nav_dakuon), IsoluminantPalette.EmeraldGreen),
-                Triple("yoon", stringResource(R.string.kana_quick_nav_yoon), IsoluminantPalette.LilacViolet)
+                Triple("seion", stringResource(R.string.kana_quick_nav_seion), if (isDark) IosColors.IndigoDark else IosColors.Indigo),
+                Triple("dakuon", stringResource(R.string.kana_quick_nav_dakuon), if (isDark) IosColors.GreenDark else IosColors.Green),
+                Triple("yoon", stringResource(R.string.kana_quick_nav_yoon), if (isDark) IosColors.PurpleDark else IosColors.Purple)
             )
             sections.forEach { (sectionKey, label, sectionColor) ->
                 val isSelected = currentSection == sectionKey
-                val activeThemeColor = if (isPlumpDuo) sectionColor else LearningPalette.KanaIndigoAccent
+                val activeThemeColor = sectionColor
 
                 val selectedSurface = if (isDark) {
-                    if (isPlumpDuo) activeThemeColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                    activeThemeColor.copy(alpha = 0.35f)
                 } else {
                     Color.White
                 }
@@ -425,7 +427,7 @@ fun KanaChartScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        if (isPlumpDuo && isSelected) {
+                        if (isSelected) {
                             Box(
                                 modifier = Modifier
                                     .size(6.dp)
@@ -450,81 +452,29 @@ fun KanaChartScreen(
 
 
 @Composable
-private fun QuickNavButton(
-    label: String,
-    surfaceColor: Color,
-    selectedSurfaceColor: Color,
-    textMain: Color,
-    selected: Boolean,
+private fun SectionTitle(
+    text: String,
     accentColor: Color,
-    isDark: Boolean,
-    onClick: () -> Unit
+    textMain: Color,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else LearningPalette.KanaIndigoAccent
-    val fgColor by animateColorAsState(
-        targetValue = if (selected) activeColor else textMain.copy(alpha = 0.6f),
-        animationSpec = tween(180),
-        label = "quickNavFg"
-    )
-
-    Column(
-        modifier = Modifier
-            .noRippleClickable(onClick = onClick)
-            .padding(bottom = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-            ),
-            color = fgColor
+        Box(
+            modifier = Modifier
+                .size(width = 4.dp, height = 16.dp)
+                .clip(RoundedRectangle(2.dp))
+                .background(accentColor)
         )
-        if (selected) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .size(width = 20.dp, height = 3.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(activeColor)
-            )
-        } else {
-            Spacer(modifier = Modifier.height(7.dp))
-        }
-    }
-}
-
-@Composable
-private fun SectionTitle(text: String, accentColor: Color, textMain: Color, flashing: Boolean) {
-    val borderColor by animateColorAsState(
-        targetValue = if (flashing) accentColor.copy(alpha = 0.75f) else Color.Transparent,
-        animationSpec = tween(220),
-        label = "sectionFlashBorder"
-    )
-    Surface(
-        modifier = Modifier.padding(top = 8.dp),
-        shape = RoundedCornerShape(10.dp),
-        color = Color.Transparent,
-        border = BorderStroke(1.dp, borderColor)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(width = 8.dp, height = 18.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(accentColor)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = text,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                color = textMain
-            )
-        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            color = textMain
+        )
     }
 }
 
@@ -533,7 +483,8 @@ private fun SectionSubtitle(text: String, textSub: Color) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = textSub
+        color = textSub,
+        modifier = Modifier.padding(horizontal = 0.dp, vertical = 2.dp)
     )
 }
 
@@ -551,28 +502,26 @@ private fun KanaGrid(
     onSpeak: (String, String) -> Unit,
     onHaptic: () -> Unit
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         cells.chunked(columns).forEachIndexed { rowIndex, row ->
+            val rowColor = getCategoryRowColor(rowIndex, isDark)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { cell ->
-                    val (cardColor, cardTextMain, cardBorderColor) = if (isPlumpDuo) {
-                        val isoluminantColor = IsoluminantCategoryColors[rowIndex % IsoluminantCategoryColors.size]
-                        if (cell?.isPlaceholder == false && cell.isEmpty == false) {
-                            val bg = isoluminantColor.copy(alpha = if (isDark) 0.12f else 0.08f)
-                            Triple(bg, isoluminantColor, isoluminantColor)
+                    val (cardColor, cardTextMain, cardBorderColor) = if (cell?.isPlaceholder == false && cell.isEmpty == false) {
+                        val bg = if (isSoftTranslucent) {
+                            rowColor.copy(alpha = if (isDark) 0.15f else 0.10f)
                         } else {
-                            Triple(surfaceColor, textMain, playingBorderColor)
+                            rowColor.copy(alpha = if (isDark) 0.22f else 0.16f)
                         }
+                        Triple(bg, rowColor, rowColor)
                     } else {
-                        val colorPair = PremiumCategoryPalette[rowIndex % PremiumCategoryPalette.size]
-                        val bg = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) colorPair.bg else surfaceColor
-                        val fg = if (!isDark && cell?.isPlaceholder == false && cell.isEmpty == false) colorPair.text else textMain
-                        Triple(bg, fg, playingBorderColor)
+                        Triple(surfaceColor, textMain, playingBorderColor)
                     }
 
                     KanaCard(
@@ -655,7 +604,7 @@ private fun KanaCard(
 
     val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
     val textOpacity = if (cell.isPlaceholder) 0.3f else 1f
-    val cardShape = RoundedCornerShape(20.dp)
+    val cardShape = RoundedRectangle(20.dp)
     val cardBorder = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
 
     if (cell.isPlaceholder) {

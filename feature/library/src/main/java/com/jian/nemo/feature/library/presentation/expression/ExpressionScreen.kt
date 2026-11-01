@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.library.presentation.expression
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.togetherWith
@@ -19,7 +20,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.res.stringResource
@@ -69,15 +70,16 @@ private fun getCategoryColor(key: String): Color {
     }
 }
 
-private fun getCategoryShortName(key: String): String {
+@StringRes
+private fun getCategoryShortNameRes(key: String): Int {
     return when (key) {
-        "collocation" -> "固"
-        "sentence_pattern" -> "句"
-        "idiom" -> "惯"
-        "four_character_idiom" -> "四"
-        "semi_fixed_template" -> "框"
-        "collocation_group" -> "群"
-        else -> "语"
+        "collocation" -> R.string.library_expression_label_short_collocation
+        "sentence_pattern" -> R.string.library_expression_label_short_sentence_pattern
+        "idiom" -> R.string.library_expression_label_short_idiom
+        "four_character_idiom" -> R.string.library_expression_label_short_four_character_idiom
+        "semi_fixed_template" -> R.string.library_expression_label_short_semi_fixed_template
+        "collocation_group" -> R.string.library_expression_label_short_collocation_group
+        else -> R.string.library_expression_label_short_default
     }
 }
 
@@ -231,7 +233,7 @@ fun CategoryFlatCard(
         modifier = Modifier
             .aspectRatio(1.35f)
             .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -253,12 +255,12 @@ fun CategoryFlatCard(
                 Box(
                     modifier = Modifier
                         .size(44.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedRectangle(12.dp))
                         .background(themeColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = getCategoryShortName(category.categoryKey),
+                        text = stringResource(getCategoryShortNameRes(category.categoryKey)),
                         color = themeColor,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
@@ -300,7 +302,7 @@ fun CategoryFlatCard(
                 // 扁平进度条指示词条条数
                 Surface(
                     color = themeColor.copy(alpha = 0.12f),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     border = BorderStroke(0.5.dp, themeColor.copy(alpha = 0.3f))
                 ) {
                     Text(
@@ -364,7 +366,7 @@ fun ExpressionBrowser(
             // 记忆口诀横幅 (Banner Card) — 高质感扁平
             Card(
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedRectangle(12.dp),
                 colors = CardDefaults.cardColors(containerColor = themeColor.copy(alpha = 0.08f)),
                 border = BorderStroke(1.dp, themeColor.copy(alpha = 0.2f))
             ) {
@@ -455,7 +457,7 @@ fun FlatFilterBar(
                     }
                 }
             },
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedRectangle(12.dp),
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -478,14 +480,14 @@ fun FlatFilterBar(
                 Surface(
                     modifier = Modifier
                         .weight(1f)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedRectangle(8.dp))
                         .clickable { onLevelSelect(level) },
                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                     border = BorderStroke(
                         width = 1.dp,
                         color = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outlineVariant
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedRectangle(8.dp)
                 ) {
                     Text(
                         text = level,
@@ -514,14 +516,14 @@ fun ExpressionFlatCard(
     
     val rotationState by animateFloatAsState(
         targetValue = if (isExamplesExpanded) 180f else 0f,
-        label = "箭头旋转"
+        label = stringResource(R.string.library_expression_label_arrow_rotation)
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(), // 点击例句或隐显填空时平滑形变动效
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -538,7 +540,7 @@ fun ExpressionFlatCard(
             ) {
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(6.dp)
+                    shape = RoundedRectangle(6.dp)
                 ) {
                     Text(
                         text = expression.level,
@@ -606,7 +608,7 @@ fun ExpressionFlatCard(
                         Surface(
                             color = themeColor.copy(alpha = 0.06f),
                             border = BorderStroke(0.5.dp, themeColor.copy(alpha = 0.2f)),
-                            shape = RoundedCornerShape(6.dp)
+                            shape = RoundedRectangle(6.dp)
                         ) {
                             Text(
                                 text = syn,
@@ -639,7 +641,7 @@ fun ExpressionFlatCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedRectangle(8.dp))
                         .clickable { isExamplesExpanded = !isExamplesExpanded }
                         .padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -695,7 +697,7 @@ fun FlatClozeBox(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .clickable { onToggleReveal() },
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
@@ -723,7 +725,7 @@ fun FlatClozeBox(
                 // 交互填空胶囊药丸 (0.dp阴影, 扁平高对比度)
                 Surface(
                     color = if (isRevealed) themeColor.copy(alpha = 0.15f) else themeColor,
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedRectangle(8.dp),
                     border = if (isRevealed) BorderStroke(1.dp, themeColor) else null,
                     modifier = Modifier.padding(horizontal = 6.dp)
                 ) {
@@ -775,7 +777,7 @@ fun ExampleItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f))
             .padding(12.dp)
     ) {

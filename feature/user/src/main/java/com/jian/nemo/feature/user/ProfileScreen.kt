@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.user.R
 
@@ -69,7 +70,8 @@ fun ProfileScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .softCardShadow(borderRadius = 16.dp, isDark = isDark)
+                    .softCardShadow(borderRadius = 16.dp, isDark = isDark),
+                shape = RoundedRectangle(16.dp)
             ) {
                 Column {
                     ProfileMenuItem(
@@ -113,7 +115,8 @@ fun ProfileScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .softCardShadow(borderRadius = 16.dp, isDark = isDark)
+                    .softCardShadow(borderRadius = 16.dp, isDark = isDark),
+                shape = RoundedRectangle(16.dp)
             ) {
                 Column {
                     ProfileMenuItem(
@@ -141,6 +144,7 @@ fun ProfileScreen(
 private fun UserInfoCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedRectangle(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         )
@@ -154,7 +158,7 @@ private fun UserInfoCard() {
             // 头像占位符
             Surface(
                 modifier = Modifier.size(64.dp),
-                shape = MaterialTheme.shapes.medium,
+                shape = RoundedRectangle(16.dp),
                 color = MaterialTheme.colorScheme.primary
             ) {
                 Box(

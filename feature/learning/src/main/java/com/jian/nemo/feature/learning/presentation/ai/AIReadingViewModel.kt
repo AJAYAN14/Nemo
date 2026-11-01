@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.util.AIClient
@@ -9,7 +10,9 @@ import com.jian.nemo.core.domain.model.AIReadingHistory
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
+import com.jian.nemo.feature.learning.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,7 +31,7 @@ data class AIReadingUiState(
     val error: String? = null,
     val isConfigured: Boolean = false,
     val difficulty: String = "N5",
-    val readingTheme: String = "日常生活",
+    val readingTheme: String = "",
     val playingAudioId: String? = null,
     val aiPlatform: String = "openai",
     val aiModel: String = "",
@@ -66,6 +69,7 @@ sealed interface AIReadingEvent {
 
 @HiltViewModel
 class AIReadingViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val aiClient: AIClient,
     private val audioRepository: AudioRepository,
@@ -84,6 +88,9 @@ class AIReadingViewModel @Inject constructor(
     private var allConfigs: List<AIConfig> = emptyList()
 
     init {
+        if (_uiState.value.readingTheme.isBlank()) {
+            _uiState.update { it.copy(readingTheme = context.getString(R.string.learning_ai_reading_theme_daily_life_title)) }
+        }
         observeSettings()
         observeTtsEvents()
         observeReadingHistory()
@@ -163,7 +170,7 @@ class AIReadingViewModel @Inject constructor(
             settingsRepository.aiReadingThemeFlow.collect { theme ->
                 _uiState.update { state ->
                     state.copy(
-                        readingTheme = theme
+                        readingTheme = theme.ifBlank { context.getString(R.string.learning_ai_reading_theme_daily_life_title) }
                     )
                 }
             }
@@ -252,7 +259,13 @@ class AIReadingViewModel @Inject constructor(
                     val configs = allConfigs
                     if (configs.size <= 1) {
                         _uiState.update {
-                            it.copy(error = if (configs.isEmpty()) "请先在配置中心添加 AI 模型" else "只有一个配置，无法切换")
+                            it.copy(
+                                error = if (configs.isEmpty()) {
+                                    context.getString(R.string.learning_ai_reading_toast_no_model_config)
+                                } else {
+                                    context.getString(R.string.learning_ai_reading_toast_single_config)
+                                }
+                            )
                         }
                         return@launch
                     }
@@ -317,7 +330,7 @@ class AIReadingViewModel @Inject constructor(
 
     private fun generateArticle() {
         if (aiApiKey.isBlank()) {
-            _uiState.update { it.copy(error = "API 密钥未配置，请前往设置配置！") }
+            _uiState.update { it.copy(error = context.getString(R.string.learning_ai_reading_toast_api_key_missing_settings)) }
             return
         }
 
@@ -358,7 +371,10 @@ class AIReadingViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
-                            error = "生成短文失败，请重试: ${error.localizedMessage ?: error.message}"
+                            error = context.getString(
+                                R.string.learning_ai_reading_format_generate_article_failed,
+                                error.localizedMessage ?: error.message ?: ""
+                            )
                         )
                     }
                 }
@@ -369,7 +385,7 @@ class AIReadingViewModel @Inject constructor(
     private fun translateWord(text: String, contextSentence: String) {
         if (text.isBlank()) return
         if (aiApiKey.isBlank()) {
-            _uiState.update { it.copy(translationError = "API 密钥未配置") }
+            _uiState.update { it.copy(translationError = context.getString(R.string.learning_ai_reading_toast_api_key_missing)) }
             return
         }
 
@@ -406,7 +422,10 @@ class AIReadingViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isTranslating = false,
-                            translationError = "翻译失败: ${error.localizedMessage ?: error.message}"
+                            translationError = context.getString(
+                                R.string.learning_ai_reading_format_translate_failed,
+                                error.localizedMessage ?: error.message ?: ""
+                            )
                         )
                     }
                 }

@@ -17,6 +17,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import android.content.Context
+import com.jian.nemo.feature.library.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import com.jian.nemo.core.domain.model.RelatedWordItem
 import com.jian.nemo.core.domain.repository.WordRelationRepository
@@ -32,6 +35,7 @@ import com.jian.nemo.core.ui.navigation.DetailContextHolder
  */
 @HiltViewModel
 class WordDetailViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle,
     private val wordRepository: WordRepository,
     private val playTtsUseCase: PlayTtsUseCase,
@@ -174,16 +178,16 @@ class WordDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val result = contentReportRepository.reportContentError(wordId, "word", errorType, description)
             if (result is Result.Success) {
-                _successMessage.value = "反馈成功，感谢您的反馈！"
+                _successMessage.value = context.getString(R.string.library_word_detail_toast_feedback_success)
             } else if (result is Result.Error) {
                 val message = result.exception.message ?: ""
                 val friendlyError = when {
-                    message.contains("unique_user_item_report") -> "您已经提交过对此类型问题的反馈了，请勿重复提交。"
+                    message.contains("unique_user_item_report") -> context.getString(R.string.library_word_detail_toast_report_duplicate)
                     message.contains("connection closed", ignoreCase = true) ||
                     message.contains("Unable to resolve host", ignoreCase = true) ||
                     message.contains("timeout", ignoreCase = true) ||
-                    message.contains("HTTP request to", ignoreCase = true) -> "网络连接失败，请检查网络后重试。"
-                    else -> "反馈失败: $message"
+                    message.contains("HTTP request to", ignoreCase = true) -> context.getString(R.string.library_word_detail_toast_network_error)
+                    else -> context.getString(R.string.library_word_detail_format_feedback_failed, message)
                 }
                 _errorMessage.value = friendlyError
             }

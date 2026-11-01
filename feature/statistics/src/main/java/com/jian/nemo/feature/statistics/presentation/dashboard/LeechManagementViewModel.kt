@@ -1,5 +1,8 @@
 package com.jian.nemo.feature.statistics.presentation.dashboard
 
+import android.content.Context
+import com.jian.nemo.feature.statistics.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
@@ -41,7 +44,8 @@ class LeechManagementViewModel @Inject constructor(
     private val getSkippedGrammarsUseCase: GetSkippedGrammarsUseCase,
     private val recoverLeechWordUseCase: RecoverLeechWordUseCase,
     private val recoverLeechGrammarUseCase: RecoverLeechGrammarUseCase,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LeechManagementUiState())
@@ -97,9 +101,9 @@ class LeechManagementViewModel @Inject constructor(
         viewModelScope.launch {
             val result = recoverLeechWordUseCase(id)
             if (result is Result.Success) {
-                _uiState.update { it.copy(successMessage = "单词已恢复至学习队列") }
+                _uiState.update { it.copy(successMessage = context.getString(R.string.stats_leech_toast_word_recovered)) }
             } else {
-                _uiState.update { it.copy(error = "恢复失败") }
+                _uiState.update { it.copy(error = context.getString(R.string.stats_leech_toast_recover_failed)) }
             }
         }
     }
@@ -108,9 +112,9 @@ class LeechManagementViewModel @Inject constructor(
         viewModelScope.launch {
             val result = recoverLeechGrammarUseCase(id)
             if (result is Result.Success) {
-                _uiState.update { it.copy(successMessage = "语法已恢复至学习队列") }
+                _uiState.update { it.copy(successMessage = context.getString(R.string.stats_leech_toast_grammar_recovered)) }
             } else {
-                _uiState.update { it.copy(error = "恢复失败") }
+                _uiState.update { it.copy(error = context.getString(R.string.stats_leech_toast_recover_failed)) }
             }
         }
     }

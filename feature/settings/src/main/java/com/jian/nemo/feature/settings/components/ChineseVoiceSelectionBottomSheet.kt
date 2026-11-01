@@ -4,9 +4,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RecordVoiceOver
+import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.settings.R
 
@@ -61,17 +63,22 @@ fun ChineseVoiceSelectionBottomSheet(
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val iconStyle = LocalSettingIconStyle.current
+                val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+                val iconTint = if (isSoftTranslucent) accentColor else Color.White
+
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(36.dp)
+                        .background(containerBgColor, RoundedRectangle(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.RecordVoiceOver,
+                        imageVector = Icons.Rounded.Translate,
                         contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))

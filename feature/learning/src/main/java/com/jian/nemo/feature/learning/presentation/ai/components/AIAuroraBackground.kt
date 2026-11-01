@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebSettings
 import android.webkit.WebView
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.toHex
+import com.jian.nemo.feature.learning.R
 
 private const val AURORA_SHADER_URL = "file:///android_asset/shaders/ai_aurora.html"
 
@@ -25,7 +27,7 @@ private const val AURORA_SHADER_URL = "file:///android_asset/shaders/ai_aurora.h
  */
 data class AuroraPreset(
     val id: String,
-    val name: String,
+    @StringRes val nameRes: Int,
     val color1: Color,
     val color2: Color,
     val color3: Color
@@ -35,7 +37,7 @@ val AuroraPresets = listOf(
     // 1. 经典极光 (Classic Neon) - 官方标志性电光紫与霓虹青绿
     AuroraPreset(
         id = "classic",
-        name = "经典极光",
+        nameRes = R.string.learning_ai_aurora_label_preset_classic,
         color1 = LearningPalette.AuroraClassic1,
         color2 = LearningPalette.AuroraClassic2,
         color3 = LearningPalette.AuroraClassic1
@@ -43,7 +45,7 @@ val AuroraPresets = listOf(
     // 2. 霓虹天际 (Nordic Sky) - React Bits 官方精选 (深紫/樱花洋红/晴空青)
     AuroraPreset(
         id = "nordic",
-        name = "霓虹天际",
+        nameRes = R.string.learning_ai_aurora_label_preset_nordic,
         color1 = LearningPalette.AuroraNordic1,
         color2 = LearningPalette.AuroraNordic2,
         color3 = LearningPalette.AuroraNordic3
@@ -51,7 +53,7 @@ val AuroraPresets = listOf(
     // 3. 极昼破晓 (Polar Dawn) - 皇家深蓝/晨曦柔粉/破晓赤红
     AuroraPreset(
         id = "polar_dawn",
-        name = "极昼破晓",
+        nameRes = R.string.learning_ai_aurora_label_preset_polar_dawn,
         color1 = LearningPalette.AuroraPolar1,
         color2 = LearningPalette.AuroraPolar2,
         color3 = LearningPalette.AuroraPolar3
@@ -59,7 +61,7 @@ val AuroraPresets = listOf(
     // 4. 冰川青碧 (Glacier Turquoise) - 冰川天蓝/薄荷翡翠/琉璃靛蓝
     AuroraPreset(
         id = "glacier",
-        name = "冰川青碧",
+        nameRes = R.string.learning_ai_aurora_label_preset_glacier,
         color1 = LearningPalette.AuroraGlacier1,
         color2 = LearningPalette.AuroraGlacier2,
         color3 = LearningPalette.AuroraGlacier3
@@ -67,7 +69,7 @@ val AuroraPresets = listOf(
     // 5. 暮色紫霞 (Dusk Sunset) - 绚丽玫红/梦幻罗兰/深海蔚蓝
     AuroraPreset(
         id = "dusk",
-        name = "暮色紫霞",
+        nameRes = R.string.learning_ai_aurora_label_preset_dusk,
         color1 = LearningPalette.AuroraDusk1,
         color2 = LearningPalette.AuroraDusk2,
         color3 = LearningPalette.AuroraDusk3

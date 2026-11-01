@@ -21,6 +21,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringArrayResource
+import com.jian.nemo.core.ui.R
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -39,11 +41,7 @@ fun AnimatedWordBackground(
     contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onPrimary // Added customizable color
 ) {
     // 词库
-    val words = listOf(
-        "こんにちは", "ありがとう", "日本語", "桜", "夢", "愛", "花見",
-        "友達", "時間", "赤い", "緑", "犬", "知る", "大きい",
-        "小さい", "新しい", "難しい", "楽しい", "静か", "見る"
-    )
+    val words = stringArrayResource(R.array.core_ui_animation_label_floating_words).toList()
 
     // 动画配置，避免每次渲染时都重复计算
     val padding = containerSize.height * 0.1f

@@ -9,7 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -625,7 +625,7 @@ private fun ReadyView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp)
-                    .clip(RoundedCornerShape(3.dp)),
+                    .clip(RoundedRectangle(3.dp)),
                 color = IosColors.Orange,
                 trackColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray200
             )
@@ -637,7 +637,7 @@ private fun ReadyView(
                     .graphicsLayer(scaleX = cardScale, scaleY = cardScale)
                     .padding(vertical = 12.dp)
                     .softCardShadow(borderRadius = 32.dp, isDark = isDark),
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedRectangle(32.dp),
                 color = cardBgColor
             ) {
                 Column(
@@ -737,16 +737,16 @@ private fun ReadyView(
                                             .size(width = 52.dp, height = 64.dp)
                                             .shadow(
                                                 elevation = if (isCurrentQCorrect) 1.dp else if (isActive && isGlobalFocused) 6.dp else 2.dp,
-                                                shape = RoundedCornerShape(20.dp)
+                                                shape = RoundedRectangle(20.dp)
                                             )
-                                            .clip(RoundedCornerShape(20.dp))
+                                            .clip(RoundedRectangle(20.dp))
                                             .background(boxBg)
                                             .border(
                                                 BorderStroke(
                                                     width = if (isCurrentQCorrect) 2.dp else if (hasError || (isActive && isGlobalFocused)) 2.dp else 0.dp,
                                                     color = boxBorderColor
                                                  ),
-                                                RoundedCornerShape(20.dp)
+                                                RoundedRectangle(20.dp)
                                             )
                                             .clickable {
                                                 if (!isCurrentQCorrect) {
@@ -849,7 +849,7 @@ private fun ReadyView(
                                 keyboardController?.show()
                             },
                             color = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100,
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedRectangle(12.dp),
                             modifier = Modifier.padding(horizontal = 8.dp)
                         ) {
                             Row(
@@ -916,7 +916,7 @@ private fun ReadyView(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isCurrentQCorrect) IosColors.Green else IosColors.Orange
                     ),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp)
@@ -972,7 +972,7 @@ private fun ReadyView(
                     .fillMaxWidth()
                     .softCardShadow(borderRadius = 28.dp, isDark = isDark),
                 color = (if (isDark) NemoNeutrals.Gray900 else Color.White).copy(alpha = 0.88f), // 玻璃半透明感
-                shape = RoundedCornerShape(28.dp),
+                shape = RoundedRectangle(28.dp),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
             ) {
                 Box(
@@ -1146,7 +1146,7 @@ private fun ResultView(
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             color = cardBg
         ) {
             Column(
@@ -1175,7 +1175,7 @@ private fun ResultView(
         Button(
             onClick = { onRegenerate() },
             colors = ButtonDefaults.buttonColors(containerColor = IosColors.Orange),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedRectangle(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp)
@@ -1195,7 +1195,7 @@ private fun ResultView(
             OutlinedButton(
                 onClick = { onRestart() },
                 border = BorderStroke(1.dp, IosColors.Orange.copy(alpha = 0.4f)),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp)
@@ -1211,7 +1211,7 @@ private fun ResultView(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray200
                 ),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 modifier = Modifier
                     .weight(1f)
                     .height(56.dp)
@@ -1290,8 +1290,8 @@ private fun ClozeHistoryView(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .shadow(2.dp, shape = RoundedCornerShape(16.dp)),
-                        shape = RoundedCornerShape(16.dp),
+                            .shadow(2.dp, shape = RoundedRectangle(16.dp)),
+                        shape = RoundedRectangle(16.dp),
                         color = if (isDark) MaterialTheme.colorScheme.surface else Color.White
                     ) {
                         Row(
@@ -1384,7 +1384,7 @@ private fun ClozeErrorView(
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(containerColor = IosColors.Orange),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedRectangle(12.dp)
             ) {
                 Text(text = stringResource(R.string.test_cloze_btn_reload), color = Color.White)
             }
@@ -1434,7 +1434,7 @@ private fun JapaneseInputGuideDialog(
                 .fillMaxHeight(0.82f)
                 .padding(16.dp)
                 .softCardShadow(borderRadius = 28.dp, isDark = isDark),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedRectangle(28.dp),
             color = bg,
             border = BorderStroke(
                 width = 1.dp,
@@ -1485,7 +1485,7 @@ private fun JapaneseInputGuideDialog(
                 // 胶囊 Tab 控制器
                 var selectedTab by remember { mutableStateOf(0) }
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1671,7 +1671,7 @@ private fun JapaneseInputGuideDialog(
                         containerColor = IosColors.Orange,
                         contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedRectangle(24.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.test_cloze_guide_btn_confirm),
@@ -1716,7 +1716,7 @@ private fun TabButton(
     
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(9.dp),
+        shape = RoundedRectangle(9.dp),
         color = bg,
         shadowElevation = elevation,
         modifier = modifier.height(36.dp)
@@ -1742,7 +1742,7 @@ private fun GuideItemCard(
     isDark: Boolean
 ) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = cardBg,
         border = BorderStroke(
             width = 1.dp,
@@ -1799,7 +1799,7 @@ private fun GuideItemCard(
             }
             
             Surface(
-                shape = RoundedCornerShape(6.dp),
+                shape = RoundedRectangle(6.dp),
                 color = keyBg,
                 shadowElevation = 1.dp,
                 modifier = Modifier.padding(start = 8.dp)

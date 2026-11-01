@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.collection.favorites
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
@@ -7,7 +8,9 @@ import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import com.jian.nemo.feature.collection.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +33,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val wordRepository: WordRepository,
     private val grammarRepository: GrammarRepository,
     private val favoriteQuestionRepository: com.jian.nemo.core.domain.repository.FavoriteQuestionRepository,
@@ -71,7 +75,7 @@ class FavoritesViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "加载失败: ${e.message}"
+                        error = context.getString(R.string.collection_favorites_format_load_failed, e.message ?: "")
                     )
                 }
             }.collect { (words, questions) ->
@@ -100,7 +104,7 @@ class FavoritesViewModel @Inject constructor(
                 is Result.Error -> {
                     println("❌ 取消单词收藏失败: ${result.exception.message}")
                     _uiState.update {
-                        it.copy(error = "取消收藏失败: ${result.exception.message}")
+                        it.copy(error = context.getString(R.string.collection_favorites_format_unfavorite_failed, result.exception.message ?: ""))
                     }
                 }
                 is Result.Loading -> { /* Do nothing */ }
@@ -120,7 +124,7 @@ class FavoritesViewModel @Inject constructor(
             } catch (e: Exception) {
                 println("❌ 批量取消单词收藏失败: ${e.message}")
                 _uiState.update {
-                    it.copy(error = "批量取消收藏失败: ${e.message}")
+                    it.copy(error = context.getString(R.string.collection_favorites_format_batch_unfavorite_failed, e.message ?: ""))
                 }
             }
         }

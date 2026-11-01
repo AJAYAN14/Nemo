@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 活动热力图 (ActivityHeatmapScreen & ActivityHeatmapViewModel) -->
+    <string name="stats_heatmap_title_annual_review">年度回顾</string>
+    <string name="stats_heatmap_title_memory_panorama">记忆全景</string>
+    <string name="stats_heatmap_title_data_highlights">数据高光</string>
+    <string name="stats_heatmap_unit_days">天</string>
+    <string name="stats_heatmap_format_longest_streak">最长 %1$d 天</string>
+    <string name="stats_heatmap_label_unremitting">坚持不懈</string>
+    <string name="stats_heatmap_unit_items">项</string>
+    <string name="stats_heatmap_label_above_avg">超过平均</string>
+    <string name="stats_heatmap_label_steady_progress">稳步前进</string>
+    <string name="stats_heatmap_suffix_items"> 项</string>
+
+    <string name="stats_heatmap_bucket_early">初识</string>
+    <string name="stats_heatmap_bucket_developing">熟悉</string>
+    <string name="stats_heatmap_bucket_mature">稳固</string>
+    <string name="stats_heatmap_bucket_expert">长效</string>
+
+    <!-- 学习热力图卡片与图例 (LearningHeatmapCard) -->
+    <string name="stats_heatmap_weekday_mon">一</string>
+    <string name="stats_heatmap_weekday_wed">三</string>
+    <string name="stats_heatmap_weekday_fri">五</string>
+    <string name="stats_heatmap_weekday_sun">日</string>
+    <string name="stats_heatmap_legend_less">少</string>
+    <string name="stats_heatmap_legend_more">多</string>
+
+    <string-array name="stats_heatmap_months">
+        <item>1月</item>
+        <item>2月</item>
+        <item>3月</item>
+        <item>4月</item>
+        <item>5月</item>
+        <item>6月</item>
+        <item>7月</item>
+        <item>8月</item>
+        <item>9月</item>
+        <item>10月</item>
+        <item>11月</item>
+        <item>12月</item>
+    </string-array>
+
+    <!-- 学习日历日期格式 (LearningCalendarScreen) -->
+    <string name="stats_calendar_format_selected_date">%1$d月%2$d日</string>
+    <string name="stats_calendar_format_today_selected_date">今天 · %1$s</string>
+
+    <!-- 热力图海报分享 (HeatmapSharePoster) -->
+    <string name="stats_poster_format_date_pattern">yyyy年M月d日</string>
+    <string name="stats_poster_unit_days">天</string>
+    <string name="stats_poster_tag_unremitting">坚持不懈</string>
+    <string name="stats_poster_unit_items">项</string>
+    <string name="stats_poster_format_best_day_tag">%1$s 巅峰</string>
+    <string name="stats_poster_unit_items_per_day">项/天</string>
+    <string name="stats_poster_tag_steady_progress">稳步向前</string>
+    <string name="stats_poster_tag_fsrs_algorithm">FSRS 算法</string>
+    <string name="stats_poster_format_total_count">%1$d 项</string>
+</resources>

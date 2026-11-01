@@ -5,7 +5,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
@@ -71,7 +72,7 @@ fun AIWordTranslationSheet(
         onDismissRequest = onDismiss,
         containerColor = Color.Transparent,
         dragHandle = null,
-        shape = RoundedCornerShape(0.dp),
+        shape = RoundedRectangle(0.dp),
         tonalElevation = 0.dp
     ) {
         Box(
@@ -102,7 +103,7 @@ fun AIWordTranslationSheet(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                                .clip(UnevenRoundedRectangle(topStart = 28.dp, topEnd = 28.dp))
                                 .background(sheetBg)
                                 .padding(horizontal = 24.dp)
                                 .padding(bottom = 32.dp)
@@ -123,7 +124,7 @@ fun AIWordTranslationSheet(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                                .clip(UnevenRoundedRectangle(topStart = 28.dp, topEnd = 28.dp))
                                 .background(sheetBg)
                                 .padding(horizontal = 24.dp)
                                 .padding(bottom = 32.dp)
@@ -182,7 +183,7 @@ private fun TranslationLoadingContent(
         modifier = Modifier
             .fillMaxWidth()
             .height(380.dp)
-            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
+            .clip(UnevenRoundedRectangle(topStart = 32.dp, topEnd = 32.dp))
             .background(drawerBg)
     ) {
         // 1. 扎根底部的原生 WebGL2 极光引擎
@@ -209,7 +210,7 @@ private fun TranslationLoadingContent(
                 .padding(top = 28.dp, start = 20.dp, end = 20.dp)
         ) {
             Surface(
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(
                     1.dp,
@@ -422,7 +423,7 @@ private fun TranslationSuccessContent(
 
             Surface(
                 color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedRectangle(12.dp),
                 border = BorderStroke(1.dp, borderColor)
             ) {
                 Row(

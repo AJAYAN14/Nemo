@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
@@ -46,12 +46,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.feature.settings.R
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.ClearLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
@@ -95,7 +97,7 @@ fun LiquidGlassLabScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             CommonHeader(
-                title = "液态玻璃实验室",
+                title = stringResource(R.string.settings_liquid_lab_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -110,7 +112,7 @@ fun LiquidGlassLabScreen(
                 // 顶部操作提示条
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = 16.dp)
@@ -127,7 +129,7 @@ fun LiquidGlassLabScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "按住按钮可自由拖拽到不同背景上对比透镜折射",
+                            text = stringResource(R.string.settings_liquid_lab_label_drag_hint),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -146,7 +148,7 @@ fun LiquidGlassLabScreen(
                         modifier = Modifier.height(48.dp)
                     ) {
                         BasicText(
-                            "全透明液态按钮",
+                            stringResource(R.string.settings_liquid_lab_btn_clear),
                             style = TextStyle(Color.Black, 15f.sp, fontWeight = FontWeight.Medium)
                         )
                     }
@@ -164,7 +166,7 @@ fun LiquidGlassLabScreen(
                         modifier = Modifier.height(48.dp)
                     ) {
                         BasicText(
-                            "带底色液态按钮",
+                            stringResource(R.string.settings_liquid_lab_btn_frosted),
                             style = TextStyle(Color.Black, 15f.sp, fontWeight = FontWeight.Medium)
                         )
                     }
@@ -183,7 +185,7 @@ fun LiquidGlassLabScreen(
                         modifier = Modifier.height(48.dp)
                     ) {
                         BasicText(
-                            "彩色液态按钮 (蓝)",
+                            stringResource(R.string.settings_liquid_lab_btn_colored_blue),
                             style = TextStyle(Color.White, 15f.sp, fontWeight = FontWeight.Medium)
                         )
                     }
@@ -202,7 +204,7 @@ fun LiquidGlassLabScreen(
                         modifier = Modifier.height(48.dp)
                     ) {
                         BasicText(
-                            "彩色液态按钮 (橙)",
+                            stringResource(R.string.settings_liquid_lab_btn_colored_orange),
                             style = TextStyle(Color.White, 15f.sp, fontWeight = FontWeight.Medium)
                         )
                     }
@@ -223,7 +225,7 @@ fun LiquidGlassLabScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(R.string.settings_liquid_lab_btn_back),
                             tint = Color.Black
                         )
                     }
@@ -337,12 +339,12 @@ private fun LabBackgroundDecorations() {
         ) {
             // 顶部模拟学习卡片
             Surface(
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedRectangle(24.dp),
                 color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 4.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedRectangle(24.dp))
             ) {
                 Row(
                     modifier = Modifier.padding(18.dp),
@@ -351,7 +353,7 @@ private fun LabBackgroundDecorations() {
                     Box(
                         modifier = Modifier
                             .size(46.dp)
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedRectangle(14.dp))
                             .background(Brush.linearGradient(listOf(SettingsPalette.LiquidBlueGradEnd, SettingsPalette.LiquidCyanGradStart))),
                         contentAlignment = Alignment.Center
                     ) {
@@ -365,7 +367,7 @@ private fun LabBackgroundDecorations() {
                     Spacer(modifier = Modifier.width(14.dp))
                     Column {
                         Text(
-                            text = "物理透镜光学折射样本",
+                            text = stringResource(R.string.settings_liquid_lab_title_optical_sample),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -393,7 +395,7 @@ private fun LabBackgroundDecorations() {
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "リアルタイム屈折レンダリング",
+                    text = stringResource(R.string.settings_liquid_lab_label_realtime_render),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 2.sp
@@ -404,11 +406,11 @@ private fun LabBackgroundDecorations() {
 
             // 底部模拟统计信息卡片
             Surface(
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedRectangle(24.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedCornerShape(24.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), RoundedRectangle(24.dp))
             ) {
                 Row(
                     modifier = Modifier
@@ -423,7 +425,7 @@ private fun LabBackgroundDecorations() {
                             color = SettingsPalette.LiquidBlueGradEnd
                         )
                         Text(
-                            text = "透镜厚度",
+                            text = stringResource(R.string.settings_liquid_lab_label_lens_thickness),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -435,7 +437,7 @@ private fun LabBackgroundDecorations() {
                             color = SettingsPalette.LiquidOrange
                         )
                         Text(
-                            text = "折射范围",
+                            text = stringResource(R.string.settings_liquid_lab_label_refract_range),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -447,7 +449,7 @@ private fun LabBackgroundDecorations() {
                             color = SettingsPalette.LiquidGreen
                         )
                         Text(
-                            text = "实时帧率",
+                            text = stringResource(R.string.settings_liquid_lab_label_realtime_fps),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

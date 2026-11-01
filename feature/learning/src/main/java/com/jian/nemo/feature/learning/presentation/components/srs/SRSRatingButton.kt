@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.learning.R
-import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,8 +43,8 @@ fun SRSRatingButton(
     LiquidButton(
         onClick = onClick,
         backgroundColor = containerColor,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.3f)),
+        shape = RoundedRectangle(16.dp),
+        border = BorderStroke(1.5.dp, color),
         elevation = 0.dp,
         modifier = modifier.height(56.dp)
     ) {
@@ -64,7 +64,7 @@ fun SRSRatingButton(
                 text = time,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
-                color = color.copy(alpha = 0.7f)
+                color = color
             )
         }
     }
@@ -77,8 +77,8 @@ private fun SRSRatingButtonPreview() {
         SRSRatingButton(
             label = stringResource(R.string.learn_srs_rating_forgot),
             time = "< 1m",
-            color = LearningPalette.SrsRoseTextLight,
-            containerColor = LearningPalette.SrsRoseBgLight,
+            color = IosColors.Red,
+            containerColor = MaterialTheme.colorScheme.surface,
             onClick = {}
         )
     }

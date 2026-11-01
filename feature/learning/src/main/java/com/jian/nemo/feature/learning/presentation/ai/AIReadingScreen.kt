@@ -8,7 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.rounded.*
@@ -23,9 +23,6 @@ import com.jian.nemo.core.ui.modifier.softShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -241,7 +238,7 @@ fun AIReadingScreen(
         ) {
             uiState.switchedConfigName?.let { name ->
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     color = colorScheme.inverseSurface,
                     shadowElevation = 10.dp,
                     tonalElevation = 0.dp
@@ -322,70 +319,52 @@ private fun ConfigScreen(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
     val levels = remember { listOf("N5", "N4", "N3", "N2", "N1") }
 
     // 精选的 6 个核心阅读主题 (Apple 风格：极度克制、纯粹意象副标、大留白)
-    val themes = remember {
-        listOf(
-            ThemeCardInfo(
-                name = "日常生活",
-                subtitle = "温暖生活琐事",
-                icon = Icons.Rounded.Park,
-                plumpIcon = PlumpIcon.Trees,
-                isoluminantColor = IsoluminantPalette.EmeraldGreen,
-                accent = BentoColors.AccentBlue,
-                iconBg = BentoColors.IconBgBlue
-            ),
-            ThemeCardInfo(
-                name = "传统文化",
-                subtitle = "和风传统美学",
-                icon = Icons.Rounded.Landscape,
-                plumpIcon = PlumpIcon.Landmark,
-                isoluminantColor = IsoluminantPalette.WarmAmber,
-                accent = BentoColors.AccentOrange,
-                iconBg = BentoColors.IconBgOrange
-            ),
-            ThemeCardInfo(
-                name = "民间故事",
-                subtitle = "经典奇幻物语",
-                icon = Icons.Rounded.AutoAwesome,
-                plumpIcon = PlumpIcon.Sparkles,
-                isoluminantColor = IsoluminantPalette.LilacViolet,
-                accent = BentoColors.AccentPurple,
-                iconBg = BentoColors.IconBgPurple
-            ),
-            ThemeCardInfo(
-                name = "美食料理",
-                subtitle = "地道烟火风味",
-                icon = Icons.Rounded.Restaurant,
-                plumpIcon = PlumpIcon.Utensils,
-                isoluminantColor = IsoluminantPalette.LakesideCyan,
-                accent = BentoColors.GrammarPrimary,
-                iconBg = BentoColors.IconBgGreen
-            ),
-            ThemeCardInfo(
-                name = "名胜风光",
-                subtitle = "四季列岛巡礼",
-                icon = Icons.Rounded.Explore,
-                plumpIcon = PlumpIcon.Compass,
-                isoluminantColor = IsoluminantPalette.RoseRuby,
-                accent = LearningPalette.ReadingAccentPink,
-                iconBg = LearningPalette.ReadingIconBgPink
-            ),
-            ThemeCardInfo(
-                name = "商务工作",
-                subtitle = "职场严谨敬语",
-                icon = Icons.Rounded.BusinessCenter,
-                plumpIcon = PlumpIcon.Briefcase,
-                isoluminantColor = IsoluminantPalette.SkyIndigo,
-                accent = LearningPalette.ReadingAccentIndigo,
-                iconBg = LearningPalette.ReadingIconBgIndigo
-            )
+    val themes = listOf(
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_daily_life_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_daily_life_subtitle),
+            icon = Icons.Rounded.Park,
+            accent = if (isDark) IosColors.GreenDark else IosColors.Green
+        ),
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_traditional_culture_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_traditional_culture_subtitle),
+            icon = Icons.Rounded.Landscape,
+            accent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+        ),
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_folk_tales_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_folk_tales_subtitle),
+            icon = Icons.Rounded.AutoAwesome,
+            accent = if (isDark) IosColors.PurpleDark else IosColors.Purple
+        ),
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_cuisine_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_cuisine_subtitle),
+            icon = Icons.Rounded.Restaurant,
+            accent = if (isDark) IosColors.CyanDark else IosColors.Cyan
+        ),
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_scenery_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_scenery_subtitle),
+            icon = Icons.Rounded.Explore,
+            accent = if (isDark) IosColors.PinkDark else IosColors.Pink
+        ),
+        ThemeCardInfo(
+            name = stringResource(R.string.learning_ai_reading_theme_business_title),
+            subtitle = stringResource(R.string.learning_ai_reading_theme_business_subtitle),
+            icon = Icons.Rounded.BusinessCenter,
+            accent = if (isDark) IosColors.IndigoDark else IosColors.Indigo
         )
-    }
+    )
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -411,7 +390,7 @@ private fun ConfigScreen(
                     offsetY = 4.dp
                 ),
             color = surfaceColor,
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedRectangle(26.dp),
             border = BorderStroke(1.dp, borderColor)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -421,27 +400,22 @@ private fun ConfigScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.GraduationCap,
-                                color = IsoluminantPalette.WarmAmber,
-                                size = 28.dp
+                        val levelIconColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                        val levelContainerBg = if (isSoftTranslucent) levelIconColor.copy(alpha = 0.15f) else levelIconColor
+                        val levelIconTint = if (isSoftTranslucent) levelIconColor else Color.White
+
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .background(levelContainerBg, RoundedRectangle(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.School,
+                                contentDescription = null,
+                                tint = levelIconTint,
+                                modifier = Modifier.size(20.dp)
                             )
-                        } else {
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = BentoColors.Primary.copy(alpha = 0.12f),
-                                modifier = Modifier.size(34.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.School,
-                                        contentDescription = null,
-                                        tint = BentoColors.Primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
                         }
                         Spacer(Modifier.width(10.dp))
                         Column {
@@ -459,10 +433,9 @@ private fun ConfigScreen(
                     }
 
                     // 当前选中的微胶囊标头
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-                    val levelAccent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
+                    val levelAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
                     Surface(
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         color = levelAccent.copy(alpha = 0.12f)
                     ) {
                         Text(
@@ -503,27 +476,22 @@ private fun ConfigScreen(
                 .padding(horizontal = 4.dp, vertical = 2.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                    PlumpDuoIcon(
-                        icon = PlumpIcon.BookOpen,
-                        color = IsoluminantPalette.WarmAmber,
-                        size = 28.dp
+                val themeIconColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                val themeContainerBg = if (isSoftTranslucent) themeIconColor.copy(alpha = 0.15f) else themeIconColor
+                val themeIconTint = if (isSoftTranslucent) themeIconColor else Color.White
+
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(themeContainerBg, RoundedRectangle(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                        contentDescription = null,
+                        tint = themeIconTint,
+                        modifier = Modifier.size(20.dp)
                     )
-                } else {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = BentoColors.Primary.copy(alpha = 0.12f),
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.MenuBook,
-                                contentDescription = null,
-                                tint = BentoColors.Primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
                 }
                 Spacer(Modifier.width(10.dp))
                 Column {
@@ -542,7 +510,7 @@ private fun ConfigScreen(
 
             // 计数与提示微胶囊
             Surface(
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = if (isDark) colorScheme.surfaceContainerHigh else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(1.dp, borderColor)
             ) {
@@ -584,8 +552,7 @@ private fun ConfigScreen(
 
         // 当前选中的主题信息与主色协同
         val selectedThemeInfo = themes.find { it.name == uiState.readingTheme } ?: themes.first()
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-        val ctaAccentColor = if (isPlumpDuo) selectedThemeInfo.isoluminantColor else BentoColors.Primary
+        val ctaAccentColor = selectedThemeInfo.accent
 
         // 底部高光主按钮 (Specular Action Button)
         SpecularCtaButton(
@@ -620,11 +587,11 @@ private fun FluidLevelSegmentedPicker(
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp)
-            .background(trackBg, RoundedCornerShape(16.dp))
+            .background(trackBg, RoundedRectangle(16.dp))
             .border(
                 width = 1.dp,
                 color = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray100,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedRectangle(16.dp)
             )
             .padding(4.dp)
     ) {
@@ -640,23 +607,13 @@ private fun FluidLevelSegmentedPicker(
             label = "fluidCapsuleOffset"
         )
 
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-        val indicatorColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
-        val indicatorBrush = if (isPlumpDuo) {
-            Brush.verticalGradient(
-                colors = listOf(
-                    indicatorColor.copy(alpha = 0.92f),
-                    indicatorColor
-                )
+        val indicatorColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+        val indicatorBrush = Brush.verticalGradient(
+            colors = listOf(
+                indicatorColor.copy(alpha = 0.92f),
+                indicatorColor
             )
-        } else {
-            Brush.verticalGradient(
-                colors = listOf(
-                    LearningPalette.AiCoralOrange,
-                    BentoColors.Primary // 元气橘
-                )
-            )
-        }
+        )
 
         // 滑动的活动指示胶囊 (带高斯弥散光晕)
         Box(
@@ -665,14 +622,14 @@ private fun FluidLevelSegmentedPicker(
                 .width(segmentWidth)
                 .fillMaxHeight()
                 .softShadow(
-                    color = indicatorColor.copy(alpha = if (isPlumpDuo) 0.28f else 0.40f),
+                    color = indicatorColor.copy(alpha = 0.35f),
                     borderRadius = 13.dp,
                     blurRadius = 10.dp,
                     offsetY = 3.dp
                 )
                 .background(
                     brush = indicatorBrush,
-                    shape = RoundedCornerShape(13.dp)
+                    shape = RoundedRectangle(13.dp)
                 )
         )
 
@@ -755,18 +712,9 @@ private fun LevelCapabilityCard(
         label = "levelDetailContent",
         modifier = modifier.fillMaxWidth()
     ) { item ->
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-        val capabilityAccent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else BentoColors.Primary
-        val cardBg = if (isPlumpDuo) {
-            capabilityAccent.copy(alpha = if (isDark) 0.12f else 0.07f)
-        } else {
-            if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.6f) else BentoColors.PrimaryLight.copy(alpha = 0.35f)
-        }
-        val cardBorder = if (isPlumpDuo) {
-            capabilityAccent.copy(alpha = if (isDark) 0.25f else 0.15f)
-        } else {
-            if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f) else BentoColors.Primary.copy(alpha = 0.15f)
-        }
+        val capabilityAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+        val cardBg = capabilityAccent.copy(alpha = if (isDark) 0.12f else 0.07f)
+        val cardBorder = capabilityAccent.copy(alpha = if (isDark) 0.25f else 0.15f)
 
         Surface(
             modifier = Modifier
@@ -777,7 +725,7 @@ private fun LevelCapabilityCard(
                     blurRadius = 10.dp,
                     offsetY = 2.dp
                 ),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedRectangle(14.dp),
             color = cardBg,
             border = BorderStroke(
                 width = 1.dp,
@@ -789,7 +737,7 @@ private fun LevelCapabilityCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedRectangle(8.dp),
                     color = capabilityAccent.copy(alpha = 0.15f)
                 ) {
                     Text(
@@ -818,10 +766,7 @@ private data class ThemeCardInfo(
     val name: String,
     val subtitle: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
-    val plumpIcon: PlumpIcon,
-    val isoluminantColor: Color,
-    val accent: Color,
-    val iconBg: Color
+    val accent: Color
 )
 
 /**
@@ -837,8 +782,7 @@ private fun ThemeBentoItem(
     val haptic = LocalHapticFeedback.current
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val effectiveAccent = if (isPlumpDuo) info.isoluminantColor else info.accent
+    val effectiveAccent = info.accent
 
     // 交互态按压弹性动画 (Apple 经典按压微缩放)
     val interactionSource = remember { MutableInteractionSource() }
@@ -927,7 +871,7 @@ private fun ThemeBentoItem(
                     onClick()
                 }
             ),
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedRectangle(22.dp),
         border = borderStroke,
         color = surfaceColor
     ) {
@@ -936,32 +880,24 @@ private fun ThemeBentoItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 18.dp)
         ) {
-            // 顶部：图标基座
-            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                Box(
-                    modifier = Modifier.size(42.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    PlumpDuoIcon(
-                        icon = info.plumpIcon,
-                        color = info.isoluminantColor,
-                        size = 28.dp
+            // 顶部：图标基座 (遵循 2:3 黄金比例与双轨单容器架构)
+            val iconStyle = LocalSettingIconStyle.current
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val iconBg = if (isSoftTranslucent) info.accent.copy(alpha = 0.15f) else info.accent
+            val iconTint = if (isSoftTranslucent) info.accent else Color.White
+
+            Surface(
+                shape = RoundedRectangle(12.dp),
+                color = iconBg,
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = info.icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(28.dp)
                     )
-                }
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(13.dp),
-                    color = if (isSelected) info.iconBg else (if (isDark) colorScheme.surfaceContainerHigh else info.iconBg.copy(alpha = 0.75f)),
-                    modifier = Modifier.size(42.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = info.icon,
-                            contentDescription = null,
-                            tint = if (isSelected) info.accent else (if (isDark) colorScheme.onSurface else info.accent.copy(alpha = 0.9f)),
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
                 }
             }
 
@@ -1056,7 +992,7 @@ private fun SpecularCtaButton(
                 blurRadius = 18.dp,
                 offsetY = 6.dp
             )
-            .clip(RoundedCornerShape(22.dp))
+            .clip(RoundedRectangle(22.dp))
             .background(
                 brush = Brush.horizontalGradient(
                     colors = gradientColors
@@ -1103,39 +1039,29 @@ private fun SpecularCtaButton(
                 color = Color.White
             )
             Spacer(Modifier.width(8.dp))
-            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                PlumpDuoIcon(
-                    icon = PlumpIcon.ChevronsRight,
-                    color = Color.White,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .offset(x = arrowOffset.dp)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .offset(x = arrowOffset.dp),
-                    tint = Color.White
-                )
-            }
+            Icon(
+                imageVector = Icons.Rounded.KeyboardDoubleArrowRight,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(24.dp)
+                    .offset(x = arrowOffset.dp),
+                tint = Color.White
+            )
         }
     }
 }
 
-private val ThinkingStepsLibrary = listOf(
-    "分析阅读偏好：明确选定主题与目标难度级别",
-    "检索主题语境：搜寻地道自然的日式生活场景",
-    "挑选核心词汇：筛选适合当前水平的重点假名与单词",
-    "构建文章脉络：规划段落层级与情节展开走向",
-    "组织日文段落：生成自然流畅、符合母语表达习惯的句子",
-    "优化语法表达：校验用词准确性与文段连贯度",
-    "对照中文翻译：生成忠实地道的中文译文与段落对照",
-    "设计阅读测验：围绕短文核心细节生成理解问答题",
-    "整理重点词条：提炼生词列表、假名读音与释义",
-    "完成排版校验：梳理段落布局，准备开启阅读训练"
+private val ThinkingStepResIds = listOf(
+    R.string.learning_ai_reading_thinking_step_preference,
+    R.string.learning_ai_reading_thinking_step_context,
+    R.string.learning_ai_reading_thinking_step_vocabulary,
+    R.string.learning_ai_reading_thinking_step_outline,
+    R.string.learning_ai_reading_thinking_step_paragraphs,
+    R.string.learning_ai_reading_thinking_step_grammar,
+    R.string.learning_ai_reading_thinking_step_translation,
+    R.string.learning_ai_reading_thinking_step_quiz,
+    R.string.learning_ai_reading_thinking_step_glossary,
+    R.string.learning_ai_reading_thinking_step_typography
 )
 
 private data class ThinkingStepItem(
@@ -1220,6 +1146,10 @@ private fun HardDecodedText(
  */
 @Composable
 private fun LoadingScreen() {
+    val context = LocalContext.current
+    val thinkingSteps = remember(context) {
+        ThinkingStepResIds.map { context.getString(it) }
+    }
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val containerBg = colorScheme.background
@@ -1232,7 +1162,7 @@ private fun LoadingScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            val stepText = ThinkingStepsLibrary[currentLibIndex % ThinkingStepsLibrary.size]
+            val stepText = thinkingSteps[currentLibIndex % thinkingSteps.size]
             currentLibIndex++
             val newItemId = ++stepCounter
             val newItem = ThinkingStepItem(uniqueId = newItemId, text = stepText, isCompleted = false)
@@ -1276,7 +1206,7 @@ private fun LoadingScreen() {
                 .align(Alignment.TopCenter)
         ) {
             Surface(
-                shape = RoundedCornerShape(22.dp),
+                shape = RoundedRectangle(22.dp),
                 color = if (isDark) LearningPalette.AiSlateText.copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(
                     1.dp,
@@ -1396,6 +1326,8 @@ private fun ArticleContentScreen(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -1449,7 +1381,7 @@ private fun ArticleContentScreen(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = surfaceColor,
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             border = BorderStroke(1.dp, borderColor)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
@@ -1613,7 +1545,7 @@ private fun ArticleContentScreen(
                         Spacer(Modifier.height(16.dp))
                         Surface(
                             color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedRectangle(12.dp)
                         ) {
                             SelectionContainer {
                                 Text(
@@ -1672,7 +1604,7 @@ private fun ArticleContentScreen(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = BentoColors.PrimaryLight.copy(alpha = if (isDark) 0.15f else 0.8f),
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         border = BorderStroke(2.dp, BentoColors.Primary)
                     ) {
                         Row(
@@ -1735,7 +1667,7 @@ private fun ArticleContentScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = colorScheme.primary,
                             disabledContainerColor = if (isDark) colorScheme.surfaceContainerHigh else NemoNeutrals.Gray200
@@ -1759,7 +1691,7 @@ private fun ArticleContentScreen(
                             modifier = Modifier
                                 .weight(1f)
                                 .height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedRectangle(16.dp),
                             border = BorderStroke(1.dp, colorScheme.primary)
                         ) {
                             Text(stringResource(R.string.learn_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
@@ -1770,7 +1702,7 @@ private fun ArticleContentScreen(
                             modifier = Modifier
                                 .weight(1.5f)
                                 .height(56.dp),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedRectangle(16.dp),
                             elevation = null
                         ) {
                             Text(stringResource(R.string.learn_reading_btn_switch_article), fontWeight = FontWeight.Bold)
@@ -1796,6 +1728,8 @@ private fun VocabularyItem(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -1811,7 +1745,7 @@ private fun VocabularyItem(
                     onEvent(AIReadingEvent.SpeakText("${voc.word}、${voc.kana}", "voc_$index"))
                 }
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         border = BorderStroke(1.dp, borderColor),
         color = if (isPlaying) BentoColors.PrimaryLight.copy(alpha = if (isDark) 0.15f else 0.8f) else surfaceColor
     ) {
@@ -1885,13 +1819,15 @@ private fun QuestionCard(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = surfaceColor,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         border = BorderStroke(1.dp, borderColor)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -1981,7 +1917,7 @@ private fun QuestionCard(
                                 enabled = !isSubmitted,
                                 onClick = { onEvent(AIReadingEvent.SelectAnswer(qIndex, oIndex)) }
                             ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         color = cardBg,
                         border = if (cardBorder != Color.Transparent) BorderStroke(1.5.dp, cardBorder) else null
                     ) {
@@ -2045,7 +1981,7 @@ private fun QuestionCard(
                     Spacer(Modifier.height(12.dp))
                     Surface(
                         color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedRectangle(12.dp)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2087,6 +2023,8 @@ private fun ErrorScreen(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -2130,7 +2068,7 @@ private fun ErrorScreen(
             // 错误日志文本卡片
             Surface(
                 color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 border = BorderStroke(1.dp, borderColor),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -2155,7 +2093,7 @@ private fun ErrorScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedRectangle(14.dp),
                     border = BorderStroke(1.dp, colorScheme.primary)
                 ) {
                     Text(stringResource(R.string.learn_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
@@ -2166,7 +2104,7 @@ private fun ErrorScreen(
                     modifier = Modifier
                         .weight(1.5f)
                         .height(50.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedRectangle(14.dp),
                     elevation = null
                 ) {
                     Text(stringResource(R.string.learn_reading_btn_regenerate), fontWeight = FontWeight.Bold)

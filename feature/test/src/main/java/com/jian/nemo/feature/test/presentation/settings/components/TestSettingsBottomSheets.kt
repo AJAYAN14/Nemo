@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.rounded.Close
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.stringResource
@@ -24,6 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+private const val LEVEL_ALL_KEY = "ALL"
+
 
 /**
  * BottomSheet 选择器组件 - UI/UX Pro Max 风格
@@ -31,7 +35,7 @@ import androidx.compose.ui.unit.sp
  * 统一采用 Grid (Column + Row) + Squircle Chips 设计
  */
 
-import androidx.compose.material.icons.filled.Close
+
 
 /**
  * 题目数量选择器
@@ -235,7 +239,7 @@ private fun SelectorHeader(title: String, onClose: (() -> Unit)? = null) {
                     modifier = Modifier.size(38.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Rounded.Close,
                         contentDescription = stringResource(R.string.test_sheet_cd_close),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
@@ -258,7 +262,7 @@ private fun PremiumSelectorChip(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp), // Squircle-ish
+        shape = RoundedRectangle(16.dp), // Squircle-ish
         color = containerColor,
         modifier = modifier.height(48.dp) // Fixed height for consistency
     ) {
@@ -280,7 +284,7 @@ private fun PremiumSelectorChip(
 private fun PremiumCustomChip(onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
         modifier = Modifier
             .height(48.dp)
@@ -314,7 +318,7 @@ private fun QuestionTypeCountRow(
 ) {
     Surface(
         color = if (isSupported) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-        shape = RoundedCornerShape(26.dp), // 对齐 PremiumCard 圆角
+        shape = RoundedRectangle(26.dp), // 对齐 PremiumCard 圆角
         border = BorderStroke(
             width = 0.5.dp,
             color = if (isSupported && count > 0) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
@@ -364,7 +368,7 @@ private fun QuestionTypeCountRow(
             // 🔢 右侧步进器 - Flat Capsule 风格
             Surface(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedRectangle(14.dp),
                 modifier = Modifier.height(38.dp)
             ) {
                 Row(
@@ -376,7 +380,7 @@ private fun QuestionTypeCountRow(
                         modifier = Modifier.size(38.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Remove,
+                            imageVector = Icons.Rounded.Remove,
                             contentDescription = stringResource(R.string.test_sheet_cd_decrease),
                             tint = if (count > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             modifier = Modifier.size(16.dp)
@@ -398,7 +402,7 @@ private fun QuestionTypeCountRow(
                         modifier = Modifier.size(38.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Rounded.Add,
                             contentDescription = stringResource(R.string.test_sheet_cd_increase),
                             tint = if (isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             modifier = Modifier.size(16.dp)
@@ -436,7 +440,7 @@ fun LevelSelector(
     val levelNotAvailableMsg = stringResource(R.string.test_sheet_level_no_available_content)
 
     // 合并“全部”选项到网格中，总共 6 个项目 (全部, N5, N4, N3, N2, N1)
-    val displayLevels = remember(allLevels) { listOf("全部") + allLevels }
+    val displayLevels = remember(allLevels) { listOf(LEVEL_ALL_KEY) + allLevels }
     val rows = remember(displayLevels) { displayLevels.chunked(2) }
 
     // 等级网格 (双列布局，刚好 3 行)
@@ -451,7 +455,7 @@ fun LevelSelector(
                 ) {
                     rowLevels.forEach { levelKey ->
                         androidx.compose.runtime.key(levelKey) {
-                            if (levelKey == "全部") {
+                            if (levelKey == LEVEL_ALL_KEY) {
                                 PremiumLevelChip(
                                     level = stringResource(R.string.test_settings_levels_all),
                                     count = totalCount,
@@ -510,7 +514,7 @@ fun LevelSelector(
     Button(
         onClick = onDismiss,
         modifier = Modifier.fillMaxWidth().height(48.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Text(stringResource(R.string.test_common_btn_confirm), fontWeight = FontWeight.Bold, color = Color.White)
@@ -553,12 +557,12 @@ private fun PremiumLevelChip(
     )
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = containerColor,
         modifier = modifier
             .height(64.dp)
             .alpha(if (isAvailable) 1f else 0.6f)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedRectangle(16.dp))
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -584,7 +588,7 @@ private fun PremiumLevelChip(
 
             if (isSelected) {
                 Icon(
-                    imageVector = Icons.Default.Check,
+                    imageVector = Icons.Rounded.Check,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier

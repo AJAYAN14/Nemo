@@ -6,6 +6,9 @@ import com.jian.nemo.core.domain.model.GrammarWrongAnswer
 import com.jian.nemo.core.domain.repository.GrammarWrongAnswerRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import android.content.Context
+import com.jian.nemo.feature.collection.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,6 +35,7 @@ data class WrongGrammarsUiState(
  */
 @HiltViewModel
 class WrongGrammarsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository,
     settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -65,7 +69,7 @@ class WrongGrammarsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = "加载失败: ${e.message}"
+                            error = context.getString(R.string.collection_wrong_grammars_format_load_failed, e.message ?: "")
                         )
                     }
                 }
@@ -103,7 +107,7 @@ class WrongGrammarsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "删除失败: ${e.message}"
+                        error = context.getString(R.string.collection_wrong_grammars_format_delete_failed, e.message ?: "")
                     )
                 }
             }

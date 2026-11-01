@@ -2,6 +2,7 @@ package com.jian.nemo.feature.library.presentation.expression
 
 import android.content.Context
 import android.util.Log
+import com.jian.nemo.feature.library.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.Expression
@@ -90,7 +91,7 @@ class ExpressionViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "加载数据失败"
+                        error = e.message ?: context.getString(R.string.library_expression_label_load_failed)
                     ) 
                 }
             }

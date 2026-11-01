@@ -6,7 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
@@ -145,7 +145,7 @@ private fun TypingInput(
         label = { Text(stringResource(R.string.test_common_label_your_answer)) },
         singleLine = true,
         enabled = !question.isAnswered,
-        shape = RoundedCornerShape(16.dp), // 16dp Radius
+        shape = RoundedRectangle(16.dp), // 16dp Radius
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -181,7 +181,7 @@ private fun TypingFeedback(question: TestQuestion.Typing) {
                 1.dp,
                 if (question.isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedRectangle(16.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

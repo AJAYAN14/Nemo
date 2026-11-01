@@ -7,9 +7,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -161,7 +164,7 @@ fun AvatarEditDialog(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AvatarActionCard(
-                        icon = Icons.Default.PhotoLibrary,
+                        icon = Icons.Rounded.PhotoLibrary,
                         label = stringResource(R.string.core_ui_avatar_edit_action_gallery),
                         containerColor = blueColor,
                         contentColor = blueColor,
@@ -169,7 +172,7 @@ fun AvatarEditDialog(
                         onClick = { galleryLauncher.launch("image/*") }
                     )
                     AvatarActionCard(
-                        icon = Icons.Default.CameraAlt,
+                        icon = Icons.Rounded.CameraAlt,
                         label = stringResource(R.string.core_ui_avatar_edit_action_camera),
                         containerColor = greenColor,
                         contentColor = greenColor,
@@ -194,7 +197,7 @@ fun AvatarEditDialog(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AvatarActionCard(
-                        icon = Icons.Default.Palette,
+                        icon = Icons.Rounded.Palette,
                         label = stringResource(R.string.core_ui_avatar_edit_action_preset),
                         containerColor = purpleColor,
                         contentColor = purpleColor,
@@ -204,7 +207,7 @@ fun AvatarEditDialog(
 
                     if (!currentAvatarPath.isNullOrEmpty()) {
                         AvatarActionCard(
-                            icon = Icons.Default.DeleteOutline,
+                            icon = Icons.Rounded.Delete,
                             label = stringResource(R.string.core_ui_avatar_edit_action_remove),
                             containerColor = redColor,
                             contentColor = redColor,
@@ -257,7 +260,7 @@ private fun AvatarActionCard(
                 offsetY = 6.dp
             )
             .height(72.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = containerColor,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
@@ -332,7 +335,7 @@ private fun saveImageToInternalStorage(context: Context, uri: Uri): AvatarResult
         // 5. 验证文件已保存
         if (!file.exists()) {
             return AvatarResult.Error.SaveFailed(
-                exception = Exception("文件保存后不存在")
+                exception = Exception(context.getString(R.string.core_ui_avatar_dialog_file_not_exist))
             )
         }
 

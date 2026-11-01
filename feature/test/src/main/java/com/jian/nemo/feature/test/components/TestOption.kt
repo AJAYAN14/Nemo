@@ -9,7 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -43,7 +43,7 @@ fun TestOption(
     val optionLabel = if (index < 26) ('A' + index).toString() else (index + 1).toString()
 
     // Shape: Standard Rounded (Aligned with Pro Max style)
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedRectangle(16.dp)
 
     // State Colors (Flat UI) - Using Safe Colors (avoiding *Container if missing)
     val containerColor = when (status) {

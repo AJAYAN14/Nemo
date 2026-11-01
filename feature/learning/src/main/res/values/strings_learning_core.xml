@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- =================================================================== -->
+    <!-- AI D 核心背词与 SRS 卡片 专属收编资源文件 (strings_learning_core.xml) -->
+    <!-- =================================================================== -->
+
+    <!-- 学习模式 (LearningMode) -->
+    <string name="learning_mode_word">单词</string>
+    <string name="learning_mode_grammar">语法</string>
+
+    <!-- 学习反馈与网络错误 (LearningViewModel) -->
+    <string name="learning_report_msg_success">反馈成功，感谢您的反馈！</string>
+    <string name="learning_report_err_duplicate">您已经提交过对此类型问题的反馈了，请勿重复提交。</string>
+    <string name="learning_report_err_network">网络连接失败，请检查网络后重试。</string>
+    <string name="learning_report_format_failed">反馈失败: %1$s</string>
+
+    <!-- SRS 语法卡片大写序号 (SRSGrammarCard) -->
+    <string-array name="learning_grammar_card_chinese_numbers">
+        <item>一</item>
+        <item>二</item>
+        <item>三</item>
+        <item>四</item>
+        <item>五</item>
+        <item>六</item>
+        <item>七</item>
+        <item>八</item>
+        <item>九</item>
+        <item>十</item>
+    </string-array>
+
+    <!-- 学习完成界面默认文案 (LearningFinishedContent) -->
+    <string name="learning_finished_default_title">今日任务达成！</string>
+    <string name="learning_finished_default_subtitle">坚持就是胜利，明天继续加油</string>
+
+    <!-- SRS 卡片操作区 (SRSActionArea) -->
+    <string name="learning_srs_action_show_answer">显示答案</string>
+    <string name="learning_srs_action_show_answer_countdown">显示答案 (%1$s)</string>
+
+    <!-- 首页头部组件日文片假名背景水印 (HomeComponents) -->
+    <string name="learning_home_header_bg_text">ネモ</string>
+
+    <!-- 卡片操作提示 (CardOpsDelegate) -->
+    <string name="learning_card_ops_toast_buried_leech">已埋藏顽固卡片: %1$s (今日不再出现，明日自动回归)</string>
+    <string name="learning_card_ops_toast_frozen_leech">已冻结顽固卡片: %1$s (累计遗忘 %2$d 次，已移出复习)</string>
+    <string name="learning_card_ops_toast_suspended">已暂停: %1$s</string>
+    <string name="learning_card_ops_toast_buried">已暂缓: %1$s (今日不再出现)</string>
+
+    <!-- 评分异常 (RatingDelegate) -->
+    <string name="learning_rating_err_format">评分异常: %1$s</string>
+
+    <!-- 会话生命周期与加餐提示 (SessionLifecycleDelegate) -->
+    <string name="learning_session_err_start_failed">启动失败: %1$s</string>
+    <string name="learning_session_unit_word">词</string>
+    <string name="learning_session_unit_grammar">语法</string>
+    <string name="learning_session_bonus_empty_review_backlog">太棒了！当前待复习积压已全部出清</string>
+    <string name="learning_session_bonus_empty_new_items">暂无更多未学新%1$s</string>
+    <string name="learning_session_bonus_label_review">待复习</string>
+    <string name="learning_session_bonus_label_new">新</string>
+    <string name="learning_session_bonus_loaded_remaining">已为你加载剩余全部 %1$d 个%2$s%3$s</string>
+    <string name="learning_session_err_bonus_start_failed">启动加餐失败: %1$s</string>
+
+    <!-- 撤销操作提示 (UndoDelegate) -->
+    <string name="learning_undo_err_format">撤销失败: %1$s</string>
+
+    <!-- 单词卡片预览假数据 (WordCard Preview) -->
+    <string name="learning_card_preview_mock_japanese">食べる</string>
+    <string name="learning_card_preview_mock_hiragana">たべる</string>
+    <string name="learning_card_preview_mock_chinese">吃</string>
+    <string name="learning_card_preview_mock_pos">动词</string>
+    <string name="learning_card_preview_mock_example">ご飯を食べる</string>
+</resources>

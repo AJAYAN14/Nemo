@@ -1,7 +1,10 @@
 package com.jian.nemo.feature.learning.presentation.delegate
 
+import android.content.Context
+import androidx.annotation.StringRes
 import com.jian.nemo.core.domain.usecase.grammar.UpdateGrammarUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -24,18 +27,33 @@ class CardOpsDelegate(
     private val stateUpdater: StateUpdater,
     private val scope: CoroutineScope,
     private val queueNavigationDelegate: QueueNavigationDelegate,
+    private val context: Context? = null,
 ) {
+
+    private fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+        return context?.getString(resId, *formatArgs) ?: when (resId) {
+            R.string.learning_card_ops_toast_buried_leech ->
+                "\u5df2\u57cb\u85cf\u987d\u56fa\u5361\u7247: ${formatArgs[0]} (\u4eca\u65e5\u4e0d\u518d\u51fa\u73b0\uff0c\u660e\u65e5\u81ea\u52a8\u56de\u5f52)"
+            R.string.learning_card_ops_toast_frozen_leech ->
+                "\u5df2\u51bb\u7ed3\u987d\u56fa\u5361\u7247: ${formatArgs[0]} (\u7d2f\u8ba1\u9057\u5fd8 ${formatArgs[1]} \u6b21\uff0c\u5df2\u79fb\u51fa\u590d\u4e60)"
+            R.string.learning_card_ops_toast_suspended ->
+                "\u5df2\u6682\u505c: ${formatArgs[0]}"
+            R.string.learning_card_ops_toast_buried ->
+                "\u5df2\u6682\u7f13: ${formatArgs[0]} (\u4eca\u65e5\u4e0d\u518d\u51fa\u73b0)"
+            else -> ""
+        }
+    }
 
     /** 处理钉子户（Leech，原 VM.handleLeech） */
     suspend fun handleLeech(item: LearningItem, totalLapses: Int) {
         println("钉子户 (Leech): ${item.displayName} (Lapses: $totalLapses, Action: ${sessionState.leechAction})")
 
         if (sessionState.leechAction == "bury_today") {
-            buryItem(item, "已埋藏顽固卡片: ${item.displayName} (今日不再出现，明日自动回归)")
+            buryItem(item, getString(R.string.learning_card_ops_toast_buried_leech, item.displayName))
         } else {
             // 提示用户
             stateUpdater.update {
-                it.copy(error = "已冻结顽固卡片: ${item.displayName} (累计遗忘 $totalLapses 次，已移出复习)")
+                it.copy(error = getString(R.string.learning_card_ops_toast_frozen_leech, item.displayName, totalLapses))
             }
 
             // 执行暂停逻辑
@@ -53,7 +71,7 @@ class CardOpsDelegate(
 
             // 提示
             stateUpdater.update {
-                it.copy(error = "已暂停: ${currentItem.displayName}")
+                it.copy(error = getString(R.string.learning_card_ops_toast_suspended, currentItem.displayName))
             }
         }
     }
@@ -64,7 +82,7 @@ class CardOpsDelegate(
         println("今日暂缓 (Bury): ${currentItem.displayName}")
 
         scope.launch {
-            buryItem(currentItem, "已暂缓: ${currentItem.displayName} (今日不再出现)")
+            buryItem(currentItem, getString(R.string.learning_card_ops_toast_buried, currentItem.displayName))
         }
     }
 

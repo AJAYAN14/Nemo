@@ -1,15 +1,7 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.NemoDangerDark
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
-import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
-import com.jian.nemo.core.designsystem.theme.NemoSecondary
-import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -18,7 +10,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -58,18 +50,11 @@ fun WrongGrammarsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val iconStyle by viewModel.iconStyle.collectAsState()
 
-    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
-    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
-    val premiumGray = MaterialTheme.colorScheme.onSurfaceVariant
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val accentBlue = IosColors.Blue
+    val deleteColor = IosColors.Red
+    val emptyIconColor = IosColors.Green
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-
-    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
-    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
-    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -171,26 +156,22 @@ fun WrongGrammarsScreen(
                     }
                 }
                 uiState.wrongAnswers.isEmpty() -> {
-                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
                     Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.BadgeCheck,
-                                        color = IsoluminantPalette.EmeraldGreen,
-                                        size = 64.dp
-                                    )
-                                }
-                            } else {
-                                Surface(shape = RoundedCornerShape(32.dp), color = premiumGray.copy(alpha = 0.1f), modifier = Modifier.size(100.dp)) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Rounded.CheckCircle, null, modifier = Modifier.size(48.dp), tint = (if (isDark) NemoSecondaryDark else NemoSecondary).copy(alpha = 0.5f))
-                                    }
-                                }
+                            val emptyBgColor = if (isSoftTranslucent) emptyIconColor.copy(alpha = 0.15f) else emptyIconColor
+                            val emptyTint = if (isSoftTranslucent) emptyIconColor else Color.White
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .background(emptyBgColor, RoundedRectangle(28.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.CheckCircle,
+                                    contentDescription = null,
+                                    tint = emptyTint,
+                                    modifier = Modifier.size(56.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(stringResource(R.string.collection_mistakes_empty_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
@@ -212,7 +193,6 @@ fun WrongGrammarsScreen(
                                     mistake = mistake,
                                     isSelectionMode = isSelectionMode,
                                     isSelected = isSelected,
-                                    isPlumpDuo = isPlumpDuo,
                                     onSelectedChange = { checked ->
                                         selectedGrammarIds = if (checked) {
                                             selectedGrammarIds + mistake.grammarId
@@ -245,24 +225,18 @@ fun WrongGrammarsScreen(
         }
     }
 }
-}
 
 /**
- * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ * 获取 JLPT 等级对应颜色（统一收拢至标准设计色彩手册 IosColors）
  */
-@Composable
-private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
-    return if (isPlumpDuo) {
-        when (level.uppercase()) {
-            "N5" -> IsoluminantPalette.EmeraldGreen
-            "N4" -> IsoluminantPalette.LakesideCyan
-            "N3" -> IsoluminantPalette.SkyIndigo
-            "N2" -> IsoluminantPalette.WarmAmber
-            "N1" -> IsoluminantPalette.RoseRuby
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) NemoPrimaryDark else NemoPrimary
+private fun getLevelColor(level: String): Color {
+    return when (level.uppercase()) {
+        "N5" -> IosColors.Green
+        "N4" -> IosColors.Cyan
+        "N3" -> IosColors.Blue
+        "N2" -> IosColors.Orange
+        "N1" -> IosColors.Pink
+        else -> IosColors.Indigo
     }
 }
 
@@ -272,22 +246,17 @@ private fun WrongGrammarCard(
     mistake: GrammarWrongAnswer,
     isSelectionMode: Boolean,
     isSelected: Boolean,
-    isPlumpDuo: Boolean,
     onSelectedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
-    val premiumGreen = if (isDark) NemoSecondaryDark else NemoSecondary
-    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
 
-    // 双方案色彩分流：Plump Duo 对应等亮度色，MD3 100% 保持原色
-    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
-    val accentRed = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
-    val accentGreen = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumGreen
-    val tagColor = getLevelColor(mistake.grammar?.grammarLevel ?: "", isPlumpDuo)
+    val accentBlue = IosColors.Blue
+    val accentRed = IosColors.Red
+    val accentGreen = IosColors.Green
+    val tagColor = getLevelColor(mistake.grammar?.grammarLevel ?: "")
 
     Card(
         modifier = Modifier
@@ -297,7 +266,7 @@ private fun WrongGrammarCard(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = if (isSelected) BorderStroke(2.dp, accentBlue) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -331,7 +300,7 @@ private fun WrongGrammarCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedRectangle(8.dp),
                         color = tagColor.copy(alpha = 0.1f)
                     ) {
                         Text(
@@ -381,7 +350,7 @@ private fun WrongGrammarCard(
                 // Answer Comparison
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
@@ -409,7 +378,7 @@ private fun WrongGrammarCard(
                     }
                 }
 
-                // Explanation Section - 辅助指示箭头在 Plump Duo 模式下严格保持中性灰
+                // Explanation Section
                 if (!mistake.explanation.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     TextButton(
@@ -421,7 +390,7 @@ private fun WrongGrammarCard(
                             Text(
                                 text = if (expanded) stringResource(R.string.collection_collapse_explanation) else stringResource(R.string.collection_expand_explanation),
                                 style = MaterialTheme.typography.labelLarge,
-                                color = if (isPlumpDuo) accentBlue else MaterialTheme.colorScheme.primary
+                                color = accentBlue
                             )
                             Icon(
                                 imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,

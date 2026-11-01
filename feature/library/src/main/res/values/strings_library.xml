@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 分类单词列表 (CategoryWordsViewModel) -->
+    <string name="library_category_words_format_load_failed">加载失败: %1$s</string>
+
+    <!-- 词性单词列表 (PosWordsViewModel) -->
+    <string name="library_pos_words_format_load_failed">加载失败: %1$s</string>
+
+    <!-- 语法详情 (GrammarDetailViewModel) -->
+    <string name="library_grammar_detail_toast_feedback_success">反馈成功，感谢您的反馈！</string>
+    <string name="library_grammar_detail_toast_report_duplicate">您已经提交过对此类型问题的反馈了，请勿重复提交。</string>
+    <string name="library_grammar_detail_toast_network_error">网络连接失败，请检查网络后重试。</string>
+    <string name="library_grammar_detail_format_feedback_failed">反馈失败: %1$s</string>
+
+    <!-- 单词详情 (WordDetailViewModel) -->
+    <string name="library_word_detail_toast_feedback_success">反馈成功，感谢您的反馈！</string>
+    <string name="library_word_detail_toast_report_duplicate">您已经提交过对此类型问题的反馈了，请勿重复提交。</string>
+    <string name="library_word_detail_toast_network_error">网络连接失败，请检查网络后重试。</string>
+    <string name="library_word_detail_format_feedback_failed">反馈失败: %1$s</string>
+
+    <!-- 灵动词法库 (ExpressionScreen & ExpressionViewModel) -->
+    <string name="library_expression_label_short_collocation">固</string>
+    <string name="library_expression_label_short_sentence_pattern">句</string>
+    <string name="library_expression_label_short_idiom">惯</string>
+    <string name="library_expression_label_short_four_character_idiom">四</string>
+    <string name="library_expression_label_short_semi_fixed_template">框</string>
+    <string name="library_expression_label_short_collocation_group">群</string>
+    <string name="library_expression_label_short_default">语</string>
+    <string name="library_expression_label_arrow_rotation">箭头旋转</string>
+    <string name="library_expression_label_load_failed">加载数据失败</string>
+
+    <!-- 词库列表通用 (GrammarListScreen & WordListScreen) -->
+    <string name="library_list_label_sync_failed_keyword">失败</string>
+    <string name="library_grammar_list_label_avatar_badge">文</string>
+
+    <!-- 词性分类主界面 (PartOfSpeechViewModel) -->
+    <string name="library_part_of_speech_format_load_failed">加载失败: %1$s</string>
+</resources>

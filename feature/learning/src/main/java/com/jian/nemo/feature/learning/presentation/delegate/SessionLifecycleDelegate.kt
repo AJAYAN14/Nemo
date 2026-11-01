@@ -1,5 +1,8 @@
 package com.jian.nemo.feature.learning.presentation.delegate
 
+import android.content.Context
+import androidx.annotation.StringRes
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.data.manager.CloudBackupManager
@@ -66,7 +69,22 @@ class SessionLifecycleDelegate(
     private val statsTimerDelegate: StatsTimerDelegate,
     private val queueNavigationDelegate: QueueNavigationDelegate,
     private val srsIntervalPreview: com.jian.nemo.feature.learning.domain.SrsIntervalPreview,
+    private val context: Context? = null,
 ) {
+    private fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+        return context?.getString(resId, *formatArgs) ?: when (resId) {
+            R.string.learning_session_err_start_failed -> "\u542f\u52a8\u5931\u8d25: ${formatArgs[0]}"
+            R.string.learning_session_unit_word -> "\u8bcd"
+            R.string.learning_session_unit_grammar -> "\u8bed\u6cd5"
+            R.string.learning_session_bonus_empty_review_backlog -> "\u592a\u68d2\u4e86\uff01\u5f53\u524d\u5f85\u590d\u4e60\u79ef\u538b\u5df2\u5168\u90e8\u51fa\u6e05"
+            R.string.learning_session_bonus_empty_new_items -> "\u6682\u65e0\u66f4\u591a\u672a\u5b66\u65b0${formatArgs[0]}"
+            R.string.learning_session_bonus_label_review -> "\u5f85\u590d\u4e60"
+            R.string.learning_session_bonus_label_new -> "\u65b0"
+            R.string.learning_session_bonus_loaded_remaining -> "\u5df2\u4e3a\u4f60\u52a0\u8f7d\u5269\u4f59\u5168\u90e8 ${formatArgs[0]} \u4e2a${formatArgs[1]}${formatArgs[2]}"
+            R.string.learning_session_err_bonus_start_failed -> "\u542f\u52a8\u52a0\u9910\u5931\u8d25: ${formatArgs[0]}"
+            else -> ""
+        }
+    }
     private var loadingJob
         get() = sessionState.loadingJob
         set(value) { sessionState.loadingJob = value }
@@ -137,7 +155,7 @@ class SessionLifecycleDelegate(
                 stateUpdater.update {
                     it.copy(
                         status = LearningStatus.Error,
-                        error = "启动失败: ${e.message}"
+                        error = getString(R.string.learning_session_err_start_failed, e.message ?: "")
                     )
                 }
             }
@@ -180,7 +198,7 @@ class SessionLifecycleDelegate(
                     LearningMode.Grammar -> settingsRepository.grammarDailyGoalFlow.first()
                 }
 
-                val unit = if (mode == LearningMode.Word) "词" else "语法"
+                val unit = if (mode == LearningMode.Word) getString(R.string.learning_session_unit_word) else getString(R.string.learning_session_unit_grammar)
                 val bonusItems: List<Any> = when (bonusMode) {
                     BonusMode.ReviewBacklog -> {
                         val today = java.time.LocalDate.now().toEpochDay()
@@ -217,8 +235,8 @@ class SessionLifecycleDelegate(
 
                 if (bonusItems.isEmpty()) {
                     val emptyMsg = when (bonusMode) {
-                        BonusMode.ReviewBacklog -> "太棒了！当前待复习积压已全部出清"
-                        BonusMode.NewItems -> "暂无更多未学新$unit"
+                        BonusMode.ReviewBacklog -> getString(R.string.learning_session_bonus_empty_review_backlog)
+                        BonusMode.NewItems -> getString(R.string.learning_session_bonus_empty_new_items, unit)
                     }
                     stateUpdater.update {
                         it.copy(
@@ -230,9 +248,9 @@ class SessionLifecycleDelegate(
                 }
 
                 if (bonusItems.size < count) {
-                    val modeLabel = if (bonusMode == BonusMode.ReviewBacklog) "待复习" else "新"
+                    val modeLabel = if (bonusMode == BonusMode.ReviewBacklog) getString(R.string.learning_session_bonus_label_review) else getString(R.string.learning_session_bonus_label_new)
                     stateUpdater.update {
-                        it.copy(successMessage = "已为你加载剩余全部 ${bonusItems.size} 个$modeLabel$unit")
+                        it.copy(successMessage = getString(R.string.learning_session_bonus_loaded_remaining, bonusItems.size, modeLabel, unit))
                     }
                 }
 
@@ -284,7 +302,7 @@ class SessionLifecycleDelegate(
                 stateUpdater.update {
                     it.copy(
                         status = LearningStatus.Error,
-                        error = "启动加餐失败: ${e.message}"
+                        error = getString(R.string.learning_session_err_bonus_start_failed, e.message ?: "")
                     )
                 }
             }

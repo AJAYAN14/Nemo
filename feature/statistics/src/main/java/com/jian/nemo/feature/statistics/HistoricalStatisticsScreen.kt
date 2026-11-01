@@ -13,17 +13,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
@@ -92,8 +89,6 @@ fun HistoricalStatisticsScreen(
     }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -116,7 +111,7 @@ fun HistoricalStatisticsScreen(
             // 1. 汇总卡片
             item {
                 Column {
-                    StatisticsSectionTitle("累计学习")
+                    StatisticsSectionTitle(stringResource(R.string.stats_history_title_cumulative_learning))
                     Spacer(modifier = Modifier.height(8.dp))
                     HistoricalSummaryCard(
                         totalWords = words.size,
@@ -130,7 +125,7 @@ fun HistoricalStatisticsScreen(
             // 2. 单词列表 (复用 StatisticsListCard)
             item {
                 Column {
-                    StatisticsSectionTitle("已学单词 (${words.size})")
+                    StatisticsSectionTitle(stringResource(R.string.stats_history_format_words_learned_count, words.size))
                     Spacer(modifier = Modifier.height(8.dp))
                     if (words.isNotEmpty()) {
                         StatisticsListCard(
@@ -144,12 +139,10 @@ fun HistoricalStatisticsScreen(
                         )
                     } else {
                         EmptyStatisticsState(
-                            message = "暂无单词学习记录",
-                            subtitle = "去学习词汇，积累你的专属词库吧",
+                            message = stringResource(R.string.stats_history_empty_words_message),
+                            subtitle = stringResource(R.string.stats_history_empty_words_subtitle),
                             icon = Icons.Rounded.Translate,
-                            plumpIcon = PlumpIcon.Languages,
-                            accentColor = NemoSecondary,
-                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                            accentColor = IosColors.Green
                         )
                     }
                 }
@@ -158,7 +151,7 @@ fun HistoricalStatisticsScreen(
             // 3. 语法列表 (复用 StatisticsListCard)
             item {
                 Column {
-                    StatisticsSectionTitle("已学语法 (${grammars.size})")
+                    StatisticsSectionTitle(stringResource(R.string.stats_history_format_grammars_learned_count, grammars.size))
                     Spacer(modifier = Modifier.height(8.dp))
                     if (grammars.isNotEmpty()) {
                         StatisticsListCard(
@@ -172,12 +165,10 @@ fun HistoricalStatisticsScreen(
                         )
                     } else {
                         EmptyStatisticsState(
-                            message = "暂无语法学习记录",
-                            subtitle = "去学习语法，掌握核心句型表达吧",
-                            icon = Icons.Rounded.Checklist,
-                            plumpIcon = PlumpIcon.ListChecks,
-                            accentColor = NemoSecondary,
-                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                            message = stringResource(R.string.stats_history_empty_grammars_message),
+                            subtitle = stringResource(R.string.stats_history_empty_grammars_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.MenuBook,
+                            accentColor = IosColors.Green
                         )
                     }
                 }
@@ -223,10 +214,10 @@ fun HistoricalStatisticsScreen(
             title = stringResource(R.string.stats_historical_title_word_dist),
             data = wordLevelData,
             totalData = uiState.wordTotalCountMap,
-            themeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary,
+            themeColor = IosColors.Blue,
             predictions = uiState.wordPredictions,
             overallPrediction = uiState.wordOverallPrediction,
-            itemUnit = "词",
+            itemUnit = stringResource(R.string.stats_history_label_unit_word),
             onDismiss = { showWordDialog = false }
         )
     }
@@ -237,10 +228,10 @@ fun HistoricalStatisticsScreen(
             title = stringResource(R.string.stats_historical_title_grammar_dist),
             data = grammarLevelData,
             totalData = uiState.grammarTotalCountMap,
-            themeColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary,
+            themeColor = IosColors.Green,
             predictions = uiState.grammarPredictions,
             overallPrediction = uiState.grammarOverallPrediction,
-            itemUnit = "条",
+            itemUnit = stringResource(R.string.stats_history_label_unit_item),
             onDismiss = { showGrammarDialog = false }
         )
     }
@@ -255,9 +246,8 @@ fun HistoricalSummaryCard(
     onWordsClick: () -> Unit,
     onGrammarsClick: () -> Unit
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val wordColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary
-    val grammarColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary
+    val wordColor = IosColors.Blue
+    val grammarColor = IosColors.Green
 
     PremiumCard {
         Row(
@@ -294,7 +284,6 @@ fun StatItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -304,11 +293,7 @@ fun StatItem(
         label = "statItemScale"
     )
 
-    val bgAlpha = if (isDark) {
-        if (isPlumpDuo) 0.12f else 0.10f
-    } else {
-        0.06f
-    }
+    val bgAlpha = if (isDark) 0.12f else 0.06f
 
     Column(
         modifier = modifier
@@ -316,7 +301,7 @@ fun StatItem(
                 scaleX = scale
                 scaleY = scale
             }
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedRectangle(20.dp))
             .background(color.copy(alpha = bgAlpha))
             .clickable(
                 interactionSource = interactionSource,
@@ -369,7 +354,7 @@ private fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
 
         modifier = modifier

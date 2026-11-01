@@ -4,7 +4,7 @@ import android.os.Build
 import android.view.WindowManager
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,7 +46,7 @@ fun NemoModalBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(),
-    shape: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    shape: Shape = UnevenRoundedRectangle(topStart = 28.dp, topEnd = 28.dp),
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     tonalElevation: Dp = 0.dp,

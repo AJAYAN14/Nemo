@@ -1,9 +1,13 @@
 package com.jian.nemo.feature.user
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.rounded.*
@@ -12,49 +16,41 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.IosColors
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.screenBackground
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.avatar.AvatarEditDialog
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.graphics.luminance
-import com.jian.nemo.feature.user.component.*
-import com.jian.nemo.feature.user.component.*
-import androidx.compose.animation.*
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import com.jian.nemo.core.ui.component.Capsule
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.user.component.*
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.jian.nemo.core.ui.modifier.softCardShadow
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
+private const val ANIMATION_DURATION = 200
+private const val PRESS_SCALE = 0.97f
+
+val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountManagementScreen(
     onNavigateBack: () -> Unit,
-
     onLogoutSuccess: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
@@ -65,14 +61,8 @@ fun AccountManagementScreen(
 
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // 头像相关状态
     val avatarPath = uiState.avatarPath
 
-    val scope = rememberCoroutineScope()
-    
-
-
-    // Handle Toasts
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
@@ -86,16 +76,13 @@ fun AccountManagementScreen(
         }
     }
 
-    // Handle Logout Redirect
     LaunchedEffect(uiState.isLoggedIn, uiState.isLoading, uiState.isAuthChecked) {
         if (uiState.isAuthChecked && !uiState.isLoggedIn && !uiState.isLoading) {
             onLogoutSuccess()
         }
     }
 
-    // Colors
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    // Premium Card Colors
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 
     val backdrop = rememberLayerBackdrop()
@@ -106,7 +93,6 @@ fun AccountManagementScreen(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            // 底层背景挂载 backdrop 采样图层（支持液态玻璃折射）
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -116,113 +102,112 @@ fun AccountManagementScreen(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-            // 1. Common Header
-            CommonHeader(
-                title = stringResource(R.string.user_account_title_screen),
-                onBack = onNavigateBack,
-                backgroundColor = backgroundColor
-            )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(scrollState)
-            ) {
-                // 2. Profile Header (Horizontal)
-                ProfileHeaderSection(
-                    uiState = uiState,
-                    avatarPath = avatarPath,
-                    onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
+                CommonHeader(
+                    title = stringResource(R.string.user_account_title_screen),
+                    onBack = onNavigateBack,
+                    backgroundColor = backgroundColor
                 )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // 2. Settings Content
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                // Group 1: Profile Settings
-                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_profile_section), cardBg = cardBg) {
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.Badge,
-                        iconTint = IosColors.Blue,
-                        plumpIcon = PlumpIcon.UserPen,
-                        plumpColor = IsoluminantPalette.SkyIndigo,
-                        title = stringResource(R.string.user_account_btn_change_username),
-                        onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(scrollState)
+                ) {
+                    ProfileHeaderSection(
+                        uiState = uiState,
+                        avatarPath = avatarPath,
+                        onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
                     )
-                    if (uiState.user?.isOnlyGoogleIdentity != true) {
-                        HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
-                        PremiumSettingsItem(
-                            icon = Icons.Rounded.MailOutline,
-                            iconTint = IosColors.Green,
-                            plumpIcon = PlumpIcon.Mail,
-                            plumpColor = IsoluminantPalette.EmeraldGreen,
-                            title = stringResource(R.string.user_account_btn_change_email),
-                            onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
-                        )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // Group 1: Profile Settings
+                        PremiumSettingsGroup(
+                            title = stringResource(R.string.user_account_title_profile_section),
+                            cardBg = cardBg
+                        ) {
+                            PremiumSettingsItem(
+                                icon = Icons.Rounded.Badge,
+                                iconTint = IosColors.Blue,
+                                title = stringResource(R.string.user_account_btn_change_username),
+                                onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
+                            )
+                            if (uiState.user?.isOnlyGoogleIdentity != true) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(start = 74.dp),
+                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                                    thickness = 0.5.dp
+                                )
+                                PremiumSettingsItem(
+                                    icon = Icons.Rounded.Mail,
+                                    iconTint = IosColors.Green,
+                                    title = stringResource(R.string.user_account_btn_change_email),
+                                    onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Group 2: Security Settings
+                        PremiumSettingsGroup(
+                            title = stringResource(R.string.user_account_title_security_section),
+                            cardBg = cardBg
+                        ) {
+                            PremiumSettingsItem(
+                                icon = Icons.Rounded.LockReset,
+                                iconTint = IosColors.Orange,
+                                title = stringResource(R.string.user_account_btn_reset_password),
+                                onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        // Group 3: Danger Zone
+                        PremiumSettingsGroup(
+                            title = stringResource(R.string.user_account_title_danger_section),
+                            cardBg = cardBg
+                        ) {
+                            PremiumSettingsItem(
+                                icon = Icons.Rounded.DeleteForever,
+                                iconTint = IosColors.Red,
+                                title = stringResource(R.string.user_account_btn_delete_account),
+                                titleColor = MaterialTheme.colorScheme.error,
+                                onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(36.dp))
+
+                        ColoredLiquidGlassButton(
+                            onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            tint = IosColors.Red,
+                            backdrop = backdrop,
+                            shape = Capsule()
+                        ) {
+                            Text(
+                                text = stringResource(R.string.user_account_btn_logout),
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(48.dp))
                     }
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Group 2: CheckIn & Privacy (Security)
-                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_security_section), cardBg = cardBg) {
-                     PremiumSettingsItem(
-                        icon = Icons.Rounded.LockReset,
-                        iconTint = IosColors.Orange,
-                        plumpIcon = PlumpIcon.KeyRound,
-                        plumpColor = IsoluminantPalette.WarmAmber,
-                        title = stringResource(R.string.user_account_btn_reset_password),
-                        onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Group 4: Danger Zone
-                PremiumSettingsGroup(title = stringResource(R.string.user_account_title_danger_section), cardBg = cardBg) {
-                    PremiumSettingsItem(
-                        icon = Icons.Rounded.DeleteForever,
-                        iconTint = MaterialTheme.colorScheme.error,
-                        plumpIcon = PlumpIcon.UserX,
-                        plumpColor = IsoluminantPalette.CoralFlame,
-                        title = stringResource(R.string.user_account_btn_delete_account),
-                        titleColor = MaterialTheme.colorScheme.error,
-                        onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                // Colored Liquid Glass Logout Button
-                ColoredLiquidGlassButton(
-                    onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    tint = IsoluminantPalette.CoralFlame,
-                    backdrop = backdrop,
-                    shape = Capsule()
-                ) {
-                    Text(
-                        text = stringResource(R.string.user_account_btn_logout),
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
-                    )
-                }
-
-                 Spacer(modifier = Modifier.height(64.dp))
             }
-
         }
     }
-    }
-    }
 
-    // Dialogs Management
     when (uiState.activeDialog) {
         UserDialogType.RESET_PASSWORD -> {
             AccountResetPasswordDialog(
@@ -272,13 +257,12 @@ fun AccountManagementScreen(
                     viewModel.deleteAccount(
                         password = password,
                         onSuccess = { viewModel.dismissDialog() },
-                        onError = { /* 对话框保持打开，错误信息通过 Toast 展示 */ }
+                        onError = { }
                     )
                 },
                 useDarkTheme = useDarkTheme
             )
         }
-
         UserDialogType.LOGOUT_CONFIRM -> {
             LogoutWarningDialog(
                 isLoading = uiState.isLoading,
@@ -290,13 +274,9 @@ fun AccountManagementScreen(
                 useDarkTheme = useDarkTheme
             )
         }
-
-
         else -> {}
     }
-
 }
-
 
 @Composable
 fun ProfileHeaderSection(
@@ -307,89 +287,85 @@ fun ProfileHeaderSection(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 24.dp), // Add padding
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-         // User Avatar with Ring
-         Box(
+        Box(
             contentAlignment = Alignment.BottomEnd,
             modifier = Modifier.clickable { onEditAvatar() }
-         ) {
-             Surface(
-                 shape = CircleShape,
-                 color = MaterialTheme.colorScheme.surface,
-                 // Flat: No elevation, add border
-                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
-                 modifier = Modifier.size(80.dp) // Slightly smaller for horizontal layout
-             ) {
-                 Box(modifier = Modifier.padding(4.dp)) {
+        ) {
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
+                modifier = Modifier.size(80.dp)
+            ) {
+                Box(modifier = Modifier.padding(4.dp)) {
                     AvatarImage(
                         username = uiState.user?.username ?: stringResource(R.string.user_account_default_username),
                         avatarPath = avatarPath.takeIf { it.isNotEmpty() },
                         size = 72.dp,
                         modifier = Modifier.fillMaxSize()
                     )
-                 }
-             }
+                }
+            }
 
-             // Edit Badge
-             Surface(
-                 shape = CircleShape,
-                 color = MaterialTheme.colorScheme.primary,
-                 modifier = Modifier.size(24.dp).border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
-             ) {
-                 Icon(
-                     imageVector = Icons.Rounded.Edit,
-                     contentDescription = stringResource(R.string.user_account_desc_edit_avatar),
-                     tint = MaterialTheme.colorScheme.onPrimary,
-                     modifier = Modifier.padding(5.dp)
-                 )
-             }
-         }
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(24.dp)
+                    .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Edit,
+                    contentDescription = stringResource(R.string.user_account_desc_edit_avatar),
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(5.dp)
+                )
+            }
+        }
 
-         Spacer(modifier = Modifier.width(20.dp))
+        Spacer(modifier = Modifier.width(20.dp))
 
-         // Text Info
-         Column(
-             modifier = Modifier.weight(1f)
-         ) {
-             // Username & Google Icon
-             Row(
-                 verticalAlignment = Alignment.CenterVertically,
-                 modifier = Modifier.fillMaxWidth()
-             ) {
-                 Text(
-                     text = uiState.user?.username ?: stringResource(R.string.user_account_label_not_logged_in),
-                     style = MaterialTheme.typography.headlineSmall.copy(
-                         fontWeight = FontWeight.Bold
-                     ),
-                     color = MaterialTheme.colorScheme.onSurface,
-                     maxLines = 1,
-                     modifier = Modifier
-                         .weight(1f, fill = false)
-                         .basicMarquee(iterations = Int.MAX_VALUE)
-                 )
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = uiState.user?.username ?: stringResource(R.string.user_account_label_not_logged_in),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .basicMarquee(iterations = Int.MAX_VALUE)
+                )
 
-                 if (uiState.user?.isOnlyGoogleIdentity == true) {
-                     Spacer(modifier = Modifier.width(6.dp))
-                     Icon(
-                         imageVector = GoogleIcon,
-                         contentDescription = stringResource(R.string.user_account_desc_google_account),
-                         tint = Color.Unspecified,
-                         modifier = Modifier.size(20.dp)
-                     )
-                 }
-             }
+                if (uiState.user?.isOnlyGoogleIdentity == true) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        imageVector = GoogleIcon,
+                        contentDescription = stringResource(R.string.user_account_desc_google_account),
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
 
-             // Email
-             Text(
-                 text = uiState.user?.email ?: stringResource(R.string.user_account_label_not_logged_in),
-                 style = MaterialTheme.typography.bodyMedium,
-                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                 modifier = Modifier.padding(top = 4.dp),
-                 maxLines = 1
-             )
-         }
+            Text(
+                text = uiState.user?.email ?: stringResource(R.string.user_account_label_not_logged_in),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                modifier = Modifier.padding(top = 4.dp),
+                maxLines = 1
+            )
+        }
     }
 }
 
@@ -402,24 +378,24 @@ fun PremiumSettingsGroup(
     Column {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(start = 12.dp, bottom = 8.dp)
+            modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
         )
 
         val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
         Card(
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedRectangle(24.dp),
             colors = CardDefaults.cardColors(containerColor = cardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-
             modifier = Modifier
                 .fillMaxWidth()
-                .softCardShadow(borderRadius = 26.dp, isDark = useDarkTheme)
+                .softCardShadow(borderRadius = 24.dp, isDark = useDarkTheme)
         ) {
             Column(
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 4.dp)
             ) {
                 content()
             }
@@ -427,78 +403,60 @@ fun PremiumSettingsGroup(
     }
 }
 
-val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
-
 @Composable
 fun PremiumSettingsItem(
-    icon: ImageVector? = null,
-    plumpIcon: PlumpIcon? = null,
+    icon: ImageVector,
     iconTint: Color,
-    plumpColor: Color = iconTint,
-    iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     title: String,
     titleColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitle: String? = null,
     trailingContent: @Composable (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) iconTint.copy(alpha = 0.15f) else iconTint
+    val actualTint = if (isSoftTranslucent) iconTint else Color.White
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) PRESS_SCALE else 1f,
+        label = "settingsItemScale",
+        animationSpec = tween(ANIMATION_DURATION)
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Container: 根据当前风格渲染 MD3（带 40dp 圆角背景底框与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
-        if (iconStyle == SettingIconStyle.MD3) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = iconTint.copy(alpha = 0.12f),
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconTint,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    } else if (plumpIcon != null) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 26.dp
-                        )
-                    }
-                }
-            }
-        } else {
-            // Plump Duo 模式：无背景框通透呈现
-            Box(
-                modifier = Modifier.size(40.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                if (plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = plumpColor,
-                        size = 28.dp
-                    )
-                } else if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(containerBgColor, RoundedRectangle(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = actualTint,
+                modifier = Modifier.size(28.dp)
+            )
         }
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        // Text
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
@@ -514,7 +472,6 @@ fun PremiumSettingsItem(
             }
         }
 
-        // Trailing Content (Chevron or Custom)
         if (trailingContent != null) {
             trailingContent()
         } else {
@@ -527,26 +484,3 @@ fun PremiumSettingsItem(
         }
     }
 }
-
-@Composable
-fun PremiumSettingsItem(
-    icon: ImageVector,
-    iconTint: Color,
-    title: String,
-    titleColor: Color = MaterialTheme.colorScheme.onSurface,
-    subtitle: String? = null,
-    trailingContent: @Composable (() -> Unit)? = null,
-    onClick: () -> Unit
-) = PremiumSettingsItem(
-    icon = icon,
-    plumpIcon = null,
-    iconTint = iconTint,
-    plumpColor = iconTint,
-    title = title,
-    titleColor = titleColor,
-    subtitle = subtitle,
-    trailingContent = trailingContent,
-    onClick = onClick
-)
-
-

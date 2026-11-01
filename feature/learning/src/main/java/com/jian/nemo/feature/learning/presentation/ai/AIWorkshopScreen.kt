@@ -12,7 +12,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.rounded.*
@@ -33,9 +33,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -49,6 +46,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -158,25 +156,17 @@ fun AIWorkshopScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                 ) {
                     Text(stringResource(R.string.workshop_btn_start_practice), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.width(8.dp))
-                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.ArrowRight,
-                            color = Color.White,
-                            size = 20.dp
-                        )
-                    } else {
-                        Icon(
-                            Icons.AutoMirrored.Rounded.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
@@ -262,7 +252,7 @@ fun AIWorkshopScreen(
         ) {
             uiState.switchedConfigName?.let { name ->
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     color = colorScheme.inverseSurface,
                     shadowElevation = 10.dp,
                     tonalElevation = 0.dp
@@ -292,14 +282,18 @@ fun AIWorkshopScreen(
 
         // 加载层 - 采用 code_artifact.html WebGL2 全屏极光引擎 + 浮动 AI 动态思维链硬解码卡片
         if (uiState.isLoading) {
+            val context = LocalContext.current
             val visibleSteps = remember { mutableStateListOf<WorkshopThinkingStepItem>() }
             var currentLibIndex by remember { mutableIntStateOf(0) }
             var stepCounter by remember { mutableIntStateOf(0) }
             val maxVisibleCount = 4 // 固定最多显示 4 条，第 5 条出现时第 1 条平滑消失
+            val thinkingSteps = remember(context) {
+                WorkshopThinkingStepResIds.map { context.getString(it) }
+            }
 
             LaunchedEffect(Unit) {
                 while (true) {
-                    val stepText = WorkshopThinkingStepsLibrary[currentLibIndex % WorkshopThinkingStepsLibrary.size]
+                    val stepText = thinkingSteps[currentLibIndex % thinkingSteps.size]
                     currentLibIndex++
                     val newItemId = ++stepCounter
                     val newItem = WorkshopThinkingStepItem(uniqueId = newItemId, text = stepText, isCompleted = false)
@@ -344,7 +338,7 @@ fun AIWorkshopScreen(
                         .align(Alignment.TopCenter)
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(22.dp),
+                        shape = RoundedRectangle(22.dp),
                         color = if (isDark) LearningPalette.AiSlateText.copy(alpha = 0.68f) else Color.White.copy(alpha = 0.85f),
                         border = BorderStroke(
                             1.dp,
@@ -534,11 +528,10 @@ private fun ModeSection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val activeColor = if (isPlumpDuo) {
-        if (currentMode == WorkshopMode.GRAMMAR) IsoluminantPalette.EmeraldGreen else IsoluminantPalette.LakesideCyan
+    val activeColor = if (currentMode == WorkshopMode.GRAMMAR) {
+        if (isDark) IosColors.GreenDark else IosColors.Green
     } else {
-        colorScheme.primary
+        if (isDark) IosColors.BlueDark else IosColors.Blue
     }
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
@@ -550,11 +543,11 @@ private fun ModeSection(
         modifier = Modifier
             .fillMaxWidth()
             .height(44.dp)
-            .background(trackBg, RoundedCornerShape(14.dp))
+            .background(trackBg, RoundedRectangle(14.dp))
             .border(
                 width = 1.dp,
                 color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else LearningPalette.AiBorderLight.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedRectangle(14.dp)
             )
             .padding(4.dp)
     ) {
@@ -573,10 +566,10 @@ private fun ModeSection(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
+                    .shadow(elevation = 2.dp, shape = RoundedRectangle(11.dp))
                     .background(
                         color = activeColor,
-                        shape = RoundedCornerShape(11.dp)
+                        shape = RoundedRectangle(11.dp)
                     )
             )
             Spacer(modifier = Modifier.weight((modes.size - 1 - animatedIndex).coerceAtLeast(0.001f)))
@@ -595,7 +588,7 @@ private fun ModeSection(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(11.dp))
+                        .clip(RoundedRectangle(11.dp))
                         .clickable(
                             enabled = enabled,
                             interactionSource = remember { MutableInteractionSource() },
@@ -626,7 +619,16 @@ private fun ModeSection(
 @Composable
 private fun GrammarDataEmptyView() {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+
+    val emptyIconColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else NemoNeutrals.Gray500
+    val emptyContainerBg = if (isSoftTranslucent) {
+        if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100
+    } else {
+        emptyIconColor
+    }
+    val emptyIconTint = if (isSoftTranslucent) emptyIconColor else Color.White
 
     Column(
         modifier = Modifier
@@ -634,32 +636,18 @@ private fun GrammarDataEmptyView() {
             .padding(top = 60.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (isPlumpDuo) {
-            Box(
-                modifier = Modifier.size(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                PlumpDuoIcon(
-                    icon = PlumpIcon.SearchX,
-                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500,
-                    size = 56.dp
-                )
-            }
-        } else {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-                shape = RoundedCornerShape(32.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Rounded.SearchOff,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(emptyContainerBg, RoundedRectangle(28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.SearchOff,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = emptyIconTint
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -687,8 +675,7 @@ private fun DifficultySection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val activeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorScheme.primary
+    val activeColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
@@ -698,11 +685,11 @@ private fun DifficultySection(
         modifier = Modifier
             .fillMaxWidth()
             .height(44.dp)
-            .background(trackBg, RoundedCornerShape(14.dp))
+            .background(trackBg, RoundedRectangle(14.dp))
             .border(
                 width = 1.dp,
                 color = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.2f) else LearningPalette.AiBorderLight.copy(alpha = 0.8f),
-                shape = RoundedCornerShape(14.dp)
+                shape = RoundedRectangle(14.dp)
             )
             .padding(4.dp)
     ) {
@@ -721,10 +708,10 @@ private fun DifficultySection(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .shadow(elevation = 2.dp, shape = RoundedCornerShape(11.dp))
+                    .shadow(elevation = 2.dp, shape = RoundedRectangle(11.dp))
                     .background(
                         color = activeColor,
-                        shape = RoundedCornerShape(11.dp)
+                        shape = RoundedRectangle(11.dp)
                     )
             )
             Spacer(modifier = Modifier.weight((levels.size - 1 - animatedIndex).coerceAtLeast(0.001f)))
@@ -743,7 +730,7 @@ private fun DifficultySection(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(11.dp))
+                        .clip(RoundedRectangle(11.dp))
                         .clickable(
                             enabled = enabled,
                             interactionSource = remember { MutableInteractionSource() },
@@ -796,35 +783,28 @@ private fun HeroStartView(
             .padding(top = 48.dp, bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-        if (isPlumpDuo) {
-            val plumpIcon = if (isGrammarMode) PlumpIcon.BookOpen else PlumpIcon.Sparkles
-            val plumpColor = if (isGrammarMode) IsoluminantPalette.EmeraldGreen else IsoluminantPalette.SkyIndigo
-            Box(
-                modifier = Modifier.size(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                PlumpDuoIcon(
-                    icon = plumpIcon,
-                    color = plumpColor,
-                    size = 56.dp
-                )
-            }
+        val iconStyle = LocalSettingIconStyle.current
+        val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+        val heroBaseColor = if (isGrammarMode) {
+            if (isDark) IosColors.GreenDark else IosColors.Green
         } else {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
-                shape = RoundedCornerShape(32.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = colorScheme.primary
-                    )
-                }
-            }
+            if (isDark) IosColors.BlueDark else IosColors.Blue
+        }
+        val heroContainerBg = if (isSoftTranslucent) heroBaseColor.copy(alpha = 0.15f) else heroBaseColor
+        val heroIconTint = if (isSoftTranslucent) heroBaseColor else Color.White
+
+        Box(
+            modifier = Modifier
+                .size(84.dp)
+                .background(heroContainerBg, RoundedRectangle(24.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = heroIconTint
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -873,23 +853,22 @@ private fun ExerciseContent(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = surfaceColor,
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             border = BorderStroke(1.dp, borderColor),
             tonalElevation = 0.dp,
             shadowElevation = 0.dp
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     val isCnToJp = exercise.type == "CN_TO_JP"
-                    val labelColor = if (isPlumpDuo) {
-                        if (isCnToJp) IsoluminantPalette.SkyIndigo else IsoluminantPalette.RoseRuby
+                    val labelColor = if (isCnToJp) {
+                        if (isDark) IosColors.BlueDark else IosColors.Blue
                     } else {
-                        if (isCnToJp) NemoPrimary else NemoRed
+                        if (isDark) IosColors.PurpleDark else IosColors.Purple
                     }
                     Surface(
-                        color = labelColor.copy(alpha = if (isPlumpDuo) 0.12f else 0.1f),
-                        shape = RoundedCornerShape(6.dp)
+                        color = labelColor.copy(alpha = if (isDark) 0.16f else 0.1f),
+                        shape = RoundedRectangle(6.dp)
                     ) {
                         Text(
                             text = if (isCnToJp) stringResource(R.string.learn_workshop_type_cn_to_jp) else stringResource(R.string.learn_workshop_type_jp_to_cn),
@@ -902,10 +881,10 @@ private fun ExerciseContent(
                     // 语法专项模式标签
                     uiState.currentGrammarPoint?.let { grammarPoint ->
                         Spacer(modifier = Modifier.width(8.dp))
-                        val grammarColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
+                        val grammarColor = if (isDark) IosColors.GreenDark else IosColors.Green
                         Surface(
-                            color = grammarColor.copy(alpha = if (isPlumpDuo) 0.12f else 0.1f),
-                            shape = RoundedCornerShape(6.dp)
+                            color = grammarColor.copy(alpha = if (isDark) 0.16f else 0.1f),
+                            shape = RoundedRectangle(6.dp)
                         ) {
                             val label = buildString {
                                 append(grammarPoint)
@@ -927,6 +906,7 @@ private fun ExerciseContent(
                     Spacer(modifier = Modifier.weight(1f))
                     if (exercise.type == "JP_TO_CN") {
                         val isPlaying = uiState.playingAudioId == "question"
+                        val audioTint = if (isDark) IosColors.BlueDark else IosColors.Blue
                         FrostedLiquidGlassButton(
                             onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
                             shape = CircleShape,
@@ -936,14 +916,14 @@ private fun ExerciseContent(
                         ) {
                             if (isPlaying) {
                                 SoundWaveAnimation(
-                                    tint = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary,
+                                    tint = audioTint,
                                     size = 20.dp
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                                     contentDescription = stringResource(R.string.learn_workshop_desc_speak),
-                                    tint = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary,
+                                    tint = audioTint,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -957,20 +937,12 @@ private fun ExerciseContent(
                         isInteractive = true,
                         modifier = Modifier.size(40.dp)
                     ) {
-                        if (isPlumpDuo) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.RotateCcw,
-                                color = IsoluminantPalette.GlazeMint,
-                                size = 20.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = stringResource(R.string.learn_workshop_desc_refresh),
-                                tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = stringResource(R.string.learn_workshop_desc_refresh),
+                            tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 }
                 
@@ -991,41 +963,24 @@ private fun ExerciseContent(
                 
                 if (exercise.hints.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(20.dp))
-                    val isPlumpDuoHint = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-                    val hintBgColor = if (isPlumpDuoHint) {
-                        IsoluminantPalette.WarmAmber.copy(alpha = if (isDark) 0.12f else 0.07f)
-                    } else {
-                        if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray50
-                    }
-                    val hintBorder = if (isPlumpDuoHint) {
-                        BorderStroke(0.5.dp, IsoluminantPalette.WarmAmber.copy(alpha = if (isDark) 0.25f else 0.18f))
-                    } else {
-                        null
-                    }
+                    val hintColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                    val hintBgColor = hintColor.copy(alpha = if (isDark) 0.12f else 0.08f)
+                    val hintBorder = BorderStroke(0.5.dp, hintColor.copy(alpha = if (isDark) 0.3f else 0.18f))
                     Surface(
                         color = hintBgColor,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         border = hintBorder
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            if (isPlumpDuoHint) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.Lightbulb,
-                                    color = IsoluminantPalette.WarmAmber,
-                                    size = 16.dp,
-                                    modifier = Modifier.padding(top = 1.dp)
-                                )
-                            } else {
-                                Icon(
-                                    Icons.Rounded.Lightbulb,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
-                                    tint = LearningPalette.AiAmberYellow
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Lightbulb,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = hintColor
+                            )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = stringResource(R.string.learn_workshop_hint_prefix, exercise.hints.joinToString(", ")),
@@ -1087,7 +1042,7 @@ private fun InputSection(
                     style = MaterialTheme.typography.bodyMedium
                 ) 
             },
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedRectangle(20.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.4f),
@@ -1108,7 +1063,7 @@ private fun InputSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(60.dp),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedRectangle(18.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White,
@@ -1135,20 +1090,10 @@ private fun FeedbackSection(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
-    val scoreColor = if (isPlumpDuo) {
-        when {
-            result.score >= 80 -> IsoluminantPalette.EmeraldGreen
-            result.score >= 60 -> IsoluminantPalette.WarmAmber
-            else -> IsoluminantPalette.CoralFlame
-        }
-    } else {
-        when {
-            result.score >= 80 -> NemoSecondary
-            result.score >= 60 -> NemoYellow
-            else -> NemoDanger
-        }
+    val scoreColor = when {
+        result.score >= 80 -> if (isDark) IosColors.GreenDark else IosColors.Green
+        result.score >= 60 -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+        else -> if (isDark) IosColors.RedDark else IosColors.Red
     }
 
 
@@ -1156,7 +1101,7 @@ private fun FeedbackSection(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = surfaceColor,
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             border = BorderStroke(2.dp, scoreColor.copy(alpha = 0.3f)),
             tonalElevation = 0.dp,
             shadowElevation = 0.dp
@@ -1183,7 +1128,7 @@ private fun FeedbackSection(
                     
                     Surface(
                         color = scoreColor,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedRectangle(12.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.learn_workshop_feedback_score_format, result.score),
@@ -1206,7 +1151,7 @@ private fun FeedbackSection(
                 Spacer(modifier = Modifier.height(8.dp))
                 Surface(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = if (isDark) 0.15f else 0.05f),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     SelectionContainer {
@@ -1231,7 +1176,7 @@ private fun FeedbackSection(
                     Spacer(modifier = Modifier.height(8.dp))
                     Surface(
                         color = NemoSecondary.copy(alpha = if (isDark) 0.15f else 0.05f),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         border = BorderStroke(1.dp, NemoSecondary.copy(alpha = if (isDark) 0.3f else 0.1f))
                     ) {
                         Row(
@@ -1304,7 +1249,7 @@ private fun FeedbackSection(
         ColoredLiquidGlassButton(
             onClick = onNext,
             tint = MaterialTheme.colorScheme.primary,
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedRectangle(18.dp),
             isInteractive = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -1318,7 +1263,16 @@ private fun FeedbackSection(
 @Composable
 private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+
+    val configIconColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500
+    val configContainerBg = if (isSoftTranslucent) {
+        if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100
+    } else {
+        configIconColor
+    }
+    val configIconTint = if (isSoftTranslucent) configIconColor else Color.White
     
     Column(
         modifier = Modifier
@@ -1326,32 +1280,18 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
             .padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (isPlumpDuo) {
-            Box(
-                modifier = Modifier.size(80.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                PlumpDuoIcon(
-                    icon = PlumpIcon.Cpu,
-                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500,
-                    size = 56.dp
-                )
-            }
-        } else {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else NemoNeutrals.Gray100,
-                shape = CircleShape
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Rounded.SettingsSuggest,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f) else NemoNeutrals.Gray400
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(configContainerBg, RoundedRectangle(28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Memory,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = configIconTint
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -1379,20 +1319,12 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
             contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
             modifier = Modifier.height(48.dp)
         ) {
-            if (isPlumpDuo) {
-                PlumpDuoIcon(
-                    icon = PlumpIcon.DailyGoalTarget,
-                    color = Color.White,
-                    size = 20.dp
-                )
-            } else {
-                Icon(
-                    Icons.Rounded.Settings,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = Color.White
-                )
-            }
+            Icon(
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = Color.White
+            )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 stringResource(R.string.learn_workshop_btn_go_config),
@@ -1458,17 +1390,17 @@ private fun HelpItem(index: String, title: String, content: String) {
     }
 }
 
-private val WorkshopThinkingStepsLibrary = listOf(
-    "解析练习要求：明确目标日语等级与句型考察重点",
-    "检索例句语境：匹配地道贴切的日式生活表达场景",
-    "构建句子骨架：确立谓语动词时态与助词搭配网络",
-    "梳理接续规则：校验形容词、副词与动词连用变形",
-    "生成候选译句：兼顾敬体与简体的自然语感表达",
-    "优化语法表达：消除中式日语痕迹，提升文段地道度",
-    "构建对照译文：生成精准贴合语境的中文参考翻译",
-    "拟定重点解析：提炼关键语法条目、用法与辨析要点",
-    "准备评分模型：建立多维度语法准确度与流利度基准",
-    "完成题目装配：格式化题目与交互结构，准备呈现"
+private val WorkshopThinkingStepResIds = listOf(
+    R.string.learning_ai_workshop_label_step_parse_requirements,
+    R.string.learning_ai_workshop_label_step_search_context,
+    R.string.learning_ai_workshop_label_step_build_skeleton,
+    R.string.learning_ai_workshop_label_step_check_conjugation,
+    R.string.learning_ai_workshop_label_step_generate_candidates,
+    R.string.learning_ai_workshop_label_step_optimize_grammar,
+    R.string.learning_ai_workshop_label_step_build_translation,
+    R.string.learning_ai_workshop_label_step_draft_analysis,
+    R.string.learning_ai_workshop_label_step_prepare_scoring,
+    R.string.learning_ai_workshop_label_step_assemble_exercise
 )
 
 private data class WorkshopThinkingStepItem(

@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.learning.presentation.ai
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.util.AIClient
@@ -17,12 +18,14 @@ import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import com.jian.nemo.core.domain.repository.AIConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import javax.inject.Inject
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
+import com.jian.nemo.feature.learning.R
 
 
 @Serializable
@@ -80,6 +83,7 @@ sealed interface AIWorkshopEvent {
 
 @HiltViewModel
 class AIWorkshopViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val aiWorkshopRepository: AIWorkshopRepository,
     private val aiClient: AIClient,
@@ -310,7 +314,13 @@ class AIWorkshopViewModel @Inject constructor(
                     val configs = allConfigs
                     if (configs.size <= 1) {
                         _uiState.update {
-                            it.copy(error = if (configs.isEmpty()) "请先在配置中心添加 AI 模型" else "只有一个配置，无法切换")
+                            it.copy(
+                                error = if (configs.isEmpty()) {
+                                    context.getString(R.string.learning_ai_workshop_label_error_no_model_config)
+                                } else {
+                                    context.getString(R.string.learning_ai_workshop_label_error_single_config)
+                                }
+                            )
                         }
                         return@launch
                     }
@@ -342,7 +352,7 @@ class AIWorkshopViewModel @Inject constructor(
 
     private fun generateExercise() {
         if (aiApiKey.isBlank()) {
-            _uiState.update { it.copy(error = "请先在设置中配置 API Key") }
+            _uiState.update { it.copy(error = context.getString(R.string.learning_ai_workshop_label_error_no_api_key)) }
             return
         }
 
@@ -393,7 +403,10 @@ class AIWorkshopViewModel @Inject constructor(
                 if (grammarWithUsages == null || grammarWithUsages.usages.isEmpty()) {
                     _uiState.update {
                         it.copy(
-                            error = "本地暂无 $difficulty 等级的语法数据，请先同步或切换到自由模式",
+                            error = context.getString(
+                                R.string.learning_ai_workshop_format_error_no_grammar_data,
+                                difficulty
+                            ),
                             isLoading = false,
                             hasGrammarData = false
                         )
@@ -462,7 +475,15 @@ class AIWorkshopViewModel @Inject constructor(
                     settingsRepository.setAiCurrentExercise(Json.encodeToString(exercise))
                 }
             }.onFailure { e ->
-                _uiState.update { it.copy(error = "获取题目失败: ${e.message}", isLoading = false) }
+                _uiState.update {
+                    it.copy(
+                        error = context.getString(
+                            R.string.learning_ai_workshop_format_error_fetch_exercise_failed,
+                            e.message ?: ""
+                        ),
+                        isLoading = false
+                    )
+                }
             }
         }
     }
@@ -503,7 +524,15 @@ class AIWorkshopViewModel @Inject constructor(
                     settingsRepository.setAiCurrentGradeResult(Json.encodeToString(grade))
                 }
             }.onFailure { e ->
-                _uiState.update { it.copy(error = "评分失败: ${e.message}", isLoading = false) }
+                _uiState.update {
+                    it.copy(
+                        error = context.getString(
+                            R.string.learning_ai_workshop_format_error_grade_failed,
+                            e.message ?: ""
+                        ),
+                        isLoading = false
+                    )
+                }
             }
         }
     }

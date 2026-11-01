@@ -4,7 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.*
@@ -59,7 +59,7 @@ fun HeatmapSharePoster(
     Column(
         modifier = modifier
             .width(360.dp)
-            .background(backgroundColor, RoundedCornerShape(26.dp))
+            .background(backgroundColor, RoundedRectangle(26.dp))
             .padding(18.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -83,7 +83,7 @@ fun HeatmapSharePoster(
                             brush = Brush.linearGradient(
                                 listOf(NemoPrimary, IosColors.Blue)
                             ),
-                            shape = RoundedCornerShape(7.dp)
+                            shape = RoundedRectangle(7.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -91,7 +91,7 @@ fun HeatmapSharePoster(
                         imageVector = Icons.Rounded.WorkspacePremium,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(15.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -107,7 +107,7 @@ fun HeatmapSharePoster(
                     )
                     Surface(
                         color = NemoPrimary.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedRectangle(4.dp)
                     ) {
                         Text(
                             text = "PRO",
@@ -121,7 +121,7 @@ fun HeatmapSharePoster(
             }
 
             Text(
-                text = SimpleDateFormat("yyyy年M月d日", Locale.CHINA).format(Date()),
+                text = SimpleDateFormat(stringResource(R.string.stats_poster_format_date_pattern), Locale.CHINA).format(Date()),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 color = textMuted
@@ -154,7 +154,7 @@ fun HeatmapSharePoster(
 
             // 纯白图标卡
             Surface(
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedRectangle(18.dp),
                 color = cardBg,
                 border = BorderStroke(1.dp, IosColors.Orange.copy(alpha = 0.25f)),
                 modifier = Modifier
@@ -169,7 +169,7 @@ fun HeatmapSharePoster(
                         imageVector = Icons.Rounded.LocalFireDepartment,
                         contentDescription = null,
                         tint = StatisticsPalette.PosterFlameOrange,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }
@@ -199,7 +199,7 @@ fun HeatmapSharePoster(
 
         // 荣耀称号胶囊
         Surface(
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedRectangle(20.dp),
             color = cardBg,
             border = BorderStroke(0.5.dp, cardBorder),
             modifier = Modifier.softCardShadow(borderRadius = 20.dp, isDark = isDarkTheme)
@@ -232,7 +232,7 @@ fun HeatmapSharePoster(
 
         // 今日战报（全宽主打高亮卡）
         Surface(
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedRectangle(18.dp),
             color = cardBg,
             border = BorderStroke(0.5.dp, cardBorder),
             modifier = Modifier
@@ -252,10 +252,10 @@ fun HeatmapSharePoster(
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
+                            .size(30.dp)
                             .background(
                                 IosColors.Orange.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
-                                RoundedCornerShape(9.dp)
+                                RoundedRectangle(9.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -263,7 +263,7 @@ fun HeatmapSharePoster(
                             imageVector = Icons.Rounded.LocalFireDepartment,
                             contentDescription = null,
                             tint = IosColors.Orange,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
@@ -297,7 +297,7 @@ fun HeatmapSharePoster(
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedRectangle(8.dp),
                     color = NemoSecondary.copy(alpha = if (isDarkTheme) 0.2f else 0.12f)
                 ) {
                     Row(
@@ -337,9 +337,9 @@ fun HeatmapSharePoster(
             PosterBentoStatCard(
                 icon = Icons.Rounded.Bolt,
                 value = "${uiState.totalActiveDays}",
-                unit = "天",
+                unit = stringResource(R.string.stats_poster_unit_days),
                 label = stringResource(R.string.stats_heatmap_label_active_days),
-                tag = "坚持不懈",
+                tag = stringResource(R.string.stats_poster_tag_unremitting),
                 color = NemoPrimary,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
@@ -351,9 +351,9 @@ fun HeatmapSharePoster(
             PosterBentoStatCard(
                 icon = Icons.Rounded.EmojiEvents,
                 value = "${uiState.bestDayCount}",
-                unit = "项",
+                unit = stringResource(R.string.stats_poster_unit_items),
                 label = stringResource(R.string.stats_heatmap_label_best_day),
-                tag = "$bestDayStr 巅峰",
+                tag = stringResource(R.string.stats_poster_format_best_day_tag, bestDayStr),
                 color = IosColors.Green,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
@@ -373,9 +373,9 @@ fun HeatmapSharePoster(
             PosterBentoStatCard(
                 icon = Icons.AutoMirrored.Rounded.TrendingUp,
                 value = "${uiState.dailyAverage}",
-                unit = "项/天",
+                unit = stringResource(R.string.stats_poster_unit_items_per_day),
                 label = stringResource(R.string.stats_heatmap_label_daily_avg),
-                tag = "稳步向前",
+                tag = stringResource(R.string.stats_poster_tag_steady_progress),
                 color = IosColors.Purple,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
@@ -389,7 +389,7 @@ fun HeatmapSharePoster(
                 value = "92",
                 unit = "%",
                 label = stringResource(R.string.stats_poster_label_retention),
-                tag = "FSRS 算法",
+                tag = stringResource(R.string.stats_poster_tag_fsrs_algorithm),
                 color = NemoDanger,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
@@ -463,7 +463,7 @@ fun HeatmapSharePoster(
             }
 
             Surface(
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedRectangle(8.dp),
                 color = cardBg,
                 border = BorderStroke(0.5.dp, cardBorder),
                 modifier = Modifier
@@ -478,7 +478,7 @@ fun HeatmapSharePoster(
                         imageVector = Icons.Rounded.Shield,
                         contentDescription = null,
                         tint = textMuted,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -510,7 +510,7 @@ private fun PosterBentoStatCard(
 ) {
     Surface(
         modifier = modifier.softCardShadow(borderRadius = 18.dp, isDark = isDarkTheme),
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedRectangle(18.dp),
         color = cardBg,
         border = BorderStroke(0.5.dp, cardBorder)
     ) {
@@ -529,7 +529,7 @@ private fun PosterBentoStatCard(
                         .size(30.dp)
                         .background(
                             color = color.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
-                            shape = RoundedCornerShape(9.dp)
+                            shape = RoundedRectangle(9.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -537,12 +537,12 @@ private fun PosterBentoStatCard(
                         imageVector = icon,
                         contentDescription = null,
                         tint = color,
-                        modifier = Modifier.size(17.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(6.dp),
+                    shape = RoundedRectangle(6.dp),
                     color = color.copy(alpha = if (isDarkTheme) 0.15f else 0.09f)
                 ) {
                     Text(
@@ -603,7 +603,7 @@ private fun PosterMemoryPanorama(
     isDarkTheme: Boolean
 ) {
     Surface(
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedRectangle(18.dp),
         color = cardBg,
         border = BorderStroke(0.5.dp, cardBorder),
         modifier = Modifier
@@ -641,11 +641,11 @@ private fun PosterMemoryPanorama(
 
                 Surface(
                     color = cardSubtleBg,
-                    shape = RoundedCornerShape(6.dp),
+                    shape = RoundedRectangle(6.dp),
                     border = BorderStroke(0.5.dp, cardBorder)
                 ) {
                     Text(
-                        text = "$totalCount 项",
+                        text = stringResource(R.string.stats_poster_format_total_count, totalCount),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         fontFamily = Rubik,
@@ -662,7 +662,7 @@ private fun PosterMemoryPanorama(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(9.dp)
-                    .clip(RoundedCornerShape(5.dp))
+                    .clip(RoundedRectangle(5.dp))
                     .background(
                         if (isDarkTheme) Color.White.copy(alpha = 0.08f)
                         else NemoNeutrals.Gray200
@@ -694,7 +694,7 @@ private fun PosterMemoryPanorama(
                 buckets.forEach { bucket ->
                     Surface(
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
+                        shape = RoundedRectangle(8.dp),
                         color = cardSubtleBg,
                         border = BorderStroke(0.5.dp, cardBorder.copy(alpha = 0.5f))
                     ) {
@@ -745,7 +745,7 @@ private fun PosterMicroHeatmap(
     isDarkTheme: Boolean
 ) {
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = cardBg,
         border = BorderStroke(0.5.dp, cardBorder),
         modifier = Modifier
@@ -809,7 +809,7 @@ private fun PosterMicroHeatmap(
                             Box(
                                 modifier = Modifier
                                     .size(7.5.dp)
-                                    .background(dotColor, RoundedCornerShape(2.dp))
+                                    .background(dotColor, RoundedRectangle(2.dp))
                             )
                         }
                     }

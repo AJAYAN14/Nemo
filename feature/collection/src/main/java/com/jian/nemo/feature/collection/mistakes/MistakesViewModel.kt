@@ -9,6 +9,9 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WrongAnswerRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import android.content.Context
+import com.jian.nemo.feature.collection.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +30,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class MistakesViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val wrongAnswerRepository: WrongAnswerRepository,
     private val grammarWrongAnswerRepository: GrammarWrongAnswerRepository,
     private val wordRepository: WordRepository,
@@ -79,7 +83,7 @@ class MistakesViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = "加载单词错题失败: ${e.message}"
+                            error = context.getString(R.string.collection_mistakes_format_load_word_mistakes_failed, e.message ?: "")
                         )
                     }
                 }
@@ -132,7 +136,7 @@ class MistakesViewModel @Inject constructor(
                 is Result.Error -> {
                     println("❌ 删除单词错题失败: ${result.exception.message}")
                     _uiState.update {
-                        it.copy(error = "删除失败: ${result.exception.message}")
+                        it.copy(error = context.getString(R.string.collection_mistakes_format_delete_failed, result.exception.message ?: ""))
                     }
                 }
                 is Result.Loading -> { /* Do nothing */ }
@@ -152,7 +156,7 @@ class MistakesViewModel @Inject constructor(
                 is Result.Error -> {
                     println("❌ 删除语法错题失败: ${result.exception.message}")
                     _uiState.update {
-                        it.copy(error = "删除失败: ${result.exception.message}")
+                        it.copy(error = context.getString(R.string.collection_mistakes_format_delete_failed, result.exception.message ?: ""))
                     }
                 }
                 is Result.Loading -> { /* Do nothing */ }
@@ -172,7 +176,7 @@ class MistakesViewModel @Inject constructor(
                 is Result.Error -> {
                     println("❌ 清空单词错题失败: ${result.exception.message}")
                     _uiState.update {
-                        it.copy(error = "清空失败: ${result.exception.message}")
+                        it.copy(error = context.getString(R.string.collection_mistakes_format_clear_failed, result.exception.message ?: ""))
                     }
                 }
                 is Result.Loading -> { /* Do nothing */ }
@@ -192,7 +196,7 @@ class MistakesViewModel @Inject constructor(
                 is Result.Error -> {
                     println("❌ 清空语法错题失败: ${result.exception.message}")
                     _uiState.update {
-                        it.copy(error = "清空失败: ${result.exception.message}")
+                        it.copy(error = context.getString(R.string.collection_mistakes_format_clear_failed, result.exception.message ?: ""))
                     }
                 }
                 is Result.Loading -> { /* Do nothing */ }

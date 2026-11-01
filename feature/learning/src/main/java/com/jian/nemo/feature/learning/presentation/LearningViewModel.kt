@@ -1,8 +1,11 @@
 
 package com.jian.nemo.feature.learning.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.feature.learning.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.model.Grammar
@@ -104,6 +107,7 @@ class LearningViewModel @Inject constructor(
     private val reviewLogRepository: com.jian.nemo.core.domain.repository.ReviewLogRepository,
     private val getLearningStatsUseCase: com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase,
     private val sessionStatsManager: LearningSessionStatsManager,
+    @ApplicationContext private val context: Context,
 ) : ViewModel(), StateUpdater {
     private val _uiState = MutableStateFlow(LearningUiState())
     val uiState: StateFlow<LearningUiState> = _uiState.asStateFlow()
@@ -135,6 +139,7 @@ class LearningViewModel @Inject constructor(
         learningUndoHelper, updateWordUseCase, updateGrammarUseCase,
         studyRecordRepository, wordRepository, grammarRepository,
         srsIntervalPreview, sessionState, this, viewModelScope, queueNavigationDelegate,
+        context = context,
     )
     /** 计时与会话结算域 delegate（承接 completeSession/syncTodayCounts/pauseTimer/resumeTimer/checkAndRestoreOrReset/showAnswer/toggleGrammarDetail） */
     private val statsTimerDelegate = StatsTimerDelegate(
@@ -151,6 +156,7 @@ class LearningViewModel @Inject constructor(
     private val cardOpsDelegate = CardOpsDelegate(
         updateWordUseCase, updateGrammarUseCase,
         sessionState, this, viewModelScope, queueNavigationDelegate,
+        context = context,
     )
     /** 评分管线域 delegate（rate/applyLapsePenalty/processRelearningGraduation/handleScheduleResult/processSrsUpdate/persistRatingItemAsync） */
     private val ratingDelegate = RatingDelegate(
@@ -159,6 +165,7 @@ class LearningViewModel @Inject constructor(
         settingsRepository, studyRecordRepository, reviewLogRepository,
         sessionState, this, viewModelScope,
         undoDelegate, statsTimerDelegate, queueNavigationDelegate, cardOpsDelegate,
+        context = context,
     )
     /** 会话生命周期编排域 delegate（handleStart/handleBonusStart/loadSession/handleSessionLoadResult/changeLearningMode/exitLearning） */
     private val sessionLifecycleDelegate = SessionLifecycleDelegate(
@@ -168,6 +175,7 @@ class LearningViewModel @Inject constructor(
         settingsRepository, cloudBackupManager,
         sessionState, this, viewModelScope,
         settingsDelegate, undoDelegate, statsTimerDelegate, queueNavigationDelegate, srsIntervalPreview,
+        context = context,
     )
 
     /**
@@ -259,16 +267,16 @@ class LearningViewModel @Inject constructor(
             val result = contentReportRepository.reportContentError(itemId, itemType, errorType, description)
             if (result is Result.Success) {
                 // 使用通用的成功消息提示
-                _uiState.update { it.copy(successMessage = "反馈成功，感谢您的反馈！") }
+                _uiState.update { it.copy(successMessage = context.getString(R.string.learning_report_msg_success)) }
             } else if (result is Result.Error) {
                 val message = result.exception.message ?: ""
                 val friendlyError = when {
-                    message.contains("unique_user_item_report") -> "您已经提交过对此类型问题的反馈了，请勿重复提交。"
+                    message.contains("unique_user_item_report") -> context.getString(R.string.learning_report_err_duplicate)
                     message.contains("connection closed", ignoreCase = true) ||
                     message.contains("Unable to resolve host", ignoreCase = true) ||
                     message.contains("timeout", ignoreCase = true) ||
-                    message.contains("HTTP request to", ignoreCase = true) -> "网络连接失败，请检查网络后重试。"
-                    else -> "反馈失败: $message"
+                    message.contains("HTTP request to", ignoreCase = true) -> context.getString(R.string.learning_report_err_network)
+                    else -> context.getString(R.string.learning_report_format_failed, message)
                 }
                 _uiState.update { it.copy(error = friendlyError) }
             }

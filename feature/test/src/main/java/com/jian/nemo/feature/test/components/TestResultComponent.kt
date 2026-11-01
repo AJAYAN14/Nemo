@@ -8,7 +8,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.draw.clip
@@ -194,7 +194,7 @@ fun TestResultComponent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Surface(
-                            shape = RoundedCornerShape(24.dp),
+                            shape = RoundedRectangle(24.dp),
                             color = MaterialTheme.colorScheme.primaryContainer,
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
@@ -332,7 +332,7 @@ fun TestResultComponent(
 
 
 
-        val buttonShape = RoundedCornerShape(24.dp)
+        val buttonShape = RoundedRectangle(24.dp)
 
         Row(
             modifier = Modifier
@@ -475,7 +475,7 @@ fun StatCard(
     val isDark = backgroundColor.luminance() < 0.5f
     Surface(
         modifier = modifier.softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = backgroundColor,
         shadowElevation = 0.dp
     ) {
@@ -528,7 +528,7 @@ fun ContentAnalysisSection(
         modifier = Modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, outlineColor)
     ) {
@@ -548,7 +548,7 @@ fun ContentAnalysisSection(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedRectangle(6.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 // 单词部分
@@ -610,7 +610,7 @@ fun TodaySummarySection(
         modifier = Modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor
     ) {
         Row(
@@ -621,7 +621,7 @@ fun TodaySummarySection(
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedRectangle(12.dp))
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {

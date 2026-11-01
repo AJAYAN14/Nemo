@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -175,7 +175,7 @@ fun NemoFractionalPicker(
         modifier = modifier
             .fillMaxWidth()
             .height(130.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedRectangle(24.dp))
             // 内阴影绘制实现凹陷深度感
             .drawWithContent {
                 drawContent()

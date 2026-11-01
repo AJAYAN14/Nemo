@@ -20,13 +20,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.speaker.SoundWaveAnimation
-import androidx.compose.material.icons.filled.VolumeUp
+import com.jian.nemo.core.designsystem.theme.NemoCategoryTheme
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -43,11 +43,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -58,9 +56,7 @@ import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
-import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.ui.component.text.FuriganaText
-
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 
@@ -111,7 +107,7 @@ fun WordCard(
                 rotationY = if (isFrontVisible) rotation else rotation - 180f
                 cameraDistance = 16f * density
             },
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedRectangle(32.dp),
         color = cardColor,
         shadowElevation = 0.dp
     ) {
@@ -125,7 +121,7 @@ fun WordCard(
                             cardColor
                         )
                     ),
-                    shape = RoundedCornerShape(32.dp)
+                    shape = RoundedRectangle(32.dp)
                 )
                 .border(
                     width = 1.dp,
@@ -136,7 +132,7 @@ fun WordCard(
                             Color.Transparent
                         )
                     ),
-                    shape = RoundedCornerShape(32.dp)
+                    shape = RoundedRectangle(32.dp)
                 )
         ) {
             if (isFrontVisible) {
@@ -207,14 +203,14 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 if (isPlaying) {
                     SoundWaveAnimation(
                         tint = themeColor,
-                        size = 24.dp
+                        size = 32.dp
                     )
                 } else {
                     androidx.compose.material3.Icon(
-                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
                         contentDescription = stringResource(R.string.learn_word_card_action_speak),
                         tint = themeColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(32.dp)
                     )
                 }
             }
@@ -257,7 +253,7 @@ private fun WordCardBack(
         word.pos?.let {
             Box(
                 modifier = Modifier
-                    .background(themeColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                    .background(themeColor.copy(alpha = 0.15f), RoundedRectangle(12.dp))
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
@@ -351,7 +347,7 @@ private fun ExampleSentence(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 20.dp)
-            .background(themeColor.copy(alpha = 0.03f), RoundedCornerShape(16.dp))
+            .background(themeColor.copy(alpha = 0.03f), RoundedRectangle(16.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -391,86 +387,14 @@ private fun ExampleSentence(
 }
 
 /**
- * UI/UX PRO: 获取基于分类 ID 或词性的主题色
+ * 获取基于分类 ID 或词性的调色盘单一标准主题色
  * 优先使用 categoryId，如果为空则回退到 pos
  */
 fun getThemeColorForCategory(categoryId: String?, pos: String?, isDark: Boolean): Color {
-    val fallbackColor = if (isDark) NemoPrimaryDark else NemoPrimary
-    // 1. 优先从分类 ID 映射 (对应 CategoryClassificationScreen 中的 id)
-    if (!categoryId.isNullOrBlank()) {
-        val colors = NemoCategoryColors
-        return when (categoryId) {
-            "verb" -> if (isDark) colors.CardVerbTextDark else colors.CardVerbTextLight
-            "noun" -> if (isDark) colors.CardNounTextDark else colors.CardNounTextLight
-            "adj" -> if (isDark) colors.CardAdjITextDark else colors.CardAdjITextLight
-            "adv" -> if (isDark) colors.CardAdvTextDark else colors.CardAdvTextLight
-            "rentai" -> if (isDark) colors.CardRentaiTextDark else colors.CardRentaiTextLight
-            "conj" -> if (isDark) colors.CardConjTextDark else colors.CardConjTextLight
-            "particle" -> if (isDark) colors.CardFixTextDark else colors.CardFixTextLight
-            "kata" -> if (isDark) colors.CardAdjNaTextDark else colors.CardAdjNaTextLight
-            "prefix" -> if (isDark) colors.CardKataTextDark else colors.CardKataTextLight
-            "suffix" -> if (isDark) colors.CardSoundTextDark else colors.CardSoundTextLight
-            "expression" -> if (isDark) colors.CardKeigoTextDark else colors.CardKeigoTextLight
-            "exclam" -> if (isDark) colors.CardIdiomTextDark else colors.CardIdiomTextLight
-            else -> fallbackColor
-        }
-    }
-
-    // 2. 回退到基于词性字符串的模糊匹配
-    if (pos == null) return fallbackColor
-    
-    val p = pos.trim()
-    val colors = NemoCategoryColors
-    return when {
-        // 动词
-        p.contains("动词") || p.endsWith("动") -> 
-            if (isDark) colors.CardVerbTextDark else colors.CardVerbTextLight
-        
-        // 名词
-        p.contains("名词") || p == "名" -> 
-            if (isDark) colors.CardNounTextDark else colors.CardNounTextLight
-            
-        // 形容词 (い)
-        p.contains("形容词") && (p.contains("い") || p.contains("1")) -> 
-            if (isDark) colors.CardAdjITextDark else colors.CardAdjITextLight
-            
-        // 形容动词 (な)
-        p.contains("形容词") || p.contains("形动") || p.contains("な") -> 
-            if (isDark) colors.CardAdjNaTextDark else colors.CardAdjNaTextLight
-            
-        // 副词
-        p.contains("副词") || p == "副" -> 
-            if (isDark) colors.CardAdvTextDark else colors.CardAdvTextLight
-            
-        // 接续词
-        p.contains("接续") -> 
-            if (isDark) colors.CardConjTextDark else colors.CardConjTextLight
-            
-        // 连体词
-        p.contains("连体") -> 
-            if (isDark) colors.CardRentaiTextDark else colors.CardRentaiTextLight
-            
-        // 外来语 / 片假名
-        p.contains("外来") || p.contains("片假名") -> 
-            if (isDark) colors.CardKataTextDark else colors.CardKataTextLight
-            
-        // 熟语 / 惯用
-        p.contains("熟语") || p.contains("惯用") -> 
-            if (isDark) colors.CardIdiomTextDark else colors.CardIdiomTextLight
-            
-        // 敬语
-        p.contains("敬语") -> 
-            if (isDark) colors.CardKeigoTextDark else colors.CardKeigoTextLight
-            
-        // 拟声 / 拟态
-        p.contains("声") || p.contains("态") -> 
-            if (isDark) colors.CardSoundTextDark else colors.CardSoundTextLight
-            
-        // 固定句 / 其他
-        p.contains("固定") || p.contains("句") -> 
-            if (isDark) colors.CardFixTextDark else colors.CardFixTextLight
-            
-        else -> fallbackColor
+    return if (!categoryId.isNullOrBlank()) {
+        NemoCategoryTheme.getCategoryColor(categoryId, isDark)
+    } else {
+        NemoCategoryTheme.getPosColor(pos, isDark)
     }
 }
 
@@ -484,12 +408,12 @@ private fun WordCardPreview() {
         val word = Word(
             id = 1,
             rawId = "1",
-            japanese = "食べる",
-            hiragana = "たべる",
-            chinese = "吃",
+            japanese = stringResource(R.string.learning_card_preview_mock_japanese),
+            hiragana = stringResource(R.string.learning_card_preview_mock_hiragana),
+            chinese = stringResource(R.string.learning_card_preview_mock_chinese),
             level = "N5",
-            pos = "动词",
-            example1 = "ご飯を食べる",
+            pos = stringResource(R.string.learning_card_preview_mock_pos),
+            example1 = stringResource(R.string.learning_card_preview_mock_example),
             gloss1 = "Eat rice"
         )
         WordCard(word = word, isFlipped = false, onFlip = {}, onSpeak = {})

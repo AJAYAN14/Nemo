@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AI Reading History Screen -->
+    <string name="learning_ai_reading_format_date_month_day_time">MM月dd日 HH:mm</string>
+
+    <!-- AI Reading Screen: Themes -->
+    <string name="learning_ai_reading_theme_daily_life_title">日常生活</string>
+    <string name="learning_ai_reading_theme_daily_life_subtitle">温暖生活琐事</string>
+    <string name="learning_ai_reading_theme_traditional_culture_title">传统文化</string>
+    <string name="learning_ai_reading_theme_traditional_culture_subtitle">和风传统美学</string>
+    <string name="learning_ai_reading_theme_folk_tales_title">民间故事</string>
+    <string name="learning_ai_reading_theme_folk_tales_subtitle">经典奇幻物语</string>
+    <string name="learning_ai_reading_theme_cuisine_title">美食料理</string>
+    <string name="learning_ai_reading_theme_cuisine_subtitle">地道烟火风味</string>
+    <string name="learning_ai_reading_theme_scenery_title">名胜风光</string>
+    <string name="learning_ai_reading_theme_scenery_subtitle">四季列岛巡礼</string>
+    <string name="learning_ai_reading_theme_business_title">商务工作</string>
+    <string name="learning_ai_reading_theme_business_subtitle">职场严谨敬语</string>
+
+    <!-- AI Reading Screen: Thinking Steps -->
+    <string name="learning_ai_reading_thinking_step_preference">分析阅读偏好：明确选定主题与目标难度级别</string>
+    <string name="learning_ai_reading_thinking_step_context">检索主题语境：搜寻地道自然的日式生活场景</string>
+    <string name="learning_ai_reading_thinking_step_vocabulary">挑选核心词汇：筛选适合当前水平的重点假名与单词</string>
+    <string name="learning_ai_reading_thinking_step_outline">构建文章脉络：规划段落层级与情节展开走向</string>
+    <string name="learning_ai_reading_thinking_step_paragraphs">组织日文段落：生成自然流畅、符合母语表达习惯的句子</string>
+    <string name="learning_ai_reading_thinking_step_grammar">优化语法表达：校验用词准确性与文段连贯度</string>
+    <string name="learning_ai_reading_thinking_step_translation">对照中文翻译：生成忠实地道的中文译文与段落对照</string>
+    <string name="learning_ai_reading_thinking_step_quiz">设计阅读测验：围绕短文核心细节生成理解问答题</string>
+    <string name="learning_ai_reading_thinking_step_glossary">整理重点词条：提炼生词列表、假名读音与释义</string>
+    <string name="learning_ai_reading_thinking_step_typography">完成排版校验：梳理段落布局，准备开启阅读训练</string>
+
+    <!-- AI Reading ViewModel: Toasts & Formats -->
+    <string name="learning_ai_reading_toast_no_model_config">请先在配置中心添加 AI 模型</string>
+    <string name="learning_ai_reading_toast_single_config">只有一个配置，无法切换</string>
+    <string name="learning_ai_reading_toast_api_key_missing_settings">API 密钥未配置，请前往设置配置！</string>
+    <string name="learning_ai_reading_format_generate_article_failed">生成短文失败，请重试: %1$s</string>
+    <string name="learning_ai_reading_toast_api_key_missing">API 密钥未配置</string>
+    <string name="learning_ai_reading_format_translate_failed">翻译失败: %1$s</string>
+
+    <!-- CustomTextToolbar: Menu Buttons -->
+    <string name="learning_ai_reading_btn_copy">复制</string>
+    <string name="learning_ai_reading_btn_select_all">全选</string>
+    <string name="learning_ai_reading_btn_translate">翻译</string>
+</resources>

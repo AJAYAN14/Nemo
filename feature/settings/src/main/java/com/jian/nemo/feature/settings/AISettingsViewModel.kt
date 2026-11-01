@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.settings
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,12 +8,14 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.AIConfig
 import com.jian.nemo.core.data.util.AIClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
+import com.jian.nemo.feature.settings.R
 
 data class AITestResult(
     val success: Boolean,
@@ -45,6 +48,7 @@ sealed interface AISettingsEvent {
 
 @HiltViewModel
 class AISettingsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingsRepository: SettingsRepository,
     private val aiClient: AIClient
 ) : ViewModel() {
@@ -85,10 +89,10 @@ class AISettingsViewModel @Inject constructor(
                         val initialConfig = AIConfig(
                             id = "default_active_id",
                             name = when(oldPlatform) {
-                                "openai" -> "OpenAI 默认配置"
-                                "gemini" -> "Gemini 默认配置"
-                                "deepseek" -> "DeepSeek 默认配置"
-                                else -> "自定义 默认配置"
+                                "openai" -> context.getString(R.string.settings_ai_config_default_openai)
+                                "gemini" -> context.getString(R.string.settings_ai_config_default_gemini)
+                                "deepseek" -> context.getString(R.string.settings_ai_config_default_deepseek)
+                                else -> context.getString(R.string.settings_ai_config_default_custom)
                             },
                             platform = oldPlatform.ifEmpty { "openai" },
                             model = oldModel,
@@ -162,7 +166,7 @@ class AISettingsViewModel @Inject constructor(
                     val currentList = _uiState.value.configs.toMutableList()
                     val index = currentList.indexOfFirst { it.id == editing.id }
                     
-                    val finalName = editing.name.trim().ifEmpty { "未命名配置" }
+                    val finalName = editing.name.trim().ifEmpty { context.getString(R.string.settings_ai_config_unnamed) }
                     val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
                     
                     // 别名与密钥重复性校验
@@ -170,14 +174,14 @@ class AISettingsViewModel @Inject constructor(
                         it.id != finalConfig.id && it.name.trim().equals(finalConfig.name.trim(), ignoreCase = true) 
                     }
                     if (hasDuplicateName) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "配置别名已存在，请换一个别名")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_duplicate_name))) }
                         return@launch
                     }
                     val hasDuplicateKey = currentList.any { 
                         it.id != finalConfig.id && it.apiKey.trim() == finalConfig.apiKey.trim() 
                     }
                     if (hasDuplicateKey) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "API 密钥已配置过，请勿重复添加")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_duplicate_key))) }
                         return@launch
                     }
                     
@@ -207,12 +211,12 @@ class AISettingsViewModel @Inject constructor(
                 is AISettingsEvent.TestConnection -> {
                     val editing = _uiState.value.editingConfig ?: return@launch
                     if (editing.apiKey.isBlank()) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "API Key 不能为空")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_empty_key))) }
                         return@launch
                     }
                     
                     val currentList = _uiState.value.configs
-                    val finalName = editing.name.trim().ifEmpty { "未命名配置" }
+                    val finalName = editing.name.trim().ifEmpty { context.getString(R.string.settings_ai_config_unnamed) }
                     val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
                     
                     // 别名与密钥重复性校验
@@ -220,14 +224,14 @@ class AISettingsViewModel @Inject constructor(
                         it.id != finalConfig.id && it.name.trim().equals(finalConfig.name.trim(), ignoreCase = true) 
                     }
                     if (hasDuplicateName) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "配置别名已存在，请换一个别名")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_duplicate_name))) }
                         return@launch
                     }
                     val hasDuplicateKey = currentList.any { 
                         it.id != finalConfig.id && it.apiKey.trim() == finalConfig.apiKey.trim() 
                     }
                     if (hasDuplicateKey) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "API 密钥已配置过，请勿重复添加")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_duplicate_key))) }
                         return@launch
                     }
 
@@ -246,10 +250,10 @@ class AISettingsViewModel @Inject constructor(
                     _uiState.update { it.copy(
                         isTesting = false,
                         testResult = if (testSuccess) {
-                            AITestResult(true, "连接成功")
+                            AITestResult(true, context.getString(R.string.settings_ai_msg_connect_success))
                         } else {
-                            val msg = result.exceptionOrNull()?.message ?: "未知错误"
-                            Log.e("AISettings", "验证失败: $msg")
+                            val msg = result.exceptionOrNull()?.message ?: context.getString(R.string.settings_ai_msg_unknown_error)
+                            Log.e("AISettings", "Verification failed: $msg")
                             AITestResult(false, msg)
                         }
                     ) }
@@ -259,7 +263,7 @@ class AISettingsViewModel @Inject constructor(
                         val currentList = _uiState.value.configs.toMutableList()
                         val index = currentList.indexOfFirst { it.id == editing.id }
                         
-                        val finalName = editing.name.trim().ifEmpty { "未命名配置" }
+                        val finalName = editing.name.trim().ifEmpty { context.getString(R.string.settings_ai_config_unnamed) }
                         val finalConfig = editing.copy(name = finalName, apiKey = editing.apiKey.trim())
                         
                         if (index >= 0) {
@@ -278,7 +282,7 @@ class AISettingsViewModel @Inject constructor(
                 is AISettingsEvent.TestConfig -> {
                     val config = event.config
                     if (config.apiKey.isBlank()) {
-                        _uiState.update { it.copy(testResult = AITestResult(false, "API Key 为空，无法测试")) }
+                        _uiState.update { it.copy(testResult = AITestResult(false, context.getString(R.string.settings_ai_toast_empty_key_test))) }
                         return@launch
                     }
                     _uiState.update { it.copy(isTesting = true, testingConfigId = config.id, testResult = null) }
@@ -294,10 +298,10 @@ class AISettingsViewModel @Inject constructor(
                         isTesting = false,
                         testingConfigId = null,
                         testResult = if (testSuccess) {
-                            AITestResult(true, "「${config.name}」API 连接正常 · 测试通过")
+                            AITestResult(true, context.getString(R.string.settings_ai_format_test_success, config.name))
                         } else {
-                            val msg = result.exceptionOrNull()?.message ?: "连接失败"
-                            AITestResult(false, "「${config.name}」测试失败: $msg")
+                            val msg = result.exceptionOrNull()?.message ?: context.getString(R.string.settings_ai_msg_connect_failed)
+                            AITestResult(false, context.getString(R.string.settings_ai_format_test_failed, config.name, msg))
                         }
                     ) }
                 }

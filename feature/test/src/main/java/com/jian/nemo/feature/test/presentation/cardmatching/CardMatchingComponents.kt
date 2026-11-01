@@ -20,7 +20,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material.icons.Icons
 
 import androidx.compose.material3.*
@@ -150,7 +151,7 @@ fun FlippableCard(
 
     // Haptic feedback
     val hapticFeedback = LocalHapticFeedback.current
-    val cardShape = RoundedCornerShape(22.dp)
+    val cardShape = RoundedRectangle(22.dp)
     val borderWidth = if (cardState == CardState.DEFAULT) 1.dp else 2.dp
 
     androidx.compose.animation.AnimatedVisibility(
@@ -334,7 +335,7 @@ fun MatchingFeedbackPanel(
             color = backgroundColor,
             modifier = Modifier.fillMaxWidth(),
             border = BorderStroke(1.dp, textColor.copy(alpha = 0.1f)),
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+            shape = UnevenRoundedRectangle(topStart = 24.dp, topEnd = 24.dp)
         ) {
             Column(
                 modifier = Modifier

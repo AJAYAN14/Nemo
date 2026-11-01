@@ -45,7 +45,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.ChartColors
 import com.jian.nemo.core.designsystem.theme.StatisticsPalette
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import kotlin.math.roundToInt
@@ -68,7 +67,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.graphicsLayer
@@ -107,7 +106,7 @@ fun ForgettingCurveChart(
     // 颜色方案
     val gridColor = if (isDark) NemoNeutrals.Gray700.copy(alpha = 0.4f) else NemoNeutrals.Gray200
     val axisLabelColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
-    val standardLineColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
+    val standardLineColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen
     
     // 动态色彩联动：折线与面积阴影跟随当前选中的分层阶段主题色平滑补间过渡
     val activeThemeColor = if (isPlumpDuo) {
@@ -508,7 +507,7 @@ private fun CurveLiquidTooltip(
         boxTop = info.chartTop + with(density) { 12.dp.toPx() }
     }
 
-    val stdPointColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else ChartColors.FreshGreen
+    val stdPointColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen
     val alertPointColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
 
     Box(
@@ -523,7 +522,7 @@ private fun CurveLiquidTooltip(
             onClick = {},
             backdrop = backdrop,
             surfaceColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.3f),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedRectangle(16.dp),
             border = BorderStroke(
                 1.dp,
                 if (isDark) Color.White.copy(alpha = 0.2f) else Color.White.copy(alpha = 0.6f)

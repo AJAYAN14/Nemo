@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +24,7 @@ fun TestProgressBar(progress: Float, text: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(10.dp) // 10dp height
-                .clip(RoundedCornerShape(5.dp)), // Rounded edges
+                .clip(Capsule()), // Rounded edges
             color = NemoPrimary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant
         )

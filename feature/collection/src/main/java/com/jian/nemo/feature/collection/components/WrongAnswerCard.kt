@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -25,20 +25,10 @@ import com.jian.nemo.core.domain.model.WrongAnswer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-/**
- * 错题卡片组件
- *
- * 用于错题本中显示错题信息
- *
- * @param wrongAnswer 错题数据
- * @param onDelete 删除回调
- */
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 
 @Composable
 fun WrongAnswerCard(
@@ -47,18 +37,18 @@ fun WrongAnswerCard(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
-    val wrongColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
-    val correctColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary
+    val wrongColor = IosColors.Red
+    val correctColor = IosColors.Green
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .softCardShadow(borderRadius = 12.dp, isDark = isDark),
+            .softCardShadow(borderRadius = 16.dp, isDark = isDark),
+        shape = RoundedRectangle(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
@@ -122,7 +112,7 @@ fun WrongAnswerCard(
             // 删除按钮
             IconButton(onClick = onDelete) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    imageVector = Icons.Rounded.Delete,
                     contentDescription = stringResource(R.string.collection_cd_delete_mistake),
                     tint = wrongColor
                 )

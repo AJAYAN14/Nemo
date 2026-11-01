@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主题设置与深浅色策略 -->
+    <string name="settings_theme_strategy_system_title">跟随系统</string>
+    <string name="settings_theme_strategy_system_subtitle">根据系统设置自动切换深浅色主题</string>
+    <string name="settings_theme_strategy_schedule_title">定时深色模式</string>
+    <string name="settings_theme_strategy_schedule_subtitle">在指定时间段开启深色模式</string>
+    <string name="settings_theme_icon_style_md3_desc">经典圆角彩色背景底框，单色聚焦图标</string>
+    <string name="settings_theme_icon_style_plump_desc">现代无背景通透设计，双色线面与等亮度调色板</string>
+
+    <!-- TTS 试听示范文本 -->
+    <string name="settings_tts_sample_japanese_text">これは音声テストです。</string>
+
+    <!-- 主题颜色名称 (弹窗专属) -->
+    <string name="settings_theme_dialog_color_default">默认</string>
+    <string name="settings_theme_dialog_color_rose_red">蔷薇红</string>
+    <string name="settings_theme_dialog_color_vibrant_orange">活力橙</string>
+    <string name="settings_theme_dialog_color_bright_yellow">明快黄</string>
+    <string name="settings_theme_dialog_color_mint_green">薄荷绿</string>
+    <string name="settings_theme_dialog_color_sky_blue">天空蓝</string>
+    <string name="settings_theme_dialog_color_classic_blue">经典蓝</string>
+    <string name="settings_theme_dialog_color_lavender_purple">薰衣草紫</string>
+    <string name="settings_theme_dialog_color_violet_purple">罗兰紫</string>
+    <string name="settings_theme_dialog_color_electric_cyan">荧光青</string>
+    <string name="settings_theme_dialog_color_bright_teal">亮青绿</string>
+    <string name="settings_theme_dialog_color_bright_orange_red">炽热红</string>
+
+    <!-- 主题颜色选择器弹窗 -->
+    <string name="settings_theme_dialog_ring_picker_title">环形配色选择器</string>
+    <string name="settings_theme_dialog_btn_confirm">确定</string>
+    <string name="settings_theme_dialog_btn_cancel">取消</string>
+    <string name="settings_theme_dialog_current_selection">当前选择：%1$s</string>
+</resources>

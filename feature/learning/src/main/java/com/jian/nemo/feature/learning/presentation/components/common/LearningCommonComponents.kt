@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.Undo
@@ -66,12 +66,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
+
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+
 import com.jian.nemo.feature.learning.presentation.LearningMode
 import com.jian.nemo.feature.learning.presentation.components.dialogs.LearningOverviewDialog
 import com.jian.nemo.feature.learning.presentation.components.dialogs.QueueExplanationDialog
@@ -126,7 +126,7 @@ fun LearnHeader(
     val haptic = LocalHapticFeedback.current
     var showQueueExplanationDialog by remember { mutableStateOf(false) }
     var showTodayOverviewDialog by remember { mutableStateOf(false) }
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+
     val remainingCount = totalCount
 
     // MD3: 使用 MaterialTheme 的颜色系统
@@ -271,13 +271,13 @@ fun LearnHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Progress Bar - MD3: 使用 LinearProgressIndicator 风格（平滑插值动画）
-                val effectiveProgressColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary
+                val effectiveProgressColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
 
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .height(4.dp) // MD3: 推荐的进度条高度 4dp
-                        .background(progressBackground, RoundedCornerShape(2.dp))
+                        .background(progressBackground, RoundedRectangle(2.dp))
                 ) {
                     Box(
                         modifier = Modifier
@@ -285,7 +285,7 @@ fun LearnHeader(
                             .fillMaxSize()
                             .background(
                                 color = effectiveProgressColor,
-                                shape = RoundedCornerShape(2.dp)
+                                shape = RoundedRectangle(2.dp)
                             )
                     )
                 }
@@ -294,7 +294,7 @@ fun LearnHeader(
                 Row(
                     modifier = Modifier
                         .padding(start = 8.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedRectangle(8.dp))
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
@@ -307,8 +307,8 @@ fun LearnHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 新学 (NEW) - 蓝色
-                    val defaultNewColor = if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
-                    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else defaultNewColor
+                    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+
                     Text(
                         text = "$queueNewCount",
                         color = newColor.copy(alpha = if (queueNewCount > 0) 1f else 0.3f),
@@ -316,8 +316,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 在学 (LEARNING) - 青色
-                    val defaultLearningColor = if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
-                    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else defaultLearningColor
+                    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+
                     Text(
                         text = "$queueLearningCount",
                         color = learningColor.copy(alpha = if (queueLearningCount > 0) 1f else 0.3f),
@@ -325,8 +325,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 复习 (REVIEW) - 绿色
-                    val defaultReviewColor = if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
-                    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else defaultReviewColor
+                    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+
                     Text(
                         text = "$queueReviewCount",
                         color = reviewColor.copy(alpha = if (queueReviewCount > 0) 1f else 0.3f),
@@ -334,8 +334,8 @@ fun LearnHeader(
                         fontWeight = FontWeight.Bold
                     )
                     // 重学 (RELEARN) - 橙色
-                    val defaultRelearnColor = if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
-                    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else defaultRelearnColor
+                    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+
                     Text(
                         text = "$queueRelearnCount",
                         color = relearnColor.copy(alpha = if (queueRelearnCount > 0) 1f else 0.3f),
@@ -355,7 +355,7 @@ fun LearnHeader(
                 queueReviewCount = queueReviewCount,
                 queueRelearnCount = queueRelearnCount,
                 isDarkTheme = isDarkTheme,
-                isPlumpDuo = isPlumpDuo
+
             )
         }
 
@@ -372,7 +372,7 @@ fun LearnHeader(
                 queueReviewCount = queueReviewCount,
                 queueRelearnCount = queueRelearnCount,
                 isDarkTheme = isDarkTheme,
-                isPlumpDuo = isPlumpDuo
+
             )
         }
     }
@@ -718,7 +718,7 @@ fun WaitingContent(
                 val displayQueue = queueCount
 
                 Card(
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedRectangle(18.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (isDark) LearningPalette.CooldownCardBgDark else LearningPalette.CooldownCardBgLight
                     ),
@@ -758,7 +758,7 @@ fun WaitingContent(
 
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
+                                    .clip(RoundedRectangle(6.dp))
                                     .background(LearningPalette.CooldownBadgeBg)
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
@@ -780,7 +780,7 @@ fun WaitingContent(
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedRectangle(12.dp))
                                     .background(if (isDark) LearningPalette.CooldownStatBgDark else LearningPalette.CooldownStatBgLight)
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
@@ -814,7 +814,7 @@ fun WaitingContent(
                             Column(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedRectangle(12.dp))
                                     .background(if (isDark) LearningPalette.CooldownStatBgDark else LearningPalette.CooldownStatBgLight)
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
@@ -854,7 +854,7 @@ fun WaitingContent(
                         onContinue()
                     },
                     backdrop = chamberBackdrop,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     tint = MaterialTheme.colorScheme.primary,
                     tintAlpha = 0.38f,
                     chromaticAberration = true,
@@ -889,7 +889,7 @@ fun WaitingContent(
                             onRest()
                         },
                         backdrop = chamberBackdrop,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         chromaticAberration = true,
                         surfaceColor = if (isDark) LearningPalette.RestButtonSurfaceDark.copy(alpha = 0.65f) else Color.White.copy(alpha = 0.55f),
                         border = null,

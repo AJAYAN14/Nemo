@@ -30,7 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Close
@@ -156,7 +156,7 @@ fun BonusStudyDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(32.dp),
+            shape = RoundedRectangle(32.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(
                 width = 1.dp,
@@ -200,7 +200,7 @@ fun BonusStudyDialog(
                     Box(
                         modifier = Modifier
                             .size(54.dp)
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedRectangle(18.dp))
                             .background(if (isDark) UiPalette.BonusWarmBgDark else UiPalette.BonusWarmBgLight),
                         contentAlignment = Alignment.Center
                     ) {
@@ -208,7 +208,7 @@ fun BonusStudyDialog(
                             imageVector = Icons.Rounded.Bolt,
                             contentDescription = null,
                             tint = accentOrange,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 
@@ -238,7 +238,7 @@ fun BonusStudyDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(44.dp)
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedRectangle(14.dp))
                             .background(if (isDark) UiPalette.BonusCardBgDark else UiPalette.DialogControlBgLight)
                             .padding(4.dp)
                     ) {
@@ -263,12 +263,12 @@ fun BonusStudyDialog(
                                 .fillMaxHeight()
                                 .shadow(
                                     elevation = if (isDark) 4.dp else 2.dp,
-                                    shape = RoundedCornerShape(10.dp),
+                                    shape = RoundedRectangle(10.dp),
                                     clip = false,
                                     spotColor = Color.Black.copy(alpha = if (isDark) 0.35f else 0.08f),
                                     ambientColor = Color.Black.copy(alpha = if (isDark) 0.20f else 0.04f)
                                 )
-                                .clip(RoundedCornerShape(10.dp))
+                                .clip(RoundedRectangle(10.dp))
                                 .background(if (isDark) UiPalette.BonusAccentCardDark else Color.White)
                         )
 

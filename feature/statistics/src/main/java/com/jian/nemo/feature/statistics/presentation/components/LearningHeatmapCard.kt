@@ -32,11 +32,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.statistics.R
 import androidx.compose.runtime.Composable
@@ -92,9 +93,6 @@ private val Level4Dark = HeatmapPalette.Level4Dark
 private val DotGlowLight = HeatmapPalette.DotGlowLight
 private val DotGlowDark = HeatmapPalette.DotGlowDark
 
-private val WEEKDAYS = listOf("一", "", "三", "", "五", "", "日")
-private val MONTHS = listOf("1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月")
-
 /**
  * 学习热力图卡片（融合 Dither 点阵粒子微光呼吸 + 果冻弹性滑动探针与解压触感）
  */
@@ -126,7 +124,7 @@ fun LearningHeatmapCard(
             .softCardShadow(borderRadius = 24.dp, isDark = isDarkTheme),
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        shape = RoundedCornerShape(24.dp)
+        shape = RoundedRectangle(24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -208,6 +206,17 @@ private fun HeatmapContent(
     val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
+    val weekdays = listOf(
+        stringResource(R.string.stats_heatmap_weekday_mon),
+        "",
+        stringResource(R.string.stats_heatmap_weekday_wed),
+        "",
+        stringResource(R.string.stats_heatmap_weekday_fri),
+        "",
+        stringResource(R.string.stats_heatmap_weekday_sun)
+    )
+    val months = stringArrayResource(R.array.stats_heatmap_months)
+
     // 方块与间距尺寸
     val blockSize = 16.dp
     val spacing = 4.dp
@@ -242,7 +251,7 @@ private fun HeatmapContent(
     }
 
     // 月份标签位置计算
-    val monthLabels = remember(paddedData) {
+    val monthLabels = remember(paddedData, months) {
         val labels = mutableListOf<Pair<String, Int>>()
         var currentMonth = -1
         paddedData.forEachIndexed { index, day ->
@@ -255,7 +264,7 @@ private fun HeatmapContent(
                 val weekIndex = index / 7
                 if (month != currentMonth) {
                     if (labels.isEmpty() || weekIndex > labels.last().second + 2) {
-                        labels.add(MONTHS[month] to weekIndex)
+                        labels.add(months[month] to weekIndex)
                         currentMonth = month
                     }
                 }
@@ -351,7 +360,7 @@ private fun HeatmapContent(
             modifier = Modifier.size(width = weekdayLabelWidth, height = totalHeight)
         ) {
             val headerHeightPx = monthHeaderHeight.toPx()
-            WEEKDAYS.forEachIndexed { index, label ->
+            weekdays.forEachIndexed { index, label ->
                 if (label.isNotEmpty()) {
                     val centerY = headerHeightPx + index * stepPx + blockSizePx / 2f
                     val baselineY = centerY - (fontMetrics.descent + fontMetrics.ascent) / 2f
@@ -599,7 +608,7 @@ private fun HeatmapLegend(isDarkTheme: Boolean) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "少",
+            text = stringResource(R.string.stats_heatmap_legend_less),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
             modifier = Modifier.padding(end = 4.dp)
@@ -612,13 +621,13 @@ private fun HeatmapLegend(isDarkTheme: Boolean) {
                     .size(10.dp)
                     .background(
                         color = getHeatmapColor(level, isDarkTheme),
-                        shape = RoundedCornerShape(2.5.dp)
+                        shape = RoundedRectangle(2.5.dp)
                     )
             )
         }
 
         Text(
-            text = "多",
+            text = stringResource(R.string.stats_heatmap_legend_more),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f),
             modifier = Modifier.padding(start = 4.dp)

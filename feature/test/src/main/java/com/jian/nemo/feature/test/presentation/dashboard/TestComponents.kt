@@ -7,7 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material3.*
@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
 // 定义常量
 private const val ANIMATION_DURATION = 200
@@ -86,7 +88,7 @@ fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
         modifier = modifier
             .fillMaxWidth()
@@ -170,6 +172,11 @@ fun SquircleListItem(
     onClick: () -> Unit,
     showDivider: Boolean = true
 ) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
+    val iconTint = if (isSoftTranslucent) color else Color.White
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -177,18 +184,18 @@ fun SquircleListItem(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Squircle Icon
+        // Squircle Icon (42dp container, 28dp icon - 2:3 golden ratio)
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .background(color.copy(alpha = 0.15f), RoundedCornerShape(12.dp)), // Squircle approx
+                .background(containerBgColor, RoundedRectangle(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(22.dp)
+                tint = iconTint,
+                modifier = Modifier.size(28.dp)
             )
         }
 

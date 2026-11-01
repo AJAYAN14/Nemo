@@ -26,14 +26,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -43,10 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -175,28 +171,26 @@ fun DiscoveryBar(
                 active = !isSearching,
                 fullArea = true,
             ) {
+                val searchStartPadding by animateDpAsState(
+                    targetValue = if (isSearching) 16.dp else ((circleSize - style.searchIconSize) / 2).coerceAtLeast(0.dp),
+                    animationSpec = spring(
+                        dampingRatio = style.mainSpringDampingRatio,
+                        stiffness = style.mainSpringStiffness,
+                    ),
+                    label = "searchStartPadding",
+                )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = 16.dp),
+                        .padding(start = searchStartPadding),
                 ) {
-                    val iconStyle = LocalSettingIconStyle.current
-                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-                    if (isPlumpDuo) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.Search,
-                            color = searchIconTint,
-                            size = style.searchIconSize,
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(R.string.core_ui_discovery_cd_search),
-                            tint = searchIconTint,
-                            modifier = Modifier.size(style.searchIconSize),
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Search,
+                        contentDescription = stringResource(R.string.core_ui_discovery_cd_search),
+                        tint = searchIconTint,
+                        modifier = Modifier.size(style.searchIconSize),
+                    )
 
                     // Search input: only visible when searching
                     val inputAlpha by animateFloatAsState(
@@ -280,22 +274,12 @@ fun DiscoveryBar(
                         },
                         fullArea = true,
                     ) {
-                        val iconStyle = LocalSettingIconStyle.current
-                        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-                        if (isPlumpDuo) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.X,
-                                color = searchIconTint,
-                                size = style.searchIconSize,
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = stringResource(R.string.core_ui_discovery_cd_close),
-                                tint = searchIconTint,
-                                modifier = Modifier.size(style.searchIconSize),
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(R.string.core_ui_discovery_cd_close),
+                            tint = searchIconTint,
+                            modifier = Modifier.size(style.searchIconSize),
+                        )
                     }
                 } else {
                     // Options selector
@@ -329,7 +313,7 @@ private fun MorphingContainer(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(height / 2)
+    val shape = Capsule()
     val isDark = backgroundColor.luminance() < 0.5f
     Box(
         modifier = modifier
@@ -387,7 +371,7 @@ private fun OptionsSelector(
                 .width(optionWidth - indicatorPadding * 2)
                 .fillMaxHeight()
                 .padding(vertical = indicatorPadding)
-                .clip(RoundedCornerShape(style.height / 2))
+                .clip(Capsule())
                 .background(indicatorBgColor),
         )
 
@@ -427,15 +411,7 @@ private fun OptionsSelector(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            val iconStyle = LocalSettingIconStyle.current
-                            if (iconStyle == SettingIconStyle.PLUMP_DUO && option.plumpIcon != null) {
-                                PlumpDuoIcon(
-                                    icon = option.plumpIcon,
-                                    color = iconColor,
-                                    size = style.iconSize,
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                            } else if (option.icon != null) {
+                            if (option.icon != null) {
                                 Icon(
                                     imageVector = option.icon,
                                     contentDescription = option.label,

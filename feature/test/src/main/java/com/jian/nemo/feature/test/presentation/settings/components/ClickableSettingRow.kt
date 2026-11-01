@@ -2,7 +2,7 @@ package com.jian.nemo.feature.test.presentation.settings.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
@@ -27,7 +27,7 @@ fun ClickableSettingRow(
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedRectangle(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)

@@ -43,7 +43,7 @@ import com.kyant.backdrop.backdrops.rememberBackdrop
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.ui.component.liquid.utils.DampedDragAnimation
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur

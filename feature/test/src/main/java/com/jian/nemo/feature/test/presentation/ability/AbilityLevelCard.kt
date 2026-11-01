@@ -4,7 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.*
@@ -35,7 +35,7 @@ fun AbilityLevelCard(
             .fillMaxWidth()
             .height(76.dp)
             .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         color = color.copy(alpha = if (isDark) 0.12f else 0.08f),
         border = BorderStroke(
             width = 1.dp,

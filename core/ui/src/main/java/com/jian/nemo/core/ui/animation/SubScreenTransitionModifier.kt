@@ -9,7 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -57,7 +57,7 @@ fun AnimatedVisibilityScope.SubScreenContainer(
                 val radius = if (isTransitioning) cornerRadius else currentRadius
                 val elev = if (isTransitioning) elevation else currentElevation
                 this.shadowElevation = elev.toPx()
-                this.shape = RoundedCornerShape(radius)
+                this.shape = RoundedRectangle(radius)
                 this.clip = isTransitioning || radius > 0.dp
             }
             .background(backgroundColor),

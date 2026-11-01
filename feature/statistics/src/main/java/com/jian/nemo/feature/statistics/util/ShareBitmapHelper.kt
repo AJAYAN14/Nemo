@@ -12,6 +12,7 @@ import android.provider.MediaStore
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.core.content.FileProvider
+import com.jian.nemo.feature.statistics.R
 import java.io.File
 import java.io.FileOutputStream
 
@@ -45,7 +46,7 @@ object ShareBitmapHelper {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(intent, "分享学习成就"))
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.stats_share_dialog_chooser_title)))
     }
 
     /**

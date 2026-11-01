@@ -6,7 +6,7 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
@@ -30,7 +30,7 @@ val LocalNavAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope
 @Composable
 fun Modifier.containerTransform(
     key: String,
-    shape: Shape = RoundedCornerShape(0.dp),
+    shape: Shape = RoundedRectangle(0.dp),
     zIndexInOverlay: Float = 1f
 ): Modifier {
     val sharedTransitionScope = LocalSharedTransitionScope.current

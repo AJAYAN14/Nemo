@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -35,9 +35,6 @@ import com.jian.nemo.core.ui.component.liquid.LiquidSlider
 import com.jian.nemo.core.ui.component.liquid.LiquidGlassButton
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
-import com.jian.nemo.feature.settings.components.PlumpIcon
-import com.jian.nemo.feature.settings.components.PlumpDuoIcon
-import com.jian.nemo.feature.settings.components.IsoluminantPalette
 import java.util.Locale
 
 import androidx.compose.ui.graphics.Brush
@@ -68,6 +65,7 @@ fun TtsSettingsScreen(
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backgroundColor = MaterialTheme.colorScheme.background
     val sampleChineseText = stringResource(R.string.settings_tts_sample_chinese_text)
+    val sampleJapaneseText = stringResource(R.string.settings_tts_sample_japanese_text)
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -103,18 +101,14 @@ fun TtsSettingsScreen(
                             subtitle = uiState.ttsVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
                             icon = Icons.Rounded.RecordVoiceOver,
                             iconColor = IosColors.Red,
-                            plumpIcon = PlumpIcon.Mic,
-                            plumpColor = IsoluminantPalette.RoseRuby,
                             onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
                             showDivider = true
                         )
                         SquircleSettingItem(
                             title = stringResource(R.string.settings_tts_item_title_select_chinese),
                             subtitle = uiState.ttsChineseVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
-                            icon = Icons.Rounded.RecordVoiceOver,
+                            icon = Icons.Rounded.Translate,
                             iconColor = IosColors.Orange,
-                            plumpIcon = PlumpIcon.Languages,
-                            plumpColor = IsoluminantPalette.WarmAmber,
                             onClick = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(true)) },
                             showDivider = false
                         )
@@ -135,8 +129,6 @@ fun TtsSettingsScreen(
                     FlatSliderSettingItem(
                         icon = Icons.Rounded.Speed,
                         iconColor = accentColor,
-                        plumpIcon = PlumpIcon.Gauge,
-                        plumpColor = IsoluminantPalette.LilacViolet,
                         title = stringResource(R.string.settings_tts_item_title_speed),
                         value = uiState.ttsSpeechRate,
                         valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsSpeechRate)}x",
@@ -163,8 +155,6 @@ fun TtsSettingsScreen(
                     FlatSliderSettingItem(
                         icon = Icons.Rounded.MusicNote,
                         iconColor = secondaryAccent,
-                        plumpIcon = PlumpIcon.MusicNote,
-                        plumpColor = IsoluminantPalette.LakesideCyan,
                         title = stringResource(R.string.settings_tts_item_title_pitch),
                         value = uiState.ttsPitch,
                         valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsPitch)}x",
@@ -211,7 +201,7 @@ fun TtsSettingsScreen(
                                     if (isPlayingJp) {
                                         viewModel.onEvent(SettingsEvent.StopPreviewTts)
                                     } else {
-                                        viewModel.onEvent(SettingsEvent.PreviewTts("这是日语语音测试。".let { "これは音声テストです。" }))
+                                        viewModel.onEvent(SettingsEvent.PreviewTts(sampleJapaneseText))
                                     }
                                 }
                             )
@@ -283,10 +273,10 @@ fun TtsSettingsScreen(
                 onDismiss = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(false)) },
                 onVoiceSelected = {
                     viewModel.onEvent(SettingsEvent.SetTtsVoiceName(it))
-                    viewModel.onEvent(SettingsEvent.PreviewTts("これは音声テストです。"))
+                    viewModel.onEvent(SettingsEvent.PreviewTts(sampleJapaneseText))
                 },
                 onPreviewVoice = { voiceName ->
-                    viewModel.onEvent(SettingsEvent.PreviewVoice(voiceName, "これは音声テストです。"))
+                    viewModel.onEvent(SettingsEvent.PreviewVoice(voiceName, sampleJapaneseText))
                 },
                 isLoading = uiState.isLoadingVoices,
                 previewingVoiceName = uiState.previewingVoiceName
@@ -323,10 +313,8 @@ fun TtsSettingsScreen(
  */
 @Composable
 private fun FlatSliderSettingItem(
-    icon: ImageVector? = null,
-    plumpIcon: PlumpIcon? = null,
+    icon: ImageVector,
     iconColor: Color,
-    plumpColor: Color = iconColor,
     iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     title: String,
     value: Float,
@@ -344,50 +332,22 @@ private fun FlatSliderSettingItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标渲染：根据当前风格渲染 MD3（带 42dp 圆角背景卡片与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
-            if (iconStyle == SettingIconStyle.MD3) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconColor,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    } else if (plumpIcon != null) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 28.dp
-                        )
-                    }
-                }
-            } else {
-                // Plump Duo 模式：无背景框通透呈现
-                Box(
-                    modifier = Modifier.size(42.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (plumpIcon != null) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 30.dp
-                        )
-                    } else if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconColor,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
+            val iconTint = if (isSoftTranslucent) iconColor else Color.White
+
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(containerBgColor, RoundedRectangle(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -402,7 +362,7 @@ private fun FlatSliderSettingItem(
             // Value Badge
             Box(
                 modifier = Modifier
-                    .background(accentColor.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                    .background(accentColor.copy(alpha = 0.12f), RoundedRectangle(8.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
@@ -477,7 +437,7 @@ private fun LiquidPreviewButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         surfaceColor = buttonSurfaceColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         border = null,
         hasLens = true,
         isInteractive = true,
@@ -519,7 +479,7 @@ private fun FlatTextButton(
         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
         color = color,
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
+            .clip(RoundedRectangle(8.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 12.dp, horizontal = 16.dp)
     )

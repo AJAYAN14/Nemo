@@ -3,6 +3,7 @@ package com.kyant.backdrop.effects
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CornerBasedShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangularShape
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastCoerceAtLeast
@@ -97,6 +98,18 @@ private val BackdropEffectScope.cornerRadii: FloatArray?
                 topRight.fastCoerceAtMost(maxRadius),
                 bottomRight.fastCoerceAtMost(maxRadius),
                 bottomLeft.fastCoerceAtMost(maxRadius)
+            )
+        }
+
+        is RoundedRectangularShape -> {
+            val size = size
+            val maxRadius = size.minDimension / 2f
+            val corners = shape.corners(size, layoutDirection, this)
+            floatArrayOf(
+                corners.topLeft.fastCoerceAtMost(maxRadius),
+                corners.topRight.fastCoerceAtMost(maxRadius),
+                corners.bottomRight.fastCoerceAtMost(maxRadius),
+                corners.bottomLeft.fastCoerceAtMost(maxRadius)
             )
         }
 

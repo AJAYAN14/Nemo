@@ -13,7 +13,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -71,7 +72,7 @@ fun BonusStudyBottomSheet(
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        shape = UnevenRoundedRectangle(topStart = 28.dp, topEnd = 28.dp),
         modifier = modifier
     ) {
         Column(
@@ -142,14 +143,14 @@ fun BonusStudyBottomSheet(
                         modifier = Modifier
                             .weight(1f)
                             .height(46.dp)
-                            .clip(RoundedCornerShape(14.dp))
+                            .clip(RoundedRectangle(14.dp))
                             .background(chipBgColor)
                             .border(
                                 border = BorderStroke(
                                     width = if (isSelected) 1.5.dp else 0.dp,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                                 ),
-                                shape = RoundedCornerShape(14.dp)
+                                shape = RoundedRectangle(14.dp)
                             )
                             .clickable {
                                 selectedMode = mode
@@ -206,14 +207,14 @@ fun BonusStudyBottomSheet(
                         modifier = Modifier
                             .weight(1f)
                             .height(44.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedRectangle(12.dp))
                             .background(chipBgColor)
                             .border(
                                 border = BorderStroke(
                                     width = if (isSelected) 1.5.dp else 0.dp,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
                                 ),
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedRectangle(12.dp)
                             )
                             .clickable {
                                 selectedQuantity = preset
@@ -268,7 +269,7 @@ fun BonusStudyBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary

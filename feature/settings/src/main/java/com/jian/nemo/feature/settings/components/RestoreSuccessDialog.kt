@@ -5,7 +5,7 @@ import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
 
@@ -42,7 +44,12 @@ data class RestoreDetailStats(
 /**
  * 解析恢复结果文本
  */
-private fun parseRestoreStats(message: String): RestoreDetailStats {
+private fun parseRestoreStats(
+    message: String,
+    wordRegexPattern: String,
+    grammarRegexPattern: String,
+    validationPrefix: String
+): RestoreDetailStats {
     var wordUpdate = "0"
     var wordInsert = "0"
     var wordSkip = "0"
@@ -52,7 +59,7 @@ private fun parseRestoreStats(message: String): RestoreDetailStats {
     var validationNote: String? = null
 
     // 匹配: 单词: 更新X / 新增Y / 跳过Z
-    val wordRegex = Regex("""单词:\s*更新(\d+)\s*/\s*新增(\d+)\s*/\s*跳过(\d+)""")
+    val wordRegex = Regex(wordRegexPattern)
     wordRegex.find(message)?.let { match ->
         wordUpdate = match.groupValues[1]
         wordInsert = match.groupValues[2]
@@ -60,7 +67,7 @@ private fun parseRestoreStats(message: String): RestoreDetailStats {
     }
 
     // 匹配: 语法: 更新A / 新增B / 跳过C
-    val grammarRegex = Regex("""语法:\s*更新(\d+)\s*/\s*新增(\d+)\s*/\s*跳过(\d+)""")
+    val grammarRegex = Regex(grammarRegexPattern)
     grammarRegex.find(message)?.let { match ->
         grammarUpdate = match.groupValues[1]
         grammarInsert = match.groupValues[2]
@@ -68,8 +75,8 @@ private fun parseRestoreStats(message: String): RestoreDetailStats {
     }
 
     // 匹配校验提示
-    if (message.contains("校验提示:")) {
-        validationNote = message.substringAfter("校验提示:").trim()
+    if (message.contains(validationPrefix)) {
+        validationNote = message.substringAfter(validationPrefix).trim()
     }
 
     return RestoreDetailStats(
@@ -94,7 +101,13 @@ fun RestoreSuccessDialog(
     val dialogBgColor = if (isDark) SettingsPalette.DialogBgDark else Color.White
     val cardBgColor = if (isDark) SettingsPalette.DialogCardBgDark else SettingsPalette.DialogCardBgLight
     val successGreen = if (isDark) TestResultPalette.CorrectCardContentDark else TestResultPalette.CorrectCardContentLight
-    val stats = remember(message) { parseRestoreStats(message) }
+
+    val wordRegexPattern = stringResource(R.string.settings_backup_restore_regex_word)
+    val grammarRegexPattern = stringResource(R.string.settings_backup_restore_regex_grammar)
+    val validationPrefix = stringResource(R.string.settings_backup_restore_prefix_validation)
+    val stats = remember(message, wordRegexPattern, grammarRegexPattern, validationPrefix) {
+        parseRestoreStats(message, wordRegexPattern, grammarRegexPattern, validationPrefix)
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -134,7 +147,7 @@ fun RestoreSuccessDialog(
             modifier = Modifier
                 .widthIn(min = 290.dp, max = 340.dp)
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             color = dialogBgColor,
             tonalElevation = 0.dp,
             shadowElevation = 8.dp
@@ -165,7 +178,7 @@ fun RestoreSuccessDialog(
 
                 // 标题
                 Text(
-                    text = "档案恢复成功",
+                    text = stringResource(R.string.settings_backup_restore_dialog_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -175,7 +188,7 @@ fun RestoreSuccessDialog(
 
                 // 副标题
                 Text(
-                    text = "云端学习档案已安全同步至本机",
+                    text = stringResource(R.string.settings_backup_restore_dialog_subtitle),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -185,25 +198,30 @@ fun RestoreSuccessDialog(
                 // 统计数据卡片
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     color = cardBgColor
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         // 词库部分
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
-                                text = "词库档案",
+                                text = stringResource(R.string.settings_backup_restore_label_word_record),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "更新: ${stats.wordUpdate}  /  新增: ${stats.wordInsert}  /  跳过: ${stats.wordSkip}",
+                                text = stringResource(
+                                    R.string.settings_backup_restore_format_record_stats,
+                                    stats.wordUpdate,
+                                    stats.wordInsert,
+                                    stats.wordSkip
+                                ),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -217,13 +235,18 @@ fun RestoreSuccessDialog(
                         // 语法部分
                         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
-                                text = "语法档案",
+                                text = stringResource(R.string.settings_backup_restore_label_grammar_record),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = "更新: ${stats.grammarUpdate}  /  新增: ${stats.grammarInsert}  /  跳过: ${stats.grammarSkip}",
+                                text = stringResource(
+                                    R.string.settings_backup_restore_format_record_stats,
+                                    stats.grammarUpdate,
+                                    stats.grammarInsert,
+                                    stats.grammarSkip
+                                ),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -236,7 +259,7 @@ fun RestoreSuccessDialog(
                                 thickness = 0.8.dp
                             )
                             Text(
-                                text = "校验说明: $note",
+                                text = stringResource(R.string.settings_backup_restore_format_validation_note, note),
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -260,7 +283,7 @@ fun RestoreSuccessDialog(
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = if (isFromLogin) "开启学习之旅" else "完成",
+                        text = if (isFromLogin) stringResource(R.string.settings_backup_restore_btn_start_learning) else stringResource(R.string.settings_backup_restore_btn_finish),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )

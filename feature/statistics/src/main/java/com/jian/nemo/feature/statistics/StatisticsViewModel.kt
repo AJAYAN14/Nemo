@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.statistics
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.util.DateTimeUtils
@@ -17,6 +18,7 @@ import com.jian.nemo.core.domain.usecase.statistics.GetReviewForecastUseCase
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +46,8 @@ class StatisticsViewModel @Inject constructor(
     private val getReviewedWordsForDateUseCase: GetReviewedWordsForDateUseCase,
     private val getReviewedGrammarsForDateUseCase: GetReviewedGrammarsForDateUseCase,
     private val getReviewForecastUseCase: GetReviewForecastUseCase,
-    private val settingsRepository: com.jian.nemo.core.domain.repository.SettingsRepository
+    private val settingsRepository: com.jian.nemo.core.domain.repository.SettingsRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatisticsUiState())
@@ -122,7 +125,10 @@ class StatisticsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "加载失败: ${e.message}"
+                        error = context.getString(
+                            R.string.stats_screen_format_load_failed,
+                            e.message ?: ""
+                        )
                     )
                 }
             }

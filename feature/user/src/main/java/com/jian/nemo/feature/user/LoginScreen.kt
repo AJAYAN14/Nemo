@@ -11,7 +11,8 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -318,7 +319,7 @@ fun LoginScreen(
                                 },
                                 backdrop = backdrop,
                                 tint = welcomePrimaryTint,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedRectangle(16.dp),
                                 contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -354,7 +355,7 @@ fun LoginScreen(
                                     if (uiState.isLoginMode) viewModel.toggleLoginMode()
                                 },
                                 backdrop = backdrop,
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedRectangle(16.dp),
                                 contentPadding = PaddingValues(0.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -416,7 +417,7 @@ fun LoginScreen(
                                         if (uiState.isLoginMode) viewModel.toggleLoginMode()
                                     },
                                     backdrop = backdrop,
-                                    shape = RoundedCornerShape(50),
+                                    shape = Capsule(),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 7.dp)
                                 ) {
                                     Text(
@@ -509,7 +510,7 @@ fun LoginScreen(
                                         if (!uiState.isLoginMode) viewModel.toggleLoginMode()
                                     },
                                     backdrop = backdrop,
-                                    shape = RoundedCornerShape(50),
+                                    shape = Capsule(),
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 7.dp)
                                 ) {
                                     Text(

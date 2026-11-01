@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -23,23 +23,9 @@ import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
-
-/**
- * 单词列表项组件
- *
- * 用于收藏列表中显示单词信息
- *
- * @param word 单词数据
- * @param onUnfavorite 取消收藏回调
- * @param onClick 点击项目回调（查看详情）
- */
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
 
 @Composable
 fun WordListItem(
@@ -49,7 +35,6 @@ fun WordListItem(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     Card(
         modifier = modifier
@@ -100,19 +85,11 @@ fun WordListItem(
 
                 // 取消收藏按钮
                 IconButton(onClick = onUnfavorite) {
-                    if (isPlumpDuo) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.Heart,
-                            color = IsoluminantPalette.RoseRuby,
-                            size = 20.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = stringResource(R.string.collection_cd_unfavorite),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Favorite,
+                        contentDescription = stringResource(R.string.collection_cd_unfavorite),
+                        tint = IosColors.Pink
+                    )
                 }
             }
         }

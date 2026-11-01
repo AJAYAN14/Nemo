@@ -367,12 +367,12 @@ object ChartColors {
     val FreshOrange = Color(0xFFFFA726)
 }
 
-// iOS 视觉风格色彩 (已隔离，不再全局直接建议使用)
+// 规范系统动态色彩
 object IosColors {
     val Red = Color(0xFFFF3B30)
     val Orange = Color(0xFFFF9500)
     val Green = Color(0xFF34C759)
-    val Teal = Color(0xFF5AC8FA)
+    val Teal = Color(0xFF30B0C7)
     val Blue = Color(0xFF007AFF)
     val Indigo = Color(0xFF5856D6)
     val Purple = Color(0xFFAF52DE)
@@ -381,17 +381,72 @@ object IosColors {
     val Pink = Color(0xFFFF2D55)
     val Yellow = Color(0xFFFFCC00)
     val Mint = Color(0xFF00C7BE)
+    val Brown = Color(0xFFA2845E)
 
     // 深色模式变体
     val RedDark = Color(0xFFFF453A)
     val OrangeDark = Color(0xFFFF9F0A)
     val GreenDark = Color(0xFF30D158)
-    val TealDark = Color(0xFF64D2FF)
+    val TealDark = Color(0xFF40C8E0)
     val BlueDark = Color(0xFF0A84FF)
     val IndigoDark = Color(0xFF5E5CE6)
     val PurpleDark = Color(0xFFBF5AF2)
     val GrayDark = Color(0xFF98989D)
     val CyanDark = Color(0xFF64D2FF)
+    val PinkDark = Color(0xFFFF375F)
+    val YellowDark = Color(0xFFFFD60A)
+    val MintDark = Color(0xFF66D4CF)
+    val BrownDark = Color(0xFFAC8E68)
+}
+
+// ============================================================================
+// 专项训练与词性分类调色盘单源映射 (Single Source of Truth)
+// 严格对齐 docs/design/color-palette 系统动态色彩与深浅模式规范
+// ============================================================================
+object NemoCategoryTheme {
+    /**
+     * 获取分类 ID 对应的单一标准调色盘色彩
+     */
+    fun getCategoryColor(categoryId: String?, isDark: Boolean = false): Color {
+        return when (categoryId?.lowercase()?.trim()) {
+            "verb" -> if (isDark) IosColors.GreenDark else IosColors.Green
+            "noun" -> if (isDark) IosColors.BlueDark else IosColors.Blue
+            "adj" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+            "adv" -> if (isDark) IosColors.TealDark else IosColors.Teal
+            "rentai" -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            "conj" -> if (isDark) IosColors.PurpleDark else IosColors.Purple
+            "particle" -> if (isDark) IosColors.CyanDark else IosColors.Cyan
+            "kata" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+            "prefix" -> if (isDark) IosColors.RedDark else IosColors.Red
+            "suffix" -> if (isDark) IosColors.MintDark else IosColors.Mint
+            "expression" -> if (isDark) IosColors.YellowDark else IosColors.Yellow
+            "exclam" -> if (isDark) IosColors.PinkDark else IosColors.Pink
+            else -> if (isDark) NemoPrimaryDark else NemoPrimary
+        }
+    }
+
+    /**
+     * 获取词性字符串对应的单一标准调色盘色彩 (回退机制)
+     */
+    fun getPosColor(pos: String?, isDark: Boolean = false): Color {
+        if (pos == null) return if (isDark) NemoPrimaryDark else NemoPrimary
+        val p = pos.trim()
+        return when {
+            p.contains("动词") || p.endsWith("动") -> if (isDark) IosColors.GreenDark else IosColors.Green
+            p.contains("名词") || p == "名" -> if (isDark) IosColors.BlueDark else IosColors.Blue
+            p.contains("形容词") || p.contains("形动") -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+            p.contains("副词") || p == "副" -> if (isDark) IosColors.TealDark else IosColors.Teal
+            p.contains("连体") -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            p.contains("接续") -> if (isDark) IosColors.PurpleDark else IosColors.Purple
+            p.contains("助词") || p.contains("固定") || p.contains("句") -> if (isDark) IosColors.CyanDark else IosColors.Cyan
+            p.contains("外来") || p.contains("片假名") -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+            p.contains("前缀") || p.contains("接头") -> if (isDark) IosColors.RedDark else IosColors.Red
+            p.contains("后缀") || p.contains("接尾") -> if (isDark) IosColors.MintDark else IosColors.Mint
+            p.contains("敬语") || p.contains("表达") || p.contains("熟语") || p.contains("惯用") -> if (isDark) IosColors.YellowDark else IosColors.Yellow
+            p.contains("感叹") || p.contains("叹") || p.contains("声") || p.contains("态") -> if (isDark) IosColors.PinkDark else IosColors.Pink
+            else -> if (isDark) NemoPrimaryDark else NemoPrimary
+        }
+    }
 }
 
 
@@ -595,13 +650,18 @@ object SortingPalette {
 
 // ============================================================================
 // 统计与活动环色板 (Statistics & Activity Rings Palette)
+// 严格对齐 docs/design/color-palette 系统动态色彩与层级背景规范
 // ============================================================================
 object ActivityRingPalette {
-    val MovePink = Color(0xFFFA2D62)
-    val ExerciseGreen = Color(0xFF7BD33A)
-    val StandCyan = Color(0xFF18C6E8)
-    val SurfaceWarmLight = Color(0xFFF5F3EF)
-    val MetricCardBgLight = Color(0xFFF6F4EF)
+    val MovePink = Color(0xFFFF2D55)          // 系统粉 (System Pink: 浅色 #FF2D55)
+    val MovePinkDark = Color(0xFFFF375F)      // 系统粉 (System Pink: 深色 #FF375F)
+    val ExerciseGreen = Color(0xFF34C759)     // 系统绿 (System Green: 浅色 #34C759)
+    val ExerciseGreenDark = Color(0xFF30D158) // 系统绿 (System Green: 深色 #30D158)
+    val StandCyan = Color(0xFF32ADE6)         // 系统青蓝 (System Cyan: 浅色 #32ADE6)
+    val StandCyanDark = Color(0xFF64D2FF)     // 系统青蓝 (System Cyan: 深色 #64D2FF)
+    val SurfaceWarmLight = Color(0xFFF2F2F7)  // 二级内容背景 (SecondarySystemBackground: #F2F2F7)
+    val MetricCardBgLight = Color(0xFFF2F2F7) // 单元格内嵌深层次背景 (TertiarySystemGroupedBackground: #F2F2F7)
+    val MetricCardBgDark = Color(0xFF2C2C2E)  // 单元格内嵌深层次背景暗色 (TertiarySystemGroupedBackground: #2C2C2E)
 }
 
 object HeatmapPalette {
@@ -622,13 +682,13 @@ object HeatmapPalette {
 }
 
 object StatisticsPalette {
-    val AlertGold = Color(0xFFFFD60A)
-    val CompositeOrange = Color(0xFFFF9800)
-    val EarlyRed = Color(0xFFEF4444)
-    val DevelopingBlue = Color(0xFF3B82F6)
-    val MatureGreen = Color(0xFF22C55E)
-    val ExpertPurple = Color(0xFF8B5CF6)
-    val GrowthAccentGold = Color(0xFFF4B73F)
+    val AlertGold = Color(0xFFFFD60A)        // 系统黄关注色 (System Yellow: 深色/空间 #FFD60A)
+    val CompositeOrange = Color(0xFFFF9500)  // 系统橙 (System Orange: 浅色 #FF9500)
+    val EarlyRed = Color(0xFFFF3B30)         // 系统红 (System Red: 浅色 #FF3B30)
+    val DevelopingBlue = Color(0xFF007AFF)   // 系统蓝 (System Blue: 浅色 #007AFF)
+    val MatureGreen = Color(0xFF34C759)      // 系统绿 (System Green: 浅色 #34C759)
+    val ExpertPurple = Color(0xFFAF52DE)     // 系统紫 (System Purple: 浅色 #AF52DE)
+    val GrowthAccentGold = Color(0xFFFFCC00) // 系统黄 (System Yellow: 浅色 #FFCC00)
 
     val EmeraldTextLight = Color(0xFF059669)
     val EmeraldTextDark = Color(0xFF34D399)

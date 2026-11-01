@@ -10,7 +10,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Interests
@@ -26,10 +25,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -618,6 +619,21 @@ private fun CapsuleNavItem(
     }
 }
 
+private val HomeRoundedFilledIcon: ImageVector by lazy {
+    ImageVector.Builder(
+        name = "Rounded.Home.Filled",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 960f,
+        viewportHeight = 960f
+    ).addPath(
+        pathData = PathParser().parsePathString(
+            "M160,760L160,400Q160,381 168.5,364Q177,347 192,336L432,156Q453,140 480,140Q507,140 528,156L768,336Q783,347 791.5,364Q800,381 800,400L800,760Q800,793 776.5,816.5Q753,840 720,840L600,840Q583,840 571.5,828.5Q560,817 560,800L560,600Q560,583 548.5,571.5Q537,560 520,560L440,560Q423,560 411.5,571.5Q400,583 400,600L400,800Q400,817 388.5,828.5Q377,840 360,840L240,840Q207,840 183.5,816.5Q160,793 160,760Z"
+        ).toNodes(),
+        fill = SolidColor(Color.White)
+    ).build()
+}
+
 /**
  * 底部导航栏 Tab 项
  */
@@ -629,7 +645,7 @@ enum class BottomNavItem(
     LEARNING(
         route = "learning",
         titleRes = R.string.core_bottombar_tab_learning,
-        icon = Icons.AutoMirrored.Rounded.MenuBook
+        icon = HomeRoundedFilledIcon
     ),
     PROGRESS(
         route = "progress",

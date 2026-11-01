@@ -10,22 +10,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.Book
-import androidx.compose.material.icons.rounded.Create
 import androidx.compose.material.icons.rounded.EmojiEvents
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.LocalFireDepartment
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.CompositionLocalProvider
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
@@ -35,6 +32,7 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -101,7 +99,7 @@ fun ActivityHeatmapScreen(
 
             item {
                 Column {
-                    HeatmapSectionTitle("年度回顾")
+                    HeatmapSectionTitle(stringResource(R.string.stats_heatmap_title_annual_review))
                     if (uiState.isLoading) {
                         Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                             NemoChasingDotsLoader()
@@ -119,7 +117,7 @@ fun ActivityHeatmapScreen(
             item {
                 if (!uiState.isLoading) {
                     Column {
-                        HeatmapSectionTitle("记忆全景")
+                        HeatmapSectionTitle(stringResource(R.string.stats_heatmap_title_memory_panorama))
                         MemoryPanoramaCard(
                             data = uiState.panoramaData,
                             isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -131,7 +129,7 @@ fun ActivityHeatmapScreen(
             if (!uiState.isLoading) {
                 item {
                     Column {
-                        HeatmapSectionTitle("数据高光")
+                        HeatmapSectionTitle(stringResource(R.string.stats_heatmap_title_data_highlights))
                         RichStatsGrid(
                             streak = uiState.streak,
                             longestStreak = uiState.longestStreak,
@@ -231,12 +229,10 @@ private fun RichStatsGrid(
             // Streak
             RichStatItem(
                 icon = Icons.Rounded.LocalFireDepartment,
-                plumpIcon = PlumpIcon.Flame,
-                isoluminantColor = IsoluminantPalette.WarmAmber,
                 label = stringResource(R.string.stats_heatmap_label_current_streak),
                 value = streak.toString(),
-                unit = "天",
-                subLabel = "最长 $longestStreak 天",
+                unit = stringResource(R.string.stats_heatmap_unit_days),
+                subLabel = stringResource(R.string.stats_heatmap_format_longest_streak, longestStreak),
                 color = IosColors.Orange,
                 modifier = Modifier.weight(1f)
             )
@@ -244,12 +240,10 @@ private fun RichStatsGrid(
             // Total Days
             RichStatItem(
                 icon = Icons.Rounded.Bolt,
-                plumpIcon = PlumpIcon.Zap,
-                isoluminantColor = IsoluminantPalette.SkyIndigo,
                 label = stringResource(R.string.stats_heatmap_label_active_days),
                 value = totalActiveDays.toString(),
-                unit = "天",
-                subLabel = "坚持不懈",
+                unit = stringResource(R.string.stats_heatmap_unit_days),
+                subLabel = stringResource(R.string.stats_heatmap_label_unremitting),
                 color = NemoPrimary,
                 modifier = Modifier.weight(1f)
             )
@@ -267,11 +261,9 @@ private fun RichStatsGrid(
 
             RichStatItem(
                 icon = Icons.Rounded.EmojiEvents,
-                plumpIcon = PlumpIcon.Trophy,
-                isoluminantColor = IsoluminantPalette.EmeraldGreen,
                 label = stringResource(R.string.stats_heatmap_label_best_day),
                 value = bestDayCount.toString(),
-                unit = "项",
+                unit = stringResource(R.string.stats_heatmap_unit_items),
                 subLabel = dateStr,
                 color = IosColors.Green,
                 modifier = Modifier.weight(1f)
@@ -280,12 +272,14 @@ private fun RichStatsGrid(
              // Daily Average
              RichStatItem(
                 icon = Icons.AutoMirrored.Rounded.TrendingUp,
-                plumpIcon = PlumpIcon.TrendingUp,
-                isoluminantColor = IsoluminantPalette.LilacViolet,
                 label = stringResource(R.string.stats_heatmap_label_daily_avg),
                 value = dailyAverage.toString(),
-                unit = "项",
-                subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "超过平均" else "稳步前进",
+                unit = stringResource(R.string.stats_heatmap_unit_items),
+                subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) {
+                    stringResource(R.string.stats_heatmap_label_above_avg)
+                } else {
+                    stringResource(R.string.stats_heatmap_label_steady_progress)
+                },
                 color = IosColors.Purple,
                 modifier = Modifier.weight(1f)
             )
@@ -296,8 +290,6 @@ private fun RichStatsGrid(
 @Composable
 private fun RichStatItem(
     icon: ImageVector,
-    plumpIcon: PlumpIcon? = null,
-    isoluminantColor: Color? = null,
     label: String,
     value: String,
     unit: String,
@@ -308,11 +300,9 @@ private fun RichStatItem(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
-
     Surface(
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedRectangle(22.dp),
         color = containerColor,
-
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 22.dp, isDark = isDark)
@@ -321,8 +311,10 @@ private fun RichStatItem(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null && isoluminantColor != null
-            val effectiveColor = if (isPlumpDuo && isoluminantColor != null) isoluminantColor else color
+            val iconStyle = LocalSettingIconStyle.current
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val containerBg = if (isSoftTranslucent) color.copy(alpha = if (isDark) 0.20f else 0.15f) else color
+            val iconTint = if (isSoftTranslucent) color else Color.White
 
             // 顶部：Squircle 语义图标 + 胶囊状态标签
             Row(
@@ -330,41 +322,33 @@ private fun RichStatItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isPlumpDuo && plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = effectiveColor,
-                        size = 28.dp
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .background(
+                            color = containerBg,
+                            shape = RoundedRectangle(10.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp) // 严格保持 2:3 黄金比例 (36 * 2/3 = 24.dp)
                     )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(
-                                color = effectiveColor.copy(alpha = if (isDark) 0.2f else 0.12f),
-                                shape = RoundedCornerShape(10.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = effectiveColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                 }
 
                 if (subLabel.isNotBlank()) {
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = effectiveColor.copy(alpha = if (isDark) 0.15f else 0.08f)
+                        shape = RoundedRectangle(6.dp),
+                        color = color.copy(alpha = if (isDark) 0.15f else 0.08f)
                     ) {
                         Text(
                             text = subLabel,
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
-                            color = effectiveColor,
+                            color = color,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }
@@ -441,7 +425,7 @@ private fun MemoryPanoramaCard(
 
 
     Surface(
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
 
         modifier = Modifier
@@ -459,32 +443,35 @@ private fun MemoryPanoramaCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.MemoryBrain,
-                            color = IsoluminantPalette.EmeraldGreen,
-                            size = 28.dp
-                        )
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val baseColor = IosColors.Green
+                    val containerBg = if (isSoftTranslucent) {
+                        if (isDarkTheme) baseColor.copy(alpha = 0.20f) else StatisticsPalette.EmeraldBgLight
                     } else {
-                        val emeraldTint = if (isDarkTheme) StatisticsPalette.EmeraldTextDark else StatisticsPalette.EmeraldTextLight
-                        val emeraldBackground = if (isDarkTheme) NemoSecondary.copy(alpha = 0.20f) else StatisticsPalette.EmeraldBgLight
+                        baseColor
+                    }
+                    val iconTint = if (isSoftTranslucent) {
+                        if (isDarkTheme) StatisticsPalette.EmeraldTextDark else StatisticsPalette.EmeraldTextLight
+                    } else {
+                        Color.White
+                    }
 
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    color = emeraldBackground,
-                                    shape = RoundedCornerShape(12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.EmojiEvents,
-                                contentDescription = null,
-                                tint = emeraldTint,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                color = containerBg,
+                                shape = RoundedRectangle(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Memory,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(24.dp) // 严格 2:3 黄金比例 (36 * 2/3 = 24.dp)
+                        )
                     }
                     Text(
                         text = stringResource(R.string.stats_heatmap_title_panorama),
@@ -496,13 +483,13 @@ private fun MemoryPanoramaCard(
                 
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedRectangle(8.dp)
                 ) {
                     EntranceCountUpText(
                         targetValue = data.totalCount,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        suffix = " 项",
+                        suffix = stringResource(R.string.stats_heatmap_suffix_items),
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                     )
                 }
@@ -573,7 +560,7 @@ private fun MemoryPanoramaCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(14.dp)
-                    .clip(RoundedCornerShape(7.dp))
+                    .clip(RoundedRectangle(7.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             ) {
                 if (barBrush != null) {
@@ -658,7 +645,7 @@ private fun LegendItem(bucket: PanoramaBucket) {
                 .size(8.dp)
                 .background(
                     color = Color(android.graphics.Color.parseColor(bucket.color)),
-                    shape = RoundedCornerShape(2.dp)
+                    shape = RoundedRectangle(2.dp)
                 )
         )
         Text(

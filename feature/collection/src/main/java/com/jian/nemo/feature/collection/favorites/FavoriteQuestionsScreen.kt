@@ -1,15 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.NemoDangerDark
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
-import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
-import com.jian.nemo.core.designsystem.theme.NemoSecondary
-import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -17,11 +9,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Favorite
@@ -70,20 +63,12 @@ fun FavoriteQuestionsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val iconStyle by viewModel.iconStyle.collectAsState()
 
-    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
-    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
-    val premiumGreen = if (isDark) NemoSecondaryDark else NemoSecondary
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val heartColor = IosColors.Pink
+    val accentGreen = IosColors.Green
+    val accentBlue = IosColors.Blue
+    val deleteColor = IosColors.Red
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-
-    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
-    val heartColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else premiumRed
-    val accentGreen = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumGreen
-    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
-    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
 
     // 多选状态
     var selectedQuestionIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -190,7 +175,6 @@ fun FavoriteQuestionsScreen(
                     }
                 }
                 uiState.favoriteQuestions.isEmpty() -> {
-                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -201,32 +185,20 @@ fun FavoriteQuestionsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.Heart,
-                                        color = heartColor,
-                                        size = 64.dp
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(32.dp),
-                                    color = premiumRed.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(100.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Favorite,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp),
-                                            tint = premiumRed.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                }
+                            val emptyBgColor = if (isSoftTranslucent) heartColor.copy(alpha = 0.15f) else heartColor
+                            val emptyTint = if (isSoftTranslucent) heartColor else Color.White
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .background(emptyBgColor, RoundedRectangle(28.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Favorite,
+                                    contentDescription = null,
+                                    tint = emptyTint,
+                                    modifier = Modifier.size(56.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
@@ -283,7 +255,7 @@ fun FavoriteQuestionsScreen(
                                     accentGreen = accentGreen,
                                     tagColor = accentBlue,
                                     heartColor = heartColor,
-                                    isPlumpDuo = isPlumpDuo,
+                                    isSoftTranslucent = isSoftTranslucent,
                                     onUnfavorite = { viewModel.unfavorite(question.id) }
                                 )
                             }
@@ -294,12 +266,9 @@ fun FavoriteQuestionsScreen(
         }
     }
 }
-}
 
 /**
  * 收藏题目列表项 — Flat Card
- *
- * elevation = 0, 细线边框, 无渐变
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -312,7 +281,7 @@ private fun FavoriteQuestionItem(
     accentGreen: Color,
     tagColor: Color,
     heartColor: Color,
-    isPlumpDuo: Boolean,
+    isSoftTranslucent: Boolean,
     onUnfavorite: () -> Unit
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -325,7 +294,7 @@ private fun FavoriteQuestionItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -368,43 +337,27 @@ private fun FavoriteQuestionItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
 
-                    // ❤️ 收藏按钮 (多选模式下隐藏)
+                    // ❤️ 收藏按钮 (单容器计算属性复用，多选模式下隐藏)
                     AnimatedVisibility(
                         visible = !isSelectionMode,
                         enter = fadeIn(),
                         exit = fadeOut()
                     ) {
-                        IconButton(
-                            onClick = onUnfavorite,
-                            modifier = Modifier.size(32.dp)
+                        val heartBg = if (isSoftTranslucent) heartColor.copy(alpha = 0.15f) else heartColor
+                        val heartTint = if (isSoftTranslucent) heartColor else Color.White
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .background(heartBg, RoundedRectangle(8.dp))
+                                .clickable(onClick = onUnfavorite),
+                            contentAlignment = Alignment.Center
                         ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.Heart,
-                                        color = heartColor,
-                                        size = 18.dp
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = heartColor.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Favorite,
-                                            contentDescription = stringResource(R.string.collection_cd_unfavorite),
-                                            tint = heartColor,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                }
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Favorite,
+                                contentDescription = stringResource(R.string.collection_cd_unfavorite),
+                                tint = heartTint,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }

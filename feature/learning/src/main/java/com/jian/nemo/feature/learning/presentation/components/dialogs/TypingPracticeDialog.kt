@@ -3,11 +3,11 @@ package com.jian.nemo.feature.learning.presentation.components.dialogs
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -65,7 +65,7 @@ fun TypingPracticeDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
@@ -114,7 +114,7 @@ fun TypingPracticeDialog(
                                 modifier = Modifier.padding(vertical = 2.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Check,
+                                    imageVector = Icons.Rounded.Check,
                                     contentDescription = null,
                                     tint = themeColor,
                                     modifier = Modifier.size(18.dp)
@@ -154,7 +154,7 @@ fun TypingPracticeDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 12.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = themeColor,
@@ -180,7 +180,7 @@ fun TypingPracticeDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = themeColor,

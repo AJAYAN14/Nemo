@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,6 +29,7 @@ import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.designsystem.theme.UserPalette
+import com.jian.nemo.feature.settings.R
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -100,18 +102,18 @@ fun ThemeColorDialog(
     }
 
     val themeColors = listOf(
-        ThemeColor("默认", UserPalette.PrimaryGlassTintLight),
-        ThemeColor("蔷薇红", IosColors.Pink),
-        ThemeColor("活力橙", IosColors.Orange),
-        ThemeColor("明快黄", IosColors.Yellow),
-        ThemeColor("薄荷绿", SettingsPalette.ThemeAppleGreen),
-        ThemeColor("天空蓝", IosColors.Teal),
-        ThemeColor("经典蓝", IosColors.Blue),
-        ThemeColor("薰衣草紫", IosColors.Indigo),
-        ThemeColor("罗兰紫", IosColors.Purple),
-        ThemeColor("荧光青", SettingsPalette.ThemeElectricCyan),
-        ThemeColor("亮青绿", SettingsPalette.ThemeBrightTeal),
-        ThemeColor("炽热红", SettingsPalette.ThemeBrightOrangeRed)
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_default), UserPalette.PrimaryGlassTintLight),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_rose_red), IosColors.Pink),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_vibrant_orange), IosColors.Orange),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_bright_yellow), IosColors.Yellow),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_mint_green), SettingsPalette.ThemeAppleGreen),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_sky_blue), IosColors.Teal),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_classic_blue), IosColors.Blue),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_lavender_purple), IosColors.Indigo),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_violet_purple), IosColors.Purple),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_electric_cyan), SettingsPalette.ThemeElectricCyan),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_bright_teal), SettingsPalette.ThemeBrightTeal),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_bright_orange_red), SettingsPalette.ThemeBrightOrangeRed)
     )
 
     // 默认颜色与外部选中颜色初始化
@@ -127,9 +129,9 @@ fun ThemeColorDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "环形配色选择器",
-        confirmText = "确定",
-        dismissText = "取消",
+        title = stringResource(R.string.settings_theme_dialog_ring_picker_title),
+        confirmText = stringResource(R.string.settings_theme_dialog_btn_confirm),
+        dismissText = stringResource(R.string.settings_theme_dialog_btn_cancel),
         confirmButtonColor = currentlySelectedColor,
         onConfirm = {
             performHapticConfirm()
@@ -206,7 +208,7 @@ fun ThemeColorDialog(
                 // 中文配色文本标签提示
                 val activeColorName = themeColors.find { it.color.value == currentlySelectedColor.value }?.name ?: ""
                 Text(
-                    text = "当前选择：$activeColorName",
+                    text = stringResource(R.string.settings_theme_dialog_current_selection, activeColorName),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp

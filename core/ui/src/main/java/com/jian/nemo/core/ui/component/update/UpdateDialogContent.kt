@@ -4,7 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RocketLaunch
@@ -58,14 +59,14 @@ fun UpdateDialogContent(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                    .background(accentColor.copy(alpha = 0.15f), RoundedRectangle(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.RocketLaunch,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(27.dp)
                 )
             }
 
@@ -172,7 +173,7 @@ fun UpdateDialogContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
-                            .clip(RoundedCornerShape(4.dp)),
+                            .clip(Capsule()),
                         color = accentColor,
                         trackColor = accentColor.copy(alpha = 0.2f),
                     )
@@ -193,7 +194,7 @@ fun UpdateDialogContent(
                         modifier = Modifier
                             .weight(1f)
                             .height(52.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedRectangle(16.dp)
                     ) {
                         Text(
                             text = stringResource(R.string.core_ui_btn_later_update),
@@ -217,7 +218,7 @@ fun UpdateDialogContent(
                     modifier = Modifier
                         .weight(1.5f)
                         .height(52.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         enabled = !isDownloading || isDownloaded,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = accentColor,

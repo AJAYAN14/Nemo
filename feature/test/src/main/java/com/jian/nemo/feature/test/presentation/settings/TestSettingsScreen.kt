@@ -3,7 +3,7 @@ package com.jian.nemo.feature.test.presentation.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import com.jian.nemo.core.designsystem.theme.screenBackground
@@ -323,7 +323,7 @@ fun TestSettingsScreen(
             .fillMaxSize()
             .containerTransform(
                 key = "container_test_${testModeId ?: "default"}",
-                shape = RoundedCornerShape(0.dp)
+                shape = RoundedRectangle(0.dp)
             ),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = backgroundColor
@@ -441,7 +441,7 @@ fun TestSettingsScreen(
                      backdrop = backdrop,
                      tint = MaterialTheme.colorScheme.primary,
                      isInteractive = !isGenerating,
-                     shape = RoundedCornerShape(28.dp),
+                     shape = RoundedRectangle(28.dp),
                      modifier = Modifier
                          .fillMaxWidth()
                          .height(56.dp)

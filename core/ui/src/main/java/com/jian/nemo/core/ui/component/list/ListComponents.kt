@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -45,7 +45,7 @@ fun LevelHeader(
                 indication = null,
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedRectangle(15.dp),
         colors = CardDefaults.cardColors(containerColor = if (containerColor != Color.Unspecified) containerColor else MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -92,7 +92,7 @@ fun LevelHeader(
 fun JlptTag(level: String) {
     Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedRectangle(20.dp))
             .background(MaterialTheme.colorScheme.primaryContainer)
             .padding(horizontal = 10.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
@@ -208,7 +208,7 @@ fun CommonWordCard(
             .fillMaxWidth()
             .padding(bottom = 8.dp) // 添加底部间距
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedRectangle(15.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(
@@ -259,7 +259,7 @@ fun SimpleListItem(
             .fillMaxWidth()
             .padding(bottom = 8.dp) // 添加底部间距
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedRectangle(12.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Column(
@@ -297,7 +297,7 @@ fun CommonGrammarCard(
             .fillMaxWidth()
             .padding(bottom = 8.dp)
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedRectangle(15.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(

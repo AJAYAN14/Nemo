@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Replay
@@ -45,17 +45,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import com.jian.nemo.core.designsystem.theme.IosColors
-import com.jian.nemo.core.designsystem.theme.SettingsPalette
-import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.feature.settings.components.FloatingLiquidIsland
@@ -156,15 +151,12 @@ fun AdvancedLearningSettingsScreen(
         showExitConfirmation = true
     }
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
-    // 多维度语义色彩体系：支持原有专属原色与 OKLCH 等亮度调色板双方案自适应
-    val retentionColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else IosColors.Purple
-    val learningStepColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else UserPalette.PrimaryGlassTintLight
-    val relearningStepColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else IosColors.OrangeDark
-    val leechColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else SettingsPalette.CoralRose
-    val temporalColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else SettingsPalette.CyanMint
-    val backlogColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else IosColors.Green
+    val retentionColor = IosColors.Purple
+    val learningStepColor = IosColors.Blue
+    val relearningStepColor = IosColors.Orange
+    val leechColor = IosColors.Red
+    val temporalColor = IosColors.Cyan
+    val backlogColor = IosColors.Green
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val backdrop = rememberLayerBackdrop()
@@ -223,8 +215,8 @@ fun AdvancedLearningSettingsScreen(
 
             // 3. 初次学习阶梯时空管道 (Step Pipeline) — 探索蓝
             StepPipelineEditor(
-                title = "新卡片初学阶梯",
-                subtitle = "新知识首次记忆时的短时巩固序列 (单位: 分钟)",
+                title = stringResource(R.string.settings_algorithm_title_new_step),
+                subtitle = stringResource(R.string.settings_algorithm_label_new_step_subtitle),
                 stepsString = stepsInput,
                 onStepsChange = { stepsInput = it },
                 accentColor = learningStepColor
@@ -232,8 +224,8 @@ fun AdvancedLearningSettingsScreen(
 
             // 4. 遗忘重学阶梯时空管道 (Relearning Steps) — 暖琥珀橙
             StepPipelineEditor(
-                title = "遗忘重学阶梯",
-                subtitle = "遗忘卡片重新激活时的强化复习序列 (单位: 分钟)",
+                title = stringResource(R.string.settings_algorithm_title_relearn_step),
+                subtitle = stringResource(R.string.settings_algorithm_label_relearn_step_subtitle),
                 stepsString = relearningStepsInput,
                 onStepsChange = { relearningStepsInput = it },
                 accentColor = relearningStepColor
@@ -285,7 +277,7 @@ fun AdvancedLearningSettingsScreen(
                 .padding(bottom = 20.dp)
         ) {
             CommonHeader(
-                title = "记忆算法调校",
+                title = stringResource(R.string.settings_algorithm_title_header),
                 onBack = {
                     if (hasUnsavedChanges) {
                         showExitConfirmation = true
@@ -312,7 +304,7 @@ fun AdvancedLearningSettingsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Replay,
-                                contentDescription = "恢复默认设置",
+                                contentDescription = stringResource(R.string.settings_algorithm_btn_reset_desc),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -337,9 +329,9 @@ fun AdvancedLearningSettingsScreen(
         if (showResetConfirmDialog) {
             com.jian.nemo.core.ui.component.NemoDialog(
                 onDismissRequest = { showResetConfirmDialog = false },
-                title = "恢复默认算法配置",
-                confirmText = "确认恢复",
-                dismissText = "取消",
+                title = stringResource(R.string.settings_algorithm_dialog_reset_title),
+                confirmText = stringResource(R.string.settings_algorithm_dialog_btn_confirm_reset),
+                dismissText = stringResource(R.string.settings_algorithm_dialog_btn_cancel),
                 confirmButtonColor = retentionColor,
                 onConfirm = {
                     stepsInput = "1 10"
@@ -359,12 +351,12 @@ fun AdvancedLearningSettingsScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            text = "确定要将记忆算法配置恢复为系统黄金推荐值吗？",
+                            text = stringResource(R.string.settings_algorithm_dialog_reset_message),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Surface(
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedRectangle(16.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                             modifier = Modifier.fillMaxWidth()
                         ) {

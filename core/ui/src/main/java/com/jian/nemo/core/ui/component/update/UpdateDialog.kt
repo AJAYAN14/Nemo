@@ -2,7 +2,7 @@ package com.jian.nemo.core.ui.component.update
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -66,7 +66,7 @@ fun UpdateDialog(
         },
         containerColor = containerColor,
         contentColor = contentColor,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        shape = UnevenRoundedRectangle(topStart = 28.dp, topEnd = 28.dp),
         modifier = Modifier.padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding())
     ) {
         // 防止下载过程中意外触碰返回键关闭

@@ -4,7 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
@@ -111,7 +111,7 @@ fun HeatmapShareBottomSheet(
                             isSaving = false
                             Toast.makeText(
                                 context,
-                                if (success) "已保存到相册" else "保存失败",
+                                if (success) context.getString(R.string.stats_share_toast_save_success) else context.getString(R.string.stats_share_toast_save_failed),
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -119,7 +119,7 @@ fun HeatmapShareBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedRectangle(14.dp),
                     enabled = !isSaving
                 ) {
                     if (isSaving) {
@@ -158,7 +158,7 @@ fun HeatmapShareBottomSheet(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedRectangle(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
                     enabled = !isSharing
                 ) {

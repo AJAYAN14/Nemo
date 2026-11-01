@@ -155,7 +155,7 @@ fun CornerLabScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Box(
@@ -223,7 +223,7 @@ fun CornerLabScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -267,7 +267,7 @@ fun CornerLabScreen(
                         listOf(8f, 16f, 20f, 26f, 32f).forEach { preset ->
                             val isSelected = radius.roundToInt() == preset.roundToInt()
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedRectangle(8.dp),
                                 color = if (isSelected) blueColor else MaterialTheme.colorScheme.surfaceContainerHighest,
                                 modifier = Modifier
                                     .weight(1f)
@@ -296,7 +296,7 @@ fun CornerLabScreen(
 
                     // 曲率梳分析开关 (Curvature Comb)
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -399,7 +399,7 @@ fun CornerLabScreen(
                             }
                             val isSelected = aspect == item
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedRectangle(8.dp),
                                 color = if (isSelected) blueColor else MaterialTheme.colorScheme.surfaceContainerHighest,
                                 modifier = Modifier
                                     .weight(1f)
@@ -470,7 +470,7 @@ fun CornerLabScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -639,7 +639,7 @@ private fun OverlayComparisonView(
                 Box(
                     modifier = Modifier
                         .size(12.dp)
-                        .background(redColor, RoundedCornerShape(2.dp))
+                        .background(redColor, RoundedRectangle(2.dp))
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -652,7 +652,7 @@ private fun OverlayComparisonView(
                 Box(
                     modifier = Modifier
                         .size(12.dp)
-                        .background(blueColor, RoundedCornerShape(2.dp))
+                        .background(blueColor, RoundedRectangle(2.dp))
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -693,9 +693,9 @@ private fun MacroZoomCornerView(
             Box(
                 modifier = Modifier
                     .size(macroSize)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedRectangle(8.dp))
                     .background(redColor.copy(alpha = if (isDark) 0.12f else 0.08f))
-                    .border(1.dp, redColor.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                    .border(1.dp, redColor.copy(alpha = 0.35f), RoundedRectangle(8.dp))
             ) {
                 ShapeBox(
                     shape = RoundedCornerShape(radius * 2f),
@@ -724,9 +724,9 @@ private fun MacroZoomCornerView(
             Box(
                 modifier = Modifier
                     .size(macroSize)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedRectangle(8.dp))
                     .background(blueColor.copy(alpha = if (isDark) 0.12f else 0.08f))
-                    .border(1.dp, blueColor.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                    .border(1.dp, blueColor.copy(alpha = 0.35f), RoundedRectangle(8.dp))
             ) {
                 ShapeBox(
                     shape = RoundedRectangle(radius * 2f, RoundedCornerStyle.Continuous),
@@ -884,7 +884,7 @@ private fun ModeChip(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedRectangle(8.dp),
         color = if (selected) activeColor else MaterialTheme.colorScheme.surfaceContainerHighest,
         modifier = modifier.clickable { onClick() }
     ) {
@@ -928,7 +928,7 @@ private fun RenderStyleChip(
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedRectangle(8.dp),
         color = if (selected) activeColor else MaterialTheme.colorScheme.surfaceContainerHighest,
         modifier = modifier.clickable { onClick() }
     ) {

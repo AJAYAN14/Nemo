@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.statistics
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.repository.GrammarRepository
@@ -9,6 +10,7 @@ import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.usecase.statistics.GetAllLearnedGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.statistics.GetAllLearnedWordsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -85,7 +87,8 @@ class HistoricalStatisticsViewModel @Inject constructor(
     private val getAllLearnedGrammarsUseCase: GetAllLearnedGrammarsUseCase,
     private val wordRepository: WordRepository,
     private val grammarRepository: GrammarRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoricalStatisticsUiState())
@@ -268,7 +271,7 @@ class HistoricalStatisticsViewModel @Inject constructor(
         val effectiveDailyGoal = if (dailyGoal > 0) dailyGoal else 1
         val today = LocalDate.now()
         val todayEpochDay = today.toEpochDay()
-        val formatter = DateTimeFormatter.ofPattern("yyyy年M月d日")
+        val formatter = DateTimeFormatter.ofPattern(context.getString(R.string.stats_history_date_format_ymd))
 
         val predictionMap = mutableMapOf<String, LevelPredictionInfo>()
         var cumulativeDays = 0
@@ -294,12 +297,15 @@ class HistoricalStatisticsViewModel @Inject constructor(
 
                 val dateText = if (epochDay > 0) {
                     try {
-                        "${LocalDate.ofEpochDay(epochDay).format(formatter)} 达成"
+                        context.getString(
+                            R.string.stats_history_format_level_achieved_date,
+                            LocalDate.ofEpochDay(epochDay).format(formatter)
+                        )
                     } catch (_: Exception) {
-                        "已达成"
+                        context.getString(R.string.stats_history_label_level_achieved)
                     }
                 } else {
-                    "已达成"
+                    context.getString(R.string.stats_history_label_level_achieved)
                 }
 
                 predictionMap[level] = LevelPredictionInfo(

@@ -1,9 +1,8 @@
 package com.jian.nemo.feature.test.presentation.settings.components
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
@@ -28,7 +27,6 @@ fun SectionTitle(
         text = text,
         style = MaterialTheme.typography.titleMedium,
         fontWeight = FontWeight.ExtraBold,
-
         color = MaterialTheme.colorScheme.onSurfaceVariant, // Standard Grey Title
         modifier = modifier
     )
@@ -42,11 +40,9 @@ fun PremiumGroupCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
-
     Surface(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
-
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 24.dp, isDark = isDark)
@@ -122,4 +118,3 @@ fun PremiumSwitchRow(
         )
     }
 }
-

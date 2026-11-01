@@ -1,12 +1,15 @@
 package com.jian.nemo.feature.collection.favorites
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.feature.collection.R
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +27,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class FavoriteGrammarsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val grammarRepository: GrammarRepository,
     settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -58,7 +62,7 @@ class FavoriteGrammarsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = "加载失败: ${e.message}"
+                            error = context.getString(R.string.collection_favorite_grammars_format_load_failed, e.message ?: "")
                         )
                     }
                 }
@@ -95,7 +99,7 @@ class FavoriteGrammarsViewModel @Inject constructor(
             } catch (e: Exception) {
                 println("❌ 批量取消语法收藏失败: ${e.message}")
                 _uiState.update {
-                    it.copy(error = "批量取消收藏失败: ${e.message}")
+                    it.copy(error = context.getString(R.string.collection_favorite_grammars_format_batch_unfavorite_failed, e.message ?: ""))
                 }
             }
         }

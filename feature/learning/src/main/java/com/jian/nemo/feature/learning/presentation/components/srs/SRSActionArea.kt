@@ -14,17 +14,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.LearningPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -76,21 +74,14 @@ fun SRSActionArea(
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
-    // 评分按钮颜色定义 - 根据 MD3 规范区分浅色/深色模式
-    // 浅色模式：600-700 文字色 + 50-100 容器色（高饱和度，高对比）
-    // 深色模式：200-300 文字色 + 800-900 容器色（降低饱和度，避免视觉振动）
+    // 评分按钮纯实色定义 - 严格遵循项目调色盘手册（单一纯实色，零透明度，不分模式）
+    val buttonContainerColor = MaterialTheme.colorScheme.surface
+    val effectiveAgainColor = IosColors.Red
+    val effectiveHardColor = IosColors.Orange
+    val effectiveGoodColor = IosColors.Blue
+    val effectiveEasyColor = IosColors.Green
 
-    val colorRose700 = if (isDarkTheme) LearningPalette.SrsRoseTextDark else LearningPalette.SrsRoseTextLight
-    val colorRose100 = if (isDarkTheme) LearningPalette.SrsRoseBgDark else LearningPalette.SrsRoseBgLight
-
-    val colorOrange600 = if (isDarkTheme) LearningPalette.SrsOrangeTextDark else LearningPalette.SrsOrangeTextLight
-    val colorOrange50 = if (isDarkTheme) LearningPalette.SrsOrangeBgDark else LearningPalette.SrsOrangeBgLight
-
-    val colorBlue600 = if (isDarkTheme) LearningPalette.SrsBlueTextDark else LearningPalette.SrsBlueTextLight
-    val colorBlue50 = if (isDarkTheme) LearningPalette.SrsBlueBgDark else LearningPalette.SrsBlueBgLight
-
-    val colorEmerald600 = if (isDarkTheme) LearningPalette.SrsEmeraldTextDark else LearningPalette.SrsEmeraldTextLight
-    val colorEmerald50 = if (isDarkTheme) LearningPalette.SrsEmeraldBgDark else LearningPalette.SrsEmeraldBgLight
+    val effectiveStarColor = if (isDarkTheme) IosColors.YellowDark else IosColors.Yellow
 
     val isDelayActive = isShowAnswerDelayEnabled || showAnswerAvailableAt > 0L
 
@@ -116,7 +107,6 @@ fun SRSActionArea(
     val remainingSec = ((remainingMs + 999L) / 1000L).toInt()
     val countdownText = if (remainingSec >= 60) "${remainingSec / 60}m ${remainingSec % 60}s" else "${remainingSec}s"
 
-
     val lastRateClickTime = androidx.compose.runtime.remember { androidx.compose.runtime.mutableLongStateOf(0L) }
     val safeRate: (Int, () -> Unit) -> Unit = { quality, feedback ->
         val currentTime = System.currentTimeMillis()
@@ -126,23 +116,6 @@ fun SRSActionArea(
             onRate(quality)
         }
     }
-
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
-    // 4个评分按钮在双模式下的自适应配色
-    val effectiveAgainColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else colorRose700
-    val effectiveAgainContainer = if (isPlumpDuo) IsoluminantPalette.CoralFlame.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorRose100
-
-    val effectiveHardColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else colorOrange600
-    val effectiveHardContainer = if (isPlumpDuo) IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorOrange50
-
-    val effectiveGoodColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorBlue600
-    val effectiveGoodContainer = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorBlue50
-
-    val effectiveEasyColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else colorEmerald600
-    val effectiveEasyContainer = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f) else colorEmerald50
-
-    val effectiveStarColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else LearningPalette.StarAmber
 
     Column(
         modifier = modifier
@@ -172,7 +145,7 @@ fun SRSActionArea(
                             }
                         },
                         backgroundColor = if (canShowAnswer) LearningPalette.ActionDarkBg else LearningPalette.ActionMutedText,
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         elevation = 0.dp,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,7 +157,7 @@ fun SRSActionArea(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = if (canShowAnswer) Icons.Default.AutoAwesome else Icons.Default.AccessTime,
+                                imageVector = if (canShowAnswer) Icons.Rounded.AutoAwesome else Icons.Rounded.AccessTime,
                                 contentDescription = null,
                                 tint = if (canShowAnswer) effectiveStarColor else Color.White.copy(alpha = 0.88f),
                                 modifier = Modifier
@@ -192,7 +165,11 @@ fun SRSActionArea(
                                     .size(18.dp)
                             )
                             Text(
-                                text = if (canShowAnswer) "显示答案" else "显示答案 ($countdownText)",
+                                text = if (canShowAnswer) {
+                                    stringResource(R.string.learning_srs_action_show_answer)
+                                } else {
+                                    stringResource(R.string.learning_srs_action_show_answer_countdown, countdownText)
+                                },
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White.copy(alpha = if (canShowAnswer) 1f else 0.9f)
@@ -212,7 +189,7 @@ fun SRSActionArea(
                         label = stringResource(R.string.learn_srs_rating_again),
                         time = ratingIntervals[1] ?: "-",
                         color = effectiveAgainColor,
-                        containerColor = effectiveAgainContainer,
+                        containerColor = buttonContainerColor,
                         onClick = { 
                             safeRate(1) {
                                 view.performHapticFeedback(HapticFeedbackConstants.REJECT)
@@ -227,7 +204,7 @@ fun SRSActionArea(
                         label = stringResource(R.string.learn_srs_rating_hard),
                         time = ratingIntervals[3] ?: "-",
                         color = effectiveHardColor,
-                        containerColor = effectiveHardContainer,
+                        containerColor = buttonContainerColor,
                         onClick = { 
                             safeRate(3) {
                                 view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -242,7 +219,7 @@ fun SRSActionArea(
                         label = stringResource(R.string.learn_srs_rating_good),
                         time = ratingIntervals[4] ?: "-",
                         color = effectiveGoodColor,
-                        containerColor = effectiveGoodContainer,
+                        containerColor = buttonContainerColor,
                         onClick = { 
                             safeRate(4) {
                                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -257,7 +234,7 @@ fun SRSActionArea(
                         label = stringResource(R.string.learn_srs_rating_easy),
                         time = ratingIntervals[5] ?: "-",
                         color = effectiveEasyColor,
-                        containerColor = effectiveEasyContainer,
+                        containerColor = buttonContainerColor,
                         onClick = { 
                             safeRate(5) {
                                 view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)

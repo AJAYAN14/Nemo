@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 关于页相关 -->
+    <string name="settings_about_label_no_log">暂无云端更新日志</string>
+    <string name="settings_about_label_fetch_failed">获取更新日志失败</string>
+
+    <!-- 学习与算法高级调校页 -->
+    <string name="settings_algorithm_title_header">记忆算法调校</string>
+    <string name="settings_algorithm_title_new_step">新卡片初学阶梯</string>
+    <string name="settings_algorithm_label_new_step_subtitle">新知识首次记忆时的短时巩固序列 (单位: 分钟)</string>
+    <string name="settings_algorithm_title_relearn_step">遗忘重学阶梯</string>
+    <string name="settings_algorithm_label_relearn_step_subtitle">遗忘卡片重新激活时的强化复习序列 (单位: 分钟)</string>
+    <string name="settings_algorithm_btn_reset_desc">恢复默认设置</string>
+    <string name="settings_algorithm_dialog_reset_title">恢复默认算法配置</string>
+    <string name="settings_algorithm_dialog_btn_confirm_reset">确认恢复</string>
+    <string name="settings_algorithm_dialog_btn_cancel">取消</string>
+    <string name="settings_algorithm_dialog_reset_message">确定要将记忆算法配置恢复为系统黄金推荐值吗？</string>
+
+    <!-- 通用状态关键字 -->
+    <string name="settings_keyword_label_failure">失败</string>
+    <string name="settings_keyword_label_exception">异常</string>
+    <string name="settings_keyword_label_import_success">导入成功</string>
+
+    <!-- 设置与数据同步相关 Toast -->
+    <string name="settings_toast_dictionary_preparing">基础词库正在准备中，请稍候恢复</string>
+    <string name="settings_format_toast_import_exception">导入过程中发生异常: %1$s</string>
+    <string name="settings_toast_backup_too_frequent">备份过于频繁，请稍后再试</string>
+    <string name="settings_toast_backup_cloud_success">云端备份成功</string>
+    <string name="settings_format_toast_backup_failed">备份失败: %1$s</string>
+    <string name="settings_toast_backup_list_refreshed">备份列表已刷新</string>
+    <string name="settings_format_toast_backup_list_failed">获取备份列表失败: %1$s</string>
+    <string name="settings_format_toast_restore_preview_failed">预览失败: %1$s</string>
+    <string name="settings_format_toast_restore_failed">恢复失败: %1$s</string>
+    <string name="settings_toast_daily_goal_updated">每日目标已更新，将在下一个学习日生效</string>
+    <string name="settings_toast_daily_grammar_goal_updated">每日语法目标已更新，将在下一个学习日生效</string>
+
+    <!-- 算法组件细节文案 -->
+    <string name="settings_algorithm_label_burden_light">清爽微负荷</string>
+    <string name="settings_algorithm_label_burden_balanced">黄金平衡态</string>
+    <string name="settings_algorithm_label_burden_heavy">极客高密度</string>
+    <string name="settings_algorithm_label_retention_preset_80">80% 宽松</string>
+    <string name="settings_algorithm_label_retention_preset_85">85% 平衡</string>
+    <string name="settings_algorithm_label_retention_preset_90">90% 黄金</string>
+    <string name="settings_algorithm_label_retention_preset_95">95% 冲刺</string>
+    <string name="settings_algorithm_btn_add_step_desc">添加阶段</string>
+    <string name="settings_algorithm_btn_add_step">增加阶梯</string>
+    <string name="settings_algorithm_dialog_title_add_step">新增复习阶段</string>
+    <string name="settings_algorithm_btn_delete_step_desc">删除该阶段</string>
+    <string name="settings_algorithm_dialog_title_edit_step">调整复习阶段时长</string>
+    <string name="settings_algorithm_dialog_label_edit_step_subtitle">设定记忆间隔时长（支持分位加减与手写输入）</string>
+    <string name="settings_algorithm_dialog_btn_confirm_save">确认保存</string>
+    <string name="settings_format_algorithm_duration_minutes">%1$s 分钟</string>
+    <string name="settings_format_algorithm_duration_hours">%1$s 小时</string>
+    <string name="settings_format_algorithm_duration_days">%1$s 天</string>
+    <string name="settings_format_algorithm_leech_count">%1$d 次</string>
+</resources>

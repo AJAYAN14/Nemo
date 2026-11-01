@@ -15,9 +15,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,16 +40,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.graphics.painter.Painter
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 // ──────────────────────────────────────────────────────────────────────────────
 // 动画时序与缓动曲线常量
@@ -126,7 +120,7 @@ interface NemoMorphMenuScope {
 @Composable
 fun NemoMorphMenu(
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Default.MoreVert,
+    icon: ImageVector = Icons.Rounded.MoreVert,
     iconPainter: Painter? = null,
     backdrop: Backdrop? = null,
     chromaticAberration: Boolean = false,
@@ -164,7 +158,7 @@ fun NemoMorphMenu(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Default.MoreVert,
+    icon: ImageVector = Icons.Rounded.MoreVert,
     iconPainter: Painter? = null,
     backdrop: Backdrop? = null,
     chromaticAberration: Boolean = false,
@@ -294,6 +288,7 @@ fun NemoMorphMenu(
                     onExpandedChange(false)
                 }
 
+                val panelShape = RoundedRectangle(20.dp)
                 // 面板卡片容器（右上角原位弹性下拉展开）
                 Box(
                     modifier = Modifier
@@ -309,17 +304,17 @@ fun NemoMorphMenu(
                             if (elevation > 0.dp) {
                                 Modifier.shadow(
                                     elevation = elevation,
-                                    shape = RoundedCornerShape(20.dp)
+                                    shape = panelShape
                                 )
                             } else {
                                 Modifier
                             }
                         )
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(panelShape)
                         .background(containerColor)
                         .border(
                             BorderStroke(0.5.dp, borderColor),
-                            RoundedCornerShape(20.dp)
+                            panelShape
                         )
                 ) {
                     Column(
@@ -339,12 +334,17 @@ fun NemoMorphMenu(
 }
 
 /**
- * NemoMorphMenuItem - 形变菜单标准项（内置错峰入场/退场动画）
+ * NemoMorphMenuItem - 形变菜单标准项
  *
- * 遵循图标设计与等亮度调色板开发规范：
- * - 默认方案 (isPlumpDuo == false): 100% 完整保留原有配色与图标不变；
- * - Plump Duo 方案 (isPlumpDuo == true): 强调色切换为 IsoluminantPalette 等亮度色彩，优先展示 PlumpDuoIcon；
- * - 辅助中性控件 (trailingIcon) 保持中性灰色 (onSurfaceVariant)，禁止滥用彩色。
+ * @param text 文本
+ * @param onClick 点击回调
+ * @param modifier 修饰符
+ * @param leadingIcon 原生矢量图标 (可选)
+ * @param leadingPainter 图标资源绘制 (可选)
+ * @param iconColor 显式指定强调色 (可选)
+ * @param trailingIcon 尾部辅助中性指示图标 (如对勾、箭头等，可选)
+ * @param enabled 是否启用
+ * @param isDestructive 是否是破坏性操作 (统一使用调色盘 IosColors.Red)
  */
 @Composable
 fun NemoMorphMenuScope.NemoMorphMenuItem(
@@ -353,7 +353,6 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     leadingPainter: Painter? = null,
-    plumpIcon: PlumpIcon? = null,
     iconColor: Color? = null,
     trailingIcon: ImageVector? = null,
     enabled: Boolean = true,
@@ -362,33 +361,18 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     val itemIndex = nextItemIndex()
     val totalCount = itemCount
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
-    val defaultLegacyColor = if (isDestructive) {
-        MaterialTheme.colorScheme.error
+    val effectiveIconColor = if (isDestructive) {
+        IosColors.Red
     } else {
-        MaterialTheme.colorScheme.primary
-    }
-
-    val defaultIsoluminantColor = if (isDestructive) {
-        IsoluminantPalette.CoralFlame
-    } else {
-        IsoluminantPalette.SkyIndigo
-    }
-
-    val effectiveIconColor = if (isPlumpDuo) {
-        iconColor ?: defaultIsoluminantColor
-    } else {
-        iconColor ?: defaultLegacyColor
+        iconColor ?: MaterialTheme.colorScheme.primary
     }
 
     val mainColor = if (isDestructive) {
-        if (isPlumpDuo) IsoluminantPalette.CoralFlame else MaterialTheme.colorScheme.error
+        IosColors.Red
     } else {
         MaterialTheme.colorScheme.onSurface
     }
 
-    // 铁律：辅助中性控件（如折角箭头、打勾等）一律保持中性灰色
     val neutralTrailingTint = MaterialTheme.colorScheme.onSurfaceVariant
 
     // ── 从 scope.transition 派生高帧率、无协程开销的错峰动画 ──
@@ -459,6 +443,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     val isPressed by interactionSource.collectIsPressedAsState()
     val bgAlpha = if (isPressed) 0.08f else 0f
     val haptic = LocalHapticFeedback.current
+    val itemShape = RoundedRectangle(12.dp)
 
     Surface(
         onClick = {
@@ -470,7 +455,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
         enabled = enabled,
         interactionSource = interactionSource,
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = bgAlpha),
-        shape = RoundedCornerShape(12.dp),
+        shape = itemShape,
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -487,14 +472,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            if (isPlumpDuo && plumpIcon != null) {
-                PlumpDuoIcon(
-                    icon = plumpIcon,
-                    color = effectiveIconColor,
-                    size = 20.dp
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-            } else if (leadingPainter != null) {
+            if (leadingPainter != null) {
                 Icon(
                     painter = leadingPainter,
                     contentDescription = null,

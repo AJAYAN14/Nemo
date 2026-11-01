@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.Icon
@@ -30,19 +30,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.kyant.backdrop.Backdrop
-
 import androidx.compose.ui.graphics.lerp
 
 /**
@@ -107,8 +101,9 @@ fun TestHeaderCenterContent(
 /**
  * 测试头部右侧操作区：学习界面同款形变菜单按钮 (NemoMorphMenu)
  *
- * 供 CommonHeader 的 actions 插槽使用。
- * 严格锁定 30/48 黄金比例 (48dp 按钮配 30dp 图标)，具备触觉反馈与窗口模糊背景遮罩联动。
+ * 遵循单一官方原生图标与调色盘标准规范：
+ * - 统一使用 Google Fonts 官方原生实心 Rounded 图标
+ * - 配色体系全面收编至设计调色盘 IosColors (一套颜色体系)
  */
 @Composable
 fun TestHeaderActions(
@@ -132,8 +127,6 @@ fun TestHeaderActions(
         }
     }
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
@@ -147,9 +140,8 @@ fun TestHeaderActions(
         if (itemId != 0) {
             NemoMorphMenuItem(
                 text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
-                leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                plumpIcon = PlumpIcon.Heart,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else null,
+                leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
                 onClick = {
                     close()
                     onToggleFavorite(itemId, !isFavorite)
@@ -161,8 +153,7 @@ fun TestHeaderActions(
         NemoMorphMenuItem(
             text = stringResource(R.string.test_header_menu_pause),
             leadingIcon = Icons.Rounded.Pause,
-            plumpIcon = PlumpIcon.Pause,
-            iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
+            iconColor = IosColors.Orange,
             onClick = {
                 close()
                 onPause()
@@ -170,4 +161,3 @@ fun TestHeaderActions(
         )
     }
 }
-

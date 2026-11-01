@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -35,10 +35,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.LiquidToggle
@@ -46,6 +43,10 @@ import com.kyant.backdrop.Backdrop
 
 /**
  * 学习界面顶部更多操作菜单 (包含卡片操作、学习设置开关与模式切换)
+ *
+ * 遵循单一官方原生图标与调色盘标准规范：
+ * - 统一采用 Google Fonts 原生实心 Rounded 图标
+ * - 配色体系全面收编至设计调色盘 IosColors (一套颜色体系)
  */
 @Composable
 fun LearnHeaderMoreMenu(
@@ -82,8 +83,6 @@ fun LearnHeaderMoreMenu(
         onToggleMenu?.invoke(expandedValue)
     }
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
@@ -99,8 +98,7 @@ fun LearnHeaderMoreMenu(
             NemoMorphMenuItem(
                 text = stringResource(R.string.learn_menu_item_rating_guide),
                 leadingIcon = Icons.Rounded.CheckCircle,
-                plumpIcon = PlumpIcon.BadgeCheck,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
+                iconColor = IosColors.Green,
                 onClick = {
                     close()
                     onShowRatingGuide()
@@ -116,8 +114,7 @@ fun LearnHeaderMoreMenu(
             NemoMorphMenuItem(
                 text = stringResource(R.string.learn_menu_item_suspend),
                 leadingIcon = Icons.Rounded.Pause,
-                plumpIcon = PlumpIcon.Pause,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
+                iconColor = IosColors.Orange,
                 onClick = {
                     close()
                     onSuspend()
@@ -126,8 +123,7 @@ fun LearnHeaderMoreMenu(
             NemoMorphMenuItem(
                 text = stringResource(R.string.learn_menu_item_bury),
                 leadingIcon = Icons.Rounded.AccessTime,
-                plumpIcon = PlumpIcon.StudyClock,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
+                iconColor = IosColors.Indigo,
                 onClick = {
                     close()
                     onBury()
@@ -137,8 +133,8 @@ fun LearnHeaderMoreMenu(
             NemoMorphMenuItem(
                 text = stringResource(R.string.learn_menu_item_report_error),
                 leadingIcon = Icons.Rounded.Report,
-                plumpIcon = PlumpIcon.CircleX,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
+                iconColor = IosColors.Red,
+                isDestructive = true,
                 onClick = {
                     close()
                     onReportError()
@@ -170,8 +166,7 @@ fun LearnHeaderMoreMenu(
                 NemoMorphMenuItem(
                     text = stringResource(R.string.learn_menu_item_delay_duration, showAnswerDelayDurationLabel),
                     leadingIcon = Icons.Rounded.Timer,
-                    plumpIcon = PlumpIcon.StudyClock,
-                    iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
+                    iconColor = IosColors.Purple,
                     onClick = {
                         close()
                         if (onOpenShowAnswerDelayDialog != null) {
@@ -195,8 +190,7 @@ fun LearnHeaderMoreMenu(
                 NemoMorphMenuItem(
                     text = stringResource(R.string.learn_menu_item_auto_reveal_duration, autoRevealAnswerDurationLabel),
                     leadingIcon = Icons.Rounded.Timer,
-                    plumpIcon = PlumpIcon.StudyClock,
-                    iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
+                    iconColor = IosColors.Purple,
                     onClick = {
                         close()
                         if (onOpenAutoRevealAnswerDialog != null) {
@@ -214,8 +208,7 @@ fun LearnHeaderMoreMenu(
             NemoMorphMenuItem(
                 text = stringResource(R.string.learn_menu_item_whiteboard, whiteboardLabel),
                 leadingIcon = Icons.Rounded.Edit,
-                plumpIcon = PlumpIcon.IconLab,
-                iconColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else null,
+                iconColor = IosColors.Blue,
                 onClick = {
                     onToggleWhiteboard(!isWhiteboardEnabled)
                 }
@@ -237,22 +230,16 @@ fun LearnHeaderMoreMenu(
             true -> Icons.Rounded.DarkMode
             false -> Icons.Rounded.LightMode
         }
-        val themePlumpIcon = when (isDarkMode) {
-            null -> PlumpIcon.ThemePalette
-            true -> PlumpIcon.Moon
-            false -> PlumpIcon.Sun
-        }
         val themeColor = when (isDarkMode) {
-            null -> IsoluminantPalette.SkyIndigo
-            true -> IsoluminantPalette.LilacViolet
-            false -> IsoluminantPalette.WarmAmber
+            null -> IosColors.Blue
+            true -> IosColors.Indigo
+            false -> IosColors.Orange
         }
 
         NemoMorphMenuItem(
             text = stringResource(R.string.learn_menu_item_display_mode, themeLabel),
             leadingIcon = themeIcon,
-            plumpIcon = themePlumpIcon,
-            iconColor = if (isPlumpDuo) themeColor else null,
+            iconColor = themeColor,
             onClick = {
                 onCycleDarkMode()
             }
@@ -275,7 +262,7 @@ private fun MorphMenuToggleItem(
             onCheckedChange(!checked)
         },
         color = Color.Transparent,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedRectangle(12.dp),
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 6.dp, vertical = 2.dp)

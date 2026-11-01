@@ -7,7 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Close
@@ -98,7 +99,7 @@ fun NemoWhiteboard(
         modifier = modifier
             .fillMaxSize()
             .softCardShadow(borderRadius = 24.dp, isDark = isDarkTheme)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedRectangle(24.dp))
             .background(boardBg)
     ) {
         Canvas(
@@ -202,7 +203,7 @@ fun NemoWhiteboard(
                 .align(Alignment.TopCenter)
                 .padding(top = 12.dp)
                 .animateContentSize(animationSpec = tween(250))
-                .background(toolbarBg, RoundedCornerShape(50))
+                .background(toolbarBg, Capsule())
                 .clickable { isColorPaletteExpanded = !isColorPaletteExpanded }
                 .padding(horizontal = if (isColorPaletteExpanded) 10.dp else 4.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),

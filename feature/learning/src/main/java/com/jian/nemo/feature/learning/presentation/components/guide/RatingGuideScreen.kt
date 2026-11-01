@@ -14,7 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -99,7 +100,7 @@ fun RatingGuideScreen(
             ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     color = if (isDark) colorScheme.surfaceContainerLow else Color.White,
                     shadowElevation = 0.dp
                 ) {
@@ -151,7 +152,7 @@ fun RatingGuideScreen(
 
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     color = adviceBg
                 ) {
                     Text(
@@ -177,7 +178,7 @@ fun RatingGuideScreen(
                             containerColor = buttonColor,
                             contentColor = Color.White
                         ),
-                        shape = RoundedCornerShape(999.dp),
+                        shape = Capsule(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp)
@@ -211,7 +212,7 @@ private fun RatingGuideSection(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = cardColor,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp
@@ -277,7 +278,7 @@ private fun GuideLineBadge(
             modifier = Modifier
                 .background(
                     color = tagBgColor,
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedRectangle(8.dp)
                 )
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         )

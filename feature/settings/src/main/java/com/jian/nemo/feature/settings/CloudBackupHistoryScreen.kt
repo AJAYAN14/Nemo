@@ -1,11 +1,12 @@
 package com.jian.nemo.feature.settings
 
+import com.jian.nemo.feature.settings.R
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.animation.core.LinearEasing
@@ -27,7 +28,7 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -76,10 +77,14 @@ fun CloudBackupHistoryScreen(
     var snackbarMessage by remember { mutableStateOf("") }
     var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
 
+    val statusFailed = stringResource(R.string.settings_backup_status_failed)
+    val statusError = stringResource(R.string.settings_backup_status_error)
+    val statusImportSuccess = stringResource(R.string.settings_backup_status_import_success)
+
     LaunchedEffect(uiState.toastMessage) {
         uiState.toastMessage?.let {
-            val isSuccess = !it.contains("失败") && !it.contains("异常")
-            val isRestoreSuccess = isSuccess && it.contains("导入成功")
+            val isSuccess = !it.contains(statusFailed) && !it.contains(statusError)
+            val isRestoreSuccess = isSuccess && it.contains(statusImportSuccess)
             // 若为恢复成功，由专用的沉浸式结算弹窗展示，无需重复弹出顶部轻量 Snackbar
             if (!isRestoreSuccess) {
                 snackbarMessage = it
@@ -181,7 +186,7 @@ fun CloudBackupHistoryScreen(
                         item(key = "dictionary_syncing_banner") {
                             Surface(
                                 color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedRectangle(12.dp),
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Row(
@@ -310,7 +315,7 @@ fun CloudBackupHistoryScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedRectangle(8.dp),
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
                                 modifier = Modifier.padding(bottom = 6.dp)
                             ) {
@@ -491,7 +496,8 @@ private fun BackupItemCard(
     modifier: Modifier = Modifier,
     onRestoreClicked: () -> Unit
 ) {
-    val formatter = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss", Locale.getDefault())
+    val dateFormatPattern = stringResource(R.string.settings_backup_format_datetime)
+    val formatter = SimpleDateFormat(dateFormatPattern, Locale.getDefault())
     val dateString = formatter.format(Date(backup.createdAt))
     val sizeKb = String.format("%.1f", backup.sizeBytes / 1024f)
 
@@ -502,7 +508,7 @@ private fun BackupItemCard(
             .fillMaxWidth()
             .softCardShadow(borderRadius = 16.dp, isDark = isDark),
         color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         border = if (isLatest) {
             androidx.compose.foundation.BorderStroke(1.2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f))
         } else null
@@ -527,7 +533,7 @@ private fun BackupItemCard(
                     )
                     if (isLatest) {
                         Surface(
-                            shape = RoundedCornerShape(6.dp),
+                            shape = RoundedRectangle(6.dp),
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                         ) {
                             Text(

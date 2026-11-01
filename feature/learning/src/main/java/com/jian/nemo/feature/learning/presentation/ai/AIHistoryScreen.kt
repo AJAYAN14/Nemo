@@ -5,7 +5,7 @@ import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,9 +33,6 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.animation.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import java.text.SimpleDateFormat
@@ -178,9 +175,14 @@ fun AIHistoryScreen(
 private fun EmptyHistoryView(
     modifier: Modifier = Modifier
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
+
+    val historyIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+    val historyContainerBg = if (isSoftTranslucent) historyIconColor.copy(alpha = 0.15f) else historyIconColor
+    val historyIconTint = if (isSoftTranslucent) historyIconColor else Color.White
 
     Box(
         modifier = modifier
@@ -191,32 +193,18 @@ private fun EmptyHistoryView(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (isPlumpDuo) {
-                Box(
-                    modifier = Modifier.size(72.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PlumpDuoIcon(
-                        icon = PlumpIcon.History,
-                        color = IsoluminantPalette.SkyIndigo,
-                        size = 56.dp
-                    )
-                }
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = colorScheme.primary
-                        )
-                    }
-                }
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .background(historyContainerBg, RoundedRectangle(28.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.History,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = historyIconTint
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -225,7 +213,7 @@ private fun EmptyHistoryView(
                 text = stringResource(R.string.learn_ai_history_empty_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = if (isPlumpDuo) colorScheme.onSurface else colorScheme.primary,
+                color = colorScheme.onSurface,
                 textAlign = TextAlign.Center
             )
 
@@ -249,7 +237,6 @@ private fun HistoryItemCard(
     history: AIExerciseHistory,
     onClick: () -> Unit
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val dateFormat = remember { SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()) }
     val dateStr = dateFormat.format(Date(history.createdAt))
 
@@ -261,7 +248,7 @@ private fun HistoryItemCard(
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = surfaceColor,
         border = BorderStroke(1.dp, borderColor),
         tonalElevation = 0.dp,
@@ -276,11 +263,15 @@ private fun HistoryItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 // 类型标签
-                val typeTagBg = if (isPlumpDuo) IsoluminantPalette.SkyIndigo.copy(alpha = 0.08f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                val typeTagColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary
+                val typeTagColor = if (history.type == "CN_TO_JP") {
+                    if (isDark) IosColors.BlueDark else IosColors.Blue
+                } else {
+                    if (isDark) IosColors.PurpleDark else IosColors.Purple
+                }
+                val typeTagBg = typeTagColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
                     color = typeTagBg,
-                    shape = RoundedCornerShape(6.dp)
+                    shape = RoundedRectangle(6.dp)
                 ) {
                     Text(
                         text = if (history.type == "CN_TO_JP") stringResource(R.string.learn_ai_history_cn_to_jp) else stringResource(R.string.learn_ai_history_jp_to_cn),
@@ -317,14 +308,11 @@ private fun HistoryItemCard(
             ) {
                 // 分数展示
                 val scoreColor = when {
-                    isPlumpDuo && history.score >= 80 -> IsoluminantPalette.EmeraldGreen
-                    isPlumpDuo && history.score >= 60 -> IsoluminantPalette.WarmAmber
-                    isPlumpDuo -> IsoluminantPalette.CoralFlame
-                    history.score >= 80 -> NemoSecondary
-                    history.score >= 60 -> NemoYellow
-                    else -> NemoDanger
+                    history.score >= 80 -> if (isDark) IosColors.GreenDark else IosColors.Green
+                    history.score >= 60 -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+                    else -> if (isDark) IosColors.RedDark else IosColors.Red
                 }
-                val scoreBgAlpha = if (isPlumpDuo) 0.08f else 0.1f
+                val scoreBgAlpha = if (isDark) 0.16f else 0.1f
 
                 Box(
                     modifier = Modifier

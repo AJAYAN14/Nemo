@@ -9,6 +9,9 @@ import com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import android.content.Context
+import com.jian.nemo.feature.library.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 /**
@@ -16,6 +19,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class PosWordsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getWordsByPartOfSpeechUseCase: GetWordsByPartOfSpeechUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -51,7 +55,7 @@ class PosWordsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "加载失败: ${e.message}"
+                        errorMessage = context.getString(R.string.library_pos_words_format_load_failed, e.message ?: "")
                     )
                 }
             }

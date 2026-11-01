@@ -9,13 +9,14 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -105,10 +106,10 @@ fun CategoryCardBrowseScreen(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
+                            imageVector = Icons.Rounded.ViewList,
                             contentDescription = stringResource(R.string.learn_category_desc_answer_sheet),
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }
@@ -354,10 +355,10 @@ fun CategoryCardBrowseActionButtons(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = stringResource(R.string.learn_category_desc_prev),
                 tint = prevTint,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(32.dp)
             )
         }
 
@@ -394,10 +395,10 @@ fun CategoryCardBrowseActionButtons(
             modifier = Modifier.size(48.dp)
         ) {
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                 contentDescription = stringResource(R.string.learn_category_desc_next),
                 tint = nextTint,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(32.dp)
             )
         }
     }
@@ -421,7 +422,7 @@ private fun TintedSquircleIconButton(
         onClick = onClick,
         modifier = modifier,
         backgroundColor = containerColor,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         elevation = if (enabled) 4.dp else 0.dp,
         useSoftShadow = enabled,
         isInteractive = enabled
@@ -467,7 +468,7 @@ fun AnswerSheetDrawer(
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+        shape = UnevenRoundedRectangle(topStart = 30.dp, topEnd = 30.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
@@ -495,7 +496,7 @@ fun AnswerSheetDrawer(
                     modifier = Modifier
                         .background(
                             color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(14.dp)
+                            shape = RoundedRectangle(14.dp)
                         )
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -503,7 +504,7 @@ fun AnswerSheetDrawer(
                 ) {
                     // Backward button
                     SmallSquircleIconButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        icon = Icons.AutoMirrored.Rounded.ArrowBack,
                         enabled = canGoBack,
                         onClick = onGoBack
                     )
@@ -518,7 +519,7 @@ fun AnswerSheetDrawer(
                         },
                         modifier = Modifier
                             .width(50.dp)
-                            .height(32.dp),
+                            .height(30.dp),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
@@ -549,7 +550,7 @@ fun AnswerSheetDrawer(
 
                     // 跳转按钮
                     SmallSquircleIconButton(
-                        icon = Icons.AutoMirrored.Filled.ArrowForward,
+                        icon = Icons.AutoMirrored.Rounded.ArrowForward,
                         enabled = jumpInput.isNotBlank() && jumpInput.toIntOrNull()?.let { it in 1..totalWords } == true,
                         isPrimary = true,
                         themeColor = themeColor,
@@ -606,7 +607,7 @@ fun AnswerSheetDrawer(
                     Box(
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .clip(RoundedCornerShape(16.dp)) // 圆角矩形裁剪
+                            .clip(RoundedRectangle(16.dp)) // 圆角矩形裁剪
                             .background(backgroundColor)
                             .background(itemBrush)
                             .clickable {
@@ -650,8 +651,8 @@ private fun SmallSquircleIconButton(
 
     Box(
         modifier = Modifier
-            .size(32.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .size(30.dp)
+            .clip(RoundedRectangle(10.dp))
             .background(containerColor)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
@@ -659,7 +660,7 @@ private fun SmallSquircleIconButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(20.dp),
             tint = contentColor
         )
     }

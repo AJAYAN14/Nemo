@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -110,7 +110,7 @@ fun <T> SingleSelectBottomSheet(
                 modifier = Modifier.size(38.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Close,
+                    imageVector = Icons.Rounded.Close,
                     contentDescription = stringResource(R.string.test_sheet_cd_close),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
@@ -154,7 +154,7 @@ fun <T> SingleSelectBottomSheet(
                 .fillMaxWidth()
                 .height(50.dp)
                 .padding(horizontal = 20.dp),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedRectangle(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
@@ -202,14 +202,14 @@ private fun <T> SingleSelectCardRow(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedRectangle(16.dp))
             .clickable(
                 enabled = isEnabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(color = themePrimary.copy(alpha = 0.15f)),
                 onClick = onClick
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = backgroundColor,
         border = BorderStroke(if (isSelected) 1.5.dp else 0.8.dp, borderColor)
     ) {
@@ -253,7 +253,7 @@ private fun <T> SingleSelectCardRow(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        imageVector = Icons.Rounded.Check,
                         contentDescription = stringResource(R.string.test_sheet_cd_selected),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)

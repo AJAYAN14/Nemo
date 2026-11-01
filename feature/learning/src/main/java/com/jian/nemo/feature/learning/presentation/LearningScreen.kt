@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Report
 import androidx.compose.material.icons.rounded.Share
@@ -426,7 +426,7 @@ fun LearningScreen(
                                 id = "delay_hint",
                                 message = context.getString(R.string.learn_screen_delay_hint, showAnswerDelayHintSec),
                                 type = NemoSnackbarType.WARNING,
-                                icon = Icons.Default.AccessTime,
+                                icon = Icons.Rounded.AccessTime,
                                 autoDismissMs = 4000L,
                                 onDismiss = { showAnswerDelayHint = false }
                             )

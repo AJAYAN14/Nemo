@@ -1,7 +1,7 @@
 package com.jian.nemo.feature.test.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
@@ -33,7 +33,7 @@ fun TestFooter(
     isAutoAdvancing: Boolean = false,
     backdrop: Backdrop? = null
 ) {
-    val shape = RoundedCornerShape(24.dp)
+    val shape = RoundedRectangle(24.dp)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
     Row(

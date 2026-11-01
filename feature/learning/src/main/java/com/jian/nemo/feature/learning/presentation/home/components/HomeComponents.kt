@@ -2,14 +2,11 @@ package com.jian.nemo.feature.learning.presentation.home.components
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
@@ -31,23 +28,27 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
-// 瀹氫箟甯搁噺
 private const val ANIMATION_DURATION = 200
 private const val PRESS_SCALE = 0.98f
 
 /**
- * 娌夋蹈寮忛椤靛ご閮?(V2.2: Solid Typography)
- * 閲囩敤绾壊瑁呴グ濉厖銆?
+ * 沉浸式首页头部组件 (Solid Typography)
  */
 @Composable
 fun HomeUnifiedHeader(
     title: String,
-    bgText: String = "銉嶃儮",
+    bgText: String = stringResource(R.string.learning_home_header_bg_text),
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -55,7 +56,7 @@ fun HomeUnifiedHeader(
             .fillMaxWidth()
             .padding(bottom = 20.dp, top = 8.dp)
     ) {
-        // Decorative BG Text (Solid Color)
+        // 背景大装饰字
         Text(
             text = bgText,
             fontSize = 90.sp,
@@ -80,8 +81,8 @@ fun HomeUnifiedHeader(
 }
 
 /**
- * Premium Card (V2.2: Solid Layered Surface)
- * 绉婚櫎娓愬彉锛屽紩鍏ユ瀬缁嗚竟妗嗗拰绾壊灞傛銆?
+ * Premium Card (Solid Layered Surface)
+ * 采用 G2 连续平滑曲率与柔和卡片阴影
  */
 @Composable
 fun PremiumCard(
@@ -90,9 +91,9 @@ fun PremiumCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val scale by if(onClick != null) {
+    val scale by if (onClick != null) {
         val isPressed by interactionSource.collectIsPressedAsState()
-         animateFloatAsState(
+        animateFloatAsState(
             targetValue = if (isPressed) PRESS_SCALE else 1f,
             label = "cardScale",
             animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
@@ -104,13 +105,11 @@ fun PremiumCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
-
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
-
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 26.dp, isDark = isDark)
@@ -123,6 +122,45 @@ fun PremiumCard(
     )
 }
 
+/**
+ * 首页双轨外观图标单容器组件
+ *
+ * 严格遵循《设置项与图标双轨系统设计规范》：
+ * 1. 严格 2:3 黄金比例公理 (图标尺寸 = 容器尺寸 * 2/3)；
+ * 2. G2 连续平滑曲率 (RoundedRectangle)；
+ * 3. 单源同色单容器架构：
+ *    - 柔和微透 (MD3): 15% 透明度底框 + 原色图标 (iconColor)；
+ *    - 活力纯色 (PLUMP_DUO/SOLID): 100% 实心底框 + 纯白反白图标 (Color.White)；
+ * 4. 两套风格切换时图标物理尺寸绝对恒定。
+ */
+@Composable
+fun HomeSquircleIconBox(
+    icon: ImageVector,
+    iconColor: Color,
+    containerSize: Dp = 36.dp,
+    iconSize: Dp = (containerSize.value * 2 / 3).dp,
+    cornerRadius: Dp = if (containerSize >= 42.dp) 12.dp else 10.dp,
+    modifier: Modifier = Modifier
+) {
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
+    val iconTint = if (isSoftTranslucent) iconColor else Color.White
+
+    Box(
+        modifier = modifier
+            .size(containerSize)
+            .background(containerBgColor, RoundedRectangle(cornerRadius)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(iconSize)
+        )
+    }
+}
 
 /**
  * ListItem with "Squircle" Icon (Solid Premium)
@@ -143,20 +181,14 @@ fun HomeSquircleListItem(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Squircle Icon
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(22.dp)
-            )
-        }
+        // Squircle Icon (标准级 42dp 容器配 28dp 图标，严格遵守 2:3 黄金比例公理)
+        HomeSquircleIconBox(
+            icon = icon,
+            iconColor = color,
+            containerSize = 42.dp,
+            iconSize = 28.dp,
+            cornerRadius = 12.dp
+        )
 
         Spacer(modifier = Modifier.width(16.dp))
 
@@ -191,7 +223,8 @@ fun HomeSquircleListItem(
 }
 
 /**
- * 分组标题 (V2.2: Solid Style)
+ * 分组标题 (Solid Style)
+ * 严格对齐《标题与卡片对齐设计规范》
  */
 @Composable
 fun HomeSectionTitle(

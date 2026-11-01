@@ -2,6 +2,7 @@ package com.kyant.backdrop.highlight
 
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.shape.CornerBasedShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangularShape
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.BlendMode
@@ -115,6 +116,15 @@ interface HighlightStyle {
 private fun DrawScope.getCornerRadii(shape: Shape): FloatArray {
     val size = size
     val maxRadius = size.minDimension / 2f
+    if (shape is RoundedRectangularShape) {
+        val corners = shape.corners(size, layoutDirection, this)
+        return floatArrayOf(
+            corners.topLeft.fastCoerceAtMost(maxRadius),
+            corners.topRight.fastCoerceAtMost(maxRadius),
+            corners.bottomRight.fastCoerceAtMost(maxRadius),
+            corners.bottomLeft.fastCoerceAtMost(maxRadius)
+        )
+    }
     val shape = shape as? CornerBasedShape ?: return FloatArray(4) { maxRadius }
     val isLtr = layoutDirection == LayoutDirection.Ltr
     val topLeft =

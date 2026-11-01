@@ -18,9 +18,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
-import com.jian.nemo.core.ui.component.Capsule
+import android.content.Context
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.ui.component.liquid.ClearLiquidGlassButton
@@ -60,7 +62,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
@@ -152,11 +154,14 @@ fun LiquidMemoryHud(
         String.format("%.1f", stability)
     }
 
-    val burdenLevel = remember(targetRetention) {
+    val burdenLight = stringResource(R.string.settings_algorithm_label_burden_light)
+    val burdenBalanced = stringResource(R.string.settings_algorithm_label_burden_balanced)
+    val burdenHeavy = stringResource(R.string.settings_algorithm_label_burden_heavy)
+    val burdenLevel = remember(targetRetention, burdenLight, burdenBalanced, burdenHeavy) {
         when {
-            targetRetention < 0.82f -> "清爽微负荷" to SettingsPalette.CyanMint
-            targetRetention <= 0.91f -> "黄金平衡态" to IosColors.Purple
-            else -> "极客高密度" to IosColors.OrangeDark
+            targetRetention < 0.82f -> burdenLight to IosColors.Cyan
+            targetRetention <= 0.91f -> burdenBalanced to IosColors.Purple
+            else -> burdenHeavy to IosColors.Orange
         }
     }
 
@@ -203,7 +208,7 @@ fun LiquidMemoryHud(
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     color = burdenLevel.second.copy(alpha = 0.12f),
                     border = BorderStroke(1.dp, burdenLevel.second.copy(alpha = 0.3f))
                 ) {
@@ -224,7 +229,7 @@ fun LiquidMemoryHud(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(110.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedRectangle(16.dp))
                     .background(
                         if (isDark) MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
                         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
@@ -400,7 +405,7 @@ fun RetentionPrecisionRuler(
                     }
 
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedRectangle(16.dp),
                         color = accentColor.copy(alpha = 0.12f),
                         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.35f))
                     ) {
@@ -463,7 +468,7 @@ fun RetentionPrecisionRuler(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(68.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedRectangle(16.dp))
                     .background(
                         if (isDark) MaterialTheme.colorScheme.surface.copy(alpha = 0.35f)
                         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -562,7 +567,12 @@ fun RetentionPrecisionRuler(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                listOf(0.80f to "80% 宽松", 0.85f to "85% 平衡", 0.90f to "90% 黄金", 0.95f to "95% 冲刺").forEach { (valRet, label) ->
+                listOf(
+                    0.80f to stringResource(R.string.settings_algorithm_label_retention_preset_80),
+                    0.85f to stringResource(R.string.settings_algorithm_label_retention_preset_85),
+                    0.90f to stringResource(R.string.settings_algorithm_label_retention_preset_90),
+                    0.95f to stringResource(R.string.settings_algorithm_label_retention_preset_95)
+                ).forEach { (valRet, label) ->
                     val isSelected = (currentRetention * 100).roundToInt() == (valRet * 100).roundToInt()
                     Text(
                         text = label,
@@ -571,7 +581,7 @@ fun RetentionPrecisionRuler(
                         ),
                         color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedRectangle(8.dp))
                             .clickable {
                                 currentRetention = valRet
                                 onRetentionChange(valRet)
@@ -653,7 +663,7 @@ fun StepPipelineEditor(
                 // 添加新阶段胶囊 (流体主题色质感，彻底告别 MD3 默认灰)
                 Surface(
                     onClick = { showAddDialog = true },
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     color = accentColor.copy(alpha = if (isDark) 0.12f else 0.06f),
                     border = BorderStroke(1.dp, accentColor.copy(alpha = if (isDark) 0.35f else 0.22f)),
                     modifier = Modifier.height(40.dp)
@@ -664,13 +674,13 @@ fun StepPipelineEditor(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Add,
-                            contentDescription = "添加阶段",
+                            contentDescription = stringResource(R.string.settings_algorithm_btn_add_step_desc),
                             tint = accentColor,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "增加阶梯",
+                            text = stringResource(R.string.settings_algorithm_btn_add_step),
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                             color = accentColor
                         )
@@ -703,7 +713,7 @@ fun StepPipelineEditor(
         StepEditDialog(
             currentValue = suggestedVal,
             accentColor = accentColor,
-            title = "新增复习阶段",
+            title = stringResource(R.string.settings_algorithm_dialog_title_add_step),
             onDismiss = { showAddDialog = false },
             onConfirm = { newVal ->
                 val mutable = stepsList.toMutableList()
@@ -726,9 +736,10 @@ private fun StepCapsuleItem(
     onClick: () -> Unit,
     onDelete: (() -> Unit)?
 ) {
+    val context = LocalContext.current
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         color = accentColor.copy(alpha = 0.10f),
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.28f)),
         modifier = Modifier.height(40.dp)
@@ -758,7 +769,7 @@ private fun StepCapsuleItem(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = formatStepDuration(step),
+                text = formatStepDuration(context, step),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -770,7 +781,7 @@ private fun StepCapsuleItem(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = "删除该阶段",
+                        contentDescription = stringResource(R.string.settings_algorithm_btn_delete_step_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                         modifier = Modifier.size(14.dp)
                     )
@@ -787,11 +798,12 @@ private fun StepCapsuleItem(
 private fun StepEditDialog(
     currentValue: String,
     accentColor: Color,
-    title: String = "调整复习阶段时长",
-    subtitle: String = "设定记忆间隔时长（支持分位加减与手写输入）",
+    title: String = stringResource(R.string.settings_algorithm_dialog_title_edit_step),
+    subtitle: String = stringResource(R.string.settings_algorithm_dialog_label_edit_step_subtitle),
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
+    val context = LocalContext.current
     val initialVal = currentValue.toIntOrNull()?.coerceAtLeast(1) ?: 10
     val presets = listOf(1, 5, 10, 15, 30, 60)
 
@@ -805,8 +817,8 @@ private fun StepEditDialog(
         max = 1440,
         step = 1,
         presets = presets,
-        presetLabelFormatter = { formatStepDuration(it.toString()) },
-        confirmText = "确认保存",
+        presetLabelFormatter = { formatStepDuration(context, it.toString()) },
+        confirmText = stringResource(R.string.settings_algorithm_dialog_btn_confirm_save),
         confirmButtonColor = accentColor,
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(it.toString()) }
@@ -816,12 +828,12 @@ private fun StepEditDialog(
 /**
  * 格式化分钟为友好显示
  */
-private fun formatStepDuration(step: String): String {
-    val mins = step.toIntOrNull() ?: return "$step 分钟"
+private fun formatStepDuration(context: Context, step: String): String {
+    val mins = step.toIntOrNull() ?: return context.getString(R.string.settings_format_algorithm_duration_minutes, step)
     return when {
-        mins < 60 -> "$mins 分钟"
-        mins < 1440 -> "${mins / 60} 小时"
-        else -> "${mins / 1440} 天"
+        mins < 60 -> context.getString(R.string.settings_format_algorithm_duration_minutes, mins.toString())
+        mins < 1440 -> context.getString(R.string.settings_format_algorithm_duration_hours, (mins / 60).toString())
+        else -> context.getString(R.string.settings_format_algorithm_duration_days, (mins / 1440).toString())
     }
 }
 
@@ -874,7 +886,7 @@ fun LeechSentinelCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(14.dp))
+                        .clip(RoundedRectangle(14.dp))
                         .background(
                             if (isDark) MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
@@ -897,7 +909,7 @@ fun LeechSentinelCard(
                     Box(
                         modifier = Modifier
                             .padding(horizontal = 2.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedRectangle(8.dp))
                             .background(
                                 if (isDark) SettingsPalette.AlgorithmCardBgDark
                                 else Color.White
@@ -908,7 +920,7 @@ fun LeechSentinelCard(
                                     if (isDark) Color.White.copy(alpha = 0.08f)
                                     else Color.Black.copy(alpha = 0.05f)
                                 ),
-                                RoundedCornerShape(8.dp)
+                                RoundedRectangle(8.dp)
                             )
                             .padding(horizontal = 8.dp, vertical = 5.dp),
                         contentAlignment = Alignment.Center
@@ -927,7 +939,7 @@ fun LeechSentinelCard(
                             label = "leech_flip_counter"
                         ) { count ->
                             Text(
-                                text = "$count 次",
+                                text = stringResource(R.string.settings_format_algorithm_leech_count, count),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Black,
                                 color = accentColor,
@@ -999,7 +1011,7 @@ private fun RubberSegmentToggle(
 
             Surface(
                 onClick = { onSelectedChange(key) },
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 color = if (isSelected) accentColor.copy(alpha = if (isDark) 0.12f else 0.08f) else Color.Transparent,
                 border = BorderStroke(
                     1.dp,
@@ -1088,7 +1100,7 @@ fun TemporalHorizonSection(
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     color = accentColor.copy(alpha = 0.12f),
                     border = BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
                 ) {
@@ -1142,7 +1154,7 @@ fun FloatingLiquidIsland(
         ) + fadeOut(),
         modifier = modifier
     ) {
-        val islandShape = RoundedCornerShape(32.dp)
+        val islandShape = RoundedRectangle(32.dp)
         val effectiveBackdrop = backdrop ?: remember { emptyBackdrop() }
 
         Box(

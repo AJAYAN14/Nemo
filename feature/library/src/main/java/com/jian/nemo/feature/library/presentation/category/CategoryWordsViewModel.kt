@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.content.Context
+import com.jian.nemo.feature.library.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 /**
@@ -23,6 +26,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class CategoryWordsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getWordsByPartOfSpeechUseCase: com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
@@ -88,7 +92,7 @@ class CategoryWordsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "加载失败: ${e.message}"
+                        error = context.getString(R.string.library_category_words_format_load_failed, e.message ?: "")
                     )
                 }
             }

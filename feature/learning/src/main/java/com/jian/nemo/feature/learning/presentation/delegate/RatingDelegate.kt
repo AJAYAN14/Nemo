@@ -1,5 +1,8 @@
 package com.jian.nemo.feature.learning.presentation.delegate
 
+import android.content.Context
+import androidx.annotation.StringRes
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.repository.SettingsRepository
@@ -56,7 +59,14 @@ class RatingDelegate(
     private val statsTimerDelegate: StatsTimerDelegate,
     private val queueNavigationDelegate: QueueNavigationDelegate,
     private val cardOpsDelegate: CardOpsDelegate,
+    private val context: Context? = null,
 ) {
+    private fun getString(@StringRes resId: Int, vararg formatArgs: Any): String {
+        return context?.getString(resId, *formatArgs) ?: when (resId) {
+            R.string.learning_rating_err_format -> "\u8bc4\u5206\u5f02\u5e38: ${formatArgs[0]}"
+            else -> ""
+        }
+    }
     private var ratingJob
         get() = sessionState.ratingJob
         set(value) { sessionState.ratingJob = value }
@@ -184,7 +194,7 @@ class RatingDelegate(
                 stateUpdater.update {
                     it.copy(
                         status = LearningStatus.Error,
-                        error = "评分异常: ${e.message}"
+                        error = getString(R.string.learning_rating_err_format, e.message ?: "")
                     )
                 }
             }

@@ -2,20 +2,17 @@ package com.jian.nemo.feature.collection.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.FolderDelete
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
@@ -24,14 +21,10 @@ import com.kyant.backdrop.Backdrop
 /**
  * 通用收藏/错题操作菜单组件 - UI/UX Pro Max
  *
- * Design Spec:
- * - Menu Background: 
- *   - Light: Pure White (#FFFFFF) + High Elevation Shadow
- *   - Dark: Surface Container (#1C1C1E) + Subtle Border
- * - Shape: Rounded 16dp
- * - Typography: Inter/System Default (Clean)
- * - Icons: 双方案自适应（默认原生图标，Plump Duo 模式呈现等亮度线面立体图标）
- * - Dialog: Premium Alert Dialog Style
+ * 遵循单一官方原生图标与调色盘标准规范：
+ * - 触发图标: Google Fonts 原生实心 Icons.Rounded.MoreVert
+ * - 菜单项图标: 统一采用实心 Rounded 图标 (DeleteSweep, Delete, FolderDelete)
+ * - 配色体系: 严格符合项目设计调色盘 IosColors (Red, Orange, Green 单套基准色)
  */
 @Composable
 fun CollectionActionMenu(
@@ -47,8 +40,6 @@ fun CollectionActionMenu(
 ) {
     if (wordCount <= 0 && grammarCount <= 0) return
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     var internalExpanded by remember { mutableStateOf(false) }
     val expanded = if (onToggleMenu != null) isExpanded else internalExpanded
     val setExpanded: (Boolean) -> Unit = { expandedValue ->
@@ -63,7 +54,7 @@ fun CollectionActionMenu(
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
-        icon = Icons.Default.MoreVert,
+        icon = Icons.Rounded.MoreVert,
         contentDescription = stringResource(R.string.collection_cd_more_options),
         backdrop = backdrop,
         buttonSize = 48.dp
@@ -71,8 +62,7 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = stringResource(R.string.collection_menu_clear_all_format, titleSuffix),
             leadingIcon = Icons.Rounded.DeleteSweep,
-            plumpIcon = PlumpIcon.ResetTrash,
-            iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
+            iconColor = IosColors.Red,
             isDestructive = true,
             onClick = {
                 close()
@@ -88,8 +78,8 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = stringResource(R.string.collection_menu_clear_words_format, titleSuffix),
             leadingIcon = Icons.Rounded.Delete,
-            plumpIcon = PlumpIcon.SpellCheck,
-            iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
+            iconColor = IosColors.Orange,
+            isDestructive = true,
             enabled = wordCount > 0,
             onClick = {
                 close()
@@ -100,8 +90,8 @@ fun CollectionActionMenu(
         NemoMorphMenuItem(
             text = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix),
             leadingIcon = Icons.Rounded.FolderDelete,
-            plumpIcon = PlumpIcon.GrammarLayers,
-            iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
+            iconColor = IosColors.Green,
+            isDestructive = true,
             enabled = grammarCount > 0,
             onClick = {
                 close()
@@ -112,7 +102,7 @@ fun CollectionActionMenu(
 
     // Dialogs (统一使用项目通用 NemoDialog)
     if (showClearAllDialog) {
-        com.jian.nemo.core.ui.component.NemoDialog(
+        NemoDialog(
             onDismissRequest = { showClearAllDialog = false },
             title = stringResource(R.string.collection_menu_clear_all_format, titleSuffix),
             text = stringResource(R.string.collection_dialog_msg_clear_all_format, titleSuffix),
@@ -127,7 +117,7 @@ fun CollectionActionMenu(
     }
 
     if (showClearWordsDialog) {
-        com.jian.nemo.core.ui.component.NemoDialog(
+        NemoDialog(
             onDismissRequest = { showClearWordsDialog = false },
             title = stringResource(R.string.collection_menu_clear_words_format, titleSuffix),
             text = stringResource(R.string.collection_dialog_msg_clear_words_format, titleSuffix),
@@ -142,7 +132,7 @@ fun CollectionActionMenu(
     }
 
     if (showClearGrammarsDialog) {
-        com.jian.nemo.core.ui.component.NemoDialog(
+        NemoDialog(
             onDismissRequest = { showClearGrammarsDialog = false },
             title = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix),
             text = stringResource(R.string.collection_dialog_msg_clear_grammars_format, titleSuffix),

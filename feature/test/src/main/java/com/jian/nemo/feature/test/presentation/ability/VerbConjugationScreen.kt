@@ -7,9 +7,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -204,7 +206,7 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            modifier = Modifier.size(100.dp).background(IosColors.Yellow.copy(alpha = 0.1f), CircleShape),
+            modifier = Modifier.size(84.dp).background(IosColors.Yellow.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(56.dp), tint = IosColors.Yellow)
@@ -213,14 +215,14 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
         Text(stringResource(R.string.test_verb_title_no_ai), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "您尚未在设置中配置大模型 API Key，无法使用动态出题功能。",
+            stringResource(R.string.test_verb_desc_no_ai),
             style = MaterialTheme.typography.bodyLarge, color = textColor, textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(48.dp))
         Button(
             onClick = onBack,
             modifier = Modifier.fillMaxWidth(0.7f).height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedRectangle(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)
         ) {
             Text(stringResource(R.string.test_verb_btn_back_to_config), fontWeight = FontWeight.Bold)
@@ -251,7 +253,7 @@ private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
             Button(
                 onClick = { onSelectLevel(level) },
                 modifier = Modifier.fillMaxWidth().height(64.dp).padding(vertical = 6.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = color.copy(alpha = 0.1f), contentColor = color)
             ) {
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -321,7 +323,7 @@ private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () ->
             // 放弃生成：辅助操作，使用 OutlinedButton 退回等级选择
             OutlinedButton(
                 onClick = onCancel,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedRectangle(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray600
                 ),
@@ -334,7 +336,7 @@ private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () ->
             // 重新生成：核心操作，使用主色调 Button 终止并重试当前等级
             Button(
                 onClick = onRetry,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedRectangle(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = IosColors.Blue,
                     contentColor = Color.White
@@ -423,7 +425,7 @@ private fun ReadyView(
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 24.dp, isDark = isDark),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             colors = CardDefaults.cardColors(containerColor = wordCardBg),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
@@ -452,9 +454,9 @@ private fun ReadyView(
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
                     onClick = { viewModel.playWordTts() },
-                    modifier = Modifier.size(44.dp).background(IosColors.Blue.copy(alpha = 0.1f), CircleShape)
+                    modifier = Modifier.size(36.dp).background(IosColors.Blue.copy(alpha = 0.12f), CircleShape)
                 ) {
-                    Icon(Icons.Rounded.VolumeUp, contentDescription = stringResource(R.string.test_verb_cd_play_audio), tint = IosColors.Blue, modifier = Modifier.size(24.dp))
+                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = stringResource(R.string.test_verb_cd_play_audio), tint = IosColors.Blue, modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -464,7 +466,7 @@ private fun ReadyView(
         // 3. 题目卡片
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             colors = CardDefaults.cardColors(containerColor = qCardBg),
             border = androidx.compose.foundation.BorderStroke(1.dp, qCardBorderColor)
         ) {
@@ -520,7 +522,7 @@ private fun ReadyView(
                 onClick = { viewModel.previousQuestion() },
                 enabled = !isFirst,
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 border = androidx.compose.foundation.BorderStroke(
                     1.dp,
                     if (isFirst) {
@@ -537,7 +539,7 @@ private fun ReadyView(
                 )
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -551,21 +553,21 @@ private fun ReadyView(
                 onClick = { viewModel.nextQuestion() },
                 enabled = isAnswered,
                 modifier = Modifier.weight(1f).height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isLast) IosColors.Green else IosColors.Blue,
                     disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray200
                 )
             ) {
                 Text(
-                    text = if (isLast) "完成练习" else "下一题",
+                    text = if (isLast) stringResource(R.string.test_verb_btn_finish) else stringResource(R.string.test_verb_btn_next),
                     fontWeight = FontWeight.Bold,
                     color = if (isAnswered) Color.White else NemoNeutrals.Gray500
                 )
                 if (!isLast) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
-                        imageVector = Icons.Rounded.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
                         contentDescription = null,
                         tint = if (isAnswered) Color.White else NemoNeutrals.Gray500
                     )
@@ -587,7 +589,7 @@ private fun ReadyView(
                 if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight
             },
             dragHandle = null,
-            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+            shape = UnevenRoundedRectangle(topStart = 32.dp, topEnd = 32.dp)
         ) {
             Column(modifier = Modifier.padding(24.dp).navigationBarsPadding()) {
                 Text(
@@ -616,7 +618,7 @@ private fun ReadyView(
                 Button(
                     onClick = { viewModel.nextQuestion() },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = if (isCorrect) IosColors.Green else IosColors.Red)
                 ) {
                     Text(text = stringResource(R.string.test_verb_btn_continue), fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -657,9 +659,9 @@ private fun OptionButton(
     Surface(
         modifier = modifier
             .height(64.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedRectangle(16.dp))
             .clickable(enabled = !isAnswered) { onClick() }
-            .border(2.dp, borderColor, RoundedCornerShape(16.dp)),
+            .border(2.dp, borderColor, RoundedRectangle(16.dp)),
         color = bgColor,
         shadowElevation = if (isDark) 0.dp else 1.dp
     ) {
@@ -717,7 +719,7 @@ private fun ResultView(
         Button(
             onClick = onRegenerate,
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
-            shape = RoundedCornerShape(28.dp),
+            shape = RoundedRectangle(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)
         ) {
             Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -728,7 +730,7 @@ private fun ResultView(
         OutlinedButton(
             onClick = onRestart,
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
-            shape = RoundedCornerShape(28.dp)
+            shape = RoundedRectangle(28.dp)
         ) {
             Text(stringResource(R.string.test_verb_btn_back_to_levels), fontSize = 16.sp)
         }

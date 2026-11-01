@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -152,14 +152,14 @@ fun ContentReportDialog(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(44.dp)
-                                        .clip(RoundedCornerShape(12.dp))
+                                        .clip(RoundedRectangle(12.dp))
                                         .background(if (isSelected) chipSelectedBg else chipUnselectedBg)
                                         .border(
                                             BorderStroke(
                                                 width = if (isSelected) 1.5.dp else 1.dp,
                                                 color = if (isSelected) chipSelectedBorder else chipUnselectedBorder
                                             ),
-                                            shape = RoundedCornerShape(12.dp)
+                                            shape = RoundedRectangle(12.dp)
                                         )
                                         .clickable {
                                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -219,7 +219,7 @@ fun ContentReportDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 80.dp),
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedRectangle(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = inputTextColor,
                         unfocusedTextColor = inputTextColor,

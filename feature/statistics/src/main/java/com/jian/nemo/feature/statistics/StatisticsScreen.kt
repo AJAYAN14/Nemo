@@ -13,20 +13,19 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Checklist
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
@@ -110,7 +109,7 @@ fun StatisticsScreen(
             // 1. 单词列表
             item {
                 Column {
-                    StatisticsSectionTitle("单词 (${words.size})")
+                    StatisticsSectionTitle(stringResource(R.string.stats_screen_words_count_format, words.size))
                     Spacer(modifier = Modifier.height(8.dp))
                     if (words.isNotEmpty()) {
                         StatisticsListCard(
@@ -123,12 +122,10 @@ fun StatisticsScreen(
                         )
                     } else {
                         EmptyStatisticsState(
-                            message = "该日期没有学习任何单词",
-                            subtitle = "完成新学或复习后会在此展示",
+                            message = stringResource(R.string.stats_screen_empty_words_message),
+                            subtitle = stringResource(R.string.stats_screen_empty_words_subtitle),
                             icon = Icons.Rounded.Translate,
-                            plumpIcon = PlumpIcon.Languages,
-                            accentColor = NemoSecondary,
-                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                            accentColor = IosColors.Green
                         )
                     }
                 }
@@ -137,7 +134,7 @@ fun StatisticsScreen(
             // 2. 语法列表
             item {
                 Column {
-                    StatisticsSectionTitle("语法 (${grammars.size})")
+                    StatisticsSectionTitle(stringResource(R.string.stats_screen_grammars_count_format, grammars.size))
                     Spacer(modifier = Modifier.height(8.dp))
                     if (grammars.isNotEmpty()) {
                         StatisticsListCard(
@@ -150,12 +147,10 @@ fun StatisticsScreen(
                         )
                     } else {
                         EmptyStatisticsState(
-                            message = "该日期没有学习任何语法",
-                            subtitle = "完成语法学习后会在此展示",
-                            icon = Icons.Rounded.Checklist,
-                            plumpIcon = PlumpIcon.ListChecks,
-                            accentColor = NemoSecondary,
-                            isoluminantColor = IsoluminantPalette.EmeraldGreen
+                            message = stringResource(R.string.stats_screen_empty_grammars_message),
+                            subtitle = stringResource(R.string.stats_screen_empty_grammars_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.MenuBook,
+                            accentColor = IosColors.Green
                         )
                     }
                 }
@@ -200,35 +195,27 @@ fun StatisticsScreen(
 // 预定义的一组高级柔和色彩，用于循环显示
 // 使用语义化颜色定义，避免硬编码
 private val AvatarColors = listOf(
-    NemoPrimary,   // Blue
-    NemoOrange,    // Orange
-    NemoSecondary, // Green
-    NemoIndigo,    // Indigo
-    NemoTeal,      // Teal
-    NemoPurple,    // Violet/Purple
-    IosColors.Pink, // Pink
-    NemoCyan       // Cyan
-)
-
-private val PlumpAvatarColors = listOf(
-    IsoluminantPalette.SkyIndigo,     // 255°
-    IsoluminantPalette.LakesideCyan,  // 195°
-    IsoluminantPalette.EmeraldGreen,  // 145°
-    IsoluminantPalette.WarmAmber,     // 70°
-    IsoluminantPalette.CoralFlame,    // 30°
-    IsoluminantPalette.RoseRuby,      // 15°
-    IsoluminantPalette.LilacViolet,   // 295°
-    IsoluminantPalette.GlazeMint      // 175°
+    IosColors.Blue,
+    IosColors.Orange,
+    IosColors.Green,
+    IosColors.Indigo,
+    IosColors.Teal,
+    IosColors.Purple,
+    IosColors.Pink,
+    IosColors.Cyan
 )
 
 @Composable
 fun StatisticsSectionTitle(
     text: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleMedium.copy(
+            lineHeight = 24.sp,
+            letterSpacing = 0.15.sp
+        ),
         fontWeight = FontWeight.ExtraBold,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
@@ -245,8 +232,6 @@ fun StatisticsListCard(
     isWord: Boolean,
     showSourceBadge: Boolean = true
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val avatarColors = if (isPlumpDuo) PlumpAvatarColors else AvatarColors
     val defaultShowCount = 5
     val pageSize = 30
     var visibleCount by remember(items) { mutableStateOf(defaultShowCount) }
@@ -263,7 +248,7 @@ fun StatisticsListCard(
         ) {
             showItems.forEachIndexed { index, item ->
                 // 根据索引循环获取颜色
-                val color = avatarColors[index % avatarColors.size]
+                val color = AvatarColors[index % AvatarColors.size]
 
                 key(item.id) {
                     StatisticsItemRow(
@@ -301,28 +286,23 @@ fun StatisticsListCard(
                     contentAlignment = Alignment.Center
                 ) {
                     val isFullyExpanded = visibleCount >= items.size
-                    val arrowTint = if (isPlumpDuo) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
-                    val textColor = if (isPlumpDuo) {
-                        IsoluminantPalette.SkyIndigo
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    }
+                    val primaryColor = MaterialTheme.colorScheme.primary
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = if (isFullyExpanded) "收起" else "展开查看更多 (剩余 $remainingCount 项)",
+                            text = if (isFullyExpanded) {
+                                stringResource(R.string.stats_screen_btn_collapse)
+                            } else {
+                                stringResource(R.string.stats_screen_btn_expand_format, remainingCount)
+                            },
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = textColor
+                            color = primaryColor
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = if (isFullyExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = arrowTint,
+                            tint = primaryColor,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -337,12 +317,12 @@ fun EmptyStatisticsState(
     message: String,
     subtitle: String? = null,
     icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox,
-    plumpIcon: PlumpIcon? = null,
-    accentColor: Color = NemoSecondary,
-    isoluminantColor: Color = IsoluminantPalette.EmeraldGreen
+    accentColor: Color = IosColors.Green
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null
-    val effectiveColor = if (isPlumpDuo) isoluminantColor else accentColor
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
     PremiumCard {
         Box(
@@ -355,32 +335,18 @@ fun EmptyStatisticsState(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                if (isPlumpDuo) {
-                    Box(
-                        modifier = Modifier.size(64.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = effectiveColor,
-                            size = 48.dp
-                        )
-                    }
-                } else {
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = accentColor.copy(alpha = 0.1f),
-                        modifier = Modifier.size(64.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = icon,
-                                contentDescription = null,
-                                tint = accentColor.copy(alpha = 0.8f),
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(containerBgColor, RoundedRectangle(14.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
@@ -413,7 +379,6 @@ fun StatisticsItemRow(
     showSourceBadge: Boolean = true,
     isWord: Boolean = true
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val interactionSource = remember { MutableInteractionSource() }
     Row(
@@ -430,12 +395,12 @@ fun StatisticsItemRow(
         // Dynamic Text Avatar
         // Prefer first character of Japanese text
         val avatarChar = item.japanese.firstOrNull()?.toString() ?: "?"
-        val avatarBgAlpha = if (isDark) 0.15f else (if (isPlumpDuo) 0.08f else 0.1f)
+        val avatarBgAlpha = if (isDark) 0.15f else 0.10f
 
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .background(avatarColor.copy(alpha = avatarBgAlpha), RoundedCornerShape(14.dp)),
+                .background(avatarColor.copy(alpha = avatarBgAlpha), RoundedRectangle(14.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -453,21 +418,22 @@ fun StatisticsItemRow(
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            val primaryColor = MaterialTheme.colorScheme.primary
-            val badgeInfo = remember(item.source, primaryColor, isPlumpDuo) {
+            val newLearnBadgeText = stringResource(R.string.stats_screen_badge_learned)
+            val reviewBadgeText = stringResource(R.string.stats_screen_badge_reviewed)
+            val badgeInfo = remember(item.source, newLearnBadgeText, reviewBadgeText) {
                 when (item.source) {
                     StatisticSource.LEARNED -> {
-                        val color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else primaryColor
+                        val color = IosColors.Blue
                         Triple(
-                            "新学",
+                            newLearnBadgeText,
                             color.copy(alpha = 0.12f),
                             color
                         )
                     }
                     StatisticSource.REVIEWED -> {
-                        val color = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary
+                        val color = IosColors.Green
                         Triple(
-                            "复习",
+                            reviewBadgeText,
                             color.copy(alpha = 0.15f),
                             color
                         )
@@ -482,7 +448,7 @@ fun StatisticsItemRow(
                 if (showSourceBadge) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedRectangle(6.dp))
                             .background(badgeBg)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
@@ -500,7 +466,7 @@ fun StatisticsItemRow(
                 if (item.level.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
+                            .clip(RoundedRectangle(6.dp))
                             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
@@ -621,7 +587,7 @@ private fun PremiumCard(
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(26.dp),
+        shape = RoundedRectangle(26.dp),
         color = containerColor,
 
         modifier = modifier
@@ -685,19 +651,15 @@ private fun OverallStatisticsDashboard(
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_new_words),
                 count = newWords,
-                color = NemoPrimary,
+                color = IosColors.Blue,
                 icon = Icons.Rounded.DoneAll,
-                plumpIcon = PlumpIcon.BadgeCheck,
-                isoluminantColor = IsoluminantPalette.SkyIndigo,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_review_words),
                 count = reviewWords,
-                color = NemoSecondary,
+                color = IosColors.Green,
                 icon = Icons.Rounded.Layers,
-                plumpIcon = PlumpIcon.GrammarLayers,
-                isoluminantColor = IsoluminantPalette.EmeraldGreen,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -705,19 +667,15 @@ private fun OverallStatisticsDashboard(
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_new_grammars),
                 count = newGrammars,
-                color = NemoOrange,
-                icon = Icons.Rounded.DoneAll,
-                plumpIcon = PlumpIcon.BadgeCheck,
-                isoluminantColor = IsoluminantPalette.WarmAmber,
+                color = IosColors.Orange,
+                icon = Icons.AutoMirrored.Rounded.MenuBook,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_review_grammars),
                 count = reviewGrammars,
-                color = NemoIndigo,
-                icon = Icons.Rounded.Layers,
-                plumpIcon = PlumpIcon.GrammarLayers,
-                isoluminantColor = IsoluminantPalette.LilacViolet,
+                color = IosColors.Indigo,
+                icon = Icons.Rounded.History,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -730,21 +688,18 @@ private fun StatCard(
     count: Int,
     color: Color,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    plumpIcon: PlumpIcon? = null,
-    isoluminantColor: Color? = null,
     modifier: Modifier = Modifier
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO && plumpIcon != null && isoluminantColor != null
-    val effectiveColor = if (isPlumpDuo) isoluminantColor!! else color
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
+    val iconTint = if (isSoftTranslucent) color else Color.White
+
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (!isPlumpDuo) {
-        if (isDark) color.copy(alpha = 0.16f) else color.copy(alpha = 0.08f)
-    } else {
-        if (isDark) effectiveColor.copy(alpha = 0.10f) else effectiveColor.copy(alpha = 0.06f)
-    }
+    val containerColor = if (isDark) color.copy(alpha = 0.12f) else color.copy(alpha = 0.06f)
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = containerColor,
         modifier = modifier
     ) {
@@ -754,28 +709,16 @@ private fun StatCard(
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
-                    .then(
-                        if (!isPlumpDuo) {
-                            Modifier.background(
-                                color = if (isDark) color.copy(alpha = 0.25f) else color.copy(alpha = 0.16f),
-                                shape = androidx.compose.foundation.shape.CircleShape
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
+                    .size(36.dp)
+                    .background(containerBgColor, RoundedRectangle(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (isPlumpDuo) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = effectiveColor,
-                        size = 28.dp
-                    )
-                } else {
-                    Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp)
+                )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {

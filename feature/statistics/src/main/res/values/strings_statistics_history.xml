@@ -1,0 +1,52 @@
+<resources>
+    <!-- HistoricalStatisticsScreen (历史统计主界面) -->
+    <string name="stats_history_title_cumulative_learning">累计学习</string>
+    <string name="stats_history_format_words_learned_count">已学单词 (%1$d)</string>
+    <string name="stats_history_empty_words_message">暂无单词学习记录</string>
+    <string name="stats_history_empty_words_subtitle">去学习词汇，积累你的专属词库吧</string>
+    <string name="stats_history_format_grammars_learned_count">已学语法 (%1$d)</string>
+    <string name="stats_history_empty_grammars_message">暂无语法学习记录</string>
+    <string name="stats_history_empty_grammars_subtitle">去学习语法，掌握核心句型表达吧</string>
+    <string name="stats_history_label_unit_word">词</string>
+    <string name="stats_history_label_unit_item">条</string>
+
+    <!-- HistoricalStatisticsViewModel (历史统计预测逻辑) -->
+    <string name="stats_history_date_format_ymd">yyyy年M月d日</string>
+    <string name="stats_history_format_level_achieved_date">%1$s 达成</string>
+    <string name="stats_history_label_level_achieved">已达成</string>
+
+    <!-- StatisticsViewModel (统计数据加载) -->
+    <string name="stats_screen_format_load_failed">加载失败: %1$s</string>
+
+    <!-- GenericStatisticsScreen (通用统计组件) -->
+    <string name="stats_generic_empty_word_message">还没有学习任何单词</string>
+    <string name="stats_generic_empty_grammar_message">还没有学习任何语法</string>
+    <string name="stats_generic_tab_word">单词</string>
+    <string name="stats_generic_tab_grammar">语法</string>
+
+    <!-- ForgettingCurveData (遗忘曲线阶段与描述) -->
+    <string name="stats_curve_stage_composite_label">全库综合</string>
+    <string name="stats_curve_stage_composite_desc">全量已学项目的综合记忆抗遗忘水平</string>
+    <string name="stats_curve_stage_young_early_label">初识新词</string>
+    <string name="stats_curve_stage_young_early_desc">刚学习1~2次，海马体临时印记，极易遗忘</string>
+    <string name="stats_curve_stage_young_dev_label">发展巩固</string>
+    <string name="stats_curve_stage_young_dev_desc">建立初步记忆突触，处于快速生长期</string>
+    <string name="stats_curve_stage_mature_label">深度稳固</string>
+    <string name="stats_curve_stage_mature_desc">已进入长时记忆区，具备极高抗遗忘韧性</string>
+    <string name="stats_curve_stage_expert_label">永久长效</string>
+    <string name="stats_curve_stage_expert_desc">深度固化为直觉记忆，接近母语级永久留存</string>
+
+    <!-- ForgettingCurveViewModel (遗忘曲线时间周期) -->
+    <string name="stats_curve_range_7_days">7天</string>
+    <string name="stats_curve_range_30_days">30天</string>
+    <string name="stats_curve_range_90_days">90天</string>
+    <string name="stats_curve_range_365_days">365天</string>
+
+    <!-- LeechManagementViewModel (顽疾词/语法管理) -->
+    <string name="stats_leech_toast_word_recovered">单词已恢复至学习队列</string>
+    <string name="stats_leech_toast_recover_failed">恢复失败</string>
+    <string name="stats_leech_toast_grammar_recovered">语法已恢复至学习队列</string>
+
+    <!-- ShareBitmapHelper (分享图片辅助) -->
+    <string name="stats_share_dialog_chooser_title">分享学习成就</string>
+</resources>

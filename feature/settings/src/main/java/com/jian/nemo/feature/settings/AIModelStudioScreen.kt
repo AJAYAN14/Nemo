@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -93,7 +94,10 @@ fun AIModelStudioScreen(
 
     // 初始参数快照，用于比对是否有未保存修改
     val initialConfig = remember { config }
+    val context = LocalContext.current
     val platformConfigFormat = stringResource(R.string.settings_ai_format_platform_config_name)
+    val suffixConfig = stringResource(R.string.settings_ai_label_suffix_config)
+    val suffixModel = stringResource(R.string.settings_ai_label_suffix_model)
     val hasUnsavedChanges = remember(config, initialConfig) {
         config.name.trim() != initialConfig.name.trim() ||
         config.platform != initialConfig.platform ||
@@ -143,8 +147,8 @@ fun AIModelStudioScreen(
                 onPlatformSelected = { platform ->
                     val nextModel = platform.flagshipModels.firstOrNull() ?: ""
                     val nextUrl = platform.defaultUrl
-                    val nextName = if (config.name.isBlank() || config.name.endsWith("配置") || config.name.endsWith("模型")) {
-                        String.format(platformConfigFormat, platform.name)
+                    val nextName = if (config.name.isBlank() || config.name.endsWith(suffixConfig) || config.name.endsWith(suffixModel)) {
+                        String.format(platformConfigFormat, platform.getName(context))
                     } else {
                         config.name
                     }

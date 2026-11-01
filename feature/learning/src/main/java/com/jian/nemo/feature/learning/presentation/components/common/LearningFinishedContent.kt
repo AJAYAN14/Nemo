@@ -23,7 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
@@ -95,8 +95,8 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LearningFinishedContent(
-    title: String = "今日任务达成！",
-    subtitle: String = "坚持就是胜利，明天继续加油",
+    title: String = stringResource(R.string.learning_finished_default_title),
+    subtitle: String = stringResource(R.string.learning_finished_default_subtitle),
     completedToday: Int = 0,
     dailyGoal: Int = 20,
     sessionDurationSeconds: Long = 0L,
@@ -276,7 +276,7 @@ fun LearningFinishedContent(
             // 2. 今日词量明细卡片（去术语化 + 堆叠比例进度条）
             // ==========================================
             Surface(
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = cardBg,
                 border = BorderStroke(1.dp, cardBorder),
                 shadowElevation = 0.dp,
@@ -284,7 +284,7 @@ fun LearningFinishedContent(
                     .fillMaxWidth()
                     .shadow(
                         elevation = 8.dp,
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         clip = false,
                         spotColor = shadowSpotColor,
                         ambientColor = shadowAmbientColor
@@ -579,7 +579,7 @@ fun LearningFinishedContent(
             // 3. 最高连击与专注用时（双等分居中排版 + 细分割线）
             // ==========================================
             Surface(
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = cardBg,
                 border = BorderStroke(1.dp, cardBorder),
                 shadowElevation = 0.dp,
@@ -587,7 +587,7 @@ fun LearningFinishedContent(
                     .fillMaxWidth()
                     .shadow(
                         elevation = 8.dp,
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         clip = false,
                         spotColor = shadowSpotColor,
                         ambientColor = shadowAmbientColor
@@ -724,7 +724,7 @@ fun LearningFinishedContent(
             // 4. 复习与预估卡片（今日待复习与明日自然到期预估）
             // ==========================================
             Surface(
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedRectangle(18.dp),
                 color = cardBg,
                 border = BorderStroke(1.dp, cardBorder),
                 shadowElevation = 0.dp,
@@ -732,7 +732,7 @@ fun LearningFinishedContent(
                     .fillMaxWidth()
                     .shadow(
                         elevation = 8.dp,
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedRectangle(18.dp),
                         clip = false,
                         spotColor = shadowSpotColor,
                         ambientColor = shadowAmbientColor
@@ -850,7 +850,7 @@ fun LearningFinishedContent(
                 // ==========================================
                 Surface(
                     onClick = { showBonusDialog = true },
-                    shape = RoundedCornerShape(24.dp),
+                    shape = RoundedRectangle(24.dp),
                     color = if (isDark) LearningPalette.FinishedWarmBgDark else LearningPalette.FinishedWarmBgLight,
                     border = BorderStroke(
                         width = 1.dp,
@@ -861,12 +861,12 @@ fun LearningFinishedContent(
                         .fillMaxWidth()
                         .shadow(
                             elevation = 10.dp,
-                            shape = RoundedCornerShape(24.dp),
+                            shape = RoundedRectangle(24.dp),
                             clip = false,
                             spotColor = shadowSpotColor,
                             ambientColor = shadowAmbientColor
                         )
-                        .clip(RoundedCornerShape(24.dp))
+                        .clip(RoundedRectangle(24.dp))
                         .drawWithContent {
                             drawContent()
                             // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
@@ -955,7 +955,7 @@ fun LearningFinishedContent(
                     // 左侧：完成今日学习（次要描边按钮）
                     OutlinedButton(
                         onClick = onBackClick,
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedRectangle(18.dp),
                         border = BorderStroke(1.5.dp, themePrimary.copy(alpha = 0.6f)),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = themePrimary
@@ -981,7 +981,7 @@ fun LearningFinishedContent(
                     ColoredLiquidGlassButton(
                         onClick = onNextGroupClick,
                         tint = themePrimary,
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedRectangle(18.dp),
                         border = null,
                         modifier = Modifier
                             .weight(1f)
@@ -1006,7 +1006,7 @@ fun LearningFinishedContent(
                 ColoredLiquidGlassButton(
                     onClick = onBackClick,
                     tint = themePrimary,
-                    shape = RoundedCornerShape(18.dp),
+                    shape = RoundedRectangle(18.dp),
                     border = null,
                     modifier = Modifier
                         .fillMaxWidth()

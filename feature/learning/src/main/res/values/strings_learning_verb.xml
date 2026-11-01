@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 动词活用手册：动词分组通用标签 -->
+    <string name="learn_verb_label_group_v1_godan">一类动词 (五段)</string>
+    <string name="learn_verb_label_group_v2_ichidan">二类动词 (一段)</string>
+    <string name="learn_verb_label_group_v3_irregular">三类动词 (不规则)</string>
+    <string name="learn_verb_label_group_v1">一类动词</string>
+    <string name="learn_verb_label_group_v2">二类动词</string>
+    <string name="learn_verb_label_group_v3">三类动词</string>
+    <string name="learn_verb_label_group_all">所有动词</string>
+
+    <!-- 动词活用手册：通用变形规则 -->
+    <string name="learn_verb_label_rule_special_memory">特殊记忆。</string>
+
+    <!-- 1. 辞书形 (基本形 / 原形) -->
+    <string name="learn_verb_label_dict_usage">动词在字典里的原始形态。用于普通体的现在时/将来时，或连接特定语法（如「～ことができる」）。</string>
+    <string name="learn_verb_label_dict_rule_v1">词尾必定是「う」段假名。</string>
+    <string name="learn_verb_label_dict_example_v1_1">書く (かく / 写)</string>
+    <string name="learn_verb_label_dict_example_v1_2">飲む (のむ / 喝)</string>
+    <string name="learn_verb_label_dict_rule_v2">词尾必定是「る」，且倒数第二个音在「い」或「え」段。</string>
+    <string name="learn_verb_label_dict_example_v2_1">食べる (たべる / 吃)</string>
+    <string name="learn_verb_label_dict_example_v2_2">見る (みる / 看)</string>
+    <string name="learn_verb_label_dict_rule_v3">只有两个特定动词。</string>
+    <string name="learn_verb_label_dict_example_v3_1">する (做)</string>
+    <string name="learn_verb_label_dict_example_v3_2">来る (くる / 来)</string>
+
+    <!-- 2. ます形 (敬体 / 连用形) -->
+    <string name="learn_verb_label_masu_usage">日语中最基础、最礼貌的表达方式（敬体）。</string>
+    <string name="learn_verb_label_masu_rule_v1">词尾「う」段假名变同行「い」段假名 + ます。</string>
+    <string name="learn_verb_label_masu_example_v1_1">書く → 書きます (かきます)</string>
+    <string name="learn_verb_label_masu_example_v1_2">飲む → 飲みます (のみます)</string>
+    <string name="learn_verb_label_masu_rule_v2">去掉词尾的「る」 + ます。</string>
+    <string name="learn_verb_label_masu_example_v2_1">食べる → 食べます (たべます)</string>
+    <string name="learn_verb_label_masu_example_v2_2">見る → 見ます (みます)</string>
+    <string name="learn_verb_label_masu_example_v3_1">する → します</string>
+    <string name="learn_verb_label_masu_example_v3_2">来る → 来ます (きます)</string>
+
+    <!-- 3. て形 (中顿 / 连用形) -->
+    <string name="learn_verb_label_te_usage">用于表示动作的先后顺序、原因、中顿，或与「～てください」连用表示请求。一类动词有音便现象。</string>
+    <string name="learn_verb_label_te_rule_v1">【促音便】う,つ,る结尾 → って\n【拨音便】ぬ,ぶ,む结尾 → んで\n【イ音便】く,ぐ结尾 → いて/いで\n【特殊】す结尾 → して。行く(いく) → 行って(いって)</string>
+    <string name="learn_verb_label_te_example_v1_1">買う(かう) → 買って(かって)</string>
+    <string name="learn_verb_label_te_example_v1_2">飲む(のむ) → 飲んで(のんで)</string>
+    <string name="learn_verb_label_te_example_v1_3">書く(かく) → 書いて(かいて)</string>
+    <string name="learn_verb_label_te_example_v1_4">話す(はなす) → 話して(はなして)</string>
+    <string name="learn_verb_label_te_rule_v2">去掉词尾的「る」 + て。</string>
+    <string name="learn_verb_label_te_example_v2_1">食べる → 食べて (たべて)</string>
+    <string name="learn_verb_label_te_example_v2_2">見る → 見て (みて)</string>
+    <string name="learn_verb_label_te_example_v3_1">する → して</string>
+    <string name="learn_verb_label_te_example_v3_2">来る → 来て (きて)</string>
+
+    <!-- 4. た形 (过去式) -->
+    <string name="learn_verb_label_ta_usage">表达动作已经发生（普通体的过去式）。变形规则与「て形」完全一致，只需把て/で换成た/だ。</string>
+    <string name="learn_verb_label_ta_rule_v1">依照「て形」的音便规则，将尾音换成 た/だ。</string>
+    <string name="learn_verb_label_ta_example_v1_1">買う → 買った (かった)</string>
+    <string name="learn_verb_label_ta_example_v1_2">飲む → 飲んだ (のんだ)</string>
+    <string name="learn_verb_label_ta_example_v1_3">書く → 書いた (かいた)</string>
+    <string name="learn_verb_label_ta_rule_v2">去掉词尾的「る」 + た。</string>
+    <string name="learn_verb_label_ta_example_v2_1">食べる → 食べた (たべた)</string>
+    <string name="learn_verb_label_ta_example_v2_2">見る → 見た (みた)</string>
+    <string name="learn_verb_label_ta_example_v3_1">する → した</string>
+    <string name="learn_verb_label_ta_example_v3_2">来る → 来た (きた)</string>
+
+    <!-- 5. ない形 (否定形 / 未然形) -->
+    <string name="learn_verb_label_nai_usage">表达否定意义（普通体），或连接「～ない对ください」（请不要做...）。</string>
+    <string name="learn_verb_label_nai_rule_v1">词尾「う」段变同行「あ」段 + ない。（※注意：词尾为「う」时变「わ」，不是「あ」）</string>
+    <string name="learn_verb_label_nai_example_v1_1">書く → 書かない (かかない)</string>
+    <string name="learn_verb_label_nai_example_v1_2">買う → 買わない (かわない / 特殊)</string>
+    <string name="learn_verb_label_nai_rule_v2">去掉词尾的「る」 + ない。</string>
+    <string name="learn_verb_label_nai_example_v2_1">食べる → 食べない (たべない)</string>
+    <string name="learn_verb_label_nai_example_v2_2">見る → 見ない (みない)</string>
+    <string name="learn_verb_label_nai_example_v3_1">する → しない</string>
+    <string name="learn_verb_label_nai_example_v3_2">来る → 来ない (こない)</string>
+
+    <!-- 6. 意志形 (意向形 / 邀请) -->
+    <string name="learn_verb_label_volitional_usage">表达说话人的决心、意愿，或提议“一起做某事吧”。</string>
+    <string name="learn_verb_label_volitional_rule_v1">词尾「う」段变同行「お」段 + う。</string>
+    <string name="learn_verb_label_volitional_example_v1_1">書く → 書こう (かこう)</string>
+    <string name="learn_verb_label_volitional_example_v1_2">行く → 行こう (いこう)</string>
+    <string name="learn_verb_label_volitional_rule_v2">去掉词尾的「る」 + よう。</string>
+    <string name="learn_verb_label_volitional_example_v2_1">食べる → 食べよう (たべよう)</string>
+    <string name="learn_verb_label_volitional_example_v2_2">見る → 見よう (みよう)</string>
+    <string name="learn_verb_label_volitional_example_v3_1">する → しよう</string>
+    <string name="learn_verb_label_volitional_example_v3_2">来る → 来よう (こよう)</string>
+
+    <!-- 7. 命令形 -->
+    <string name="learn_verb_label_imperative_usage">强硬地命令他人做某事，常用于男性粗鲁用语、标语、紧急情况。</string>
+    <string name="learn_verb_label_imperative_rule_v1">词尾「う」段变同行「え」段。</string>
+    <string name="learn_verb_label_imperative_example_v1_1">書く → 書け (かけ)</string>
+    <string name="learn_verb_label_imperative_example_v1_2">行く → 行け (いけ)</string>
+    <string name="learn_verb_label_imperative_rule_v2">去掉词尾的「る」 + ろ。</string>
+    <string name="learn_verb_label_imperative_example_v2_1">食べる → 食べろ (たべろ)</string>
+    <string name="learn_verb_label_imperative_example_v2_2">見る → 見ろ (みろ)</string>
+    <string name="learn_verb_label_imperative_example_v3_1">する → しろ / せよ</string>
+    <string name="learn_verb_label_imperative_example_v3_2">来る → 来い (こい)</string>
+
+    <!-- 8. 禁止形 -->
+    <string name="learn_verb_label_prohibitive_usage">强硬地命令他人“不准做某事”。</string>
+    <string name="learn_verb_label_prohibitive_rule_all">直接在【辞书形 (原形)】后 + な。</string>
+    <string name="learn_verb_label_prohibitive_example_all_1">書く → 書くな (かくな)</string>
+    <string name="learn_verb_label_prohibitive_example_all_2">食べる → 食べるな (たべるな)</string>
+    <string name="learn_verb_label_prohibitive_example_all_3">する → するな</string>
+    <string name="learn_verb_label_prohibitive_example_all_4">来る → 来るな (くるな)</string>
+
+    <!-- 9. 假定形 (ば形) -->
+    <string name="learn_verb_label_conditional_usage">表示假定条件，即“如果……的话”。</string>
+    <string name="learn_verb_label_conditional_rule_v1">词尾「う」段变同行「え」段 + ば。</string>
+    <string name="learn_verb_label_conditional_example_v1_1">書く → 書けば (かけば)</string>
+    <string name="learn_verb_label_conditional_example_v1_2">行く → 行けば (いけば)</string>
+    <string name="learn_verb_label_conditional_rule_v2">去掉词尾的「る」 + れば。</string>
+    <string name="learn_verb_label_conditional_example_v2_1">食べる → 食べれば (たべれば)</string>
+    <string name="learn_verb_label_conditional_example_v2_2">見る → 見れば (みれば)</string>
+    <string name="learn_verb_label_conditional_example_v3_1">する → すれば</string>
+    <string name="learn_verb_label_conditional_example_v3_2">来る → 来れば (くれば)</string>
+
+    <!-- 10. 可能形 -->
+    <string name="learn_verb_label_potential_usage">表示能力或客观条件允许，即“能够做某事”。</string>
+    <string name="learn_verb_label_potential_rule_v1">词尾「う」段变同行「え」段 + る。</string>
+    <string name="learn_verb_label_potential_example_v1_1">書く → 書ける (かける)</string>
+    <string name="learn_verb_label_potential_example_v1_2">話す → 話せる (はなせる)</string>
+    <string name="learn_verb_label_potential_rule_v2">去掉词尾的「る」 + られる。</string>
+    <string name="learn_verb_label_potential_example_v2_1">食べる → 食べられる</string>
+    <string name="learn_verb_label_potential_example_v2_2">見る → 見られる</string>
+    <string name="learn_verb_label_potential_rule_v3">特殊记忆。する 的可能形是一个全新的词。</string>
+    <string name="learn_verb_label_potential_example_v3_1">する → できる</string>
+    <string name="learn_verb_label_potential_example_v3_2">来る → 来られる (こられる)</string>
+
+    <!-- 11. 被动态 (受身形) -->
+    <string name="learn_verb_label_passive_usage">表示动作的承受者（被做某事），也可表示受害或间接尊敬。</string>
+    <string name="learn_verb_label_passive_rule_v1">词尾「う」段变同行「あ」段 + れる。（※尾音「う」变「わ」）</string>
+    <string name="learn_verb_label_passive_example_v1_1">書く → 書かれる (かかれる)</string>
+    <string name="learn_verb_label_passive_example_v1_2">言う → 言われる (いわれる)</string>
+    <string name="learn_verb_label_passive_rule_v2">去掉词尾的「る」 + られる。（形式与可能形完全一致）</string>
+    <string name="learn_verb_label_passive_example_v2_1">食べる → 食べられる</string>
+    <string name="learn_verb_label_passive_example_v2_2">見る → 見られる</string>
+    <string name="learn_verb_label_passive_example_v3_1">する → される</string>
+    <string name="learn_verb_label_passive_example_v3_2">来る → 来られる (こられる)</string>
+
+    <!-- 12. 使役形 -->
+    <string name="learn_verb_label_causative_usage">表示让某人做某事，或者允许某人做某事。</string>
+    <string name="learn_verb_label_causative_rule_v1">词尾「う」段变同行「あ」段 + せる。（※尾音「う」变「わ」）</string>
+    <string name="learn_verb_label_causative_example_v1_1">書く → 書かせる (かかせる)</string>
+    <string name="learn_verb_label_causative_example_v1_2">買う → 買わせる (かわせる)</string>
+    <string name="learn_verb_label_causative_rule_v2">去掉词尾的「る」 + させる。</string>
+    <string name="learn_verb_label_causative_example_v2_1">食べる → 食べさせる</string>
+    <string name="learn_verb_label_causative_example_v2_2">見る → 見させる</string>
+    <string name="learn_verb_label_causative_example_v3_1">する → させる</string>
+    <string name="learn_verb_label_causative_example_v3_2">来る → 来させる (こさせる)</string>
+
+    <!-- 13. 使役被动形 -->
+    <string name="learn_verb_label_causative_passive_usage">表示被迫做某事（“被逼着不得不做……”），是使役形 + 被动形的结合。</string>
+    <string name="learn_verb_label_causative_passive_rule_v1">【小白必杀技】把「ない形」的「ない」去掉，换成「される」即可。（※词尾是「す」时只能加「させられる」）</string>
+    <string name="learn_verb_label_causative_passive_example_v1_1">書く → [書かない] → 書かされる (被逼写)</string>
+    <string name="learn_verb_label_causative_passive_example_v1_2">話す → [話さない] → 話させられる (特殊)</string>
+    <string name="learn_verb_label_causative_passive_rule_v2">去掉词尾的「る」 + させられる。</string>
+    <string name="learn_verb_label_causative_passive_example_v2_1">食べる → 食べさせられる (被逼着吃)</string>
+    <string name="learn_verb_label_causative_passive_example_v3_1">する → させられる</string>
+    <string name="learn_verb_label_causative_passive_example_v3_2">来る → 来させられる (こさせられる)</string>
+</resources>

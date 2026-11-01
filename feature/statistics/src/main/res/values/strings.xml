@@ -177,6 +177,8 @@
 
     <string name="stats_share_title_achievement">分享学习成就</string>
     <string name="stats_share_btn_save_image">保存图片</string>
+    <string name="stats_share_toast_save_success">已保存到相册</string>
+    <string name="stats_share_toast_save_failed">保存失败</string>
     <string name="stats_share_toast_failed">分享失败</string>
     <string name="stats_share_btn_share_friend">分享给好友</string>
 

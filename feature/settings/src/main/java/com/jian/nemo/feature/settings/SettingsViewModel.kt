@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import android.util.Log
 import javax.inject.Inject
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.data.manager.CloudBackupManager
 
 /**
@@ -305,7 +306,7 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.ShowCloudBackupList -> loadCloudBackups()
             is SettingsEvent.SelectRestoreFile -> {
                 if (!_uiState.value.isDictionaryReady) {
-                    _uiState.update { it.copy(toastMessage = "基础词库正在准备中，请稍候恢复") }
+                    _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_toast_dictionary_preparing)) }
                 } else {
                     _uiState.update { it.copy(showRestoreStrategyDialog = true, pendingRestoreFileName = event.fileName) }
                 }
@@ -350,7 +351,7 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(toastMessage = message) }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Import failed", e)
-                _uiState.update { it.copy(toastMessage = "导入过程中发生异常: ${e.message}") }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_format_toast_import_exception, e.message ?: "")) }
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
@@ -363,7 +364,7 @@ class SettingsViewModel @Inject constructor(
     private fun backupToCloud() {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastSuccessfulBackupTime < BACKUP_DEBOUNCE_INTERVAL) {
-            _uiState.update { it.copy(toastMessage = "备份过于频繁，请稍后再试") }
+            _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_toast_backup_too_frequent)) }
             return
         }
 
@@ -372,10 +373,10 @@ class SettingsViewModel @Inject constructor(
             try {
                 cloudBackupManager.uploadBackup()
                 lastSuccessfulBackupTime = System.currentTimeMillis()
-                _uiState.update { it.copy(toastMessage = "云端备份成功") }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_toast_backup_cloud_success)) }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Backup to cloud failed", e)
-                _uiState.update { it.copy(toastMessage = "备份失败: ${e.message}") }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_format_toast_backup_failed, e.message ?: "")) }
             } finally {
                 _uiState.update { it.copy(isCloudSyncing = false) }
                 // 备份后刷新列表
@@ -392,12 +393,12 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { 
                     it.copy(
                         cloudBackupList = backups,
-                        toastMessage = "备份列表已刷新"
+                        toastMessage = application.getString(R.string.settings_toast_backup_list_refreshed)
                     ) 
                 }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Load cloud backups failed", e)
-                _uiState.update { it.copy(toastMessage = "获取备份列表失败: ${e.message}") }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_format_toast_backup_list_failed, e.message ?: "")) }
             } finally {
                 _uiState.update { it.copy(isCloudSyncing = false) }
             }
@@ -419,7 +420,7 @@ class SettingsViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Preview restore failed", e)
-                _uiState.update { it.copy(toastMessage = "预览失败: ${e.message}", pendingRestoreFileName = null) }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_format_toast_restore_preview_failed, e.message ?: ""), pendingRestoreFileName = null) }
             } finally {
                 _uiState.update { it.copy(isCloudSyncing = false) }
             }
@@ -432,7 +433,7 @@ class SettingsViewModel @Inject constructor(
         if (content == null || preview == null) return
 
         if (!_uiState.value.isDictionaryReady) {
-            _uiState.update { it.copy(toastMessage = "基础词库正在准备中，请稍候恢复") }
+            _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_toast_dictionary_preparing)) }
             return
         }
 
@@ -440,16 +441,16 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(restorePreview = null, isCloudSyncing = true) }
             try {
                 val message = cloudBackupManager.executeRestore(content, preview.strategy)
-                val isSuccess = !message.contains("失败") && !message.contains("异常")
+                val isSuccess = !message.contains(application.getString(R.string.settings_keyword_label_failure)) && !message.contains(application.getString(R.string.settings_keyword_label_exception))
                 _uiState.update { 
                     it.copy(
                         toastMessage = message,
-                        restoreSuccessMessage = if (isSuccess && message.contains("导入成功")) message else null
+                        restoreSuccessMessage = if (isSuccess && message.contains(application.getString(R.string.settings_keyword_label_import_success))) message else null
                     ) 
                 }
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Confirm restore failed", e)
-                _uiState.update { it.copy(toastMessage = "恢复失败: ${e.message}", restoreSuccessMessage = null) }
+                _uiState.update { it.copy(toastMessage = application.getString(R.string.settings_format_toast_restore_failed, e.message ?: ""), restoreSuccessMessage = null) }
             } finally {
                 _uiState.update { 
                     it.copy(
@@ -536,7 +537,7 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { 
                 it.copy(
                     showDailyGoalDialog = false,
-                    toastMessage = "每日目标已更新，将在下一个学习日生效"
+                    toastMessage = application.getString(R.string.settings_toast_daily_goal_updated)
                 ) 
             }
         }
@@ -551,7 +552,7 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { 
                 it.copy(
                     showGrammarDailyGoalDialog = false,
-                    toastMessage = "每日语法目标已更新，将在下一个学习日生效"
+                    toastMessage = application.getString(R.string.settings_toast_daily_grammar_goal_updated)
                 ) 
             }
         }

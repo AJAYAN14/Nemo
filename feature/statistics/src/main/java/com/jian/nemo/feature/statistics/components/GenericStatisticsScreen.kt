@@ -13,7 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.statistics.R
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.core.ui.component.list.LevelHeader
 import com.jian.nemo.core.ui.component.card.CommonGrammarCard
@@ -35,10 +37,12 @@ fun GenericStatisticsScreen(
     onBack: () -> Unit,
     onItemClick: (type: String, item: StatisticDisplayItem) -> Unit,
     modifier: Modifier = Modifier,
-    emptyWordMessage: String = "还没有学习任何单词",
-    emptyGrammarMessage: String = "还没有学习任何语法"
+    emptyWordMessage: String = stringResource(R.string.stats_generic_empty_word_message),
+    emptyGrammarMessage: String = stringResource(R.string.stats_generic_empty_grammar_message)
 ) {
-    val tabItems = listOf("单词", "语法")
+    val wordTab = stringResource(R.string.stats_generic_tab_word)
+    val grammarTab = stringResource(R.string.stats_generic_tab_grammar)
+    val tabItems = listOf(wordTab, grammarTab)
     val pagerState = rememberPagerState(pageCount = { tabItems.size })
     val scope = rememberCoroutineScope()
 
@@ -72,13 +76,13 @@ fun GenericStatisticsScreen(
             HorizontalPager(state = pagerState) { page ->
                 when (page) {
                     0 -> StatisticsContent(
-                        type = "单词",
+                        type = wordTab,
                         items = wordItems,
                         onItemClick = onItemClick,
                         emptyMessage = emptyWordMessage
                     )
                     1 -> StatisticsContent(
-                        type = "语法",
+                        type = grammarTab,
                         items = grammarItems,
                         onItemClick = onItemClick,
                         emptyMessage = emptyGrammarMessage

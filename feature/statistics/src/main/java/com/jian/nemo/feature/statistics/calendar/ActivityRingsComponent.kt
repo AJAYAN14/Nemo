@@ -15,7 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
@@ -369,7 +369,7 @@ fun ActivityRingItemRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(13.dp))
+            .clip(RoundedRectangle(13.dp))
             .background(if (isHighlighted) surface2 else Color.Transparent)
             .clickable {
                 view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -436,7 +436,7 @@ fun ActivityWeekPicker(
 
     Surface(
         color = containerBg,
-        shape = RoundedCornerShape(18.dp),
+        shape = RoundedRectangle(18.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -454,7 +454,7 @@ fun ActivityWeekPicker(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 1.dp)
-                        .clip(RoundedCornerShape(13.dp))
+                        .clip(RoundedRectangle(13.dp))
                         .background(if (isSelected) activeBg else Color.Transparent)
                         .then(
                             if (isSelected) {
@@ -565,7 +565,7 @@ fun ActivityMonthGrid(
         // 月历网格卡片
         Surface(
             color = surfaceBg,
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedRectangle(20.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(10.dp)) {
@@ -637,7 +637,7 @@ fun ActivityMonthGrid(
                                     modifier = Modifier
                                         .weight(1f)
                                         .padding(1.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .clip(RoundedRectangle(10.dp))
                                         .background(cellBg)
                                         .then(
                                             if (isSelected) {

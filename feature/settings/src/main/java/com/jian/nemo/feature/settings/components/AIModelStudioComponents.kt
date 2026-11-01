@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.settings.components
 
+import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
@@ -49,7 +51,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Cable
@@ -58,9 +60,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -123,7 +123,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.domain.repository.AIConfig
-import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.feature.settings.AITestResult
 import kotlin.math.PI
@@ -150,22 +150,35 @@ object StudioThemePalette {
  */
 data class PlatformItem(
     val id: String,
-    val name: String,
-    val tagline: String,
+    @StringRes val nameRes: Int? = null,
+    val rawName: String = "",
+    @StringRes val taglineRes: Int? = null,
+    val rawTagline: String = "",
     val brandColor: Color,
     val iconRes: Int? = null,
     val iconVector: ImageVector? = null,
     val defaultUrl: String,
     val flagshipModels: List<String>
-)
+) {
+    fun getName(context: Context): String = nameRes?.let { context.getString(it) } ?: rawName
+    fun getTagline(context: Context): String = taglineRes?.let { context.getString(it) } ?: rawTagline
+}
+
+val PlatformItem.displayName: String
+    @Composable
+    get() = nameRes?.let { stringResource(it) } ?: rawName
+
+val PlatformItem.displayTagline: String
+    @Composable
+    get() = taglineRes?.let { stringResource(it) } ?: rawTagline
 
 object AIPlatformRegistry {
     val platforms = listOf(
         // === 国产模型阵列（首字母字典序：DeepSeek -> 豆包 -> GLM -> Kimi -> Mimo -> Qwen）===
         PlatformItem(
             id = "deepseek",
-            name = "DeepSeek",
-            tagline = "深度求索 · V4 旗舰推理与高性价比",
+            rawName = "DeepSeek",
+            taglineRes = R.string.settings_ai_lab_tagline_deepseek,
             brandColor = AIPalette.DeepSeek,
             iconRes = DesignR.drawable.ic_deepseek,
             defaultUrl = "https://api.deepseek.com/v1",
@@ -173,8 +186,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "doubao",
-            name = "豆包",
-            tagline = "字节跳动 · Seed 2.1 旗舰与 Evolving 持续演进",
+            nameRes = R.string.settings_ai_lab_platform_doubao,
+            taglineRes = R.string.settings_ai_lab_tagline_doubao,
             brandColor = AIPalette.Doubao,
             iconRes = DesignR.drawable.ic_doubao,
             defaultUrl = "https://ark.cn-beijing.volces.com/api/v3",
@@ -182,8 +195,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "glm",
-            name = "智谱 GLM",
-            tagline = "智谱 AI · GLM-5.3 旗舰推理与 Agent 编码",
+            nameRes = R.string.settings_ai_lab_platform_glm,
+            taglineRes = R.string.settings_ai_lab_tagline_glm,
             brandColor = AIPalette.Glm,
             iconRes = DesignR.drawable.ic_glm,
             defaultUrl = "https://open.bigmodel.cn/api/paas/v4",
@@ -191,8 +204,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "kimi",
-            name = "Kimi",
-            tagline = "Moonshot AI · K3 旗舰 1M 多模态与长程编程",
+            rawName = "Kimi",
+            taglineRes = R.string.settings_ai_lab_tagline_kimi,
             brandColor = AIPalette.Kimi,
             iconRes = DesignR.drawable.ic_kimi,
             defaultUrl = "https://api.moonshot.cn/v1",
@@ -200,8 +213,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "mimo",
-            name = "Mimo",
-            tagline = "小米大模型 · V2.6 旗舰推理与端云协同",
+            rawName = "Mimo",
+            taglineRes = R.string.settings_ai_lab_tagline_mimo,
             brandColor = AIPalette.Mimo,
             iconRes = DesignR.drawable.ic_mimo,
             defaultUrl = "https://api.xiaomimimo.com/v1",
@@ -209,8 +222,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "qwen",
-            name = "通义千问",
-            tagline = "阿里云百炼 · qwen3.8-max 旗舰与双轨生态",
+            nameRes = R.string.settings_ai_lab_platform_qwen,
+            taglineRes = R.string.settings_ai_lab_tagline_qwen,
             brandColor = AIPalette.Qwen,
             iconRes = DesignR.drawable.ic_qwen,
             defaultUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -220,8 +233,8 @@ object AIPlatformRegistry {
         // === 国外模型阵列（按 2026 顶级综合实力梯队：Claude -> OpenAI -> Gemini）===
         PlatformItem(
             id = "claude",
-            name = "Claude",
-            tagline = "Anthropic · 5.x 旗舰体系与自适应思考链",
+            rawName = "Claude",
+            taglineRes = R.string.settings_ai_lab_tagline_claude,
             brandColor = AIPalette.ClaudeAmber,
             iconRes = DesignR.drawable.ic_claude,
             defaultUrl = "https://api.anthropic.com/v1",
@@ -229,8 +242,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "openai",
-            name = "OpenAI",
-            tagline = "GPT-6 旗舰梯队 · Astra 深度推理与 Sol 智能体",
+            rawName = "OpenAI",
+            taglineRes = R.string.settings_ai_lab_tagline_openai,
             brandColor = AIPalette.OpenAI,
             iconRes = DesignR.drawable.ic_openai,
             defaultUrl = "https://api.openai.com/v1",
@@ -238,8 +251,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "gemini",
-            name = "Gemini",
-            tagline = "Google DeepMind · Argon 旗舰推理与百万上下文",
+            rawName = "Gemini",
+            taglineRes = R.string.settings_ai_lab_tagline_gemini,
             brandColor = AIPalette.Gemini,
             iconRes = DesignR.drawable.ic_gemini,
             defaultUrl = "https://generativelanguage.googleapis.com/v1beta",
@@ -247,8 +260,8 @@ object AIPlatformRegistry {
         ),
         PlatformItem(
             id = "custom",
-            name = "自定义",
-            tagline = "接入任意兼容 OpenAI 协议的接口与模型",
+            nameRes = R.string.settings_ai_lab_platform_custom,
+            taglineRes = R.string.settings_ai_lab_tagline_custom,
             brandColor = AIPalette.CustomPurple,
             iconVector = Icons.Rounded.Cable,
             defaultUrl = "",
@@ -287,7 +300,11 @@ fun MatrixChipDock(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Column(modifier = modifier.fillMaxWidth()) {
-        val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+        val iconStyle = LocalSettingIconStyle.current
+        val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+        val baseColor = IosColors.Orange
+        val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
+        val iconTint = if (isSoftTranslucent) baseColor else Color.White
 
         Row(
             modifier = Modifier
@@ -298,25 +315,19 @@ fun MatrixChipDock(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(containerBg, RoundedRectangle(8.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (isPlumpDuo) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.Cpu,
-                            color = IsoluminantPalette.WarmAmber,
-                            size = 24.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.Memory,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Memory,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
                     text = stringResource(R.string.settings_ai_title_service_platform),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
@@ -351,7 +362,7 @@ fun MatrixChipDock(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onPlatformSelected(item)
                     },
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     color = if (isSelected) {
                         item.brandColor.copy(alpha = if (isDark) 0.18f else 0.12f)
                     } else {
@@ -423,7 +434,7 @@ fun MatrixChipDock(
 
                         Column {
                             Text(
-                                text = item.name,
+                                text = item.displayName,
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = if (isSelected) item.brandColor else MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
@@ -480,25 +491,24 @@ fun SlotModelPicker(
                         .weight(1f)
                         .padding(end = 12.dp)
                 ) {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val baseColor = platform.brandColor
+                    val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
+                    val iconTint = if (isSoftTranslucent) baseColor else Color.White
+
                     Box(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(containerBg, RoundedRectangle(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isPlumpDuo) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.BrainCircuit,
-                                color = IsoluminantPalette.EmeraldGreen,
-                                size = 28.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Psychology,
-                                contentDescription = null,
-                                tint = platform.brandColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Psychology,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(
@@ -512,7 +522,7 @@ fun SlotModelPicker(
                             color = StudioThemePalette.textPrimary(isDark)
                         )
                         Text(
-                            text = platform.tagline,
+                            text = platform.displayTagline,
                             style = MaterialTheme.typography.bodySmall,
                             color = StudioThemePalette.textSecondary(isDark),
                             maxLines = 1,
@@ -526,7 +536,7 @@ fun SlotModelPicker(
                         isCustomMode = !isCustomMode
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     color = if (isCustomMode) platform.brandColor.copy(alpha = if (isDark) 0.20f else 0.12f) else StudioThemePalette.surfacePill(isDark),
                     border = BorderStroke(
                         0.5.dp,
@@ -576,7 +586,7 @@ fun SlotModelPicker(
                                 )
                             },
                             singleLine = true,
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedRectangle(16.dp),
                             textStyle = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
@@ -609,7 +619,7 @@ fun SlotModelPicker(
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onModelChange(modelName)
                                 },
-                                shape = RoundedCornerShape(16.dp),
+                                shape = RoundedRectangle(16.dp),
                                 color = if (isSelected) {
                                     platform.brandColor.copy(alpha = if (isDark) 0.16f else 0.10f)
                                 } else {
@@ -734,25 +744,24 @@ fun CryptKeySocket(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val baseColor = platform.brandColor
+                    val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
+                    val iconTint = if (isSoftTranslucent) baseColor else Color.White
+
                     Box(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(containerBg, RoundedRectangle(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isPlumpDuo) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.KeyRound,
-                                color = IsoluminantPalette.LakesideCyan,
-                                size = 28.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Key,
-                                contentDescription = null,
-                                tint = platform.brandColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Key,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
@@ -794,13 +803,13 @@ fun CryptKeySocket(
                 onValueChange = onNameChange,
                 placeholder = {
                     Text(
-                        text = stringResource(R.string.settings_ai_placeholder_config_name, platform.name),
+                        text = stringResource(R.string.settings_ai_placeholder_config_name, platform.displayName),
                         style = MaterialTheme.typography.bodySmall,
                         color = StudioThemePalette.textMuted(isDark)
                     )
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedRectangle(14.dp),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     color = StudioThemePalette.textPrimary(isDark)
                 ),
@@ -839,7 +848,7 @@ fun CryptKeySocket(
                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onApiKeyChange(clipboardText)
                         },
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedRectangle(10.dp),
                         color = platform.brandColor.copy(alpha = 0.15f),
                         border = BorderStroke(0.5.dp, platform.brandColor)
                     ) {
@@ -874,13 +883,13 @@ fun CryptKeySocket(
                 onValueChange = onApiKeyChange,
                 placeholder = {
                     Text(
-                        text = stringResource(R.string.settings_ai_placeholder_api_key, platform.name),
+                        text = stringResource(R.string.settings_ai_placeholder_api_key, platform.displayName),
                         style = MaterialTheme.typography.bodySmall,
                         color = StudioThemePalette.textMuted(isDark)
                     )
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedRectangle(14.dp),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = FontFamily.Monospace,
@@ -952,7 +961,7 @@ fun CryptKeySocket(
                     )
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedRectangle(14.dp),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
@@ -1011,25 +1020,24 @@ fun SloshGaugeProbe(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val baseColor = platform.brandColor
+                    val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
+                    val iconTint = if (isSoftTranslucent) baseColor else Color.White
+
                     Box(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(containerBg, RoundedRectangle(8.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (isPlumpDuo) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.Gauge,
-                                color = IsoluminantPalette.SkyIndigo,
-                                size = 28.dp
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Rounded.Radar,
-                                contentDescription = null,
-                                tint = platform.brandColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
+                        Icon(
+                            imageVector = Icons.Rounded.Speed,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
@@ -1057,7 +1065,7 @@ fun SloshGaugeProbe(
                         onStartTest()
                     }
                 },
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedRectangle(20.dp),
                 color = when {
                     isTesting -> platform.brandColor.copy(alpha = 0.12f)
                     testResult != null && testResult.success -> AIPalette.OpenAI.copy(alpha = 0.12f)
@@ -1176,7 +1184,7 @@ fun SloshGaugeProbe(
 
                         if (!isTesting) {
                             Surface(
-                                shape = RoundedCornerShape(10.dp),
+                                shape = RoundedRectangle(10.dp),
                                 color = platform.brandColor.copy(alpha = if (isDark) 0.18f else 0.12f),
                                 border = BorderStroke(0.5.dp, platform.brandColor.copy(alpha = 0.35f))
                             ) {

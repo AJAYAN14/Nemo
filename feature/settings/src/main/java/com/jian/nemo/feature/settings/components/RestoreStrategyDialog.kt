@@ -2,7 +2,7 @@ package com.jian.nemo.feature.settings.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.CallMerge
 import androidx.compose.material.icons.rounded.Warning
@@ -96,7 +96,7 @@ private fun StrategyOption(
 
     Surface(
         color = containerColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -123,7 +123,7 @@ private fun StrategyOption(
                         Spacer(modifier = Modifier.width(8.dp))
                         Surface(
                             color = MaterialTheme.colorScheme.primary,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedRectangle(8.dp)
                         ) {
                             Text(
                                 text = stringResource(R.string.settings_restore_strategy_badge_recommended),

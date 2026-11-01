@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ========================================== -->
+    <!-- AI G 专属重构资源：云端备份、积压控制与设置组件 -->
+    <!-- ========================================== -->
+
+    <!-- CloudBackupHistoryScreen -->
+    <string name="settings_backup_status_failed">失败</string>
+    <string name="settings_backup_status_error">异常</string>
+    <string name="settings_backup_status_import_success">导入成功</string>
+    <string name="settings_backup_format_datetime">yyyy年MM月dd日 HH:mm:ss</string>
+
+    <!-- RestoreSuccessDialog -->
+    <string name="settings_backup_restore_regex_word"><![CDATA[单词:\s*更新(\d+)\s*/\s*新增(\d+)\s*/\s*跳过(\d+)]]></string>
+    <string name="settings_backup_restore_regex_grammar"><![CDATA[语法:\s*更新(\d+)\s*/\s*新增(\d+)\s*/\s*跳过(\d+)]]></string>
+    <string name="settings_backup_restore_prefix_validation">校验提示:</string>
+    <string name="settings_backup_restore_dialog_title">档案恢复成功</string>
+    <string name="settings_backup_restore_dialog_subtitle">云端学习档案已安全同步至本机</string>
+    <string name="settings_backup_restore_label_word_record">词库档案</string>
+    <string name="settings_backup_restore_format_record_stats">更新: %1$s  /  新增: %2$s  /  跳过: %3$s</string>
+    <string name="settings_backup_restore_label_grammar_record">语法档案</string>
+    <string name="settings_backup_restore_format_validation_note">校验说明: %1$s</string>
+    <string name="settings_backup_restore_btn_start_learning">开启学习之旅</string>
+    <string name="settings_backup_restore_btn_finish">完成</string>
+
+    <!-- SettingsComponents -->
+    <string name="settings_components_title_daily_word_goal">每日单词目标</string>
+    <string name="settings_components_format_word_goal">%1$d 个单词</string>
+    <string name="settings_components_title_daily_grammar_goal">每日语法目标</string>
+    <string name="settings_components_format_grammar_goal">%1$d 条语法</string>
+    <string name="settings_components_title_reset_hour">学习日重置时间</string>
+    <string name="settings_components_desc_reset_hour">每天此时间后开始新的学习日</string>
+    <string name="settings_components_reset_hour_midnight">凌晨 0:00 (午夜)</string>
+    <string name="settings_components_reset_hour_2am">凌晨 2:00</string>
+    <string name="settings_components_reset_hour_4am_recommended">凌晨 4:00 (推荐)</string>
+    <string name="settings_components_reset_hour_5am">凌晨 5:00</string>
+    <string name="settings_components_reset_hour_6am">凌晨 6:00</string>
+    <string name="settings_components_voice_group_network">云端语音</string>
+    <string name="settings_components_voice_group_local">本地语音</string>
+    <string name="settings_components_title_select_voice">选择语音</string>
+    <string name="settings_components_empty_voices">未找到可用语音</string>
+    <string name="settings_components_voice_tag_network">云端</string>
+    <string name="settings_components_voice_tag_local">本地</string>
+    <string name="settings_components_voice_name_default">系统默认</string>
+    <string name="settings_components_voice_name_ja_format">日语语音 %1$s</string>
+    <string name="settings_components_voice_name_format">语音 %1$s</string>
+    <string name="settings_components_voice_quality_high">高质量</string>
+    <string name="settings_components_btn_preview_voice">试听</string>
+</resources>

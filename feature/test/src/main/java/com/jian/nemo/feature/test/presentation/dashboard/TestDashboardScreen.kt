@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Assignment
@@ -21,9 +21,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
@@ -41,16 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
-import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.NemoDangerDark
-import com.jian.nemo.core.designsystem.theme.NemoIndigo
-import com.jian.nemo.core.designsystem.theme.NemoOrange
-import com.jian.nemo.core.designsystem.theme.NemoWarningDark
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.Rubik
-import com.jian.nemo.core.designsystem.theme.NemoPurple
-import com.jian.nemo.core.designsystem.theme.NemoSecondary
-import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
-import com.jian.nemo.core.designsystem.theme.NemoTeal
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
@@ -79,11 +68,6 @@ fun TestDashboardScreen(
 
     val colorScheme = MaterialTheme.colorScheme
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-
-    val isDark = colorScheme.background.luminance() < 0.5f
-    val dangerColor = if (isDark) NemoDangerDark else NemoDanger
-    val secondaryColor = if (isDark) NemoSecondaryDark else NemoSecondary
-    val warningColor = if (isDark) NemoWarningDark else NemoOrange
 
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
@@ -124,30 +108,26 @@ fun TestDashboardScreen(
                         .weight(1f)
                         .containerTransform(
                             key = "container_mistakes",
-                            shape = RoundedCornerShape(24.dp)
+                            shape = RoundedRectangle(24.dp)
                         ),
                     title = stringResource(R.string.test_dashboard_item_mistakes),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.wrongWordsCount),
                     icon = Icons.Rounded.Cancel,
-                    color = dangerColor,
-                    onClick = onNavigateToMistakes,
-                    plumpIcon = PlumpIcon.CircleX,
-                    paletteColor = IsoluminantPalette.CoralFlame
+                    color = IosColors.Red,
+                    onClick = onNavigateToMistakes
                 )
                 DashboardTile(
                     modifier = Modifier
                         .weight(1f)
                         .containerTransform(
                             key = "container_favorites",
-                            shape = RoundedCornerShape(24.dp)
+                            shape = RoundedRectangle(24.dp)
                         ),
                     title = stringResource(R.string.test_dashboard_item_favorites),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.favoriteWordsCount),
                     icon = Icons.Rounded.Star,
-                    color = warningColor,
-                    onClick = onNavigateToFavorites,
-                    plumpIcon = PlumpIcon.Star,
-                    paletteColor = IsoluminantPalette.WarmAmber
+                    color = IosColors.Orange,
+                    onClick = onNavigateToFavorites
                 )
             }
 
@@ -164,30 +144,26 @@ fun TestDashboardScreen(
                             .weight(1f)
                             .containerTransform(
                                 key = "container_test_multiple_choice",
-                                shape = RoundedCornerShape(24.dp)
+                                shape = RoundedRectangle(24.dp)
                             ),
                         title = stringResource(R.string.test_dashboard_type_choice_title),
                         subtitle = stringResource(R.string.test_dashboard_type_choice_subtitle),
                         icon = Icons.AutoMirrored.Rounded.Assignment,
-                        color = secondaryColor,
-                        onClick = { onNavigateToTestSettings("multiple_choice") },
-                        plumpIcon = PlumpIcon.ListChecks,
-                        paletteColor = IsoluminantPalette.EmeraldGreen
+                        color = IosColors.Green,
+                        onClick = { onNavigateToTestSettings("multiple_choice") }
                     )
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
                             .containerTransform(
                                 key = "container_test_typing",
-                                shape = RoundedCornerShape(24.dp)
+                                shape = RoundedRectangle(24.dp)
                             ),
                         title = stringResource(R.string.test_dashboard_type_typing_title),
                         subtitle = stringResource(R.string.test_dashboard_type_typing_subtitle),
                         icon = Icons.Rounded.TextFields,
-                        color = NemoIndigo,
-                        onClick = { onNavigateToTestSettings("typing") },
-                        plumpIcon = PlumpIcon.Keyboard,
-                        paletteColor = IsoluminantPalette.SkyIndigo
+                        color = IosColors.Indigo,
+                        onClick = { onNavigateToTestSettings("typing") }
                     )
                 }
                 Row(
@@ -199,30 +175,26 @@ fun TestDashboardScreen(
                             .weight(1f)
                             .containerTransform(
                                 key = "container_test_card_matching",
-                                shape = RoundedCornerShape(24.dp)
+                                shape = RoundedRectangle(24.dp)
                             ),
                         title = stringResource(R.string.test_dashboard_type_card_title),
                         subtitle = stringResource(R.string.test_dashboard_type_card_subtitle),
                         icon = Icons.Rounded.ViewModule,
-                        color = NemoTeal,
-                        onClick = { onNavigateToTestSettings("card_matching") },
-                        plumpIcon = PlumpIcon.GalleryVerticalEnd,
-                        paletteColor = IsoluminantPalette.LakesideCyan
+                        color = IosColors.Teal,
+                        onClick = { onNavigateToTestSettings("card_matching") }
                     )
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
                             .containerTransform(
                                 key = "container_test_sorting",
-                                shape = RoundedCornerShape(24.dp)
+                                shape = RoundedRectangle(24.dp)
                             ),
                         title = stringResource(R.string.test_dashboard_type_sorting_title),
                         subtitle = stringResource(R.string.test_dashboard_type_sorting_subtitle),
                         icon = Icons.Rounded.Extension,
-                        color = NemoPurple,
-                        onClick = { onNavigateToTestSettings("sorting") },
-                        plumpIcon = PlumpIcon.ArrowDownUp,
-                        paletteColor = IsoluminantPalette.LilacViolet
+                        color = IosColors.Purple,
+                        onClick = { onNavigateToTestSettings("sorting") }
                     )
                 }
             }
@@ -234,12 +206,12 @@ fun TestDashboardScreen(
                 DashboardBanner(
                     modifier = Modifier.containerTransform(
                         key = "container_ability_workshop",
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedRectangle(24.dp)
                     ),
                     title = stringResource(R.string.test_dashboard_workshop_title),
                     subtitle = stringResource(R.string.test_dashboard_workshop_subtitle),
                     icon = Icons.Rounded.AllInclusive,
-                    gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
+                    gradientColors = listOf(IosColors.Blue, IosColors.Blue.copy(alpha = 0.8f)),
                     onClick = onNavigateToAbilityWorkshop
                 )
             }
@@ -255,13 +227,9 @@ fun TestDashboardScreen(
 private fun StatsPager(
     uiState: TestDashboardUiState
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     data class CompactStatsPage(
         val title: String,
         val icon: ImageVector,
-        val plumpIcon: PlumpIcon,
-        val paletteColor: Color,
         val accent: Color,
         val primaryValue: String,
         val primaryLabel: String,
@@ -276,18 +244,10 @@ private fun StatsPager(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     fun ringColorByAccuracy(accuracyPercent: Int): Color {
-        return if (isPlumpDuo) {
-            when {
-                accuracyPercent < 60 -> IsoluminantPalette.CoralFlame
-                accuracyPercent < 85 -> IsoluminantPalette.WarmAmber
-                else -> IsoluminantPalette.EmeraldGreen
-            }
-        } else {
-            when {
-                accuracyPercent < 60 -> if (isDark) NemoDangerDark else NemoDanger
-                accuracyPercent < 85 -> if (isDark) NemoWarningDark else NemoOrange
-                else -> if (isDark) NemoSecondaryDark else NemoSecondary
-            }
+        return when {
+            accuracyPercent < 60 -> IosColors.Red
+            accuracyPercent < 85 -> IosColors.Orange
+            else -> IosColors.Green
         }
     }
     val pageCount = 10000
@@ -310,9 +270,7 @@ private fun StatsPager(
         CompactStatsPage(
             title = stringResource(R.string.test_dashboard_stat_today_title),
             icon = Icons.Rounded.Bolt,
-            plumpIcon = PlumpIcon.Zap,
-            paletteColor = IsoluminantPalette.SkyIndigo,
-            accent = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary,
+            accent = IosColors.Blue,
             primaryValue = uiState.todayTestCount.toString(),
             primaryLabel = stringResource(R.string.test_dashboard_stat_tested_questions),
             secondaryValue = uiState.consecutiveTestDays.toString(),
@@ -324,9 +282,7 @@ private fun StatsPager(
         CompactStatsPage(
             title = stringResource(R.string.test_dashboard_stat_total_title),
             icon = Icons.Rounded.EmojiEvents,
-            plumpIcon = PlumpIcon.Trophy,
-            paletteColor = IsoluminantPalette.WarmAmber,
-            accent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else NemoDanger,
+            accent = IosColors.Orange,
             primaryValue = uiState.totalTestCount.toString(),
             primaryLabel = stringResource(R.string.test_dashboard_stat_total_tests),
             secondaryValue = uiState.maxTestStreak.toString(),
@@ -353,7 +309,7 @@ private fun StatsPager(
             val ringColor = if (pageData.useSoftRingColor) baseRingColor.copy(alpha = 0.9f) else baseRingColor
 
             Surface(
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedRectangle(24.dp),
                 color = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -373,31 +329,23 @@ private fun StatsPager(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(34.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = pageData.plumpIcon,
-                                        color = pageData.paletteColor,
-                                        size = 26.dp
-                                    )
-                                }
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(34.dp)
-                                        .background(pageData.accent, RoundedCornerShape(10.dp)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = pageData.icon,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
+                            val iconStyle = LocalSettingIconStyle.current
+                            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                            val headerContainerBg = if (isSoftTranslucent) pageData.accent.copy(alpha = 0.15f) else pageData.accent
+                            val headerIconTint = if (isSoftTranslucent) pageData.accent else Color.White
+
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(headerContainerBg, RoundedRectangle(10.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = pageData.icon,
+                                    contentDescription = null,
+                                    tint = headerIconTint,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
                             Column {
                                 Text(
@@ -523,7 +471,7 @@ private fun CompactStatItem(
     unit: String = ""
 ) {
     Surface(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -571,13 +519,12 @@ private fun DashboardTile(
     subtitle: String,
     icon: ImageVector,
     color: Color,
-    onClick: () -> Unit,
-    plumpIcon: PlumpIcon? = null,
-    paletteColor: Color? = null
+    onClick: () -> Unit
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO && plumpIcon != null
-    val effectiveColor = if (isPlumpDuo && paletteColor != null) paletteColor else color
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
+    val iconTint = if (isSoftTranslucent) color else Color.White
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else BentoColors.Surface
@@ -586,9 +533,9 @@ private fun DashboardTile(
 
     Card(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedRectangle(24.dp))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(containerColor = surfaceColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -602,31 +549,15 @@ private fun DashboardTile(
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .then(
-                        if (!isPlumpDuo) {
-                            Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(effectiveColor.copy(alpha = 0.15f))
-                        } else {
-                            Modifier
-                        }
-                    ),
+                    .background(containerBgColor, RoundedRectangle(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (isPlumpDuo && plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = effectiveColor,
-                        size = 28.dp
-                    )
-                } else {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = effectiveColor,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(28.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -672,7 +603,7 @@ private fun DashboardBanner(
             .fillMaxWidth()
             .height(120.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(containerColor = surfaceColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {

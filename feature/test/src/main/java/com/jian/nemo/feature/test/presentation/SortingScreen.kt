@@ -10,7 +10,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
@@ -232,7 +232,7 @@ private fun AnswerContainer(
         modifier = Modifier
             .fillMaxWidth()
             .offset(x = shakeOffset.dp)
-            .background(containerColor, RoundedCornerShape(32.dp))
+            .background(containerColor, RoundedRectangle(32.dp))
             .padding(20.dp)
             .heightIn(min = 100.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
@@ -298,7 +298,7 @@ private fun OptionsContainer(
             .background(
                 if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
                 else SortingPalette.OptionsTrayBgLight,
-                RoundedCornerShape(32.dp)
+                RoundedRectangle(32.dp)
             )
             .padding(vertical = 24.dp, horizontal = 12.dp)
     ) {
@@ -371,7 +371,7 @@ private fun SortableChip(
         NemoNeutrals.Gray100
     }
 
-    val chipShape = RoundedCornerShape(18.dp)
+    val chipShape = RoundedRectangle(18.dp)
     val borderStroke = if (status == ChipStatus.NORMAL && !isSelected) {
         BorderStroke(1.dp, borderColor)
     } else null
@@ -442,7 +442,7 @@ private fun SortingFeedback(
                 containerColor = if (question.isCorrect) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            shape = RoundedCornerShape(24.dp)
+            shape = RoundedRectangle(24.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

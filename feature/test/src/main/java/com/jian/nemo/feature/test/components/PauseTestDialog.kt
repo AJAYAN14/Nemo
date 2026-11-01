@@ -6,7 +6,7 @@ import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.*
@@ -76,7 +76,7 @@ fun PauseTestDialog(
         }
 
         Surface(
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedRectangle(26.dp),
             color = containerColor,
             tonalElevation = 6.dp,
             shadowElevation = 12.dp,

@@ -17,7 +17,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Download
@@ -126,7 +126,7 @@ fun DailyAchievementShareDialog(
             ) {
                 // 1. 纯粹的海报卡片（包裹在 GraphicsLayer 中直角满幅录制，外层圆角展示）
                 Surface(
-                    shape = RoundedCornerShape(26.dp),
+                    shape = RoundedRectangle(26.dp),
                     color = Color.White, // 固定白底，保证导出图片底色纯白明亮
                     shadowElevation = 18.dp,
                     tonalElevation = 6.dp,
@@ -289,7 +289,7 @@ fun DailyAchievementShareDialog(
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(24.dp)
-                                        .clip(RoundedCornerShape(6.dp))
+                                        .clip(RoundedRectangle(6.dp))
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
@@ -341,7 +341,7 @@ fun DailyAchievementShareDialog(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.White.copy(alpha = 0.16f)
                     ),
@@ -395,7 +395,7 @@ fun DailyAchievementShareDialog(
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = themePrimary),
                     enabled = !isSharing && !isSaving
                 ) {

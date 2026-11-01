@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- AI 模型工作室 (AIModelStudioScreen) -->
+    <string name="settings_ai_label_suffix_config">配置</string>
+    <string name="settings_ai_label_suffix_model">模型</string>
+
+    <!-- AI 设置 ViewModel 业务状态与提示 (AISettingsViewModel) -->
+    <string name="settings_ai_config_default_openai">OpenAI 默认配置</string>
+    <string name="settings_ai_config_default_gemini">Gemini 默认配置</string>
+    <string name="settings_ai_config_default_deepseek">DeepSeek 默认配置</string>
+    <string name="settings_ai_config_default_custom">自定义 默认配置</string>
+    <string name="settings_ai_config_unnamed">未命名配置</string>
+    <string name="settings_ai_toast_duplicate_name">配置别名已存在，请换一个别名</string>
+    <string name="settings_ai_toast_duplicate_key">API 密钥已配置过，请勿重复添加</string>
+    <string name="settings_ai_toast_empty_key">API Key 不能为空</string>
+    <string name="settings_ai_msg_connect_success">连接成功</string>
+    <string name="settings_ai_msg_unknown_error">未知错误</string>
+    <string name="settings_ai_toast_empty_key_test">API Key 为空，无法测试</string>
+    <string name="settings_ai_format_test_success">「%1$s」API 连接正常 · 测试通过</string>
+    <string name="settings_ai_msg_connect_failed">连接失败</string>
+    <string name="settings_ai_format_test_failed">「%1$s」测试失败: %2$s</string>
+
+    <!-- 液态玻璃实验室 (LiquidGlassLabScreen) -->
+    <string name="settings_liquid_lab_title">液态玻璃实验室</string>
+    <string name="settings_liquid_lab_label_drag_hint">按住按钮可自由拖拽到不同背景上对比透镜折射</string>
+    <string name="settings_liquid_lab_btn_clear">全透明液态按钮</string>
+    <string name="settings_liquid_lab_btn_frosted">带底色液态按钮</string>
+    <string name="settings_liquid_lab_btn_colored_blue">彩色液态按钮 (蓝)</string>
+    <string name="settings_liquid_lab_btn_colored_orange">彩色液态按钮 (橙)</string>
+    <string name="settings_liquid_lab_btn_back">返回</string>
+    <string name="settings_liquid_lab_title_optical_sample">物理透镜光学折射样本</string>
+    <string name="settings_liquid_lab_label_realtime_render">リアルタイム屈折レンダリング</string>
+    <string name="settings_liquid_lab_label_lens_thickness">透镜厚度</string>
+    <string name="settings_liquid_lab_label_refract_range">折射范围</string>
+    <string name="settings_liquid_lab_label_realtime_fps">实时帧率</string>
+
+    <!-- AI 模型注册表与服务商组件 (AIModelStudioComponents) -->
+    <string name="settings_ai_lab_platform_doubao">豆包</string>
+    <string name="settings_ai_lab_platform_glm">智谱 GLM</string>
+    <string name="settings_ai_lab_platform_qwen">通义千问</string>
+    <string name="settings_ai_lab_platform_custom">自定义</string>
+
+    <string name="settings_ai_lab_tagline_deepseek">深度求索 · V4 旗舰推理与高性价比</string>
+    <string name="settings_ai_lab_tagline_doubao">字节跳动 · Seed 2.1 旗舰与 Evolving 持续演进</string>
+    <string name="settings_ai_lab_tagline_glm">智谱 AI · GLM-5.3 旗舰推理与 Agent 编码</string>
+    <string name="settings_ai_lab_tagline_kimi">Moonshot AI · K3 旗舰 1M 多模态与长程编程</string>
+    <string name="settings_ai_lab_tagline_mimo">小米大模型 · V2.6 旗舰推理与端云协同</string>
+    <string name="settings_ai_lab_tagline_qwen">阿里云百炼 · qwen3.8-max 旗舰与双轨生态</string>
+    <string name="settings_ai_lab_tagline_claude">Anthropic · 5.x 旗舰体系与自适应思考链</string>
+    <string name="settings_ai_lab_tagline_openai">GPT-6 旗舰梯队 · Astra 深度推理与 Sol 智能体</string>
+    <string name="settings_ai_lab_tagline_gemini">Google DeepMind · Argon 旗舰推理与百万上下文</string>
+    <string name="settings_ai_lab_tagline_custom">接入任意兼容 OpenAI 协议的接口与模型</string>
+</resources>

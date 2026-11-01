@@ -1,82 +1,81 @@
 package com.jian.nemo.feature.library.presentation.category
 
-import com.jian.nemo.core.designsystem.theme.screenBackground
-
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
-
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.AltRoute
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.automirrored.rounded.Sort
-import androidx.compose.material.icons.automirrored.rounded.AltRoute
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Campaign
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.FormatQuote
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Link
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.res.stringResource
-import com.jian.nemo.feature.library.R
-import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.NemoCategoryTheme
+import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.library.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
- * 词性分类主题颜色
+ * 分类项数据模型
  */
-data class CategoryThemeColor(
-    val containerColor: Color,
-    val contentColor: Color
+private data class CategoryItem(
+    val id: String,
+    val title: String,
+    val subtitle: String,
+    val icon: ImageVector,
+    val iconColor: Color
 )
 
 /**
- * 根据当前主题获取分类颜色
- */
-@Composable
-private fun getCategoryTheme(
-    lightContainer: Color,
-    lightContent: Color,
-    darkContainer: Color,
-    darkContent: Color
-): CategoryThemeColor {
-    // 保持原来的颜色逻辑用于Icon
-    val isDark = MaterialTheme.colorScheme.surface.luminance < 0.5
-    return CategoryThemeColor(
-        containerColor = if (isDark) darkContainer else lightContainer,
-        contentColor = if (isDark) darkContent else lightContent
-    )
-}
-
-/**
- * 专项训练 - 分类选择界面
- *
- * 风格统一：
- * - Background: Solid (MaterialTheme.colorScheme.background)
- * - Card: Premium Card (White/SurfaceContainer + Shadow + 26dp Rounded)
- * - Icon: Squircle (Rounded 14dp)
- * - Typography: ExtraBold Titles
+ * 专项训练 / 专项词汇 - 分类选择界面
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,7 +88,6 @@ fun CategoryClassificationScreen(
     val settingIconStyle by viewModel.settingIconStyle.collectAsState()
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
-    // 根据来源显示不同的标题
     val title = when (source) {
         "practice" -> stringResource(R.string.lib_category_title_practice)
         "vocabulary" -> stringResource(R.string.lib_category_title_vocabulary)
@@ -99,203 +97,143 @@ fun CategoryClassificationScreen(
     CompositionLocalProvider(LocalSettingIconStyle provides settingIconStyle) {
         Scaffold(
             topBar = {
-                com.jian.nemo.core.ui.component.common.CommonHeader(
+                CommonHeader(
                     title = title,
                     onBack = onNavigateBack,
-                    backgroundColor = backgroundColor // Header 背景与页面一致
+                    backgroundColor = backgroundColor
                 )
             },
             containerColor = backgroundColor
         ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 24.dp)
-        ) {
-            // 1. 基础词性类
-            SectionHeader(title = stringResource(R.string.lib_category_section_basic), delay = 0)
-            CategoryGrid(
-                items = listOf(
-                    CategoryItem(
-                        id = "noun",
-                        title = stringResource(R.string.lib_category_item_noun_title),
-                        subtitle = stringResource(R.string.lib_category_item_noun_subtitle),
-                        icon = Icons.AutoMirrored.Rounded.MenuBook,
-                        plumpIcon = PlumpIcon.BookOpen,
-                        isoluminantColor = IsoluminantPalette.SkyIndigo,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardNounBgLight, NemoCategoryColors.CardNounTextLight,
-                            NemoCategoryColors.CardNounBgDark, NemoCategoryColors.CardNounTextDark
-                        ) }
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 24.dp)
+            ) {
+                // 1. 基础词性类
+                SectionHeader(title = stringResource(R.string.lib_category_section_basic), delay = 0)
+                CategoryGrid(
+                    items = listOf(
+                        CategoryItem(
+                            id = "noun",
+                            title = stringResource(R.string.lib_category_item_noun_title),
+                            subtitle = stringResource(R.string.lib_category_item_noun_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.MenuBook,
+                            iconColor = NemoCategoryTheme.getCategoryColor("noun")
+                        ),
+                        CategoryItem(
+                            id = "adj",
+                            title = stringResource(R.string.lib_category_item_adj_title),
+                            subtitle = stringResource(R.string.lib_category_item_adj_subtitle),
+                            icon = Icons.Rounded.AutoAwesome,
+                            iconColor = NemoCategoryTheme.getCategoryColor("adj")
+                        ),
+                        CategoryItem(
+                            id = "verb",
+                            title = stringResource(R.string.lib_category_item_verb_title),
+                            subtitle = stringResource(R.string.lib_category_item_verb_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.DirectionsRun,
+                            iconColor = NemoCategoryTheme.getCategoryColor("verb")
+                        ),
+                        CategoryItem(
+                            id = "adv",
+                            title = stringResource(R.string.lib_category_item_adv_title),
+                            subtitle = stringResource(R.string.lib_category_item_adv_subtitle),
+                            icon = Icons.Rounded.Tune,
+                            iconColor = NemoCategoryTheme.getCategoryColor("adv")
+                        )
                     ),
-                    CategoryItem(
-                        id = "adj",
-                        title = stringResource(R.string.lib_category_item_adj_title),
-                        subtitle = stringResource(R.string.lib_category_item_adj_subtitle),
-                        icon = Icons.Rounded.AutoAwesome,
-                        plumpIcon = PlumpIcon.Sparkles,
-                        isoluminantColor = IsoluminantPalette.WarmAmber,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardAdjIBgLight, NemoCategoryColors.CardAdjITextLight,
-                            NemoCategoryColors.CardAdjIBgDark, NemoCategoryColors.CardAdjITextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "verb",
-                        title = stringResource(R.string.lib_category_item_verb_title),
-                        subtitle = stringResource(R.string.lib_category_item_verb_subtitle),
-                        icon = Icons.AutoMirrored.Rounded.DirectionsRun,
-                        plumpIcon = PlumpIcon.Activity,
-                        isoluminantColor = IsoluminantPalette.EmeraldGreen,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardVerbBgLight, NemoCategoryColors.CardVerbTextLight,
-                            NemoCategoryColors.CardVerbBgDark, NemoCategoryColors.CardVerbTextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "adv",
-                        title = stringResource(R.string.lib_category_item_adv_title),
-                        subtitle = stringResource(R.string.lib_category_item_adv_subtitle),
-                        icon = Icons.Rounded.Tune,
-                        plumpIcon = PlumpIcon.SlidersHorizontal,
-                        isoluminantColor = IsoluminantPalette.LakesideCyan,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardAdvBgLight, NemoCategoryColors.CardAdvTextLight,
-                            NemoCategoryColors.CardAdvBgDark, NemoCategoryColors.CardAdvTextDark
-                        ) }
-                    )
-                ),
-                onItemClick = { category ->
-                    onCategorySelected(category.id, category.title)
-                }
-            )
+                    onItemClick = { category ->
+                        onCategorySelected(category.id, category.title)
+                    }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // 2. 构词·句法功能类
-            SectionHeader(title = stringResource(R.string.lib_category_section_syntax), delay = 100)
-            CategoryGrid(
-                items = listOf(
-                    CategoryItem(
-                        id = "rentai",
-                        title = stringResource(R.string.lib_category_item_rentai_title),
-                        subtitle = stringResource(R.string.lib_category_item_rentai_subtitle),
-                        icon = Icons.Rounded.Link,
-                        plumpIcon = PlumpIcon.Link2,
-                        isoluminantColor = IsoluminantPalette.SeaMarine,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardRentaiBgLight, NemoCategoryColors.CardRentaiTextLight,
-                            NemoCategoryColors.CardRentaiBgDark, NemoCategoryColors.CardRentaiTextDark
-                        ) }
+                // 2. 构词·句法功能类
+                SectionHeader(title = stringResource(R.string.lib_category_section_syntax), delay = 100)
+                CategoryGrid(
+                    items = listOf(
+                        CategoryItem(
+                            id = "rentai",
+                            title = stringResource(R.string.lib_category_item_rentai_title),
+                            subtitle = stringResource(R.string.lib_category_item_rentai_subtitle),
+                            icon = Icons.Rounded.Link,
+                            iconColor = NemoCategoryTheme.getCategoryColor("rentai")
+                        ),
+                        CategoryItem(
+                            id = "conj",
+                            title = stringResource(R.string.lib_category_item_conj_title),
+                            subtitle = stringResource(R.string.lib_category_item_conj_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.AltRoute,
+                            iconColor = NemoCategoryTheme.getCategoryColor("conj")
+                        ),
+                        CategoryItem(
+                            id = "exclam",
+                            title = stringResource(R.string.lib_category_item_exclam_title),
+                            subtitle = stringResource(R.string.lib_category_item_exclam_subtitle),
+                            icon = Icons.Rounded.Campaign,
+                            iconColor = NemoCategoryTheme.getCategoryColor("exclam")
+                        ),
+                        CategoryItem(
+                            id = "particle",
+                            title = stringResource(R.string.lib_category_item_particle_title),
+                            subtitle = stringResource(R.string.lib_category_item_particle_subtitle),
+                            icon = Icons.Rounded.Extension,
+                            iconColor = NemoCategoryTheme.getCategoryColor("particle")
+                        )
                     ),
-                    CategoryItem(
-                        id = "conj",
-                        title = stringResource(R.string.lib_category_item_conj_title),
-                        subtitle = stringResource(R.string.lib_category_item_conj_subtitle),
-                        icon = Icons.AutoMirrored.Rounded.AltRoute,
-                        plumpIcon = PlumpIcon.Workflow,
-                        isoluminantColor = IsoluminantPalette.fromOklch(85f),
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardConjBgLight, NemoCategoryColors.CardConjTextLight,
-                            NemoCategoryColors.CardConjBgDark, NemoCategoryColors.CardConjTextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "exclam",
-                        title = stringResource(R.string.lib_category_item_exclam_title),
-                        subtitle = stringResource(R.string.lib_category_item_exclam_subtitle),
-                        icon = Icons.Rounded.Campaign,
-                        plumpIcon = PlumpIcon.Megaphone,
-                        isoluminantColor = IsoluminantPalette.CoralFlame,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardIdiomBgLight, NemoCategoryColors.CardIdiomTextLight,
-                            NemoCategoryColors.CardIdiomBgDark, NemoCategoryColors.CardIdiomTextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "particle",
-                        title = stringResource(R.string.lib_category_item_particle_title),
-                        subtitle = stringResource(R.string.lib_category_item_particle_subtitle),
-                        icon = Icons.Rounded.Extension,
-                        plumpIcon = PlumpIcon.Puzzle,
-                        isoluminantColor = IsoluminantPalette.LilacViolet,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardFixBgLight, NemoCategoryColors.CardFixTextLight,
-                            NemoCategoryColors.CardFixBgDark, NemoCategoryColors.CardFixTextDark
-                        ) }
-                    )
-                ),
-                onItemClick = { category ->
-                    onCategorySelected(category.id, category.title)
-                }
-            )
+                    onItemClick = { category ->
+                        onCategorySelected(category.id, category.title)
+                    }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // 3. 构词·表达用法类
-            SectionHeader(title = stringResource(R.string.lib_category_section_expression), delay = 200)
-            CategoryGrid(
-                items = listOf(
-                    CategoryItem(
-                        id = "prefix",
-                        title = stringResource(R.string.lib_category_item_prefix_title),
-                        subtitle = stringResource(R.string.lib_category_item_prefix_subtitle),
-                        icon = Icons.AutoMirrored.Rounded.ArrowForward,
-                        plumpIcon = PlumpIcon.ArrowRight,
-                        isoluminantColor = IsoluminantPalette.RoseRuby,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardKataBgLight, NemoCategoryColors.CardKataTextLight,
-                            NemoCategoryColors.CardKataBgDark, NemoCategoryColors.CardKataTextDark
-                        ) }
+                // 3. 构词·表达用法类
+                SectionHeader(title = stringResource(R.string.lib_category_section_expression), delay = 200)
+                CategoryGrid(
+                    items = listOf(
+                        CategoryItem(
+                            id = "prefix",
+                            title = stringResource(R.string.lib_category_item_prefix_title),
+                            subtitle = stringResource(R.string.lib_category_item_prefix_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.ArrowForward,
+                            iconColor = NemoCategoryTheme.getCategoryColor("prefix")
+                        ),
+                        CategoryItem(
+                            id = "suffix",
+                            title = stringResource(R.string.lib_category_item_suffix_title),
+                            subtitle = stringResource(R.string.lib_category_item_suffix_subtitle),
+                            icon = Icons.AutoMirrored.Rounded.ArrowBack,
+                            iconColor = NemoCategoryTheme.getCategoryColor("suffix")
+                        ),
+                        CategoryItem(
+                            id = "expression",
+                            title = stringResource(R.string.lib_category_item_expression_title),
+                            subtitle = stringResource(R.string.lib_category_item_expression_subtitle),
+                            icon = Icons.Rounded.FormatQuote,
+                            iconColor = NemoCategoryTheme.getCategoryColor("expression")
+                        ),
+                        CategoryItem(
+                            id = "kata",
+                            title = stringResource(R.string.lib_category_item_kata_title),
+                            subtitle = stringResource(R.string.lib_category_item_kata_subtitle),
+                            icon = Icons.Rounded.Language,
+                            iconColor = NemoCategoryTheme.getCategoryColor("kata")
+                        )
                     ),
-                    CategoryItem(
-                        id = "suffix",
-                        title = stringResource(R.string.lib_category_item_suffix_title),
-                        subtitle = stringResource(R.string.lib_category_item_suffix_subtitle),
-                        icon = Icons.AutoMirrored.Rounded.ArrowBack,
-                        plumpIcon = PlumpIcon.ArrowLeft,
-                        isoluminantColor = IsoluminantPalette.GlazeMint,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight,
-                            NemoCategoryColors.CardSoundBgDark, NemoCategoryColors.CardSoundTextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "expression",
-                        title = stringResource(R.string.lib_category_item_expression_title),
-                        subtitle = stringResource(R.string.lib_category_item_expression_subtitle),
-                        icon = Icons.Rounded.FormatQuote,
-                        plumpIcon = PlumpIcon.Quote,
-                        isoluminantColor = IsoluminantPalette.fromOklch(45f),
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardKeigoBgLight, NemoCategoryColors.CardKeigoTextLight,
-                            NemoCategoryColors.CardKeigoBgDark, NemoCategoryColors.CardKeigoTextDark
-                        ) }
-                    ),
-                    CategoryItem(
-                        id = "kata",
-                        title = stringResource(R.string.lib_category_item_kata_title),
-                        subtitle = stringResource(R.string.lib_category_item_kata_subtitle),
-                        icon = Icons.Rounded.Language,
-                        plumpIcon = PlumpIcon.Globe,
-                        isoluminantColor = IsoluminantPalette.OceanBlue,
-                        colors = { getCategoryTheme(
-                            NemoCategoryColors.CardAdjNaBgLight, NemoCategoryColors.CardAdjNaTextLight,
-                            NemoCategoryColors.CardAdjNaBgDark, NemoCategoryColors.CardAdjNaTextDark
-                        ) }
-                    )
-                ),
-                onItemClick = { category ->
-                    onCategorySelected(category.id, category.title)
-                }
-            )
+                    onItemClick = { category ->
+                        onCategorySelected(category.id, category.title)
+                    }
+                )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
-}
 }
 
 @Composable
@@ -342,7 +280,6 @@ private fun CategoryGrid(
                         onClick = { onItemClick(item) }
                     )
                 }
-                // 如果只有1个item，添加一个空的Spacer来保持布局
                 if (rowItems.size == 1) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
@@ -357,64 +294,43 @@ private fun CategoryCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val themeColors = item.colors()
-    val isDark = MaterialTheme.colorScheme.background.luminance < 0.5f // Use standard check
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
-    val containerColor = themeColors.containerColor
-
-    val iconContainerColor = if (isDark) themeColors.contentColor.copy(alpha = 0.15f) else Color.White
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBgColor = if (isSoftTranslucent) item.iconColor.copy(alpha = 0.15f) else item.iconColor
+    val iconTint = if (isSoftTranslucent) item.iconColor else Color.White
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
-
         modifier = modifier
-            .height(76.dp)
-            .softCardShadow(borderRadius = 20.dp, isDark = isDark)
+            .height(100.dp)
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Icon Container：根据全局设置区分 Plump Duo 与 MD3
-            val iconStyle = LocalSettingIconStyle.current
-            val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-            if (isPlumpDuo) {
-                // Plump Duo 规范：42dp 纯透明容器，居中展示 28dp 双层微质感矢量图标，无沉重方块背景
-                Box(
-                    modifier = Modifier.size(42.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PlumpDuoIcon(
-                        icon = item.plumpIcon,
-                        color = item.isoluminantColor,
-                        size = 28.dp
-                    )
-                }
-            } else {
-                // 原生 Material 3 规范：Squircle 浅色容器与单色描边图标
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(iconContainerColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(22.dp),
-                        tint = themeColors.contentColor
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(containerBgColor, RoundedRectangle(14.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = item.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = iconTint
+                )
             }
 
-            // Text
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.Center
@@ -423,16 +339,16 @@ private fun CategoryCard(
                     text = item.title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = 16.sp
                     ),
-                    color = MaterialTheme.colorScheme.onSurface, // Clean text color
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = item.subtitle,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        fontSize = 12.sp
+                        fontSize = 13.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     maxLines = 1
@@ -441,20 +357,3 @@ private fun CategoryCard(
         }
     }
 }
-
-/**
- * 分类项数据类
- */
-private data class CategoryItem(
-    val id: String,
-    val title: String,
-    val subtitle: String,
-    val icon: ImageVector,
-    val plumpIcon: PlumpIcon,
-    val isoluminantColor: Color,
-    val colors: @Composable () -> CategoryThemeColor
-)
-
-// 扩展属性：获取Color的亮度
-private val Color.luminance: Float
-    get() = (0.299f * red + 0.587f * green + 0.114f * blue) // Keep for local usage

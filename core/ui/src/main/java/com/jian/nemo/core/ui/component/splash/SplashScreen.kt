@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -540,7 +540,7 @@ fun SplashScreen(
                         scaleY = dividerScaleY.value
                         alpha = dividerAlpha.value
                     }
-                    .clip(RoundedCornerShape(1.dp))
+                    .clip(RoundedRectangle(1.dp))
                     .background(fgColor)
             )
 

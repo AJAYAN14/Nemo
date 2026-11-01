@@ -9,7 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -130,7 +130,7 @@ private fun ForcedNotificationCard(
             .padding(24.dp)
             .widthIn(max = 400.dp)
             .clickable(enabled = false) { /* 防止点击卡片内部触发背景点击 */ },
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedRectangle(32.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp
     ) {
@@ -226,7 +226,7 @@ private fun ForcedNotificationCard(
                     .padding(horizontal = 24.dp, vertical = 8.dp)
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.onSurface,
                     contentColor = MaterialTheme.colorScheme.surface

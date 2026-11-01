@@ -18,6 +18,7 @@ import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.text.FuriganaText
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 
 /**
  * 详情页头部组件（亮色主题）
@@ -158,7 +159,7 @@ fun SectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 20.dp),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+        shape = RoundedRectangle(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),

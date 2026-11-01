@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 浮动文字背景动效词库 -->
+    <string-array name="core_ui_animation_label_floating_words">
+        <item>こんにちは</item>
+        <item>ありがとう</item>
+        <item>日本語</item>
+        <item>桜</item>
+        <item>夢</item>
+        <item>愛</item>
+        <item>花見</item>
+        <item>友達</item>
+        <item>時間</item>
+        <item>赤い</item>
+        <item>緑</item>
+        <item>犬</item>
+        <item>知る</item>
+        <item>大きい</item>
+        <item>小さい</item>
+        <item>新しい</item>
+        <item>難しい</item>
+        <item>楽しい</item>
+        <item>静か</item>
+        <item>見る</item>
+    </string-array>
+
+    <!-- 头像编辑弹窗异常提示 -->
+    <string name="core_ui_avatar_dialog_file_not_exist">文件保存后不存在</string>
+</resources>

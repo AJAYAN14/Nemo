@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,10 +39,7 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.library.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -59,19 +57,18 @@ fun BoxScope.LibraryScrollToTopButton(
     backdrop: Backdrop?,
     isMenuExpanded: Boolean,
     bottomPadding: Dp,
-    modifier: Modifier = Modifier,
-    buttonSize: Dp = 56.dp
+    modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
     val showScrollToTop by remember {
         derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 200
+            lazyListState.firstVisibleItemIndex > 6
         }
     }
 
     AnimatedVisibility(
         visible = showScrollToTop && !isMenuExpanded,
-        enter = fadeIn(tween(200)) + scaleIn(spring(dampingRatio = 0.8f, stiffness = 400f)),
+        enter = fadeIn(spring()) + scaleIn(spring(dampingRatio = 0.75f)),
         exit = fadeOut(tween(150)) + scaleOut(tween(150)),
         modifier = modifier
             .align(Alignment.BottomEnd)
@@ -83,16 +80,18 @@ fun BoxScope.LibraryScrollToTopButton(
                     lazyListState.animateScrollToItem(0)
                 }
             },
-            modifier = Modifier.size(buttonSize),
             shape = CircleShape,
             backdrop = backdrop,
-            contentPadding = PaddingValues(0.dp)
+            hasLens = backdrop != null,
+            contentPadding = PaddingValues(0.dp),
+            isInteractive = true,
+            modifier = Modifier.size(56.dp)
         ) {
             Icon(
                 painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_scroll_to_top),
                 contentDescription = stringResource(R.string.lib_components_scroll_to_top_cd),
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(buttonSize * (30f / 48f))
+                modifier = Modifier.size(35.dp),
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -102,6 +101,7 @@ fun BoxScope.LibraryScrollToTopButton(
  * 词库列表通用 - 等级筛选 NemoMorphMenu
  *
  * 48dp 液态玻璃透镜按钮，专属几何图标，全部等级与 N5~N1 纯文字对齐、选中打勾、无震动
+ * 遵循单一官方原生图标规范与标准设计调色盘 IosColors。
  */
 @Composable
 fun LibraryLevelSelectionMenu(
@@ -113,13 +113,11 @@ fun LibraryLevelSelectionMenu(
     backdrop: Backdrop?,
     onScrollToTop: () -> Unit
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     NemoMorphMenu(
         expanded = expanded,
         onExpandedChange = onExpandedChange,
         buttonSize = 48.dp,
-        menuWidth = if (isPlumpDuo) 220.dp else 200.dp,
+        menuWidth = 200.dp,
         enableHaptic = false,
         backdrop = backdrop,
         iconPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
@@ -130,8 +128,8 @@ fun LibraryLevelSelectionMenu(
 
         NemoMorphMenuItem(
             text = stringResource(R.string.lib_components_all_levels_count_format, allCount),
-            plumpIcon = PlumpIcon.GraduationCap,
-            iconColor = if (isPlumpDuo) IsoluminantPalette.OceanBlue else null,
+            leadingIcon = Icons.Rounded.School,
+            iconColor = IosColors.Blue,
             trailingIcon = if (isAllSelected) Icons.Rounded.Check else null,
             onClick = {
                 onLevelSelected("ALL")
@@ -145,19 +143,19 @@ fun LibraryLevelSelectionMenu(
         )
 
         val levelsList = listOf(
-            "N5" to IsoluminantPalette.EmeraldGreen,
-            "N4" to IsoluminantPalette.LakesideCyan,
-            "N3" to IsoluminantPalette.SkyIndigo,
-            "N2" to IsoluminantPalette.LilacViolet,
-            "N1" to IsoluminantPalette.CoralFlame
+            "N5" to IosColors.Green,
+            "N4" to IosColors.Cyan,
+            "N3" to IosColors.Indigo,
+            "N2" to IosColors.Purple,
+            "N1" to IosColors.Red
         )
         levelsList.forEach { (level, levelColor) ->
             val count = countsByLevel[level] ?: 0
             val isSelected = selectedLevel.equals(level, ignoreCase = true)
             NemoMorphMenuItem(
                 text = stringResource(R.string.lib_components_level_count_format, level, count),
-                plumpIcon = PlumpIcon.GraduationCap,
-                iconColor = if (isPlumpDuo) levelColor else null,
+                leadingIcon = Icons.Rounded.School,
+                iconColor = levelColor,
                 trailingIcon = if (isSelected) Icons.Rounded.Check else null,
                 onClick = {
                     onLevelSelected(level)

@@ -6,7 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -73,7 +73,7 @@ fun AnimatedButton(
         OutlinedButton(
             onClick = onClick,
             modifier = buttonModifier,
-            shape = RoundedCornerShape(24.dp), // Consistent with AnswerContainer
+            shape = RoundedRectangle(24.dp), // Consistent with AnswerContainer
             enabled = enabled,
             interactionSource = interactionSource
         ) {
@@ -89,7 +89,7 @@ fun AnimatedButton(
         Button(
             onClick = onClick,
             modifier = buttonModifier,
-            shape = RoundedCornerShape(24.dp), // Consistent with AnswerContainer
+            shape = RoundedRectangle(24.dp), // Consistent with AnswerContainer
             enabled = enabled,
             colors = colors,
             elevation = ButtonDefaults.buttonElevation(

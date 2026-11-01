@@ -14,33 +14,21 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Inbox
-import androidx.compose.material.icons.rounded.Checklist
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.Layers
-import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.Apps
-import androidx.compose.material.icons.rounded.DoneAll
 import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -152,47 +140,24 @@ fun GrammarListScreen(
         val tabLearnedText = stringResource(R.string.lib_grammar_list_tab_learned)
         val tabUnlearnedText = stringResource(R.string.lib_grammar_list_tab_unlearned)
 
-        val options = remember(iconStyle, tabAllText, tabLearnedText, tabUnlearnedText) {
-            if (iconStyle == SettingIconStyle.PLUMP_DUO) {
-                listOf(
-                    DiscoveryOption(
-                        label = tabAllText,
-                        icon = Icons.Default.Book,
-                        plumpIcon = PlumpIcon.BookOpen,
-                        activeColor = IsoluminantPalette.SkyIndigo,
-                    ),
-                    DiscoveryOption(
-                        label = tabLearnedText,
-                        icon = Icons.Default.CheckCircle,
-                        plumpIcon = PlumpIcon.BadgeCheck,
-                        activeColor = IsoluminantPalette.EmeraldGreen,
-                    ),
-                    DiscoveryOption(
-                        label = tabUnlearnedText,
-                        icon = Icons.Default.Error,
-                        plumpIcon = PlumpIcon.Flame,
-                        activeColor = IsoluminantPalette.WarmAmber,
-                    ),
-                )
-            } else {
-                listOf(
-                    DiscoveryOption(
-                        label = tabAllText,
-                        icon = Icons.Default.Book,
-                        activeColor = NemoIndigo,
-                    ),
-                    DiscoveryOption(
-                        label = tabLearnedText,
-                        icon = Icons.Default.CheckCircle,
-                        activeColor = NemoSecondary,
-                    ),
-                    DiscoveryOption(
-                        label = tabUnlearnedText,
-                        icon = Icons.Default.Error,
-                        activeColor = NemoOrange,
-                    ),
-                )
-            }
+        val options = remember(tabAllText, tabLearnedText, tabUnlearnedText) {
+            listOf(
+                DiscoveryOption(
+                    label = tabAllText,
+                    icon = Icons.AutoMirrored.Rounded.MenuBook,
+                    activeColor = IosColors.Indigo,
+                ),
+                DiscoveryOption(
+                    label = tabLearnedText,
+                    icon = Icons.Rounded.CheckCircle,
+                    activeColor = IosColors.Green,
+                ),
+                DiscoveryOption(
+                    label = tabUnlearnedText,
+                    icon = Icons.Rounded.HourglassEmpty,
+                    activeColor = IosColors.Orange,
+                ),
+            )
         }
         val selectedIndex = when (uiState.filterState) {
             StudyFilter.ALL -> 0
@@ -296,16 +261,15 @@ fun GrammarListScreen(
                                     else ->
                                         stringResource(R.string.lib_grammar_list_empty_default_title) to stringResource(R.string.lib_grammar_list_empty_default_desc)
                                 }
-                                val (emptyIcon, emptyPlumpIcon) = if (searchQuery.isNotEmpty()) {
-                                    Icons.Rounded.Search to PlumpIcon.SearchX
+                                val emptyIcon = if (searchQuery.isNotEmpty()) {
+                                    Icons.Rounded.Search
                                 } else {
-                                    Icons.Rounded.Checklist to PlumpIcon.ListChecks
+                                    Icons.AutoMirrored.Rounded.MenuBook
                                 }
                                 EmptyState(
                                     title = emptyTitle,
                                     subtitle = emptySubtitle,
-                                    icon = emptyIcon,
-                                    plumpIcon = emptyPlumpIcon
+                                    icon = emptyIcon
                                 )
                             }
                         }
@@ -372,11 +336,11 @@ fun GrammarListScreen(
         com.jian.nemo.core.ui.component.common.NemoSnackbar(
             visible = uiState.syncMessage != null,
             message = uiState.syncMessage ?: "",
-            type = if (uiState.syncMessage?.contains("失败") == true)
+            type = if (uiState.syncMessage?.contains(stringResource(R.string.library_list_label_sync_failed_keyword)) == true)
                 com.jian.nemo.core.ui.component.common.NemoSnackbarType.ERROR
             else
                 com.jian.nemo.core.ui.component.common.NemoSnackbarType.SUCCESS,
-            icon = if (uiState.syncMessage?.contains("失败") == true)
+            icon = if (uiState.syncMessage?.contains(stringResource(R.string.library_list_label_sync_failed_keyword)) == true)
                 Icons.Rounded.Warning
             else
                 Icons.Rounded.CheckCircle,
@@ -389,65 +353,53 @@ fun GrammarListScreen(
     }
 }
 
-private val Md3AvatarColors = listOf(
-    NemoPrimary, NemoOrange, NemoSecondary, NemoIndigo,
-    NemoTeal, NemoPurple, IosColors.Pink, NemoCyan
-)
-
-private val PlumpAvatarColors = listOf(
-    IsoluminantPalette.SkyIndigo,     // 255°
-    IsoluminantPalette.LakesideCyan,  // 195°
-    IsoluminantPalette.EmeraldGreen,  // 145°
-    IsoluminantPalette.WarmAmber,     // 70°
-    IsoluminantPalette.CoralFlame,    // 30°
-    IsoluminantPalette.RoseRuby,      // 15°
-    IsoluminantPalette.LilacViolet,   // 295°
-    IsoluminantPalette.GlazeMint      // 175°
+private val AvatarPalette = listOf(
+    IosColors.Blue,
+    IosColors.Orange,
+    IosColors.Green,
+    IosColors.Indigo,
+    IosColors.Teal,
+    IosColors.Purple,
+    IosColors.Pink,
+    IosColors.Cyan
 )
 
 @Composable
 private fun getLevelColor(level: String): Color {
-    val iconStyle = LocalSettingIconStyle.current
-    return if (iconStyle == SettingIconStyle.PLUMP_DUO) {
-        when (level.uppercase()) {
-            "N5" -> IsoluminantPalette.EmeraldGreen
-            "N4" -> IsoluminantPalette.LakesideCyan
-            "N3" -> IsoluminantPalette.SkyIndigo
-            "N2" -> IsoluminantPalette.WarmAmber
-            "N1" -> IsoluminantPalette.RoseRuby
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        when (level.uppercase()) {
-            "N5" -> NemoSecondary
-            "N4" -> NemoCyan
-            "N3" -> NemoPrimary
-            "N2" -> NemoOrange
-            "N1" -> IosColors.Pink
-            else -> NemoPrimary
-        }
+    return when (level.uppercase()) {
+        "N5" -> IosColors.Green
+        "N4" -> IosColors.Cyan
+        "N3" -> IosColors.Blue
+        "N2" -> IosColors.Orange
+        "N1" -> IosColors.Pink
+        else -> IosColors.Blue
     }
 }
 
 @Composable
 private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
     val iconStyle = LocalSettingIconStyle.current
-    val avatarColors = if (iconStyle == SettingIconStyle.PLUMP_DUO) PlumpAvatarColors else Md3AvatarColors
-    val avatarColor = avatarColors[kotlin.math.abs(grammar.id.hashCode()) % avatarColors.size]
+    val avatarColor = AvatarPalette[kotlin.math.abs(grammar.id.hashCode()) % AvatarPalette.size]
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) avatarColor.copy(alpha = 0.15f) else avatarColor
+    val contentColor = if (isSoftTranslucent) avatarColor else Color.White
+
     PremiumCard(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
-                modifier = Modifier.size(50.dp).background(avatarColor.copy(alpha = 0.12f), RoundedCornerShape(16.dp)),
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(containerBg, RoundedRectangle(16.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "文",
+                    text = stringResource(R.string.library_grammar_list_label_avatar_badge),
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontFamily = NotoSerifJP,
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
                     fontWeight = FontWeight.W900,
-                    color = avatarColor
+                    color = contentColor
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -469,11 +421,13 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
             }
             if (grammar.grammarLevel.isNotBlank()) {
                 val levelColor = getLevelColor(grammar.grammarLevel)
+                val levelBg = if (isSoftTranslucent) levelColor.copy(alpha = 0.15f) else levelColor
+                val levelText = if (isSoftTranslucent) levelColor else Color.White
                 Spacer(modifier = Modifier.width(8.dp))
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(levelColor.copy(alpha = 0.12f))
+                        .clip(RoundedRectangle(8.dp))
+                        .background(levelBg)
                         .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -482,7 +436,7 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Black,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = levelColor
+                        color = levelText
                     )
                 }
             }
@@ -494,12 +448,13 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
 private fun EmptyState(
     title: String,
     subtitle: String? = null,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Checklist,
-    plumpIcon: PlumpIcon? = null
+    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.AutoMirrored.Rounded.MenuBook
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoSecondary
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val accentColor = IosColors.Indigo
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -508,32 +463,18 @@ private fun EmptyState(
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
     ) {
-        if (isPlumpDuo && plumpIcon != null) {
-            Box(
-                modifier = Modifier.size(72.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                PlumpDuoIcon(
-                    icon = plumpIcon,
-                    color = accentColor,
-                    size = 56.dp
-                )
-            }
-        } else {
-            Surface(
-                shape = RoundedCornerShape(32.dp),
-                color = accentColor.copy(alpha = 0.1f),
-                modifier = Modifier.size(100.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = accentColor.copy(alpha = 0.8f)
-                    )
-                }
-            }
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(containerBg, RoundedRectangle(28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = iconTint
+            )
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
@@ -565,7 +506,7 @@ private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable Colu
     Surface(
         onClick = onClick ?: {},
         enabled = onClick != null,
-        shape = RoundedCornerShape(22.dp),
+        shape = RoundedRectangle(22.dp),
         color = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
         modifier = Modifier
             .fillMaxWidth()

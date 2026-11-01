@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Button
@@ -146,7 +146,7 @@ fun CommonConfigDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(32.dp),
+            shape = RoundedRectangle(32.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(
                 width = 1.dp,
@@ -190,7 +190,7 @@ fun CommonConfigDialog(
                     Box(
                         modifier = Modifier
                             .size(54.dp)
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedRectangle(18.dp))
                             .background(if (isDark) headerIconBgColorDark else headerIconBgColor),
                         contentAlignment = Alignment.Center
                     ) {
@@ -198,7 +198,7 @@ fun CommonConfigDialog(
                             imageVector = headerIcon,
                             contentDescription = null,
                             tint = headerIconTint,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(36.dp)
                         )
                     }
 

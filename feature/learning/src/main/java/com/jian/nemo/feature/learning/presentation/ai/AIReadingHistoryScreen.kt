@@ -7,16 +7,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material3.*
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.NemoDialog
@@ -173,12 +172,14 @@ private fun HistoryItemCard(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val colorScheme = MaterialTheme.colorScheme
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
-    val dateFormat = remember { SimpleDateFormat("MM月dd日 HH:mm", Locale.getDefault()) }
+    val dateFormatPattern = stringResource(R.string.learning_ai_reading_format_date_month_day_time)
+    val dateFormat = remember(dateFormatPattern) { SimpleDateFormat(dateFormatPattern, Locale.getDefault()) }
     val timeStr = dateFormat.format(Date(history.createdAt))
 
     // 计算正确率
@@ -190,7 +191,7 @@ private fun HistoryItemCard(
 
     Surface(
         color = surfaceColor,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         border = BorderStroke(1.dp, borderColor),
         modifier = Modifier
             .fillMaxWidth()
@@ -200,32 +201,23 @@ private fun HistoryItemCard(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标装饰：在 Plump Duo 模式下移除纯色圆形底块，居中显示 28dp 双色图标
-            if (isPlumpDuo) {
-                Box(
-                    modifier = Modifier.size(46.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PlumpDuoIcon(
-                        icon = PlumpIcon.BookOpen,
-                        color = IsoluminantPalette.SkyIndigo,
-                        size = 28.dp
+            // 图标装饰：遵循 2:3 黄金比例与双轨单容器架构
+            val itemIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            val itemContainerBg = if (isSoftTranslucent) itemIconColor.copy(alpha = 0.15f) else itemIconColor
+            val itemIconTint = if (isSoftTranslucent) itemIconColor else Color.White
+
+            Surface(
+                shape = RoundedRectangle(12.dp),
+                color = itemContainerBg,
+                modifier = Modifier.size(42.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
+                        contentDescription = null,
+                        tint = itemIconTint,
+                        modifier = Modifier.size(28.dp)
                     )
-                }
-            } else {
-                Surface(
-                    shape = CircleShape,
-                    color = if (isDark) colorScheme.primaryContainer.copy(alpha = 0.3f) else colorScheme.primaryContainer.copy(alpha = 0.5f),
-                    modifier = Modifier.size(46.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.Book,
-                            contentDescription = null,
-                            tint = colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
                 }
             }
 
@@ -249,7 +241,7 @@ private fun HistoryItemCard(
                 ) {
                     // 级别标签
                     Surface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = RoundedRectangle(6.dp),
                         color = if (isDark) colorScheme.secondaryContainer.copy(alpha = 0.4f) else colorScheme.secondaryContainer.copy(alpha = 0.6f),
                         modifier = Modifier.padding(end = 4.dp)
                     ) {
@@ -274,42 +266,36 @@ private fun HistoryItemCard(
             // 答题状态标签
             if (history.isSubmitted) {
                 val isAllCorrect = correctCount == totalQuestions
-                val badgeBg = when {
-                    isPlumpDuo && isAllCorrect -> IsoluminantPalette.EmeraldGreen.copy(alpha = 0.08f)
-                    isPlumpDuo -> IsoluminantPalette.CoralFlame.copy(alpha = 0.08f)
-                    isAllCorrect -> LearningPalette.ReadingIconBgGreen
-                    else -> LearningPalette.ReadingIconBgRed.copy(alpha = 0.6f)
+                val badgeColor = if (isAllCorrect) {
+                    if (isDark) IosColors.GreenDark else IosColors.Green
+                } else {
+                    if (isDark) IosColors.RedDark else IosColors.Red
                 }
-                val badgeTextColor = when {
-                    isPlumpDuo && isAllCorrect -> IsoluminantPalette.EmeraldGreen
-                    isPlumpDuo -> IsoluminantPalette.CoralFlame
-                    isAllCorrect -> LearningPalette.ReadingAccentGreen
-                    else -> LearningPalette.ReadingAccentRed
-                }
+                val badgeBg = badgeColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedRectangle(8.dp),
                     color = badgeBg,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.ai_reading_score_format, correctCount, totalQuestions),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = badgeTextColor,
+                        color = badgeColor,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
             } else {
-                val ongoingBg = if (isPlumpDuo) IsoluminantPalette.WarmAmber.copy(alpha = 0.08f) else LearningPalette.ReadingIconBgOrange
-                val ongoingTextColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else LearningPalette.ReadingAccentOrange
+                val ongoingColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                val ongoingBg = ongoingColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedRectangle(8.dp),
                     color = ongoingBg,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.ai_reading_status_ongoing),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = ongoingTextColor,
+                        color = ongoingColor,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -338,7 +324,8 @@ private fun EmptyState(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
@@ -351,31 +338,22 @@ private fun EmptyState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (isPlumpDuo) {
-                Box(
-                    modifier = Modifier.size(72.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    PlumpDuoIcon(
-                        icon = PlumpIcon.History,
-                        color = IsoluminantPalette.SkyIndigo,
-                        size = 56.dp
+            val emptyIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            val emptyContainerBg = if (isSoftTranslucent) emptyIconColor.copy(alpha = 0.15f) else emptyIconColor
+            val emptyIconTint = if (isSoftTranslucent) emptyIconColor else Color.White
+
+            Surface(
+                shape = RoundedRectangle(28.dp),
+                color = emptyContainerBg,
+                modifier = Modifier.size(100.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Rounded.History,
+                        contentDescription = null,
+                        modifier = Modifier.size(56.dp),
+                        tint = emptyIconTint
                     )
-                }
-            } else {
-                Surface(
-                    shape = RoundedCornerShape(32.dp),
-                    color = if (isDark) colorScheme.primary.copy(alpha = 0.15f) else colorScheme.primary.copy(alpha = 0.1f),
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Rounded.History,
-                            contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = colorScheme.primary
-                        )
-                    }
                 }
             }
 
@@ -408,10 +386,10 @@ private fun EmptyState(
                 .padding(bottom = 24.dp)
                 .height(54.dp)
                 .align(Alignment.BottomCenter),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedRectangle(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else colorScheme.primary,
-                contentColor = colorScheme.onPrimary
+                containerColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                contentColor = Color.White
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
         ) {

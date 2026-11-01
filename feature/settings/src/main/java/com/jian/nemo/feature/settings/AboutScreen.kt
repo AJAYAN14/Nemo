@@ -22,7 +22,7 @@ import android.os.Build
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -54,16 +55,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.R as DesignR
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
-import com.jian.nemo.core.ui.modifier.shaderRipple
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.core.ui.modifier.tiltOnPress
 import com.jian.nemo.core.ui.util.AppUtils
+import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
@@ -111,7 +111,7 @@ private fun parade(): List<Party> {
 /**
  * 关于 Nemo 界面 (AboutScreen)
  *
- * 1. 顶部融合 Cresto 同款 3D 物理倾斜、AGSL 光波扩散与明度发光边框；
+ * 1. 顶部融合 Cresto 同款 3D 物理倾斜与明度发光边框；
  * 2. 支持连续点击 10 次与【长按 0.8s】触发 Cresto 1:1 双炮筒抛物线喷射彩花；
  * 3. 启动更新检测开关持久化控制冷启动更新；
  * 4. 更新日志对接 Supabase 后端 (ConfigRepository)，拒绝硬编码；
@@ -129,6 +129,7 @@ fun AboutScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val aboutUiState by viewModel.uiState.collectAsState()
+    val settingIconStyle by viewModel.settingIconStyle.collectAsState()
 
     val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
     var checkUpdateOnStartup by remember {
@@ -187,11 +188,14 @@ fun AboutScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
+    CompositionLocalProvider(
+        LocalSettingIconStyle provides settingIconStyle
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             modifier = Modifier
@@ -203,11 +207,11 @@ fun AboutScreen(
             )
         ) {
                 // ==========================================
-                // 1. 顶部艺术卡片（3D 物理倾斜 + 长按检测 + AGSL 波纹 + 明度发光描边）
+                // 1. 顶部艺术卡片（3D 物理倾斜 + 长按检测 + 明度发光描边）
                 // ==========================================
                 item {
                     val density = LocalDensity.current
-                    val cardShape = RoundedCornerShape(24.dp)
+                    val cardShape = RoundedRectangle(24.dp)
 
                     Box(
                         modifier = Modifier
@@ -230,7 +234,6 @@ fun AboutScreen(
                                 }
                             )
                             .clip(cardShape)
-                            .shaderRipple(dark = isDark)
                             .drawWithContent {
                                 drawContent()
                                 val outline = cardShape.createOutline(
@@ -259,9 +262,7 @@ fun AboutScreen(
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = Icons.Rounded.RocketLaunch,
-                            plumpIcon = PlumpIcon.LiquidLab,
-                            iconColor = NemoCyan,
-                            plumpColor = IsoluminantPalette.LakesideCyan,
+                            iconColor = IosColors.Cyan,
                             title = stringResource(R.string.settings_about_title_auto_check),
                             subtitle = stringResource(R.string.settings_about_subtitle_auto_check),
                             onClick = {
@@ -277,16 +278,14 @@ fun AboutScreen(
                                         checkUpdateOnStartup = next
                                         prefs.edit().putBoolean(KEY_CHECK_UPDATE_ON_STARTUP, next).apply()
                                     },
-                                    accentColor = NemoPrimary
+                                    accentColor = IosColors.Blue
                                 )
                             }
                         )
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Cached,
-                            plumpIcon = PlumpIcon.CheckUpdate,
-                            iconColor = NemoSecondary,
-                            plumpColor = IsoluminantPalette.OceanBlue,
+                            iconColor = IosColors.Green,
                             iconRotation = if (isCheckingUpdate) checkUpdateRotation else 0f,
                             title = stringResource(R.string.settings_about_title_check_update),
                             subtitle = if (isCheckingUpdate) stringResource(R.string.settings_about_subtitle_checking) else stringResource(R.string.settings_about_subtitle_current_version_format, versionName, versionCode),
@@ -318,6 +317,11 @@ fun AboutScreen(
                 // 3. 更新日志（后端 Supabase 真实数据动态加载）
                 // ==========================================
                 item {
+                    val iconStyle = LocalSettingIconStyle.current
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val changelogBg = if (isSoftTranslucent) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue
+                    val changelogTint = if (isSoftTranslucent) IosColors.Blue else Color.White
+
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_changelog))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Column(
@@ -342,7 +346,7 @@ fun AboutScreen(
                                         scaleX = changelogScale
                                         scaleY = changelogScale
                                     }
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedRectangle(12.dp))
                                     .clickable(
                                         interactionSource = changelogInteractionSource,
                                         indication = null
@@ -352,14 +356,14 @@ fun AboutScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(42.dp)
-                                        .background(NemoPrimary.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                                        .background(changelogBg, RoundedRectangle(12.dp)),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(
                                         imageVector = Icons.Rounded.Info,
                                         contentDescription = null,
-                                        tint = NemoPrimary,
-                                        modifier = Modifier.size(22.dp)
+                                        tint = changelogTint,
+                                        modifier = Modifier.size(28.dp)
                                     )
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
@@ -397,7 +401,7 @@ fun AboutScreen(
                                                 CircularProgressIndicator(
                                                     modifier = Modifier.size(20.dp),
                                                     strokeWidth = 2.dp,
-                                                    color = NemoPrimary
+                                                    color = IosColors.Blue
                                                 )
                                                 Spacer(modifier = Modifier.width(10.dp))
                                                 Text(
@@ -465,9 +469,7 @@ fun AboutScreen(
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
-                            plumpIcon = PlumpIcon.GitHub,
-                            iconColor = NemoPrimary,
-                            plumpColor = IsoluminantPalette.OceanBlue,
+                            iconColor = IosColors.Blue,
                             title = stringResource(R.string.settings_about_title_github),
                             subtitle = stringResource(R.string.settings_about_subtitle_github),
                             onClick = {
@@ -503,9 +505,7 @@ fun AboutScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Person,
-                            plumpIcon = PlumpIcon.User,
-                            iconColor = NemoPurple,
-                            plumpColor = IsoluminantPalette.LilacViolet,
+                            iconColor = IosColors.Purple,
                             title = stringResource(R.string.settings_about_title_developer),
                             subtitle = stringResource(R.string.settings_about_subtitle_developer),
                             onClick = {
@@ -555,7 +555,7 @@ fun AboutScreen(
                             )
                             VersionInfoRow(
                                 label = stringResource(R.string.settings_about_label_tech_stack),
-                                value = "Kotlin + Jetpack Compose + AGSL"
+                                value = "Kotlin + Jetpack Compose"
                             )
                         }
                     }
@@ -611,6 +611,7 @@ fun AboutScreen(
                 }
             }
         }
+    }
 }
 
 /**
@@ -628,7 +629,7 @@ private fun ChangelogLineItem(text: String) {
             modifier = Modifier
                 .padding(top = 7.dp, end = 8.dp)
                 .size(6.dp)
-                .background(NemoPrimary, CircleShape)
+                .background(IosColors.Blue, CircleShape)
         )
         Text(
             text = text,
@@ -678,67 +679,16 @@ private fun VersionInfoRow(
 }
 
 /**
- * Nemo 专属艺术 Banner 绘制组件
- */
-private const val GRAIN_SHADER_SRC = """
-uniform shader composable;
-uniform float2 resolution;
-uniform float intensity;
-uniform float isDark;
-
-float hash21(float2 p) {
-    float3 p3 = fract(float3(p.xyx) * 0.1031);
-    p3 += dot(p3, p3.yzx + 33.33);
-    return fract((p3.x + p3.y) * p3.z);
-}
-
-half4 main(float2 fragCoord) {
-    half4 color = composable.eval(fragCoord);
-    float noise = hash21(fragCoord);
-    float grain = (noise - 0.5) * intensity;
-    if (isDark > 0.5) {
-        color.rgb += half3(grain * 1.35);
-    } else {
-        color.rgb = clamp(color.rgb + half3(grain * 0.95), 0.0, 1.0);
-    }
-    return color;
-}
-"""
-
-/**
  * Nemo 专属高阶纯代码艺术卡片 Banner
  *
  * 1. 采用对角线 135° 环境微光与艺术纸张底色；
  * 2. 居中渲染透明青蛙 Logo 背景图；
- * 3. AGSL 微米级胶片喷砂着色器（Film Grain Shader），打造孔版印刷砂纸肌理；
- * 4. 完美融合 3D 物理倾斜微动与明度发光边框。
+ * 3. 完美融合 3D 物理倾斜微动与明度发光边框。
  */
 @Composable
 private fun NemoArtisticBanner(isDark: Boolean) {
-    val runtimeShader = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                android.graphics.RuntimeShader(GRAIN_SHADER_SRC)
-            } catch (_: Throwable) {
-                null
-            }
-        } else null
-    }
-
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                if (runtimeShader != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    runtimeShader.setFloatUniform("resolution", size.width, size.height)
-                    runtimeShader.setFloatUniform("intensity", if (isDark) 0.12f else 0.15f)
-                    runtimeShader.setFloatUniform("isDark", if (isDark) 1.0f else 0.0f)
-                    renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-                        runtimeShader,
-                        "composable"
-                    ).asComposeRenderEffect()
-                }
-            }
+        modifier = Modifier.fillMaxSize()
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val w = size.width
@@ -760,30 +710,28 @@ private fun NemoArtisticBanner(isDark: Boolean) {
             )
             drawRect(brush = lightBeamBrush)
 
-            // 3. 低版本/未开启 AGSL 时的兜底微米纸质颗粒漫射层
-            if (runtimeShader == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                val noiseTint = if (isDark) Color.White.copy(alpha = 0.045f) else SettingsPalette.AboutNoiseLight.copy(alpha = 0.04f)
-                val step = 12f
-                var y = 0f
-                var r = 0
-                while (y < h) {
-                    var x = 0f
-                    var c = 0
-                    while (x < w) {
-                        val pseudo = (r * 43 + c * 89) % 97
-                        if (pseudo > 50) {
-                            drawCircle(
-                                color = noiseTint,
-                                radius = if (pseudo > 88) 1.5f else 0.8f,
-                                center = Offset(x + (pseudo % 7) - 3f, y + ((pseudo / 7) % 7) - 3f)
-                            )
-                        }
-                        x += step
-                        c++
+            // 3. 微米纸质颗粒漫射层
+            val noiseTint = if (isDark) Color.White.copy(alpha = 0.045f) else SettingsPalette.AboutNoiseLight.copy(alpha = 0.04f)
+            val step = 12f
+            var y = 0f
+            var r = 0
+            while (y < h) {
+                var x = 0f
+                var c = 0
+                while (x < w) {
+                    val pseudo = (r * 43 + c * 89) % 97
+                    if (pseudo > 50) {
+                        drawCircle(
+                            color = noiseTint,
+                            radius = if (pseudo > 88) 1.5f else 0.8f,
+                            center = Offset(x + (pseudo % 7) - 3f, y + ((pseudo / 7) % 7) - 3f)
+                        )
                     }
-                    y += step
-                    r++
+                    x += step
+                    c++
                 }
+                y += step
+                r++
             }
         }
 

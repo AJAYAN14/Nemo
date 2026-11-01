@@ -22,7 +22,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -61,9 +61,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
@@ -135,7 +133,12 @@ fun AISettingsScreen(
                     )
                 ) {
                         item {
-                            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+                            val iconStyle = LocalSettingIconStyle.current
+                            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                            val baseColor = IosColors.Blue
+                            val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
+                            val iconTint = if (isSoftTranslucent) baseColor else Color.White
+
                             PremiumCard(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -146,34 +149,18 @@ fun AISettingsScreen(
                                         .padding(16.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    if (isPlumpDuo) {
-                                        Box(
-                                            modifier = Modifier.size(46.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.AiBot,
-                                                color = IsoluminantPalette.GlazeMint,
-                                                size = 36.dp
-                                            )
-                                        }
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(46.dp)
-                                                .background(
-                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                                    RoundedCornerShape(14.dp)
-                                                ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.AutoAwesome,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                        }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(42.dp)
+                                            .background(containerBg, RoundedRectangle(12.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.SmartToy,
+                                            contentDescription = null,
+                                            tint = iconTint,
+                                            modifier = Modifier.size(28.dp)
+                                        )
                                     }
                                     Spacer(modifier = Modifier.width(16.dp))
                                     Column {
@@ -370,7 +357,7 @@ fun SwipeableActionTile(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Rounded.DeleteOutline,
+                        imageVector = Icons.Rounded.Delete,
                         contentDescription = stringResource(R.string.settings_ai_cd_delete_config),
                         tint = Color.White,
                         modifier = Modifier.size(22.dp)
@@ -500,7 +487,7 @@ fun AIConfigCard(
                 scaleX = scale
                 scaleY = scale
             }
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedRectangle(16.dp))
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -510,7 +497,7 @@ fun AIConfigCard(
                     onLongClick()
                 }
             ),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedRectangle(16.dp),
         color = containerColor,
         border = BorderStroke(
             width = if (isActive) 1.5.dp else 1.dp,
@@ -553,21 +540,12 @@ fun AIConfigCard(
                         tint = Color.Unspecified
                     )
                 } else {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-                    if (isPlumpDuo) {
-                        PlumpDuoIcon(
-                            icon = PlumpIcon.Cpu,
-                            color = platformColor,
-                            size = 28.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Rounded.Cable,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = platformColor
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Rounded.Memory,
+                        contentDescription = null,
+                        modifier = Modifier.size(26.dp),
+                        tint = platformColor
+                    )
                 }
             }
 
@@ -587,8 +565,8 @@ fun AIConfigCard(
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedCornerShape(6.dp))
-                                .border(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), RoundedRectangle(6.dp))
+                                .border(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f), RoundedRectangle(6.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
@@ -700,7 +678,7 @@ fun FormSectionCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 18.dp, isDark = isDark),
-            shape = RoundedCornerShape(18.dp),
+            shape = RoundedRectangle(18.dp),
             color = containerColor
         ) {
             Column(
@@ -746,7 +724,7 @@ fun PlatformDropdownSelector(
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedRectangle(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.25f else 0.35f),
@@ -896,12 +874,12 @@ fun RecommendedModelChips(
 
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedRectangle(8.dp))
                             .background(chipBgColor)
                             .border(
                                 width = if (isSelected) 1.2.dp else 1.dp,
                                 color = chipBorderColor,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedRectangle(8.dp)
                             )
                             .clickable {
                                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -953,7 +931,7 @@ fun FormBottomActionBar(
             modifier = Modifier
                 .weight(0.38f)
                 .height(48.dp),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedRectangle(14.dp),
             border = BorderStroke(
                 width = 1.dp,
                 color = if (canTest && !isTesting) {
@@ -1003,7 +981,7 @@ fun FormBottomActionBar(
             modifier = Modifier
                 .weight(0.62f)
                 .height(48.dp),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedRectangle(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -1061,7 +1039,7 @@ fun AISettingTextField(
                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
                 ) 
             },
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedRectangle(14.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.25f else 0.35f),
@@ -1104,7 +1082,7 @@ private fun EmptyAIConfigView(
             verticalArrangement = Arrangement.Center
         ) {
             Surface(
-                shape = RoundedCornerShape(32.dp),
+                shape = RoundedRectangle(32.dp),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 modifier = Modifier.size(100.dp)
             ) {

@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,9 +52,9 @@ enum class NemoSnackbarType {
 }
 
 /**
- * Nemo 自定义顶部 Snackbar
+ * 全局浮动轻提示组件。
  *
- * 用于替代 MD3 官方 Snackbar，提供统一的项目 UI 风格
+ * 支持多语义类型色彩映射、进入与退出动效、自动延时关闭及全局点击交互。
  *
  * @param visible 是否显示
  * @param message 消息内容
@@ -108,8 +108,8 @@ fun NemoSnackbar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .shadow(8.dp, RoundedCornerShape(cornerRadius))
-                .clip(RoundedCornerShape(cornerRadius))
+                .shadow(8.dp, RoundedRectangle(cornerRadius))
+                .clip(RoundedRectangle(cornerRadius))
                 .background(Brush.horizontalGradient(gradientColors))
                 .then(
                     if (onClick != null) {

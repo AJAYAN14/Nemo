@@ -1,15 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.NemoDangerDark
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
-import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
-import com.jian.nemo.core.designsystem.theme.NemoWarning
-import com.jian.nemo.core.designsystem.theme.NemoWarningDark
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -21,7 +13,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.Close
@@ -71,23 +63,12 @@ fun FavoriteGrammarsScreen(
     val iconStyle by viewModel.iconStyle.collectAsState()
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-    // Premium Aesthetics
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
-    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
-    val premiumOrange = if (isDark) NemoWarningDark else NemoWarning
-    val premiumGray = MaterialTheme.colorScheme.onSurfaceVariant
-
-    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
-    val heartColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else premiumRed
-    val accentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else premiumOrange
-    val accentBlue = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
-    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
+    val heartColor = IosColors.Pink
+    val accentColor = IosColors.Orange
+    val accentBlue = IosColors.Blue
+    val deleteColor = IosColors.Red
 
     // 多选状态
     var selectedGrammarIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -194,7 +175,6 @@ fun FavoriteGrammarsScreen(
                     }
                 }
                 uiState.favoriteGrammars.isEmpty() -> {
-                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -205,32 +185,20 @@ fun FavoriteGrammarsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.Heart,
-                                        color = heartColor,
-                                        size = 64.dp
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(32.dp),
-                                    color = premiumRed.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(100.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Favorite,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp),
-                                            tint = premiumRed.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                }
+                            val emptyBgColor = if (isSoftTranslucent) heartColor.copy(alpha = 0.15f) else heartColor
+                            val emptyTint = if (isSoftTranslucent) heartColor else Color.White
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .background(emptyBgColor, RoundedRectangle(28.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Favorite,
+                                    contentDescription = null,
+                                    tint = emptyTint,
+                                    modifier = Modifier.size(56.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
@@ -287,9 +255,9 @@ fun FavoriteGrammarsScreen(
                                         }
                                     },
                                     accentColor = accentColor,
-                                    tagColor = getLevelColor(grammar.grammarLevel, isPlumpDuo),
+                                    tagColor = getLevelColor(grammar.grammarLevel),
                                     heartColor = heartColor,
-                                    isPlumpDuo = isPlumpDuo
+                                    isSoftTranslucent = isSoftTranslucent
                                 )
                             }
                         }
@@ -299,24 +267,18 @@ fun FavoriteGrammarsScreen(
         }
     }
 }
-}
 
 /**
- * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ * 获取 JLPT 等级对应颜色（统一收拢至标准设计色彩手册 IosColors）
  */
-@Composable
-private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
-    return if (isPlumpDuo) {
-        when (level.uppercase()) {
-            "N5" -> IsoluminantPalette.EmeraldGreen
-            "N4" -> IsoluminantPalette.LakesideCyan
-            "N3" -> IsoluminantPalette.SkyIndigo
-            "N2" -> IsoluminantPalette.WarmAmber
-            "N1" -> IsoluminantPalette.RoseRuby
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) NemoPrimaryDark else NemoPrimary
+private fun getLevelColor(level: String): Color {
+    return when (level.uppercase()) {
+        "N5" -> IosColors.Green
+        "N4" -> IosColors.Cyan
+        "N3" -> IosColors.Blue
+        "N2" -> IosColors.Orange
+        "N1" -> IosColors.Pink
+        else -> IosColors.Indigo
     }
 }
 
@@ -334,7 +296,7 @@ private fun FavoriteGrammarItem(
     accentColor: Color,
     tagColor: Color,
     heartColor: Color,
-    isPlumpDuo: Boolean
+    isSoftTranslucent: Boolean
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
@@ -346,7 +308,7 @@ private fun FavoriteGrammarItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -405,50 +367,38 @@ private fun FavoriteGrammarItem(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Heart Icon：Plump Duo 取消方块背景，使用透明对齐容器 (多选模式下隐藏)
+                // Heart Icon：单容器计算属性复用 (30dp 底块 + 20dp 实心圆角爱心，多选模式下隐藏)
                 AnimatedVisibility(
                     visible = !isSelectionMode,
                     enter = fadeIn(),
                     exit = fadeOut()
                 ) {
-                    if (isPlumpDuo) {
-                        Box(
-                            modifier = Modifier.size(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.Heart,
-                                color = heartColor,
-                                size = 18.dp
-                            )
-                        }
-                    } else {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = heartColor.copy(alpha = 0.1f),
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Favorite,
-                                    contentDescription = stringResource(R.string.collection_cd_favorited),
-                                    tint = heartColor,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
+                    val heartBg = if (isSoftTranslucent) heartColor.copy(alpha = 0.15f) else heartColor
+                    val heartTint = if (isSoftTranslucent) heartColor else Color.White
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .background(heartBg, RoundedRectangle(8.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Favorite,
+                            contentDescription = stringResource(R.string.collection_cd_favorited),
+                            tint = heartTint,
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
                 }
 
                 // JLPT Squircle Tag
                 Surface(
-                    shape = RoundedCornerShape(10.dp),
-                    color = tagColor.copy(alpha = 0.1f)
+                    shape = RoundedRectangle(8.dp),
+                    color = tagColor.copy(alpha = 0.12f)
                 ) {
                     Text(
-                        text = grammar.grammarLevel,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelMedium,
+                        text = grammar.grammarLevel.uppercase(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = tagColor
                     )

@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Timer
@@ -146,7 +146,7 @@ fun DurationPickerDialog(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(32.dp),
+            shape = RoundedRectangle(32.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(
                 width = 1.dp,
@@ -190,7 +190,7 @@ fun DurationPickerDialog(
                     Box(
                         modifier = Modifier
                             .size(52.dp)
-                            .clip(RoundedCornerShape(18.dp))
+                            .clip(RoundedRectangle(18.dp))
                             .background(if (isDark) UiPalette.DialogBlueTintBgDark else UiPalette.DialogBlueTintBgLight),
                         contentAlignment = Alignment.Center
                     ) {
@@ -198,7 +198,7 @@ fun DurationPickerDialog(
                             imageVector = Icons.Rounded.Timer,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(35.dp)
                         )
                     }
 

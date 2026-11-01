@@ -4,7 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -44,7 +45,6 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.srs.SrsStatusChip
 
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -202,8 +202,8 @@ private fun WordDetailContent(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-    val accentColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else MaterialTheme.colorScheme.primary
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val accentColor = if (isDark) IosColors.BlueDark else IosColors.Blue
 
     // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
     val transitionDistancePx = with(density) { 90.dp.toPx() }
@@ -227,10 +227,10 @@ private fun WordDetailContent(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = if (isDark) listOf(
-                                accentColor.copy(alpha = if (isPlumpDuo) 0.20f else 0.2f),
+                                accentColor.copy(alpha = 0.20f),
                                 MaterialTheme.colorScheme.background
                             ) else listOf(
-                                accentColor.copy(alpha = if (isPlumpDuo) 0.10f else 0.1f),
+                                accentColor.copy(alpha = 0.10f),
                                 MaterialTheme.colorScheme.background
                             )
                         )
@@ -272,12 +272,14 @@ private fun WordDetailContent(
 
                     // Play Audio Button (Hero Style)
                     val wordAudioId = "word_${word.id}"
+                    val speakerBg = if (isSoftTranslucent) accentColor.copy(alpha = if (isDark) 0.18f else 0.12f) else accentColor
+                    val speakerTint = if (isSoftTranslucent) accentColor else Color.White
                     SpeakerButton(
                         isPlaying = playingAudioId == wordAudioId,
                         onClick = { onPlayAudio(word.japanese, wordAudioId) },
                         size = 56.dp,
-                        backgroundColor = if (isPlumpDuo) accentColor.copy(alpha = if (isDark) 0.18f else 0.12f) else MaterialTheme.colorScheme.primaryContainer,
-                        tint = if (isPlumpDuo) accentColor else MaterialTheme.colorScheme.onPrimaryContainer
+                        backgroundColor = speakerBg,
+                        tint = speakerTint
                     )
                 }
             }
@@ -286,10 +288,10 @@ private fun WordDetailContent(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 16.dp)
             ) {
                 PremiumDetailCard(isDark = isDark) {
-                    Column(modifier = Modifier.padding(24.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         // Chinese Meaning
                         Text(
                             text = stringResource(R.string.lib_word_detail_section_meaning),
@@ -311,56 +313,45 @@ private fun WordDetailContent(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             // Level Tag
-                            val levelColor = if (isPlumpDuo) {
-                                when (word.level.uppercase()) {
-                                    "N5" -> IsoluminantPalette.EmeraldGreen
-                                    "N4" -> IsoluminantPalette.LakesideCyan
-                                    "N3" -> IsoluminantPalette.SkyIndigo
-                                    "N2" -> IsoluminantPalette.WarmAmber
-                                    "N1" -> IsoluminantPalette.RoseRuby
-                                    else -> IsoluminantPalette.WarmAmber
-                                }
-                            } else {
-                                NemoPrimary
+                            val levelColor = when (word.level.uppercase()) {
+                                "N5" -> if (isDark) IosColors.GreenDark else IosColors.Green
+                                "N4" -> if (isDark) IosColors.CyanDark else IosColors.Cyan
+                                "N3" -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
+                                "N2" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
+                                "N1" -> if (isDark) IosColors.RedDark else IosColors.Red
+                                else -> if (isDark) IosColors.BlueDark else IosColors.Blue
                             }
                             DetailTag(
                                 text = word.level,
-                                containerColor = if (isPlumpDuo) levelColor.copy(alpha = if (isDark) 0.18f else 0.12f) else NemoPrimary,
-                                contentColor = if (isPlumpDuo) levelColor else Color.White
+                                tagColor = levelColor
                             )
 
                             // POS Tag
                             word.pos?.let { pos ->
+                                val posColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
                                 DetailTag(
                                     text = pos,
-                                    containerColor = if (isPlumpDuo) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f) else MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = if (isPlumpDuo) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSecondaryContainer
+                                    tagColor = posColor
                                 )
                             }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
                 // === 1.3 Related Words ===
                 if (relatedWords.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(24.dp))
+                    DetailSectionTitle(stringResource(R.string.lib_word_detail_section_related_words))
                     RelatedWordsSection(
                         relatedWords = relatedWords,
                         isDark = isDark,
-                        isPlumpDuo = isPlumpDuo,
                         onWordClick = onNavigateToWordDetail
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
 
                 // === 1.4 Example Sentences ===
-                Text(
-                    text = stringResource(R.string.lib_word_detail_section_examples),
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-                )
+                Spacer(modifier = Modifier.height(24.dp))
+                DetailSectionTitle(stringResource(R.string.lib_word_detail_section_examples))
 
                 val examples = listOfNotNull(
                     if (!word.example1.isNullOrBlank() && !word.gloss1.isNullOrBlank()) Triple(word.example1!!, word.gloss1!!, 1) else null,
@@ -389,7 +380,7 @@ private fun WordDetailContent(
                         text = stringResource(R.string.lib_word_detail_examples_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 4.dp)
+                        modifier = Modifier.padding(start = 0.dp)
                     )
                 }
 
@@ -464,27 +455,47 @@ private fun PremiumDetailCard(
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = borderRadius, isDark = isDark),
-        shape = RoundedCornerShape(borderRadius),
+        shape = RoundedRectangle(borderRadius),
         color = containerColor,
         content = { Column(content = content) }
     )
 }
 
 /**
- * Detail Tag (Pill Shape)
+ * Detail Section Title (遵循标题与卡片对齐规范)
+ */
+@Composable
+private fun DetailSectionTitle(
+    text: String,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
+}
+
+/**
+ * Detail Tag (双轨单源同色、单容器架构)
  */
 @Composable
 private fun DetailTag(
     text: String,
-    containerColor: Color,
-    contentColor: Color,
+    tagColor: Color,
     height: androidx.compose.ui.unit.Dp = 28.dp,
     horizontalPadding: androidx.compose.ui.unit.Dp = 12.dp,
     textStyle: androidx.compose.ui.text.TextStyle? = null
 ) {
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val containerBg = if (isSoftTranslucent) tagColor.copy(alpha = 0.15f) else tagColor
+    val contentColor = if (isSoftTranslucent) tagColor else Color.White
+
     Surface(
-        shape = RoundedCornerShape(50),
-        color = containerColor,
+        shape = Capsule(),
+        color = containerBg,
         modifier = Modifier.height(height)
     ) {
         Box(
@@ -536,7 +547,7 @@ private fun ExampleCard(
                     text = sentence,
                     baseTextStyle = MaterialTheme.typography.bodyLarge.copy(
                         fontSize = 17.sp,
-                        fontWeight = FontWeight.Normal, // Changed from Medium to Normal
+                        fontWeight = FontWeight.Normal,
                         lineHeight = 24.sp,
                         fontFamily = NotoSerifJP
                     ),
@@ -573,38 +584,19 @@ private fun ExampleCard(
 private fun RelatedWordsSection(
     relatedWords: List<com.jian.nemo.core.domain.model.RelatedWordItem>,
     isDark: Boolean,
-    isPlumpDuo: Boolean,
     onWordClick: (Int) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
+    androidx.compose.foundation.lazy.LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Section Title
-        Text(
-            text = stringResource(R.string.lib_word_detail_section_related_words),
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            ),
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 28.dp, bottom = 16.dp)
-        )
-
-        // Horizontal Carousel of Related Words
-        androidx.compose.foundation.lazy.LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(relatedWords.size) { index ->
-                val item = relatedWords[index]
-                RelatedWordCard(
-                    item = item,
-                    isDark = isDark,
-                    isPlumpDuo = isPlumpDuo,
-                    onClick = { onWordClick(item.relatedWord.id) }
-                )
-            }
+        items(relatedWords.size) { index ->
+            val item = relatedWords[index]
+            RelatedWordCard(
+                item = item,
+                isDark = isDark,
+                onClick = { onWordClick(item.relatedWord.id) }
+            )
         }
     }
 }
@@ -613,9 +605,10 @@ private fun RelatedWordsSection(
 private fun RelatedWordCard(
     item: com.jian.nemo.core.domain.model.RelatedWordItem,
     isDark: Boolean,
-    isPlumpDuo: Boolean,
     onClick: () -> Unit
 ) {
+    val tagColor = if (isDark) IosColors.TealDark else IosColors.Teal
+
     PremiumDetailCard(
         isDark = isDark,
         borderRadius = 16.dp,
@@ -630,13 +623,9 @@ private fun RelatedWordCard(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            // Relation Type Tag
-            val tagContainerColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan.copy(alpha = if (isDark) 0.18f else 0.12f) else MaterialTheme.colorScheme.tertiaryContainer
-            val tagContentColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else MaterialTheme.colorScheme.onTertiaryContainer
             DetailTag(
                 text = item.relation.relationType,
-                containerColor = tagContainerColor,
-                contentColor = tagContentColor,
+                tagColor = tagColor,
                 height = 20.dp,
                 horizontalPadding = 8.dp,
                 textStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)

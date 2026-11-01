@@ -1,21 +1,53 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.StatisticsPalette
+import com.jian.nemo.feature.statistics.R
 
 /**
  * 记忆分层阶段
  */
 enum class CurveStage(
-    val label: String,
+    @StringRes val labelRes: Int,
     val themeColor: Color,
-    val description: String
+    @StringRes val descriptionRes: Int
 ) {
-    COMPOSITE("全库综合", StatisticsPalette.CompositeOrange, "全量已学项目的综合记忆抗遗忘水平"),
-    YOUNG_EARLY("初识新词", StatisticsPalette.EarlyRed, "刚学习1~2次，海马体临时印记，极易遗忘"),
-    YOUNG_DEVELOPING("发展巩固", StatisticsPalette.DevelopingBlue, "建立初步记忆突触，处于快速生长期"),
-    MATURE("深度稳固", StatisticsPalette.MatureGreen, "已进入长时记忆区，具备极高抗遗忘韧性"),
-    EXPERT("永久长效", StatisticsPalette.ExpertPurple, "深度固化为直觉记忆，接近母语级永久留存")
+    COMPOSITE(
+        R.string.stats_curve_stage_composite_label,
+        StatisticsPalette.CompositeOrange,
+        R.string.stats_curve_stage_composite_desc
+    ),
+    YOUNG_EARLY(
+        R.string.stats_curve_stage_young_early_label,
+        StatisticsPalette.EarlyRed,
+        R.string.stats_curve_stage_young_early_desc
+    ),
+    YOUNG_DEVELOPING(
+        R.string.stats_curve_stage_young_dev_label,
+        StatisticsPalette.DevelopingBlue,
+        R.string.stats_curve_stage_young_dev_desc
+    ),
+    MATURE(
+        R.string.stats_curve_stage_mature_label,
+        StatisticsPalette.MatureGreen,
+        R.string.stats_curve_stage_mature_desc
+    ),
+    EXPERT(
+        R.string.stats_curve_stage_expert_label,
+        StatisticsPalette.ExpertPurple,
+        R.string.stats_curve_stage_expert_desc
+    );
+
+    val label: String
+        @Composable
+        get() = stringResource(labelRes)
+
+    val description: String
+        @Composable
+        get() = stringResource(descriptionRes)
 }
 
 /**

@@ -5,7 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
 import com.jian.nemo.core.designsystem.theme.IosColors
+import java.util.Locale
 
 /**
  * 积压排产与微会话控制卡片 (Backlog & Micro-Session Controller Card)
@@ -48,6 +49,10 @@ fun BacklogControllerCard(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     var showBatchDialog by remember { mutableStateOf(false) }
     var showReviewLimitDialog by remember { mutableStateOf(false) }
+
+    val customLabel = stringResource(R.string.settings_backlog_label_custom)
+    val unlimitedLabel = stringResource(R.string.settings_backlog_label_unlimited)
+    val wordsCountFormat = stringResource(R.string.settings_backlog_format_words_count)
 
     PremiumCard(modifier = modifier) {
         Column(
@@ -115,7 +120,7 @@ fun BacklogControllerCard(
 
                         Surface(
                             onClick = { onBatchSizeChange(size) },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedRectangle(12.dp),
                             color = bg,
                             border = BorderStroke(
                                 1.dp,
@@ -150,7 +155,7 @@ fun BacklogControllerCard(
 
                     Surface(
                         onClick = { showBatchDialog = true },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         color = customBg,
                         border = BorderStroke(
                             1.dp,
@@ -162,7 +167,7 @@ fun BacklogControllerCard(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = if (isCustomBatch) "$sessionBatchSize" else "自定义",
+                                text = if (isCustomBatch) "$sessionBatchSize" else customLabel,
                                 fontSize = 12.sp,
                                 fontWeight = if (isCustomBatch) FontWeight.Bold else FontWeight.Medium,
                                 color = customTextColor
@@ -200,7 +205,12 @@ fun BacklogControllerCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val reviewLimitOptions = listOf(0 to "不限", 40 to "40 词", 60 to "60 词", 80 to "80 词")
+                    val reviewLimitOptions = listOf(
+                        0 to unlimitedLabel,
+                        40 to String.format(Locale.getDefault(), wordsCountFormat, 40),
+                        60 to String.format(Locale.getDefault(), wordsCountFormat, 60),
+                        80 to String.format(Locale.getDefault(), wordsCountFormat, 80)
+                    )
                     reviewLimitOptions.forEach { (limit, label) ->
                         val selected = maxDailyReviews == limit
                         val bg by animateColorAsState(
@@ -215,7 +225,7 @@ fun BacklogControllerCard(
 
                         Surface(
                             onClick = { onMaxReviewsChange(limit) },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedRectangle(12.dp),
                             color = bg,
                             border = BorderStroke(
                                 1.dp,
@@ -250,7 +260,7 @@ fun BacklogControllerCard(
 
                     Surface(
                         onClick = { showReviewLimitDialog = true },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         color = customReviewBg,
                         border = BorderStroke(
                             1.dp,
@@ -262,7 +272,7 @@ fun BacklogControllerCard(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
-                                text = if (isCustomReviewLimit) "$maxDailyReviews 词" else "自定义",
+                                text = if (isCustomReviewLimit) String.format(Locale.getDefault(), wordsCountFormat, maxDailyReviews) else customLabel,
                                 fontSize = 12.sp,
                                 fontWeight = if (isCustomReviewLimit) FontWeight.Bold else FontWeight.Medium,
                                 color = customReviewTextColor
@@ -327,7 +337,7 @@ fun BacklogControllerCard(
             max = 100,
             step = 1,
             presets = listOf(10, 15, 20, 25, 30, 50),
-            presetLabelFormatter = { "$it 词" },
+            presetLabelFormatter = { String.format(Locale.getDefault(), wordsCountFormat, it) },
             confirmText = stringResource(R.string.settings_btn_confirm_save),
             confirmButtonColor = accentColor,
             onDismissRequest = { showBatchDialog = false },
@@ -350,7 +360,7 @@ fun BacklogControllerCard(
             max = 500,
             step = 5,
             presets = listOf(0, 30, 50, 80, 100, 150),
-            presetLabelFormatter = { if (it == 0) "不限" else "$it 词" },
+            presetLabelFormatter = { if (it == 0) unlimitedLabel else String.format(Locale.getDefault(), wordsCountFormat, it) },
             confirmText = stringResource(R.string.settings_btn_confirm_save),
             confirmButtonColor = accentColor,
             onDismissRequest = { showReviewLimitDialog = false },
@@ -380,7 +390,7 @@ private fun StrategyOptionCard(
 
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedRectangle(14.dp),
         color = bg,
         border = BorderStroke(
             1.dp,

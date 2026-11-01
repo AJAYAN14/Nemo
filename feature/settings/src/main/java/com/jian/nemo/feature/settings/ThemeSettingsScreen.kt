@@ -11,7 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -484,7 +484,7 @@ private fun ThemeOption(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .clickable(onClick = onClick)
             .padding(vertical = 4.dp)
     ) {
@@ -531,7 +531,7 @@ private fun DeviceMockup(
                     .border(
                         width = 2.dp,
                         color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(18.dp)
+                        shape = RoundedRectangle(18.dp)
                     )
             )
         }
@@ -540,12 +540,12 @@ private fun DeviceMockup(
         Box(
             modifier = Modifier
                 .size(mockupWidth, mockupHeight)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedRectangle(14.dp))
                 .then(mockupBackground)
                 .border(
                     width = 1.5.dp,
                     color = borderColor,
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedRectangle(14.dp)
                 )
                 .padding(top = 12.dp),
             contentAlignment = Alignment.TopCenter
@@ -572,7 +572,7 @@ private fun MockupNav(mode: DarkModeOption) {
     Box(
         modifier = Modifier
             .size(38.dp, 6.dp)
-            .clip(RoundedCornerShape(3.dp))
+            .clip(RoundedRectangle(3.dp))
             .then(modifier)
     )
 }
@@ -586,7 +586,7 @@ private fun MockupCard(mode: DarkModeOption) {
     Box(
         modifier = Modifier
             .size(56.dp, 32.dp)
-            .clip(RoundedCornerShape(6.dp))
+            .clip(RoundedRectangle(6.dp))
             .then(modifier)
     )
 }
@@ -602,7 +602,7 @@ private fun ColumnScope.MockupLine(mode: DarkModeOption, isShort: Boolean) {
             .padding(start = 11.dp, bottom = 6.dp)
             .align(Alignment.Start)
             .size(if (isShort) 26.dp else 44.dp, 5.dp)
-            .clip(RoundedCornerShape(2.5.dp))
+            .clip(RoundedRectangle(2.5.dp))
             .then(modifier)
     )
 }
@@ -750,7 +750,7 @@ private fun IconStyleOptionRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -783,14 +783,14 @@ private fun StrategyOptionItemPreview() {
     MaterialTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             StrategyOptionItem(
-                title = "跟随系统",
-                subtitle = "根据系统设置自动切换深浅色主题",
+                title = stringResource(R.string.settings_theme_strategy_system_title),
+                subtitle = stringResource(R.string.settings_theme_strategy_system_subtitle),
                 isSelected = true,
                 onClick = {}
             )
             StrategyOptionItem(
-                title = "定时深色模式",
-                subtitle = "在指定时间段开启深色模式",
+                title = stringResource(R.string.settings_theme_strategy_schedule_title),
+                subtitle = stringResource(R.string.settings_theme_strategy_schedule_subtitle),
                 isSelected = false,
                 onClick = {}
             )
@@ -805,14 +805,14 @@ private fun StrategyOptionItemDarkPreview() {
         Surface {
             Column(modifier = Modifier.padding(16.dp)) {
                 StrategyOptionItem(
-                    title = "跟随系统",
-                    subtitle = "根据系统设置自动切换深浅色主题",
+                    title = stringResource(R.string.settings_theme_strategy_system_title),
+                    subtitle = stringResource(R.string.settings_theme_strategy_system_subtitle),
                     isSelected = true,
                     onClick = {}
                 )
                 StrategyOptionItem(
-                    title = "定时深色模式",
-                    subtitle = "在指定时间段开启深色模式",
+                    title = stringResource(R.string.settings_theme_strategy_schedule_title),
+                    subtitle = stringResource(R.string.settings_theme_strategy_schedule_subtitle),
                     isSelected = false,
                     onClick = {}
                 )
@@ -828,14 +828,14 @@ private fun IconStyleOptionRowPreview() {
         Column(modifier = Modifier.padding(16.dp)) {
             IconStyleOptionRow(
                 title = "Material Design 3",
-                description = "经典圆角彩色背景底框，单色聚焦图标",
+                description = stringResource(R.string.settings_theme_icon_style_md3_desc),
                 isSelected = true,
                 onClick = {}
             )
             Spacer(modifier = Modifier.height(8.dp))
             IconStyleOptionRow(
                 title = "Plump Duo",
-                description = "现代无背景通透设计，双色线面与等亮度调色板",
+                description = stringResource(R.string.settings_theme_icon_style_plump_desc),
                 isSelected = false,
                 onClick = {}
             )
@@ -851,14 +851,14 @@ private fun IconStyleOptionRowDarkPreview() {
             Column(modifier = Modifier.padding(16.dp)) {
                 IconStyleOptionRow(
                     title = "Material Design 3",
-                    description = "经典圆角彩色背景底框，单色聚焦图标",
+                    description = stringResource(R.string.settings_theme_icon_style_md3_desc),
                     isSelected = true,
                     onClick = {}
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 IconStyleOptionRow(
                     title = "Plump Duo",
-                    description = "现代无背景通透设计，双色线面与等亮度调色板",
+                    description = stringResource(R.string.settings_theme_icon_style_plump_desc),
                     isSelected = false,
                     onClick = {}
                 )
@@ -982,7 +982,7 @@ private fun AppIconOption(
                 .border(
                     width = if (isSelected) 2.5.dp else 0.dp,
                     color = if (isSelected) primaryColor else Color.Transparent,
-                    shape = RoundedCornerShape(19.dp)
+                    shape = RoundedRectangle(19.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -990,12 +990,12 @@ private fun AppIconOption(
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedRectangle(16.dp))
                     .background(Color.White)
                     .border(
                         width = 0.5.dp,
                         color = Color.Black.copy(alpha = 0.08f),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedRectangle(16.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -1016,12 +1016,12 @@ private fun AppIconOption(
                     .align(Alignment.TopEnd)
                     .offset(x = 2.dp, y = (-2).dp)
                     .size(19.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(RoundedRectangle(10.dp))
                     .background(primaryColor)
                     .border(
                         width = 1.5.dp,
                         color = MaterialTheme.colorScheme.surface,
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedRectangle(10.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {

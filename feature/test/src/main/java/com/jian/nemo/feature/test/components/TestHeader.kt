@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +23,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoDanger
+import com.jian.nemo.core.designsystem.theme.IosColors
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -31,19 +33,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
 import com.jian.nemo.core.ui.component.common.NemoMenuItem
 
 /**
- * 测试头部组件（包含返回按钮、倒计时和收藏按钮）
-
+ * 测试头部组件（包含返回按钮、倒计时和操作菜单）
+ *
+ * 遵循单一官方原生图标与调色盘标准规范：
+ * - 统一使用 Google Fonts 官方原生实心 Rounded 图标
+ * - 配色体系全面收编至设计调色盘 IosColors (一套颜色体系)
  */
-import com.jian.nemo.core.domain.model.Grammar
-
 @Composable
 fun TestHeader(
     onBack: () -> Unit,
@@ -107,8 +106,6 @@ fun TestHeader(
                 )
             }
 
-            val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
             NemoDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -121,9 +118,8 @@ fun TestHeader(
                             expanded = false
                             onToggleFavorite(itemId, !isFavorite)
                         },
-                        leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        plumpIcon = PlumpIcon.Heart,
-                        iconColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else null
+                        leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                        iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -135,8 +131,7 @@ fun TestHeader(
                         onPause()
                     },
                     leadingIcon = Icons.Rounded.Pause,
-                    plumpIcon = PlumpIcon.Pause,
-                    iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null
+                    iconColor = IosColors.Orange
                 )
             }
         }

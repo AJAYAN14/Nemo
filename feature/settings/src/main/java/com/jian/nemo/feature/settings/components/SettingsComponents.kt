@@ -13,9 +13,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
+import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +33,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.settings.R
+import java.util.Locale
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
@@ -76,7 +84,7 @@ fun PremiumCard(
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     Surface(
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedRectangle(24.dp),
         color = containerColor,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
@@ -185,55 +193,36 @@ fun SquircleSettingItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 图标渲染：根据当前风格渲染 MD3（带 42dp 圆角背景卡片与 22dp 单色图标）或 Plump Duo（通透无框双色线面）
-            if (iconStyle == SettingIconStyle.MD3) {
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(iconColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconColor,
-                            modifier = Modifier
-                                .size(22.dp)
-                                .graphicsLayer { rotationZ = iconRotation }
-                        )
-                    } else if (plumpIcon != null) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 28.dp,
-                            modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
-                        )
-                    }
-                }
-            } else {
-                // Plump Duo 模式：无背景框通透呈现
-                Box(
-                    modifier = Modifier.size(42.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (plumpIcon != null) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 30.dp,
-                            modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
-                        )
-                    } else if (icon != null) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconColor,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .graphicsLayer { rotationZ = iconRotation }
-                        )
-                    }
+            // 双轨风格支持 (单容器纯复用架构)：
+            // 风格 1 (柔和微透): 15% 半透明底框 + 彩色原色图标
+            // 风格 2 (活力纯色): 100% 实心高饱和底框 + 纯白反白图标
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
+            val iconTint = if (isSoftTranslucent) iconColor else Color.White
+            val plumpTint = if (isSoftTranslucent) plumpColor else Color.White
+
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(containerBgColor, RoundedRectangle(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .graphicsLayer { rotationZ = iconRotation }
+                    )
+                } else if (plumpIcon != null) {
+                    PlumpDuoIcon(
+                        icon = plumpIcon,
+                        color = plumpTint,
+                        size = 28.dp,
+                        modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
+                    )
                 }
             }
 
@@ -306,11 +295,15 @@ fun DailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 20, 30, 50)
-    val accentColor = NemoWarning
+    val accentColor = IosColors.Orange
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface, // Use surface for clean look
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(modifier = Modifier.padding(bottom = 32.dp)) {
@@ -321,23 +314,22 @@ fun DailyGoalSelectionBottomSheet(
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Tinted Icon
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(36.dp)
+                        .background(containerBg, RoundedRectangle(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Flag,
+                        imageVector = Icons.Rounded.TrackChanges,
                         contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "每日单词目标",
+                    text = stringResource(R.string.settings_components_title_daily_word_goal),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -352,7 +344,7 @@ fun DailyGoalSelectionBottomSheet(
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 goals.forEach { goal ->
                     GoalSelectionItem(
-                        text = "$goal 个单词",
+                        text = stringResource(R.string.settings_components_format_word_goal, goal),
                         isSelected = (goal == currentGoal),
                         color = accentColor,
                         onClick = { onGoalSelected(goal) }
@@ -374,7 +366,11 @@ fun GrammarDailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 15, 20, 25)
-    val accentColor = NemoSecondary
+    val accentColor = IosColors.Green
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -389,23 +385,22 @@ fun GrammarDailyGoalSelectionBottomSheet(
                     .padding(horizontal = 24.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                 // Tinted Icon
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(36.dp)
+                        .background(containerBg, RoundedRectangle(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Subject, // Safer icon than JoinLeft
+                        imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                         contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "每日语法目标",
+                    text = stringResource(R.string.settings_components_title_daily_grammar_goal),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -420,7 +415,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 goals.forEach { goal ->
                     GoalSelectionItem(
-                        text = "$goal 条语法",
+                        text = stringResource(R.string.settings_components_format_grammar_goal, goal),
                         isSelected = (goal == currentGoal),
                         color = accentColor,
                         onClick = { onGoalSelected(goal) }
@@ -448,7 +443,7 @@ private fun GoalSelectionItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -486,7 +481,11 @@ fun LearningDayResetHourBottomSheet(
     onHourSelected: (Int) -> Unit
 ) {
     val hours = listOf(0, 2, 4, 5, 6)
-    val accentColor = NemoIndigo
+    val accentColor = IosColors.Mint
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -503,27 +502,27 @@ fun LearningDayResetHourBottomSheet(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(36.dp)
+                        .background(containerBg, RoundedRectangle(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Schedule,
+                        imageVector = Icons.Rounded.Timer,
                         contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "学习日重置时间",
+                        text = stringResource(R.string.settings_components_title_reset_hour),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "每天此时间后开始新的学习日",
+                        text = stringResource(R.string.settings_components_desc_reset_hour),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -564,11 +563,11 @@ private fun ResetHourSelectionItem(
     val textColor = if (isSelected) color else MaterialTheme.colorScheme.onSurface
 
     val displayText = when (hour) {
-        0 -> "凌晨 0:00 (午夜)"
-        2 -> "凌晨 2:00"
-        4 -> "凌晨 4:00 (推荐)"
-        5 -> "凌晨 5:00"
-        6 -> "凌晨 6:00"
+        0 -> stringResource(R.string.settings_components_reset_hour_midnight)
+        2 -> stringResource(R.string.settings_components_reset_hour_2am)
+        4 -> stringResource(R.string.settings_components_reset_hour_4am_recommended)
+        5 -> stringResource(R.string.settings_components_reset_hour_5am)
+        6 -> stringResource(R.string.settings_components_reset_hour_6am)
         else -> "${hour}:00"
     }
 
@@ -576,7 +575,7 @@ private fun ResetHourSelectionItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
@@ -617,13 +616,29 @@ fun VoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val accentColor = NemoPink
+    val accentColor = IosColors.Pink
+    val iconStyle = LocalSettingIconStyle.current
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
 
+    val networkVoiceGroup = stringResource(R.string.settings_components_voice_group_network)
+    val localVoiceGroup = stringResource(R.string.settings_components_voice_group_local)
+    val selectVoiceTitle = stringResource(R.string.settings_components_title_select_voice)
+    val emptyVoiceText = stringResource(R.string.settings_components_empty_voices)
+
+    val tagNetwork = stringResource(R.string.settings_components_voice_tag_network)
+    val tagLocal = stringResource(R.string.settings_components_voice_tag_local)
+    val defaultVoiceName = stringResource(R.string.settings_components_voice_name_default)
+    val jaVoiceFormat = stringResource(R.string.settings_components_voice_name_ja_format)
+    val voiceFormat = stringResource(R.string.settings_components_voice_name_format)
+    val highQualityText = stringResource(R.string.settings_components_voice_quality_high)
+
     // 按本地/云端分组
-    val groupedVoices = remember(voices) {
+    val groupedVoices = remember(voices, networkVoiceGroup, localVoiceGroup) {
         voices.groupBy { voice ->
-            if (voice.name.lowercase().contains("network")) "云端语音" else "本地语音"
+            if (voice.name.lowercase().contains("network")) networkVoiceGroup else localVoiceGroup
         }
     }
 
@@ -642,20 +657,20 @@ fun VoiceSelectionBottomSheet(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .background(accentColor.copy(alpha = 0.15f), RoundedCornerShape(12.dp)),
+                        .size(36.dp)
+                        .background(containerBg, RoundedRectangle(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.RecordVoiceOver,
+                        imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
                         contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(20.dp)
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "选择语音",
+                    text = selectVoiceTitle,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -684,7 +699,7 @@ fun VoiceSelectionBottomSheet(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "未找到可用语音",
+                            text = emptyVoiceText,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -703,7 +718,15 @@ fun VoiceSelectionBottomSheet(
 
                             items(groupVoices.size) { index ->
                                 val voice = groupVoices[index]
-                                val displayInfo = formatVoiceName(voice)
+                                val displayInfo = formatVoiceName(
+                                    voice = voice,
+                                    tagNetwork = tagNetwork,
+                                    tagLocal = tagLocal,
+                                    defaultVoiceName = defaultVoiceName,
+                                    jaVoiceFormat = jaVoiceFormat,
+                                    voiceFormat = voiceFormat,
+                                    highQualityText = highQualityText
+                                )
                                 val isPreviewing = previewingVoiceName == voice.name
 
                                 VoiceSelectionItem(
@@ -778,7 +801,7 @@ fun VoiceSkeletonItem() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -789,7 +812,7 @@ fun VoiceSkeletonItem() {
                 .size(36.dp)
                 .background(
                     MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
-                    RoundedCornerShape(8.dp)
+                    RoundedRectangle(8.dp)
                 )
         )
 
@@ -803,7 +826,7 @@ fun VoiceSkeletonItem() {
                     .height(16.dp)
                     .background(
                         MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
-                        RoundedCornerShape(4.dp)
+                        RoundedRectangle(4.dp)
                     )
             )
             Spacer(modifier = Modifier.height(6.dp))
@@ -814,7 +837,7 @@ fun VoiceSkeletonItem() {
                     .height(12.dp)
                     .background(
                         MaterialTheme.colorScheme.onSurface.copy(alpha = alpha * 0.6f),
-                        RoundedCornerShape(4.dp)
+                        RoundedRectangle(4.dp)
                     )
             )
         }
@@ -833,12 +856,20 @@ data class VoiceDisplayInfo(
 /**
  * 格式化语音名称
  */
-private fun formatVoiceName(voice: com.jian.nemo.core.domain.model.TtsVoice): VoiceDisplayInfo {
+private fun formatVoiceName(
+    voice: com.jian.nemo.core.domain.model.TtsVoice,
+    tagNetwork: String,
+    tagLocal: String,
+    defaultVoiceName: String,
+    jaVoiceFormat: String,
+    voiceFormat: String,
+    highQualityText: String
+): VoiceDisplayInfo {
     val rawName = voice.name.lowercase()
 
     // 1. 识别类型 (Network/Local)
     val isNetwork = rawName.contains("network")
-    val tag = if (isNetwork) "云端" else "本地"
+    val tag = if (isNetwork) tagNetwork else tagLocal
 
     // 2. 生成友好名称
     var friendlyName = ""
@@ -848,14 +879,14 @@ private fun formatVoiceName(voice: com.jian.nemo.core.domain.model.TtsVoice): Vo
     val coreId = idMatch?.groupValues?.get(1)?.uppercase() ?: rawName.takeLast(4).uppercase()
 
     friendlyName = when {
-        rawName.contains("language") -> "系统默认"
-        coreId.isNotEmpty() -> "日语语音 $coreId"
-        else -> "语音 ${coreId}"
+        rawName.contains("language") -> defaultVoiceName
+        coreId.isNotEmpty() -> String.format(Locale.getDefault(), jaVoiceFormat, coreId)
+        else -> String.format(Locale.getDefault(), voiceFormat, coreId)
     }
 
     return VoiceDisplayInfo(
         title = friendlyName,
-        subtitle = if (voice.quality == "high" || voice.quality == "very_high") "高质量" else "",
+        subtitle = if (voice.quality == "high" || voice.quality == "very_high") highQualityText else "",
         tag = tag
     )
 }
@@ -892,9 +923,9 @@ fun VoiceSelectionItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(backgroundColor)
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .border(1.dp, borderColor, RoundedRectangle(12.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -905,15 +936,15 @@ fun VoiceSelectionItem(
                 .size(36.dp)
                 .background(
                     if (isSelected) color.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-                    RoundedCornerShape(8.dp)
+                    RoundedRectangle(10.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Rounded.RecordVoiceOver,
+                imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
                 contentDescription = null,
                 tint = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
 
@@ -960,8 +991,8 @@ fun VoiceSelectionItem(
             modifier = Modifier.size(36.dp)
         ) {
             Icon(
-                imageVector = if (isPreviewing) Icons.Rounded.VolumeUp else Icons.Rounded.PlayArrow,
-                contentDescription = "试听",
+                imageVector = if (isPreviewing) Icons.AutoMirrored.Rounded.VolumeUp else Icons.Rounded.PlayArrow,
+                contentDescription = stringResource(R.string.settings_components_btn_preview_voice),
                 tint = if (isPreviewing) color else MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .size(22.dp)

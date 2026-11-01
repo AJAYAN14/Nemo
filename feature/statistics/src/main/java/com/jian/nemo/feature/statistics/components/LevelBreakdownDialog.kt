@@ -14,8 +14,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
@@ -37,9 +36,6 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.Rubik
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.statistics.LevelPredictionInfo
 import com.jian.nemo.feature.statistics.OverallPredictionSummary
 import kotlinx.coroutines.delay
@@ -118,7 +114,7 @@ fun LevelBreakdownDialog(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
                 .widthIn(max = 350.dp),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedRectangle(24.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)),
             shadowElevation = 10.dp
@@ -146,7 +142,7 @@ fun LevelBreakdownDialog(
                         onClick = onDismiss,
                         modifier = Modifier
                             .size(32.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedRectangle(8.dp))
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
@@ -163,8 +159,8 @@ fun LevelBreakdownDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
-                        .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f), RoundedRectangle(14.dp))
+                        .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f), RoundedRectangle(14.dp))
                         .padding(horizontal = 14.dp, vertical = 12.dp)
                 ) {
                     Row(
@@ -198,7 +194,7 @@ fun LevelBreakdownDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(6.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(3.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedRectangle(3.dp))
                     ) {
                         Box(
                             modifier = Modifier
@@ -208,7 +204,7 @@ fun LevelBreakdownDialog(
                                     brush = Brush.horizontalGradient(
                                         colors = listOf(themeColor.copy(alpha = 0.7f), themeColor)
                                     ),
-                                    shape = RoundedCornerShape(3.dp)
+                                    shape = RoundedRectangle(3.dp)
                                 )
                         )
                     }
@@ -221,25 +217,14 @@ fun LevelBreakdownDialog(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
                     val levelList = listOf("N5", "N4", "N3", "N2", "N1")
-                    val levelColors = if (isPlumpDuo) {
-                        mapOf(
-                            "N5" to IsoluminantPalette.EmeraldGreen,
-                            "N4" to IsoluminantPalette.LakesideCyan,
-                            "N3" to IsoluminantPalette.SkyIndigo,
-                            "N2" to IsoluminantPalette.WarmAmber,
-                            "N1" to IsoluminantPalette.RoseRuby
-                        )
-                    } else {
-                        mapOf(
-                            "N1" to IosColors.Red,
-                            "N2" to IosColors.Orange,
-                            "N3" to IosColors.Yellow,
-                            "N4" to IosColors.Green,
-                            "N5" to IosColors.Blue
-                        )
-                    }
+                    val levelColors = mapOf(
+                        "N1" to IosColors.Red,
+                        "N2" to IosColors.Orange,
+                        "N3" to IosColors.Yellow,
+                        "N4" to IosColors.Green,
+                        "N5" to IosColors.Blue
+                    )
 
                     levelList.forEach { level ->
                         val count = data[level] ?: 0
@@ -256,7 +241,7 @@ fun LevelBreakdownDialog(
                         )
 
                         Surface(
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedRectangle(14.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.06f),
                             border = BorderStroke(
                                 if (isExpanded) (if (isPinned) 1.5.dp else 1.dp) else 0.5.dp,
@@ -264,7 +249,7 @@ fun LevelBreakdownDialog(
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
+                                .clip(RoundedRectangle(14.dp))
                                 .combinedClickable(
                                     onClick = {
                                         if (isExpanded) {
@@ -321,8 +306,8 @@ fun LevelBreakdownDialog(
                                         Box(
                                             modifier = Modifier
                                                 .size(width = 38.dp, height = 22.dp)
-                                                .background(color.copy(alpha = 0.12f), RoundedCornerShape(6.dp))
-                                                .border(0.5.dp, color.copy(alpha = 0.3f), RoundedCornerShape(6.dp)),
+                                                .background(color.copy(alpha = 0.12f), RoundedRectangle(6.dp))
+                                                .border(0.5.dp, color.copy(alpha = 0.3f), RoundedRectangle(6.dp)),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
@@ -438,7 +423,7 @@ fun LevelBreakdownDialog(
                 if (overallPrediction != null) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Surface(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedRectangle(12.dp),
                         color = themeColor.copy(alpha = 0.08f),
                         border = BorderStroke(0.5.dp, themeColor.copy(alpha = 0.2f)),
                         modifier = Modifier.fillMaxWidth()
@@ -520,4 +505,3 @@ fun LevelBreakdownDialog(
         }
     }
 }
-

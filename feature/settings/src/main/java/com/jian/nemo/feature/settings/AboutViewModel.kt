@@ -4,10 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.AppUpdateConfig
 import com.jian.nemo.core.domain.repository.ConfigRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,8 +33,17 @@ data class AboutUiState(
  */
 @HiltViewModel
 class AboutViewModel @Inject constructor(
-    private val configRepository: ConfigRepository
+    private val configRepository: ConfigRepository,
+    private val settingsRepository: SettingsRepository,
+    private val application: android.app.Application
 ) : ViewModel() {
+
+    val settingIconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = SettingIconStyle.PLUMP_DUO
+        )
 
     private val _uiState = MutableStateFlow(AboutUiState())
     val uiState: StateFlow<AboutUiState> = _uiState.asStateFlow()
@@ -48,14 +61,14 @@ class AboutViewModel @Inject constructor(
                     it.copy(
                         isLoadingLog = false,
                         updateConfig = config,
-                        errorMessage = if (config == null) "暂无云端更新日志" else null
+                        errorMessage = if (config == null) application.getString(R.string.settings_about_label_no_log) else null
                     )
                 }
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(
                         isLoadingLog = false,
-                        errorMessage = e.message ?: "获取更新日志失败"
+                        errorMessage = e.message ?: application.getString(R.string.settings_about_label_fetch_failed)
                     )
                 }
             }

@@ -1,6 +1,9 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
 import android.content.Context
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.feature.statistics.R
@@ -23,11 +26,15 @@ import com.jian.nemo.core.domain.repository.SettingIconStyle
 /**
  * 时间范围选项
  */
-enum class CurveTimeRange(val days: Int, val label: String) {
-    SHORT(7, "7天"),
-    MEDIUM(30, "30天"),
-    LONG(90, "90天"),
-    EXTENDED(365, "365天")
+enum class CurveTimeRange(val days: Int, @StringRes val labelRes: Int) {
+    SHORT(7, R.string.stats_curve_range_7_days),
+    MEDIUM(30, R.string.stats_curve_range_30_days),
+    LONG(90, R.string.stats_curve_range_90_days),
+    EXTENDED(365, R.string.stats_curve_range_365_days);
+
+    val label: String
+        @Composable
+        get() = stringResource(labelRes)
 }
 
 /**

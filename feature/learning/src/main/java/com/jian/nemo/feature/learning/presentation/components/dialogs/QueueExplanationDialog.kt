@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,8 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 
@@ -39,13 +38,13 @@ fun QueueExplanationDialog(
     queueLearningCount: Int,
     queueReviewCount: Int,
     queueRelearnCount: Int,
-    isDarkTheme: Boolean,
-    isPlumpDuo: Boolean
+    isDarkTheme: Boolean
+
 ) {
-    val newColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight
-    val learningColor = if (isPlumpDuo) IsoluminantPalette.LakesideCyan else if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight
-    val reviewColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight
-    val relearnColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight
+    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
 
     NemoDialog(
         onDismissRequest = onDismissRequest,
@@ -104,7 +103,7 @@ private fun QueueExplanationItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
             .padding(horizontal = 12.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically

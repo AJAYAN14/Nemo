@@ -9,7 +9,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -143,7 +144,7 @@ fun ProfileSetupContent(
                     onClick = onSkip,
                     backdrop = backdrop,
                     modifier = Modifier.height(48.dp),
-                    shape = RoundedCornerShape(24.dp),
+                    shape = Capsule(),
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp)
                 ) {
                     Text(
@@ -388,7 +389,7 @@ fun ProfileSetupContent(
                     backdrop = backdrop,
                     tint = primaryGlassTint,
                     isInteractive = canStart,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedRectangle(16.dp),
                     contentPadding = PaddingValues(0.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -427,5 +428,3 @@ fun ProfileSetupContent(
         }
     }
 }
-
-

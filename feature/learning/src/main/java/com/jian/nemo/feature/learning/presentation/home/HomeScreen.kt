@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
@@ -35,9 +35,6 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.CompositionLocalProvider
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
@@ -128,10 +125,19 @@ fun HomeScreen(
     val textSub = colorScheme.onSurfaceVariant
     val textMuted = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     val dividerColor = colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val iconBgOrange = if (isDark) BentoColors.AccentOrange.copy(alpha = 0.15f) else BentoColors.IconBgOrange
-    val iconBgGreen = if (isDark) BentoColors.AccentGreen.copy(alpha = 0.15f) else BentoColors.IconBgGreen
-    val iconBgBlue = if (isDark) BentoColors.AccentBlue.copy(alpha = 0.15f) else BentoColors.IconBgBlue
-    val iconBgPurple = if (isDark) BentoColors.AccentPurple.copy(alpha = 0.15f) else BentoColors.IconBgPurple
+    // 单一权威调色盘规范色 (系统动态主色，严格遵照 docs/design/color-palette 手册)
+    val wordModeColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+    val grammarModeColor = if (isDark) IosColors.GreenDark else IosColors.Green
+    val primaryModeColor = if (uiState.learningMode == LearningMode.Word) wordModeColor else grammarModeColor
+
+    val reviewColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+    val completionColor = if (isDark) IosColors.GreenDark else IosColors.Green
+    val heatmapColor = if (isDark) IosColors.PurpleDark else IosColors.Purple
+    val kanaColor = if (isDark) IosColors.BlueDark else IosColors.Blue
+    val verbColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+    val aiWorkshopColor = if (isDark) IosColors.PurpleDark else IosColors.Purple
+    val aiReadingColor = if (isDark) IosColors.GreenDark else IosColors.Green
+
 
     val morningPhrases = stringArrayResource(R.array.home_greeting_subtitles_morning)
     val afternoonPhrases = stringArrayResource(R.array.home_greeting_subtitles_afternoon)
@@ -256,7 +262,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(surfaceColor, RoundedCornerShape(24.dp))
+                            .background(surfaceColor, RoundedRectangle(24.dp))
                     ) {
                         Row(
                             modifier = Modifier
@@ -300,7 +306,7 @@ fun HomeScreen(
                     ) {
                         // Bento 2: 进度大卡片 (左侧，纵跨)
                         Surface(
-                            shape = RoundedCornerShape(24.dp),
+                            shape = RoundedRectangle(24.dp),
                             color = surfaceColor,
                             shadowElevation = 0.dp,
                             modifier = Modifier
@@ -322,11 +328,7 @@ fun HomeScreen(
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Box(contentAlignment = Alignment.Center) {
-                                    val progressColor = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                        if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
-                                    } else {
-                                        if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
-                                    }
+                                    val progressColor = primaryModeColor
                                     NemoCircularProgress(
                                         progress = uiState.progressFraction,
                                         isLoading = showLoadingRing,
@@ -367,7 +369,7 @@ fun HomeScreen(
                         ) {
                             // 统计 1: 待复习项目
                             Surface(
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp,
                                 modifier = Modifier
@@ -380,38 +382,13 @@ fun HomeScreen(
                                         .fillMaxSize(),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    val iconStyle = LocalSettingIconStyle.current
-                                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .then(
-                                                if (!isPlumpDuo) {
-                                                    Modifier
-                                                        .clip(CircleShape)
-                                                        .background(iconBgOrange)
-                                                } else {
-                                                    Modifier
-                                                }
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (isPlumpDuo) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.History,
-                                                color = IsoluminantPalette.WarmAmber,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Restore,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentOrange,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
-                                    }
+                                    HomeSquircleIconBox(
+                                        icon = Icons.Rounded.Restore,
+                                        iconColor = reviewColor,
+                                        containerSize = 36.dp,
+                                        iconSize = 24.dp,
+                                        cornerRadius = 10.dp
+                                    )
                                     Spacer(Modifier.height(12.dp))
                                     val reviewOutstanding = uiState.itemsDue
                                     val reviewDone = uiState.reviewedToday
@@ -463,7 +440,7 @@ fun HomeScreen(
                             }
                             // 统计 2: 学习达成率（仅新学）
                             Surface(
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp,
                                 modifier = Modifier
@@ -476,38 +453,13 @@ fun HomeScreen(
                                         .fillMaxSize(),
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    val iconStyle = LocalSettingIconStyle.current
-                                    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .then(
-                                                if (!isPlumpDuo) {
-                                                    Modifier
-                                                        .clip(CircleShape)
-                                                        .background(iconBgGreen)
-                                                } else {
-                                                    Modifier
-                                                }
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (isPlumpDuo) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.BadgeCheck,
-                                                color = IsoluminantPalette.EmeraldGreen,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Icon(
-                                                imageVector = Icons.Rounded.CheckCircle,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentGreen,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
-                                    }
+                                    HomeSquircleIconBox(
+                                        icon = Icons.Rounded.CheckCircle,
+                                        iconColor = completionColor,
+                                        containerSize = 36.dp,
+                                        iconSize = 24.dp,
+                                        cornerRadius = 10.dp
+                                    )
                                     Spacer(Modifier.height(12.dp))
                                     Text(
                                         text = buildAnnotatedString {
@@ -547,11 +499,7 @@ fun HomeScreen(
                     }
 
                     // Bento 5: 底部主按钮 (全宽)
-                    val btnColor = if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                        if (uiState.learningMode == LearningMode.Word) IsoluminantPalette.SkyIndigo else IsoluminantPalette.EmeraldGreen
-                    } else {
-                        if (uiState.learningMode == LearningMode.Word) BentoColors.Primary else BentoColors.GrammarPrimary
-                    }
+                    val btnColor = primaryModeColor
 
                     // 2.4s 45° 斜切流光扫过 (Shimmer Sweep) 动效
                     val shimmerTransition = rememberInfiniteTransition(label = "Bento5Shimmer")
@@ -577,7 +525,7 @@ fun HomeScreen(
                             .fillMaxWidth()
                             .height(64.dp),
                         backgroundColor = btnColor,
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedRectangle(24.dp),
                         elevation = 6.dp
                     ) {
                         // 按钮内容
@@ -593,29 +541,17 @@ fun HomeScreen(
                             )
                             // 基于学习进度切换图标及应用闪烁动效
                             val isLearned = uiState.currentProgress > 0
-                            if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                PlumpDuoIcon(
-                                    icon = if (isLearned) PlumpIcon.ChevronsRight else PlumpIcon.Play,
-                                    color = Color.White,
-                                    modifier = Modifier
-                                        .padding(start = 6.dp)
-                                        .size(18.dp)
-                                        .graphicsLayer {
-                                            alpha = pulseAlpha
-                                        }
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .graphicsLayer {
-                                            alpha = pulseAlpha
-                                        },
-                                    tint = Color.White
-                                )
-                            }
+                            Icon(
+                                imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(start = 4.dp)
+                                    .size(24.dp)
+                                    .graphicsLayer {
+                                        alpha = pulseAlpha
+                                    },
+                                tint = Color.White
+                            )
                         }
                         // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，放在 content 内部以跟随按钮拖拽位移
                         Box(
@@ -671,7 +607,7 @@ fun HomeScreen(
                                     indication = null,
                                     onClick = onNavigateToHeatmap
                                 ),
-                            shape = RoundedCornerShape(24.dp),
+                            shape = RoundedRectangle(24.dp),
                             color = surfaceColor,
                             shadowElevation = 0.dp
                         ) {
@@ -683,25 +619,13 @@ fun HomeScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.Trophy,
-                                            color = IsoluminantPalette.LilacViolet,
-                                            size = 28.dp
-                                        )
-                                    } else {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = iconBgPurple
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.EmojiEvents,
-                                                contentDescription = null,
-                                                tint = BentoColors.AccentPurple,
-                                                modifier = Modifier.padding(12.dp).size(24.dp)
-                                            )
-                                        }
-                                    }
+                                    HomeSquircleIconBox(
+                                        icon = Icons.Rounded.EmojiEvents,
+                                        iconColor = heatmapColor,
+                                        containerSize = 42.dp,
+                                        iconSize = 28.dp,
+                                        cornerRadius = 12.dp
+                                    )
                                     Spacer(Modifier.width(16.dp))
                                     Column {
                                         Text(
@@ -717,30 +641,16 @@ fun HomeScreen(
                                         )
                                     }
                                 }
-                                if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                    // Plump Duo 规范：通透纯净容器，无沉重圆块背景，保持文本次级中性色
-                                    Box(
-                                        modifier = Modifier.size(36.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        PlumpDuoIcon(
-                                            icon = PlumpIcon.ArrowRight,
-                                            color = textSub,
-                                            size = 20.dp
-                                        )
-                                    }
-                                } else {
-                                    Surface(
-                                        shape = CircleShape,
-                                        color = dividerColor
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                            contentDescription = null,
-                                            tint = textSub,
-                                            modifier = Modifier.padding(8.dp).size(20.dp)
-                                        )
-                                    }
+                                Surface(
+                                    shape = CircleShape,
+                                    color = dividerColor
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                        contentDescription = null,
+                                        tint = textSub,
+                                        modifier = Modifier.padding(8.dp).size(20.dp)
+                                    )
                                 }
                             }
                         }
@@ -763,7 +673,7 @@ fun HomeScreen(
                                         indication = null,
                                         onClick = onNavigateToKanaChart
                                     ),
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp
                             ) {
@@ -778,25 +688,13 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.Languages,
-                                                color = IsoluminantPalette.SkyIndigo,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Surface(
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = iconBgBlue
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Language,
-                                                    contentDescription = null,
-                                                    tint = BentoColors.AccentBlue,
-                                                    modifier = Modifier.padding(10.dp).size(20.dp)
-                                                )
-                                            }
-                                        }
+                                        HomeSquircleIconBox(
+                                            icon = Icons.Rounded.Translate,
+                                            iconColor = kanaColor,
+                                            containerSize = 36.dp,
+                                            iconSize = 24.dp,
+                                            cornerRadius = 10.dp
+                                        )
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                                             contentDescription = null,
@@ -831,7 +729,7 @@ fun HomeScreen(
                                         indication = null,
                                         onClick = onNavigateToVerbHandbook
                                     ),
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp
                             ) {
@@ -846,25 +744,13 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.GrammarLayers,
-                                                color = IsoluminantPalette.LakesideCyan,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Surface(
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = if (isDark) IosColors.IndigoDark.copy(alpha = 0.15f) else IosColors.Indigo.copy(alpha = 0.1f)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.Transform,
-                                                    contentDescription = null,
-                                                    tint = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
-                                                    modifier = Modifier.padding(10.dp).size(20.dp)
-                                                )
-                                            }
-                                        }
+                                        HomeSquircleIconBox(
+                                            icon = Icons.Rounded.Transform,
+                                            iconColor = verbColor,
+                                            containerSize = 36.dp,
+                                            iconSize = 24.dp,
+                                            cornerRadius = 10.dp
+                                        )
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                                             contentDescription = null,
@@ -907,7 +793,7 @@ fun HomeScreen(
                                         indication = null,
                                         onClick = onNavigateToAIWorkshop
                                     ),
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp
                             ) {
@@ -922,25 +808,13 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.Sparkles,
-                                                color = IsoluminantPalette.RoseRuby,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Surface(
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = iconBgPurple
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.AutoAwesome,
-                                                    contentDescription = null,
-                                                    tint = BentoColors.AccentPurple,
-                                                    modifier = Modifier.padding(10.dp).size(20.dp)
-                                                )
-                                            }
-                                        }
+                                        HomeSquircleIconBox(
+                                            icon = Icons.Rounded.AutoAwesome,
+                                            iconColor = aiWorkshopColor,
+                                            containerSize = 36.dp,
+                                            iconSize = 24.dp,
+                                            cornerRadius = 10.dp
+                                        )
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                                             contentDescription = null,
@@ -975,7 +849,7 @@ fun HomeScreen(
                                         indication = null,
                                         onClick = onNavigateToAIReading
                                     ),
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedRectangle(24.dp),
                                 color = surfaceColor,
                                 shadowElevation = 0.dp
                             ) {
@@ -990,25 +864,13 @@ fun HomeScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.Top
                                     ) {
-                                        if (LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO) {
-                                            PlumpDuoIcon(
-                                                icon = PlumpIcon.BookOpen,
-                                                color = IsoluminantPalette.WarmAmber,
-                                                size = 28.dp
-                                            )
-                                        } else {
-                                            Surface(
-                                                shape = RoundedCornerShape(12.dp),
-                                                color = iconBgGreen
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Rounded.ChromeReaderMode,
-                                                    contentDescription = null,
-                                                    tint = BentoColors.AccentGreen,
-                                                    modifier = Modifier.padding(10.dp).size(20.dp)
-                                                )
-                                            }
-                                        }
+                                        HomeSquircleIconBox(
+                                            icon = Icons.Rounded.MenuBook,
+                                            iconColor = aiReadingColor,
+                                            containerSize = 36.dp,
+                                            iconSize = 24.dp,
+                                            cornerRadius = 10.dp
+                                        )
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                                             contentDescription = null,
@@ -1056,7 +918,7 @@ private fun BentoAnimatedSegmentedControl(
     isDark: Boolean,
     onOptionSelected: (Int) -> Unit
 ) {
-    val trackColor = if (isDark) BentoColors.SegmentTrackDark else BentoColors.BgBase
+    val trackColor = if (isDark) BentoColors.SegmentTrackDark else MaterialTheme.colorScheme.surfaceVariant
     val pillColor = if (isDark) BentoColors.SegmentThumbDark else BentoColors.Surface
 
     Surface(

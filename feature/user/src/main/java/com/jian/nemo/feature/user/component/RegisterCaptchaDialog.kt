@@ -7,7 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -182,9 +182,9 @@ fun CaptchaCanvas(
 
     Canvas(
         modifier = modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedRectangle(12.dp))
             .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+            .border(1.dp, borderColor, RoundedRectangle(12.dp))
     ) {
         val width = size.width
         val height = size.height
@@ -326,7 +326,7 @@ fun RegisterCaptchaDialog(
 
                 OutlinedButton(
                     onClick = { refreshCaptcha() },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedRectangle(12.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                     modifier = Modifier.height(52.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
@@ -373,7 +373,7 @@ fun RegisterCaptchaDialog(
                 },
                 singleLine = true,
                 isError = errorMessage != null,
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedRectangle(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,

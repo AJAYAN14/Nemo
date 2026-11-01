@@ -45,14 +45,16 @@ import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.liquid.utils.DampedDragAnimation
-import com.jian.nemo.core.ui.component.Capsule
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlin.math.abs
 
 /**
@@ -83,6 +85,7 @@ fun LiquidToggle(
     val animationScope = rememberCoroutineScope()
     val currentSelected by rememberUpdatedState(selected)
     var fraction by remember { mutableFloatStateOf(if (selected()) 1f else 0f) }
+    var isInitialized by remember { mutableStateOf(false) }
 
     val dampedDragAnimation = remember(animationScope) {
         DampedDragAnimation(
@@ -98,8 +101,14 @@ fun LiquidToggle(
         )
     }
 
+    LaunchedEffect(Unit) {
+        delay(100)
+        isInitialized = true
+    }
+
     LaunchedEffect(dampedDragAnimation) {
         snapshotFlow { fraction }
+            .drop(1)
             .collectLatest { frac ->
                 dampedDragAnimation.updateValue(frac)
             }
@@ -109,7 +118,11 @@ fun LiquidToggle(
         val target = if (selected()) 1f else 0f
         if (target != fraction) {
             fraction = target
-            dampedDragAnimation.animateToValue(target)
+            if (!isInitialized) {
+                dampedDragAnimation.snapToValue(target)
+            } else {
+                dampedDragAnimation.animateToValue(target)
+            }
         }
     }
 

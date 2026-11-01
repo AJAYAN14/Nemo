@@ -1,5 +1,7 @@
 package com.jian.nemo.feature.statistics
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.util.DateTimeUtils
@@ -52,6 +54,7 @@ data class PanoramaBucket(
 
 @HiltViewModel
 class ActivityHeatmapViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val getHeatmapDataUseCase: GetHeatmapDataUseCase,
     private val wordRepository: WordRepository,
     private val grammarRepository: GrammarRepository,
@@ -86,10 +89,10 @@ class ActivityHeatmapViewModel @Inject constructor(
                 val totalCount = allItems.size
                 
                 val buckets = listOf(
-                    createBucket("young_early", "初识", allItems.count { it.stability < 3f }, totalCount, StabilityEarlyHex),
-                    createBucket("young_developing", "熟悉", allItems.count { it.stability >= 3f && it.stability < 21f }, totalCount, StabilityDevelopingHex),
-                    createBucket("mature", "稳固", allItems.count { it.stability >= 21f && it.stability < 90f }, totalCount, StabilityMatureHex),
-                    createBucket("expert", "长效", allItems.count { it.stability >= 90f }, totalCount, StabilityExpertHex)
+                    createBucket("young_early", context.getString(R.string.stats_heatmap_bucket_early), allItems.count { it.stability < 3f }, totalCount, StabilityEarlyHex),
+                    createBucket("young_developing", context.getString(R.string.stats_heatmap_bucket_developing), allItems.count { it.stability >= 3f && it.stability < 21f }, totalCount, StabilityDevelopingHex),
+                    createBucket("mature", context.getString(R.string.stats_heatmap_bucket_mature), allItems.count { it.stability >= 21f && it.stability < 90f }, totalCount, StabilityMatureHex),
+                    createBucket("expert", context.getString(R.string.stats_heatmap_bucket_expert), allItems.count { it.stability >= 90f }, totalCount, StabilityExpertHex)
                 )
 
                 val panoramaData = MemoryPanoramaData(totalCount, buckets)

@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +43,7 @@ fun ExplanationCardContainer(
             1.dp,
             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedRectangle(16.dp)
     ) {
         val scrollState = rememberScrollState()
 

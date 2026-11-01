@@ -24,7 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.Translate
@@ -57,11 +58,6 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
@@ -72,34 +68,6 @@ import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.presentation.CardBadge
-import kotlin.math.abs
-
-/**
- * HIG 风格配色列表 - 用于生成随机但稳定的颜色
- */
-private val higColors = listOf(
-    IosColors.Blue,
-    IosColors.Green,
-    IosColors.Orange,
-    IosColors.Pink,
-    IosColors.Indigo,
-    IosColors.Purple,
-    IosColors.Mint,
-    IosColors.Red,
-    IosColors.Teal,
-    IosColors.Yellow
-)
-
-
-
-/**
- * 根据单词 ID 获取稳定的随机颜色
- */
-private fun getColorForWord(wordId: Int): Color {
-    val index = abs(wordId) % higColors.size
-    return higColors[index]
-}
-
 /**
  * @param word 单词数据
  * @param isAnswerShown 是否显示答案
@@ -121,9 +89,6 @@ fun SRSLearningCard(
     isWhiteboardEnabled: Boolean = false,
     autoRevealProgress: Float? = null
 ) {
-    // 检测图标风格
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
-
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(word.id) { mutableStateOf(false) }
 
@@ -138,10 +103,6 @@ fun SRSLearningCard(
     val borderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
     val dividerColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray100
 
-    // Shadow Parameters
-    val shadowElevation = if (isDarkTheme) 2.dp else 10.dp
-    val shadowColor = if (isDarkTheme) Color.Black.copy(alpha = 0.4f) else Color.Black.copy(alpha = 0.03f)
-
     // Text: 使用 NemoNeutrals 定义的精准色值
     val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
     val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray400
@@ -150,18 +111,20 @@ fun SRSLearningCard(
     val labelBgColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray100
     val labelTextColor = if (isDarkTheme) NemoNeutrals.DarkTextSecondary else NemoNeutrals.Gray500
 
-    // Indigo 标签色 (用于等级徽章)
-    val indigoBg = if (isDarkTheme) LearningPalette.IndigoBgDark else LearningPalette.IndigoBgLight
-    val indigoBorder = if (isDarkTheme) LearningPalette.IndigoBorderDark else LearningPalette.IndigoBorderLight
-    val indigoText = if (isDarkTheme) LearningPalette.IndigoTextDark else LearningPalette.IndigoTextLight
+    // 标准调色盘统一色彩系统
+    val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+    val levelBg = indigoColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+    val levelText = indigoColor
 
-    // 跟打按钮颜色 - 根据单词 ID 生成稳定的随机颜色
-    val practiceButtonColor = remember(word.id) { getColorForWord(word.id) }
-    val practiceButtonBgColor = if (isDarkTheme) {
-        practiceButtonColor.copy(alpha = 0.2f)
-    } else {
-        practiceButtonColor.copy(alpha = 0.1f)
-    }
+    val audioColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+    val audioBg = audioColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+
+    val practiceColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+    val practiceBg = practiceColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+
+    val whiteboardColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val whiteboardBg = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+    val whiteboardTint = if (showBackWhiteboard) Color.White else whiteboardColor
 
     Column(
         modifier = modifier
@@ -174,8 +137,8 @@ fun SRSLearningCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
-                .clip(RoundedCornerShape(26.dp))
-                .background(cardBackground, RoundedCornerShape(26.dp))
+                .clip(RoundedRectangle(26.dp))
+                .background(cardBackground, RoundedRectangle(26.dp))
         ) {
             if (autoRevealProgress != null && autoRevealProgress > 0f) {
                 androidx.compose.material3.LinearProgressIndicator(
@@ -183,9 +146,9 @@ fun SRSLearningCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(3.dp)
-                        .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
+                        .clip(UnevenRoundedRectangle(topStart = 26.dp, topEnd = 26.dp))
                         .align(Alignment.TopCenter),
-                    color = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary,
+                    color = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue,
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -221,7 +184,7 @@ fun SRSLearningCard(
 
                 // 假名读音 (答案显示时) / 思考提示 (答案隐藏时)
                 if (isAnswerShown) {
-                    val pronunciationColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoNeutrals.Blue600
+                    val pronunciationColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
                     Text(
                         text = word.hiragana,
                         color = pronunciationColor,
@@ -244,27 +207,16 @@ fun SRSLearningCard(
             }
 
             // 左上角等级徽章 (镜像对称)
-            val effectiveLevelBg = if (isPlumpDuo) {
-                IsoluminantPalette.LilacViolet.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-            } else {
-                indigoBg
-            }
-            val effectiveLevelText = if (isPlumpDuo) {
-                IsoluminantPalette.LilacViolet
-            } else {
-                indigoText
-            }
-
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(top = 24.dp, start = 16.dp)
-                    .background(effectiveLevelBg, CircleShape)
+                    .background(levelBg, CircleShape)
                     .padding(horizontal = 14.dp, vertical = 6.dp)
             ) {
                 Text(
                     text = word.level,
-                    color = effectiveLevelText,
+                    color = levelText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 1.2.sp
@@ -272,39 +224,30 @@ fun SRSLearningCard(
             }
 
             cardBadge?.let { badge ->
-                val (text, bgColor, textColor) = when (badge) {
-                    CardBadge.NEW -> if (isPlumpDuo) {
-                        Triple(stringResource(R.string.card_badge_new), IsoluminantPalette.SkyIndigo.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.SkyIndigo)
-                    } else {
-                        Triple(stringResource(R.string.card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
-                    }
-                    CardBadge.LEARNING -> if (isPlumpDuo) {
-                        Triple(stringResource(R.string.card_badge_learning), IsoluminantPalette.LakesideCyan.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.LakesideCyan)
-                    } else {
-                        Triple(stringResource(R.string.card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
-                    }
-                    CardBadge.REVIEW -> if (isPlumpDuo) {
-                        Triple(stringResource(R.string.card_badge_review), IsoluminantPalette.EmeraldGreen.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.EmeraldGreen)
-                    } else {
-                        Triple(stringResource(R.string.card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
-                    }
-                    CardBadge.RELEARN -> if (isPlumpDuo) {
-                        Triple(stringResource(R.string.card_badge_relearn), IsoluminantPalette.WarmAmber.copy(alpha = if (isDarkTheme) 0.12f else 0.08f), IsoluminantPalette.WarmAmber)
-                    } else {
-                        Triple(stringResource(R.string.card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
-                    }
+                val badgeColor = when (badge) {
+                    CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+                    CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+                    CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+                    CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
                 }
+                val badgeText = when (badge) {
+                    CardBadge.NEW -> stringResource(R.string.card_badge_new)
+                    CardBadge.LEARNING -> stringResource(R.string.card_badge_learning)
+                    CardBadge.REVIEW -> stringResource(R.string.card_badge_review)
+                    CardBadge.RELEARN -> stringResource(R.string.card_badge_relearn)
+                }
+                val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(top = 24.dp, end = 16.dp)
-                        .background(bgColor, CircleShape)
+                        .background(badgeBg, CircleShape)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = text,
-                        color = textColor,
+                        text = badgeText,
+                        color = badgeColor,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.2.sp
@@ -348,12 +291,12 @@ fun SRSLearningCard(
                                 .fillMaxWidth()
                                 .height(440.dp)
                                 .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
-                                .clip(RoundedCornerShape(26.dp))
+                                .clip(RoundedRectangle(26.dp))
                                 .background(cardBackground.copy(alpha = if (isDarkTheme) 0.85f else 0.95f))
                                 .border(
                                     width = 0.8.dp,
                                     color = borderColor,
-                                    shape = RoundedCornerShape(26.dp)
+                                    shape = RoundedRectangle(26.dp)
                                 )
                                 .drawBehind {
                                     val dotSpacing = 18.dp.toPx()
@@ -399,20 +342,12 @@ fun SRSLearningCard(
                                 .padding(vertical = 42.dp, horizontal = 20.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (isPlumpDuo) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.Lightbulb,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    size = 96.dp
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Lightbulb,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(96.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            Icon(
+                                imageVector = Icons.Rounded.Lightbulb,
+                                contentDescription = null,
+                                modifier = Modifier.size(96.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                 }
@@ -451,7 +386,7 @@ fun SRSLearningCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
-                        .background(cardBackground.copy(alpha = 0.95f), RoundedCornerShape(26.dp))
+                        .background(cardBackground.copy(alpha = 0.95f), RoundedRectangle(26.dp))
                         .padding(24.dp)
                 ) {
                     // Meaning
@@ -577,123 +512,49 @@ fun SRSLearningCard(
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (isPlumpDuo) {
-                        // Plump Duo 方案：切换为 IsoluminantPalette 对应的等亮度颜色，图标换为 PlumpDuoIcon
-                        val plumpAudioColor = IsoluminantPalette.SkyIndigo
-                        val plumpPracticeColor = IsoluminantPalette.LakesideCyan
-                        val plumpWhiteboardColor = IsoluminantPalette.WarmAmber
+                    // 1. 朗读单词按钮
+                    if (onSpeakWord != null) {
+                        SpeakerButton(
+                            isPlaying = playingAudioId == "word",
+                            onClick = { onSpeakWord() },
+                            tint = audioColor,
+                            size = 42.dp,
+                            backgroundColor = audioBg
+                        )
+                    }
 
-                        // 1. 朗读单词按钮
-                        if (onSpeakWord != null) {
-                            if (playingAudioId == "word") {
-                                SpeakerButton(
-                                    isPlaying = true,
-                                    onClick = { onSpeakWord() },
-                                    tint = plumpAudioColor,
-                                    size = 44.dp,
-                                    backgroundColor = plumpAudioColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-                                )
-                            } else {
-                                LiquidButton(
-                                    onClick = { onSpeakWord() },
-                                    backgroundColor = plumpAudioColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
-                                    shape = CircleShape,
-                                    elevation = 0.dp,
-                                    modifier = Modifier.size(44.dp)
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.AudioVolume,
-                                        color = plumpAudioColor,
-                                        size = 24.dp
-                                    )
-                                }
-                            }
-                        }
-
-                        // 2. 跟打练习按钮
-                        if (onPracticeClick != null) {
-                            LiquidButton(
-                                onClick = { onPracticeClick() },
-                                backgroundColor = plumpPracticeColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                PlumpDuoIcon(
-                                    icon = PlumpIcon.Languages,
-                                    color = plumpPracticeColor,
-                                    size = 24.dp
-                                )
-                            }
-                        }
-
-                        // 3. 手写白板按钮
-                        val whiteboardBg = if (showBackWhiteboard) {
-                            plumpWhiteboardColor
-                        } else {
-                            plumpWhiteboardColor.copy(alpha = if (isDarkTheme) 0.12f else 0.08f)
-                        }
-                        val whiteboardIconColor = if (showBackWhiteboard) Color.White else plumpWhiteboardColor
-
+                    // 2. 跟打练习按钮
+                    if (onPracticeClick != null) {
                         LiquidButton(
-                            onClick = { showBackWhiteboard = !showBackWhiteboard },
-                            backgroundColor = whiteboardBg,
+                            onClick = { onPracticeClick() },
+                            backgroundColor = practiceBg,
                             shape = CircleShape,
                             elevation = 0.dp,
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            PlumpDuoIcon(
-                                icon = PlumpIcon.UserPen,
-                                color = whiteboardIconColor,
-                                size = 24.dp
-                            )
-                        }
-                    } else {
-                        // 默认方案：100% 保持原有配色和图标不变
-                        // 朗读单词按钮
-                        if (onSpeakWord != null) {
-                            SpeakerButton(
-                                isPlaying = playingAudioId == "word",
-                                onClick = { onSpeakWord() },
-                                tint = practiceButtonColor,
-                                size = 44.dp,
-                                backgroundColor = practiceButtonBgColor
-                            )
-                        }
-
-                        // 跟打练习按钮
-                        if (onPracticeClick != null) {
-                            LiquidButton(
-                                onClick = { onPracticeClick() },
-                                backgroundColor = practiceButtonBgColor,
-                                shape = CircleShape,
-                                elevation = 0.dp,
-                                modifier = Modifier.size(44.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Translate,
-                                    contentDescription = stringResource(R.string.btn_practice_typing),
-                                    tint = practiceButtonColor,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                            }
-                        }
-
-                        // 手写白板按钮 (背面固定显示，不用去 menu 再次打开了)
-                        LiquidButton(
-                            onClick = { showBackWhiteboard = !showBackWhiteboard },
-                            backgroundColor = if (showBackWhiteboard) practiceButtonColor else practiceButtonBgColor,
-                            shape = CircleShape,
-                            elevation = 0.dp,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.size(42.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Edit,
-                                contentDescription = stringResource(R.string.btn_temp_whiteboard),
-                                tint = if (showBackWhiteboard) Color.White else practiceButtonColor,
-                                modifier = Modifier.size(24.dp)
+                                imageVector = Icons.Rounded.Translate,
+                                contentDescription = stringResource(R.string.btn_practice_typing),
+                                tint = practiceColor,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
+                    }
+
+                    // 3. 手写白板按钮
+                    LiquidButton(
+                        onClick = { showBackWhiteboard = !showBackWhiteboard },
+                        backgroundColor = whiteboardBg,
+                        shape = CircleShape,
+                        elevation = 0.dp,
+                        modifier = Modifier.size(42.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Edit,
+                            contentDescription = stringResource(R.string.btn_temp_whiteboard),
+                            tint = whiteboardTint,
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             }

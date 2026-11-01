@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -138,7 +138,7 @@ fun AccountResetPasswordDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -157,7 +157,7 @@ fun AccountResetPasswordDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -176,7 +176,7 @@ fun AccountResetPasswordDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                         isError = errorMessage != null
@@ -196,15 +196,6 @@ fun AccountResetPasswordDialog(
         }
     )
 }
-// Helper to control stage from outside if needed, but for now we keep state internal to dialog for simplicity
-// except we need a way to tell dialog "Success, move to next step".
-// Since we can't easily change the architecture to return Result in callback,
-// we will rely on a slightly different approach:
-// The Callers will be updated to accept a callback that returns Boolean or similar?
-// No, standard MVVM: ViewModel exposes State, Dialog observes State.
-// But this dialog is likely just functional stateless component used in a Screen.
-// Let's check where it's used. "AccountManagementScreen" probably.
-
 
 @Composable
 fun AccountUpdateUsernameDialog(
@@ -279,7 +270,7 @@ fun AccountUpdateUsernameDialog(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                    shape = RoundedRectangle(20.dp),
                     isError = errorMessage != null
                 )
 
@@ -383,7 +374,7 @@ fun AccountUpdateEmailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -402,7 +393,7 @@ fun AccountUpdateEmailDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         isError = errorMessage != null
                     )
@@ -492,7 +483,7 @@ fun DeleteAccountDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        shape = RoundedRectangle(20.dp),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
@@ -649,7 +640,7 @@ fun DeleteAccountDialog(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(26.dp),
+                        shape = RoundedRectangle(26.dp),
                         visualTransformation = if (isOnlyGoogleIdentity) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = if (isOnlyGoogleIdentity) KeyboardType.Email else KeyboardType.Password,
@@ -708,5 +699,3 @@ fun DeleteAccountDialog(
         }
     )
 }
-
-

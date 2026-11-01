@@ -7,6 +7,7 @@ import android.view.View
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
+import com.jian.nemo.feature.learning.R
 
 /**
  * 自定义 TextToolbar：在系统原生复制/全选操作的基础上，
@@ -36,14 +37,15 @@ class CustomTextToolbar(
     ) {
         val callback = object : ActionMode.Callback2() {
             override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+                val context = view.context
                 if (onCopyRequested != null) {
-                    menu.add(0, MENU_ITEM_COPY, 0, "复制")
+                    menu.add(0, MENU_ITEM_COPY, 0, context.getString(R.string.learning_ai_reading_btn_copy))
                 }
                 if (onSelectAllRequested != null) {
-                    menu.add(0, MENU_ITEM_SELECT_ALL, 1, "全选")
+                    menu.add(0, MENU_ITEM_SELECT_ALL, 1, context.getString(R.string.learning_ai_reading_btn_select_all))
                 }
                 // 注入自定义"翻译"按钮
-                menu.add(0, MENU_ITEM_TRANSLATE, 2, "翻译")
+                menu.add(0, MENU_ITEM_TRANSLATE, 2, context.getString(R.string.learning_ai_reading_btn_translate))
                 return true
             }
 

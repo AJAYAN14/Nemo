@@ -2,7 +2,7 @@ package com.jian.nemo.core.ui.component.card
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,7 +33,7 @@ fun CommonWordCard(
             .fillMaxWidth()
             .padding(bottom = 8.dp)
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedRectangle(15.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor)
     ) {
         Row(

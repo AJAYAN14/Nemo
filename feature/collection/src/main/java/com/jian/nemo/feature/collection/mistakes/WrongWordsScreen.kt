@@ -1,15 +1,7 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.NemoDangerDark
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
-import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
-import com.jian.nemo.core.designsystem.theme.NemoWarning
-import com.jian.nemo.core.designsystem.theme.NemoWarningDark
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -21,9 +13,10 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cancel
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Check
@@ -81,18 +74,10 @@ fun WrongWordsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val premiumRed = if (isDark) NemoDangerDark else NemoDanger
-    val premiumBlue = if (isDark) NemoPrimaryDark else NemoPrimary
-    val premiumOrange = if (isDark) NemoWarningDark else NemoWarning
-    val premiumGray = MaterialTheme.colorScheme.onSurfaceVariant
-
-    // 双方案色彩分流：Plump Duo 切换为 IsoluminantPalette 等亮度色，MD3 100% 保持原色
-    val accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else premiumBlue
-    val deleteColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else premiumRed
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val accentColor = IosColors.Blue
+    val deleteColor = IosColors.Red
+    val emptyIconColor = IosColors.Green
 
     // 多选状态
     var selectedWordIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -139,7 +124,6 @@ fun WrongWordsScreen(
                     }
                 }
                 uiState.words.isEmpty() -> {
-                    // Empty State: Plump Duo 取消外层纯色底块，使用纯透明对齐容器
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -150,32 +134,20 @@ fun WrongWordsScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if (isPlumpDuo) {
-                                Box(
-                                    modifier = Modifier.size(100.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    PlumpDuoIcon(
-                                        icon = PlumpIcon.CircleX,
-                                        color = IsoluminantPalette.EmeraldGreen,
-                                        size = 64.dp
-                                    )
-                                }
-                            } else {
-                                Surface(
-                                    shape = RoundedCornerShape(32.dp),
-                                    color = premiumGray.copy(alpha = 0.1f),
-                                    modifier = Modifier.size(100.dp)
-                                ) {
-                                    Box(contentAlignment = Alignment.Center) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Cancel,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(48.dp),
-                                            tint = premiumGray.copy(alpha = 0.5f)
-                                        )
-                                    }
-                                }
+                            val emptyBgColor = if (isSoftTranslucent) emptyIconColor.copy(alpha = 0.15f) else emptyIconColor
+                            val emptyTint = if (isSoftTranslucent) emptyIconColor else Color.White
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .background(emptyBgColor, RoundedRectangle(28.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.CheckCircle,
+                                    contentDescription = null,
+                                    tint = emptyTint,
+                                    modifier = Modifier.size(56.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
@@ -240,7 +212,7 @@ fun WrongWordsScreen(
                                         }
                                     },
                                     accentColor = accentColor,
-                                    tagColor = getLevelColor(word.level, isPlumpDuo)
+                                    tagColor = getLevelColor(word.level)
                                 )
                             }
                         }
@@ -342,24 +314,18 @@ fun WrongWordsScreen(
         }
     }
 }
-}
 
 /**
- * 获取 JLPT 等级对应颜色（双风格自适应：Plump Duo 下对应等亮度色彩，MD3 保持原经典蓝）
+ * 获取 JLPT 等级对应颜色（统一收拢至标准设计色彩手册 IosColors）
  */
-@Composable
-private fun getLevelColor(level: String, isPlumpDuo: Boolean): Color {
-    return if (isPlumpDuo) {
-        when (level.uppercase()) {
-            "N5" -> IsoluminantPalette.EmeraldGreen
-            "N4" -> IsoluminantPalette.LakesideCyan
-            "N3" -> IsoluminantPalette.SkyIndigo
-            "N2" -> IsoluminantPalette.WarmAmber
-            "N1" -> IsoluminantPalette.RoseRuby
-            else -> IsoluminantPalette.SkyIndigo
-        }
-    } else {
-        if (MaterialTheme.colorScheme.background.luminance() < 0.5f) NemoPrimaryDark else NemoPrimary
+private fun getLevelColor(level: String): Color {
+    return when (level.uppercase()) {
+        "N5" -> IosColors.Green
+        "N4" -> IosColors.Cyan
+        "N3" -> IosColors.Blue
+        "N2" -> IosColors.Orange
+        "N1" -> IosColors.Pink
+        else -> IosColors.Indigo
     }
 }
 
@@ -388,7 +354,7 @@ private fun WrongWordItem(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedRectangle(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface // Clean surface
         ),
@@ -456,17 +422,17 @@ private fun WrongWordItem(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Premium Tag: Tinted Squircle
+            // JLPT Level Tag: G2 Rounded Squircle
             Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = tagColor.copy(alpha = 0.1f) // Tinted background
+                shape = RoundedRectangle(8.dp),
+                color = tagColor.copy(alpha = 0.12f)
             ) {
                 Text(
-                    text = word.level,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.labelMedium,
+                    text = word.level.uppercase(),
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = tagColor // Solid text color
+                    color = tagColor
                 )
             }
         }
