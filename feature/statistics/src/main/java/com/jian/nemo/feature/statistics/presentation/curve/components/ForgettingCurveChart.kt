@@ -33,7 +33,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextMeasurer
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +97,12 @@ fun ForgettingCurveChart(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
+    val thresholdLineFormat = stringResource(R.string.stats_curve_chart_threshold_line_format)
+    val dayToday = stringResource(R.string.stats_curve_axis_day_today)
+    val dayTomorrow = stringResource(R.string.stats_curve_axis_day_tomorrow)
+    val dayDayAfter = stringResource(R.string.stats_curve_axis_day_day_after)
+    val dayAfterFormat = stringResource(R.string.stats_curve_axis_day_after_format)
+    val dayFormat = stringResource(R.string.stats_curve_axis_day_format)
 
     // 颜色方案
     val gridColor = if (isDark) NemoNeutrals.Gray700.copy(alpha = 0.4f) else NemoNeutrals.Gray200
@@ -271,7 +279,7 @@ fun ForgettingCurveChart(
                     end = Offset(x, chartBottom),
                     strokeWidth = gridLineWidth
                 )
-                val dayLabel = formatDayLabel(dayValue, maxDayIndex)
+                val dayLabel = formatDayLabel(dayValue, maxDayIndex, dayToday, dayTomorrow, dayDayAfter, dayAfterFormat, dayFormat)
                 val xLabelResult = textMeasurer.measure(dayLabel, axisTextStyle)
                 drawText(
                     textLayoutResult = xLabelResult,
@@ -295,7 +303,7 @@ fun ForgettingCurveChart(
             )
 
             val thresholdPercent = (animatedThreshold * 100).roundToInt()
-            val thresholdText = "${thresholdPercent}% 警戒线"
+            val thresholdText = String.format(thresholdLineFormat, thresholdPercent)
             val thresholdStyle = TextStyle(
                 color = if (isPlumpDuo) {
                     if (isDark) alertLineColor else NemoNeutrals.Gray800
@@ -528,7 +536,7 @@ private fun CurveLiquidTooltip(
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
-                    text = "第 ${info.day} 天",
+                    text = stringResource(R.string.stats_curve_tooltip_day_format, info.day),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (isDark) NemoNeutrals.Gray50 else NemoNeutrals.Gray900
                 )
@@ -540,7 +548,7 @@ private fun CurveLiquidTooltip(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "${stageLabel}留存: ${(info.userRate * 100).toInt()}%",
+                        text = stringResource(R.string.stats_curve_tooltip_retention_format, stageLabel, (info.userRate * 100).toInt()),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
@@ -553,7 +561,7 @@ private fun CurveLiquidTooltip(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "标准参考: ${(info.stdRate * 100).toInt()}%",
+                        text = stringResource(R.string.stats_curve_tooltip_std_format, (info.stdRate * 100).toInt()),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
@@ -566,7 +574,7 @@ private fun CurveLiquidTooltip(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "动态警戒: ${(info.alertThreshold * 100).toInt()}%",
+                        text = stringResource(R.string.stats_curve_tooltip_alert_format, (info.alertThreshold * 100).toInt()),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isDark) NemoNeutrals.Gray300 else NemoNeutrals.Gray700
                     )
@@ -576,16 +584,24 @@ private fun CurveLiquidTooltip(
     }
 }
 
-fun formatDayLabel(dayIndex: Int, maxDays: Int): String {
+fun formatDayLabel(
+    dayIndex: Int,
+    maxDays: Int,
+    todayText: String,
+    tomorrowText: String,
+    dayAfterText: String,
+    dayAfterFormat: String,
+    dayFormat: String
+): String {
     return if (maxDays <= 7) {
         when (dayIndex) {
-            0 -> "今\n天"
-            1 -> "明\n天"
-            2 -> "后\n天"
-            else -> "${dayIndex}\n天\n后"
+            0 -> todayText
+            1 -> tomorrowText
+            2 -> dayAfterText
+            else -> String.format(dayAfterFormat, dayIndex)
         }
     } else {
-        "${dayIndex}天"
+        String.format(dayFormat, dayIndex)
     }
 }
 

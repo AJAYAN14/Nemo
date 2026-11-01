@@ -1,4 +1,5 @@
 package com.jian.nemo.feature.test.components
+// 资源化本文件硬编码文字
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -29,6 +30,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -42,6 +45,7 @@ import android.annotation.SuppressLint
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
+import com.jian.nemo.core.designsystem.theme.NemoKonfettiColors
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
@@ -202,7 +206,7 @@ fun TestResultComponent(
                             }
                             Icon(
                                 imageVector = gradeIcon,
-                                contentDescription = "评级图标",
+                                contentDescription = stringResource(R.string.test_result_cd_rating_icon),
                                 modifier = Modifier
                                     .padding(16.dp)
                                     .size(48.dp),
@@ -210,7 +214,7 @@ fun TestResultComponent(
                             )
                         }
                         Text(
-                            text = "测试完成！",
+                            text = stringResource(R.string.test_result_title_completed),
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -250,13 +254,13 @@ fun TestResultComponent(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Text(
-                                text = "${animatedAccuracy}%",
+                                text = String.format(stringResource(R.string.test_result_accuracy_format), animatedAccuracy),
                                 style = MaterialTheme.typography.displayLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = accuracyColor
                             )
                             Text(
-                                text = "正确率",
+                                text = stringResource(R.string.test_result_label_accuracy),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = textSub
                             )
@@ -274,7 +278,7 @@ fun TestResultComponent(
                         StatCard(
                             icon = Icons.Default.Check,
                             value = correctAnswers.toString(),
-                            label = "答对",
+                            label = stringResource(R.string.test_result_stat_correct),
                             backgroundColor = if (isDark) TestResultPalette.CorrectCardBgDark else TestResultPalette.CorrectCardBgLight,
                             contentColor = if (isDark) TestResultPalette.CorrectCardContentDark else TestResultPalette.CorrectCardContentLight,
                             modifier = Modifier.weight(1f)
@@ -284,7 +288,7 @@ fun TestResultComponent(
                         StatCard(
                             icon = Icons.Default.Close,
                             value = wrongAnswersCount.toString(),
-                            label = "答错",
+                            label = stringResource(R.string.test_result_stat_wrong),
                             backgroundColor = if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight,
                             contentColor = if (isDark) TestResultPalette.WrongCardContentDark else TestResultPalette.WrongCardContentLight,
                             modifier = Modifier.weight(1f)
@@ -294,7 +298,7 @@ fun TestResultComponent(
                         StatCard(
                             icon = Icons.Default.AccessTime,
                             value = timeFormatted,
-                            label = "用时",
+                            label = stringResource(R.string.test_result_stat_time),
                             backgroundColor = if (isDark) TestResultPalette.TimeCardBgDark else TestResultPalette.TimeCardBgLight,
                             contentColor = if (isDark) TestResultPalette.TimeCardContentDark else TestResultPalette.TimeCardContentLight,
                             modifier = Modifier.weight(1f)
@@ -347,7 +351,7 @@ fun TestResultComponent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "返回菜单",
+                    text = stringResource(R.string.test_result_btn_back_menu),
                     color = if (isDark) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
@@ -365,7 +369,7 @@ fun TestResultComponent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "再来一次",
+                    text = stringResource(R.string.test_result_btn_retake),
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
@@ -386,7 +390,7 @@ fun TestResultComponent(
                 maxSpeed = 30f,
                 damping = 0.9f,
                 spread = 360,
-                colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def, 0x10B981, 0x3B82F6),
+                colors = NemoKonfettiColors,
                 emitter = Emitter(duration = 100, TimeUnit.MILLISECONDS).max(100),
                 position = Position.Relative(0.5, 0.3)
             )
@@ -533,7 +537,7 @@ fun ContentAnalysisSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "测试内容分布",
+                text = stringResource(R.string.test_result_title_content_analysis),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -572,14 +576,14 @@ fun ContentAnalysisSection(
                     Box(modifier = Modifier.size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(if (isDark) TestResultPalette.WordAccentDark else TestResultPalette.WordAccentLight))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "单词 $wordPercent%",
+                        text = stringResource(R.string.test_result_format_words_percent, wordPercent),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "语法 $grammarPercent%",
+                        text = stringResource(R.string.test_result_format_grammars_percent, grammarPercent),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -631,12 +635,12 @@ fun TodaySummarySection(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "今日累计战报",
+                    text = stringResource(R.string.test_result_title_today_summary),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "已完成 $todayTestCount 次测试",
+                    text = stringResource(R.string.test_result_format_today_completed, todayTestCount),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -650,7 +654,7 @@ fun TodaySummarySection(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "平均正确率",
+                    text = stringResource(R.string.test_result_label_avg_accuracy),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -676,11 +680,12 @@ fun getAccuracyColor(accuracy: Int): Color {
 /**
  * 获取激励性语句
  */
+@Composable
 fun getMotivationalQuote(accuracy: Int): String {
     return when {
-        accuracy == 100 -> "完美！你是学习大师！"
-        accuracy >= 80 -> "太棒了！继续保持！"
-        accuracy >= 60 -> "不错！离成功又近了一步！"
-        else -> "别灰心，温故而知新！"
+        accuracy == 100 -> stringResource(R.string.test_result_quote_perfect)
+        accuracy >= 80 -> stringResource(R.string.test_result_quote_great)
+        accuracy >= 60 -> stringResource(R.string.test_result_quote_good)
+        else -> stringResource(R.string.test_result_quote_cheer)
     }
 }

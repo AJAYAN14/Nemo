@@ -32,7 +32,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -128,7 +130,7 @@ fun NemoMorphMenu(
     iconPainter: Painter? = null,
     backdrop: Backdrop? = null,
     chromaticAberration: Boolean = false,
-    contentDescription: String? = "更多选项",
+    contentDescription: String? = stringResource(R.string.core_ui_morph_menu_cd_more),
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
     elevation: Dp = 0.dp,
@@ -166,7 +168,7 @@ fun NemoMorphMenu(
     iconPainter: Painter? = null,
     backdrop: Backdrop? = null,
     chromaticAberration: Boolean = false,
-    contentDescription: String? = "更多选项",
+    contentDescription: String? = stringResource(R.string.core_ui_morph_menu_cd_more),
     buttonSize: Dp = 44.dp,
     menuWidth: Dp = 192.dp,
     elevation: Dp = 0.dp,

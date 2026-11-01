@@ -35,6 +35,7 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -147,7 +148,7 @@ fun ActivityHeatmapScreen(
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(top = 20.dp), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "每一天都在进步，保持连胜！",
+                            text = stringResource(R.string.stats_heatmap_banner_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
@@ -173,7 +174,7 @@ fun ActivityHeatmapScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "学习热力图",
+                title = stringResource(R.string.stats_heatmap_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -190,7 +191,7 @@ fun ActivityHeatmapScreen(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_share_ios),
-                                contentDescription = "分享",
+                                contentDescription = stringResource(R.string.stats_heatmap_cd_share),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -232,7 +233,7 @@ private fun RichStatsGrid(
                 icon = Icons.Rounded.LocalFireDepartment,
                 plumpIcon = PlumpIcon.Flame,
                 isoluminantColor = IsoluminantPalette.WarmAmber,
-                label = "当前坚持",
+                label = stringResource(R.string.stats_heatmap_label_current_streak),
                 value = streak.toString(),
                 unit = "天",
                 subLabel = "最长 $longestStreak 天",
@@ -245,7 +246,7 @@ private fun RichStatsGrid(
                 icon = Icons.Rounded.Bolt,
                 plumpIcon = PlumpIcon.Zap,
                 isoluminantColor = IsoluminantPalette.SkyIndigo,
-                label = "累计活跃",
+                label = stringResource(R.string.stats_heatmap_label_active_days),
                 value = totalActiveDays.toString(),
                 unit = "天",
                 subLabel = "坚持不懈",
@@ -268,7 +269,7 @@ private fun RichStatsGrid(
                 icon = Icons.Rounded.EmojiEvents,
                 plumpIcon = PlumpIcon.Trophy,
                 isoluminantColor = IsoluminantPalette.EmeraldGreen,
-                label = "单日最佳",
+                label = stringResource(R.string.stats_heatmap_label_best_day),
                 value = bestDayCount.toString(),
                 unit = "项",
                 subLabel = dateStr,
@@ -281,7 +282,7 @@ private fun RichStatsGrid(
                 icon = Icons.AutoMirrored.Rounded.TrendingUp,
                 plumpIcon = PlumpIcon.TrendingUp,
                 isoluminantColor = IsoluminantPalette.LilacViolet,
-                label = "日均学习",
+                label = stringResource(R.string.stats_heatmap_label_daily_avg),
                 value = dailyAverage.toString(),
                 unit = "项",
                 subLabel = if (todayCount >= dailyAverage && dailyAverage > 0) "超过平均" else "稳步前进",
@@ -486,7 +487,7 @@ private fun MemoryPanoramaCard(
                         }
                     }
                     Text(
-                        text = "全库记忆全景",
+                        text = stringResource(R.string.stats_heatmap_title_panorama),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface

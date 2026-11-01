@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.test.presentation.ability
 
 import android.content.Context
+import com.jian.nemo.feature.test.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.audio.TtsManager
@@ -153,7 +154,7 @@ class ListeningComprehensionViewModel @Inject constructor(
                         if (targetWord.pos != null) {
                             append("【词性分类】${targetWord.pos}\n")
                         }
-                        append("【正确答案】${options[correctIndex]}。本题主要考察根据语音识别出正确的${qTypeDesc}。")
+                        append(context.getString(R.string.test_listening_analysis_template, options[correctIndex], qTypeDesc))
                     }
 
                     ListeningQuestion(

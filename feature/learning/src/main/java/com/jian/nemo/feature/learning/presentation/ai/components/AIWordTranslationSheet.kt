@@ -11,6 +11,8 @@ import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -257,7 +259,7 @@ private fun TranslationLoadingContent(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "AI 正在分析语义...",
+                text = stringResource(R.string.learn_reading_sheet_analyzing),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 0.5.sp
@@ -351,7 +353,7 @@ private fun TranslationSuccessContent(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
-                        contentDescription = "朗读",
+                        contentDescription = stringResource(R.string.learn_reading_sheet_desc_speak),
                         tint = BentoColors.Primary,
                         modifier = Modifier.size(28.dp)
                     )
@@ -398,7 +400,7 @@ private fun TranslationSuccessContent(
             Spacer(Modifier.width(10.dp))
             Column {
                 Text(
-                    text = "释义",
+                    text = stringResource(R.string.learn_reading_sheet_meaning_title),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
                 )

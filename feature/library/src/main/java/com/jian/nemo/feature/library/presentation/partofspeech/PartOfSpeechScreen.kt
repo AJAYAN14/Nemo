@@ -42,7 +42,7 @@ fun PartOfSpeechScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.library_pos_title_screen)) },
+                title = { Text(stringResource(R.string.lib_pos_title_screen)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -136,7 +136,7 @@ private fun PartOfSpeechCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "$count 个",
+                text = stringResource(R.string.lib_pos_count_format, count),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

@@ -23,6 +23,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -148,7 +150,7 @@ fun MistakesScreen(
                 .padding(bottom = 8.dp)
         ) {
             com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "我的错题",
+                title = stringResource(R.string.collection_mistakes_title_screen),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -157,7 +159,7 @@ fun MistakesScreen(
                     com.jian.nemo.feature.collection.components.CollectionActionMenu(
                         wordCount = uiState.wrongWordsCount,
                         grammarCount = uiState.wrongGrammarsCount,
-                        titleSuffix = "错题",
+                        titleSuffix = stringResource(R.string.collection_suffix_mistakes),
                         onClearAll = viewModel::clearAllWrongAnswers,
                         onClearWords = viewModel::clearAllWordMistakes,
                         onClearGrammars = viewModel::clearAllGrammarMistakes,
@@ -207,12 +209,12 @@ fun StatsOverviewCard(
 
     // 状态逻辑
     val encouragementText = when {
-        totalLearnedCount == 0 -> "开始学习，消灭知识盲点！"
-        gapRate == 0 -> "完美！所有知识点都已掌握"
-        gapRate <= 5 -> "状态极佳，继续保持！"
-        gapRate <= 15 -> "有些小漏洞，及时复习哦"
-        gapRate <= 30 -> "盲点较多，建议专项突破"
-        else -> "基础不牢，地动山摇，快去复习！"
+        totalLearnedCount == 0 -> stringResource(R.string.collection_mistakes_encouragement_zero)
+        gapRate == 0 -> stringResource(R.string.collection_mistakes_encouragement_perfect)
+        gapRate <= 5 -> stringResource(R.string.collection_mistakes_encouragement_great)
+        gapRate <= 15 -> stringResource(R.string.collection_mistakes_encouragement_warn)
+        gapRate <= 30 -> stringResource(R.string.collection_mistakes_encouragement_danger)
+        else -> stringResource(R.string.collection_mistakes_encouragement_critical)
     }
 
     // 颜色状态 (仅影响文字和装饰，不影响Card背景)
@@ -239,7 +241,7 @@ fun StatsOverviewCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "知识盲点率",
+                    text = stringResource(R.string.collection_mistakes_blindspot_rate),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -296,8 +298,8 @@ fun WrongAnswersList(
     // 与其把两个放在一个Card，不如拆分成两个Premium Card，视觉更强
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         WrongAnswerCategoryCard(
-            title = "错误的单词",
-            subtitle = "学习和测试中答错的单词",
+            title = stringResource(R.string.collection_mistakes_words_title),
+            subtitle = stringResource(R.string.collection_mistakes_words_subtitle),
             count = wrongWordsCount,
             icon = Icons.Rounded.Spellcheck,
             iconColor = NemoSecondary,
@@ -307,8 +309,8 @@ fun WrongAnswersList(
         )
 
         WrongAnswerCategoryCard(
-            title = "错误的语法",
-            subtitle = "学习和测试中答错的语法",
+            title = stringResource(R.string.collection_mistakes_grammars_title),
+            subtitle = stringResource(R.string.collection_mistakes_grammars_subtitle),
             count = wrongGrammarsCount,
             icon = Icons.Rounded.AccountTree,
             iconColor = NemoOrange,

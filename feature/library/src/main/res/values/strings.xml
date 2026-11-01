@@ -1,5 +1,139 @@
 <resources>
-    <!-- 词库展示文本 -->
+    <!-- 兼容历史项 -->
     <string name="library_pos_title_screen">词性分类</string>
     <string name="library_expression_placeholder_search">搜索表达、假名、释义...</string>
+
+    <!-- 单词列表 (WordListScreen) -->
+    <string name="lib_word_list_tab_all">全部</string>
+    <string name="lib_word_list_tab_learned">已学</string>
+    <string name="lib_word_list_tab_unlearned">未学</string>
+    <string name="lib_word_list_search_placeholder">搜索：汉字 / 假名 / 释义</string>
+    <string name="lib_word_list_empty_search_title">未找到相关单词</string>
+    <string name="lib_word_list_empty_search_desc">请尝试更换搜索关键词或假名拼写</string>
+    <string name="lib_word_list_empty_level_unlearned_title">当前等级暂无未学单词</string>
+    <string name="lib_word_list_empty_unlearned_title">暂无未学单词</string>
+    <string name="lib_word_list_empty_unlearned_desc">太棒了，所有单词均已学习完毕！</string>
+    <string name="lib_word_list_empty_level_learned_title">当前等级暂无已学单词</string>
+    <string name="lib_word_list_empty_learned_title">暂无已学单词</string>
+    <string name="lib_word_list_empty_learned_desc">去开始背词，积累更多词汇量吧</string>
+    <string name="lib_word_list_empty_level_title">当前等级暂无单词</string>
+    <string name="lib_word_list_empty_level_desc">可以切换上方的等级菜单查看其他内容</string>
+    <string name="lib_word_list_empty_default_title">暂无单词数据</string>
+    <string name="lib_word_list_empty_default_desc">暂时没有收录相关单词条目</string>
+    <string name="lib_word_list_header_title">单词列表</string>
+    <string name="lib_word_list_header_title_with_level">%1$s 单词</string>
+
+    <!-- 语法列表 (GrammarListScreen) -->
+    <string name="lib_grammar_list_tab_all">全部</string>
+    <string name="lib_grammar_list_tab_learned">已学</string>
+    <string name="lib_grammar_list_tab_unlearned">未学</string>
+    <string name="lib_grammar_list_search_placeholder">搜索：语法 / 解释</string>
+    <string name="lib_grammar_list_empty_search_title">未找到相关语法</string>
+    <string name="lib_grammar_list_empty_search_desc">请尝试更换搜索关键词或检查拼写</string>
+    <string name="lib_grammar_list_empty_level_unlearned_title">当前等级暂无未学语法</string>
+    <string name="lib_grammar_list_empty_unlearned_title">暂无未学语法</string>
+    <string name="lib_grammar_list_empty_unlearned_desc">太棒了，所有语法均已学习完毕！</string>
+    <string name="lib_grammar_list_empty_level_learned_title">当前等级暂无已学语法</string>
+    <string name="lib_grammar_list_empty_learned_title">暂无已学语法</string>
+    <string name="lib_grammar_list_empty_learned_desc">去开始学习，掌握更多语法知识吧</string>
+    <string name="lib_grammar_list_empty_level_title">当前等级暂无语法</string>
+    <string name="lib_grammar_list_empty_level_desc">可以切换上方的等级菜单查看其他内容</string>
+    <string name="lib_grammar_list_empty_default_title">暂无语法数据</string>
+    <string name="lib_grammar_list_empty_default_desc">暂时没有收录相关语法条目</string>
+    <string name="lib_grammar_list_header_title">语法列表</string>
+    <string name="lib_grammar_list_header_title_with_level">%1$s 语法</string>
+
+    <!-- 单词详情 (WordDetailScreen) -->
+    <string name="lib_word_detail_section_meaning">中文释义</string>
+    <string name="lib_word_detail_section_examples">例句</string>
+    <string name="lib_word_detail_examples_empty">暂无例句</string>
+    <string name="lib_word_detail_report_content_description">举报内容</string>
+    <string name="lib_word_detail_section_related_words">相关词</string>
+
+    <!-- 语法详情 (GrammarDetailScreen) -->
+    <string name="lib_grammar_detail_usage_title">用法 %1$d</string>
+    <string name="lib_grammar_detail_usage_title_with_subtype">用法 %1$d · %2$s</string>
+    <string name="lib_grammar_detail_section_explanation">解释</string>
+    <string name="lib_grammar_detail_section_connection">接续</string>
+    <string name="lib_grammar_detail_section_notes">注意</string>
+    <string name="lib_grammar_detail_report_content_description">举报内容</string>
+
+    <!-- 分类选择 (CategoryClassificationScreen) -->
+    <string name="lib_category_title_practice">专项训练</string>
+    <string name="lib_category_title_vocabulary">专项词汇</string>
+    <string name="lib_category_title_default">专项分类</string>
+    <string name="lib_category_section_basic">基础词性类</string>
+    <string name="lib_category_item_noun_title">名词类</string>
+    <string name="lib_category_item_noun_subtitle">名词、代词等</string>
+    <string name="lib_category_item_adj_title">形容词类</string>
+    <string name="lib_category_item_adj_subtitle">い形、な形形容词</string>
+    <string name="lib_category_item_verb_title">动词类</string>
+    <string name="lib_category_item_verb_subtitle">自动/他动/自他動词</string>
+    <string name="lib_category_item_adv_title">副词</string>
+    <string name="lib_category_item_adv_subtitle">修饰用言词汇</string>
+    <string name="lib_category_section_syntax">構词·句法功能类</string>
+    <string name="lib_category_item_rentai_title">连体词</string>
+    <string name="lib_category_item_rentai_subtitle">直接修饰体言</string>
+    <string name="lib_category_item_conj_title">接続词</string>
+    <string name="lib_category_item_conj_subtitle">连接句子成分</string>
+    <string name="lib_category_item_exclam_title">感叹词</string>
+    <string name="lib_category_item_exclam_subtitle">表达情感语气</string>
+    <string name="lib_category_item_particle_title">助词</string>
+    <string name="lib_category_item_particle_subtitle">语法功能标记</string>
+    <string name="lib_category_section_expression">構词·表达用法类</string>
+    <string name="lib_category_item_prefix_title">接头词</string>
+    <string name="lib_category_item_prefix_subtitle">词语前置构成</string>
+    <string name="lib_category_item_suffix_title">接尾词</string>
+    <string name="lib_category_item_suffix_subtitle">词语后置构成</string>
+    <string name="lib_category_item_expression_title">表达·固定句型</string>
+    <string name="lib_category_item_expression_subtitle">习惯表达方式</string>
+    <string name="lib_category_item_kata_title">外来语</string>
+    <string name="lib_category_item_kata_subtitle">片假名借词体系</string>
+
+    <!-- 分类单词列表 (CategoryWordsScreen) -->
+    <string name="lib_category_words_tab_all">全部</string>
+    <string name="lib_category_words_tab_learned">已学</string>
+    <string name="lib_category_words_tab_unlearned">未学</string>
+    <string name="lib_category_words_error_load_failed">加载失败</string>
+    <string name="lib_category_words_search_placeholder">搜索：汉字 / 假名 / 释义</string>
+    <string name="lib_category_words_empty_search">未找到相关单词</string>
+    <string name="lib_category_words_empty_level">当前等级暂无单词</string>
+    <string name="lib_category_words_empty_category">该分类下暂无词汇</string>
+    <string name="lib_category_words_title_with_count">%1$s (%2$d)</string>
+    <string name="lib_category_words_title_with_level_count">%1$s · %2$s (%3$d)</string>
+
+    <!-- 词性单词列表 (PosWordsScreen) -->
+    <string name="lib_pos_words_count_format">%1$d 个单词</string>
+    <string name="lib_pos_words_nav_back">返回</string>
+    <string name="lib_pos_words_empty_format">暂无%1$s单词</string>
+
+    <!-- 词法库 (ExpressionScreen) -->
+    <string name="lib_expression_error_load_failed">数据加载出错了: %1$s</string>
+    <string name="lib_expression_title">灵动词法库</string>
+    <string name="lib_expression_count_format">%1$d 条表达</string>
+    <string name="lib_expression_formula_format">💡 口诀: %1$s</string>
+    <string name="lib_expression_empty_filter">没有符合过滤条件的表达词条</string>
+    <string name="lib_expression_search_placeholder">搜索表达、假名、释义...</string>
+    <string name="lib_expression_furigana_format">假名: %1$s</string>
+    <string name="lib_expression_tip_format">💡 提示: %1$s</string>
+    <string name="lib_expression_examples_expand_format">查看双语例句 (%1$d)</string>
+    <string name="lib_expression_expand_arrow_cd">展收箭头</string>
+
+    <!-- 词性分类主界面 (PartOfSpeechScreen) -->
+    <string name="lib_pos_title_screen">词性分类</string>
+    <string name="lib_pos_count_format">%1$d 个</string>
+
+    <!-- 词库通用组件 (LibraryListComponents) -->
+    <string name="lib_components_scroll_to_top_cd">回到顶部</string>
+    <string name="lib_components_select_level_cd">选择等级</string>
+    <string name="lib_components_all_levels_count_format">全部等级 (%1$d)</string>
+    <string name="lib_components_level_count_format">%1$s 等级 (%2$d)</string>
+
+    <!-- 词库同步提示 (WordListViewModel & GrammarListViewModel) -->
+    <string name="lib_sync_updated_prefix">词库已更新：</string>
+    <string name="lib_sync_updated_words">%1$d条单词 </string>
+    <string name="lib_sync_updated_grammars">%1$d条语法 </string>
+    <string name="lib_sync_updated_relations">%1$d条相关词</string>
+    <string name="lib_sync_already_latest">词库已是最新 (本地:V%1$s, 远程:V%2$s)</string>
+    <string name="lib_sync_failed">同步失败: %1$s</string>
 </resources>

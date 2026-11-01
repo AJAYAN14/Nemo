@@ -21,6 +21,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +84,7 @@ fun RatingGuideScreen(
                 .fillMaxSize()
         ) {
             CommonHeader(
-                title = "评分说明",
+                title = stringResource(R.string.rating_guide_title),
                 onBack = onDismiss,
                 backgroundColor = backgroundColor
             )
@@ -106,14 +108,14 @@ fun RatingGuideScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "核心原则",
+                            text = stringResource(R.string.rating_guide_core_principle_title),
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
                             color = textMain
                         )
                         Text(
-                            text = "按回忆难度打分，不按是否看过答案打分。",
+                            text = stringResource(R.string.rating_guide_core_principle_content),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium,
                                 lineHeight = 21.sp
@@ -128,11 +130,11 @@ fun RatingGuideScreen(
                     cardColor = surfaceColor,
                     titleColor = textMain,
                     bodyColor = textMuted,
-                    title = "新学（第一次接触）",
-                    againText = "重来：完全想不起来，或需要重新看讲解。",
-                    hardText = "困难：能回忆一点，但很吃力、很慢，容易错。",
-                    goodText = "良好：能正常回忆，速度一般。",
-                    easyText = "容易：几乎秒回，且很有把握。"
+                    title = stringResource(R.string.rating_guide_new_learn_title),
+                    againText = stringResource(R.string.rating_guide_new_again_desc),
+                    hardText = stringResource(R.string.rating_guide_new_hard_desc),
+                    goodText = stringResource(R.string.rating_guide_new_good_desc),
+                    easyText = stringResource(R.string.rating_guide_new_easy_desc)
                 )
 
                 RatingGuideSection(
@@ -140,11 +142,11 @@ fun RatingGuideScreen(
                     cardColor = surfaceColor,
                     titleColor = textMain,
                     bodyColor = textMuted,
-                    title = "复习（学过的卡片）",
-                    againText = "重来：这次没想起来，或答错。",
-                    hardText = "困难：想起来了，但明显比预期更费劲。",
-                    goodText = "良好：正常想起，符合日常复习状态。",
-                    easyText = "容易：非常轻松，建议拉长下次间隔。"
+                    title = stringResource(R.string.rating_guide_review_title),
+                    againText = stringResource(R.string.rating_guide_review_again_desc),
+                    hardText = stringResource(R.string.rating_guide_review_hard_desc),
+                    goodText = stringResource(R.string.rating_guide_review_good_desc),
+                    easyText = stringResource(R.string.rating_guide_review_easy_desc)
                 )
 
                 Surface(
@@ -153,7 +155,7 @@ fun RatingGuideScreen(
                     color = adviceBg
                 ) {
                     Text(
-                        text = "实用建议：拿不准时优先选“良好”；只有明显吃力再选“困难”，别把“重来”当保守选项常点。",
+                        text = stringResource(R.string.rating_guide_practical_tip),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium,
                             lineHeight = 21.sp
@@ -181,7 +183,7 @@ fun RatingGuideScreen(
                             .height(48.dp)
                     ) {
                         Text(
-                            text = "我知道了",
+                            text = stringResource(R.string.rating_guide_btn_understood),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -228,10 +230,15 @@ private fun RatingGuideSection(
                 color = titleColor
             )
 
-            GuideLineBadge(isDark = isDark, label = "重来", description = againText, bodyColor = bodyColor)
-            GuideLineBadge(isDark = isDark, label = "困难", description = hardText, bodyColor = bodyColor)
-            GuideLineBadge(isDark = isDark, label = "良好", description = goodText, bodyColor = bodyColor)
-            GuideLineBadge(isDark = isDark, label = "容易", description = easyText, bodyColor = bodyColor)
+            val againLabel = stringResource(R.string.learn_srs_rating_again)
+            val hardLabel = stringResource(R.string.learn_srs_rating_hard)
+            val goodLabel = stringResource(R.string.learn_srs_rating_good)
+            val easyLabel = stringResource(R.string.learn_srs_rating_easy_alt)
+
+            GuideLineBadge(isDark = isDark, label = againLabel, description = againText, bodyColor = bodyColor)
+            GuideLineBadge(isDark = isDark, label = hardLabel, description = hardText, bodyColor = bodyColor)
+            GuideLineBadge(isDark = isDark, label = goodLabel, description = goodText, bodyColor = bodyColor)
+            GuideLineBadge(isDark = isDark, label = easyLabel, description = easyText, bodyColor = bodyColor)
         }
     }
 }
@@ -243,11 +250,17 @@ private fun GuideLineBadge(
     description: String,
     bodyColor: Color
 ) {
+    val againLabel = stringResource(R.string.learn_srs_rating_again)
+    val hardLabel = stringResource(R.string.learn_srs_rating_hard)
+    val goodLabel = stringResource(R.string.learn_srs_rating_good)
+    val easyLabelAlt = stringResource(R.string.learn_srs_rating_easy_alt)
+    val easyLabel = stringResource(R.string.learn_srs_rating_easy)
+
     val (tagTextColor, tagBgColor) = when (label) {
-        "重来" -> if (isDark) RatingGuideBadgeRoseTextDark to RatingGuideBadgeRoseBgDark else RatingGuideBadgeRoseText to RatingGuideBadgeRoseBg
-        "困难" -> if (isDark) RatingGuideBadgeOrangeTextDark to RatingGuideBadgeOrangeBgDark else RatingGuideBadgeOrangeText to RatingGuideBadgeOrangeBg
-        "良好" -> if (isDark) RatingGuideBadgeBlueTextDark to RatingGuideBadgeBlueBgDark else RatingGuideBadgeBlueText to RatingGuideBadgeBlueBg
-        "容易", "简单" -> if (isDark) RatingGuideBadgeEmeraldTextDark to RatingGuideBadgeEmeraldBgDark else RatingGuideBadgeEmeraldText to RatingGuideBadgeEmeraldBg
+        againLabel -> if (isDark) RatingGuideBadgeRoseTextDark to RatingGuideBadgeRoseBgDark else RatingGuideBadgeRoseText to RatingGuideBadgeRoseBg
+        hardLabel -> if (isDark) RatingGuideBadgeOrangeTextDark to RatingGuideBadgeOrangeBgDark else RatingGuideBadgeOrangeText to RatingGuideBadgeOrangeBg
+        goodLabel -> if (isDark) RatingGuideBadgeBlueTextDark to RatingGuideBadgeBlueBgDark else RatingGuideBadgeBlueText to RatingGuideBadgeBlueBg
+        easyLabelAlt, easyLabel -> if (isDark) RatingGuideBadgeEmeraldTextDark to RatingGuideBadgeEmeraldBgDark else RatingGuideBadgeEmeraldText to RatingGuideBadgeEmeraldBg
         else -> MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
     }
 

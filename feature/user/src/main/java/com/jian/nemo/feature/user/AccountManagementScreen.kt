@@ -256,7 +256,7 @@ fun AccountManagementScreen(
         UserDialogType.UPDATE_AVATAR -> {
             AvatarEditDialog(
                 currentAvatarPath = avatarPath.takeIf { it.isNotEmpty() },
-                username = uiState.user?.username ?: "用户",
+                username = uiState.user?.username ?: stringResource(R.string.user_account_default_username),
                 onDismiss = { viewModel.dismissDialog() },
                 onAvatarChanged = { newAvatarPath ->
                     viewModel.onAvatarChanged(newAvatarPath)
@@ -324,7 +324,7 @@ fun ProfileHeaderSection(
              ) {
                  Box(modifier = Modifier.padding(4.dp)) {
                     AvatarImage(
-                        username = uiState.user?.username ?: "用户",
+                        username = uiState.user?.username ?: stringResource(R.string.user_account_default_username),
                         avatarPath = avatarPath.takeIf { it.isNotEmpty() },
                         size = 72.dp,
                         modifier = Modifier.fillMaxSize()
@@ -340,7 +340,7 @@ fun ProfileHeaderSection(
              ) {
                  Icon(
                      imageVector = Icons.Rounded.Edit,
-                     contentDescription = "Edit",
+                     contentDescription = stringResource(R.string.user_account_desc_edit_avatar),
                      tint = MaterialTheme.colorScheme.onPrimary,
                      modifier = Modifier.padding(5.dp)
                  )
@@ -359,7 +359,7 @@ fun ProfileHeaderSection(
                  modifier = Modifier.fillMaxWidth()
              ) {
                  Text(
-                     text = uiState.user?.username ?: "未登录",
+                     text = uiState.user?.username ?: stringResource(R.string.user_account_label_not_logged_in),
                      style = MaterialTheme.typography.headlineSmall.copy(
                          fontWeight = FontWeight.Bold
                      ),
@@ -374,7 +374,7 @@ fun ProfileHeaderSection(
                      Spacer(modifier = Modifier.width(6.dp))
                      Icon(
                          imageVector = GoogleIcon,
-                         contentDescription = "Google 快捷登录账号",
+                         contentDescription = stringResource(R.string.user_account_desc_google_account),
                          tint = Color.Unspecified,
                          modifier = Modifier.size(20.dp)
                      )
@@ -383,7 +383,7 @@ fun ProfileHeaderSection(
 
              // Email
              Text(
-                 text = uiState.user?.email ?: "未登录",
+                 text = uiState.user?.email ?: stringResource(R.string.user_account_label_not_logged_in),
                  style = MaterialTheme.typography.bodyMedium,
                  color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                  modifier = Modifier.padding(top = 4.dp),

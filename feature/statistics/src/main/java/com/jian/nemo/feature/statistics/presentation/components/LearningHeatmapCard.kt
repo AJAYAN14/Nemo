@@ -37,6 +37,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -159,7 +161,7 @@ fun LearningHeatmapCard(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "${formatDate(day.date)} · ${day.count} 次复习",
+                                text = stringResource(R.string.stats_heatmap_card_review_format, formatDate(day.date), day.count),
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
@@ -167,7 +169,7 @@ fun LearningHeatmapCard(
                         }
                     } else {
                         Text(
-                            text = "累计活跃 ${activeDays} 天 · 共 ${totalCount} 次",
+                            text = stringResource(R.string.stats_heatmap_card_active_total_format, activeDays, totalCount),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f)

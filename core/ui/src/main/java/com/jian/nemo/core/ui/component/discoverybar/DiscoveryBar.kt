@@ -57,10 +57,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.R
 
 /**
  * A premium Discovery Bar composable that uses robust morphing containers to switch
@@ -190,7 +192,7 @@ fun DiscoveryBar(
                     } else {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
+                            contentDescription = stringResource(R.string.core_ui_discovery_cd_search),
                             tint = searchIconTint,
                             modifier = Modifier.size(style.searchIconSize),
                         )
@@ -289,7 +291,7 @@ fun DiscoveryBar(
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
+                                contentDescription = stringResource(R.string.core_ui_discovery_cd_close),
                                 tint = searchIconTint,
                                 modifier = Modifier.size(style.searchIconSize),
                             )

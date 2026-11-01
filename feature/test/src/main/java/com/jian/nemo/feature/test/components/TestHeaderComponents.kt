@@ -13,6 +13,8 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -139,12 +141,12 @@ fun TestHeaderActions(
         menuWidth = 192.dp,
         backdrop = backdrop,
         icon = Icons.Rounded.MoreVert,
-        contentDescription = "更多选项"
+        contentDescription = stringResource(R.string.test_header_cd_more_options)
     ) {
         // 收藏/取消收藏选项
         if (itemId != 0) {
             NemoMorphMenuItem(
-                text = if (isFavorite) "取消收藏" else "收藏",
+                text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
                 leadingIcon = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 plumpIcon = PlumpIcon.Heart,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.RoseRuby else null,
@@ -157,7 +159,7 @@ fun TestHeaderActions(
 
         // 暂停测试选项
         NemoMorphMenuItem(
-            text = "暂停测试",
+            text = stringResource(R.string.test_header_menu_pause),
             leadingIcon = Icons.Rounded.Pause,
             plumpIcon = PlumpIcon.Pause,
             iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,

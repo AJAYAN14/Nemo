@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -185,7 +186,7 @@ fun StatisticsScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "今日统计",
+                title = stringResource(R.string.stats_screen_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -682,7 +683,7 @@ private fun OverallStatisticsDashboard(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatCard(
-                title = "今日新学 (词)",
+                title = stringResource(R.string.stats_screen_stat_new_words),
                 count = newWords,
                 color = NemoPrimary,
                 icon = Icons.Rounded.DoneAll,
@@ -691,7 +692,7 @@ private fun OverallStatisticsDashboard(
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                title = "今日复习 (词)",
+                title = stringResource(R.string.stats_screen_stat_review_words),
                 count = reviewWords,
                 color = NemoSecondary,
                 icon = Icons.Rounded.Layers,
@@ -702,7 +703,7 @@ private fun OverallStatisticsDashboard(
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             StatCard(
-                title = "今日新学 (语法)",
+                title = stringResource(R.string.stats_screen_stat_new_grammars),
                 count = newGrammars,
                 color = NemoOrange,
                 icon = Icons.Rounded.DoneAll,
@@ -711,7 +712,7 @@ private fun OverallStatisticsDashboard(
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                title = "今日复习 (语法)",
+                title = stringResource(R.string.stats_screen_stat_review_grammars),
                 count = reviewGrammars,
                 color = NemoIndigo,
                 icon = Icons.Rounded.Layers,

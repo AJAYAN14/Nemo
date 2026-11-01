@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExitToApp
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -53,8 +55,8 @@ fun AbilityExitDialog(
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
         title = title,
-        confirmText = "保留并退出挑战",
-        dismissText = "继续挑战",
+        confirmText = stringResource(R.string.test_ability_exit_btn_keep_exit),
+        dismissText = stringResource(R.string.test_ability_exit_btn_continue),
         confirmButtonColor = themeColor,
         onConfirm = onKeepAndExit,
         content = {
@@ -85,7 +87,7 @@ fun AbilityExitDialog(
                     elevation = ButtonDefaults.buttonElevation(0.dp)
                 ) {
                     Text(
-                        text = "放弃本次进度并退出",
+                        text = stringResource(R.string.test_ability_exit_btn_discard_exit),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold

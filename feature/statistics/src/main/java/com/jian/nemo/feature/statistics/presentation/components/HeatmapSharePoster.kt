@@ -16,6 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -187,7 +189,7 @@ fun HeatmapSharePoster(
         )
 
         Text(
-            text = "天连续学习",
+            text = stringResource(R.string.stats_poster_text_streak_days),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = textSecondary
@@ -214,7 +216,7 @@ fun HeatmapSharePoster(
                     modifier = Modifier.size(13.dp)
                 )
                 Text(
-                    text = "超越 96% 同行者 · 最长连胜 ${uiState.longestStreak} 天",
+                    text = stringResource(R.string.stats_poster_text_top_percent, uiState.longestStreak),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.5.sp),
                     fontWeight = FontWeight.SemiBold,
                     color = textSecondary
@@ -267,7 +269,7 @@ fun HeatmapSharePoster(
 
                     Column {
                         Text(
-                            text = "今日战报",
+                            text = stringResource(R.string.stats_poster_text_report_today),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             color = textSecondary
@@ -285,7 +287,7 @@ fun HeatmapSharePoster(
                                 color = textPrimary
                             )
                             Text(
-                                text = "项完成",
+                                text = stringResource(R.string.stats_poster_text_items_done),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = textMuted,
                                 modifier = Modifier.padding(bottom = 2.dp)
@@ -310,7 +312,7 @@ fun HeatmapSharePoster(
                             modifier = Modifier.size(12.dp)
                         )
                         Text(
-                            text = "已达标",
+                            text = stringResource(R.string.stats_poster_text_achieved),
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = NemoSecondary
@@ -336,7 +338,7 @@ fun HeatmapSharePoster(
                 icon = Icons.Rounded.Bolt,
                 value = "${uiState.totalActiveDays}",
                 unit = "天",
-                label = "累计活跃",
+                label = stringResource(R.string.stats_heatmap_label_active_days),
                 tag = "坚持不懈",
                 color = NemoPrimary,
                 cardBg = cardBg,
@@ -350,7 +352,7 @@ fun HeatmapSharePoster(
                 icon = Icons.Rounded.EmojiEvents,
                 value = "${uiState.bestDayCount}",
                 unit = "项",
-                label = "单日最高",
+                label = stringResource(R.string.stats_heatmap_label_best_day),
                 tag = "$bestDayStr 巅峰",
                 color = IosColors.Green,
                 cardBg = cardBg,
@@ -372,7 +374,7 @@ fun HeatmapSharePoster(
                 icon = Icons.AutoMirrored.Rounded.TrendingUp,
                 value = "${uiState.dailyAverage}",
                 unit = "项/天",
-                label = "日均稳步",
+                label = stringResource(R.string.stats_heatmap_label_daily_avg),
                 tag = "稳步向前",
                 color = IosColors.Purple,
                 cardBg = cardBg,
@@ -386,7 +388,7 @@ fun HeatmapSharePoster(
                 icon = Icons.Rounded.CheckCircle,
                 value = "92",
                 unit = "%",
-                label = "记忆留存",
+                label = stringResource(R.string.stats_poster_label_retention),
                 tag = "FSRS 算法",
                 color = NemoDanger,
                 cardBg = cardBg,
@@ -447,14 +449,14 @@ fun HeatmapSharePoster(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "“每一步积累都算数 · 见证每日蜕变”",
+                    text = stringResource(R.string.stats_poster_quote),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = textSecondary
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "由 Nemo 科学记忆引擎驱动生成",
+                    text = stringResource(R.string.stats_poster_footer_engine),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.5.sp),
                     color = textMuted
                 )
@@ -630,7 +632,7 @@ private fun PosterMemoryPanorama(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "全库记忆全景",
+                        text = stringResource(R.string.stats_heatmap_title_panorama),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = textPrimary
@@ -761,13 +763,13 @@ private fun PosterMicroHeatmap(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "近 12 周学习足迹热力",
+                    text = stringResource(R.string.stats_poster_heatmap_title),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = textMuted
                 )
                 Text(
-                    text = "🔥 持续点亮",
+                    text = stringResource(R.string.stats_poster_flame_continuous),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = NemoSecondary

@@ -46,17 +46,20 @@ fun AccountResetPasswordDialog(
 
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
     val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errInvalidEmail = stringResource(R.string.user_dialog_err_invalid_email)
+    val errInvalidOtp = stringResource(R.string.user_dialog_err_invalid_otp)
+    val errShortPassword = stringResource(R.string.user_dialog_err_short_password)
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
         title = when (stage) {
-            0 -> "重置密码"
-            1 -> "输入验证码"
-            2 -> "设置新密码"
-            else -> "重置密码"
+            0 -> stringResource(R.string.user_dialog_title_reset_password)
+            1 -> stringResource(R.string.user_dialog_title_input_otp)
+            2 -> stringResource(R.string.user_dialog_title_set_new_password)
+            else -> stringResource(R.string.user_dialog_title_reset_password)
         },
-        confirmText = if (stage == 2) "重置密码" else "下一步",
-        dismissText = "取消",
+        confirmText = if (stage == 2) stringResource(R.string.user_dialog_title_reset_password) else stringResource(R.string.user_dialog_btn_next),
+        dismissText = stringResource(R.string.user_dialog_btn_cancel),
         confirmButtonColor = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
         isLoading = isLoading,
         onConfirm = {
@@ -77,7 +80,7 @@ fun AccountResetPasswordDialog(
                             }
                         )
                     } else {
-                        errorMessage = "请输入有效的邮箱地址"
+                        errorMessage = errInvalidEmail
                     }
                 }
                 1 -> {
@@ -95,7 +98,7 @@ fun AccountResetPasswordDialog(
                             }
                         )
                     } else {
-                        errorMessage = "请输入 8 位验证码"
+                        errorMessage = errInvalidOtp
                     }
                 }
                 2 -> {
@@ -113,7 +116,7 @@ fun AccountResetPasswordDialog(
                             }
                         )
                     } else {
-                        errorMessage = "密码长度至少为 8 位"
+                        errorMessage = errShortPassword
                     }
                 }
             }
@@ -122,7 +125,7 @@ fun AccountResetPasswordDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (stage == 0) {
                     Text(
-                        text = "我们将向您的邮箱发送验证码。",
+                        text = stringResource(R.string.user_dialog_msg_reset_pwd_send_otp),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -141,7 +144,7 @@ fun AccountResetPasswordDialog(
                     )
                 } else if (stage == 1) {
                     Text(
-                        text = "请输入发送至 $email 的 8 位验证码。",
+                        text = stringResource(R.string.user_dialog_msg_input_otp_format, email),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -160,7 +163,7 @@ fun AccountResetPasswordDialog(
                     )
                 } else {
                     Text(
-                        text = "验证成功，请设置您的新密码。",
+                        text = stringResource(R.string.user_dialog_msg_otp_verified),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -215,12 +218,14 @@ fun AccountUpdateUsernameDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
     val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errSameUsername = stringResource(R.string.user_dialog_err_same_username)
+    val errUsernameLength = stringResource(R.string.user_dialog_err_username_length)
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = "修改用户名",
-        confirmText = "确认修改",
-        dismissText = "取消",
+        title = stringResource(R.string.user_dialog_title_change_username),
+        confirmText = stringResource(R.string.user_dialog_btn_confirm_modify),
+        dismissText = stringResource(R.string.user_dialog_btn_cancel),
         confirmButtonColor = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
         confirmEnabled = newUsername.trim().isNotEmpty() && newUsername.trim().length <= 16 && newUsername.trim() != currentUsername,
         isLoading = isLoading,
@@ -242,16 +247,16 @@ fun AccountUpdateUsernameDialog(
                         }
                     )
                 } else {
-                    errorMessage = "新用户名不能与当前用户名相同"
+                    errorMessage = errSameUsername
                 }
             } else {
-                errorMessage = "用户名需在 1~16 个字符以内"
+                errorMessage = errUsernameLength
             }
         },
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "请输入新的用户名，这将是您在应用中的显示名称。",
+                    text = stringResource(R.string.user_dialog_msg_change_username),
                     fontSize = 15.sp,
                     color = bodyColor,
                     lineHeight = 20.sp
@@ -264,7 +269,7 @@ fun AccountUpdateUsernameDialog(
                     label = { Text(stringResource(R.string.user_dialog_label_new_username), fontSize = 14.sp) },
                     supportingText = {
                         Text(
-                            text = "${newUsername.length}/16",
+                            text = stringResource(R.string.user_dialog_format_char_count, newUsername.length),
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = androidx.compose.ui.text.style.TextAlign.End,
                             color = bodyColor,
@@ -308,12 +313,15 @@ fun AccountUpdateEmailDialog(
 
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
     val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errSameEmail = stringResource(R.string.user_dialog_err_same_email)
+    val errInvalidEmail = stringResource(R.string.user_dialog_err_invalid_email)
+    val errInvalidOtp = stringResource(R.string.user_dialog_err_invalid_otp)
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = if (stage == 0) "修改邮箱" else "输入验证码",
-        confirmText = if (stage == 0) "下一步" else "确认修改",
-        dismissText = "取消",
+        title = if (stage == 0) stringResource(R.string.user_dialog_title_change_email) else stringResource(R.string.user_dialog_title_input_otp),
+        confirmText = if (stage == 0) stringResource(R.string.user_dialog_btn_next) else stringResource(R.string.user_dialog_btn_confirm_modify),
+        dismissText = stringResource(R.string.user_dialog_btn_cancel),
         confirmButtonColor = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
         isLoading = isLoading,
         onConfirm = {
@@ -334,10 +342,10 @@ fun AccountUpdateEmailDialog(
                             }
                         )
                     } else {
-                        errorMessage = "新邮箱不能与当前邮箱相同"
+                        errorMessage = errSameEmail
                     }
                 } else {
-                    errorMessage = "请输入有效的邮箱地址"
+                    errorMessage = errInvalidEmail
                 }
             } else {
                 if (otp.length == 8) {
@@ -354,7 +362,7 @@ fun AccountUpdateEmailDialog(
                         }
                     )
                 } else {
-                    errorMessage = "请输入 8 位验证码"
+                    errorMessage = errInvalidOtp
                 }
             }
         },
@@ -362,7 +370,7 @@ fun AccountUpdateEmailDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (stage == 0) {
                     Text(
-                        text = "请输入新的邮箱地址，我们将发送验证码。",
+                        text = stringResource(R.string.user_dialog_msg_change_email_prompt),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -381,7 +389,7 @@ fun AccountUpdateEmailDialog(
                     )
                 } else {
                     Text(
-                        text = "请输入发送至 $newEmail 的 8 位验证码。",
+                        text = stringResource(R.string.user_dialog_msg_input_otp_format, newEmail),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -427,6 +435,7 @@ fun DeleteAccountDialog(
 
     val primaryColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
+    val errEmptyPassword = stringResource(R.string.user_dialog_err_empty_password)
 
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = {
@@ -437,10 +446,10 @@ fun DeleteAccountDialog(
                 onDismiss()
             }
         },
-        title = if (showFinalConfirm) "最终确认删除" else "删除账户",
+        title = if (showFinalConfirm) stringResource(R.string.user_dialog_title_final_confirm_delete) else stringResource(R.string.user_dialog_title_delete_user_account),
         isDangerous = true,
-        confirmText = if (showFinalConfirm) "确认删除" else "下一步",
-        dismissText = if (showFinalConfirm) "返回" else "取消",
+        confirmText = if (showFinalConfirm) stringResource(R.string.user_dialog_btn_confirm_delete_account) else stringResource(R.string.user_dialog_btn_next),
+        dismissText = if (showFinalConfirm) stringResource(R.string.user_dialog_btn_back) else stringResource(R.string.user_dialog_btn_cancel),
         confirmEnabled = showFinalConfirm || password.isNotEmpty(),
         isLoading = isLoading,
         onConfirm = {
@@ -449,7 +458,7 @@ fun DeleteAccountDialog(
                     showFinalConfirm = true
                     errorMessage = null
                 } else {
-                    errorMessage = "请输入密码"
+                    errorMessage = errEmptyPassword
                 }
             } else {
                 isLoading = true
@@ -461,7 +470,7 @@ fun DeleteAccountDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (!showFinalConfirm) {
                     Text(
-                        text = "删除账户是不可逆的操作，将永久删除您的所有数据，包括：",
+                        text = stringResource(R.string.user_dialog_msg_delete_account_warning),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp
@@ -469,7 +478,7 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "• 学习进度和统计数据\n• 测试记录和错题记录\n• 个人设置和偏好\n• 头像和用户信息",
+                        text = stringResource(R.string.user_dialog_msg_delete_details),
                         fontSize = 14.sp,
                         color = bodyColor,
                         lineHeight = 22.sp
@@ -492,7 +501,7 @@ fun DeleteAccountDialog(
                     )
                 } else {
                     Text(
-                        text = "您确定要永久删除您的账户吗？\n此操作无法撤销！",
+                        text = stringResource(R.string.user_dialog_msg_delete_account_final),
                         fontSize = 16.sp,
                         color = primaryColor,
                         fontWeight = FontWeight.Medium,
@@ -523,11 +532,11 @@ fun LogoutWarningDialog(
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = "即将清除数据",
-        text = "退出登录将永久删除本机的学习进度和统计数据。此操作不可恢复。",
+        title = stringResource(R.string.user_dialog_title_logout_clear_data),
+        text = stringResource(R.string.user_dialog_msg_logout_clear_data),
         isDangerous = true,
-        confirmText = "直接退出",
-        dismissText = "取消",
+        confirmText = stringResource(R.string.user_dialog_btn_direct_logout),
+        dismissText = stringResource(R.string.user_dialog_btn_cancel),
         isLoading = isLoading,
         onConfirm = onConfirmLogout
     )
@@ -553,6 +562,8 @@ fun DeleteAccountDialog(
     val focusedBorderColor = primaryColor
     val unfocusedBorderColor = if (useDarkTheme) UserPalette.DialogBorderDark else UserPalette.DialogBorderLight
     val errorColor = primaryColor
+    val errEmailMismatch = stringResource(R.string.user_dialog_err_email_mismatch)
+    val errEmptyPassword = stringResource(R.string.user_dialog_err_empty_password)
     val selectionColors = androidx.compose.foundation.text.selection.TextSelectionColors(
         handleColor = primaryColor,
         backgroundColor = primaryColor.copy(alpha = 0.4f)
@@ -560,10 +571,10 @@ fun DeleteAccountDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "注销账户",
+        title = stringResource(R.string.user_dialog_title_delete_account),
         isDangerous = true,
-        confirmText = if (showFinalConfirm) "确认注销" else "下一步",
-        dismissText = if (showFinalConfirm) "返回" else "取消",
+        confirmText = if (showFinalConfirm) stringResource(R.string.user_dialog_btn_confirm_delete) else stringResource(R.string.user_dialog_btn_next),
+        dismissText = if (showFinalConfirm) stringResource(R.string.user_dialog_btn_back) else stringResource(R.string.user_dialog_btn_cancel),
         confirmEnabled = !isLoading && (showFinalConfirm || input.isNotEmpty()),
         isLoading = isLoading,
         onConfirm = {
@@ -573,14 +584,14 @@ fun DeleteAccountDialog(
                         showFinalConfirm = true
                         errorMessage = null
                     } else {
-                        errorMessage = "邮箱输入不匹配，请重新输入"
+                        errorMessage = errEmailMismatch
                     }
                 } else {
                     if (input.isNotEmpty()) {
                         showFinalConfirm = true
                         errorMessage = null
                     } else {
-                        errorMessage = "请输入密码"
+                        errorMessage = errEmptyPassword
                     }
                 }
             } else {
@@ -601,7 +612,7 @@ fun DeleteAccountDialog(
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (!showFinalConfirm) {
                     Text(
-                        text = "注销账户是不可逆的操作，将永久删除您的所有数据，包括：",
+                        text = stringResource(R.string.user_dialog_msg_delete_warning),
                         fontSize = 15.sp,
                         color = bodyColor,
                         lineHeight = 20.sp,
@@ -610,7 +621,7 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "• 学习进度和统计数据\n• 测试记录和错题记录\n• 个人设置和偏好\n• 头像和用户信息",
+                        text = stringResource(R.string.user_dialog_msg_delete_details),
                         fontSize = 14.sp,
                         color = bodyColor,
                         lineHeight = 22.sp
@@ -618,7 +629,7 @@ fun DeleteAccountDialog(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = if (isOnlyGoogleIdentity) "请输入当前邮箱以确认注销：" else "请输入您的密码以确认注销：",
+                        text = if (isOnlyGoogleIdentity) stringResource(R.string.user_dialog_msg_delete_prompt_email) else stringResource(R.string.user_dialog_msg_delete_prompt_password),
                         fontSize = 15.sp,
                         color = bodyColor,
                         fontWeight = FontWeight.Medium
@@ -630,7 +641,7 @@ fun DeleteAccountDialog(
                         onValueChange = { input = it },
                         label = {
                             Text(
-                                text = if (isOnlyGoogleIdentity) "邮箱" else "密码",
+                                text = if (isOnlyGoogleIdentity) stringResource(R.string.user_dialog_label_email) else stringResource(R.string.user_dialog_label_verify_password),
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -668,14 +679,14 @@ fun DeleteAccountDialog(
                     )
                 } else {
                     Text(
-                        text = "最终确认",
+                        text = stringResource(R.string.user_dialog_title_final_confirm),
                         fontSize = 18.sp,
                         color = primaryColor,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "您确定要永久注销您的账户吗？\n\n此操作无法撤销！",
+                        text = stringResource(R.string.user_dialog_msg_delete_final_confirm),
                         fontSize = 16.sp,
                         color = primaryColor,
                         fontWeight = FontWeight.Medium,

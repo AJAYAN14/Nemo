@@ -3,6 +3,8 @@ package com.jian.nemo.feature.test.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -56,12 +58,13 @@ fun QuestionCard(
     }
 }
 
+@Composable
 private fun getModeHint(mode: TestMode): String {
     return when (mode) {
-        TestMode.JP_TO_CN -> "请选择对应的中文释义"
-        TestMode.CN_TO_JP -> "请选择对应的日语单词"
-        TestMode.KANA -> "请选择正确的假名"
-        TestMode.EXAMPLE -> "请选择例句的意思"
-        TestMode.RANDOM -> "请选择正确答案"
+        TestMode.JP_TO_CN -> stringResource(R.string.test_question_hint_jp_to_cn)
+        TestMode.CN_TO_JP -> stringResource(R.string.test_question_hint_cn_to_jp)
+        TestMode.KANA -> stringResource(R.string.test_question_hint_kana)
+        TestMode.EXAMPLE -> stringResource(R.string.test_question_hint_example)
+        TestMode.RANDOM -> stringResource(R.string.test_question_hint_random)
     }
 }

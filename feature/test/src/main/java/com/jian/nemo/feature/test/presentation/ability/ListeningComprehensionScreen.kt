@@ -92,7 +92,7 @@ fun ListeningComprehensionScreen(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "听力挑战",
+                title = stringResource(R.string.test_listening_header_title),
                 onBack = {
                     if (uiState is ListeningUiState.Ready) {
                         showExitDialog = true
@@ -102,7 +102,7 @@ fun ListeningComprehensionScreen(
                 },
                 actions = {
                     IconButton(onClick = { showHistoryView = true }) {
-                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
+                        Icon(Icons.Rounded.History, contentDescription = stringResource(R.string.test_listening_cd_history), tint = textMain)
                     }
                 }
             )
@@ -152,8 +152,8 @@ fun ListeningComprehensionScreen(
 
     AbilityExitDialog(
         show = showExitDialog,
-        title = "退出听力挑战",
-        message = "是否保留当前答题进度？保留后可下次继续作答，清空则删除当前进度。",
+        title = stringResource(R.string.test_listening_exit_dialog_title),
+        message = stringResource(R.string.test_cloze_exit_dialog_message),
         themeColor = IosColors.Indigo,
         isDark = isDark,
         textMain = textMain,
@@ -183,7 +183,7 @@ private fun ListeningHistoryView(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "听力挑战记录",
+                title = stringResource(R.string.test_listening_history_title),
                 onBack = onBack
             )
         },
@@ -224,11 +224,11 @@ private fun ListeningHistoryView(
 private fun LevelSelectionView(onSelectLevel: (String) -> Unit) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val levels = listOf(
-        Triple("N5", "初级基础词汇听辨", if (isDark) NemoSecondaryDark else NemoSecondary),
-        Triple("N4", "常用社交词汇听辨", if (isDark) NemoPrimaryDark else NemoPrimary),
-        Triple("N3", "中级日常词汇听辨", if (isDark) NemoWarningDark else NemoWarning),
-        Triple("N2", "中高级书面词汇听辨", if (isDark) NemoWarningDark else NemoWarning),
-        Triple("N1", "高级专业词汇听辨", if (isDark) NemoDangerDark else NemoDanger)
+        Triple("N5", stringResource(R.string.test_listening_level_n5_desc), if (isDark) NemoSecondaryDark else NemoSecondary),
+        Triple("N4", stringResource(R.string.test_listening_level_n4_desc), if (isDark) NemoPrimaryDark else NemoPrimary),
+        Triple("N3", stringResource(R.string.test_listening_level_n3_desc), if (isDark) NemoWarningDark else NemoWarning),
+        Triple("N2", stringResource(R.string.test_listening_level_n2_desc), if (isDark) NemoWarningDark else NemoWarning),
+        Triple("N1", stringResource(R.string.test_listening_level_n1_desc), if (isDark) NemoDangerDark else NemoDanger)
     )
     
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
@@ -351,7 +351,7 @@ private fun ReadyView(
             )
             Spacer(modifier = Modifier.width(8.dp))
             IconButton(onClick = onRegenerate, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Rounded.Refresh, contentDescription = "换一批", tint = textSub)
+                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.test_listening_cd_refresh), tint = textSub)
             }
         }
 
@@ -371,7 +371,7 @@ private fun ReadyView(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (currentQuestion.questionType == "IDENTIFY_WORD") "听录音辨析日语单词" else "听录音辨析中文释义",
+                    text = if (currentQuestion.questionType == "IDENTIFY_WORD") stringResource(R.string.test_listening_prompt_identify_word) else stringResource(R.string.test_listening_prompt_identify_meaning),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = IosColors.Indigo
@@ -438,7 +438,7 @@ private fun ReadyView(
                                 .size(48.dp)
                                 .background(IosColors.Teal.copy(alpha = 0.1f), CircleShape)
                         ) {
-                            Icon(Icons.Rounded.SlowMotionVideo, contentDescription = "慢速播放", tint = IosColors.Teal)
+                            Icon(Icons.Rounded.SlowMotionVideo, contentDescription = stringResource(R.string.test_listening_cd_play_slow), tint = IosColors.Teal)
                         }
 
                         // 主播放按钮 (中间大的是标准速 1.0x)
@@ -455,7 +455,7 @@ private fun ReadyView(
                         ) {
                             Icon(
                                 imageVector = if (isPlaying) Icons.AutoMirrored.Rounded.VolumeUp else Icons.Rounded.PlayArrow,
-                                contentDescription = "播放",
+                                contentDescription = stringResource(R.string.test_listening_cd_play),
                                 tint = Color.White,
                                 modifier = Modifier.size(36.dp)
                             )
@@ -468,7 +468,7 @@ private fun ReadyView(
                                 .size(48.dp)
                                 .background(IosColors.Indigo.copy(alpha = 0.1f), CircleShape)
                         ) {
-                            Icon(Icons.Rounded.FastForward, contentDescription = "快速播放", tint = IosColors.Indigo)
+                            Icon(Icons.Rounded.FastForward, contentDescription = stringResource(R.string.test_listening_cd_play_fast), tint = IosColors.Indigo)
                         }
                     }
 
@@ -530,14 +530,14 @@ private fun ReadyView(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "听力内容已锁定",
+                            text = stringResource(R.string.test_listening_label_content_locked),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = textMain
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "请仔细聆听上方的纯正录音，并在下方选出最匹配的选项。答题后将完整解密词汇拼写与释义。",
+                            text = stringResource(R.string.test_listening_desc_content_locked),
                             style = MaterialTheme.typography.bodySmall,
                             color = textSub,
                             textAlign = TextAlign.Center,
@@ -619,7 +619,7 @@ private fun ReadyView(
                 )
             ) {
                 Text(
-                    text = if (isLast) "完成练习" else "下一题",
+                    text = if (isLast) stringResource(R.string.test_listening_btn_finish) else stringResource(R.string.test_listening_btn_next),
                     fontWeight = FontWeight.Bold,
                     color = if (isAnswered) Color.White else NemoNeutrals.Gray500
                 )
@@ -671,7 +671,7 @@ private fun ReadyView(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isCorrect) "回答正确！解锁发音卡" else "回答错误，解锁发音卡",
+                        text = if (isCorrect) stringResource(R.string.test_listening_sheet_correct) else stringResource(R.string.test_listening_sheet_wrong),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = if (isCorrect) {
@@ -723,7 +723,7 @@ private fun ReadyView(
                         containerColor = if (isCorrect) IosColors.Green else IosColors.Red
                     )
                 ) {
-                    Text(text = "继续", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = stringResource(R.string.test_listening_btn_continue), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }

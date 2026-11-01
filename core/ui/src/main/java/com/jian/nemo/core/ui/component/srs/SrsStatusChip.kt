@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.util.SrsDateUtils
 import com.kyant.backdrop.Backdrop
@@ -29,7 +31,7 @@ fun SrsStatusChip(
     val isNew = repetitionCount == 0
     val isOverdue = !isNew && SrsDateUtils.isOverdue(nextReviewDay)
     
-    val text = if (isNew) "未学习" else SrsDateUtils.formatNextReviewDate(nextReviewDay)
+    val text = if (isNew) stringResource(R.string.core_ui_srs_status_unlearned) else SrsDateUtils.formatNextReviewDate(nextReviewDay)
 
     val containerColor = when {
         isNew -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)

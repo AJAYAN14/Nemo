@@ -25,7 +25,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.stringResource
 import coil.compose.AsyncImage
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.designsystem.theme.UiPalette
 
 /**
@@ -55,16 +57,21 @@ fun AvatarImage(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+// 获取首字母
+    val initial = remember(username) {
+        username.takeIf { it.isNotEmpty() }?.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+    }
+
+    // 本地化的可访问描述，使用 Compose 的 stringResource，避免在非 @Composable 环境中调用
+    val fallbackErrorDesc = stringResource(R.string.core_ui_avatar_cd_fallback_error, username, initial)
+    val imageDesc = stringResource(R.string.core_ui_avatar_cd_image, username)
+    val fallbackDesc = stringResource(R.string.core_ui_avatar_cd_fallback, username, initial)
+
     var isLoading by remember { mutableStateOf(false) }
 
     // 生成基于用户名的颜色
     val backgroundColor = remember(username) {
         generateColorFromUsername(username)
-    }
-
-    // 获取首字母
-    val initial = remember(username) {
-        username.takeIf { it.isNotEmpty() }?.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
     }
 
     // 解析预设头像
@@ -176,14 +183,14 @@ fun AvatarImage(
                                 color = Color.White,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.semantics {
-                                    this.contentDescription = "用户 $username 的默认头像，显示首字母 $initial (图片加载失败)"
+                                    this.contentDescription = context.getString(R.string.core_ui_avatar_cd_fallback_error, username, initial)
                                 }
                             )
                         }
                     } else {
                         AsyncImage(
                             model = request,
-                            contentDescription = "用户 $username 的个人头像图片",
+                            contentDescription = context.getString(R.string.core_ui_avatar_cd_image, username),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(shape),
@@ -208,7 +215,7 @@ fun AvatarImage(
                             color = Color.White,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.semantics {
-                                this.contentDescription = "用户 $username 的默认头像，显示首字母 $initial"
+                                this.contentDescription = context.getString(R.string.core_ui_avatar_cd_fallback, username, initial)
                             }
                         )
                     }

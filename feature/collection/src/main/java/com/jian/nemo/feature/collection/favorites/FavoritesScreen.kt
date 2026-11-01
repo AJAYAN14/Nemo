@@ -25,6 +25,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -140,7 +142,7 @@ fun FavoritesScreen(
                 .padding(bottom = 8.dp)
         ) {
             com.jian.nemo.core.ui.component.common.CommonHeader(
-                title = "我的收藏",
+                title = stringResource(R.string.collection_favorites_title_screen),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -149,7 +151,7 @@ fun FavoritesScreen(
                     com.jian.nemo.feature.collection.components.CollectionActionMenu(
                         wordCount = uiState.favoriteWordsCount,
                         grammarCount = uiState.favoriteGrammarsCount,
-                        titleSuffix = "收藏",
+                        titleSuffix = stringResource(R.string.collection_suffix_favorites),
                         onClearAll = viewModel::clearAll,
                         onClearWords = viewModel::clearAllWordFavorites,
                         onClearGrammars = viewModel::clearAllGrammarFavorites,
@@ -191,8 +193,8 @@ fun FavoritesList(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FavoriteCategoryCard(
-            title = "收藏的单词",
-            subtitle = "已收藏的重点单词",
+            title = stringResource(R.string.collection_favorites_words_title),
+            subtitle = stringResource(R.string.collection_favorites_words_subtitle),
             count = favoriteWordsCount,
             icon = Icons.Rounded.Translate,
             iconColor = NemoSecondary,
@@ -202,8 +204,8 @@ fun FavoritesList(
         )
 
         FavoriteCategoryCard(
-            title = "收藏的题目",
-            subtitle = "已收藏的重点题目",
+            title = stringResource(R.string.collection_favorites_questions_title),
+            subtitle = stringResource(R.string.collection_favorites_questions_subtitle),
             count = favoriteGrammarsCount,
             icon = Icons.Rounded.Checklist,
             iconColor = NemoOrange,

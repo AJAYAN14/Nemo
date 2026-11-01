@@ -12,8 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.data.manager.ImportStrategy
 
 /**
@@ -30,24 +32,24 @@ fun RestoreStrategyDialog(
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = "选择恢复方式",
+        title = stringResource(R.string.settings_restore_strategy_title),
         confirmText = null,
-        dismissText = "取消",
+        dismissText = stringResource(R.string.settings_btn_cancel),
         content = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "即将恢复备份: $fileName\n请选择以下数据处理方式：",
+                    text = stringResource(R.string.settings_restore_strategy_prompt, fileName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
                 // Merge Option
                 StrategyOption(
-                    title = "智能合并",
-                    description = "保留本地较新的学习记录，仅合并云端进度。这是最安全的选项。",
+                    title = stringResource(R.string.settings_restore_strategy_smart_title),
+                    description = stringResource(R.string.settings_restore_strategy_smart_desc),
                     icon = Icons.AutoMirrored.Rounded.CallMerge,
                     isRecommended = true,
                     onClick = { onConfirm(ImportStrategy.MERGE) }
@@ -55,8 +57,8 @@ fun RestoreStrategyDialog(
                 
                 // Replace Option
                 StrategyOption(
-                    title = "完全覆盖",
-                    description = "清空本地所有学习进度，完全使用云端数据。适用于彻底重置。",
+                    title = stringResource(R.string.settings_restore_strategy_overwrite_title),
+                    description = stringResource(R.string.settings_restore_strategy_overwrite_desc),
                     icon = Icons.Rounded.Warning,
                     isRecommended = false,
                     isDestructive = true,
@@ -124,7 +126,7 @@ private fun StrategyOption(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "推荐",
+                                text = stringResource(R.string.settings_restore_strategy_badge_recommended),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)

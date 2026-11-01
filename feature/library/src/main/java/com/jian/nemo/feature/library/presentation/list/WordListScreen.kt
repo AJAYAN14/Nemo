@@ -91,6 +91,8 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import kotlinx.coroutines.launch
 
 
@@ -145,23 +147,27 @@ fun WordListScreen(
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-        val options = remember(iconStyle) {
+        val tabAllText = stringResource(R.string.lib_word_list_tab_all)
+        val tabLearnedText = stringResource(R.string.lib_word_list_tab_learned)
+        val tabUnlearnedText = stringResource(R.string.lib_word_list_tab_unlearned)
+
+        val options = remember(iconStyle, tabAllText, tabLearnedText, tabUnlearnedText) {
             if (iconStyle == SettingIconStyle.PLUMP_DUO) {
                 listOf(
                     DiscoveryOption(
-                        label = "全部",
+                        label = tabAllText,
                         icon = Icons.Default.Book,
                         plumpIcon = PlumpIcon.BookOpen,
                         activeColor = IsoluminantPalette.SkyIndigo,
                     ),
                     DiscoveryOption(
-                        label = "已学",
+                        label = tabLearnedText,
                         icon = Icons.Default.CheckCircle,
                         plumpIcon = PlumpIcon.BadgeCheck,
                         activeColor = IsoluminantPalette.EmeraldGreen,
                     ),
                     DiscoveryOption(
-                        label = "未学",
+                        label = tabUnlearnedText,
                         icon = Icons.Default.Error,
                         plumpIcon = PlumpIcon.Flame,
                         activeColor = IsoluminantPalette.WarmAmber,
@@ -170,17 +176,17 @@ fun WordListScreen(
             } else {
                 listOf(
                     DiscoveryOption(
-                        label = "全部",
+                        label = tabAllText,
                         icon = Icons.Default.Book,
                         activeColor = NemoIndigo,
                     ),
                     DiscoveryOption(
-                        label = "已学",
+                        label = tabLearnedText,
                         icon = Icons.Default.CheckCircle,
                         activeColor = NemoSecondary,
                     ),
                     DiscoveryOption(
-                        label = "未学",
+                        label = tabUnlearnedText,
                         icon = Icons.Default.Error,
                         activeColor = NemoOrange,
                     ),
@@ -252,7 +258,7 @@ fun WordListScreen(
                             },
                             searchQuery = searchQuery,
                             onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                            searchPlaceholder = "搜索：汉字 / 假名 / 释义",
+                            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder),
                             style = DiscoveryBarStyle(
                                 backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
                                 inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -279,15 +285,15 @@ fun WordListScreen(
                             ) {
                                 val (emptyTitle, emptySubtitle) = when {
                                     searchQuery.isNotEmpty() ->
-                                        "未找到相关单词" to "请尝试更换搜索关键词或假名拼写"
+                                        stringResource(R.string.lib_word_list_empty_search_title) to stringResource(R.string.lib_word_list_empty_search_desc)
                                     uiState.filterState == StudyFilter.UNLEARNED ->
-                                        (if (selectedLevel != "ALL") "当前等级暂无未学单词" else "暂无未学单词") to "太棒了，所有单词均已学习完毕！"
+                                        (if (selectedLevel != "ALL") stringResource(R.string.lib_word_list_empty_level_unlearned_title) else stringResource(R.string.lib_word_list_empty_unlearned_title)) to stringResource(R.string.lib_word_list_empty_unlearned_desc)
                                     uiState.filterState == StudyFilter.LEARNED ->
-                                        (if (selectedLevel != "ALL") "当前等级暂无已学单词" else "暂无已学单词") to "去开始背词，积累更多词汇量吧"
+                                        (if (selectedLevel != "ALL") stringResource(R.string.lib_word_list_empty_level_learned_title) else stringResource(R.string.lib_word_list_empty_learned_title)) to stringResource(R.string.lib_word_list_empty_learned_desc)
                                     selectedLevel != "ALL" ->
-                                        "当前等级暂无单词" to "可以切换上方的等级菜单查看其他内容"
+                                        stringResource(R.string.lib_word_list_empty_level_title) to stringResource(R.string.lib_word_list_empty_level_desc)
                                     else ->
-                                        "暂无单词数据" to "暂时没有收录相关单词条目"
+                                        stringResource(R.string.lib_word_list_empty_default_title) to stringResource(R.string.lib_word_list_empty_default_desc)
                                 }
                                 val (emptyIcon, emptyPlumpIcon) = if (searchQuery.isNotEmpty()) {
                                     Icons.Rounded.Search to PlumpIcon.SearchX
@@ -324,7 +330,11 @@ fun WordListScreen(
 
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
-            val headerTitle = if (selectedLevel == "ALL") "单词列表" else "$selectedLevel 单词"
+            val headerTitle = if (selectedLevel == "ALL") {
+                stringResource(R.string.lib_word_list_header_title)
+            } else {
+                stringResource(R.string.lib_word_list_header_title_with_level, selectedLevel)
+            }
             CommonHeader(
                 title = headerTitle,
                 onBack = { navController.navigateUp() },

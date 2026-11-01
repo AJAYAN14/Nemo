@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +29,7 @@ fun TestFooter(
     canSubmit: Boolean = true,
     isAnswered: Boolean = false,
     isLastQuestion: Boolean = false,
-    submitText: String = "提交",
+    submitText: String = stringResource(R.string.test_footer_btn_submit),
     isAutoAdvancing: Boolean = false,
     backdrop: Backdrop? = null
 ) {
@@ -53,7 +55,7 @@ fun TestFooter(
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
         ) {
             Text(
-                text = "上一题",
+                text = stringResource(R.string.test_footer_btn_prev),
                 color = if (canGoPrev) onSurfaceColor else onSurfaceColor.copy(alpha = 0.38f),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
@@ -62,8 +64,8 @@ fun TestFooter(
 
         val mainButtonText = when {
             !isAnswered -> submitText
-            isLastQuestion -> "完成测试"
-            else -> "下一题"
+            isLastQuestion -> stringResource(R.string.test_footer_btn_finish)
+            else -> stringResource(R.string.test_footer_btn_next)
         }
         
         val isMainEnabled = (canSubmit || isAnswered) && !isAutoAdvancing

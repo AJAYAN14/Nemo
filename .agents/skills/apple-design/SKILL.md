@@ -2,8 +2,7 @@
 version: alpha
 name: apple-ui
 website: "https://www.apple.com"
-description: A photography-first interface that turns marketing into a museum gallery. Edge-to-edge product tiles alternate light and dark canvases, framed by SF Pro Display headlines with negative letter-spacing and a single Action Blue (#0066cc) interactive color. UI chrome recedes so the product can speak — no decorative gradients, no shadows on chrome, only the one signature drop-shadow under product imagery resting on a surface.
-
+description: "苹果极简摄影美学。画廊级产品卡片、SF Pro 紧凑负字距排版、极简行动蓝与超克制镀铬边框，打造纯粹精致的科技美感。"
 seo:
   title: "Apple Design System for React — Action Blue, SF Pro, and 24 components"
   metaDescription: "Apple's design system as a DESIGN.md file. Action Blue #0066cc, SF Pro, 21 colors, 24 components. For React, Next.js, and AI tools."

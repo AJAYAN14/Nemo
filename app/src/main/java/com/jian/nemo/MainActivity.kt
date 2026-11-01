@@ -33,6 +33,9 @@ import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -330,7 +333,7 @@ fun NemoApp(
         viewModel.updateCheckEvents.collect { event ->
             when (event) {
                 is UpdateCheckEvent.NoUpdateAvailable -> {
-                    snackbarMessage = "已是最新版本"
+                    snackbarMessage = context.getString(R.string.app_toast_latest_version)
                     snackbarType = NemoSnackbarType.SUCCESS
                     snackbarVisible = true
                 }
@@ -429,7 +432,7 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
 
             // 同步窗口原生底色 (Level 0: 浅色 #F2F2F7 / 深色 #000000)，消除滑动边缘与冷启动穿帮
             val isDark = backgroundColor.luminance() < 0.5f
-            val windowBg = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.rgb(242, 242, 247)
+            val windowBg = if (isDark) android.graphics.Color.BLACK else NemoSurfaceBackground.toArgb()
             it.decorView.setBackgroundColor(windowBg)
         }
 

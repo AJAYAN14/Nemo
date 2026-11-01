@@ -18,6 +18,19 @@ typealias IsoluminantPalette = CoreIsoluminantPalette
 @Composable
 fun PlumpDuoIcon(
     icon: PlumpIcon,
+    modifier: Modifier = Modifier,
+    size: Dp = 28.dp
+) {
+    CorePlumpDuoIcon(
+        icon = icon,
+        modifier = modifier,
+        size = size
+    )
+}
+
+@Composable
+fun PlumpDuoIcon(
+    icon: PlumpIcon,
     color: Color,
     modifier: Modifier = Modifier,
     size: Dp = 28.dp

@@ -33,6 +33,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -96,10 +98,10 @@ fun FavoriteQuestionsScreen(
     if (showDeleteDialog) {
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = "取消收藏",
-            text = "确定要将选中的 ${selectedQuestionIds.size} 个题目取消收藏吗？",
-            confirmText = "确认移出",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_dialog_unfavorite_title),
+            text = stringResource(R.string.collection_dialog_unfavorite_questions_format, selectedQuestionIds.size),
+            confirmText = stringResource(R.string.collection_btn_confirm_remove),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 viewModel.deleteQuestionFavorites(selectedQuestionIds)
@@ -130,13 +132,13 @@ fun FavoriteQuestionsScreen(
                             IconButton(onClick = { selectedQuestionIds = emptySet() }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
-                                    contentDescription = "取消选择",
+                                    contentDescription = stringResource(R.string.collection_cd_cancel_selection),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "已选择 ${selectedQuestionIds.size} 项",
+                                text = stringResource(R.string.collection_selected_items_format, selectedQuestionIds.size),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -151,7 +153,7 @@ fun FavoriteQuestionsScreen(
                                 }
                             ) {
                                 Text(
-                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = accentBlue
@@ -161,7 +163,7 @@ fun FavoriteQuestionsScreen(
                             IconButton(onClick = { showDeleteDialog = true }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Delete,
-                                    contentDescription = "批量取消收藏",
+                                    contentDescription = stringResource(R.string.collection_cd_batch_unfavorite),
                                     tint = deleteColor
                                 )
                             }
@@ -169,7 +171,7 @@ fun FavoriteQuestionsScreen(
                     }
                 } else {
                     com.jian.nemo.core.ui.component.common.CommonHeader(
-                        title = "收藏题目",
+                        title = stringResource(R.string.collection_favorites_questions_screen_title),
                         onBack = onNavigateBack,
                         backgroundColor = backgroundColor
                     )
@@ -228,14 +230,14 @@ fun FavoriteQuestionsScreen(
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
-                                text = "暂无收藏题目",
+                                text = stringResource(R.string.collection_empty_questions_title),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "做题时点击 ❤️ 收藏重点题目",
+                                text = stringResource(R.string.collection_empty_questions_desc),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 maxLines = 2,
@@ -396,7 +398,7 @@ private fun FavoriteQuestionItem(
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
                                             imageVector = Icons.Rounded.Favorite,
-                                            contentDescription = "取消收藏",
+                                            contentDescription = stringResource(R.string.collection_cd_unfavorite),
                                             tint = heartColor,
                                             modifier = Modifier.size(18.dp)
                                         )

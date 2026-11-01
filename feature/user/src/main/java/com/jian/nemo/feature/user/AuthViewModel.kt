@@ -31,7 +31,8 @@ class AuthViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val getUserAvatarPathUseCase: GetUserAvatarPathUseCase,
     private val authRepository: AuthRepository,
-    val supabaseClient: io.github.jan.supabase.SupabaseClient
+    val supabaseClient: io.github.jan.supabase.SupabaseClient,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
     
     // 用于隔离登录/注册期间产生的全局状态扰动，防止过早跳转
@@ -195,7 +196,7 @@ class AuthViewModel @Inject constructor(
                         }
                     }
                     is Result.Error -> {
-                        handleAuthError(result.exception, "登录失败")
+                        handleAuthError(result.exception, context.getString(R.string.user_auth_err_login_failed))
                     }
                     else -> {}
                 }
@@ -221,7 +222,7 @@ class AuthViewModel @Inject constructor(
                         }
                     }
                     is Result.Error -> {
-                        handleAuthError(result.exception, "注册失败")
+                        handleAuthError(result.exception, context.getString(R.string.user_auth_err_register_failed))
                     }
                     else -> {}
                 }
@@ -256,14 +257,14 @@ class AuthViewModel @Inject constructor(
                          it.copy(
                              isLoading = false,
                              user = updatedUser,
-                             successMessage = "头像上传成功",
+                             successMessage = context.getString(R.string.user_auth_msg_avatar_upload_success),
                              avatarPath = file.absolutePath
                          )
                      }
 
                  }
                  is Result.Error -> {
-                     _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: "头像上传失败") }
+                     _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_upload_failed)) }
                  }
                  else -> {}
              }
@@ -280,14 +281,14 @@ class AuthViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             user = updatedUser,
-                            successMessage = "头像更新成功",
+                            successMessage = context.getString(R.string.user_auth_msg_avatar_update_success),
                             avatarPath = url // 预设头像直接用协议串作为 path
                         )
                     }
 
                 }
                 is Result.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: "头像更新失败") }
+                    _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_update_failed)) }
                 }
                 else -> {}
             }
@@ -301,11 +302,11 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             when(val result = authRepository.sendPasswordResetOtp(email)) {
                 is Result.Success -> {
-                    _uiState.update { it.copy(isLoading = false, successMessage = "验证码已发送") }
+                    _uiState.update { it.copy(isLoading = false, successMessage = context.getString(R.string.user_auth_msg_otp_sent)) }
                     onSuccess()
                 }
                 is Result.Error -> {
-                    val msg = result.exception.message ?: "发送验证码失败"
+                    val msg = result.exception.message ?: context.getString(R.string.user_auth_err_send_otp_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -320,11 +321,11 @@ class AuthViewModel @Inject constructor(
             when(val result = authRepository.verifyPasswordResetOtp(email, token)) {
                 is Result.Success -> {
                     // Logic handled in repo (login), we just update UI
-                    _uiState.update { it.copy(isLoading = false, successMessage = "验证成功") }
+                    _uiState.update { it.copy(isLoading = false, successMessage = context.getString(R.string.user_auth_msg_otp_verified)) }
                     onSuccess()
                 }
                 is Result.Error -> {
-                     val msg = result.exception.message ?: "验证失败"
+                     val msg = result.exception.message ?: context.getString(R.string.user_auth_err_verify_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -338,11 +339,11 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
              when(val result = authRepository.updatePassword(password)) {
                  is Result.Success -> {
-                     _uiState.update { it.copy(isLoading = false, successMessage = "密码重置成功") }
+                     _uiState.update { it.copy(isLoading = false, successMessage = context.getString(R.string.user_auth_msg_reset_pwd_success)) }
                      onSuccess()
                  }
                  is Result.Error -> {
-                      val msg = result.exception.message ?: "重置密码失败"
+                      val msg = result.exception.message ?: context.getString(R.string.user_auth_err_reset_pwd_failed)
                      _uiState.update { it.copy(isLoading = false, error = msg) }
                      onError(msg)
                  }
@@ -354,7 +355,7 @@ class AuthViewModel @Inject constructor(
     fun updateUsername(newUsername: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
         val cleanUsername = newUsername.trim().take(16)
         if (cleanUsername.isEmpty()) {
-            onError("用户名不能为空")
+            onError(context.getString(R.string.user_auth_err_empty_username))
             return
         }
         viewModelScope.launch {
@@ -363,12 +364,12 @@ class AuthViewModel @Inject constructor(
                 is Result.Success -> {
                     val updatedUser = _uiState.value.user?.copy(username = cleanUsername)
                     _uiState.update {
-                        it.copy(isLoading = false, user = updatedUser, successMessage = "用户名更新成功")
+                        it.copy(isLoading = false, user = updatedUser, successMessage = context.getString(R.string.user_auth_msg_update_username_success))
                     }
                     onSuccess()
                 }
                 is Result.Error -> {
-                    val msg = result.exception.message ?: "更新失败"
+                    val msg = result.exception.message ?: context.getString(R.string.user_auth_err_update_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -385,7 +386,7 @@ class AuthViewModel @Inject constructor(
             if (!password.isNullOrBlank()) {
                 val passResult = authRepository.updatePassword(password)
                 if (passResult is Result.Error) {
-                    val msg = passResult.exception.message ?: "设置密码失败"
+                    val msg = passResult.exception.message ?: context.getString(R.string.user_auth_err_set_pwd_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                     return@launch
@@ -398,7 +399,7 @@ class AuthViewModel @Inject constructor(
             if (cleanNickname.isNotBlank() && cleanNickname != currentUsername) {
                 val nameResult = updateUserProfileUseCase.updateUsername(cleanNickname)
                 if (nameResult is Result.Error) {
-                    val msg = nameResult.exception.message ?: "设置昵称失败"
+                    val msg = nameResult.exception.message ?: context.getString(R.string.user_auth_err_set_nickname_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                     return@launch
@@ -417,12 +418,12 @@ class AuthViewModel @Inject constructor(
                 is Result.Success -> {
                     // OTP sent
                     _uiState.update {
-                        it.copy(isLoading = false, successMessage = "验证码已发送至新邮箱")
+                        it.copy(isLoading = false, successMessage = context.getString(R.string.user_auth_msg_email_otp_sent))
                     }
                     onSuccess()
                 }
                 is Result.Error -> {
-                    val msg = result.exception.message ?: "发送验证码失败"
+                    val msg = result.exception.message ?: context.getString(R.string.user_auth_err_send_otp_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -437,12 +438,12 @@ class AuthViewModel @Inject constructor(
             when (val result = authRepository.verifyEmailChangeOtp(email, code)) {
                 is Result.Success -> {
                     _uiState.update {
-                        it.copy(isLoading = false, successMessage = "邮箱修改成功")
+                        it.copy(isLoading = false, successMessage = context.getString(R.string.user_auth_msg_email_updated))
                     }
                     onSuccess()
                 }
                 is Result.Error -> {
-                    val msg = result.exception.message ?: "验证失败"
+                    val msg = result.exception.message ?: context.getString(R.string.user_auth_err_verify_failed)
                      _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -462,14 +463,14 @@ class AuthViewModel @Inject constructor(
                             isLoading = false,
                             isLoggedIn = false,
                             user = null,
-                            successMessage = "账号已成功销毁",
+                            successMessage = context.getString(R.string.user_auth_msg_account_deleted),
                             avatarPath = ""
                         )
                     }
                     onSuccess()
                 }
                 is Result.Error -> {
-                    val msg = result.exception.message ?: "操作失败"
+                    val msg = result.exception.message ?: context.getString(R.string.user_auth_err_action_failed)
                     _uiState.update { it.copy(isLoading = false, error = msg) }
                     onError(msg)
                 }
@@ -500,7 +501,7 @@ class AuthViewModel @Inject constructor(
 
     private fun handleAuthError(exception: Throwable, defaultMessage: String) {
         val message = if (exception is com.jian.nemo.core.common.error.AuthException) {
-            "错误(${exception.code}): ${exception.message ?: defaultMessage}"
+            context.getString(R.string.user_auth_err_code_format, exception.code, exception.message ?: defaultMessage)
         } else {
             exception.message ?: defaultMessage
         }

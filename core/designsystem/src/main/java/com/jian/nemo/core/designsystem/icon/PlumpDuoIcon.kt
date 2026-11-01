@@ -25,6 +25,12 @@ import androidx.compose.ui.unit.dp
  * 2. 视觉层：取消传统沉重的纯色方块背景，采用“主色高对比圆润描边 + 局部柔光浅色面填充”的双色层次；
  * 3. 适用场景：设置列表项、状态指示与功能入口等界面元素的通透呈现。
  */
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.PathFillType
+import com.jian.nemo.core.designsystem.theme.PlumpDuoFill
+import com.jian.nemo.core.designsystem.theme.PlumpDuoFillDark
+import com.jian.nemo.core.designsystem.theme.PlumpDuoStroke
+import com.jian.nemo.core.designsystem.theme.PlumpDuoStrokeDark
 enum class PlumpIcon {
     // --- 1. 系统与通用设置分支 (PlumpIconsSettings.kt) ---
     User,             // 登录 / 注册
@@ -49,6 +55,7 @@ enum class PlumpIcon {
     Sun,              // 结束深色模式 / 太阳
     IconStyle,        // 图标风格选择 / 几何图形
     Pause,            // 暂停操作 / 双竖条
+    AboutInfo,        // 关于 Nemo / 官方信息圆环
 
     // --- 2. 语音与媒体参数分支 (PlumpIconsMedia.kt) ---
     Mic,              // 日语语音 / 麦克风
@@ -187,6 +194,7 @@ object IsoluminantPalette {
     }
 }
 
+
 /**
  * 内部图标路径定义元数据
  */
@@ -194,7 +202,8 @@ internal data class PlumpIconPathDefinition(
     val fillPathData: String?,
     val strokePathData: String,
     val fillAlpha: Float = 0.22f,
-    val strokeWidth: Float = 2.1f
+    val strokeWidth: Float = 3.0f,
+    val viewBox: Float = 48f
 )
 
 /**
@@ -211,28 +220,24 @@ private val PlumpIconRegistry: Map<PlumpIcon, PlumpIconPathDefinition> by lazy {
 }
 
 /**
- * Plump Duo 双色丰满矢量图标渲染组件
- *
- * 将目标矢量图标渲染为具备“饱满主色描边 + 局部柔光浅色填充”的高品质双层微质感图形。
- *
- * @param icon 目标图标定义
- * @param color 图标主色调 (自动衍生深色轮廓与感知一致的浅色底面)
- * @param modifier 修饰符
- * @param size 渲染尺寸规格 (默认 28.dp 丰满视觉规格)
+ * Plump Duo 双色丰满矢量图标渲染组件（支持官方原生方案 B 双色）
  */
 @Composable
 fun PlumpDuoIcon(
     icon: PlumpIcon,
-    color: Color,
     modifier: Modifier = Modifier,
-    size: Dp = 28.dp
+    size: Dp = 28.dp,
+    strokeColor: Color = if (isSystemInDarkTheme()) PlumpDuoStrokeDark else PlumpDuoStroke,
+    fillColor: Color = if (isSystemInDarkTheme()) PlumpDuoFillDark else PlumpDuoFill
 ) {
     val def = PlumpIconRegistry[icon] ?: return
 
     val fillComposePath: Path? = remember(def.fillPathData) {
         def.fillPathData?.let {
             try {
-                PathParser().parsePathString(it).toPath()
+                PathParser().parsePathString(it).toPath().apply {
+                    fillType = PathFillType.EvenOdd
+                }
             } catch (_: Exception) {
                 null
             }
@@ -248,22 +253,22 @@ fun PlumpDuoIcon(
     }
 
     Canvas(modifier = modifier.size(size)) {
-        val scaleFactor = this.size.minDimension / 24f
+        val scaleFactor = this.size.minDimension / def.viewBox
         scale(scaleFactor, Offset.Zero) {
-            // 1. 绘制 Plump Duo 浅色软填充底面 (Soft Fill Surface)
+            // 1. 绘制底层填充面 (EvenOdd 镂空支持)
             if (fillComposePath != null) {
                 drawPath(
                     path = fillComposePath,
-                    color = color.copy(alpha = def.fillAlpha),
+                    color = fillColor,
                     style = Fill
                 )
             }
 
-            // 2. 绘制 Lucide 原生饱满描边层 (Bold Round Stroke)
+            // 2. 绘制表层圆润描边
             if (strokeComposePath != null) {
                 drawPath(
                     path = strokeComposePath,
-                    color = color,
+                    color = strokeColor,
                     style = Stroke(
                         width = def.strokeWidth,
                         cap = StrokeCap.Round,
@@ -274,3 +279,23 @@ fun PlumpDuoIcon(
         }
     }
 }
+
+/**
+ * Plump Duo 双色矢量图标渲染组件（兼容指定单主色派生模式）
+ */
+@Composable
+fun PlumpDuoIcon(
+    icon: PlumpIcon,
+    color: Color,
+    modifier: Modifier = Modifier,
+    size: Dp = 28.dp
+) {
+    PlumpDuoIcon(
+        icon = icon,
+        modifier = modifier,
+        size = size,
+        strokeColor = color,
+        fillColor = color.copy(alpha = 0.22f)
+    )
+}
+

@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -89,9 +91,9 @@ fun CategoryClassificationScreen(
 
     // 根据来源显示不同的标题
     val title = when (source) {
-        "practice" -> "专项训练"
-        "vocabulary" -> "专项词汇"
-        else -> "专项分类"
+        "practice" -> stringResource(R.string.lib_category_title_practice)
+        "vocabulary" -> stringResource(R.string.lib_category_title_vocabulary)
+        else -> stringResource(R.string.lib_category_title_default)
     }
 
     CompositionLocalProvider(LocalSettingIconStyle provides settingIconStyle) {
@@ -113,13 +115,13 @@ fun CategoryClassificationScreen(
                 .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
             // 1. 基础词性类
-            SectionHeader(title = "基础词性类", delay = 0)
+            SectionHeader(title = stringResource(R.string.lib_category_section_basic), delay = 0)
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
                         id = "noun",
-                        title = "名词类",
-                        subtitle = "名词、代词等",
+                        title = stringResource(R.string.lib_category_item_noun_title),
+                        subtitle = stringResource(R.string.lib_category_item_noun_subtitle),
                         icon = Icons.AutoMirrored.Rounded.MenuBook,
                         plumpIcon = PlumpIcon.BookOpen,
                         isoluminantColor = IsoluminantPalette.SkyIndigo,
@@ -130,8 +132,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "adj",
-                        title = "形容词类",
-                        subtitle = "い形、な形形容词",
+                        title = stringResource(R.string.lib_category_item_adj_title),
+                        subtitle = stringResource(R.string.lib_category_item_adj_subtitle),
                         icon = Icons.Rounded.AutoAwesome,
                         plumpIcon = PlumpIcon.Sparkles,
                         isoluminantColor = IsoluminantPalette.WarmAmber,
@@ -142,8 +144,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "verb",
-                        title = "动词类",
-                        subtitle = "自动/他动/自他動词",
+                        title = stringResource(R.string.lib_category_item_verb_title),
+                        subtitle = stringResource(R.string.lib_category_item_verb_subtitle),
                         icon = Icons.AutoMirrored.Rounded.DirectionsRun,
                         plumpIcon = PlumpIcon.Activity,
                         isoluminantColor = IsoluminantPalette.EmeraldGreen,
@@ -154,8 +156,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "adv",
-                        title = "副词",
-                        subtitle = "修饰用言词汇",
+                        title = stringResource(R.string.lib_category_item_adv_title),
+                        subtitle = stringResource(R.string.lib_category_item_adv_subtitle),
                         icon = Icons.Rounded.Tune,
                         plumpIcon = PlumpIcon.SlidersHorizontal,
                         isoluminantColor = IsoluminantPalette.LakesideCyan,
@@ -173,13 +175,13 @@ fun CategoryClassificationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 2. 构词·句法功能类
-            SectionHeader(title = "構词·句法功能类", delay = 100)
+            SectionHeader(title = stringResource(R.string.lib_category_section_syntax), delay = 100)
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
                         id = "rentai",
-                        title = "连体词",
-                        subtitle = "直接修饰体言",
+                        title = stringResource(R.string.lib_category_item_rentai_title),
+                        subtitle = stringResource(R.string.lib_category_item_rentai_subtitle),
                         icon = Icons.Rounded.Link,
                         plumpIcon = PlumpIcon.Link2,
                         isoluminantColor = IsoluminantPalette.SeaMarine,
@@ -190,8 +192,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "conj",
-                        title = "接続词",
-                        subtitle = "连接句子成分",
+                        title = stringResource(R.string.lib_category_item_conj_title),
+                        subtitle = stringResource(R.string.lib_category_item_conj_subtitle),
                         icon = Icons.AutoMirrored.Rounded.AltRoute,
                         plumpIcon = PlumpIcon.Workflow,
                         isoluminantColor = IsoluminantPalette.fromOklch(85f),
@@ -202,8 +204,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "exclam",
-                        title = "感叹词",
-                        subtitle = "表达情感语气",
+                        title = stringResource(R.string.lib_category_item_exclam_title),
+                        subtitle = stringResource(R.string.lib_category_item_exclam_subtitle),
                         icon = Icons.Rounded.Campaign,
                         plumpIcon = PlumpIcon.Megaphone,
                         isoluminantColor = IsoluminantPalette.CoralFlame,
@@ -214,8 +216,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "particle",
-                        title = "助词",
-                        subtitle = "语法功能标记",
+                        title = stringResource(R.string.lib_category_item_particle_title),
+                        subtitle = stringResource(R.string.lib_category_item_particle_subtitle),
                         icon = Icons.Rounded.Extension,
                         plumpIcon = PlumpIcon.Puzzle,
                         isoluminantColor = IsoluminantPalette.LilacViolet,
@@ -233,13 +235,13 @@ fun CategoryClassificationScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // 3. 构词·表达用法类
-            SectionHeader(title = "構词·表达用法类", delay = 200)
+            SectionHeader(title = stringResource(R.string.lib_category_section_expression), delay = 200)
             CategoryGrid(
                 items = listOf(
                     CategoryItem(
                         id = "prefix",
-                        title = "接头词",
-                        subtitle = "词语前置构成",
+                        title = stringResource(R.string.lib_category_item_prefix_title),
+                        subtitle = stringResource(R.string.lib_category_item_prefix_subtitle),
                         icon = Icons.AutoMirrored.Rounded.ArrowForward,
                         plumpIcon = PlumpIcon.ArrowRight,
                         isoluminantColor = IsoluminantPalette.RoseRuby,
@@ -250,8 +252,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "suffix",
-                        title = "接尾词",
-                        subtitle = "词语后置构成",
+                        title = stringResource(R.string.lib_category_item_suffix_title),
+                        subtitle = stringResource(R.string.lib_category_item_suffix_subtitle),
                         icon = Icons.AutoMirrored.Rounded.ArrowBack,
                         plumpIcon = PlumpIcon.ArrowLeft,
                         isoluminantColor = IsoluminantPalette.GlazeMint,
@@ -262,8 +264,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "expression",
-                        title = "表达·固定句型",
-                        subtitle = "习惯表达方式",
+                        title = stringResource(R.string.lib_category_item_expression_title),
+                        subtitle = stringResource(R.string.lib_category_item_expression_subtitle),
                         icon = Icons.Rounded.FormatQuote,
                         plumpIcon = PlumpIcon.Quote,
                         isoluminantColor = IsoluminantPalette.fromOklch(45f),
@@ -274,8 +276,8 @@ fun CategoryClassificationScreen(
                     ),
                     CategoryItem(
                         id = "kata",
-                        title = "外来语",
-                        subtitle = "片假名借词体系",
+                        title = stringResource(R.string.lib_category_item_kata_title),
+                        subtitle = stringResource(R.string.lib_category_item_kata_subtitle),
                         icon = Icons.Rounded.Language,
                         plumpIcon = PlumpIcon.Globe,
                         isoluminantColor = IsoluminantPalette.OceanBlue,

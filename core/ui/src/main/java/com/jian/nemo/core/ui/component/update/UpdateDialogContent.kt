@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +73,7 @@ fun UpdateDialogContent(
 
             Column {
                 Text(
-                    text = "发现新版本",
+                    text = stringResource(R.string.core_ui_update_title),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -79,7 +81,7 @@ fun UpdateDialogContent(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "V${config.versionName} 已准备就绪",
+                    text = stringResource(R.string.core_ui_update_version_ready, config.versionName),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -100,7 +102,7 @@ fun UpdateDialogContent(
             // 更新日志区域
             if (config.updateLog.isNotBlank()) {
                  Text(
-                    text = "更新内容",
+                    text = stringResource(R.string.core_ui_update_changelog_title),
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -150,7 +152,7 @@ fun UpdateDialogContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        val statusText = if (isDownloaded) "下载完成" else "正在下载..."
+                        val statusText = if (isDownloaded) stringResource(R.string.core_ui_update_status_downloaded) else stringResource(R.string.core_ui_update_status_downloading_full)
                         Text(
                             text = statusText,
                             style = MaterialTheme.typography.labelMedium,
@@ -194,7 +196,7 @@ fun UpdateDialogContent(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "暂不更新",
+                            text = stringResource(R.string.core_ui_btn_later_update),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
@@ -203,9 +205,9 @@ fun UpdateDialogContent(
 
                 // 主操作按钮
                 val primaryActionText = when {
-                    isDownloaded -> "立即安装"
-                    isDownloading -> "下载中..."
-                    else -> "立即更新"
+                    isDownloaded -> stringResource(R.string.core_ui_update_btn_install_now)
+                    isDownloading -> stringResource(R.string.core_ui_update_btn_downloading)
+                    else -> stringResource(R.string.core_ui_update_btn_upgrade_now)
                 }
 
                 Button(

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 1. 系统动态主色调 - 深色模式 (Dark Mode) -->
+    <color name="app_system_red">#FF453A</color>
+    <color name="app_system_orange">#FF9F0A</color>
+    <color name="app_system_yellow">#FFD60A</color>
+    <color name="app_system_green">#30D158</color>
+    <color name="app_system_mint">#66D4CF</color>
+    <color name="app_system_teal">#40C8E0</color>
+    <color name="app_system_cyan">#64D2FF</color>
+    <color name="app_system_blue">#0A84FF</color>
+    <color name="app_system_indigo">#5E5CE6</color>
+    <color name="app_system_purple">#BF5AF2</color>
+    <color name="app_system_pink">#FF375F</color>
+    <color name="app_system_brown">#AC8E68</color>
+    <color name="app_system_gray">#8E8E93</color>
+    <color name="app_system_gray2">#636366</color>
+    <color name="app_system_gray3">#48484A</color>
+    <color name="app_system_gray4">#3A3A3C</color>
+    <color name="app_system_gray5">#2C2C2E</color>
+    <color name="app_system_gray6">#1C1C1E</color>
+
+    <!-- 2. 语义化界面层级与背景/文本色 - 深色模式 (Dark Mode, AARRGGBB) -->
+    <color name="app_system_background">#000000</color>
+    <color name="app_secondary_system_background">#1C1C1E</color>
+    <color name="app_tertiary_system_background">#2C2C2E</color>
+    <color name="app_system_grouped_background">#000000</color>
+    <color name="app_secondary_system_grouped_background">#1C1C1E</color>
+    <color name="app_tertiary_system_grouped_background">#2C2C2E</color>
+    <color name="app_label">#FFFFFF</color>
+    <color name="app_secondary_label">#99EBEBF5</color>
+    <color name="app_tertiary_label">#4CEBEBF5</color>
+    <color name="app_quaternary_label">#2EEBEBF5</color>
+    <color name="app_placeholder_text">#7A7A7A</color>
+    <color name="app_system_fill">#5C787880</color>
+    <color name="app_secondary_system_fill">#52787880</color>
+    <color name="app_tertiary_system_fill">#3D787880</color>
+    <color name="app_quaternary_system_fill">#30787880</color>
+    <color name="app_separator">#99545456</color>
+    <color name="app_opaque_separator">#38383A</color>
+    <color name="app_link">#0A84FF</color>
+
+    <!-- 3. 无障碍高对比度主色 - 深色模式 (Dark Mode) -->
+    <color name="app_accessible_red">#FF6961</color>
+    <color name="app_accessible_orange">#FFB340</color>
+    <color name="app_accessible_yellow">#FFD426</color>
+    <color name="app_accessible_green">#30DB5B</color>
+    <color name="app_accessible_mint">#66D4CF</color>
+    <color name="app_accessible_teal">#5DE6FF</color>
+    <color name="app_accessible_cyan">#70D7FF</color>
+    <color name="app_accessible_blue">#409CFF</color>
+    <color name="app_accessible_indigo">#7D7AFF</color>
+    <color name="app_accessible_purple">#DA8FFF</color>
+    <color name="app_accessible_pink">#FF6482</color>
+    <color name="app_accessible_brown">#B59469</color>
+    <color name="app_accessible_gray">#AEAEB2</color>
+    <color name="app_accessible_gray2">#7C7C80</color>
+    <color name="app_accessible_gray3">#545456</color>
+    <color name="app_accessible_gray4">#444446</color>
+    <color name="app_accessible_gray5">#363638</color>
+    <color name="app_accessible_gray6">#242426</color>
+
+    <!-- 4. 桌面辅助主色 - 深色模式 (Dark Mode) -->
+    <color name="app_desktop_green">#32D74B</color>
+    <color name="app_desktop_teal">#6AC4DC</color>
+    <color name="app_desktop_cyan">#5AC8F5</color>
+    <color name="app_desktop_gray">#98989D</color>
+</resources>

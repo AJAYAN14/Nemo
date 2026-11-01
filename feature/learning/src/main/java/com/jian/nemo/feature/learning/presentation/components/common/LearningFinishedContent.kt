@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.NemoKonfettiColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.OceanTheme
 import com.jian.nemo.core.designsystem.theme.UiPalette
@@ -236,7 +237,7 @@ fun LearningFinishedContent(
                         lineHeight = 64.sp
                     )
                     Text(
-                        text = "词",
+                        text = stringResource(R.string.learn_finish_unit_word),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = textSecondary,
@@ -256,7 +257,7 @@ fun LearningFinishedContent(
                 // 专注度或副标题动态激励反馈（HTML 同款极简耗时文案）
                 val feedbackText = if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
                     val avgSeconds = String.format(Locale.getDefault(), "%.1f", sessionDurationSeconds.toFloat() / sessionTotalCount)
-                    stringResource(R.string.finish_avg_seconds_format, avgSeconds)
+                    stringResource(R.string.learn_finish_avg_seconds_format, avgSeconds)
                 } else {
                     subtitle
                 }
@@ -300,7 +301,7 @@ fun LearningFinishedContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.finish_today_word_count),
+                            text = stringResource(R.string.learn_finish_today_word_count),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black,
                             color = textPrimary
@@ -311,7 +312,7 @@ fun LearningFinishedContent(
                             color = LearningPalette.SrsEmeraldBgLight.copy(alpha = if (isDark) 0.22f else 1f)
                         ) {
                             Text(
-                                text = stringResource(R.string.finish_100_percent_mastered),
+                                text = stringResource(R.string.learn_finish_100_percent_mastered),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = accentGreen,
@@ -410,7 +411,7 @@ fun LearningFinishedContent(
                                         .background(accentGreen)
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_old_words_consolidate),
+                                    text = stringResource(R.string.learn_finish_old_words_consolidate),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textSecondary
@@ -428,7 +429,7 @@ fun LearningFinishedContent(
                                     lineHeight = 22.sp
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_unit_words),
+                                    text = stringResource(R.string.learn_finish_unit_words),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -471,7 +472,7 @@ fun LearningFinishedContent(
                                         .background(accentBlue)
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_new_words_expand),
+                                    text = stringResource(R.string.learn_finish_new_words_expand),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textSecondary
@@ -489,7 +490,7 @@ fun LearningFinishedContent(
                                     lineHeight = 22.sp
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_unit_words),
+                                    text = stringResource(R.string.learn_finish_unit_words),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -533,7 +534,7 @@ fun LearningFinishedContent(
                                             .background(accentGold)
                                     )
                                     Text(
-                                        text = stringResource(R.string.finish_relearn_conquer),
+                                        text = stringResource(R.string.learn_finish_relearn_conquer),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = textSecondary
@@ -551,7 +552,7 @@ fun LearningFinishedContent(
                                         lineHeight = 22.sp
                                     )
                                     Text(
-                                        text = stringResource(R.string.finish_unit_words),
+                                        text = stringResource(R.string.learn_finish_unit_words),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = textPrimary,
@@ -616,7 +617,7 @@ fun LearningFinishedContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = stringResource(R.string.finish_max_combo),
+                                text = stringResource(R.string.learn_finish_max_combo),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -635,7 +636,7 @@ fun LearningFinishedContent(
                                 lineHeight = 24.sp
                             )
                             Text(
-                                text = stringResource(R.string.finish_unit_times),
+                                text = stringResource(R.string.learn_finish_unit_times),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -670,7 +671,7 @@ fun LearningFinishedContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = stringResource(R.string.finish_focus_duration),
+                                text = stringResource(R.string.learn_finish_focus_duration),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -691,7 +692,7 @@ fun LearningFinishedContent(
                                     lineHeight = 24.sp
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_unit_minute),
+                                    text = stringResource(R.string.learn_finish_unit_minute),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary,
@@ -706,7 +707,7 @@ fun LearningFinishedContent(
                                 lineHeight = 24.sp
                             )
                             Text(
-                                text = if (sessionDurationSeconds > 0) stringResource(R.string.finish_unit_second) else stringResource(R.string.finish_unit_minute),
+                                text = if (sessionDurationSeconds > 0) stringResource(R.string.learn_finish_unit_second) else stringResource(R.string.learn_finish_unit_minute),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -761,7 +762,7 @@ fun LearningFinishedContent(
                                 modifier = Modifier.size(17.dp)
                             )
                             Text(
-                                text = stringResource(R.string.finish_today_due_review),
+                                text = stringResource(R.string.learn_finish_today_due_review),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -778,7 +779,7 @@ fun LearningFinishedContent(
                                 color = textPrimary
                             )
                             Text(
-                                text = stringResource(R.string.finish_unit_words),
+                                text = stringResource(R.string.learn_finish_unit_words),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -813,7 +814,7 @@ fun LearningFinishedContent(
                                 modifier = Modifier.size(17.dp)
                             )
                             Text(
-                                text = stringResource(R.string.finish_tomorrow_review_forecast),
+                                text = stringResource(R.string.learn_finish_tomorrow_review_forecast),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textSecondary
@@ -830,7 +831,7 @@ fun LearningFinishedContent(
                                 color = textPrimary
                             )
                             Text(
-                                text = stringResource(R.string.finish_unit_words),
+                                text = stringResource(R.string.learn_finish_unit_words),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = textPrimary,
@@ -908,13 +909,13 @@ fun LearningFinishedContent(
                                 verticalArrangement = Arrangement.spacedBy(2.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.finish_bonus_title),
+                                    text = stringResource(R.string.learn_finish_bonus_title),
                                     fontSize = 17.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = textPrimary
                                 )
                                 Text(
-                                    text = stringResource(R.string.finish_bonus_subtitle),
+                                    text = stringResource(R.string.learn_finish_bonus_subtitle),
                                     fontSize = 13.sp,
                                     color = textSecondary
                                 )
@@ -928,7 +929,7 @@ fun LearningFinishedContent(
                             contentColor = Color.White
                         ) {
                             Text(
-                                text = stringResource(R.string.finish_btn_go_bonus),
+                                text = stringResource(R.string.learn_finish_btn_go_bonus),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
@@ -970,7 +971,7 @@ fun LearningFinishedContent(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = stringResource(R.string.finish_btn_complete_today),
+                            text = stringResource(R.string.learn_finish_btn_complete_today),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -987,7 +988,7 @@ fun LearningFinishedContent(
                             .fillMaxHeight()
                     ) {
                         Text(
-                            text = stringResource(R.string.finish_btn_learn_next_group),
+                            text = stringResource(R.string.learn_finish_btn_learn_next_group),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -1012,7 +1013,7 @@ fun LearningFinishedContent(
                         .height(52.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.finish_btn_complete_today),
+                        text = stringResource(R.string.learn_finish_btn_complete_today),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -1039,14 +1040,7 @@ fun LearningFinishedContent(
             modifier = Modifier.fillMaxSize()
         ) {
             val partyColors = remember(themePrimary) {
-                listOf(
-                    themePrimary.toArgb(),
-                    0xFF10B981.toInt(),
-                    0xFF3B82F6.toInt(),
-                    0xFFF59E0B.toInt(),
-                    0xFFEC4899.toInt(),
-                    0xFF6366F1.toInt()
-                )
+                listOf(themePrimary.toArgb()) + NemoKonfettiColors
             }
             val party = remember(partyColors) {
                 Party(

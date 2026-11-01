@@ -59,7 +59,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -181,7 +183,7 @@ fun BonusStudyDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = "关闭",
+                        contentDescription = stringResource(R.string.core_ui_dialog_cd_close),
                         tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )
@@ -213,7 +215,7 @@ fun BonusStudyDialog(
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Text(
-                        text = "今日加餐",
+                        text = stringResource(R.string.core_ui_bonus_dialog_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Black,
                             fontSize = 22.sp
@@ -224,7 +226,7 @@ fun BonusStudyDialog(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = "突破常规，设定追加练习目标",
+                        text = stringResource(R.string.core_ui_bonus_dialog_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
@@ -297,7 +299,7 @@ fun BonusStudyDialog(
                                     label = "backlogTextColor"
                                 )
                                 Text(
-                                    text = "消化积压",
+                                    text = stringResource(R.string.core_ui_bonus_dialog_mode_backlog),
                                     fontSize = 14.sp,
                                     fontWeight = if (selectedIndex == 0) FontWeight.Bold else FontWeight.Medium,
                                     color = textColor
@@ -326,7 +328,7 @@ fun BonusStudyDialog(
                                     label = "newItemsTextColor"
                                 )
                                 Text(
-                                    text = "学习新词",
+                                    text = stringResource(R.string.core_ui_bonus_dialog_mode_new),
                                     fontSize = 14.sp,
                                     fontWeight = if (selectedIndex == 1) FontWeight.Bold else FontWeight.Medium,
                                     color = textColor
@@ -397,7 +399,7 @@ fun BonusStudyDialog(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "${preset}项",
+                                            text = stringResource(R.string.core_ui_bonus_dialog_preset_item_format, preset),
                                             style = MaterialTheme.typography.bodyMedium.copy(
                                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                                             ),
@@ -432,7 +434,7 @@ fun BonusStudyDialog(
                         )
                     ) {
                         Text(
-                            text = "开始挑战 →",
+                            text = stringResource(R.string.core_ui_bonus_dialog_btn_start),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp

@@ -22,9 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -63,7 +65,7 @@ fun AIExerciseDetailDialog(
         Column(modifier = Modifier.fillMaxSize()) {
             // 1. Header
             CommonHeader(
-                title = "练习详情",
+                title = stringResource(R.string.learn_ai_detail_title),
                 onBack = onDismiss,
                 backgroundColor = backgroundColor
             )
@@ -85,7 +87,7 @@ fun AIExerciseDetailDialog(
 
                 // Question & Answer
                 DetailSectionCard(
-                    title = if (history.type == "CN_TO_JP") "中文题目" else "日文题目",
+                    title = if (history.type == "CN_TO_JP") stringResource(R.string.learn_ai_detail_cn_question) else stringResource(R.string.learn_ai_detail_jp_question),
                     content = history.question,
                     icon = Icons.Rounded.Info,
                     iconColor = MaterialTheme.colorScheme.primary,
@@ -99,7 +101,7 @@ fun AIExerciseDetailDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 DetailSectionCard(
-                    title = "你的答案",
+                    title = stringResource(R.string.learn_ai_detail_my_answer),
                     content = history.userAnswer,
                     icon = Icons.Rounded.Translate,
                     iconColor = LearningPalette.SuccessGreen,
@@ -110,7 +112,7 @@ fun AIExerciseDetailDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 DetailSectionCard(
-                    title = "参考答案",
+                    title = stringResource(R.string.learn_ai_detail_ref_answer),
                     content = history.standardAnswer,
                     icon = Icons.Rounded.CheckCircle,
                     iconColor = MaterialTheme.colorScheme.primary,
@@ -125,7 +127,7 @@ fun AIExerciseDetailDialog(
 
                 // AI Feedback
                 DetailSectionCard(
-                    title = "AI 评价与解析",
+                    title = stringResource(R.string.learn_ai_detail_eval_title),
                     content = history.feedback,
                     icon = Icons.Rounded.Psychology,
                     iconColor = MaterialTheme.colorScheme.secondary,
@@ -165,20 +167,20 @@ private fun ScoreCard(score: Int, difficulty: String) {
         ) {
             Column {
                 Text(
-                    "AI 综合评分",
+                    text = stringResource(R.string.learn_ai_detail_score_title),
                     style = MaterialTheme.typography.labelMedium,
                     color = scoreColor,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (score >= 85) "表现卓越！" else if (score >= 60) "合格" else "需继续努力",
+                    text = if (score >= 85) stringResource(R.string.learn_ai_detail_score_excellent) else if (score >= 60) stringResource(R.string.learn_ai_detail_score_pass) else stringResource(R.string.learn_ai_detail_score_need_work),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "题目难度: $difficulty",
+                    text = stringResource(R.string.learn_ai_detail_difficulty_format, difficulty),
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onSurfaceVariant
                 )

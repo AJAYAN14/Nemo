@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -73,7 +75,7 @@ fun SRSRatingButton(
 private fun SRSRatingButtonPreview() {
     MaterialTheme {
         SRSRatingButton(
-            label = "完全忘记",
+            label = stringResource(R.string.learn_srs_rating_forgot),
             time = "< 1m",
             color = LearningPalette.SrsRoseTextLight,
             containerColor = LearningPalette.SrsRoseBgLight,

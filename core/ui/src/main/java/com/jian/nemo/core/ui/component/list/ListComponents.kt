@@ -13,6 +13,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.designsystem.theme.NemoDanger
 
 // 通用等级头部组件
 @Composable
@@ -31,7 +34,7 @@ fun LevelHeader(
     isExpanded: Boolean,
     onClick: () -> Unit,
     containerColor: Color = Color.Unspecified,
-    itemType: String = "单词"
+    itemType: String = stringResource(R.string.core_ui_list_item_type_word)
 ) {
     Card(
         modifier = Modifier
@@ -51,25 +54,29 @@ fun LevelHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = when (itemType) {
-                    "单词" -> "JLPT $level"
-                    "语法" -> "JLPT $level"
-                    else -> "JLPT $level"
-                },
+                text = stringResource(R.string.core_ui_list_header_jlpt_format, level),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "$count ${if (itemType == "单词") "词" else "条"}",
+                text = if (itemType == stringResource(R.string.core_ui_list_item_type_word)) {
+                    stringResource(R.string.core_ui_list_header_count_word_format, count)
+                } else {
+                    stringResource(R.string.core_ui_list_header_count_grammar_format, count)
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             Icon(
                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "折叠" else "展开",
+                contentDescription = if (isExpanded) {
+                    stringResource(R.string.core_ui_list_header_cd_collapse)
+                } else {
+                    stringResource(R.string.core_ui_list_header_cd_expand)
+                },
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -322,8 +329,8 @@ fun CommonGrammarCard(
             if (isFavorite) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "已收藏",
-                    tint = Color.Red,
+                    contentDescription = stringResource(R.string.core_ui_grammar_card_cd_favorited),
+                    tint = NemoDanger,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }

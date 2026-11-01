@@ -15,9 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 /**
@@ -76,7 +78,7 @@ fun <T> GenericExpandableListScreen(
                 backgroundColor = Color.Transparent,
                 actions = {
                     IconButton(onClick = { showSearch = !showSearch }) {
-                        Icon(Icons.Filled.Search, contentDescription = "搜索")
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.core_ui_search_cd_search))
                     }
                 }
             )

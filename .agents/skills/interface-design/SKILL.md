@@ -1,6 +1,6 @@
 ---
 name: interface-design
-description: This skill is for interface design — dashboards, admin panels, apps, tools, and interactive products. NOT for marketing design (landing pages, marketing sites, campaigns). 及时上网搜索学习新技术和方法。
+description: "专业工具与管理面板设计。专精于仪表盘、管理后台、工具面板等高信息密度界面的布局与交互。"
 version: 2.0.0
 ---
 

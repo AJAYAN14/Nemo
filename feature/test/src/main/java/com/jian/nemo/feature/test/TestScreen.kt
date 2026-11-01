@@ -89,11 +89,11 @@ fun TestScreen(
     if (uiState.showExitConfirmation) {
         com.jian.nemo.core.ui.component.NemoDialog(
             onDismissRequest = { viewModel.cancelExitTest() },
-            title = "确认退出测试",
-            text = "确定要退出测试吗？当前未提交进度将丢失。",
+            title = stringResource(R.string.test_screen_exit_dialog_title),
+            text = stringResource(R.string.test_screen_exit_dialog_msg),
             isDangerous = true,
-            confirmText = "确认退出",
-            dismissText = "继续测试",
+            confirmText = stringResource(R.string.test_screen_exit_dialog_confirm),
+            dismissText = stringResource(R.string.test_screen_exit_dialog_dismiss),
             onConfirm = {
                 viewModel.actualExitTest()
                 viewModel.cancelExitTest()

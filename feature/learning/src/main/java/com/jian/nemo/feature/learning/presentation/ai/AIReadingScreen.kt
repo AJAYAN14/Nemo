@@ -162,7 +162,7 @@ fun AIReadingScreen(
                 .padding(bottom = 16.dp)
         ) {
             CommonHeader(
-                title = "AI 日语阅读",
+                title = stringResource(R.string.learn_reading_title),
                 onBack = {
                     if (uiState.currentArticle != null) {
                         viewModel.onEvent(AIReadingEvent.ResetReader)
@@ -184,7 +184,7 @@ fun AIReadingScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.History,
-                                contentDescription = "阅读历史",
+                                contentDescription = stringResource(R.string.learn_reading_desc_history),
                                 modifier = Modifier.size(30.dp),
                                 tint = colorScheme.onSurface
                             )
@@ -218,7 +218,7 @@ fun AIReadingScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Settings,
-                                contentDescription = "AI设置",
+                                contentDescription = stringResource(R.string.learn_reading_desc_settings),
                                 modifier = Modifier.size(30.dp),
                                 tint = colorScheme.onSurface
                             )
@@ -446,12 +446,12 @@ private fun ConfigScreen(
                         Spacer(Modifier.width(10.dp))
                         Column {
                             Text(
-                                text = "选择 JLPT 级别",
+                                text = stringResource(R.string.learn_reading_select_level),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
                             )
                             Text(
-                                text = "难度自适应匹配 AI 生成语料",
+                                text = stringResource(R.string.learn_reading_level_subtitle),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextMuted
                             )
@@ -528,12 +528,12 @@ private fun ConfigScreen(
                 Spacer(Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "选择阅读主题",
+                        text = stringResource(R.string.learn_reading_select_theme),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
                     )
                     Text(
-                        text = "沉浸式日式和风物语",
+                        text = stringResource(R.string.learn_reading_theme_subtitle),
                         style = MaterialTheme.typography.labelSmall,
                         color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextMuted
                     )
@@ -547,7 +547,7 @@ private fun ConfigScreen(
                 border = BorderStroke(1.dp, borderColor)
             ) {
                 Text(
-                    text = "6 个精选领域",
+                    text = stringResource(R.string.learn_reading_theme_count),
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                     color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
@@ -590,7 +590,7 @@ private fun ConfigScreen(
         // 底部高光主按钮 (Specular Action Button)
         SpecularCtaButton(
             onClick = { onEvent(AIReadingEvent.GenerateArticle) },
-            text = "开启智能阅读训练",
+            text = stringResource(R.string.learn_reading_btn_start_training),
             accentColor = ctaAccentColor
         )
 
@@ -730,14 +730,15 @@ private fun LevelCapabilityCard(
     isDark: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val detail = remember(selectedLevel) {
+    val context = LocalContext.current
+    val detail = remember(selectedLevel, context) {
         when (selectedLevel) {
-            "N5" -> LevelDetail("入门基石", "基础生活日常会话与简明短文")
-            "N4" -> LevelDetail("初级进阶", "日常情境叙述与基础复合句表达")
-            "N3" -> LevelDetail("中级跨越", "文化生活随笔与较完整话题阅读")
-            "N2" -> LevelDetail("高级突破", "报刊社论、深度观点与复杂议论文")
-            "N1" -> LevelDetail("学术精通", "文学原著、社科政经与地道深度论述")
-            else -> LevelDetail("自适应", "AI 智能语料匹配与动态训练")
+            "N5" -> LevelDetail(context.getString(R.string.learn_reading_level_n5_tag), context.getString(R.string.learn_reading_level_n5_desc))
+            "N4" -> LevelDetail(context.getString(R.string.learn_reading_level_n4_tag), context.getString(R.string.learn_reading_level_n4_desc))
+            "N3" -> LevelDetail(context.getString(R.string.learn_reading_level_n3_tag), context.getString(R.string.learn_reading_level_n3_desc))
+            "N2" -> LevelDetail(context.getString(R.string.learn_reading_level_n2_tag), context.getString(R.string.learn_reading_level_n2_desc))
+            "N1" -> LevelDetail(context.getString(R.string.learn_reading_level_n1_tag), context.getString(R.string.learn_reading_level_n1_desc))
+            else -> LevelDetail(context.getString(R.string.learn_reading_level_adaptive_tag), context.getString(R.string.learn_reading_level_adaptive_desc))
         }
     }
 
@@ -1302,7 +1303,7 @@ private fun LoadingScreen() {
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.ai_reading_building_training),
+                                text = stringResource(R.string.learn_reading_building_training),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.5.sp
@@ -1343,7 +1344,7 @@ private fun LoadingScreen() {
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Rounded.Check,
-                                                contentDescription = stringResource(R.string.status_completed),
+                                                contentDescription = stringResource(R.string.learn_reading_status_completed),
                                                 tint = Color.White,
                                                 modifier = Modifier.size(12.dp)
                                             )
@@ -1542,7 +1543,7 @@ private fun ArticleContentScreen(
                             indication = null,
                             onClick = {
                                 clipboardManager.setText(AnnotatedString(article.contentRaw))
-                                onShowCopySnackbar("日文原文已复制到剪贴板")
+                                onShowCopySnackbar(context.getString(R.string.learn_reading_snackbar_copied))
                             }
                         ),
                         shape = CircleShape,
@@ -1560,7 +1561,7 @@ private fun ArticleContentScreen(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                text = "复制原文",
+                                text = stringResource(R.string.learn_reading_btn_copy),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
                             )
@@ -1589,7 +1590,7 @@ private fun ArticleContentScreen(
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
-                                text = if (showTranslation) "隐藏中文对照" else "查看中文对照",
+                                text = if (showTranslation) stringResource(R.string.learn_reading_hide_translation) else stringResource(R.string.learn_reading_show_translation),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 color = if (showTranslation) BentoColors.Primary else (if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub)
                             )
@@ -1634,7 +1635,7 @@ private fun ArticleContentScreen(
         if (article.vocabulary.isNotEmpty()) {
             Column {
                 Text(
-                    text = "核心重点词汇",
+                    text = stringResource(R.string.learn_reading_section_vocab),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                     color = if (isDark) colorScheme.onSurface else BentoColors.TextMain,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -1655,7 +1656,7 @@ private fun ArticleContentScreen(
         if (article.questions.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(
-                    text = "阅读理解小测验",
+                    text = stringResource(R.string.learn_reading_section_quiz),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                     color = if (isDark) colorScheme.onSurface else BentoColors.TextMain,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
@@ -1681,13 +1682,13 @@ private fun ArticleContentScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = if (correctCount == totalCount) "完璧！全部答对！" else "继续加油！答对 $correctCount/$totalCount 道题",
+                                    text = if (correctCount == totalCount) stringResource(R.string.learn_reading_quiz_all_correct) else stringResource(R.string.learn_reading_quiz_score_format, correctCount, totalCount),
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                                     color = BentoColors.Primary
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = if (correctCount == totalCount) "太棒了，您的阅读理解能力无懈可击！" else "阅读中还有细节需要厘清，查看下方解析学习吧！",
+                                    text = if (correctCount == totalCount) stringResource(R.string.learn_reading_quiz_all_correct_sub) else stringResource(R.string.learn_reading_quiz_review_sub),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
                                 )
@@ -1742,7 +1743,7 @@ private fun ArticleContentScreen(
                         elevation = null
                     ) {
                         Text(
-                            text = if (allAnswered) "提交答题并查看评分" else "请先完成所有题目",
+                            text = if (allAnswered) stringResource(R.string.learn_reading_btn_submit_score) else stringResource(R.string.learn_reading_btn_complete_all_questions),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (allAnswered) Color.White else (if (isDark) colorScheme.onSurface.copy(alpha = 0.3f) else NemoNeutrals.Gray400)
@@ -1761,7 +1762,7 @@ private fun ArticleContentScreen(
                             shape = RoundedCornerShape(16.dp),
                             border = BorderStroke(1.dp, colorScheme.primary)
                         ) {
-                            Text(stringResource(R.string.ai_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.learn_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
                         }
 
                         Button(
@@ -1772,7 +1773,7 @@ private fun ArticleContentScreen(
                             shape = RoundedCornerShape(16.dp),
                             elevation = null
                         ) {
-                            Text(stringResource(R.string.ai_reading_btn_switch_article), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.learn_reading_btn_switch_article), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -2003,7 +2004,7 @@ private fun QuestionCard(
                                     isCorrect -> {
                                         Icon(
                                             imageVector = Icons.Rounded.CheckCircle,
-                                            contentDescription = "正确",
+                                            contentDescription = stringResource(R.string.learn_reading_desc_correct),
                                             tint = BentoColors.AccentGreen,
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -2011,7 +2012,7 @@ private fun QuestionCard(
                                     isSelected -> {
                                         Icon(
                                             imageVector = Icons.Rounded.Cancel,
-                                            contentDescription = "错误",
+                                            contentDescription = stringResource(R.string.learn_reading_desc_incorrect),
                                             tint = ReadingAccentRed,
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -2056,7 +2057,7 @@ private fun QuestionCard(
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
-                                    text = "题目解析",
+                                    text = stringResource(R.string.learn_reading_question_analysis),
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                     color = BentoColors.Primary
                                 )
@@ -2119,7 +2120,7 @@ private fun ErrorScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "生成短文失败",
+                text = stringResource(R.string.learn_reading_error_generate_failed),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
             )
@@ -2157,7 +2158,7 @@ private fun ErrorScreen(
                     shape = RoundedCornerShape(14.dp),
                     border = BorderStroke(1.dp, colorScheme.primary)
                 ) {
-                    Text(stringResource(R.string.ai_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.learn_reading_btn_back_to_config), fontWeight = FontWeight.Bold)
                 }
 
                 Button(
@@ -2168,7 +2169,7 @@ private fun ErrorScreen(
                     shape = RoundedCornerShape(14.dp),
                     elevation = null
                 ) {
-                    Text(stringResource(R.string.ai_reading_btn_regenerate), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.learn_reading_btn_regenerate), fontWeight = FontWeight.Bold)
                 }
             }
         }

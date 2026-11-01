@@ -35,6 +35,8 @@ import androidx.compose.material.icons.rounded.Report
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -290,7 +292,7 @@ private fun WordDetailContent(
                     Column(modifier = Modifier.padding(24.dp)) {
                         // Chinese Meaning
                         Text(
-                            text = "中文释义",
+                            text = stringResource(R.string.lib_word_detail_section_meaning),
                             style = MaterialTheme.typography.labelLarge,
                             color = accentColor
                         )
@@ -354,7 +356,7 @@ private fun WordDetailContent(
 
                 // === 1.4 Example Sentences ===
                 Text(
-                    text = "例句",
+                    text = stringResource(R.string.lib_word_detail_section_examples),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
@@ -384,7 +386,7 @@ private fun WordDetailContent(
                     }
                 } else {
                      Text(
-                        text = "暂无例句",
+                        text = stringResource(R.string.lib_word_detail_examples_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 4.dp)
@@ -436,7 +438,7 @@ private fun WordDetailContent(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Report,
-                            contentDescription = "举报内容",
+                            contentDescription = stringResource(R.string.lib_word_detail_report_content_description),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -579,7 +581,7 @@ private fun RelatedWordsSection(
     ) {
         // Section Title
         Text(
-            text = "相关词",
+            text = stringResource(R.string.lib_word_detail_section_related_words),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.5.sp

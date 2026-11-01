@@ -26,7 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +58,7 @@ fun LevelBreakdownDialog(
     themeColor: Color,
     predictions: Map<String, LevelPredictionInfo> = emptyMap(),
     overallPrediction: OverallPredictionSummary? = null,
-    itemUnit: String = "词",
+    itemUnit: String = stringResource(R.string.stats_breakdown_unit_word_default),
     onDismiss: () -> Unit
 ) {
     val totalCount = remember(data) { data.values.sum() }
@@ -171,7 +173,7 @@ fun LevelBreakdownDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "整体掌握比: $totalCount / $grandTotalCount",
+                            text = stringResource(R.string.stats_breakdown_label_mastery_ratio, totalCount, grandTotalCount),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -335,7 +337,7 @@ fun LevelBreakdownDialog(
 
                                         // 对比分数说明
                                         Text(
-                                            text = "已学 $count / $total",
+                                            text = stringResource(R.string.stats_breakdown_label_learned_ratio, count, total),
                                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                                             fontWeight = FontWeight.Medium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
@@ -377,14 +379,14 @@ fun LevelBreakdownDialog(
                                                     modifier = Modifier.fillMaxWidth()
                                                 ) {
                                                     Text(
-                                                        text = "达成记录：${prediction.completionDateText ?: "已达成"}",
+                                                        text = stringResource(R.string.stats_breakdown_format_achieve_record, prediction.completionDateText ?: stringResource(R.string.stats_breakdown_achieved_default)),
                                                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                                         fontWeight = FontWeight.SemiBold,
                                                         color = color
                                                     )
                                                     if (isPinned) {
                                                         Text(
-                                                            text = "固定中",
+                                                            text = stringResource(R.string.stats_breakdown_badge_locking),
                                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                                             fontWeight = FontWeight.Medium,
                                                             color = color.copy(alpha = 0.9f)
@@ -398,7 +400,7 @@ fun LevelBreakdownDialog(
                                                     modifier = Modifier.fillMaxWidth()
                                                 ) {
                                                     Text(
-                                                        text = "预计学完：${prediction.predictedDateText ?: "—"}",
+                                                        text = stringResource(R.string.stats_breakdown_format_predict_finish, prediction.predictedDateText ?: "—"),
                                                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                                         fontWeight = FontWeight.Bold,
                                                         color = MaterialTheme.colorScheme.onSurface
@@ -408,14 +410,14 @@ fun LevelBreakdownDialog(
                                                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                                                     ) {
                                                         Text(
-                                                            text = "约需 ${prediction.remainingDays} 天 (余 ${prediction.remainingCount}${itemUnit})",
+                                                            text = stringResource(R.string.stats_breakdown_format_remaining_days, prediction.remainingDays, prediction.remainingCount, itemUnit),
                                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                                                             fontWeight = FontWeight.Medium,
                                                             color = color
                                                         )
                                                         if (isPinned) {
                                                             Text(
-                                                                text = "固定",
+                                                                text = stringResource(R.string.stats_breakdown_badge_locked),
                                                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                                                 fontWeight = FontWeight.Medium,
                                                                 color = color.copy(alpha = 0.8f)
@@ -451,9 +453,12 @@ fun LevelBreakdownDialog(
                             Column {
                                 Text(
                                     text = if (overallPrediction.isAllCompleted) {
-                                        "全等级已圆满达成"
+                                        stringResource(R.string.stats_breakdown_all_completed)
                                     } else {
-                                        "通关预计：${overallPrediction.estimatedCompletionDateText ?: "—"}"
+                                        stringResource(
+                                            R.string.stats_breakdown_prediction_format,
+                                            overallPrediction.estimatedCompletionDateText ?: "—"
+                                        )
                                     },
                                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                                     fontWeight = FontWeight.Bold,
@@ -461,7 +466,7 @@ fun LevelBreakdownDialog(
                                 )
                                 if (!overallPrediction.isAllCompleted) {
                                     Text(
-                                        text = "按每日 ${overallPrediction.dailyGoal}${itemUnit} 目标推算",
+                                        text = stringResource(R.string.stats_breakdown_format_daily_goal_deduction, overallPrediction.dailyGoal, itemUnit),
                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
@@ -469,7 +474,7 @@ fun LevelBreakdownDialog(
                             }
                             if (!overallPrediction.isAllCompleted) {
                                 Text(
-                                    text = "约${overallPrediction.totalRemainingDays}天",
+                                    text = stringResource(R.string.stats_breakdown_format_approx_days, overallPrediction.totalRemainingDays),
                                     style = MaterialTheme.typography.titleSmall.copy(
                                         fontFamily = Rubik,
                                         fontWeight = FontWeight.Bold
@@ -498,7 +503,7 @@ fun LevelBreakdownDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "已掌握总计",
+                        text = stringResource(R.string.stats_breakdown_label_total_mastered),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

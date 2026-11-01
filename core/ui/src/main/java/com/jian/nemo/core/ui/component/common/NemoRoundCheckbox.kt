@@ -29,7 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -71,6 +73,8 @@ fun NemoRoundCheckbox(
         label = "nemoRoundCheckboxBorder"
     )
 
+    val checkedDesc = stringResource(R.string.core_ui_checkbox_cd_checked)
+    val uncheckedDesc = stringResource(R.string.core_ui_checkbox_cd_unchecked)
     val interactionModifier = if (onCheckedChange != null) {
         Modifier.toggleable(
             value = checked,
@@ -79,7 +83,7 @@ fun NemoRoundCheckbox(
         )
     } else {
         Modifier.semantics {
-            contentDescription = if (checked) "已选中" else "未选中"
+            contentDescription = if (checked) checkedDesc else uncheckedDesc
         }
     }
 

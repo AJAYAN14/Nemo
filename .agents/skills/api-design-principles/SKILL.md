@@ -1,6 +1,6 @@
 ---
 name: api-design-principles
-description: Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. Use when designing new APIs, reviewing API specifications, or establishing API design standards. 及时上网搜索学习新技术和方法。
+description: "REST 与 GraphQL API 接口设计规范。指导直观、可扩展的接口建模、路由命名、状态码与错误处理标准。"
 version: 2.0.0
 ---
 

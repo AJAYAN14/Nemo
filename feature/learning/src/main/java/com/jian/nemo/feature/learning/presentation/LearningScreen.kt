@@ -34,7 +34,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.CompositionLocalProvider
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
@@ -90,6 +92,7 @@ fun LearningScreen(
     onNavigateBack: () -> Unit,
     initialMode: LearningMode = LearningMode.Word
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(key1 = initialMode) {
@@ -230,7 +233,7 @@ fun LearningScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                contentDescription = "返回",
+                                contentDescription = stringResource(R.string.learn_screen_desc_back),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -249,7 +252,7 @@ fun LearningScreen(
                             ) {
                                 Text(text = "🔥", fontSize = 13.sp)
                                 Text(
-                                    text = "已连续打卡 ${uiState.dailyStreak} 天",
+                                    text = stringResource(R.string.learn_screen_badge_daily_streak, uiState.dailyStreak),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (isDarkTheme) LearningPalette.BannerOrangeTextDark else LearningPalette.BannerOrangeTextLight
@@ -269,7 +272,7 @@ fun LearningScreen(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_share_ios),
-                                contentDescription = "分享",
+                                contentDescription = stringResource(R.string.learn_screen_desc_share),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -421,7 +424,7 @@ fun LearningScreen(
                         add(
                             com.jian.nemo.core.ui.component.common.NemoNotificationData(
                                 id = "delay_hint",
-                                message = "等待中，请先回想 (${showAnswerDelayHintSec}s)",
+                                message = context.getString(R.string.learn_screen_delay_hint, showAnswerDelayHintSec),
                                 type = NemoSnackbarType.WARNING,
                                 icon = Icons.Default.AccessTime,
                                 autoDismissMs = 4000L,
@@ -488,7 +491,7 @@ fun LearningScreen(
             if (showAutoRevealDurationDialog) {
                 val currentSec = ((if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000).toInt()
                 DurationPickerDialog(
-                    title = "自动翻面时长",
+                    title = stringResource(R.string.learn_screen_dialog_auto_reveal_title),
                     initialSeconds = currentSec,
                     onDismissRequest = { showAutoRevealDurationDialog = false },
                     onConfirm = { seconds ->
@@ -506,7 +509,7 @@ fun LearningScreen(
             if (showDelayDurationDialog) {
                 val currentSec = (uiState.showAnswerDelayMs / 1000).toInt()
                 DurationPickerDialog(
-                    title = "显示答案等待时长",
+                    title = stringResource(R.string.learn_screen_dialog_delay_title),
                     initialSeconds = currentSec,
                     onDismissRequest = { showDelayDurationDialog = false },
                     onConfirm = { seconds ->
@@ -664,8 +667,8 @@ fun WordLearningContent(
             }
         } else if (uiState.shouldShowDailyGoalMet) {
             LearningFinishedContent(
-                title = "今日任务达成！",
-                subtitle = "坚持就是胜利，明天继续加油",
+                title = stringResource(R.string.learn_screen_finish_daily_goal_title),
+                subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -686,8 +689,8 @@ fun WordLearningContent(
         } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
             val remainingWords = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
             LearningFinishedContent(
-                title = "本组微会话完成！",
-                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，继续完成今日目标吧（还差 $remainingWords 词）",
+                title = stringResource(R.string.learn_screen_finish_micro_session_title),
+                subtitle = stringResource(R.string.learn_screen_finish_micro_session_words_subtitle, uiState.dailyStreak, remainingWords),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -712,8 +715,8 @@ fun WordLearningContent(
             )
         } else {
             LearningFinishedContent(
-                title = "暂无单词任务",
-                subtitle = "目前没有需要学习或复习的单词",
+                title = stringResource(R.string.learn_screen_finish_no_words_title),
+                subtitle = stringResource(R.string.learn_screen_finish_no_words_subtitle),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -830,8 +833,8 @@ fun GrammarLearningContent(
             }
         } else if (uiState.shouldShowDailyGoalMet) {
             LearningFinishedContent(
-                title = "今日任务达成！",
-                subtitle = "坚持就是胜利，明天继续加油",
+                title = stringResource(R.string.learn_screen_finish_daily_goal_title),
+                subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -852,8 +855,8 @@ fun GrammarLearningContent(
         } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
             val remainingGrammars = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
             LearningFinishedContent(
-                title = "本组微会话完成！",
-                subtitle = "已连续打卡 ${uiState.dailyStreak} 天，继续完成今日目标吧（还差 $remainingGrammars 项）",
+                title = stringResource(R.string.learn_screen_finish_micro_session_title),
+                subtitle = stringResource(R.string.learn_screen_finish_micro_session_grammars_subtitle, uiState.dailyStreak, remainingGrammars),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,
@@ -878,8 +881,8 @@ fun GrammarLearningContent(
             )
         } else {
             LearningFinishedContent(
-                title = "暂无语法任务",
-                subtitle = "目前没有需要学习或复习的语法",
+                title = stringResource(R.string.learn_screen_finish_no_grammars_title),
+                subtitle = stringResource(R.string.learn_screen_finish_no_grammars_subtitle),
                 completedToday = uiState.completedToday,
                 dailyGoal = uiState.dailyGoal,
                 dailyStreak = uiState.dailyStreak,

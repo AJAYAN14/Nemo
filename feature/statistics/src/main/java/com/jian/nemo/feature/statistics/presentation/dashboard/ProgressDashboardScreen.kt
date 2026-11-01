@@ -11,7 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -77,7 +79,7 @@ fun ProgressDashboardScreen(
             ) {
                 // 页面标题
                 item {
-                    ImmersiveDashboardHeader(title = "进度")
+                    ImmersiveDashboardHeader(title = stringResource(R.string.stats_dashboard_title_screen))
                 }
 
                 // 学习摘要卡片（3页轮播）

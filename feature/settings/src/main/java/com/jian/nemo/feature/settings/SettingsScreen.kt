@@ -54,6 +54,7 @@ fun SettingsScreen(
     onNavigateToAiSettings: () -> Unit,
     onNavigateToCloudBackupHistory: () -> Unit,
     onNavigateToLiquidLab: () -> Unit,
+    onNavigateToCornerLab: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
@@ -144,7 +145,7 @@ fun SettingsScreen(
             ) {
                 // 大标题
                 item {
-                    ImmersiveSettingsHeader(title = "设置")
+                    ImmersiveSettingsHeader(title = stringResource(R.string.settings_title_screen))
                 }
 
                 // 账号与同步
@@ -171,8 +172,8 @@ fun SettingsScreen(
                                 plumpIcon = PlumpIcon.User,
                                 iconColor = NemoIndigo,
                                 plumpColor = IsoluminantPalette.SkyIndigo,
-                                title = "登录/注册",
-                                subtitle = "登录以体验完整功能",
+                                title = stringResource(R.string.settings_item_title_login),
+                                subtitle = stringResource(R.string.settings_item_subtitle_login),
                                 onClick = onNavigateToLogin,
                                 showDivider = true
                             )
@@ -183,8 +184,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.CloudUpload,
                             iconColor = NemoCyan,
                             plumpColor = IsoluminantPalette.LakesideCyan,
-                            title = "备份到云端",
-                            subtitle = "将当前进度安全保存在云端",
+                            title = stringResource(R.string.settings_item_title_backup),
+                            subtitle = stringResource(R.string.settings_item_subtitle_backup),
                             onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
                             showDivider = true
                         )
@@ -193,8 +194,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.CloudBackup,
                             iconColor = NemoPurple,
                             plumpColor = IsoluminantPalette.LilacViolet,
-                            title = "云端备份历史",
-                            subtitle = "查看或从云端恢复历史备份",
+                            title = stringResource(R.string.settings_item_title_backup_history),
+                            subtitle = stringResource(R.string.settings_item_subtitle_backup_history),
                             onClick = onNavigateToCloudBackupHistory,
                             showDivider = false
                         )
@@ -212,11 +213,11 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.ThemePalette,
                             iconColor = NemoPurple,
                             plumpColor = IsoluminantPalette.LilacViolet,
-                            title = "主题外观",
+                            title = stringResource(R.string.settings_theme_title_screen),
                             subtitle = when (uiState.darkMode) {
-                                DarkModeOption.LIGHT -> "浅色"
-                                DarkModeOption.DARK -> "深色"
-                                DarkModeOption.AUTO -> "自动"
+                                DarkModeOption.LIGHT -> stringResource(R.string.settings_theme_label_light)
+                                DarkModeOption.DARK -> stringResource(R.string.settings_theme_label_dark)
+                                DarkModeOption.AUTO -> stringResource(R.string.settings_theme_label_auto)
                             },
                             onClick = onNavigateToThemeSettings,
                             showDivider = false
@@ -234,14 +235,14 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.DailyGoalTarget,
                             iconColor = NemoOrange,
                             plumpColor = IsoluminantPalette.WarmAmber,
-                            title = "每日单词目标",
-                            subtitle = "设置每天要学习的单词数量",
+                            title = stringResource(R.string.settings_item_title_daily_word_goal),
+                            subtitle = stringResource(R.string.settings_item_subtitle_daily_word_goal),
                             onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(true)) },
                             showDivider = true,
                             trailing = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "${uiState.dailyGoal}个",
+                                        text = stringResource(R.string.settings_format_count_piece, uiState.dailyGoal),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 15.sp
                                     )
@@ -261,14 +262,14 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.GrammarLayers,
                             iconColor = NemoSecondary,
                             plumpColor = IsoluminantPalette.EmeraldGreen,
-                            title = "每日语法目标",
-                            subtitle = "设置每天要学习的语法数量",
+                            title = stringResource(R.string.settings_item_title_daily_grammar_goal),
+                            subtitle = stringResource(R.string.settings_item_subtitle_daily_grammar_goal),
                             onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
                             showDivider = true,
                             trailing = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "${uiState.grammarDailyGoal}条",
+                                        text = stringResource(R.string.settings_format_count_item, uiState.grammarDailyGoal),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 15.sp
                                     )
@@ -288,8 +289,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.StudyClock,
                             iconColor = NemoIndigo,
                             plumpColor = IsoluminantPalette.SkyIndigo,
-                            title = "学习日重置时间",
-                            subtitle = "零点跨天保护，过了此时间才算新的一天",
+                            title = stringResource(R.string.settings_item_title_day_reset),
+                            subtitle = stringResource(R.string.settings_item_subtitle_day_reset),
                             onClick = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(true)) },
                             showDivider = true,
                             trailing = {
@@ -315,8 +316,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.RandomShuffle,
                             iconColor = NemoPrimary,
                             plumpColor = IsoluminantPalette.EmeraldGreen,
-                            title = "新内容乱序抽取",
-                            subtitle = if (uiState.isRandomNewContentEnabled) "随机抽取新内容" else "按顺序抽取新内容",
+                            title = stringResource(R.string.settings_item_title_random_extract),
+                            subtitle = if (uiState.isRandomNewContentEnabled) stringResource(R.string.settings_item_subtitle_random_extract_on) else stringResource(R.string.settings_item_subtitle_random_extract_off),
                             onClick = { showRandomNewContentConfirmDialog = true },
                             showDivider = true,
                             trailing = {
@@ -333,8 +334,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.MemoryBrain,
                             iconColor = NemoPurple,
                             plumpColor = IsoluminantPalette.LilacViolet,
-                            title = "记忆算法配置",
-                            subtitle = "步进、提前复习与 Leech 策略",
+                            title = stringResource(R.string.settings_item_title_algorithm),
+                            subtitle = stringResource(R.string.settings_item_subtitle_algorithm),
                             onClick = onNavigateToAdvancedLearning,
                             showDivider = true,
                             trailing = {
@@ -352,8 +353,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.AiBot,
                             iconColor = NemoCyan,
                             plumpColor = IsoluminantPalette.LakesideCyan,
-                            title = "AI 工坊配置",
-                            subtitle = "设置 API Key 与 AI 模型",
+                            title = stringResource(R.string.settings_item_title_ai_workshop),
+                            subtitle = stringResource(R.string.settings_item_subtitle_ai_workshop),
                             onClick = onNavigateToAiSettings,
                             showDivider = false,
                             trailing = {
@@ -378,8 +379,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.AudioVolume,
                             iconColor = IosColors.Pink,
                             plumpColor = IsoluminantPalette.RoseRuby,
-                            title = "语音参数",
-                            subtitle = "调节语速和音调",
+                            title = stringResource(R.string.settings_item_title_tts),
+                            subtitle = stringResource(R.string.settings_item_subtitle_tts),
                             onClick = onNavigateToTtsSettings,
                             showDivider = false
                         )
@@ -396,8 +397,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.ExportDownload,
                             iconColor = NemoSecondary,
                             plumpColor = IsoluminantPalette.SeaMarine,
-                            title = "导出数据",
-                            subtitle = "导出本地数据文件",
+                            title = stringResource(R.string.settings_item_title_export),
+                            subtitle = stringResource(R.string.settings_item_subtitle_export),
                             onClick = {
                                 viewModel.onEvent(SettingsEvent.RequestExport)
                             },
@@ -408,8 +409,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.ImportUpload,
                             iconColor = NemoPrimary,
                             plumpColor = IsoluminantPalette.SeaMarine,
-                            title = "导入本地数据",
-                            subtitle = "从文件恢复进度",
+                            title = stringResource(R.string.settings_item_title_import),
+                            subtitle = stringResource(R.string.settings_item_subtitle_import),
                             onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
                             showDivider = true
                         )
@@ -419,8 +420,8 @@ fun SettingsScreen(
                             plumpIcon = PlumpIcon.ResetTrash,
                             iconColor = NemoDanger,
                             plumpColor = IsoluminantPalette.CoralFlame,
-                            title = "重置学习进度",
-                            subtitle = "清空所有数据 (慎用)",
+                            title = stringResource(R.string.settings_item_title_reset),
+                            subtitle = stringResource(R.string.settings_item_subtitle_reset),
                             onClick = {
                                 isResetting = false
                                 showConfirmDialog = true
@@ -442,9 +443,19 @@ fun SettingsScreen(
                                 plumpIcon = PlumpIcon.LiquidLab,
                                 iconColor = NemoCyan,
                                 plumpColor = IsoluminantPalette.LakesideCyan,
-                                title = "液态玻璃实验室",
-                                subtitle = "体验透镜折射与动态物理流体按钮",
+                                title = stringResource(R.string.settings_item_title_liquid_lab),
+                                subtitle = stringResource(R.string.settings_item_subtitle_liquid_lab),
                                 onClick = onNavigateToLiquidLab,
+                                showDivider = true
+                            )
+                            SquircleSettingItem(
+                                icon = Icons.Rounded.AutoAwesome,
+                                plumpIcon = PlumpIcon.IconStyle,
+                                iconColor = NemoPrimary,
+                                plumpColor = IsoluminantPalette.SkyIndigo,
+                                title = stringResource(R.string.settings_item_title_corner_lab),
+                                subtitle = stringResource(R.string.settings_item_subtitle_corner_lab),
+                                onClick = onNavigateToCornerLab,
                                 showDivider = false
                             )
                         }
@@ -461,11 +472,11 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Info,
-                            plumpIcon = PlumpIcon.LiquidLab,
+                            plumpIcon = PlumpIcon.AboutInfo,
                             iconColor = NemoPrimary,
                             plumpColor = IsoluminantPalette.OceanBlue,
-                            title = "关于 Nemo",
-                            subtitle = "版本 v$versionName • 更新检测与更新日志",
+                            title = stringResource(R.string.settings_about_title_screen),
+                            subtitle = stringResource(R.string.settings_format_about_subtitle, versionName),
                             onClick = onNavigateToAbout,
                             showDivider = false,
                             trailing = {
@@ -581,14 +592,14 @@ fun SettingsScreen(
         val willEnable = !uiState.isRandomNewContentEnabled
         NemoDialog(
             onDismissRequest = { showRandomNewContentConfirmDialog = false },
-            title = if (willEnable) "开启乱序抽取" else "关闭乱序抽取",
+            title = if (willEnable) stringResource(R.string.settings_dialog_title_random_on) else stringResource(R.string.settings_dialog_title_random_off),
             text = if (willEnable) {
-                "确定要开启新内容乱序抽取吗？开启后将随机抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。"
+                stringResource(R.string.settings_dialog_msg_random_on)
             } else {
-                "确定要关闭新内容乱序抽取吗？关闭后将按顺序抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。"
+                stringResource(R.string.settings_dialog_msg_random_off)
             },
-            confirmText = "确认",
-            dismissText = "取消",
+            confirmText = stringResource(R.string.settings_btn_confirm),
+            dismissText = stringResource(R.string.settings_btn_cancel),
             onConfirm = {
                 viewModel.onEvent(SettingsEvent.SetRandomNewContentEnabled(willEnable))
                 showRandomNewContentConfirmDialog = false

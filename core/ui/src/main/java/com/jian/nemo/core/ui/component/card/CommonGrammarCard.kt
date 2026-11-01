@@ -9,11 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.core.designsystem.theme.NemoDanger
 
 /**
  * 通用语法卡片组件
@@ -65,8 +68,8 @@ fun CommonGrammarCard(
             if (isFavorite) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "已收藏",
-                    tint = Color.Red,
+                    contentDescription = stringResource(R.string.core_ui_grammar_card_cd_favorited),
+                    tint = NemoDanger,
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }

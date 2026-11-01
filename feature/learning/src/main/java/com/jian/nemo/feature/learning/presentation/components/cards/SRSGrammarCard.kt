@@ -243,7 +243,7 @@ fun SRSGrammarCard(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Edit,
-                                    contentDescription = stringResource(R.string.btn_temp_whiteboard),
+                                    contentDescription = stringResource(R.string.learn_grammar_card_btn_whiteboard),
                                     tint = buttonTextColor,
                                     modifier = Modifier.size(15.dp)
                                 )
@@ -270,7 +270,7 @@ fun SRSGrammarCard(
                 // 思考提示（答案隐藏时）
                 if (!isAnswerShown) {
                     Text(
-                        text = stringResource(R.string.hint_think_grammar_usage),
+                        text = stringResource(R.string.learn_grammar_card_hint_think),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryTextColor.copy(alpha = 0.6f),
@@ -281,10 +281,10 @@ fun SRSGrammarCard(
 
             cardBadge?.let { badge ->
                 val (text, bgColor, textColor) = when (badge) {
-                    CardBadge.NEW -> Triple(stringResource(R.string.card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
-                    CardBadge.LEARNING -> Triple(stringResource(R.string.card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
-                    CardBadge.REVIEW -> Triple(stringResource(R.string.card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
-                    CardBadge.RELEARN -> Triple(stringResource(R.string.card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
+                    CardBadge.NEW -> Triple(stringResource(R.string.learn_grammar_card_badge_new), if (isDarkTheme) LearningPalette.BadgeNewBgDark else LearningPalette.BadgeNewBgLight, if (isDarkTheme) LearningPalette.BadgeNewTextDark else LearningPalette.BadgeNewTextLight)
+                    CardBadge.LEARNING -> Triple(stringResource(R.string.learn_grammar_card_badge_learning), if (isDarkTheme) LearningPalette.BadgeLearningBgDark else LearningPalette.BadgeLearningBgLight, if (isDarkTheme) LearningPalette.BadgeLearningTextDark else LearningPalette.BadgeLearningTextLight)
+                    CardBadge.REVIEW -> Triple(stringResource(R.string.learn_grammar_card_badge_review), if (isDarkTheme) LearningPalette.BadgeReviewBgDark else LearningPalette.BadgeReviewBgLight, if (isDarkTheme) LearningPalette.BadgeReviewTextDark else LearningPalette.BadgeReviewTextLight)
+                    CardBadge.RELEARN -> Triple(stringResource(R.string.learn_grammar_card_badge_relearn), if (isDarkTheme) LearningPalette.BadgeRelearnBgDark else LearningPalette.BadgeRelearnBgLight, if (isDarkTheme) LearningPalette.BadgeRelearnTextDark else LearningPalette.BadgeRelearnTextLight)
                 }
 
                 Box(
@@ -527,7 +527,7 @@ fun SRSGrammarCard(
                                 val chineseNumbers = listOf("一", "二", "三", "四", "五", "六", "七", "八", "九", "十")
                                 val label = chineseNumbers.getOrNull(usageIndex) ?: (usageIndex + 1).toString()
                                 Text(
-                                    text = stringResource(R.string.grammar_label_usage_prefix, label),
+                                    text = stringResource(R.string.learn_grammar_card_label_usage_prefix, label),
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Black,
                                     color = effectiveUsageText,
@@ -550,7 +550,7 @@ fun SRSGrammarCard(
                             // 展开状态图标
                             Icon(
                                 imageVector = Icons.Rounded.KeyboardArrowDown, // 始终使用向下箭头
-                                contentDescription = if (isExpanded) stringResource(R.string.action_collapse) else stringResource(R.string.action_expand),
+                                contentDescription = if (isExpanded) stringResource(R.string.learn_grammar_card_action_collapse) else stringResource(R.string.learn_grammar_card_action_expand),
                                 tint = secondaryTextColor.copy(alpha = 0.5f),
                                 modifier = Modifier
                                     .size(20.dp)
@@ -607,7 +607,7 @@ fun SRSGrammarCard(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = stringResource(R.string.grammar_label_connection),
+                                            text = stringResource(R.string.learn_grammar_card_label_connection),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = secondaryTextColor,
@@ -655,7 +655,7 @@ fun SRSGrammarCard(
                                     }
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = stringResource(R.string.grammar_label_explanation),
+                                        text = stringResource(R.string.learn_grammar_card_label_explanation),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = effectiveExplanationColor,
@@ -694,7 +694,7 @@ fun SRSGrammarCard(
                                         )
                                         Spacer(modifier = Modifier.width(10.dp))
                                         Text(
-                                            text = stringResource(R.string.label_word_example),
+                                            text = stringResource(R.string.learn_grammar_card_label_example),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = secondaryTextColor,
@@ -810,7 +810,7 @@ fun SRSGrammarCard(
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = stringResource(R.string.grammar_tips_prefix, usage.notes ?: ""),
+                                        text = stringResource(R.string.learn_grammar_card_tips_prefix, usage.notes ?: ""),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = effectiveTipsText,

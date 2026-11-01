@@ -32,6 +32,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -105,10 +107,10 @@ fun WrongWordsScreen(
     if (showDeleteDialog) {
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = "移出错题本",
-            text = "确定要将选中的 ${selectedWordIds.size} 个单词从错题本中移除吗？此操作不会删除单词本身，仅清除错题记录。",
-            confirmText = "确认移除",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_dialog_remove_mistake_title),
+            text = stringResource(R.string.collection_dialog_remove_words_format, selectedWordIds.size),
+            confirmText = stringResource(R.string.collection_btn_confirm_remove_mistake),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 viewModel.deleteWrongWords(selectedWordIds)
@@ -177,14 +179,14 @@ fun WrongWordsScreen(
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
-                                text = "暂无错词记录",
+                                text = stringResource(R.string.collection_empty_mistakes_words_title),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "太棒了！继续保持全对的状态。",
+                                text = stringResource(R.string.collection_empty_mistakes_words_desc),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -280,14 +282,14 @@ fun WrongWordsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
-                                contentDescription = "取消选择",
+                                contentDescription = stringResource(R.string.collection_cd_cancel_selection),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "已选择 ${selectedWordIds.size} 项",
+                            text = stringResource(R.string.collection_selected_items_format, selectedWordIds.size),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -302,7 +304,7 @@ fun WrongWordsScreen(
                             }
                         ) {
                             Text(
-                                text = if (isAllSelected) "取消全选" else "全选",
+                                text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = accentColor
@@ -321,7 +323,7 @@ fun WrongWordsScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Delete,
-                                contentDescription = "批量删除",
+                                contentDescription = stringResource(R.string.collection_cd_batch_delete),
                                 tint = deleteColor,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -329,7 +331,7 @@ fun WrongWordsScreen(
                     }
                 } else {
                     com.jian.nemo.core.ui.component.common.CommonHeader(
-                        title = "错误的单词",
+                        title = stringResource(R.string.collection_mistakes_words_title),
                         onBack = onNavigateBack,
                         backgroundColor = Color.Transparent,
                         backdrop = backdrop,

@@ -21,6 +21,12 @@ val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
 val NemoPink = Color(0xFFFF2D55)             // 规范粉红
 val NemoNeutralGray = Color(0xFF8E8E93)      // 中性灰基准 (Dynamic Color Spec 规范)
 
+// Streamline Plump Duo 官方原版双色标准
+val PlumpDuoStroke = Color(0xFF2859C5)
+val PlumpDuoStrokeDark = Color(0xFF0A84FF)
+val PlumpDuoFill = Color(0xFF8FBFFA)
+val PlumpDuoFillDark = Color(0x3D8FBFFA)
+
 // ColorScheme 容器与对应前景配色 (Light)
 val NemoPrimaryContainerLight = Color(0xFFE5F1FF)
 val NemoOnPrimaryContainerLight = Color(0xFF004CB3)
@@ -56,6 +62,27 @@ val StabilityMature = Color(0xFF22C55E)
 val StabilityExpert = Color(0xFF8B5CF6)
 val HeatmapSubtleTextDark = Color(0xFF8B949E)
 val HeatmapSubtleTextLight = Color(0xFF64748B)
+
+// 粒子特效调色板 (Konfetti 统一管理)
+val NemoKonfettiColors = listOf(
+    0xFFF59E0B.toInt(), // 暖金
+    0xFF8B5CF6.toInt(), // 浅紫
+    0xFFF43F5E.toInt(), // 蔷薇红
+    0xFFEC4899.toInt(), // 浅粉
+    0xFF3B82F6.toInt(), // 蔚蓝
+    0xFFF97316.toInt(), // 橙金
+    0xFF10B981.toInt()  // 翡翠青
+)
+
+/**
+ * 将 Compose Color 转换为十六进制颜色字符串 (#RRGGBB)
+ */
+fun Color.toHex(): String {
+    val r = (red * 255).toInt().coerceIn(0, 255)
+    val g = (green * 255).toInt().coerceIn(0, 255)
+    val b = (blue * 255).toInt().coerceIn(0, 255)
+    return String.format("#%02X%02X%02X", r, g, b)
+}
 
 
 // 测试结算页原始配色（集中管理）

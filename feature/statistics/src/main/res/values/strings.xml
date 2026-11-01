@@ -1,0 +1,211 @@
+<resources>
+    <!-- 进度与概览主页面 (ProgressDashboard & ProgressComponents) -->
+    <string name="stats_dashboard_title_screen">进度</string>
+    <string name="stats_dashboard_bento_title_daily_overview">日间概览</string>
+    <string name="stats_dashboard_bento_label_today_learned">今日已学</string>
+    <string name="stats_dashboard_bento_label_due_review">待复习</string>
+    <string name="stats_dashboard_bento_label_goal_rate">目标完成度</string>
+    <string name="stats_dashboard_bento_title_learning_track">学习轨迹</string>
+    <string name="stats_dashboard_bento_label_streak">连续学习</string>
+    <string name="stats_dashboard_bento_label_mastered">累计掌握</string>
+    <string name="stats_dashboard_bento_label_unmastered">待学习</string>
+    <string name="stats_dashboard_bento_title_growth_overview">成长总览</string>
+    <string name="stats_dashboard_bento_label_total_progress">总进度</string>
+    <string name="stats_dashboard_bento_label_total_days">累计学习</string>
+    <string name="stats_dashboard_bento_label_week_days">本周学习</string>
+    <string name="stats_dashboard_unit_items">项</string>
+    <string name="stats_dashboard_unit_days">天</string>
+    <string name="stats_dashboard_unit_percent">%</string>
+
+    <string name="stats_dashboard_section_stats_analysis">统计与分析</string>
+    <string name="stats_dashboard_item_today_stats_title">今日统计</string>
+    <string name="stats_dashboard_item_today_stats_desc">查看今日详细的学习统计</string>
+    <string name="stats_dashboard_item_history_stats_title">历史统计</string>
+    <string name="stats_dashboard_item_history_stats_desc">查看所有详细的学习统计</string>
+    <string name="stats_dashboard_item_curve_title">遗忘曲线</string>
+    <string name="stats_dashboard_item_curve_desc">记忆衰减可视化分析</string>
+    <string name="stats_dashboard_item_calendar_title">学习日历</string>
+    <string name="stats_dashboard_item_calendar_desc">查看学习计划与记录</string>
+
+    <string name="stats_dashboard_section_materials_lexicon">资料与词库</string>
+    <string name="stats_dashboard_item_word_list_title">单词列表</string>
+    <string name="stats_dashboard_item_word_list_desc">词汇库管理</string>
+    <string name="stats_dashboard_item_grammar_list_title">语法列表</string>
+    <string name="stats_dashboard_item_grammar_list_desc">语法知识库</string>
+    <string name="stats_dashboard_item_category_vocab_title">专项词汇</string>
+    <string name="stats_dashboard_item_category_vocab_desc">按分类查看词汇</string>
+    <string name="stats_dashboard_item_authentic_title">地道表达</string>
+    <string name="stats_dashboard_item_authentic_desc">日语惯用句与常用搭配库</string>
+
+    <string name="stats_dashboard_section_reinforce_breakthrough">强化与突破</string>
+    <string name="stats_dashboard_item_practice_title">专项训练</string>
+    <string name="stats_dashboard_item_practice_desc">针对性强化练习</string>
+    <string name="stats_dashboard_item_leech_title">复学清单</string>
+    <string name="stats_dashboard_item_leech_desc">难点项召回与复习</string>
+
+    <!-- 复学清单 (LeechManagementScreen) -->
+    <string name="stats_leech_title_screen">复学清单</string>
+    <string name="stats_leech_tab_words">单词</string>
+    <string name="stats_leech_tab_grammars">语法</string>
+    <string name="stats_leech_tab_count_format">%1$s (%2$d)</string>
+    <string name="stats_leech_btn_recover">恢复</string>
+    <string name="stats_leech_empty_words_title">暂无待复学单词</string>
+    <string name="stats_leech_empty_words_desc">当前没有被冻结的难点单词，继续保持哦</string>
+    <string name="stats_leech_empty_grammars_title">暂无待复学语法</string>
+    <string name="stats_leech_empty_grammars_desc">当前没有被冻结的难点语法，继续保持哦</string>
+
+    <!-- 遗忘曲线 (ForgettingCurveScreen & ForgettingCurveChart) -->
+    <string name="stats_curve_title_screen">遗忘曲线</string>
+    <string name="stats_curve_legend_stage_curve_format">%1$s遗忘曲线</string>
+    <string name="stats_curve_legend_ebbinghaus">艾宾浩斯遗忘曲线 (标准参考)</string>
+    <string name="stats_curve_legend_adaptive_alert_format">自适应警戒线 (%1$d%%)</string>
+    <string name="stats_curve_alert_critical_badge_format">%1$d%%临界: %2$d天</string>
+    <string name="stats_curve_status_stable">表现平稳</string>
+    <string name="stats_curve_status_high_load">负荷偏高</string>
+    <string name="stats_curve_status_monitoring">强化监控</string>
+    <string name="stats_curve_status_solid">掌握扎实</string>
+    <string name="stats_curve_status_light_maintenance">轻量维护</string>
+    <string name="stats_curve_status_adaptive_tuning">自适应微调</string>
+    <string name="stats_curve_status_sample_insufficient">样本不足(需≥10条)</string>
+    <string name="stats_curve_diagnosis_retention_format">目标保留率: %1$d%%  |  实际回忆率: %2$d%%</string>
+    <string name="stats_curve_diagnosis_collecting_format">目标保留率: %1$d%%  |  实际回忆率: 采集中</string>
+    <string name="stats_curve_empty_tip">学习的时间越久，你的遗忘曲线统计将越精准。</string>
+    <string name="stats_curve_range_days_format">%1$d天</string>
+    <string name="stats_curve_chart_threshold_line_format">%1$d%% 警戒线</string>
+    <string name="stats_curve_tooltip_day_format">第 %1$d 天</string>
+    <string name="stats_curve_tooltip_retention_format">%1$s留存: %2$d%%</string>
+    <string name="stats_curve_tooltip_std_format">标准参考: %1$d%%</string>
+    <string name="stats_curve_tooltip_alert_format">动态警戒: %1$d%%</string>
+    <string name="stats_curve_axis_day_today">今\n天</string>
+    <string name="stats_curve_axis_day_tomorrow">明\n天</string>
+    <string name="stats_curve_axis_day_day_after">后\n天</string>
+    <string name="stats_curve_axis_day_after_format">%1$d\n天\n后</string>
+    <string name="stats_curve_axis_day_format">%1$d天</string>
+
+    <!-- 活动三环组件 (ActivityRingsComponent) -->
+    <string name="stats_rings_label_new_words">新学单词</string>
+    <string name="stats_rings_unit_words"> 个</string>
+    <string name="stats_rings_label_new_grammars">新学语法</string>
+    <string name="stats_rings_unit_grammars"> 条</string>
+    <string name="stats_rings_label_review">复习达成</string>
+    <string name="stats_rings_unit_review"> 次</string>
+    <string name="stats_rings_title_activity_progress">活动进度</string>
+    <string name="stats_rings_date_today_format">今天 · %1$d月%2$d日</string>
+    <string name="stats_rings_date_format">%1$d月%2$d日</string>
+    <string name="stats_rings_cd_prev_month">上一月</string>
+    <string name="stats_rings_cd_next_month">下一月</string>
+    <string name="stats_rings_month_year_format">%1$d年 %2$d月</string>
+    <string name="stats_rings_period_week">本周</string>
+    <string name="stats_rings_period_month">本月</string>
+    <string name="stats_rings_summary_closed_days_format">%1$s三环全合上天数：%2$d 天</string>
+
+    <!-- 学习日历页面 (LearningCalendarScreen) -->
+    <string name="stats_calendar_title_screen">学习日历</string>
+    <string name="stats_calendar_mode_month">月视图</string>
+    <string name="stats_calendar_mode_week">周视图</string>
+    <string name="stats_calendar_section_month_rings">月度活动日历</string>
+    <string name="stats_calendar_section_week_rings">周进度与目标</string>
+    <string name="stats_calendar_section_details">详细记录</string>
+    <string name="stats_calendar_label_due_review">待复习</string>
+    <string name="stats_calendar_label_completed">已完成</string>
+    <string name="stats_calendar_detail_due_words">待复习单词</string>
+    <string name="stats_calendar_detail_due_grammars">待复习语法</string>
+    <string name="stats_calendar_detail_reviewed_words_today">今日已复习单词</string>
+    <string name="stats_calendar_detail_reviewed_grammars_today">今日已复习语法</string>
+    <string name="stats_calendar_detail_learned_words_today">今日新学单词</string>
+    <string name="stats_calendar_detail_learned_grammars_today">今日新学语法</string>
+    <string name="stats_calendar_detail_forecast_words">预计复习单词</string>
+    <string name="stats_calendar_detail_forecast_grammars">预计复习语法</string>
+    <string name="stats_calendar_detail_learned_words">已学单词</string>
+    <string name="stats_calendar_detail_learned_grammars">已学语法</string>
+    <string name="stats_calendar_detail_reviewed_words">已复习单词</string>
+    <string name="stats_calendar_detail_reviewed_grammars">已复习语法</string>
+    <string name="stats_calendar_unit_word">个</string>
+    <string name="stats_calendar_unit_grammar">条</string>
+    <string name="stats_calendar_empty_detail_desc">该日暂无详细记录</string>
+    <string name="stats_calendar_weekday_mon">一</string>
+    <string name="stats_calendar_weekday_tue">二</string>
+    <string name="stats_calendar_weekday_wed">三</string>
+    <string name="stats_calendar_weekday_thu">四</string>
+    <string name="stats_calendar_weekday_fri">五</string>
+    <string name="stats_calendar_weekday_sat">六</string>
+    <string name="stats_calendar_weekday_sun">日</string>
+
+    <!-- 今日统计页面 (StatisticsScreen) -->
+    <string name="stats_screen_title_screen">今日统计</string>
+    <string name="stats_screen_words_count_format">单词 (%1$d)</string>
+    <string name="stats_screen_grammars_count_format">语法 (%1$d)</string>
+    <string name="stats_screen_badge_learned">新学</string>
+    <string name="stats_screen_badge_reviewed">复习</string>
+    <string name="stats_screen_empty_words_message">该日期没有学习任何单词</string>
+    <string name="stats_screen_empty_words_subtitle">完成新学或复习后会在此展示</string>
+    <string name="stats_screen_empty_grammars_message">该日期没有学习任何语法</string>
+    <string name="stats_screen_empty_grammars_subtitle">完成语法学习后会在此展示</string>
+    <string name="stats_screen_btn_collapse">收起</string>
+    <string name="stats_screen_btn_expand_format">展开查看更多 (剩余 %1$d 项)</string>
+    <string name="stats_screen_stat_new_words">今日新学 (词)</string>
+    <string name="stats_screen_stat_review_words">今日复习 (词)</string>
+    <string name="stats_screen_stat_new_grammars">今日新学 (语法)</string>
+    <string name="stats_screen_stat_review_grammars">今日复习 (语法)</string>
+
+    <!-- 热力图与历史统计补充 -->
+    <string name="stats_heatmap_banner_subtitle">每一天都在进步，保持连胜！</string>
+    <string name="stats_heatmap_title_screen">学习热力图</string>
+    <string name="stats_heatmap_cd_share">分享</string>
+    <string name="stats_heatmap_label_current_streak">当前坚持</string>
+    <string name="stats_heatmap_label_active_days">累计活跃</string>
+    <string name="stats_heatmap_label_best_day">单日最佳</string>
+    <string name="stats_heatmap_label_daily_avg">日均学习</string>
+    <string name="stats_heatmap_title_panorama">全库记忆全景</string>
+
+    <string name="stats_historical_title_screen">历史统计</string>
+    <string name="stats_historical_title_word_dist">单词等级分布</string>
+    <string name="stats_historical_title_grammar_dist">语法等级分布</string>
+    <string name="stats_historical_label_word_total">单词总数</string>
+    <string name="stats_historical_label_grammar_total">语法总数</string>
+
+    <string name="stats_curve_title_fragile">极速遗忘预警 · 脆弱初识期</string>
+    <string name="stats_curve_msg_fragile">初识词群预计将在 %1$d 天后跌破 %2$d%% 记忆安全阈值。海马体印记脆弱，需重点及时复习。</string>
+    <string name="stats_curve_title_consolidation">稳步爬坡期 · 黄金巩固窗口</string>
+    <string name="stats_curve_msg_consolidation">发展期词汇约在 %1$d 天后进入遗忘加速区间（低于 %2$d%% 阈值）。建议按时完成常规复习，避免知识回生。</string>
+    <string name="stats_curve_title_solid">稳固长时记忆 · 坚实知识屏障</string>
+    <string name="stats_curve_msg_solid">该群组词汇已进入长期突触储存，未来 %1$d 天内仍可稳定保持 %2$d%% 以上高回忆率。</string>
+    <string name="stats_curve_title_permanent">永久直觉印记 · 接近母语级</string>
+    <string name="stats_curve_msg_permanent">长效知识已高度固化，预计维持 %1$d%% 以上留存率长达 %2$d 天，无需频繁打扰。</string>
+    <string name="stats_curve_title_deduction">全库综合推演 · 整体记忆态</string>
+    <string name="stats_curve_msg_deduction">当前全库中位数记忆保持在 %1$d%% 警戒线以上的窗口约为 %2$d 天，整体抗遗忘表现健康平稳。</string>
+
+    <string name="stats_share_title_achievement">分享学习成就</string>
+    <string name="stats_share_btn_save_image">保存图片</string>
+    <string name="stats_share_toast_failed">分享失败</string>
+    <string name="stats_share_btn_share_friend">分享给好友</string>
+
+    <string name="stats_poster_text_streak_days">天连续学习</string>
+    <string name="stats_poster_text_top_percent">超越 96%% 同行者 · 最长连胜 %1$d 天</string>
+    <string name="stats_poster_text_report_today">今日战报</string>
+    <string name="stats_poster_text_items_done">项完成</string>
+    <string name="stats_poster_text_achieved">已达标</string>
+    <string name="stats_poster_label_retention">记忆留存</string>
+    <string name="stats_poster_quote">“每一步积累都算数 · 见证每日蜕变”</string>
+    <string name="stats_poster_footer_engine">由 Nemo 科学记忆引擎驱动生成</string>
+    <string name="stats_poster_heatmap_title">近 12 周学习足迹热力</string>
+    <string name="stats_poster_flame_continuous">🔥 持续点亮</string>
+
+    <string name="stats_breakdown_label_mastery_ratio">整体掌握比: %1$d / %2$d</string>
+    <string name="stats_breakdown_label_learned_ratio">已学 %1$d / %2$d</string>
+    <string name="stats_breakdown_achieved_default">已达成</string>
+    <string name="stats_breakdown_format_achieve_record">达成记录：%1$s</string>
+    <string name="stats_breakdown_badge_locking">固定中</string>
+    <string name="stats_breakdown_badge_locked">固定</string>
+    <string name="stats_breakdown_format_predict_finish">预计学完：%1$s</string>
+    <string name="stats_breakdown_format_remaining_days">约需 %1$d 天 (余 %2$d%3$s)</string>
+    <string name="stats_breakdown_format_daily_goal_deduction">按每日 %1$d%2$s 目标推算</string>
+    <string name="stats_breakdown_format_approx_days">约%1$d天</string>
+    <string name="stats_breakdown_label_total_mastered">已掌握总计</string>
+    <string name="stats_heatmap_card_review_format">%1$s · %2$d 次复习</string>
+    <string name="stats_heatmap_card_active_total_format">累计活跃 %1$d 天 · 共 %2$d 次</string>
+<!-- 等级完成度弹窗 (LevelBreakdownDialog) -->
+    <string name="stats_breakdown_unit_word_default">词</string>
+    <string name="stats_breakdown_all_completed">全等级已圆满达成</string>
+    <string name="stats_breakdown_prediction_format">通关预计：%1$s</string>
+</resources>

@@ -1,6 +1,6 @@
 ---
 name: database-schema-designer
-description: Design robust, scalable database schemas for SQL and NoSQL databases. Provides normalization guidelines, indexing strategies, migration patterns, constraint design, and performance optimization. Ensures data integrity, query performance, and maintainable data models. 及时上网搜索学习新技术和方法。
+description: "健壮数据库模型设计。涵盖范式化平衡、索引优化策略、外键约束设计及无损数据迁移方案。"
 version: 2.0.0
 license: MIT
 ---

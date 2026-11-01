@@ -18,6 +18,8 @@ import com.jian.nemo.feature.test.components.UnifiedTestScreen
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.test.components.TestHeaderCenterContent
 import com.jian.nemo.feature.test.components.TestHeaderActions
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 
 /**
  * 选择题界面
@@ -100,7 +102,7 @@ fun MultipleChoiceQuestionPage(viewModel: TestViewModel) {
                 },
                 isAnswered = currentQuestion.isAnswered,
                 isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
-                submitText = "提交",
+                submitText = stringResource(R.string.test_footer_btn_submit),
                 isAutoAdvancing = uiState.isAutoAdvancing
             )
         }

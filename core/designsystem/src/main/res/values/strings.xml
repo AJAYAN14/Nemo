@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stepper 步进器无障碍描述 -->
+    <string name="core_ui_stepper_cd_decrease">减少</string>
+    <string name="core_ui_stepper_cd_increase">增加</string>
+</resources>

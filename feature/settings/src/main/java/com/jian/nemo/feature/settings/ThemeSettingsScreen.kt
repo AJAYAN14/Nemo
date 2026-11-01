@@ -129,7 +129,7 @@ fun ThemeSettingsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SettingsSectionTitle(
-                    text = "显示模式",
+                    text = stringResource(R.string.settings_theme_title_display_mode),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
                 PremiumCard {
@@ -172,13 +172,13 @@ fun ThemeSettingsScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "自动",
+                                    text = stringResource(R.string.settings_theme_label_auto),
                                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "根据设置在浅色与深色外观间自动切换",
+                                    text = stringResource(R.string.settings_theme_desc_auto_switch),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -211,19 +211,19 @@ fun ThemeSettingsScreen(
                     Column {
                         Spacer(modifier = Modifier.height(20.dp))
                         SettingsSectionTitle(
-                            text = "自动切换模式",
+                            text = stringResource(R.string.settings_theme_title_auto_switch_mode),
                             modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                         )
                         PremiumCard {
                             StrategyOptionItem(
-                                title = "跟随系统",
-                                subtitle = "根据系统设置自动切换深浅色主题",
+                                title = stringResource(R.string.settings_theme_title_follow_system),
+                                subtitle = stringResource(R.string.settings_theme_subtitle_follow_system),
                                 isSelected = uiState.darkModeStrategy == DarkModeStrategy.FOLLOW_SYSTEM,
                                 onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.FOLLOW_SYSTEM)) }
                             )
                             StrategyOptionItem(
-                                title = "定时深色模式",
-                                subtitle = "在指定时间段开启深色模式",
+                                title = stringResource(R.string.settings_theme_title_scheduled),
+                                subtitle = stringResource(R.string.settings_theme_subtitle_scheduled),
                                 isSelected = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
                                 showDivider = false,
                                 onClick = { viewModel.onEvent(SettingsEvent.SetDarkModeStrategy(DarkModeStrategy.SCHEDULED)) }
@@ -238,7 +238,7 @@ fun ThemeSettingsScreen(
                             Column {
                                 Spacer(modifier = Modifier.height(20.dp))
                                 SettingsSectionTitle(
-                                    text = "深色模式定时",
+                                    text = stringResource(R.string.settings_theme_section_scheduled_time),
                                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                                 )
                                 PremiumCard {
@@ -305,10 +305,10 @@ fun ThemeSettingsScreen(
                         plumpIcon = PlumpIcon.IconStyle,
                         iconColor = NemoIndigo,
                         plumpColor = IsoluminantPalette.SkyIndigo,
-                        title = "图标风格",
+                        title = stringResource(R.string.settings_theme_title_icon_style),
                         subtitle = when (uiState.settingIconStyle) {
-                            SettingIconStyle.MD3 -> "Material Design 3 (圆角卡片)"
-                            SettingIconStyle.PLUMP_DUO -> "Plump Duo (双色通透)"
+                            SettingIconStyle.MD3 -> stringResource(R.string.settings_theme_icon_style_md3)
+                            SettingIconStyle.PLUMP_DUO -> stringResource(R.string.settings_theme_icon_style_plump_duo)
                         },
                         onClick = { showIconStyleDialog = true },
                         showDivider = false
@@ -318,7 +318,7 @@ fun ThemeSettingsScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 SettingsSectionTitle(
-                    text = "桌面图标",
+                    text = stringResource(R.string.settings_theme_section_app_icon),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
                 PremiumCard {
@@ -352,7 +352,7 @@ fun ThemeSettingsScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "主题外观",
+                title = stringResource(R.string.settings_theme_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -389,16 +389,16 @@ fun ThemeSettingsScreen(
         val targetStyle = pendingAppIconStyle!!
         NemoDialog(
             onDismissRequest = { pendingAppIconStyle = null },
-            title = "更换桌面图标",
-            confirmText = "确认更换",
-            dismissText = "取消",
+            title = stringResource(R.string.settings_theme_dialog_title_change_app_icon),
+            confirmText = stringResource(R.string.settings_theme_btn_confirm_change),
+            dismissText = stringResource(R.string.settings_btn_cancel),
             onConfirm = {
                 pendingAppIconStyle = null
                 viewModel.onEvent(SettingsEvent.SetAppIconStyle(targetStyle))
             },
             content = {
                 Text(
-                    text = "更换桌面图标需要刷新系统快捷方式，应用将自动返回手机桌面以完成生效。\n\n是否确认更换？",
+                    text = stringResource(R.string.settings_theme_dialog_msg_change_app_icon),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 22.sp
@@ -412,8 +412,8 @@ fun ThemeSettingsScreen(
             currentColor = uiState.themeColor,
             onDismiss = { showThemeColorDialog = false },
             onColorSelect = { color ->
-                // 默认蓝 0xFF0E68FF 传 null 以恢复默认
-                val defaultBlue = 0xFF0E68FF.toULong()
+                // 默认主题蓝传 null 以恢复默认
+                val defaultBlue = UserPalette.PrimaryGlassTintLight.value
                 val colorArgb = if (color.value == defaultBlue) null else color.value.toLong()
                 viewModel.onEvent(SettingsEvent.SetThemeColor(colorArgb))
                 showThemeColorDialog = false
@@ -458,14 +458,14 @@ private fun ThemeSelectionGrid(
     ) {
         ThemeOption(
             mode = DarkModeOption.LIGHT,
-            label = "浅色",
+            label = stringResource(R.string.settings_theme_label_light),
             isSelected = selectedMode == DarkModeOption.LIGHT,
             onClick = { onModeSelected(DarkModeOption.LIGHT) },
             modifier = Modifier.weight(1f)
         )
         ThemeOption(
             mode = DarkModeOption.DARK,
-            label = "深色",
+            label = stringResource(R.string.settings_theme_label_dark),
             isSelected = selectedMode == DarkModeOption.DARK,
             onClick = { onModeSelected(DarkModeOption.DARK) },
             modifier = Modifier.weight(1f)
@@ -714,9 +714,9 @@ private fun IconStyleSelectionDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "选择图标风格",
-        confirmText = "确定",
-        dismissText = "取消",
+        title = stringResource(R.string.settings_theme_dialog_title_select_icon_style),
+        confirmText = stringResource(R.string.settings_btn_confirm),
+        dismissText = stringResource(R.string.settings_btn_cancel),
         onConfirm = { onStyleSelect(selectedStyle) },
         content = {
             Column(
@@ -724,14 +724,14 @@ private fun IconStyleSelectionDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 IconStyleOptionRow(
-                    title = "Material Design 3",
-                    description = "经典圆角彩色背景底框，单色聚焦图标",
+                    title = stringResource(R.string.settings_theme_icon_style_md3_short),
+                    description = stringResource(R.string.settings_theme_icon_style_desc_md3),
                     isSelected = selectedStyle == SettingIconStyle.MD3,
                     onClick = { selectedStyle = SettingIconStyle.MD3 }
                 )
                 IconStyleOptionRow(
-                    title = "Plump Duo",
-                    description = "现代无背景通透设计，双色线面与等亮度调色板",
+                    title = stringResource(R.string.settings_theme_icon_style_plump_duo_short),
+                    description = stringResource(R.string.settings_theme_icon_style_desc_plump_duo),
                     isSelected = selectedStyle == SettingIconStyle.PLUMP_DUO,
                     onClick = { selectedStyle = SettingIconStyle.PLUMP_DUO }
                 )
@@ -892,13 +892,13 @@ private fun ThemeSelectionCardLightPreview() {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "自动",
+                                text = stringResource(R.string.settings_theme_label_auto),
                                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "根据设置在浅色与深色外观间自动切换",
+                                text = stringResource(R.string.settings_theme_desc_auto_switch),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

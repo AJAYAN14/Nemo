@@ -9,6 +9,8 @@ import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import com.jian.nemo.core.designsystem.icon.PlumpIcon
@@ -62,12 +64,12 @@ fun CollectionActionMenu(
         expanded = expanded,
         onExpandedChange = setExpanded,
         icon = Icons.Default.MoreVert,
-        contentDescription = "更多选项",
+        contentDescription = stringResource(R.string.collection_cd_more_options),
         backdrop = backdrop,
         buttonSize = 48.dp
     ) {
         NemoMorphMenuItem(
-            text = "清除所有${titleSuffix}",
+            text = stringResource(R.string.collection_menu_clear_all_format, titleSuffix),
             leadingIcon = Icons.Rounded.DeleteSweep,
             plumpIcon = PlumpIcon.ResetTrash,
             iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
@@ -84,7 +86,7 @@ fun CollectionActionMenu(
         )
 
         NemoMorphMenuItem(
-            text = "清除单词${titleSuffix}",
+            text = stringResource(R.string.collection_menu_clear_words_format, titleSuffix),
             leadingIcon = Icons.Rounded.Delete,
             plumpIcon = PlumpIcon.SpellCheck,
             iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
@@ -96,7 +98,7 @@ fun CollectionActionMenu(
         )
 
         NemoMorphMenuItem(
-            text = "清除语法${titleSuffix}",
+            text = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix),
             leadingIcon = Icons.Rounded.FolderDelete,
             plumpIcon = PlumpIcon.GrammarLayers,
             iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
@@ -112,10 +114,10 @@ fun CollectionActionMenu(
     if (showClearAllDialog) {
         com.jian.nemo.core.ui.component.NemoDialog(
             onDismissRequest = { showClearAllDialog = false },
-            title = "清除所有${titleSuffix}",
-            text = "确定要清除所有${titleSuffix}吗？此操作无法撤销，所有记录将永久删除。",
-            confirmText = "清除全部",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_menu_clear_all_format, titleSuffix),
+            text = stringResource(R.string.collection_dialog_msg_clear_all_format, titleSuffix),
+            confirmText = stringResource(R.string.collection_btn_clear_all),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 onClearAll()
@@ -127,10 +129,10 @@ fun CollectionActionMenu(
     if (showClearWordsDialog) {
         com.jian.nemo.core.ui.component.NemoDialog(
             onDismissRequest = { showClearWordsDialog = false },
-            title = "清除单词${titleSuffix}",
-            text = "确定要清除所有单词${titleSuffix}吗？此操作无法撤销。",
-            confirmText = "清除",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_menu_clear_words_format, titleSuffix),
+            text = stringResource(R.string.collection_dialog_msg_clear_words_format, titleSuffix),
+            confirmText = stringResource(R.string.collection_btn_clear),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 onClearWords()
@@ -142,10 +144,10 @@ fun CollectionActionMenu(
     if (showClearGrammarsDialog) {
         com.jian.nemo.core.ui.component.NemoDialog(
             onDismissRequest = { showClearGrammarsDialog = false },
-            title = "清除语法${titleSuffix}",
-            text = "确定要清除所有语法${titleSuffix}吗？此操作无法撤销。",
-            confirmText = "清除",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix),
+            text = stringResource(R.string.collection_dialog_msg_clear_grammars_format, titleSuffix),
+            confirmText = stringResource(R.string.collection_btn_clear),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 onClearGrammars()

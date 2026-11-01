@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -84,7 +86,7 @@ fun LearningCalendarScreen(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "学习日历",
+                title = stringResource(R.string.stats_calendar_title_screen),
                 onBack = onNavigateBack,
                 backdrop = backdrop,
                 actions = {
@@ -268,7 +270,7 @@ fun TodaySummaryCard(
             // 新学单词
             StatItem(
                 value = stats.todayLearnedWords.toString(),
-                label = "新学单词",
+                label = stringResource(R.string.stats_rings_label_new_words),
                 color = NemoPrimary,
                 modifier = Modifier.weight(1f)
             )
@@ -276,7 +278,7 @@ fun TodaySummaryCard(
             // 新学语法
             StatItem(
                 value = stats.todayLearnedGrammars.toString(),
-                label = "新学语法",
+                label = stringResource(R.string.stats_rings_label_new_grammars),
                 color = NemoSecondary,
                 modifier = Modifier.weight(1f)
             )
@@ -291,7 +293,7 @@ fun TodaySummaryCard(
             // 待复习
             StatItem(
                 value = (stats.dueWords + stats.dueGrammars).toString(),
-                label = "待复习",
+                label = stringResource(R.string.stats_calendar_label_due_review),
                 color = NemoOrange, // Orange equivalent
                 modifier = Modifier.weight(1f)
             )
@@ -301,7 +303,7 @@ fun TodaySummaryCard(
                            stats.todayReviewedWords + stats.todayReviewedGrammars
             StatItem(
                 value = completed.toString(),
-                label = "已完成",
+                label = stringResource(R.string.stats_calendar_label_completed),
                 color = NemoIndigo, // Indigo equivalent
                 modifier = Modifier.weight(1f)
             )
@@ -544,13 +546,13 @@ fun MonthViewContent(
             }) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowLeft,
-                    contentDescription = "上一月",
+                    contentDescription = stringResource(R.string.stats_rings_cd_prev_month),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Text(
-                text = "${displayedCal.get(Calendar.YEAR)}年 ${displayedCal.get(Calendar.MONTH) + 1}月",
+                text = stringResource(R.string.stats_rings_month_year_format, displayedCal.get(Calendar.YEAR), displayedCal.get(Calendar.MONTH) + 1),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -566,7 +568,7 @@ fun MonthViewContent(
             }) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowRight,
-                    contentDescription = "下一月",
+                    contentDescription = stringResource(R.string.stats_rings_cd_next_month),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -949,7 +951,7 @@ fun DayDetailPanel(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "该日暂无详细记录",
+                            text = stringResource(R.string.stats_calendar_empty_detail_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)

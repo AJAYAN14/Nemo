@@ -69,6 +69,8 @@ import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.settings.R
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
@@ -176,14 +178,14 @@ fun AISettingsScreen(
                                     Spacer(modifier = Modifier.width(16.dp))
                                     Column {
                                         Text(
-                                            text = "AI 智能工坊",
+                                            text = stringResource(R.string.settings_ai_title_workshop),
                                             style = MaterialTheme.typography.titleMedium,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "配置专属密钥，解锁AI单词智能解析、实时翻译与发音评估等强大功能。",
+                                            text = stringResource(R.string.settings_ai_desc_workshop),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -193,7 +195,7 @@ fun AISettingsScreen(
                         }
 
                         item {
-                            SettingsSectionTitle(text = "配置列表")
+                            SettingsSectionTitle(text = stringResource(R.string.settings_ai_section_config_list))
                         }
                         items(uiState.configs, key = { it.id }) { config ->
                             val isActive = uiState.activeConfigId == config.id
@@ -234,7 +236,7 @@ fun AISettingsScreen(
                 .padding(bottom = 16.dp)
         ) {
             CommonHeader(
-                title = "AI 模型配置",
+                title = stringResource(R.string.settings_ai_title_screen),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -250,7 +252,7 @@ fun AISettingsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Add,
-                            contentDescription = "新建配置",
+                            contentDescription = stringResource(R.string.settings_ai_cd_new_config),
                             tint = if (isDark) AIPalette.StudioInputContainerLight else UserPalette.TextSlate900,
                             modifier = Modifier.size(30.dp)
                         )
@@ -289,7 +291,7 @@ fun AISettingsScreen(
         uiState.testResult?.let { result ->
             NemoSnackbar(
                 visible = true,
-                message = if (result.success) "API 连接正常，测试成功" else result.message,
+                message = if (result.success) stringResource(R.string.settings_ai_msg_test_success) else result.message,
                 type = if (result.success) NemoSnackbarType.SUCCESS else NemoSnackbarType.ERROR,
                 icon = if (result.success) Icons.Rounded.TaskAlt else Icons.Rounded.ErrorOutline,
                 onDismiss = { viewModel.onEvent(AISettingsEvent.ClearTestResult) },
@@ -303,10 +305,10 @@ fun AISettingsScreen(
         configToDelete?.let { config ->
             NemoDialog(
                 onDismissRequest = { configToDelete = null },
-                title = "确认删除此配置？",
-                text = "您确认要删除 AI 配置 \"${config.name}\" 吗？删除后该配置的密钥和代理信息将永久丢失，且无法恢复。",
-                confirmText = "确认删除",
-                dismissText = "取消",
+                title = stringResource(R.string.settings_ai_dialog_title_delete),
+                text = stringResource(R.string.settings_ai_dialog_msg_delete, config.name),
+                confirmText = stringResource(R.string.settings_ai_dialog_btn_confirm_delete),
+                dismissText = stringResource(R.string.settings_btn_cancel),
                 isDangerous = true,
                 onConfirm = {
                     viewModel.onEvent(AISettingsEvent.DeleteConfig(config.id))
@@ -369,7 +371,7 @@ fun SwipeableActionTile(
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.DeleteOutline,
-                        contentDescription = "删除配置",
+                        contentDescription = stringResource(R.string.settings_ai_cd_delete_config),
                         tint = Color.White,
                         modifier = Modifier.size(22.dp)
                     )
@@ -459,15 +461,15 @@ fun AIConfigCard(
     
     val platformName = when (config.platform) {
         "deepseek" -> "DeepSeek"
-        "doubao" -> "豆包"
-        "glm" -> "智谱 GLM"
+        "doubao" -> stringResource(R.string.settings_ai_platform_doubao)
+        "glm" -> stringResource(R.string.settings_ai_platform_glm)
         "kimi" -> "Kimi"
         "mimo" -> "Mimo"
-        "qwen" -> "通义千问"
+        "qwen" -> stringResource(R.string.settings_ai_platform_qwen)
         "claude" -> "Claude"
         "openai" -> "OpenAI"
         "gemini" -> "Gemini"
-        else -> "自定义平台"
+        else -> stringResource(R.string.settings_ai_platform_custom)
     }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -590,7 +592,7 @@ fun AIConfigCard(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "当前启用",
+                                text = stringResource(R.string.settings_ai_badge_active),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontSize = 9.sp,
@@ -636,7 +638,7 @@ fun AIConfigCard(
                     } else {
                         Icon(
                             imageVector = Icons.Rounded.Speed,
-                            contentDescription = "测试连通性",
+                            contentDescription = stringResource(R.string.settings_ai_cd_test_connection),
                             tint = platformColor,
                             modifier = Modifier.size(17.dp)
                         )
@@ -660,7 +662,7 @@ fun AIConfigCard(
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.Edit,
-                        contentDescription = "编辑配置",
+                        contentDescription = stringResource(R.string.settings_ai_cd_edit_config),
                         tint = if (isDark) UserPalette.SlatePlaceholder else UserPalette.TextSlate500,
                         modifier = Modifier.size(16.dp)
                     )
@@ -715,6 +717,7 @@ fun PlatformDropdownSelector(
     selectedPlatform: String,
     onPlatformSelected: (String) -> Unit
 ) {
+    val customPlatformDesc = stringResource(R.string.settings_ai_platform_custom_desc)
     val platforms = listOf(
         Triple("gemini", "Gemini", DesignR.drawable.ic_gemini),
         Triple("deepseek", "DeepSeek", DesignR.drawable.ic_deepseek),
@@ -722,11 +725,11 @@ fun PlatformDropdownSelector(
         Triple("claude", "Claude", DesignR.drawable.ic_claude),
         Triple("doubao", "Doubao", DesignR.drawable.ic_doubao),
         Triple("mimo", "Mimo", DesignR.drawable.ic_mimo),
-        Triple("custom", "自定义平台 (OpenAI 格式)", Icons.Rounded.Cable)
+        Triple("custom", customPlatformDesc, Icons.Rounded.Cable)
     )
 
     var expanded by remember { mutableStateOf(false) }
-    val currentPlatform = platforms.find { it.first == selectedPlatform } ?: Triple("custom", "自定义平台 (OpenAI 格式)", Icons.Rounded.Cable)
+    val currentPlatform = platforms.find { it.first == selectedPlatform } ?: Triple("custom", customPlatformDesc, Icons.Rounded.Cable)
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
@@ -859,7 +862,7 @@ fun RecommendedModelChips(
     if (suggestedModels.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = 10.dp)) {
             Text(
-                text = "推荐预设：",
+                text = stringResource(R.string.settings_ai_label_recommended_presets),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
@@ -971,7 +974,7 @@ fun FormBottomActionBar(
                 NemoChasingDotsLoader(size = 16.dp)
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "测试中...", 
+                    text = stringResource(R.string.settings_ai_btn_testing), 
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -983,7 +986,7 @@ fun FormBottomActionBar(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "验证连接", 
+                    text = stringResource(R.string.settings_ai_btn_test_connection), 
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -1019,7 +1022,7 @@ fun FormBottomActionBar(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                text = "保存配置", 
+                text = stringResource(R.string.settings_ai_btn_save_config), 
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -1075,7 +1078,7 @@ fun AISettingTextField(
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = image,
-                            contentDescription = if (passwordVisible) "隐藏密钥" else "显示密钥",
+                            contentDescription = if (passwordVisible) stringResource(R.string.settings_ai_cd_hide_key) else stringResource(R.string.settings_ai_cd_show_key),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -1116,14 +1119,14 @@ private fun EmptyAIConfigView(
             }
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "暂无 AI 模型配置",
+                text = stringResource(R.string.settings_ai_empty_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "点击右上角「+」添加您的第一个 AI 模型配置",
+                text = stringResource(R.string.settings_ai_empty_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 maxLines = 2,

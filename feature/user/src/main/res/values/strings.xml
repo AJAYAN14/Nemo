@@ -21,6 +21,51 @@
     <string name="user_auth_btn_register_submit">立即注册</string>
     <string name="user_auth_desc_back_to_welcome">返回封面</string>
 
+    <!-- 登录与注册页面状态提示 -->
+    <string name="user_login_msg_google_success">Google授权成功，正在同步登录状态...</string>
+    <string name="user_login_err_google_failed">Google登录失败: %1$s</string>
+    <string name="user_login_err_network">网络错误: %1$s</string>
+    <string name="user_login_msg_google_canceled">用户取消登录</string>
+    <string name="user_login_msg_google_unsupported">当前设备不支持原生 Google 登录</string>
+    <string name="user_login_err_invalid_email">请输入有效的电子邮箱地址</string>
+    <string name="user_register_err_password_length">密码长度不能少于 8 位</string>
+    <string name="user_register_err_passwords_mismatch">两次输入的密码不一致</string>
+    <string name="user_register_placeholder_username">您的称呼（选填，最多16字）</string>
+    <string name="user_register_placeholder_password">设置密码（至少 8 位）</string>
+    <string name="user_register_placeholder_confirm_password">确认密码</string>
+    <string name="user_register_btn_google">使用 Google 账号快捷注册</string>
+
+    <!-- 算术验证码弹窗 -->
+    <string name="user_captcha_title_security_verify">安全验证</string>
+    <string name="user_captcha_desc_default">请计算图中算术式的结果，输入答案完成验证：</string>
+    <string name="user_captcha_desc_register">请计算图中算术式的结果，输入答案完成注册：</string>
+    <string name="user_captcha_desc_login">密码错误次数过多，请计算图中算术式的结果后继续登录：</string>
+    <string name="user_captcha_btn_confirm">确认</string>
+    <string name="user_captcha_btn_confirm_register">确认并注册</string>
+    <string name="user_captcha_btn_confirm_login">确认并登录</string>
+    <string name="user_captcha_btn_refresh">换一题</string>
+    <string name="user_captcha_placeholder_result">请输入运算结果</string>
+    <string name="user_captcha_err_empty_result">请输入计算结果</string>
+    <string name="user_captcha_err_wrong_result">计算结果不正确，请重新计算</string>
+
+    <!-- 完善名片 -->
+    <string name="user_profile_setup_title">完善名片</string>
+    <string name="user_profile_setup_subtitle">开启沉浸式日语假名习得之旅</string>
+    <string name="user_profile_setup_btn_skip">跳过</string>
+    <string name="user_profile_setup_default_username">用户</string>
+    <string name="user_profile_setup_desc_change_avatar">更换头像</string>
+    <string name="user_profile_setup_label_change_avatar">点击更换个性头像</string>
+    <string name="user_profile_setup_label_username">用户名称</string>
+    <string name="user_profile_setup_placeholder_username">设置您的专属昵称（最多16字）</string>
+    <string name="user_profile_setup_label_password_optional">独立密码 (选填)</string>
+    <string name="user_profile_setup_placeholder_password">设置登录密码（至少 6 位）</string>
+    <string name="user_profile_setup_label_confirm_password">确认密码</string>
+    <string name="user_profile_setup_placeholder_confirm_password">请再次输入密码以进行确认</string>
+    <string name="user_profile_setup_err_password_mismatch">两次输入的密码不一致</string>
+    <string name="user_profile_setup_err_password_length">密码长度至少需要 6 位</string>
+    <string name="user_profile_setup_hint_password">设置独立密码后，未来亦可使用邮箱密码快捷登录</string>
+    <string name="user_profile_setup_btn_save_and_start">保存并开启</string>
+
     <!-- 个人主页 -->
     <string name="user_profile_title_screen">我的</string>
     <string name="user_profile_title_learning_tools">学习工具</string>
@@ -36,6 +81,7 @@
     <string name="user_profile_title_about">关于</string>
     <string name="user_profile_label_default_user_name">日语学习者</string>
     <string name="user_profile_label_default_cheer">继续加油！</string>
+    <string name="user_profile_label_version">版本 1.0.0</string>
 
     <!-- 账户管理 -->
     <string name="user_account_title_screen">账户管理</string>
@@ -47,6 +93,10 @@
     <string name="user_account_title_danger_section">危险区域</string>
     <string name="user_account_btn_delete_account">注销账户</string>
     <string name="user_account_btn_logout">退出登录</string>
+    <string name="user_account_default_username">用户</string>
+    <string name="user_account_desc_edit_avatar">Edit</string>
+    <string name="user_account_label_not_logged_in">未登录</string>
+    <string name="user_account_desc_google_account">Google 快捷登录账号</string>
 
     <!-- 弹窗输入框标签 -->
     <string name="user_dialog_label_email">邮箱地址</string>
@@ -55,4 +105,78 @@
     <string name="user_dialog_label_new_username">新用户名（最多16字）</string>
     <string name="user_dialog_label_new_email">新邮箱</string>
     <string name="user_dialog_label_verify_password">验证登录密码</string>
+
+    <!-- 账户管理弹窗文案 -->
+    <string name="user_dialog_title_reset_password">重置密码</string>
+    <string name="user_dialog_title_input_otp">输入验证码</string>
+    <string name="user_dialog_title_set_new_password">设置新密码</string>
+    <string name="user_dialog_btn_next">下一步</string>
+    <string name="user_dialog_btn_cancel">取消</string>
+    <string name="user_dialog_btn_back">返回</string>
+    <string name="user_dialog_err_invalid_email">请输入有效的邮箱地址</string>
+    <string name="user_dialog_err_invalid_otp">请输入 8 位验证码</string>
+    <string name="user_dialog_err_short_password">密码长度至少为 8 位</string>
+    <string name="user_dialog_msg_reset_pwd_send_otp">我们将向您的邮箱发送验证码。</string>
+    <string name="user_dialog_msg_input_otp_format">请输入发送至 %1$s 的 8 位验证码。</string>
+    <string name="user_dialog_msg_otp_verified">验证成功，请设置您的新密码。</string>
+
+    <string name="user_dialog_title_change_username">修改用户名</string>
+    <string name="user_dialog_btn_confirm_modify">确认修改</string>
+    <string name="user_dialog_err_same_username">新用户名不能与当前用户名相同</string>
+    <string name="user_dialog_err_username_length">用户名需在 1~16 个字符以内</string>
+    <string name="user_dialog_msg_change_username">请输入新的用户名，这将是您在应用中的显示名称。</string>
+
+    <string name="user_dialog_title_change_email">修改邮箱</string>
+    <string name="user_dialog_err_same_email">新邮箱不能与当前邮箱相同</string>
+    <string name="user_dialog_msg_change_email_prompt">请输入新的邮箱地址，我们将发送验证码。</string>
+
+    <string name="user_dialog_title_delete_account">注销账户</string>
+    <string name="user_dialog_title_final_confirm">最终确认</string>
+    <string name="user_dialog_title_final_confirm_delete">最终确认删除</string>
+    <string name="user_dialog_title_delete_user_account">删除账户</string>
+    <string name="user_dialog_btn_confirm_delete">确认注销</string>
+    <string name="user_dialog_btn_confirm_delete_account">确认删除</string>
+    <string name="user_dialog_err_email_mismatch">邮箱输入不匹配，请重新输入</string>
+    <string name="user_dialog_err_empty_password">请输入密码</string>
+    <string name="user_dialog_msg_delete_warning">注销账户是不可逆的操作，将永久删除您的所有数据，包括：</string>
+    <string name="user_dialog_msg_delete_account_warning">删除账户是不可逆的操作，将永久删除您的所有数据，包括：</string>
+    <string name="user_dialog_msg_delete_details">• 学习进度和统计数据\n• 测试记录和错题记录\n• 个人设置和偏好\n• 头像和用户信息</string>
+    <string name="user_dialog_msg_delete_prompt_email">请输入当前邮箱以确认注销：</string>
+    <string name="user_dialog_msg_delete_prompt_password">请输入您的密码以确认注销：</string>
+    <string name="user_dialog_msg_delete_final_confirm">您确定要永久注销您的账户吗？\n\n此操作无法撤销！</string>
+    <string name="user_dialog_msg_delete_account_final">您确定要永久删除您的账户吗？\n此操作无法撤销！</string>
+
+    <string name="user_dialog_title_logout_clear_data">即将清除数据</string>
+    <string name="user_dialog_msg_logout_clear_data">退出登录将永久删除本机的学习进度和统计数据。此操作不可恢复。</string>
+    <string name="user_dialog_btn_direct_logout">直接退出</string>
+
+    <!-- ViewModel 操作反馈提示 -->
+    <string name="user_auth_err_login_failed">登录失败</string>
+    <string name="user_auth_err_register_failed">注册失败</string>
+    <string name="user_auth_msg_avatar_upload_success">头像上传成功</string>
+    <string name="user_auth_err_avatar_upload_failed">头像上传失败</string>
+    <string name="user_auth_msg_avatar_update_success">头像更新成功</string>
+    <string name="user_auth_err_avatar_update_failed">头像更新失败</string>
+    <string name="user_auth_msg_otp_sent">验证码已发送</string>
+    <string name="user_auth_err_send_otp_failed">发送验证码失败</string>
+    <string name="user_auth_msg_otp_verified">验证成功</string>
+    <string name="user_auth_err_verify_failed">验证失败</string>
+    <string name="user_auth_msg_reset_pwd_success">密码重置成功</string>
+    <string name="user_auth_err_reset_pwd_failed">重置密码失败</string>
+    <string name="user_auth_err_empty_username">用户名不能为空</string>
+    <string name="user_auth_msg_update_username_success">用户名更新成功</string>
+    <string name="user_auth_err_update_failed">更新失败</string>
+    <string name="user_auth_err_set_pwd_failed">设置密码失败</string>
+    <string name="user_auth_err_set_nickname_failed">设置昵称失败</string>
+    <string name="user_auth_msg_email_otp_sent">验证码已发送至新邮箱</string>
+    <string name="user_auth_msg_email_updated">邮箱修改成功</string>
+    <string name="user_auth_msg_account_deleted">账号已成功销毁</string>
+    <string name="user_auth_err_action_failed">操作失败</string>
+    <string name="user_auth_err_code_format">错误(%1$s): %2$s</string>
+
+    <!-- 账户管理弹窗 (AccountManagementDialogs) -->
+    <string name="user_dialog_format_char_count">%1$d/16</string>
+
+    <!-- 完善名片 (ProfileSetupContent) -->
+    <string name="user_profile_setup_format_nickname_count">%1$d/16</string>
 </resources>

@@ -47,7 +47,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -73,7 +75,7 @@ fun CommonConfigDialog(
     step: Int = 1,
     presets: List<Int>,
     presetLabelFormatter: (Int) -> String = { "$it" },
-    confirmText: String = "确定",
+    confirmText: String = stringResource(R.string.core_ui_dialog_btn_confirm),
     confirmButtonColor: Color = headerIconTint,
     onDismissRequest: () -> Unit,
     onConfirm: (Int) -> Unit,
@@ -171,7 +173,7 @@ fun CommonConfigDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = "关闭",
+                        contentDescription = stringResource(R.string.core_ui_dialog_cd_close),
                         tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )

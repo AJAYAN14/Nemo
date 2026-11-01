@@ -20,8 +20,10 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.statistics.R
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.statistics.ActivityHeatmapUiState
@@ -61,7 +63,7 @@ fun HeatmapShareBottomSheet(
         ) {
             // 标题
             Text(
-                text = "分享学习成就",
+                text = stringResource(R.string.stats_share_title_achievement),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -134,7 +136,7 @@ fun HeatmapShareBottomSheet(
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "保存图片",
+                        text = stringResource(R.string.stats_share_btn_save_image),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -148,7 +150,7 @@ fun HeatmapShareBottomSheet(
                             try {
                                 ShareBitmapHelper.shareImage(context, graphicsLayer)
                             } catch (e: Exception) {
-                                Toast.makeText(context, "分享失败", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, context.getString(R.string.stats_share_toast_failed), Toast.LENGTH_SHORT).show()
                             }
                             isSharing = false
                         }
@@ -175,7 +177,7 @@ fun HeatmapShareBottomSheet(
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "分享给好友",
+                        text = stringResource(R.string.stats_share_btn_share_friend),
                         fontWeight = FontWeight.SemiBold
                     )
                 }

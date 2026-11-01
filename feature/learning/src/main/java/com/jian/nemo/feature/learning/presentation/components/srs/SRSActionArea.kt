@@ -33,8 +33,10 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.learning.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -207,7 +209,7 @@ fun SRSActionArea(
                 ) {
                     // 1. 重来 (Again) - Quality 1
                     SRSRatingButton(
-                        label = "重来",
+                        label = stringResource(R.string.learn_srs_rating_again),
                         time = ratingIntervals[1] ?: "-",
                         color = effectiveAgainColor,
                         containerColor = effectiveAgainContainer,
@@ -222,7 +224,7 @@ fun SRSActionArea(
 
                     // 2. 困难 (Hard) - Quality 3
                     SRSRatingButton(
-                        label = "困难",
+                        label = stringResource(R.string.learn_srs_rating_hard),
                         time = ratingIntervals[3] ?: "-",
                         color = effectiveHardColor,
                         containerColor = effectiveHardContainer,
@@ -237,7 +239,7 @@ fun SRSActionArea(
 
                     // 3. 良好 (Good) - Quality 4
                     SRSRatingButton(
-                        label = "良好",
+                        label = stringResource(R.string.learn_srs_rating_good),
                         time = ratingIntervals[4] ?: "-",
                         color = effectiveGoodColor,
                         containerColor = effectiveGoodContainer,
@@ -252,7 +254,7 @@ fun SRSActionArea(
 
                     // 4. 简单 (Easy) - Quality 5
                     SRSRatingButton(
-                        label = "简单",
+                        label = stringResource(R.string.learn_srs_rating_easy),
                         time = ratingIntervals[5] ?: "-",
                         color = effectiveEasyColor,
                         containerColor = effectiveEasyContainer,

@@ -19,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,7 +59,7 @@ fun <T> SingleSelectBottomSheet(
     onConfirm: (T) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    confirmButtonText: String = "完成"
+    confirmButtonText: String = stringResource(R.string.test_sheet_btn_confirm_done)
 ) {
     var tempSelectedKey by remember(selectedKey) { mutableStateOf(selectedKey) }
 
@@ -109,7 +111,7 @@ fun <T> SingleSelectBottomSheet(
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "关闭",
+                    contentDescription = stringResource(R.string.test_sheet_cd_close),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
@@ -252,7 +254,7 @@ private fun <T> SingleSelectCardRow(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "已选中",
+                        contentDescription = stringResource(R.string.test_sheet_cd_selected),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )

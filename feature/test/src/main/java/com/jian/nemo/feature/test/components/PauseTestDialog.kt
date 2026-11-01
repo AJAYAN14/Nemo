@@ -1,4 +1,5 @@
 package com.jian.nemo.feature.test.components
+// 资源化本文件硬编码文字
 
 import android.os.Build
 import android.view.WindowManager
@@ -109,7 +110,7 @@ fun PauseTestDialog(
 
                 // 2. Title
                 Text(
-                    text = "测试已暂停",
+                    text = stringResource(R.string.test_pause_dialog_title),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.2.sp
@@ -122,7 +123,7 @@ fun PauseTestDialog(
 
                 // 3. Description
                 Text(
-                    text = "休息一下，点击按钮继续测试。",
+                    text = stringResource(R.string.test_pause_dialog_desc),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         lineHeight = 22.sp
                     ),

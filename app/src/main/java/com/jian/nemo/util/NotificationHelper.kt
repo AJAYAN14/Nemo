@@ -11,6 +11,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.jian.nemo.R
 import java.io.File
 
 object NotificationHelper {
@@ -28,8 +29,8 @@ object NotificationHelper {
     fun createNotificationChannel(context: Context) {
         val appContext = context.applicationContext
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "下载通知"
-            val descriptionText = "显示应用更新下载进度"
+            val name = appContext.getString(R.string.app_notification_channel_name)
+            val descriptionText = appContext.getString(R.string.app_notification_channel_desc)
             val importance = NotificationManager.IMPORTANCE_LOW
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
@@ -40,14 +41,14 @@ object NotificationHelper {
         }
     }
 
-    fun showProgress(context: Context, progress: Int, title: String = "正在下载更新...") {
+    fun showProgress(context: Context, progress: Int, title: String? = null) {
         val appContext = context.applicationContext
         createNotificationChannel(appContext)
 
         val builder = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle(title)
-            .setContentText("$progress%")
+            .setSmallIcon(android.R.drawable.stat_sys_download).setContentTitle(title ?: appContext.getString(R.string.app_notification_download_progress))
+
+            .setContentText(appContext.getString(R.string.app_notification_progress_format, progress))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOnlyAlertOnce(true)
             .setProgress(100, progress, false)
@@ -62,7 +63,7 @@ object NotificationHelper {
         }
     }
 
-    fun showSuccess(context: Context, file: File, title: String = "下载完成", content: String = "点击立即安装") {
+    fun showSuccess(context: Context, file: File, title: String? = null, content: String? = null) {
         val appContext = context.applicationContext
         val intent = Intent(Intent.ACTION_VIEW).apply {
             val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -86,9 +87,9 @@ object NotificationHelper {
         )
 
         val builder = NotificationCompat.Builder(appContext, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle(title)
-            .setContentText(content)
+            .setSmallIcon(android.R.drawable.stat_sys_download_done).setContentTitle(title ?: appContext.getString(R.string.app_notification_download_success))
+
+            .setContentText(content ?: appContext.getString(R.string.app_notification_click_to_install))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

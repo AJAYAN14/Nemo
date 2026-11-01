@@ -58,6 +58,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.designsystem.R
 import com.jian.nemo.core.designsystem.theme.DesignSystemPalette
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.luminance
@@ -201,7 +203,7 @@ fun PremiumStepper(
             icon = {
                 Icon(
                     imageVector = Icons.Default.Remove,
-                    contentDescription = "减少",
+                    contentDescription = stringResource(R.string.core_ui_stepper_cd_decrease),
                     modifier = Modifier.size(28.dp),
                     tint = if (enabled && value - step >= min) {
                         if (isDark) Color.White else DesignSystemPalette.StepperSlateText
@@ -340,7 +342,7 @@ fun PremiumStepper(
             icon = {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "增加",
+                    contentDescription = stringResource(R.string.core_ui_stepper_cd_increase),
                     modifier = Modifier.size(28.dp),
                     tint = if (enabled && value + step <= max) {
                         if (isDark) Color.White else DesignSystemPalette.StepperSlateText

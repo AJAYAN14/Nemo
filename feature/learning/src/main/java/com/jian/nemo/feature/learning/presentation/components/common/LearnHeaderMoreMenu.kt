@@ -20,6 +20,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -90,12 +92,12 @@ fun LearnHeaderMoreMenu(
         buttonSize = 48.dp,
         menuWidth = 240.dp,
         icon = Icons.Rounded.MoreVert,
-        contentDescription = "更多选项",
+        contentDescription = stringResource(R.string.learn_menu_desc_more),
         modifier = modifier
     ) {
         if (onShowRatingGuide != null) {
             NemoMorphMenuItem(
-                text = "评分说明（新学/复习）",
+                text = stringResource(R.string.learn_menu_item_rating_guide),
                 leadingIcon = Icons.Rounded.CheckCircle,
                 plumpIcon = PlumpIcon.BadgeCheck,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else null,
@@ -112,7 +114,7 @@ fun LearnHeaderMoreMenu(
 
         if (remainingCount > 0) {
             NemoMorphMenuItem(
-                text = "暂停此卡片 (Suspend)",
+                text = stringResource(R.string.learn_menu_item_suspend),
                 leadingIcon = Icons.Rounded.Pause,
                 plumpIcon = PlumpIcon.Pause,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else null,
@@ -122,7 +124,7 @@ fun LearnHeaderMoreMenu(
                 }
             )
             NemoMorphMenuItem(
-                text = "今日暂缓此项 (Bury)",
+                text = stringResource(R.string.learn_menu_item_bury),
                 leadingIcon = Icons.Rounded.AccessTime,
                 plumpIcon = PlumpIcon.StudyClock,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
@@ -133,7 +135,7 @@ fun LearnHeaderMoreMenu(
             )
 
             NemoMorphMenuItem(
-                text = "报告条目错误",
+                text = stringResource(R.string.learn_menu_item_report_error),
                 leadingIcon = Icons.Rounded.Report,
                 plumpIcon = PlumpIcon.CircleX,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.CoralFlame else null,
@@ -151,7 +153,7 @@ fun LearnHeaderMoreMenu(
         // 自动朗读开关
         if (onToggleAutoAudio != null) {
             MorphMenuToggleItem(
-                text = "翻面自动朗读",
+                text = stringResource(R.string.learn_menu_toggle_auto_audio),
                 checked = isAutoAudioEnabled,
                 onCheckedChange = { onToggleAutoAudio(it) }
             )
@@ -159,14 +161,14 @@ fun LearnHeaderMoreMenu(
 
         if (onToggleShowAnswerDelay != null) {
             MorphMenuToggleItem(
-                text = "显示答案等待",
+                text = stringResource(R.string.learn_menu_toggle_delay),
                 checked = isShowAnswerDelayEnabled,
                 onCheckedChange = { onToggleShowAnswerDelay(it) }
             )
 
             if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
                 NemoMorphMenuItem(
-                    text = "等待时长: $showAnswerDelayDurationLabel",
+                    text = stringResource(R.string.learn_menu_item_delay_duration, showAnswerDelayDurationLabel),
                     leadingIcon = Icons.Rounded.Timer,
                     plumpIcon = PlumpIcon.StudyClock,
                     iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
@@ -184,14 +186,14 @@ fun LearnHeaderMoreMenu(
 
         if (onToggleAutoRevealAnswer != null) {
             MorphMenuToggleItem(
-                text = "自动翻面",
+                text = stringResource(R.string.learn_menu_toggle_auto_reveal),
                 checked = isAutoRevealAnswerEnabled,
                 onCheckedChange = { onToggleAutoRevealAnswer(it) }
             )
 
             if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
                 NemoMorphMenuItem(
-                    text = "翻面时长: $autoRevealAnswerDurationLabel",
+                    text = stringResource(R.string.learn_menu_item_auto_reveal_duration, autoRevealAnswerDurationLabel),
                     leadingIcon = Icons.Rounded.Timer,
                     plumpIcon = PlumpIcon.StudyClock,
                     iconColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else null,
@@ -208,9 +210,9 @@ fun LearnHeaderMoreMenu(
         }
 
         if (onToggleWhiteboard != null) {
-            val whiteboardLabel = if (isWhiteboardEnabled) "已开启" else "已关闭"
+            val whiteboardLabel = if (isWhiteboardEnabled) stringResource(R.string.learn_menu_status_enabled) else stringResource(R.string.learn_menu_status_disabled)
             NemoMorphMenuItem(
-                text = "手写白板: $whiteboardLabel",
+                text = stringResource(R.string.learn_menu_item_whiteboard, whiteboardLabel),
                 leadingIcon = Icons.Rounded.Edit,
                 plumpIcon = PlumpIcon.IconLab,
                 iconColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else null,
@@ -226,9 +228,9 @@ fun LearnHeaderMoreMenu(
 
         // 主题切换项 (循环模式)
         val themeLabel = when (isDarkMode) {
-            null -> "跟随系统"
-            true -> "深色模式"
-            false -> "浅色模式"
+            null -> stringResource(R.string.learn_menu_theme_system)
+            true -> stringResource(R.string.learn_menu_theme_dark)
+            false -> stringResource(R.string.learn_menu_theme_light)
         }
         val themeIcon = when (isDarkMode) {
             null -> Icons.Rounded.SettingsBrightness
@@ -247,7 +249,7 @@ fun LearnHeaderMoreMenu(
         }
 
         NemoMorphMenuItem(
-            text = "显示模式: $themeLabel",
+            text = stringResource(R.string.learn_menu_item_display_mode, themeLabel),
             leadingIcon = themeIcon,
             plumpIcon = themePlumpIcon,
             iconColor = if (isPlumpDuo) themeColor else null,

@@ -34,6 +34,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.user.R
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.designsystem.theme.UserPalette
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
@@ -120,7 +122,7 @@ fun ProfileSetupContent(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "完善名片",
+                        text = stringResource(R.string.user_profile_setup_title),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = titleTextColor,
@@ -128,7 +130,7 @@ fun ProfileSetupContent(
                     )
                     Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "开启沉浸式日语假名习得之旅",
+                        text = stringResource(R.string.user_profile_setup_subtitle),
                         fontSize = 13.sp,
                         color = subtitleTextColor
                     )
@@ -145,7 +147,7 @@ fun ProfileSetupContent(
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp)
                 ) {
                     Text(
-                        text = "跳过",
+                        text = stringResource(R.string.user_profile_setup_btn_skip),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = if (isDark) Color.White.copy(alpha = 0.90f) else UserPalette.TextSlate800
@@ -185,7 +187,7 @@ fun ProfileSetupContent(
                 ) {
                     AvatarImage(
                         avatarPath = avatarPath,
-                        username = nickname.takeIf { it.isNotBlank() } ?: "用户",
+                        username = nickname.takeIf { it.isNotBlank() } ?: stringResource(R.string.user_profile_setup_default_username),
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -203,7 +205,7 @@ fun ProfileSetupContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "更换头像",
+                        contentDescription = stringResource(R.string.user_profile_setup_desc_change_avatar),
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(16.dp)
                     )
@@ -213,7 +215,7 @@ fun ProfileSetupContent(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "点击更换个性头像",
+                text = stringResource(R.string.user_profile_setup_label_change_avatar),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Normal,
                 color = subtitleTextColor
@@ -238,13 +240,13 @@ fun ProfileSetupContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "用户名称",
+                            text = stringResource(R.string.user_profile_setup_label_username),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = labelTextColor
                         )
                         Text(
-                            text = "${nickname.length}/16",
+                            text = stringResource(R.string.user_profile_setup_format_nickname_count, nickname.length),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Normal,
                             color = subtitleTextColor
@@ -258,7 +260,7 @@ fun ProfileSetupContent(
                                 onNicknameChange(it)
                             }
                         },
-                        placeholder = "设置您的专属昵称（最多16字）",
+                        placeholder = stringResource(R.string.user_profile_setup_placeholder_username),
                         leadingIcon = Icons.Rounded.Person,
                         isDark = isDark,
                         enabled = !isLoading,
@@ -281,7 +283,7 @@ fun ProfileSetupContent(
                 if (isGoogleOnlyUser) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "独立密码 (选填)",
+                            text = stringResource(R.string.user_profile_setup_label_password_optional),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = labelTextColor,
@@ -291,7 +293,7 @@ fun ProfileSetupContent(
                         AppStyleTextField(
                             value = password,
                             onValueChange = onPasswordChange,
-                            placeholder = "设置登录密码（至少 6 位）",
+                            placeholder = stringResource(R.string.user_profile_setup_placeholder_password),
                             leadingIcon = Icons.Rounded.Lock,
                             trailingIcon = if (isPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                             onTrailingIconClick = onTogglePasswordVisibility,
@@ -308,7 +310,7 @@ fun ProfileSetupContent(
                     // 再次输入密码（确认密码字段）
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "确认密码",
+                            text = stringResource(R.string.user_profile_setup_label_confirm_password),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                             color = labelTextColor,
@@ -318,7 +320,7 @@ fun ProfileSetupContent(
                         AppStyleTextField(
                             value = confirmPassword,
                             onValueChange = { confirmPassword = it },
-                            placeholder = "请再次输入密码以进行确认",
+                            placeholder = stringResource(R.string.user_profile_setup_placeholder_confirm_password),
                             leadingIcon = Icons.Rounded.Lock,
                             trailingIcon = if (isConfirmPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                             onTrailingIconClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
@@ -344,21 +346,21 @@ fun ProfileSetupContent(
 
                         if (passwordMismatch) {
                             Text(
-                                text = "两次输入的密码不一致",
+                                text = stringResource(R.string.user_profile_setup_err_password_mismatch),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(start = 6.dp)
                             )
                         } else if (passwordTooShort) {
                             Text(
-                                text = "密码长度至少需要 6 位",
+                                text = stringResource(R.string.user_profile_setup_err_password_length),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(start = 6.dp)
                             )
                         } else {
                             Text(
-                                text = "设置独立密码后，未来亦可使用邮箱密码快捷登录",
+                                text = stringResource(R.string.user_profile_setup_hint_password),
                                 fontSize = 12.sp,
                                 color = subtitleTextColor,
                                 modifier = Modifier.padding(start = 6.dp)
@@ -404,7 +406,7 @@ fun ProfileSetupContent(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "保存并开启",
+                                text = stringResource(R.string.user_profile_setup_btn_save_and_start),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.White.copy(alpha = if (canStart) 1f else 0.40f)

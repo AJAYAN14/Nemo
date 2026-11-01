@@ -94,6 +94,7 @@ core/designsystem/src/main/java/com/jian/nemo/core/designsystem/theme/
 | **A3** | 文本硬编码 | Composable 内 `Text("` 直接编写中文/英文展示字面量（不在白名单内） | 🔴 阻断 |
 | **A4** | 动态取色泄漏 | 代码中出现 `dynamicLightColorScheme` / `dynamicDarkColorScheme` / `dynamicColor` | 🔴 阻断 |
 | **A5** | 标题/卡片对齐失范 | 未遵循 `docs/design/标题与卡片对齐设计规范.md` 造成分组标题与卡片边缘脱焦错位 | 🟠 Review 拦截 |
+| **A6** | 悬浮顶栏臆造失范 | 新建或重构全屏滚动子界面时，未继承 `ActivityHeatmapScreen` 的 48dp `CommonHeader` 与四阶渐变遮罩 | 🔴 阻断 |
 
 ---
 

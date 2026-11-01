@@ -93,15 +93,7 @@ private fun parade(): List<Party> {
         damping = 0.91f,
         angle = Angle.RIGHT - 45, // 向右上放射喷射
         spread = 270,
-        colors = listOf(
-            0xFFF59E0B.toInt(), // 暖金
-            0xFF8B5CF6.toInt(), // 浅紫
-            0xFFF43F5E.toInt(), // 蔷薇红
-            0xFFEC4899.toInt(), // 浅粉
-            0xFF3B82F6.toInt(), // 蔚蓝
-            0xFFF97316.toInt(), // 橙金
-            0xFF10B981.toInt()  // 翡翠青
-        ),
+        colors = NemoKonfettiColors,
         timeToLive = 4000L,
         emitter = Emitter(duration = 800, TimeUnit.MILLISECONDS).perSecond(150),
         position = Position.Relative(-0.1, 0.1) // 屏幕左侧上方偏外
@@ -270,8 +262,8 @@ fun AboutScreen(
                             plumpIcon = PlumpIcon.LiquidLab,
                             iconColor = NemoCyan,
                             plumpColor = IsoluminantPalette.LakesideCyan,
-                            title = "启动时检测更新",
-                            subtitle = "应用启动时自动检查最新版本",
+                            title = stringResource(R.string.settings_about_title_auto_check),
+                            subtitle = stringResource(R.string.settings_about_subtitle_auto_check),
                             onClick = {
                                 val next = !checkUpdateOnStartup
                                 checkUpdateOnStartup = next
@@ -296,8 +288,8 @@ fun AboutScreen(
                             iconColor = NemoSecondary,
                             plumpColor = IsoluminantPalette.OceanBlue,
                             iconRotation = if (isCheckingUpdate) checkUpdateRotation else 0f,
-                            title = "检查新版本",
-                            subtitle = if (isCheckingUpdate) "正在检测新版本..." else "当前版本 v$versionName (Build $versionCode)",
+                            title = stringResource(R.string.settings_about_title_check_update),
+                            subtitle = if (isCheckingUpdate) stringResource(R.string.settings_about_subtitle_checking) else stringResource(R.string.settings_about_subtitle_current_version_format, versionName, versionCode),
                             onClick = {
                                 if (!isCheckingUpdate) {
                                     isCheckingUpdate = true
@@ -333,7 +325,7 @@ fun AboutScreen(
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         ) {
-                            val logTitle = "更新日志"
+                            val logTitle = stringResource(R.string.settings_about_title_changelog)
 
                             val changelogInteractionSource = remember { MutableInteractionSource() }
                             val isChangelogPressed by changelogInteractionSource.collectIsPressedAsState()
@@ -378,14 +370,14 @@ fun AboutScreen(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = if (aboutUiState.isLoadingLog) "正在拉取云端更新日志..." else "点击${if (isChangelogExpanded) "收起" else "展开"}详细更新日志",
+                                        text = if (aboutUiState.isLoadingLog) stringResource(R.string.settings_about_log_loading) else if (isChangelogExpanded) stringResource(R.string.settings_about_log_collapse_tip) else stringResource(R.string.settings_about_log_expand_tip),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                     )
                                 }
                                 Icon(
                                     imageVector = if (isChangelogExpanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                                    contentDescription = if (isChangelogExpanded) "收起更新日志" else "展开更新日志",
+                                    contentDescription = if (isChangelogExpanded) stringResource(R.string.settings_about_cd_collapse_log) else stringResource(R.string.settings_about_cd_expand_log),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                     modifier = Modifier.size(24.dp)
                                 )
@@ -409,7 +401,7 @@ fun AboutScreen(
                                                 )
                                                 Spacer(modifier = Modifier.width(10.dp))
                                                 Text(
-                                                    text = "正在同步后端更新日志...",
+                                                    text = stringResource(R.string.settings_about_log_syncing),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -427,7 +419,7 @@ fun AboutScreen(
                                                 }
                                             } else {
                                                 Text(
-                                                    text = "云端暂未配置本版本更新详情。",
+                                                    text = stringResource(R.string.settings_about_log_empty),
                                                     style = MaterialTheme.typography.bodyMedium,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -438,7 +430,7 @@ fun AboutScreen(
                                             // 加载失败或暂无数据
                                             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                                 Text(
-                                                    text = aboutUiState.errorMessage ?: "未能成功获取云端更新日志",
+                                                    text = aboutUiState.errorMessage ?: stringResource(R.string.settings_about_log_error_fallback),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.error
                                                 )
@@ -476,8 +468,8 @@ fun AboutScreen(
                             plumpIcon = PlumpIcon.GitHub,
                             iconColor = NemoPrimary,
                             plumpColor = IsoluminantPalette.OceanBlue,
-                            title = "GitHub 项目",
-                            subtitle = "访问开源代码仓库，欢迎 Star & Issue",
+                            title = stringResource(R.string.settings_about_title_github),
+                            subtitle = stringResource(R.string.settings_about_subtitle_github),
                             onClick = {
                                 val githubUrl = "https://github.com/AJAYAN14/Nemo"
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
@@ -489,11 +481,11 @@ fun AboutScreen(
                                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     }
                                     context.startActivity(intent)
-                                    snackbarMessage = "已复制项目地址并打开浏览器"
+                                    snackbarMessage = context.getString(R.string.settings_about_toast_copied_open_browser)
                                     snackbarType = NemoSnackbarType.SUCCESS
                                     snackbarVisible = true
                                 } catch (_: Exception) {
-                                    snackbarMessage = "已复制项目地址：$githubUrl"
+                                    snackbarMessage = context.getString(R.string.settings_about_toast_copied_format, githubUrl)
                                     snackbarType = NemoSnackbarType.INFO
                                     snackbarVisible = true
                                 }
@@ -514,10 +506,10 @@ fun AboutScreen(
                             plumpIcon = PlumpIcon.User,
                             iconColor = NemoPurple,
                             plumpColor = IsoluminantPalette.LilacViolet,
-                            title = "主开发者",
-                            subtitle = "AJAYAN14 • 致力于极致体验的日语学习伴侣",
+                            title = stringResource(R.string.settings_about_title_developer),
+                            subtitle = stringResource(R.string.settings_about_subtitle_developer),
                             onClick = {
-                                snackbarMessage = "感谢使用 Nemo！陪伴你的每一次记忆成长。"
+                                snackbarMessage = context.getString(R.string.settings_about_toast_developer_cheer)
                                 snackbarType = NemoSnackbarType.INFO
                                 snackbarVisible = true
                             },
@@ -533,27 +525,38 @@ fun AboutScreen(
                 item {
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_build_info))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            VersionInfoRow(label = "应用名称", value = "Nemo 记忆伴侣")
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
-                                modifier = Modifier.padding(vertical = 10.dp)
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            VersionInfoRow(
+                                label = stringResource(R.string.settings_about_label_app_name),
+                                value = stringResource(R.string.settings_about_value_app_name)
                             )
-                            VersionInfoRow(label = "当前版本", value = "v$versionName")
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
-                                modifier = Modifier.padding(vertical = 10.dp)
+                                modifier = Modifier.padding(start = 16.dp),
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
                             )
-                            VersionInfoRow(label = "内部构建代号 (Build)", value = "$versionCode")
+                            VersionInfoRow(
+                                label = stringResource(R.string.settings_about_label_version),
+                                value = "v$versionName"
+                            )
                             HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.15f),
-                                modifier = Modifier.padding(vertical = 10.dp)
+                                modifier = Modifier.padding(start = 16.dp),
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
                             )
-                            VersionInfoRow(label = "技术架构", value = "Kotlin + Jetpack Compose + AGSL")
+                            VersionInfoRow(
+                                label = stringResource(R.string.settings_about_label_build),
+                                value = "$versionCode"
+                            )
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 16.dp),
+                                thickness = 0.5.dp,
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+                            )
+                            VersionInfoRow(
+                                label = stringResource(R.string.settings_about_label_tech_stack),
+                                value = "Kotlin + Jetpack Compose + AGSL"
+                            )
                         }
                     }
                 }
@@ -576,7 +579,7 @@ fun AboutScreen(
                     .padding(bottom = 8.dp)
             ) {
                 CommonHeader(
-                    title = "关于 Nemo",
+                    title = stringResource(R.string.settings_about_title_screen),
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
                     backdrop = backdrop,
@@ -637,24 +640,39 @@ private fun ChangelogLineItem(text: String) {
 }
 
 /**
- * 版本信息行
+ * 版本与规格键值行
  */
 @Composable
-private fun VersionInfoRow(label: String, value: String) {
+private fun VersionInfoRow(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 44.dp)
+            .padding(horizontal = 16.dp, vertical = 11.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 22.sp,
+            letterSpacing = (-0.41).sp,
+            color = MaterialTheme.colorScheme.onSurface
         )
+        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-            color = MaterialTheme.colorScheme.onSurface
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Normal,
+            lineHeight = 22.sp,
+            letterSpacing = (-0.41).sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.End
         )
     }
 }
@@ -772,7 +790,7 @@ private fun NemoArtisticBanner(isDark: Boolean) {
         // 4. 透明青蛙 Logo 放置在卡片中（居中留白，呈现高级艺术呼吸感）
         Image(
             painter = painterResource(id = DesignR.drawable.img_about_frog_logo),
-            contentDescription = "Logo",
+            contentDescription = stringResource(R.string.settings_about_cd_logo),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 28.dp, vertical = 20.dp),

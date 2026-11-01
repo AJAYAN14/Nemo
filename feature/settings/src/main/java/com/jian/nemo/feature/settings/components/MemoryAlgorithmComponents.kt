@@ -18,11 +18,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import com.jian.nemo.core.ui.component.Capsule
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.ui.component.liquid.ClearLiquidGlassButton
+import com.jian.nemo.feature.settings.R
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.emptyBackdrop
 import com.kyant.backdrop.drawBackdrop
@@ -188,12 +190,12 @@ fun LiquidMemoryHud(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "记忆动力沙盘",
+                            text = stringResource(R.string.settings_algo_title_simulation),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "FSRS 遗忘曲面与复习负荷实时映射",
+                            text = stringResource(R.string.settings_algo_desc_simulation),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -316,12 +318,12 @@ fun LiquidMemoryHud(
                 ) {
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "参考记忆半衰期",
+                            text = stringResource(R.string.settings_algo_label_half_life),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = "≈ $estimatedHalfLifeDays 天",
+                            text = stringResource(R.string.settings_algo_format_half_life_days, estimatedHalfLifeDays),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -365,12 +367,12 @@ fun RetentionPrecisionRuler(
             ) {
                 Column {
                     Text(
-                        text = "目标保留率",
+                        text = stringResource(R.string.settings_algo_title_target_retention),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "滑动刻度微调 · 建议设定于 85% ~ 92%",
+                        text = stringResource(R.string.settings_algo_desc_target_retention),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -391,7 +393,7 @@ fun RetentionPrecisionRuler(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Remove,
-                            contentDescription = "减少1%",
+                            contentDescription = stringResource(R.string.settings_algo_cd_decrease_one_percent),
                             tint = accentColor,
                             modifier = Modifier.size(20.dp)
                         )
@@ -438,7 +440,7 @@ fun RetentionPrecisionRuler(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Add,
-                            contentDescription = "增加1%",
+                            contentDescription = stringResource(R.string.settings_algo_cd_increase_one_percent),
                             tint = accentColor,
                             modifier = Modifier.size(20.dp)
                         )
@@ -854,13 +856,13 @@ fun LeechSentinelCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "顽固卡片判定阈值",
+                        text = stringResource(R.string.settings_algo_title_leech_threshold),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1
                     )
                     Text(
-                        text = "某张卡片累计遗忘此次数后自动触发防爆防护",
+                        text = stringResource(R.string.settings_algo_desc_leech_threshold),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -885,7 +887,7 @@ fun LeechSentinelCard(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Remove,
-                            contentDescription = "减少",
+                            contentDescription = stringResource(R.string.settings_algo_cd_decrease),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
@@ -943,7 +945,7 @@ fun LeechSentinelCard(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Add,
-                            contentDescription = "增加",
+                            contentDescription = stringResource(R.string.settings_algo_cd_increase),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
@@ -954,7 +956,7 @@ fun LeechSentinelCard(
             // 处置行为选择 (果冻分段滑槽)
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "防爆触发后的处置策略",
+                    text = stringResource(R.string.settings_algo_title_leech_action),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -962,8 +964,8 @@ fun LeechSentinelCard(
                 // 橡胶果冻分段器
                 RubberSegmentToggle(
                     options = listOf(
-                        "skip" to ("冻结卡片" to "彻底移出复习，沉淀至复学清单"),
-                        "bury_today" to ("埋藏今日" to "今日不再提示，明日自动回归")
+                        "skip" to (stringResource(R.string.settings_algo_action_skip_title) to stringResource(R.string.settings_algo_action_skip_desc)),
+                        "bury_today" to (stringResource(R.string.settings_algo_action_bury_title) to stringResource(R.string.settings_algo_action_bury_desc))
                     ),
                     selectedKey = leechAction,
                     onSelectedChange = onActionChange,
@@ -1074,12 +1076,12 @@ fun TemporalHorizonSection(
             ) {
                 Column {
                     Text(
-                        text = "提前复习容差窗口",
+                        text = stringResource(R.string.settings_algo_title_early_review),
                         style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "卡片冷却剩余低于此时间时，允许提前温习",
+                        text = stringResource(R.string.settings_algo_desc_early_review),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1091,7 +1093,7 @@ fun TemporalHorizonSection(
                     border = BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
                 ) {
                     Text(
-                        text = "${limitMinutes.toInt()} 分钟",
+                        text = stringResource(R.string.settings_algo_format_minutes_int, limitMinutes.toInt()),
                         color = accentColor,
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -1181,12 +1183,12 @@ fun FloatingLiquidIsland(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "算法参数已更新",
+                            text = stringResource(R.string.settings_algo_island_title_updated),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "点击应用以同步生效至引擎",
+                            text = stringResource(R.string.settings_algo_island_desc_updated),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1211,7 +1213,7 @@ fun FloatingLiquidIsland(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "立即应用",
+                            text = stringResource(R.string.settings_algo_btn_apply_now),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                             color = Color.White
                         )

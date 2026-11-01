@@ -21,6 +21,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
@@ -54,6 +56,7 @@ import com.jian.nemo.feature.settings.ThemeSettingsScreen
 import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
 import com.jian.nemo.feature.settings.AISettingsScreen
 import com.jian.nemo.feature.settings.LiquidGlassLabScreen
+import com.jian.nemo.feature.settings.CornerLabScreen
 import com.jian.nemo.feature.settings.AboutScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
@@ -604,6 +607,9 @@ fun NemoNavHost(
                 onNavigateToLiquidLab = {
                     navController.navigate(NavDestination.LIQUID_GLASS_LAB)
                 },
+                onNavigateToCornerLab = {
+                    navController.navigate(NavDestination.CORNER_LAB)
+                },
                 onNavigateToAbout = {
                     navController.navigate(NavDestination.ABOUT)
                 },
@@ -625,6 +631,15 @@ fun NemoNavHost(
         composable(NavDestination.LIQUID_GLASS_LAB) {
             SubScreenContainer {
                 LiquidGlassLabScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+
+        // 平滑圆角实验室
+        composable(NavDestination.CORNER_LAB) {
+            SubScreenContainer {
+                CornerLabScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
@@ -877,7 +892,7 @@ private fun PlaceholderScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_back)
                         )
                     }
                 }
@@ -899,7 +914,7 @@ private fun PlaceholderScreen(
                     style = MaterialTheme.typography.headlineMedium
                 )
                 Text(
-                    text = "功能开发中...",
+                    text = stringResource(R.string.app_feature_under_development),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

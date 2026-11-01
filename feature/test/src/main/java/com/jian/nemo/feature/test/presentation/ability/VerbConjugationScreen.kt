@@ -82,11 +82,11 @@ fun VerbConjugationScreen(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "动词活用",
+                title = stringResource(R.string.test_verb_header_title),
                 onBack = onNavigateBack,
                 actions = {
                     IconButton(onClick = { showHistoryView = true }) {
-                        Icon(Icons.Rounded.History, contentDescription = "历史记录", tint = textMain)
+                        Icon(Icons.Rounded.History, contentDescription = stringResource(R.string.test_verb_cd_history), tint = textMain)
                     }
                 }
             )
@@ -158,7 +158,7 @@ fun HistoryView(
     Scaffold(
         topBar = {
             CommonHeader(
-                title = "练习记录",
+                title = stringResource(R.string.test_verb_title_history),
                 onBack = onBack
             )
         },
@@ -412,7 +412,7 @@ private fun ReadyView(
             )
             Spacer(modifier = Modifier.width(8.dp))
             IconButton(onClick = onRegenerate, modifier = Modifier.size(32.dp)) {
-                Icon(Icons.Rounded.Refresh, contentDescription = "换一批", tint = textSub)
+                Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.test_verb_cd_refresh_batch), tint = textSub)
             }
         }
 
@@ -454,7 +454,7 @@ private fun ReadyView(
                     onClick = { viewModel.playWordTts() },
                     modifier = Modifier.size(44.dp).background(IosColors.Blue.copy(alpha = 0.1f), CircleShape)
                 ) {
-                    Icon(Icons.Rounded.VolumeUp, contentDescription = "Play Audio", tint = IosColors.Blue, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Rounded.VolumeUp, contentDescription = stringResource(R.string.test_verb_cd_play_audio), tint = IosColors.Blue, modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -619,7 +619,7 @@ private fun ReadyView(
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = if (isCorrect) IosColors.Green else IosColors.Red)
                 ) {
-                    Text(text = "继续", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.test_verb_btn_continue), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }

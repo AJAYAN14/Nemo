@@ -1,5 +1,8 @@
 package com.jian.nemo.core.ui.util
 
+import android.content.Context
+import com.jian.nemo.core.ui.R
+
 /**
  * 头像操作结果
  * 使用sealed class提供详细的错误信息
@@ -12,7 +15,7 @@ sealed class AvatarResult {
      */
     data class Success(
         val path: String,
-        val message: String = "头像已保存"
+        val message: String = ""
     ) : AvatarResult()
 
     /**
@@ -26,8 +29,8 @@ sealed class AvatarResult {
          * 权限被拒绝
          */
         data class PermissionDenied(
-            override val message: String = "权限被拒绝",
-            override val details: String? = "需要存储或相机权限才能设置头像"
+            override val message: String = "",
+            override val details: String? = null
         ) : Error()
 
         /**
@@ -35,8 +38,8 @@ sealed class AvatarResult {
          */
         data class FileNotFound(
             val path: String,
-            override val message: String = "文件不存在",
-            override val details: String? = "选择的图片文件不存在或已被删除"
+            override val message: String = "",
+            override val details: String? = null
         ) : Error()
 
         /**
@@ -45,8 +48,8 @@ sealed class AvatarResult {
         data class StorageFull(
             val availableSpace: Long,
             val requiredSpace: Long,
-            override val message: String = "存储空间不足",
-            override val details: String? = "需要至少 ${requiredSpace / 1024 / 1024}MB 空间"
+            override val message: String = "",
+            override val details: String? = null
         ) : Error()
 
         /**
@@ -54,7 +57,7 @@ sealed class AvatarResult {
          */
         data class InvalidImage(
             val reason: String,
-            override val message: String = "无效的图片文件",
+            override val message: String = "",
             override val details: String? = reason
         ) : Error()
 
@@ -64,8 +67,8 @@ sealed class AvatarResult {
         data class ImageTooLarge(
             val actualSize: Long,
             val maxSize: Long,
-            override val message: String = "图片文件过大",
-            override val details: String? = "图片大小 ${actualSize / 1024 / 1024}MB 超过限制 ${maxSize / 1024 / 1024}MB"
+            override val message: String = "",
+            override val details: String? = null
         ) : Error()
 
         /**
@@ -73,7 +76,7 @@ sealed class AvatarResult {
          */
         data class CompressionFailed(
             val exception: Exception,
-            override val message: String = "图片处理失败",
+            override val message: String = "",
             override val details: String? = exception.message
         ) : Error()
 
@@ -82,7 +85,7 @@ sealed class AvatarResult {
          */
         data class SaveFailed(
             val exception: Exception,
-            override val message: String = "保存失败",
+            override val message: String = "",
             override val details: String? = exception.message
         ) : Error()
 
@@ -91,9 +94,62 @@ sealed class AvatarResult {
          */
         data class Unknown(
             val exception: Exception,
-            override val message: String = "操作失败",
+            override val message: String = "",
             override val details: String? = exception.message
         ) : Error()
+    }
+
+    /**
+     * 获取用户友好的错误消息（通过 Context 本地化）
+     */
+    fun getUserMessage(context: Context): String {
+        return when (this) {
+            is Success -> context.getString(R.string.core_ui_avatar_result_success)
+            is Error.PermissionDenied -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_permission_denied),
+                context.getString(R.string.core_ui_avatar_result_permission_denied_details)
+            )
+            is Error.FileNotFound -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_file_not_found),
+                context.getString(R.string.core_ui_avatar_result_file_not_found_details)
+            )
+            is Error.StorageFull -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_storage_full),
+                context.getString(R.string.core_ui_avatar_result_storage_full_details, requiredSpace / 1024 / 1024)
+            )
+            is Error.InvalidImage -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_invalid_image),
+                reason
+            )
+            is Error.ImageTooLarge -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_image_too_large),
+                context.getString(
+                    R.string.core_ui_avatar_result_image_too_large_details,
+                    actualSize / 1024 / 1024,
+                    maxSize / 1024 / 1024
+                )
+            )
+            is Error.CompressionFailed -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_compression_failed),
+                details ?: ""
+            )
+            is Error.SaveFailed -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_save_failed),
+                details ?: ""
+            )
+            is Error.Unknown -> context.getString(
+                R.string.core_ui_avatar_result_format_with_details,
+                context.getString(R.string.core_ui_avatar_result_unknown),
+                details ?: ""
+            )
+        }
     }
 
     /**
@@ -102,7 +158,7 @@ sealed class AvatarResult {
     fun getUserMessage(): String {
         return when (this) {
             is Success -> message
-            is Error -> "$message${if (details != null) "：$details" else ""}"
+            is Error -> if (details != null) "$message：$details" else message
         }
     }
 

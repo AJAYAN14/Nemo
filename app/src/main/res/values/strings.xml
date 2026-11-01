@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Nemo</string>
+    <string name="app_feature_under_development">功能开发中...</string>
+    <string name="app_toast_new_version_found">发现新版本</string>
+    <string name="app_toast_latest_version">已是最新版本</string>
+
+    <!-- 应用更新通知栏文案 -->
+    <string name="app_notification_channel_name">下载通知</string>
+    <string name="app_notification_channel_desc">显示应用更新下载进度</string>
+    <string name="app_notification_download_progress">正在下载更新...</string>
+    <string name="app_notification_progress_format">%1$d%%</string>
+    <string name="app_notification_download_success">下载完成</string>
+    <string name="app_notification_click_to_install">点击立即安装</string>
+
+    <!-- 应用更新与服务下载错误与提示文案 -->
+    <string name="app_update_error_check_failed">检查更新失败</string>
+    <string name="app_update_error_unknown">未知错误</string>
+    <string name="app_update_error_download_failed">下载失败: %1$s</string>
+    <string name="app_update_error_download_exception">下载异常: %1$s</string>
+    <string name="app_update_notification_tts_downloading">正在下载 Google 语音服务...</string>
+    <string name="app_update_notification_tts_success_title">Google 语音服务下载完成</string>
+    <string name="app_update_error_file_not_found">安装失败：找不到文件</string>
+    <string name="app_update_error_install_failed">安装程序启动失败: %1$s</string>
 </resources>

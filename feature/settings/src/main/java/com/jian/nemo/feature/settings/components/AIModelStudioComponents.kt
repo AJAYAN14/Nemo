@@ -109,6 +109,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -120,6 +121,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.R as DesignR
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.domain.repository.AIConfig
 import com.jian.nemo.core.ui.component.Capsule
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
@@ -316,14 +318,14 @@ fun MatrixChipDock(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "AI 服务平台",
+                    text = stringResource(R.string.settings_ai_title_service_platform),
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Text(
-                text = "滑动轻触切换",
+                text = stringResource(R.string.settings_ai_label_swipe_tap_switch),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
@@ -428,7 +430,7 @@ fun MatrixChipDock(
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = if (isSelected) "● 已挂载" else "点击挂载",
+                                text = if (isSelected) stringResource(R.string.settings_ai_label_mounted) else stringResource(R.string.settings_ai_label_click_to_mount),
                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                                 color = if (isSelected) item.brandColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
@@ -505,7 +507,7 @@ fun SlotModelPicker(
                             .padding(end = 12.dp)
                     ) {
                         Text(
-                            text = "选择模型",
+                            text = stringResource(R.string.settings_ai_title_select_model),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = StudioThemePalette.textPrimary(isDark)
                         )
@@ -543,7 +545,7 @@ fun SlotModelPicker(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = if (isCustomMode) "推荐型号" else "手动输入",
+                            text = if (isCustomMode) stringResource(R.string.settings_ai_label_recommended_model) else stringResource(R.string.settings_ai_label_manual_input),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                             color = if (isCustomMode) platform.brandColor else StudioThemePalette.textSecondary(isDark)
                         )
@@ -569,7 +571,7 @@ fun SlotModelPicker(
                             onValueChange = onModelChange,
                             placeholder = {
                                 Text(
-                                    text = "输入自定义模型代号, 例如: ${platform.flagshipModels.firstOrNull() ?: "model-id"}",
+                                    text = stringResource(R.string.settings_ai_placeholder_custom_model, platform.flagshipModels.firstOrNull() ?: "model-id"),
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             },
@@ -589,7 +591,7 @@ fun SlotModelPicker(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "提示：自定义模型需确保您的 API Key 具备该模型调用权限",
+                            text = stringResource(R.string.settings_ai_tip_custom_model_permission),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         )
@@ -658,9 +660,9 @@ fun SlotModelPicker(
                                             )
                                             Text(
                                                 text = when {
-                                                    modelName.contains("reasoner") || modelName.contains("opus") -> "满血深度逻辑推理 / 长思维链"
-                                                    modelName.contains("mini") || modelName.contains("flash") -> "超低延迟极速响应 / 经济轻量"
-                                                    else -> "通用全能旗舰主力模型"
+                                                    modelName.contains("reasoner") || modelName.contains("opus") -> stringResource(R.string.settings_ai_desc_reasoner_model)
+                                                    modelName.contains("mini") || modelName.contains("flash") -> stringResource(R.string.settings_ai_desc_light_model)
+                                                    else -> stringResource(R.string.settings_ai_desc_flagship_model)
                                                 },
                                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
@@ -755,12 +757,12 @@ fun CryptKeySocket(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "安全凭证与网关",
+                            text = stringResource(R.string.settings_ai_title_security_and_gateway),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "端到端密钥本地加密保护，绝不上报云端",
+                            text = stringResource(R.string.settings_ai_subtitle_security_and_gateway),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -778,7 +780,7 @@ fun CryptKeySocket(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "配置名称",
+                    text = stringResource(R.string.settings_ai_label_config_name),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -792,7 +794,7 @@ fun CryptKeySocket(
                 onValueChange = onNameChange,
                 placeholder = {
                     Text(
-                        text = "例如: ${platform.name} 极速引擎",
+                        text = stringResource(R.string.settings_ai_placeholder_config_name, platform.name),
                         style = MaterialTheme.typography.bodySmall,
                         color = StudioThemePalette.textMuted(isDark)
                     )
@@ -822,7 +824,7 @@ fun CryptKeySocket(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "API 访问密钥",
+                    text = stringResource(R.string.settings_ai_label_api_key),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -853,7 +855,7 @@ fun CryptKeySocket(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "嗅探到密钥 · 一键注入",
+                                text = stringResource(R.string.settings_ai_btn_paste_key),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -872,7 +874,7 @@ fun CryptKeySocket(
                 onValueChange = onApiKeyChange,
                 placeholder = {
                     Text(
-                        text = "输入或粘贴 ${platform.name} API Key",
+                        text = stringResource(R.string.settings_ai_placeholder_api_key, platform.name),
                         style = MaterialTheme.typography.bodySmall,
                         color = StudioThemePalette.textMuted(isDark)
                     )
@@ -889,7 +891,7 @@ fun CryptKeySocket(
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
-                            contentDescription = if (passwordVisible) "隐藏" else "显示",
+                            contentDescription = if (passwordVisible) stringResource(R.string.settings_ai_cd_hide) else stringResource(R.string.settings_ai_cd_show),
                             tint = StudioThemePalette.textSecondary(isDark)
                         )
                     }
@@ -914,7 +916,7 @@ fun CryptKeySocket(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "服务网关端点",
+                    text = stringResource(R.string.settings_ai_label_gateway_endpoint),
                     style = MaterialTheme.typography.titleSmall.copy(
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.5.sp
@@ -925,7 +927,7 @@ fun CryptKeySocket(
                 // 一键恢复官方默认网关
                 if (baseUrl.trim() != platform.defaultUrl.trim()) {
                     Text(
-                        text = "恢复官方预设",
+                        text = stringResource(R.string.settings_ai_btn_restore_default_url),
                         style = MaterialTheme.typography.labelSmall.copy(
                             color = platform.brandColor,
                             fontWeight = FontWeight.Bold
@@ -944,7 +946,7 @@ fun CryptKeySocket(
                 onValueChange = onBaseUrlChange,
                 placeholder = {
                     Text(
-                        text = "例如: ${platform.defaultUrl}",
+                        text = stringResource(R.string.settings_ai_placeholder_gateway_endpoint, platform.defaultUrl),
                         style = MaterialTheme.typography.bodySmall,
                         color = StudioThemePalette.textMuted(isDark)
                     )
@@ -1032,12 +1034,12 @@ fun SloshGaugeProbe(
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(
-                            text = "网络连通性测试",
+                            text = stringResource(R.string.settings_ai_title_network_test),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "发送轻量 Ping 探测端点有效性与首字延迟",
+                            text = stringResource(R.string.settings_ai_subtitle_network_test),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1144,10 +1146,10 @@ fun SloshGaugeProbe(
                             ) {
                                 Text(
                                     text = when {
-                                        isTesting -> "正在测试连通性..."
-                                        testResult != null && testResult.success -> "连接成功"
-                                        testResult != null && !testResult.success -> "连接失败"
-                                        else -> "测试连通性"
+                                        isTesting -> stringResource(R.string.settings_ai_status_testing)
+                                        testResult != null && testResult.success -> stringResource(R.string.settings_ai_status_success)
+                                        testResult != null && !testResult.success -> stringResource(R.string.settings_ai_status_failed)
+                                        else -> stringResource(R.string.settings_ai_status_test_connection)
                                     },
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                     color = when {
@@ -1160,9 +1162,9 @@ fun SloshGaugeProbe(
                                 )
                                 Text(
                                     text = when {
-                                        isTesting -> "正在验证 API 与模型响应..."
+                                        isTesting -> stringResource(R.string.settings_ai_status_verifying)
                                         testResult != null -> testResult.message
-                                        else -> "验证当前密钥与端点可用性"
+                                        else -> stringResource(R.string.settings_ai_status_desc_idle)
                                     },
                                     style = MaterialTheme.typography.labelSmall,
                                     color = StudioThemePalette.textSecondary(isDark),
@@ -1179,7 +1181,7 @@ fun SloshGaugeProbe(
                                 border = BorderStroke(0.5.dp, platform.brandColor.copy(alpha = 0.35f))
                             ) {
                                 Text(
-                                    text = if (testResult != null) "重测" else "探测",
+                                    text = if (testResult != null) stringResource(R.string.settings_ai_btn_retest) else stringResource(R.string.settings_ai_btn_probe),
                                     color = platform.brandColor,
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)

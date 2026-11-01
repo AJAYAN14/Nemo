@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.data.manager.BackupInfo
@@ -126,13 +127,13 @@ fun CloudBackupHistoryScreen(
                     NemoChasingDotsLoader()
                     Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = "正在准备基础词库...",
+                        text = stringResource(R.string.settings_backup_preparing_dict_title),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "请稍候，基础词库下载完成后将自动展示历史备份",
+                        text = stringResource(R.string.settings_backup_preparing_dict_desc),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -194,7 +195,7 @@ fun CloudBackupHistoryScreen(
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = "基础词库正在准备中，请稍候恢复...",
+                                        text = stringResource(R.string.settings_backup_preparing_dict_banner),
                                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
@@ -325,7 +326,7 @@ fun CloudBackupHistoryScreen(
                                         modifier = Modifier.size(13.dp)
                                     )
                                     Text(
-                                        text = "云端档案同步",
+                                        text = stringResource(R.string.settings_backup_cloud_sync_tag),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -333,7 +334,7 @@ fun CloudBackupHistoryScreen(
                             }
 
                             Text(
-                                text = "恢复你的学习档案",
+                                text = stringResource(R.string.settings_backup_restore_archive_title),
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 24.sp
@@ -344,7 +345,7 @@ fun CloudBackupHistoryScreen(
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text(
-                                text = "检测到云端历史记录，选择一份备份同步至本机",
+                                text = stringResource(R.string.settings_backup_restore_archive_subtitle),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -366,7 +367,7 @@ fun CloudBackupHistoryScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "刷新列表",
+                                contentDescription = stringResource(R.string.settings_backup_btn_refresh_list),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
                                     .size(30.dp)
@@ -378,7 +379,7 @@ fun CloudBackupHistoryScreen(
             } else {
                 // 从设置页进入的二级管理模式：保留左侧返回键
                 CommonHeader(
-                    title = "云端备份历史",
+                    title = stringResource(R.string.settings_backup_history_title),
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
                     backdrop = backdrop,
@@ -398,7 +399,7 @@ fun CloudBackupHistoryScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "刷新列表",
+                                contentDescription = stringResource(R.string.settings_backup_btn_refresh_list),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
                                     .size(30.dp)
@@ -431,7 +432,7 @@ fun CloudBackupHistoryScreen(
                         .height(52.dp)
                 ) {
                     Text(
-                        text = "跳过，稍后在设置中恢复",
+                        text = stringResource(R.string.settings_backup_btn_skip_restore),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )
@@ -468,13 +469,13 @@ private fun EmptyBackupState() {
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "暂无云端备份",
+            text = stringResource(R.string.settings_backup_empty_title),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "返回上一页点击“备份到云端”将数据安全地保存在云端",
+            text = stringResource(R.string.settings_backup_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
             textAlign = TextAlign.Center
@@ -530,7 +531,7 @@ private fun BackupItemCard(
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                         ) {
                             Text(
-                                text = "最新进度",
+                                text = stringResource(R.string.settings_backup_tag_latest),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -540,7 +541,7 @@ private fun BackupItemCard(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "文件大小: $sizeKb KB",
+                    text = stringResource(R.string.settings_backup_format_size, sizeKb),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -558,7 +559,7 @@ private fun BackupItemCard(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.CloudDownload,
-                    contentDescription = if (isRestoreEnabled) "恢复此备份" else "词库准备中，暂不可恢复"
+                    contentDescription = if (isRestoreEnabled) stringResource(R.string.settings_backup_cd_restore) else stringResource(R.string.settings_backup_cd_restore_disabled)
                 )
             }
         }

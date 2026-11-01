@@ -26,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,22 +111,22 @@ fun LoginScreen(
         onResult = { result ->
             when (result) {
                 is NativeSignInResult.Success -> {
-                    snackbarMessage = "Google授权成功，正在同步登录状态..."
+                    snackbarMessage = context.getString(R.string.user_login_msg_google_success)
                     snackbarType = NemoSnackbarType.INFO
                     snackbarVisible = true
                 }
                 is NativeSignInResult.Error -> {
-                    snackbarMessage = "Google登录失败: ${result.message}"
+                    snackbarMessage = context.getString(R.string.user_login_err_google_failed, result.message)
                     snackbarType = NemoSnackbarType.ERROR
                     snackbarVisible = true
                 }
                 is NativeSignInResult.NetworkError -> {
-                    snackbarMessage = "网络错误: ${result.message}"
+                    snackbarMessage = context.getString(R.string.user_login_err_network, result.message)
                     snackbarType = NemoSnackbarType.ERROR
                     snackbarVisible = true
                 }
                 is NativeSignInResult.ClosedByUser -> {
-                    snackbarMessage = "用户取消登录"
+                    snackbarMessage = context.getString(R.string.user_login_msg_google_canceled)
                     snackbarType = NemoSnackbarType.INFO
                     snackbarVisible = true
                 }
@@ -133,7 +134,7 @@ fun LoginScreen(
             }
         },
         fallback = {
-            snackbarMessage = "当前设备不支持原生 Google 登录"
+            snackbarMessage = context.getString(R.string.user_login_msg_google_unsupported)
             snackbarType = NemoSnackbarType.WARNING
             snackbarVisible = true
         }
@@ -246,7 +247,7 @@ fun LoginScreen(
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                            contentDescription = "返回封面",
+                            contentDescription = stringResource(R.string.user_auth_desc_back_to_welcome),
                             tint = backBtnTint,
                             modifier = Modifier.size(30.dp)
                         )
@@ -289,7 +290,7 @@ fun LoginScreen(
                                 .padding(bottom = 24.dp)
                         ) {
                             Text(
-                                text = "在流动之间，\n精准掌握日语。",
+                                text = stringResource(R.string.user_auth_title_welcome),
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = titleTextColor,
@@ -300,7 +301,7 @@ fun LoginScreen(
                             Spacer(modifier = Modifier.height(14.dp))
 
                             Text(
-                                text = "Nemo 将沉浸式语言美学与 FSRS 科学记忆算法融合，助您轻松攻克假名、词汇、语法与动词变形。",
+                                text = stringResource(R.string.user_auth_label_welcome_desc),
                                 fontSize = 14.sp,
                                 color = descTextColor,
                                 lineHeight = 22.sp
@@ -329,7 +330,7 @@ fun LoginScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "登录账号",
+                                        text = stringResource(R.string.user_auth_btn_login),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = Color.White
@@ -364,7 +365,7 @@ fun LoginScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "注册新账号",
+                                        text = stringResource(R.string.user_auth_btn_register),
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = secondaryBtnText
@@ -390,7 +391,7 @@ fun LoginScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "欢迎回来",
+                                        text = stringResource(R.string.user_auth_title_login),
                                         fontSize = 26.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = titleTextColor,
@@ -400,7 +401,7 @@ fun LoginScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
 
                                     Text(
-                                        text = "使用邮箱密码或 Google 账号继续",
+                                        text = stringResource(R.string.user_auth_label_login_desc),
                                         fontSize = 13.sp,
                                         color = descTextColor
                                     )
@@ -419,7 +420,7 @@ fun LoginScreen(
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 7.dp)
                                 ) {
                                     Text(
-                                        text = "去注册",
+                                        text = stringResource(R.string.user_auth_btn_to_register),
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = capsuleText
@@ -439,7 +440,7 @@ fun LoginScreen(
                                 onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
                                 onLogin = {
                                     if (uiState.email.isBlank() || !uiState.email.contains("@")) {
-                                        snackbarMessage = "请输入有效的电子邮箱地址"
+                                        snackbarMessage = context.getString(R.string.user_login_err_invalid_email)
                                         snackbarType = NemoSnackbarType.WARNING
                                         snackbarVisible = true
                                         return@AppLoginForm
@@ -483,7 +484,7 @@ fun LoginScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "开启旅程",
+                                        text = stringResource(R.string.user_auth_title_register),
                                         fontSize = 26.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = titleTextColor,
@@ -493,7 +494,7 @@ fun LoginScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
 
                                     Text(
-                                        text = "开启您的沉浸式日语假名习得之旅",
+                                        text = stringResource(R.string.user_auth_label_register_desc),
                                         fontSize = 13.sp,
                                         color = descTextColor
                                     )
@@ -512,7 +513,7 @@ fun LoginScreen(
                                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 7.dp)
                                 ) {
                                     Text(
-                                        text = "去登录",
+                                        text = stringResource(R.string.user_auth_btn_to_login),
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = capsuleText
@@ -538,19 +539,19 @@ fun LoginScreen(
                                 onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                                 onRegister = {
                                     if (uiState.email.isBlank() || !uiState.email.contains("@")) {
-                                        snackbarMessage = "请输入有效的电子邮箱地址"
+                                        snackbarMessage = context.getString(R.string.user_login_err_invalid_email)
                                         snackbarType = NemoSnackbarType.WARNING
                                         snackbarVisible = true
                                         return@AppRegisterForm
                                     }
                                     if (uiState.password.length < 8) {
-                                        snackbarMessage = "密码长度不能少于 8 位"
+                                        snackbarMessage = context.getString(R.string.user_register_err_password_length)
                                         snackbarType = NemoSnackbarType.WARNING
                                         snackbarVisible = true
                                         return@AppRegisterForm
                                     }
                                     if (uiState.password != uiState.confirmPassword) {
-                                        snackbarMessage = "两次输入的密码不一致"
+                                        snackbarMessage = context.getString(R.string.user_register_err_passwords_mismatch)
                                         snackbarType = NemoSnackbarType.WARNING
                                         snackbarVisible = true
                                         return@AppRegisterForm
@@ -629,9 +630,9 @@ fun LoginScreen(
                 viewModel.register(finalUsername, uiState.email, uiState.password)
             },
             isDark = isDark,
-            title = "安全验证",
-            description = "请计算图中算术式的结果，输入答案完成注册：",
-            confirmText = "确认并注册"
+            title = stringResource(R.string.user_captcha_title_security_verify),
+            description = stringResource(R.string.user_captcha_desc_register),
+            confirmText = stringResource(R.string.user_captcha_btn_confirm_register)
         )
     }
 
@@ -644,9 +645,9 @@ fun LoginScreen(
                 viewModel.onLoginClicked()
             },
             isDark = isDark,
-            title = "安全验证",
-            description = "密码错误次数过多，请计算图中算术式的结果后继续登录：",
-            confirmText = "确认并登录"
+            title = stringResource(R.string.user_captcha_title_security_verify),
+            description = stringResource(R.string.user_captcha_desc_login),
+            confirmText = stringResource(R.string.user_captcha_btn_confirm_login)
         )
     }
 }

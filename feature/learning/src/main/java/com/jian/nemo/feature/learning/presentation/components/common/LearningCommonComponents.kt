@@ -170,7 +170,7 @@ fun LearnHeader(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                            contentDescription = "返回",
+                            contentDescription = stringResource(R.string.learn_common_desc_back),
                             tint = contentColor,
                             modifier = Modifier.size(30.dp)
                         )
@@ -178,7 +178,7 @@ fun LearnHeader(
 
                     // MD3: 标题使用 titleLarge (22sp)
                     Text(
-                        text = if(learningMode == LearningMode.Word) "单词学习" else "语法学习",
+                        text = if (learningMode == LearningMode.Word) stringResource(R.string.learn_common_title_word_learning) else stringResource(R.string.learn_common_title_grammar_learning),
                         style = MaterialTheme.typography.titleLarge,
                         color = contentColor,
                         modifier = Modifier.padding(start = 8.dp) // MD3: navigation 和 title 之间间距
@@ -208,7 +208,7 @@ fun LearnHeader(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Rounded.Undo,
-                                contentDescription = "撤销上一次评分",
+                                contentDescription = stringResource(R.string.learn_common_desc_undo),
                                 tint = contentColor,
                                 modifier = Modifier.size(30.dp)
                             )
@@ -240,7 +240,7 @@ fun LearnHeader(
                                         fontWeight = FontWeight.Medium
                                     )
                                 ) {
-                                    append("剩余 ")
+                                    append(stringResource(R.string.learn_common_label_remaining_prefix))
                                 }
                                 withStyle(
                                     style = SpanStyle(
@@ -670,7 +670,7 @@ fun WaitingContent(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = stringResource(R.string.cooldown_cooling_title),
+                            text = stringResource(R.string.learn_cooldown_cooling_title),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 1.5.sp,
@@ -689,7 +689,7 @@ fun WaitingContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(R.string.cooldown_no_expired_cards),
+                    text = stringResource(R.string.learn_cooldown_no_expired_cards),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isDark) Color.White else LearningPalette.AiSlateText
@@ -698,7 +698,7 @@ fun WaitingContent(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.cooldown_desc),
+                    text = stringResource(R.string.learn_cooldown_desc),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Normal,
                     lineHeight = 19.sp,
@@ -749,7 +749,7 @@ fun WaitingContent(
                                     modifier = Modifier.size(15.dp)
                                 )
                                 Text(
-                                    text = stringResource(R.string.cooldown_round_audit),
+                                    text = stringResource(R.string.learn_cooldown_round_audit),
                                     fontSize = 12.5.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = if (isDark) LearningPalette.CooldownPurpleTextDark else LearningPalette.AiSlateText
@@ -763,7 +763,7 @@ fun WaitingContent(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.cooldown_cooling_count, displayQueue),
+                                    text = stringResource(R.string.learn_cooldown_cooling_count, displayQueue),
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = LearningPalette.CooldownBadgeText
@@ -785,7 +785,7 @@ fun WaitingContent(
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.cooldown_learned_this_round),
+                                    text = stringResource(R.string.learn_cooldown_learned_this_round),
                                     fontSize = 11.sp,
                                     color = if (isDark) LearningPalette.CooldownMutedDark else LearningPalette.AiMutedText
                                 )
@@ -796,13 +796,13 @@ fun WaitingContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.cooldown_word_count, displayCompleted),
+                                        text = stringResource(R.string.learn_cooldown_word_count, displayCompleted),
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (isDark) LearningPalette.AiTrackBgLight else LearningPalette.AiSlateText
                                     )
                                     Text(
-                                        text = stringResource(R.string.cooldown_advanced),
+                                        text = stringResource(R.string.learn_cooldown_advanced),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = LearningPalette.ReadingAccentGreen
@@ -819,7 +819,7 @@ fun WaitingContent(
                                     .padding(horizontal = 11.dp, vertical = 9.dp)
                             ) {
                                 Text(
-                                    text = stringResource(R.string.cooldown_to_consolidate),
+                                    text = stringResource(R.string.learn_cooldown_to_consolidate),
                                     fontSize = 11.sp,
                                     color = if (isDark) LearningPalette.CooldownMutedDark else LearningPalette.AiMutedText
                                 )
@@ -830,13 +830,13 @@ fun WaitingContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = stringResource(R.string.cooldown_word_count, displayQueue),
+                                        text = stringResource(R.string.learn_cooldown_word_count, displayQueue),
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (isDark) LearningPalette.AiTrackBgLight else LearningPalette.AiSlateText
                                     )
                                     Text(
-                                        text = stringResource(R.string.cooldown_cooling_status),
+                                        text = stringResource(R.string.learn_cooldown_cooling_status),
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = LearningPalette.AccentOrange
@@ -874,7 +874,7 @@ fun WaitingContent(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.cooldown_btn_review_ahead),
+                        text = stringResource(R.string.learn_cooldown_btn_review_ahead),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -908,7 +908,7 @@ fun WaitingContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = stringResource(R.string.cooldown_btn_take_rest),
+                            text = stringResource(R.string.learn_cooldown_btn_take_rest),
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = if (isDark) LearningPalette.Slate300 else LearningPalette.Slate600

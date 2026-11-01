@@ -84,7 +84,11 @@ fun RestorePreviewDialog(
             ) {
                 // 标题
                 Text(
-                    text = if (preview.strategy == ImportStrategy.MERGE) "合并恢复预览" else "覆盖恢复预览",
+                    text = if (preview.strategy == ImportStrategy.MERGE) {
+                        stringResource(R.string.settings_restore_title_preview_merge)
+                    } else {
+                        stringResource(R.string.settings_restore_title_preview_overwrite)
+                    },
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -156,7 +160,7 @@ fun RestorePreviewDialog(
                         shape = CircleShape
                     ) {
                         Text(
-                            text = "取消",
+                            text = stringResource(R.string.settings_btn_cancel),
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -174,7 +178,7 @@ fun RestorePreviewDialog(
                         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                     ) {
                         Text(
-                            text = "确认恢复",
+                            text = stringResource(R.string.settings_restore_btn_confirm_restore),
                             fontWeight = FontWeight.SemiBold
                         )
                     }

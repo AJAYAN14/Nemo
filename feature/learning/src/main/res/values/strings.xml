@@ -220,4 +220,349 @@
     <string name="ai_reading_btn_back_to_config">返回配置</string>
     <string name="ai_reading_btn_switch_article">换一篇短文</string>
     <string name="ai_reading_btn_regenerate">重新生成</string>
+
+    <!-- 首页问候语副标题数组 -->
+    <string-array name="home_greeting_subtitles_morning">
+        <item>新的一天，从第一项学习开始。</item>
+        <item>晨间微凉，静心学习最相宜。</item>
+        <item>早安，今天也要元气满满。</item>
+        <item>清晨的学习，是为了遇见更好的自己。</item>
+        <item>日积月累，梦想终会开花。</item>
+    </string-array>
+    <string-array name="home_greeting_subtitles_afternoon">
+        <item>享受午后的学习时光吧。</item>
+        <item>阳光正好，适合温故而知新。</item>
+        <item>午后的宁静，是进步最好的陪伴。</item>
+        <item>偶尔小憩，是为了更有力地前进。</item>
+        <item>慢慢来，每一步积累都算数。</item>
+    </string-array>
+    <string-array name="home_greeting_subtitles_evening">
+        <item>今天辛苦了，收个好尾吧。</item>
+        <item>晚风习习，伴你复习今日所得。</item>
+        <item>总结今日，满怀期待迎接明天。</item>
+        <item>夜晚的学习，是对心灵最好的慰藉。</item>
+        <item>今日事今日毕，晚安前的最后冲刺。</item>
+    </string-array>
+    <string-array name="home_greeting_subtitles_night">
+        <item>夜深了，忙完这项就早点休息哦。</item>
+        <item>星光不问赶路人，但也要记得睡觉。</item>
+        <item>深夜的灵感，请留给明天的晨曦。</item>
+        <item>熬夜是不行的哦，身体才是本钱。</item>
+        <item>静谧的夜，愿你带着收获入梦。</item>
+    </string-array>
+
+    <!-- 首页 Bento 卡片与快捷入口 -->
+    <string name="home_bento_learn_progress_title">今日新学进度</string>
+    <string name="home_bento_learn_goal_format">新学目标 %1$d</string>
+    <string name="home_bento_review_empty">暂无复习项目</string>
+    <string name="home_bento_review_progress_title">复习进度</string>
+    <string name="home_menu_verb_conjugation_title">动词活用</string>
+    <string name="home_menu_verb_conjugation_subtitle">13种变形速查</string>
+    <string name="home_menu_ai_reading_title">AI 阅读</string>
+    <string name="home_menu_ai_reading_subtitle">分级智能短文</string>
+
+    <!-- 单词卡片展示文案 -->
+    <string name="card_action_speak">朗读</string>
+    <string name="card_hint_tap_to_flip">点 击 翻 转</string>
+    <string name="card_label_meaning">词 义</string>
+    <string name="card_label_example">例 句</string>
+
+    <!-- 评分指引界面 -->
+    <string name="rating_guide_title">评分说明</string>
+    <string name="rating_guide_core_principle_title">核心原则</string>
+    <string name="rating_guide_core_principle_content">按回忆难度打分，不按是否看过答案打分。</string>
+    <string name="rating_guide_new_learn_title">新学（第一次接触）</string>
+    <string name="rating_guide_new_again_desc">重来：完全想不起来，或需要重新看讲解。</string>
+    <string name="rating_guide_new_hard_desc">困难：能回忆一点，但很吃力、很慢，容易错。</string>
+    <string name="rating_guide_new_good_desc">良好：能正常回忆，速度一般。</string>
+    <string name="rating_guide_new_easy_desc">容易：几乎秒回，且很有把握。</string>
+    <string name="rating_guide_review_title">复习（学过的卡片）</string>
+    <string name="rating_guide_review_again_desc">重来：这次没想起来，或答错。</string>
+    <string name="rating_guide_review_hard_desc">困难：想起来了，但明显比预期更费劲。</string>
+    <string name="rating_guide_review_good_desc">良好：正常想起，符合日常复习状态。</string>
+    <string name="rating_guide_review_easy_desc">容易：非常轻松，建议拉长下次间隔。</string>
+    <string name="rating_guide_practical_tip">实用建议：拿不准时优先选“良好”；只有明显吃力再选“困难”，别把“重来”当保守选项常点。</string>
+    <string name="rating_guide_btn_understood">我知道了</string>
+    <string name="rating_level_again">重来</string>
+    <string name="rating_level_hard">困难</string>
+    <string name="rating_level_good">良好</string>
+    <string name="rating_level_easy">容易</string>
+
+    <!-- ========================================== -->
+    <!-- :feature:learning 规范标准化文案收编 (learn_*) -->
+    <!-- ========================================== -->
+
+    <!-- LearningScreen -->
+    <string name="learn_screen_desc_back">返回</string>
+    <string name="learn_screen_desc_share">分享</string>
+    <string name="learn_screen_badge_daily_streak">已连续打卡 %1$d 天</string>
+    <string name="learn_screen_delay_hint">等待中，请先回想 (%1$ds)</string>
+    <string name="learn_screen_dialog_auto_reveal_title">自动翻面时长</string>
+    <string name="learn_screen_dialog_delay_title">显示答案等待时长</string>
+    <string name="learn_screen_finish_daily_goal_title">今日任务达成！</string>
+    <string name="learn_screen_finish_daily_goal_subtitle">坚持就是胜利，明天继续加油</string>
+    <string name="learn_screen_finish_micro_session_title">本组微会话完成！</string>
+    <string name="learn_screen_finish_micro_session_words_subtitle">已连续打卡 %1$d 天，继续完成今日目标吧（还差 %2$d 词）</string>
+    <string name="learn_screen_finish_micro_session_grammars_subtitle">已连续打卡 %1$d 天，继续完成今日目标吧（还差 %2$d 项）</string>
+    <string name="learn_screen_finish_no_words_title">暂无单词任务</string>
+    <string name="learn_screen_finish_no_words_subtitle">目前没有需要学习或复习的单词</string>
+    <string name="learn_screen_finish_no_grammars_title">暂无语法任务</string>
+    <string name="learn_screen_finish_no_grammars_subtitle">目前没有需要学习或复习的语法</string>
+
+    <!-- WordCard -->
+    <string name="learn_word_card_action_speak">朗读</string>
+    <string name="learn_word_card_hint_tap_to_flip">点 击 翻 转</string>
+    <string name="learn_word_card_label_meaning">词 义</string>
+    <string name="learn_word_card_label_example">例 句</string>
+
+    <!-- SRSGrammarCard -->
+    <string name="learn_grammar_card_btn_whiteboard">临时手写板</string>
+    <string name="learn_grammar_card_hint_think">思考这个语法的用法...</string>
+    <string name="learn_grammar_card_badge_new">新学</string>
+    <string name="learn_grammar_card_badge_learning">在学</string>
+    <string name="learn_grammar_card_badge_review">复习</string>
+    <string name="learn_grammar_card_badge_relearn">重学</string>
+    <string name="learn_grammar_card_label_usage_prefix">用法%1$s</string>
+    <string name="learn_grammar_card_action_collapse">收起</string>
+    <string name="learn_grammar_card_action_expand">展开</string>
+    <string name="learn_grammar_card_label_connection">接续</string>
+    <string name="learn_grammar_card_label_explanation">说明</string>
+    <string name="learn_grammar_card_label_example">例句</string>
+    <string name="learn_grammar_card_tips_prefix">TIPS: %1$s</string>
+
+    <!-- LearnHeaderMoreMenu -->
+    <string name="learn_menu_desc_more">更多选项</string>
+    <string name="learn_menu_item_rating_guide">评分说明（新学/复习）</string>
+    <string name="learn_menu_item_suspend">暂停此卡片 (Suspend)</string>
+    <string name="learn_menu_item_bury">今日暂缓此项 (Bury)</string>
+    <string name="learn_menu_item_report_error">报告条目错误</string>
+    <string name="learn_menu_toggle_auto_audio">翻面自动朗读</string>
+    <string name="learn_menu_toggle_delay">显示答案等待</string>
+    <string name="learn_menu_item_delay_duration">等待时长: %1$s</string>
+    <string name="learn_menu_toggle_auto_reveal">自动翻面</string>
+    <string name="learn_menu_item_auto_reveal_duration">翻面时长: %1$s</string>
+    <string name="learn_menu_status_enabled">已开启</string>
+    <string name="learn_menu_status_disabled">已关闭</string>
+    <string name="learn_menu_item_whiteboard">手写白板: %1$s</string>
+    <string name="learn_menu_theme_system">跟随系统</string>
+    <string name="learn_menu_theme_dark">深色模式</string>
+    <string name="learn_menu_theme_light">浅色模式</string>
+    <string name="learn_menu_item_display_mode">显示模式: %1$s</string>
+
+    <!-- LearningFinishedContent -->
+    <string name="learn_finish_unit_word">词</string>
+    <string name="learn_finish_avg_seconds_format">平均每词 %1$s 秒</string>
+    <string name="learn_finish_today_word_count">今日词量</string>
+    <string name="learn_finish_100_percent_mastered">100% 掌握</string>
+    <string name="learn_finish_old_words_consolidate">旧词巩固</string>
+    <string name="learn_finish_unit_words">词</string>
+    <string name="learn_finish_new_words_expand">新词拓展</string>
+    <string name="learn_finish_relearn_conquer">攻克</string>
+    <string name="learn_finish_max_combo">最高连击</string>
+    <string name="learn_finish_unit_times">次</string>
+    <string name="learn_finish_focus_duration">专注用时</string>
+    <string name="learn_finish_unit_minute">分</string>
+    <string name="learn_finish_unit_second">秒</string>
+    <string name="learn_finish_today_due_review">今日待复习词量</string>
+    <string name="learn_finish_tomorrow_review_forecast">明日自然到期预估</string>
+    <string name="learn_finish_bonus_title">今日加餐</string>
+    <string name="learn_finish_bonus_subtitle">突破常规，设定追加练习目标</string>
+    <string name="learn_finish_btn_go_bonus">去加餐</string>
+    <string name="learn_finish_btn_complete_today">完成今日学习</string>
+    <string name="learn_finish_btn_learn_next_group">学习下一组</string>
+
+    <!-- LearningCommonComponents -->
+    <string name="learn_common_desc_back">返回</string>
+    <string name="learn_common_title_word_learning">单词学习</string>
+    <string name="learn_common_title_grammar_learning">语法学习</string>
+    <string name="learn_common_desc_undo">撤销上一次评分</string>
+    <string name="learn_common_label_remaining_prefix">剩余 </string>
+    <string name="learn_cooldown_cooling_title">复习冷却中</string>
+    <string name="learn_cooldown_no_expired_cards">暂无已到期的卡片</string>
+    <string name="learn_cooldown_desc">当前词已进入短时记忆巩固阶梯。依据记忆曲线规律，稍候再次复习可达到最佳记忆留存效果。</string>
+    <string name="learn_cooldown_round_audit">本轮学习战报</string>
+    <string name="learn_cooldown_cooling_count">冷却中 %1$d 词</string>
+    <string name="learn_cooldown_learned_this_round">本轮已学</string>
+    <string name="learn_cooldown_word_count">%1$d 词</string>
+    <string name="learn_cooldown_advanced">已推进</string>
+    <string name="learn_cooldown_to_consolidate">待巩固卡片</string>
+    <string name="learn_cooldown_cooling_status">正在冷却</string>
+    <string name="learn_cooldown_btn_review_ahead">提前复习</string>
+    <string name="learn_cooldown_btn_take_rest">稍后复习，去休息片刻</string>
+
+    <!-- AIReadingScreen -->
+    <string name="learn_reading_title">AI 日语阅读</string>
+    <string name="learn_reading_desc_history">阅读历史</string>
+    <string name="learn_reading_desc_settings">AI设置</string>
+    <string name="learn_reading_select_level">选择 JLPT 级别</string>
+    <string name="learn_reading_level_subtitle">难度自适应匹配 AI 生成语料</string>
+    <string name="learn_reading_level_n5_tag">入门基石</string>
+    <string name="learn_reading_level_n5_desc">基础生活日常会话与简明短文</string>
+    <string name="learn_reading_level_n4_tag">初级进阶</string>
+    <string name="learn_reading_level_n4_desc">日常情境叙述与基础复合句表达</string>
+    <string name="learn_reading_level_n3_tag">中级跨越</string>
+    <string name="learn_reading_level_n3_desc">文化生活随笔与较完整话题阅读</string>
+    <string name="learn_reading_level_n2_tag">高级突破</string>
+    <string name="learn_reading_level_n2_desc">报刊社论、深度观点与复杂议论文</string>
+    <string name="learn_reading_level_n1_tag">学术精通</string>
+    <string name="learn_reading_level_n1_desc">文学原著、社科政经与地道深度论述</string>
+    <string name="learn_reading_level_adaptive_tag">自适应</string>
+    <string name="learn_reading_level_adaptive_desc">AI 智能语料匹配与动态训练</string>
+    <string name="learn_reading_select_theme">选择阅读主题</string>
+    <string name="learn_reading_theme_subtitle">沉浸式日式和风物语</string>
+    <string name="learn_reading_theme_count">6 个精选领域</string>
+    <string name="learn_reading_btn_start_training">开启智能阅读训练</string>
+    <string name="learn_reading_building_training">AI 正在构建智能阅读训练</string>
+    <string name="learn_reading_status_completed">已完成</string>
+    <string name="learn_reading_btn_confirm">确定</string>
+    <string name="learn_reading_snackbar_copied">日文原文已复制到剪贴板</string>
+    <string name="learn_reading_btn_copy">复制原文</string>
+    <string name="learn_reading_hide_translation">隐藏中文对照</string>
+    <string name="learn_reading_show_translation">查看中文对照</string>
+    <string name="learn_reading_section_vocab">核心重点词汇</string>
+    <string name="learn_reading_section_quiz">阅读理解小测验</string>
+    <string name="learn_reading_quiz_all_correct">完璧！全部答对！</string>
+    <string name="learn_reading_quiz_score_format">继续加油！答对 %1$d/%2$d 道题</string>
+    <string name="learn_reading_quiz_all_correct_sub">太棒了，您的阅读理解能力无懈可击！</string>
+    <string name="learn_reading_quiz_review_sub">阅读中还有细节需要厘清，查看下方解析学习吧！</string>
+    <string name="learn_reading_btn_submit_score">提交答题并查看评分</string>
+    <string name="learn_reading_btn_complete_all_questions">请先完成所有题目</string>
+    <string name="learn_reading_btn_back_to_config">返回配置</string>
+    <string name="learn_reading_btn_switch_article">换一篇短文</string>
+    <string name="learn_reading_desc_correct">正确</string>
+    <string name="learn_reading_desc_incorrect">错误</string>
+    <string name="learn_reading_question_analysis">题目解析</string>
+    <string name="learn_reading_error_generate_failed">生成短文失败</string>
+    <string name="learn_reading_btn_regenerate">重新生成</string>
+
+    <!-- AIWorkshopScreen -->
+    <string name="learn_workshop_title">AI 例文工坊</string>
+    <string name="learn_workshop_desc_history">历史记录</string>
+    <string name="learn_workshop_desc_help">帮助</string>
+    <string name="learn_workshop_btn_start_practice">开始练习</string>
+    <string name="learn_workshop_ai_generating">AI 正在生成例文与场景运用</string>
+    <string name="learn_workshop_status_completed">已完成</string>
+    <string name="learn_workshop_error_retry">操作失败，请重试</string>
+    <string name="learn_workshop_mode_free">自由模式</string>
+    <string name="learn_workshop_mode_grammar">语法专项</string>
+    <string name="learn_workshop_empty_grammar_title">本地暂无该等级语法数据</string>
+    <string name="learn_workshop_empty_grammar_desc">请先返回主页同步数据\n或切换到「自由模式」进行练习</string>
+    <string name="learn_workshop_hero_title_grammar">语法专项训练</string>
+    <string name="learn_workshop_hero_title_free">开启智能练习</string>
+    <string name="learn_workshop_hero_desc_grammar">AI 将从本地语法库中随机抽取\n一个语法点为您生成针对性练习</string>
+    <string name="learn_workshop_hero_desc_free">AI 将根据您的日语等级\n为您实时生成专属的翻译例文</string>
+    <string name="learn_workshop_type_cn_to_jp">中翻日</string>
+    <string name="learn_workshop_type_jp_to_cn">日翻中</string>
+    <string name="learn_workshop_desc_speak">朗读</string>
+    <string name="learn_workshop_desc_refresh">换一题</string>
+    <string name="learn_workshop_hint_prefix">提示: %1$s</string>
+    <string name="learn_workshop_input_placeholder">在这里输入您的翻译答案...</string>
+    <string name="learn_workshop_btn_submit_eval">提交 AI 评分</string>
+    <string name="learn_workshop_feedback_great">完成得很棒！</string>
+    <string name="learn_workshop_feedback_keep_going">继续加油！</string>
+    <string name="learn_workshop_feedback_score_title">AI 综合评分结果</string>
+    <string name="learn_workshop_feedback_score_format">%1$d 分</string>
+    <string name="learn_workshop_label_my_answer">我的答案</string>
+    <string name="learn_workshop_label_standard_answer">标准参考答案</string>
+    <string name="learn_workshop_label_ai_review">AI 详细点评</string>
+    <string name="learn_workshop_btn_next_question">下一题</string>
+    <string name="learn_workshop_config_required_title">未配置 AI 服务</string>
+    <string name="learn_workshop_config_required_desc">请前往“设置 -> AI 工坊配置”\n填写 API Key 即可开启智能练习</string>
+    <string name="learn_workshop_btn_go_config">立即去配置</string>
+    <string name="learn_workshop_help_title">工坊使用指南</string>
+    <string name="learn_workshop_help_btn_confirm">我知道了</string>
+    <string name="learn_workshop_help_item_1_title">定制化练习</string>
+    <string name="learn_workshop_help_item_1_desc">AI 会根据您设置的日语等级（N1-N5）生成针对性的练习题。</string>
+    <string name="learn_workshop_help_item_2_title">多样化题型</string>
+    <string name="learn_workshop_help_item_2_desc">包含中译日和日译中两种类型，全面提升翻译和表达能力。</string>
+    <string name="learn_workshop_help_item_3_title">专业反馈</string>
+    <string name="learn_workshop_help_item_3_desc">提交后 AI 会即时评分并提供详细的语法及用词点评建议。</string>
+    <string name="learn_workshop_help_item_4_title">记录回顾</string>
+    <string name="learn_workshop_help_item_4_desc">所有练习均保存 30 天，可随时通过顶部历史图标回顾。</string>
+
+    <!-- AIWordTranslationSheet -->
+    <string name="learn_reading_sheet_analyzing">AI 正在分析语义...</string>
+    <string name="learn_reading_sheet_desc_speak">朗读</string>
+    <string name="learn_reading_sheet_meaning_title">释义</string>
+
+    <!-- CustomTextToolbar -->
+    <string name="learn_toolbar_copy">复制</string>
+    <string name="learn_toolbar_select_all">全选</string>
+    <string name="learn_toolbar_translate">翻译</string>
+
+    <!-- AIAuroraBackground -->
+    <string name="learn_aurora_preset_classic">经典极光</string>
+    <string name="learn_aurora_preset_nordic">霓虹天际</string>
+    <string name="learn_aurora_preset_polar_dawn">极昼破晓</string>
+    <string name="learn_aurora_preset_glacier">冰川青碧</string>
+    <string name="learn_aurora_preset_dusk">暮色紫霞</string>
+
+    <!-- CategoryCardBrowseScreen -->
+    <string name="learn_category_desc_answer_sheet">答题卡</string>
+    <string name="learn_category_error_load_failed">加载失败</string>
+    <string name="learn_category_error_unknown">未知错误</string>
+    <string name="learn_category_empty_title">暂无词汇</string>
+    <string name="learn_category_empty_desc">该分类下暂时没有词汇</string>
+    <string name="learn_category_desc_prev">上一个</string>
+    <string name="learn_category_btn_practice">跟打练习</string>
+    <string name="learn_category_desc_next">下一个</string>
+    <string name="learn_category_answer_sheet_title">编号列表</string>
+
+    <!-- 学习模块补充文本 -->
+    <string name="learn_ai_detail_title">练习详情</string>
+    <string name="learn_ai_detail_cn_question">中文题目</string>
+    <string name="learn_ai_detail_jp_question">日文题目</string>
+    <string name="learn_ai_detail_my_answer">你的答案</string>
+    <string name="learn_ai_detail_ref_answer">参考答案</string>
+    <string name="learn_ai_detail_eval_title">AI 评价与解析</string>
+    <string name="learn_ai_detail_difficulty_format">题目难度: %1$s</string>
+    <string name="learn_ai_detail_score_title">AI 综合评分</string>
+    <string name="learn_ai_detail_score_excellent">表现卓越！</string>
+    <string name="learn_ai_detail_score_pass">合格</string>
+    <string name="learn_ai_detail_score_need_work">需继续努力</string>
+
+    <string name="learn_ai_history_title">练习历史</string>
+    <string name="learn_ai_history_cd_clear">清空历史</string>
+    <string name="learn_ai_history_dialog_clear_title">清空历史记录</string>
+    <string name="learn_ai_history_dialog_clear_msg">确定要清空所有的练习历史吗？此操作不可撤销。</string>
+    <string name="learn_ai_history_confirm_clear">确认清空</string>
+    <string name="learn_ai_history_empty_title">暂无练习历史</string>
+    <string name="learn_ai_history_empty_desc">在这里记录并回顾您的 AI 翻译与语法练习表现</string>
+    <string name="learn_ai_history_difficulty_format">难度: %1$s</string>
+    <string name="learn_ai_history_cn_to_jp">中翻日</string>
+    <string name="learn_ai_history_jp_to_cn">日翻中</string>
+
+    <string name="learn_typing_dialog_title">跟打练习</string>
+    <string name="learn_typing_btn_clear">清空</string>
+    <string name="learn_typing_feedback_correct">回答正确！</string>
+    <string name="learn_typing_feedback_wrong">回答错误，请检查您的输入</string>
+
+    <string name="learn_srs_rating_again">重来</string>
+    <string name="learn_srs_rating_hard">困难</string>
+    <string name="learn_srs_rating_good">良好</string>
+    <string name="learn_srs_rating_easy">简单</string>
+    <string name="learn_srs_rating_easy_alt">容易</string>
+    <string name="learn_srs_rating_forgot">完全忘记</string>
+
+    <string name="learn_notification_btn_got_it">我知道了</string>
+    <string name="learn_streak_days_format">%1$d 天</string>
+
+    <string name="learn_verb_handbook_title">日语动词活用大全</string>
+    <string name="learn_verb_form_dictionary">辞书形 (基本形 / 原形)</string>
+    <string name="learn_verb_form_masu">ます形 (敬体连用形)</string>
+    <string name="learn_verb_form_te">て形 (中顿 / 请求)</string>
+    <string name="learn_verb_form_ta">た形 (过去式)</string>
+    <string name="learn_verb_form_nai">ない形 (否定形)</string>
+    <string name="learn_verb_form_volitional">意志形</string>
+    <string name="learn_verb_form_imperative">命令形</string>
+    <string name="learn_verb_form_prohibitive">禁止形</string>
+    <string name="learn_verb_form_conditional">条件形 (ば形)</string>
+    <string name="learn_verb_form_potential">可能形</string>
+    <string name="learn_verb_form_passive">被动形 (受身形)</string>
+    <string name="learn_verb_form_causative">使役形</string>
+    <string name="learn_verb_form_causative_passive">使役被动形</string>
+<!-- 今日成就分享弹窗 (DailyAchievementShareDialog) -->
+    <string name="learning_share_time_min_sec_format">%1$d分%2$d秒</string>
+    <string name="learning_share_time_sec_format">%1$d秒</string>
+    <string name="learning_share_intent_chooser_title">分享今日学习成就</string>
 </resources>

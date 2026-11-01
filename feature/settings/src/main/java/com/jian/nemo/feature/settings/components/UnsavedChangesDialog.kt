@@ -8,6 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.settings.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,10 +29,10 @@ fun UnsavedChangesDialog(
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = "未保存的更改",
-        text = "您对参数进行了修改，是否在离开前应用这些配置？",
-        confirmText = "应用更改",
-        dismissText = "放弃更改",
+        title = stringResource(R.string.settings_dialog_title_unsaved_changes),
+        text = stringResource(R.string.settings_dialog_msg_unsaved_changes),
+        confirmText = stringResource(R.string.settings_dialog_btn_apply_changes),
+        dismissText = stringResource(R.string.settings_dialog_btn_discard_changes),
         confirmButtonColor = MaterialTheme.colorScheme.primary,
         onConfirm = onSaveAndExit,
         onDismiss = onDiscardChanges

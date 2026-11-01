@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -104,7 +106,7 @@ fun CategoryCardBrowseScreen(
                     ) {
                         Icon(
                             painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_page_menu_ios),
-                            contentDescription = "答题卡",
+                            contentDescription = stringResource(R.string.learn_category_desc_answer_sheet),
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(30.dp)
                         )
@@ -146,12 +148,12 @@ fun CategoryCardBrowseScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "加载失败",
+                            text = stringResource(R.string.learn_category_error_load_failed),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = errorMessage ?: "未知错误",
+                            text = errorMessage ?: stringResource(R.string.learn_category_error_unknown),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -166,12 +168,12 @@ fun CategoryCardBrowseScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "暂无词汇",
+                            text = stringResource(R.string.learn_category_empty_title),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "该分类下暂时没有词汇",
+                            text = stringResource(R.string.learn_category_empty_desc),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -353,7 +355,7 @@ fun CategoryCardBrowseActionButtons(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "上一个",
+                contentDescription = stringResource(R.string.learn_category_desc_prev),
                 tint = prevTint,
                 modifier = Modifier.size(24.dp)
             )
@@ -375,7 +377,7 @@ fun CategoryCardBrowseActionButtons(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "跟打练习",
+                    text = stringResource(R.string.learn_category_btn_practice),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -393,7 +395,7 @@ fun CategoryCardBrowseActionButtons(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "下一个",
+                contentDescription = stringResource(R.string.learn_category_desc_next),
                 tint = nextTint,
                 modifier = Modifier.size(24.dp)
             )
@@ -483,7 +485,7 @@ fun AnswerSheetDrawer(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "编号列表",
+                    text = stringResource(R.string.learn_category_answer_sheet_title),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )

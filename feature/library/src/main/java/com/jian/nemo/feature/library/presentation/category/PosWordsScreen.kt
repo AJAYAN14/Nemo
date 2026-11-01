@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.animation.animateListItem
 import com.jian.nemo.core.ui.animation.animateListItem
@@ -40,7 +42,7 @@ fun PosWordsScreen(
                     Column {
                         Text(uiState.partOfSpeech.displayName)
                         Text(
-                            text = "${uiState.words.size} 个单词",
+                            text = stringResource(R.string.lib_pos_words_count_format, uiState.words.size),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -49,7 +51,7 @@ fun PosWordsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回"
+                            contentDescription = stringResource(R.string.lib_pos_words_nav_back)
                         )
                     }
                 },
@@ -71,7 +73,7 @@ fun PosWordsScreen(
                 )
             } else if (uiState.words.isEmpty()) {
                 Text(
-                    text = "暂无${uiState.partOfSpeech.displayName}单词",
+                    text = stringResource(R.string.lib_pos_words_empty_format, uiState.partOfSpeech.displayName),
                     modifier = Modifier.align(Alignment.Center),
                     style = MaterialTheme.typography.bodyLarge
                 )

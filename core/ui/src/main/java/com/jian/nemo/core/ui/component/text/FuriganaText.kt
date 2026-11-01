@@ -39,7 +39,7 @@ fun FuriganaText(
     baseTextStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     baseTextColor: Color = Color.Unspecified,
     furiganaTextSize: TextUnit = 10.sp,
-    furiganaTextColor: Color = Color.Gray,
+    furiganaTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     furiganaFontFamily: FontFamily? = null
 ) {
     // 1. 解析

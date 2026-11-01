@@ -113,7 +113,7 @@ fun ExpressionScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "数据加载出错了: ${uiState.error}",
+                        text = stringResource(R.string.lib_expression_error_load_failed, uiState.error ?: ""),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -173,7 +173,7 @@ fun CategoryDashboard(
         topBar = {
             if (onNavigateBack != null) {
                 CommonHeader(
-                    title = "灵动词法库",
+                    title = stringResource(R.string.lib_expression_title),
                     onBack = onNavigateBack
                 )
             }
@@ -304,7 +304,7 @@ fun CategoryFlatCard(
                     border = BorderStroke(0.5.dp, themeColor.copy(alpha = 0.3f))
                 ) {
                     Text(
-                        text = "${category.items.size} 条表达",
+                        text = stringResource(R.string.lib_expression_count_format, category.items.size),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
@@ -373,7 +373,7 @@ fun ExpressionBrowser(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "💡 口诀: ${category.formula}",
+                        text = stringResource(R.string.lib_expression_formula_format, category.formula),
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         color = themeColor
@@ -402,7 +402,7 @@ fun ExpressionBrowser(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "没有符合过滤条件的表达词条",
+                    text = stringResource(R.string.lib_expression_empty_filter),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -446,7 +446,7 @@ fun FlatFilterBar(
             value = searchQuery,
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.library_expression_placeholder_search)) },
+            placeholder = { Text(stringResource(R.string.lib_expression_search_placeholder)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
@@ -568,7 +568,7 @@ fun ExpressionFlatCard(
             
             // 假名读音 (振假名方式提示)
             Text(
-                text = "假名: ${expression.furigana}",
+                text = stringResource(R.string.lib_expression_furigana_format, expression.furigana),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -588,7 +588,7 @@ fun ExpressionFlatCard(
             // 独立淡灰色提示字眼 (解耦后的 tip 字段)
             if (expression.tip.isNotBlank()) {
                 Text(
-                    text = "💡 提示: ${expression.tip}",
+                    text = stringResource(R.string.lib_expression_tip_format, expression.tip),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
@@ -646,7 +646,7 @@ fun ExpressionFlatCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "查看双语例句 (${expression.examples.size})",
+                        text = stringResource(R.string.lib_expression_examples_expand_format, expression.examples.size),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -654,7 +654,7 @@ fun ExpressionFlatCard(
                     
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "展收箭头",
+                        contentDescription = stringResource(R.string.lib_expression_expand_arrow_cd),
                         modifier = Modifier.rotate(rotationState),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

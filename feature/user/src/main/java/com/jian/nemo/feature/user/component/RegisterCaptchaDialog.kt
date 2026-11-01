@@ -30,6 +30,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.user.R
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.CaptchaPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
@@ -247,9 +249,9 @@ fun RegisterCaptchaDialog(
     onDismissRequest: () -> Unit,
     onSuccess: () -> Unit,
     isDark: Boolean,
-    title: String = "安全验证",
-    description: String = "请计算图中算术式的结果，输入答案完成验证：",
-    confirmText: String = "确认"
+    title: String = stringResource(R.string.user_captcha_title_security_verify),
+    description: String = stringResource(R.string.user_captcha_desc_default),
+    confirmText: String = stringResource(R.string.user_captcha_btn_confirm)
 ) {
     var captchaData by remember { mutableStateOf(generateCaptchaData(isDark)) }
     var inputCode by remember { mutableStateOf("") }
@@ -259,6 +261,8 @@ fun RegisterCaptchaDialog(
     val primaryTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
     val errorColor = if (isDark) IosColors.RedDark else IosColors.Red
     val descTextColor = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate500
+    val errEmptyResult = stringResource(R.string.user_captcha_err_empty_result)
+    val errWrongResult = stringResource(R.string.user_captcha_err_wrong_result)
 
     fun refreshCaptcha() {
         captchaData = generateCaptchaData(isDark)
@@ -268,14 +272,14 @@ fun RegisterCaptchaDialog(
 
     fun submitVerification() {
         if (inputCode.isBlank()) {
-            errorMessage = "请输入计算结果"
+            errorMessage = errEmptyResult
             return
         }
         if (inputCode.trim() == captchaData.answer) {
             errorMessage = null
             onSuccess()
         } else {
-            errorMessage = "计算结果不正确，请重新计算"
+            errorMessage = errWrongResult
             refreshCaptcha()
         }
     }
@@ -284,7 +288,7 @@ fun RegisterCaptchaDialog(
         onDismissRequest = onDismissRequest,
         title = title,
         confirmText = confirmText,
-        dismissText = "取消",
+        dismissText = stringResource(R.string.user_dialog_btn_cancel),
         confirmButtonColor = primaryTint,
         onConfirm = { submitVerification() },
         onDismiss = onDismissRequest
@@ -331,12 +335,12 @@ fun RegisterCaptchaDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Refresh,
-                        contentDescription = "换一题",
+                        contentDescription = stringResource(R.string.user_captcha_btn_refresh),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "换一题",
+                        text = stringResource(R.string.user_captcha_btn_refresh),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -354,7 +358,7 @@ fun RegisterCaptchaDialog(
                 },
                 placeholder = {
                     Text(
-                        text = "请输入运算结果",
+                        text = stringResource(R.string.user_captcha_placeholder_result),
                         fontSize = 14.sp,
                         color = descTextColor.copy(alpha = 0.6f)
                     )

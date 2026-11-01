@@ -9,6 +9,8 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -213,7 +215,7 @@ fun FlippableCard(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Check,
-                                contentDescription = "已配对",
+                                contentDescription = stringResource(R.string.test_matching_cd_paired),
                                 tint = Color.White,
                                 modifier = Modifier.size(14.dp)
                             )
@@ -354,12 +356,12 @@ fun MatchingFeedbackPanel(
                 // 提示文本
                 Text(
                     text = when (feedbackState) {
-                        FeedbackPanelState.COMPLETE -> "配对成功！"
+                        FeedbackPanelState.COMPLETE -> stringResource(R.string.test_matching_feedback_success)
                         FeedbackPanelState.INCORRECT -> {
                             if (wrongCount >= wrongLimit) {
-                                "错误次数过多，已跳过此题"
+                                stringResource(R.string.test_matching_feedback_skipped_too_many_errors)
                             } else {
-                                "配对错误，请重试"
+                                stringResource(R.string.test_matching_feedback_wrong_retry)
                             }
                         }
                         else -> ""

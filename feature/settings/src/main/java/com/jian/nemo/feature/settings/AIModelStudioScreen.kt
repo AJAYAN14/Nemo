@@ -46,8 +46,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.domain.repository.AIConfig
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -91,6 +93,7 @@ fun AIModelStudioScreen(
 
     // 初始参数快照，用于比对是否有未保存修改
     val initialConfig = remember { config }
+    val platformConfigFormat = stringResource(R.string.settings_ai_format_platform_config_name)
     val hasUnsavedChanges = remember(config, initialConfig) {
         config.name.trim() != initialConfig.name.trim() ||
         config.platform != initialConfig.platform ||
@@ -141,7 +144,7 @@ fun AIModelStudioScreen(
                     val nextModel = platform.flagshipModels.firstOrNull() ?: ""
                     val nextUrl = platform.defaultUrl
                     val nextName = if (config.name.isBlank() || config.name.endsWith("配置") || config.name.endsWith("模型")) {
-                        "${platform.name} 配置"
+                        String.format(platformConfigFormat, platform.name)
                     } else {
                         config.name
                     }
@@ -206,7 +209,7 @@ fun AIModelStudioScreen(
                 .padding(bottom = 16.dp)
         ) {
             CommonHeader(
-                title = if (isNew) "新建 AI 配置" else "编辑 AI 配置",
+                title = if (isNew) stringResource(R.string.settings_ai_title_new_config) else stringResource(R.string.settings_ai_title_edit_config),
                 onBack = {
                     if (hasUnsavedChanges) {
                         showExitConfirmation = true

@@ -1,13 +1,16 @@
 package com.jian.nemo.feature.library.presentation.list
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.DictionarySyncManager
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +39,7 @@ data class WordListUiState(
 
 @HiltViewModel
 class WordListViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val wordRepository: WordRepository,
     private val syncManager: DictionarySyncManager,
     private val settingsRepository: SettingsRepository
@@ -131,17 +135,17 @@ class WordListViewModel @Inject constructor(
                 
                 if (result.updatedWords > 0 || result.updatedGrammars > 0 || result.updatedWordRelations > 0) {
                     val message = buildString {
-                        append("词库已更新：")
-                        if (result.updatedWords > 0) append("${result.updatedWords}条单词 ")
-                        if (result.updatedGrammars > 0) append("${result.updatedGrammars}条语法 ")
-                        if (result.updatedWordRelations > 0) append("${result.updatedWordRelations}条相关词")
+                        append(context.getString(R.string.lib_sync_updated_prefix))
+                        if (result.updatedWords > 0) append(context.getString(R.string.lib_sync_updated_words, result.updatedWords))
+                        if (result.updatedGrammars > 0) append(context.getString(R.string.lib_sync_updated_grammars, result.updatedGrammars))
+                        if (result.updatedWordRelations > 0) append(context.getString(R.string.lib_sync_updated_relations, result.updatedWordRelations))
                     }
                     _syncMessage.value = message
                 } else {
-                    _syncMessage.value = "词库已是最新 (本地:V${result.localVersion}, 远程:V${result.remoteVersion})"
+                    _syncMessage.value = context.getString(R.string.lib_sync_already_latest, result.localVersion, result.remoteVersion)
                 }
             } catch (e: Exception) {
-                _syncMessage.value = "同步失败: ${e.message}"
+                _syncMessage.value = context.getString(R.string.lib_sync_failed, e.message ?: "")
             } finally {
                 _isRefreshing.value = false
             }

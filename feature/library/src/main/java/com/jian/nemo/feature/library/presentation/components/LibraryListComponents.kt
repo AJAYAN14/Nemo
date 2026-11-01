@@ -34,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
@@ -88,7 +90,7 @@ fun BoxScope.LibraryScrollToTopButton(
         ) {
             Icon(
                 painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_scroll_to_top),
-                contentDescription = "回到顶部",
+                contentDescription = stringResource(R.string.lib_components_scroll_to_top_cd),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(buttonSize * (30f / 48f))
             )
@@ -121,13 +123,13 @@ fun LibraryLevelSelectionMenu(
         enableHaptic = false,
         backdrop = backdrop,
         iconPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
-        contentDescription = "选择等级"
+        contentDescription = stringResource(R.string.lib_components_select_level_cd)
     ) {
         val allCount = countsByLevel.values.sum()
         val isAllSelected = selectedLevel == "ALL"
 
         NemoMorphMenuItem(
-            text = "全部等级 ($allCount)",
+            text = stringResource(R.string.lib_components_all_levels_count_format, allCount),
             plumpIcon = PlumpIcon.GraduationCap,
             iconColor = if (isPlumpDuo) IsoluminantPalette.OceanBlue else null,
             trailingIcon = if (isAllSelected) Icons.Rounded.Check else null,
@@ -153,7 +155,7 @@ fun LibraryLevelSelectionMenu(
             val count = countsByLevel[level] ?: 0
             val isSelected = selectedLevel.equals(level, ignoreCase = true)
             NemoMorphMenuItem(
-                text = "$level 等级 ($count)",
+                text = stringResource(R.string.lib_components_level_count_format, level, count),
                 plumpIcon = PlumpIcon.GraduationCap,
                 iconColor = if (isPlumpDuo) levelColor else null,
                 trailingIcon = if (isSelected) Icons.Rounded.Check else null,

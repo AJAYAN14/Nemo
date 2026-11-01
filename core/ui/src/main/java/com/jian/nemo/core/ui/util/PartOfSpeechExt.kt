@@ -1,43 +1,72 @@
 package com.jian.nemo.core.ui.util
 
+import android.content.Context
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.domain.model.PartOfSpeech
+import com.jian.nemo.core.ui.R
+
+/**
+ * 词性显示名称资源 ID 映射
+ */
+val PartOfSpeech.displayNameResId: Int
+    @StringRes
+    get() = when (this) {
+        PartOfSpeech.VERB -> R.string.core_ui_pos_verb
+        PartOfSpeech.NOUN -> R.string.core_ui_pos_noun
+        PartOfSpeech.ADJECTIVE -> R.string.core_ui_pos_adjective
+        PartOfSpeech.ADVERB -> R.string.core_ui_pos_adverb
+        PartOfSpeech.PARTICLE -> R.string.core_ui_pos_particle
+        PartOfSpeech.CONJUNCTION -> R.string.core_ui_pos_conjunction
+        PartOfSpeech.RENTAI -> R.string.core_ui_pos_rentai
+        PartOfSpeech.PREFIX -> R.string.core_ui_pos_prefix
+        PartOfSpeech.SUFFIX -> R.string.core_ui_pos_suffix
+        PartOfSpeech.INTERJECTION -> R.string.core_ui_pos_interjection
+        PartOfSpeech.FIXED_EXPRESSION -> R.string.core_ui_pos_fixed_expression
+        PartOfSpeech.LOAN_WORD -> R.string.core_ui_pos_loan_word
+    }
 
 /**
  * 词性显示名称映射
- *
- * 将显示文案从 Domain 层迁移至 UI 层，以符合多语言扩展和领域层纯洁度原则。
  */
 val PartOfSpeech.displayName: String
+    @Composable
+    get() = stringResource(displayNameResId)
+
+/**
+ * 词性详细描述资源 ID 映射
+ */
+val PartOfSpeech.descriptionResId: Int
+    @StringRes
     get() = when (this) {
-        PartOfSpeech.VERB -> "动词"
-        PartOfSpeech.NOUN -> "名词"
-        PartOfSpeech.ADJECTIVE -> "形容词"
-        PartOfSpeech.ADVERB -> "副词"
-        PartOfSpeech.PARTICLE -> "助词"
-        PartOfSpeech.CONJUNCTION -> "接续词"
-        PartOfSpeech.RENTAI -> "连体词"
-        PartOfSpeech.PREFIX -> "接头词"
-        PartOfSpeech.SUFFIX -> "接尾词"
-        PartOfSpeech.INTERJECTION -> "感叹词"
-        PartOfSpeech.FIXED_EXPRESSION -> "固定表达"
-        PartOfSpeech.LOAN_WORD -> "外来语"
+        PartOfSpeech.VERB -> R.string.core_ui_pos_desc_verb
+        PartOfSpeech.NOUN -> R.string.core_ui_pos_desc_noun
+        PartOfSpeech.ADJECTIVE -> R.string.core_ui_pos_desc_adjective
+        PartOfSpeech.ADVERB -> R.string.core_ui_pos_desc_adverb
+        PartOfSpeech.PARTICLE -> R.string.core_ui_pos_desc_particle
+        PartOfSpeech.CONJUNCTION -> R.string.core_ui_pos_desc_conjunction
+        PartOfSpeech.RENTAI -> R.string.core_ui_pos_desc_rentai
+        PartOfSpeech.PREFIX -> R.string.core_ui_pos_desc_prefix
+        PartOfSpeech.SUFFIX -> R.string.core_ui_pos_desc_suffix
+        PartOfSpeech.INTERJECTION -> R.string.core_ui_pos_desc_interjection
+        PartOfSpeech.FIXED_EXPRESSION -> R.string.core_ui_pos_desc_fixed_expression
+        PartOfSpeech.LOAN_WORD -> R.string.core_ui_pos_desc_loan_word
     }
 
 /**
  * 词性详细描述映射
  */
 val PartOfSpeech.description: String
-    get() = when (this) {
-        PartOfSpeech.VERB -> "自動詞・他動詞・自他動詞"
-        PartOfSpeech.NOUN -> "名詞・代名词"
-        PartOfSpeech.ADJECTIVE -> "イ形容词・ナ形容词"
-        PartOfSpeech.ADVERB -> "副詞"
-        PartOfSpeech.PARTICLE -> "助詞"
-        PartOfSpeech.CONJUNCTION -> "接続詞"
-        PartOfSpeech.RENTAI -> "連体詞"
-        PartOfSpeech.PREFIX -> "接頭語"
-        PartOfSpeech.SUFFIX -> "接尾語"
-        PartOfSpeech.INTERJECTION -> "感動詞"
-        PartOfSpeech.FIXED_EXPRESSION -> "慣用句・連語"
-        PartOfSpeech.LOAN_WORD -> "カタカナ語"
-    }
+    @Composable
+    get() = stringResource(descriptionResId)
+
+/**
+ * 非 Composable 环境获取词性名称
+ */
+fun PartOfSpeech.getDisplayName(context: Context): String = context.getString(displayNameResId)
+
+/**
+ * 非 Composable 环境获取词性描述
+ */
+fun PartOfSpeech.getDescription(context: Context): String = context.getString(descriptionResId)

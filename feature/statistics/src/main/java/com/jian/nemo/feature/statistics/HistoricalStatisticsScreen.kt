@@ -34,6 +34,7 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -207,7 +208,7 @@ fun HistoricalStatisticsScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "历史统计",
+                title = stringResource(R.string.stats_historical_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -219,7 +220,7 @@ fun HistoricalStatisticsScreen(
     // 单词级别分布弹窗
     if (showWordDialog) {
         LevelBreakdownDialog(
-            title = "单词等级分布",
+            title = stringResource(R.string.stats_historical_title_word_dist),
             data = wordLevelData,
             totalData = uiState.wordTotalCountMap,
             themeColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary,
@@ -233,7 +234,7 @@ fun HistoricalStatisticsScreen(
     // 语法级别分布弹窗
     if (showGrammarDialog) {
         LevelBreakdownDialog(
-            title = "语法等级分布",
+            title = stringResource(R.string.stats_historical_title_grammar_dist),
             data = grammarLevelData,
             totalData = uiState.grammarTotalCountMap,
             themeColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary,
@@ -266,7 +267,7 @@ fun HistoricalSummaryCard(
             // Words
             StatItem(
                 value = totalWords.toString(),
-                label = "单词总数",
+                label = stringResource(R.string.stats_historical_label_word_total),
                 color = wordColor,
                 modifier = Modifier.weight(1f),
                 onClick = onWordsClick
@@ -275,7 +276,7 @@ fun HistoricalSummaryCard(
             // Grammar
             StatItem(
                 value = totalGrammars.toString(),
-                label = "语法总数",
+                label = stringResource(R.string.stats_historical_label_grammar_total),
                 color = grammarColor,
                 modifier = Modifier.weight(1f),
                 onClick = onGrammarsClick

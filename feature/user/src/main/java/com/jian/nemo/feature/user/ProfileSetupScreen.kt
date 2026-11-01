@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.avatar.AvatarEditDialog
@@ -57,7 +58,7 @@ fun ProfileSetupScreen(
     if (showAvatarDialog) {
         AvatarEditDialog(
             currentAvatarPath = uiState.avatarPath.takeIf { it.isNotEmpty() } ?: uiState.user?.avatarUrl,
-            username = nickname.takeIf { it.isNotBlank() } ?: "用户",
+            username = nickname.takeIf { it.isNotBlank() } ?: stringResource(R.string.user_profile_setup_default_username),
             onDismiss = { showAvatarDialog = false },
             onAvatarChanged = { newAvatarPath ->
                 showAvatarDialog = false

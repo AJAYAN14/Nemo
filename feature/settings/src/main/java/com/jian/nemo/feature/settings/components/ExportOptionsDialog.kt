@@ -1,7 +1,9 @@
 package com.jian.nemo.feature.settings.components
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.feature.settings.R
 
 /**
  * 导出选项对话框
@@ -14,10 +16,10 @@ fun ExportOptionsDialog(
 ) {
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "导出选项",
-        text = "压缩导出能大幅减小文件体积并保护数据结构；纯文本导出则文件较大，但可用文本编辑器直接阅读，适合用于调试。",
-        confirmText = "压缩导出 (推荐)",
-        dismissText = "纯文本导出",
+        title = stringResource(R.string.settings_dialog_title_export_options),
+        text = stringResource(R.string.settings_dialog_msg_export_options),
+        confirmText = stringResource(R.string.settings_dialog_btn_export_zip_recommended),
+        dismissText = stringResource(R.string.settings_dialog_btn_export_text),
         onConfirm = { onConfirm(true) },
         onDismiss = { onConfirm(false) }
     )

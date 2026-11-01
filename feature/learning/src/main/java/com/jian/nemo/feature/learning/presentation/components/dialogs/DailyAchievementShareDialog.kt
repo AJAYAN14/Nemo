@@ -87,7 +87,7 @@ fun DailyAchievementShareDialog(
 
     val minutes = sessionDurationSeconds / 60
     val seconds = sessionDurationSeconds % 60
-    val timeStr = if (minutes > 0) "${minutes}分${seconds}秒" else "${seconds}秒"
+    val timeStr = if (minutes > 0) stringResource(R.string.learning_share_time_min_sec_format, minutes, seconds) else stringResource(R.string.learning_share_time_sec_format, seconds)
 
     val currentDateStr = remember {
         SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()).format(Date())
@@ -473,7 +473,7 @@ private fun shareBitmapImage(context: Context, bitmap: Bitmap) {
         putExtra(Intent.EXTRA_STREAM, uri)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(sendIntent, "分享今日学习成就"))
+    context.startActivity(Intent.createChooser(sendIntent, context.getString(R.string.learning_share_intent_chooser_title)))
 }
 
 /**

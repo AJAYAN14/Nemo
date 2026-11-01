@@ -31,6 +31,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -210,7 +212,7 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 } else {
                     androidx.compose.material3.Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                        contentDescription = "朗读",
+                        contentDescription = stringResource(R.string.learn_word_card_action_speak),
                         tint = themeColor,
                         modifier = Modifier.size(24.dp)
                     )
@@ -219,7 +221,7 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
         }
         
         Text(
-            text = "点 击 翻 转",
+            text = stringResource(R.string.learn_word_card_hint_tap_to_flip),
             style = MaterialTheme.typography.labelMedium.copy(
                 letterSpacing = 2.sp,
                 fontWeight = FontWeight.Bold
@@ -299,7 +301,7 @@ private fun WordCardBack(
         )
 
         Text(
-            text = "词 义",
+            text = stringResource(R.string.learn_word_card_label_meaning),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
@@ -321,7 +323,7 @@ private fun WordCardBack(
         if (!word.example1.isNullOrBlank()) {
             Spacer(modifier = Modifier.height(32.dp))
             Text(
-                text = "例 句",
+                text = stringResource(R.string.learn_word_card_label_example),
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 1.sp

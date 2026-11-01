@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.ExplanationPayload
+import com.jian.nemo.feature.test.R
 
 /**
  * 解析入口：根据 payload 类型分发到单词/语法卡片。
@@ -32,9 +34,9 @@ fun WordExplanationCard(
     modifier: Modifier = Modifier
 ) {
     ExplanationCardContainer(modifier = modifier) {
-        ExplanationField(label = "汉字", value = payload.japanese)
-        ExplanationField(label = "假名", value = payload.hiragana)
-        ExplanationField(label = "意思", value = payload.meaning)
+        ExplanationField(label = stringResource(R.string.test_explanation_label_kanji), value = payload.japanese)
+        ExplanationField(label = stringResource(R.string.test_explanation_label_kana), value = payload.hiragana)
+        ExplanationField(label = stringResource(R.string.test_explanation_label_meaning), value = payload.meaning)
     }
 }
 

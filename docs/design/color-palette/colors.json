@@ -1,0 +1,1140 @@
+{
+  "metadata": {
+    "version": "2.0.0",
+    "description": "Android 生产级标准色值规范数据源（严格按固定静态色值区分浅色与深色模式，杜绝动态二次计算与非官方来源）",
+    "color_format_note": "所有八位带透明度色值统一采用 Android 规范的 #AARRGGBB 格式"
+  },
+  "system_dynamic_tints": [
+    {
+      "id": "systemRed",
+      "name": "系统红 (System Red)",
+      "light_hex": "#FF3B30",
+      "light_rgb": "255, 59, 48",
+      "dark_hex": "#FF453A",
+      "dark_rgb": "255, 69, 58",
+      "desc": "标准警示、危险操作、核心强调色"
+    },
+    {
+      "id": "systemOrange",
+      "name": "系统橙 (System Orange)",
+      "light_hex": "#FF9500",
+      "light_rgb": "255, 149, 0",
+      "dark_hex": "#FF9F0A",
+      "dark_rgb": "255, 159, 10",
+      "desc": "提醒、进行中状态、次级强调色",
+      "cross_repo_variance": "innei 库深色定义为 255 175 113 (#FFAF71)，本成果依据 kunal、phpcolor 与原生 HIG 采纳标准深色 #FF9F0A"
+    },
+    {
+      "id": "systemYellow",
+      "name": "系统黄 (System Yellow)",
+      "light_hex": "#FFCC00",
+      "light_rgb": "255, 204, 0",
+      "dark_hex": "#FFD60A",
+      "dark_rgb": "255, 214, 10",
+      "desc": "关注、警示提示、评星收藏色"
+    },
+    {
+      "id": "systemGreen",
+      "name": "系统绿 (System Green)",
+      "light_hex": "#34C759",
+      "light_rgb": "52, 199, 89",
+      "dark_hex": "#30D158",
+      "dark_rgb": "48, 209, 88",
+      "desc": "成功状态、安全、完成、资产正向色",
+      "cross_repo_variance": "brillaint 库深色定义为 #32D74B（实为桌面深色绿），本成果依据 kunal、phpcolor、innei 采纳移动端标准深色 #30D158"
+    },
+    {
+      "id": "systemMint",
+      "name": "系统薄荷绿 (System Mint)",
+      "light_hex": "#00C7BE",
+      "light_rgb": "0, 199, 190",
+      "dark_hex": "#66D4CF",
+      "dark_rgb": "102, 212, 207",
+      "desc": "清爽强调色、健康生活、辅助状态",
+      "cross_repo_variance": "innei 库深色定义为 99 230 226 (#63E6E2)，本成果依据 kunal 与 phpcolor 采纳标准深色 #66D4CF"
+    },
+    {
+      "id": "systemTeal",
+      "name": "系统蓝绿 (System Teal)",
+      "light_hex": "#30B0C7",
+      "light_rgb": "48, 176, 199",
+      "dark_hex": "#40C8E0",
+      "dark_rgb": "64, 200, 224",
+      "desc": "现代青蓝基调、阅读标注、数据图表色",
+      "cross_repo_variance": "brillaint 库采用旧版青蓝 (#5AC8FA / #64D2FF)；innei 库 B 通道微偏 (48 176 190 / 64 200 244)；本成果依据 kunal 与 phpcolor 采纳现代标准色"
+    },
+    {
+      "id": "systemCyan",
+      "name": "系统青蓝 (System Cyan)",
+      "light_hex": "#32ADE6",
+      "light_rgb": "50, 173, 230",
+      "dark_hex": "#64D2FF",
+      "dark_rgb": "100, 210, 255",
+      "desc": "信息提示、交互高亮、图表辅助",
+      "cross_repo_variance": "innei 库浅色定义为 50 173 200 (#32ADC8)，本成果依据 kunal 与 phpcolor 采纳标准浅色 #32ADE6"
+    },
+    {
+      "id": "systemBlue",
+      "name": "系统蓝 (System Blue)",
+      "light_hex": "#007AFF",
+      "light_rgb": "0, 122, 255",
+      "dark_hex": "#0A84FF",
+      "dark_rgb": "10, 132, 255",
+      "desc": "默认品牌交互色、按钮主色、链接文本色"
+    },
+    {
+      "id": "systemIndigo",
+      "name": "系统靛蓝 (System Indigo)",
+      "light_hex": "#5856D6",
+      "light_rgb": "88, 86, 214",
+      "dark_hex": "#5E5CE6",
+      "dark_rgb": "94, 92, 230",
+      "desc": "沉稳深邃色、标签、多媒体功能分类"
+    },
+    {
+      "id": "systemPurple",
+      "name": "系统紫 (System Purple)",
+      "light_hex": "#AF52DE",
+      "light_rgb": "175, 82, 222",
+      "dark_hex": "#BF5AF2",
+      "dark_rgb": "191, 90, 242",
+      "desc": "灵感、创意、会员、特色功能专属色"
+    },
+    {
+      "id": "systemPink",
+      "name": "系统粉 (System Pink)",
+      "light_hex": "#FF2D55",
+      "light_rgb": "255, 45, 85",
+      "dark_hex": "#FF375F",
+      "dark_rgb": "255, 55, 95",
+      "desc": "活力、女性、心愿、点赞喜爱色",
+      "cross_repo_variance": "brillaint 库深色未配对（写为 #FF2D55），本成果依据 kunal、phpcolor、innei 采纳标准深色 #FF375F"
+    },
+    {
+      "id": "systemBrown",
+      "name": "系统棕 (System Brown)",
+      "light_hex": "#A2845E",
+      "light_rgb": "162, 132, 94",
+      "dark_hex": "#AC8E68",
+      "dark_rgb": "172, 142, 104",
+      "desc": "复古自然、书卷阅读、木质质感分类",
+      "cross_repo_variance": "phpcolor 移动端配置写为 165 132 94 (#A5845E)，本成果依据 kunal、innei 及 phpcolor 桌面端配置统一采纳 #A2845E"
+    },
+    {
+      "id": "systemGray",
+      "name": "系统灰 1 (System Gray)",
+      "light_hex": "#8E8E93",
+      "light_rgb": "142, 142, 147",
+      "dark_hex": "#8E8E93",
+      "dark_rgb": "142, 142, 147",
+      "desc": "标准基准灰，深浅模式统一，图标与次级提示"
+    },
+    {
+      "id": "systemGray2",
+      "name": "系统灰 2 (System Gray 2)",
+      "light_hex": "#AEAEB2",
+      "light_rgb": "174, 174, 178",
+      "dark_hex": "#636366",
+      "dark_rgb": "99, 99, 102",
+      "desc": "二级灰阶，用于组件边框与淡化图标",
+      "cross_repo_variance": "innei 库浅色定义为 172 172 178 (#ACACB2)，本成果依据 kunal 与 brillaint 采纳标准浅色 #AEAEB2"
+    },
+    {
+      "id": "systemGray3",
+      "name": "系统灰 3 (System Gray 3)",
+      "light_hex": "#C7C7CC",
+      "light_rgb": "199, 199, 204",
+      "dark_hex": "#48484A",
+      "dark_rgb": "72, 72, 74",
+      "desc": "三级灰阶，用于输入占位与非激活组件"
+    },
+    {
+      "id": "systemGray4",
+      "name": "系统灰 4 (System Gray 4)",
+      "light_hex": "#D1D1D6",
+      "light_rgb": "209, 209, 214",
+      "dark_hex": "#3A3A3C",
+      "dark_rgb": "58, 58, 60",
+      "desc": "四级灰阶，用于卡片边线与淡化分割"
+    },
+    {
+      "id": "systemGray5",
+      "name": "系统灰 5 (System Gray 5)",
+      "light_hex": "#E5E5EA",
+      "light_rgb": "229, 229, 234",
+      "dark_hex": "#2C2C2E",
+      "dark_rgb": "44, 44, 46",
+      "desc": "五级灰阶，用于浅底卡片与深色次级底色"
+    },
+    {
+      "id": "systemGray6",
+      "name": "系统灰 6 (System Gray 6)",
+      "light_hex": "#F2F2F7",
+      "light_rgb": "242, 242, 247",
+      "dark_hex": "#1C1C1E",
+      "dark_rgb": "28, 28, 30",
+      "desc": "最淡级灰阶，用于页面浅灰背景与暗色卡片底"
+    }
+  ],
+  "semantic_ui_elements": [
+    {
+      "id": "systemBackground",
+      "name": "系统主背景 (systemBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFFFFFFF",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(255, 255, 255, 1.0)",
+      "dark_hex_android": "#FF000000",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(0, 0, 0, 1.0)",
+      "desc": "主界面全屏内容底色（浅色纯白 / 深色纯黑）"
+    },
+    {
+      "id": "secondarySystemBackground",
+      "name": "二级内容背景 (secondarySystemBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFF2F2F7",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(242, 242, 247, 1.0)",
+      "dark_hex_android": "#FF1C1C1E",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(28, 28, 30, 1.0)",
+      "desc": "卡片、内容层级与浮层底色"
+    },
+    {
+      "id": "tertiarySystemBackground",
+      "name": "三级内容背景 (tertiarySystemBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFFFFFFF",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(255, 255, 255, 1.0)",
+      "dark_hex_android": "#FF2C2C2E",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(44, 44, 46, 1.0)",
+      "desc": "卡片内部嵌套元素、弹窗内部容器底色"
+    },
+    {
+      "id": "systemGroupedBackground",
+      "name": "分组列表背景 (systemGroupedBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFF2F2F7",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(242, 242, 247, 1.0)",
+      "dark_hex_android": "#FF000000",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(0, 0, 0, 1.0)",
+      "desc": "设置页面、分组列表的最底层背景色"
+    },
+    {
+      "id": "secondarySystemGroupedBackground",
+      "name": "分组列表卡片背景 (secondarySystemGroupedBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFFFFFFF",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(255, 255, 255, 1.0)",
+      "dark_hex_android": "#FF1C1C1E",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(28, 28, 30, 1.0)",
+      "desc": "分组列表单元格 Cell 单项的背景色"
+    },
+    {
+      "id": "tertiarySystemGroupedBackground",
+      "name": "分组列表内嵌背景 (tertiarySystemGroupedBackground)",
+      "category": "背景层级 (Backgrounds)",
+      "light_hex_android": "#FFF2F2F7",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(242, 242, 247, 1.0)",
+      "dark_hex_android": "#FF2C2C2E",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(44, 44, 46, 1.0)",
+      "desc": "单元格内嵌深层次组件背景"
+    },
+    {
+      "id": "label",
+      "name": "一级主文本 (label)",
+      "category": "文本排版 (Typography)",
+      "light_hex_android": "#FF000000",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(0, 0, 0, 1.0)",
+      "dark_hex_android": "#FFFFFFFF",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(255, 255, 255, 1.0)",
+      "desc": "页面大标题、正文重要信息"
+    },
+    {
+      "id": "secondaryLabel",
+      "name": "二级次文本 (secondaryLabel)",
+      "category": "文本排版 (Typography)",
+      "light_hex_android": "#993C3C43",
+      "light_opacity": "60%",
+      "light_css_rgba": "rgba(60, 60, 67, 0.6)",
+      "dark_hex_android": "#99EBEBF5",
+      "dark_opacity": "60%",
+      "dark_css_rgba": "rgba(235, 235, 245, 0.6)",
+      "desc": "副标题、说明文字、元数据标签"
+    },
+    {
+      "id": "tertiaryLabel",
+      "name": "三级弱文本 (tertiaryLabel)",
+      "category": "文本排版 (Typography)",
+      "light_hex_android": "#4C3C3C43",
+      "light_opacity": "30%",
+      "light_css_rgba": "rgba(60, 60, 67, 0.3)",
+      "dark_hex_android": "#4CEBEBF5",
+      "dark_opacity": "30%",
+      "dark_css_rgba": "rgba(235, 235, 245, 0.3)",
+      "desc": "输入框占位符、注释角标、禁用文字 (统一十进制 76 = 0x4C)"
+    },
+    {
+      "id": "quaternaryLabel",
+      "name": "四级极弱文本 (quaternaryLabel)",
+      "category": "文本排版 (Typography)",
+      "light_hex_android": "#2E3C3C43",
+      "light_opacity": "18%",
+      "light_css_rgba": "rgba(60, 60, 67, 0.18)",
+      "dark_hex_android": "#2EEBEBF5",
+      "dark_opacity": "18%",
+      "dark_css_rgba": "rgba(235, 235, 245, 0.18)",
+      "desc": "水印背景字、弱化装饰图标"
+    },
+    {
+      "id": "placeholderText",
+      "name": "占位文本 (placeholderText)",
+      "category": "文本排版 (Typography)",
+      "light_hex_android": "#FFC7C7CC",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(199, 199, 204, 1.0)",
+      "dark_hex_android": "#FF7A7A7A",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(122, 122, 122, 1.0)",
+      "desc": "未输入状态下的引导提示文本"
+    },
+    {
+      "id": "systemFill",
+      "name": "一级半透明填充 (systemFill)",
+      "category": "容器填充 (Fills)",
+      "light_hex_android": "#33787880",
+      "light_opacity": "20%",
+      "light_css_rgba": "rgba(120, 120, 128, 0.2)",
+      "dark_hex_android": "#5C787880",
+      "dark_opacity": "36%",
+      "dark_css_rgba": "rgba(120, 120, 128, 0.36)",
+      "desc": "搜索栏背景、浅底交互控件底色"
+    },
+    {
+      "id": "secondarySystemFill",
+      "name": "二级半透明填充 (secondarySystemFill)",
+      "category": "容器填充 (Fills)",
+      "light_hex_android": "#29787880",
+      "light_opacity": "16%",
+      "light_css_rgba": "rgba(120, 120, 128, 0.16)",
+      "dark_hex_android": "#52787880",
+      "dark_opacity": "32%",
+      "dark_css_rgba": "rgba(120, 120, 128, 0.32)",
+      "desc": "分段控件选项底色、开关滑槽背景"
+    },
+    {
+      "id": "tertiarySystemFill",
+      "name": "三级半透明填充 (tertiarySystemFill)",
+      "category": "容器填充 (Fills)",
+      "light_hex_android": "#1F787880",
+      "light_opacity": "12%",
+      "light_css_rgba": "rgba(120, 120, 128, 0.12)",
+      "dark_hex_android": "#3D787880",
+      "dark_opacity": "24%",
+      "dark_css_rgba": "rgba(120, 120, 128, 0.24)",
+      "desc": "微弱控件底色、滑块未激活槽线"
+    },
+    {
+      "id": "quaternarySystemFill",
+      "name": "四级半透明填充 (quaternarySystemFill)",
+      "category": "容器填充 (Fills)",
+      "light_hex_android": "#14787880",
+      "light_opacity": "8%",
+      "light_css_rgba": "rgba(120, 120, 128, 0.08)",
+      "dark_hex_android": "#30787880",
+      "dark_opacity": "19%",
+      "dark_css_rgba": "rgba(120, 120, 128, 0.19)",
+      "desc": "大面积表格隔行斑马线等极微弱填充"
+    },
+    {
+      "id": "separator",
+      "name": "半透明分割线 (separator)",
+      "category": "分割与交互 (Borders & Actions)",
+      "light_hex_android": "#57545456",
+      "light_opacity": "34%",
+      "light_css_rgba": "rgba(84, 84, 86, 0.34)",
+      "dark_hex_android": "#99545456",
+      "dark_opacity": "60%",
+      "dark_css_rgba": "rgba(84, 84, 86, 0.6)",
+      "desc": "列表项之间的标准半透明细分割线"
+    },
+    {
+      "id": "opaqueSeparator",
+      "name": "不透明分割线 (opaqueSeparator)",
+      "category": "分割与交互 (Borders & Actions)",
+      "light_hex_android": "#FFC6C6C8",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(198, 198, 200, 1.0)",
+      "dark_hex_android": "#FF38383A",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(56, 56, 58, 1.0)",
+      "desc": "无透明度的纯色边缘与隔离边框"
+    },
+    {
+      "id": "link",
+      "name": "超链接交互色 (link)",
+      "category": "分割与交互 (Borders & Actions)",
+      "light_hex_android": "#FF007AFF",
+      "light_opacity": "100%",
+      "light_css_rgba": "rgba(0, 122, 255, 1.0)",
+      "dark_hex_android": "#FF0A84FF",
+      "dark_opacity": "100%",
+      "dark_css_rgba": "rgba(10, 132, 255, 1.0)",
+      "desc": "可点击跳转文字的专用链接色"
+    }
+  ],
+  "accessible_variants": [
+    {
+      "id": "accessibleRed",
+      "name": "高对比红 (Accessible Red)",
+      "light_hex": "#D70015",
+      "light_rgb": "215, 0, 21",
+      "dark_hex": "#FF6961",
+      "dark_rgb": "255, 105, 97"
+    },
+    {
+      "id": "accessibleOrange",
+      "name": "高对比橙 (Accessible Orange)",
+      "light_hex": "#C93400",
+      "light_rgb": "201, 52, 0",
+      "dark_hex": "#FFB340",
+      "dark_rgb": "255, 179, 64"
+    },
+    {
+      "id": "accessibleYellow",
+      "name": "高对比黄 (Accessible Yellow)",
+      "light_hex": "#B25000",
+      "light_rgb": "178, 80, 0",
+      "dark_hex": "#FFD426",
+      "dark_rgb": "255, 212, 38"
+    },
+    {
+      "id": "accessibleGreen",
+      "name": "高对比绿 (Accessible Green)",
+      "light_hex": "#248A3D",
+      "light_rgb": "36, 138, 61",
+      "dark_hex": "#30DB5B",
+      "dark_rgb": "48, 219, 91"
+    },
+    {
+      "id": "accessibleMint",
+      "name": "高对比薄荷绿 (Accessible Mint)",
+      "light_hex": "#0C817B",
+      "light_rgb": "12, 129, 123",
+      "dark_hex": "#66D4CF",
+      "dark_rgb": "102, 212, 207"
+    },
+    {
+      "id": "accessibleTeal",
+      "name": "高对比蓝绿 (Accessible Teal)",
+      "light_hex": "#008299",
+      "light_rgb": "0, 130, 153",
+      "dark_hex": "#5DE6FF",
+      "dark_rgb": "93, 230, 255"
+    },
+    {
+      "id": "accessibleCyan",
+      "name": "高对比青蓝 (Accessible Cyan)",
+      "light_hex": "#0071A4",
+      "light_rgb": "0, 113, 164",
+      "dark_hex": "#70D7FF",
+      "dark_rgb": "112, 215, 255"
+    },
+    {
+      "id": "accessibleBlue",
+      "name": "高对比蓝 (Accessible Blue)",
+      "light_hex": "#0040DD",
+      "light_rgb": "0, 64, 221",
+      "dark_hex": "#409CFF",
+      "dark_rgb": "64, 156, 255"
+    },
+    {
+      "id": "accessibleIndigo",
+      "name": "高对比靛蓝 (Accessible Indigo)",
+      "light_hex": "#3634A3",
+      "light_rgb": "54, 52, 163",
+      "dark_hex": "#7D7AFF",
+      "dark_rgb": "125, 122, 255"
+    },
+    {
+      "id": "accessiblePurple",
+      "name": "高对比紫 (Accessible Purple)",
+      "light_hex": "#8944AB",
+      "light_rgb": "137, 68, 171",
+      "dark_hex": "#DA8FFF",
+      "dark_rgb": "218, 143, 255"
+    },
+    {
+      "id": "accessiblePink",
+      "name": "高对比粉 (Accessible Pink)",
+      "light_hex": "#D30F45",
+      "light_rgb": "211, 15, 69",
+      "dark_hex": "#FF6482",
+      "dark_rgb": "255, 100, 130"
+    },
+    {
+      "id": "accessibleBrown",
+      "name": "高对比棕 (Accessible Brown)",
+      "light_hex": "#7F6545",
+      "light_rgb": "127, 101, 69",
+      "dark_hex": "#B59469",
+      "dark_rgb": "181, 148, 105"
+    },
+    {
+      "id": "accessibleGray",
+      "name": "高对比灰 1 (Accessible Gray)",
+      "light_hex": "#6C6C70",
+      "light_rgb": "108, 108, 112",
+      "dark_hex": "#AEAEB2",
+      "dark_rgb": "174, 174, 178"
+    },
+    {
+      "id": "accessibleGray2",
+      "name": "高对比灰 2 (Accessible Gray 2)",
+      "light_hex": "#8E8E93",
+      "light_rgb": "142, 142, 147",
+      "dark_hex": "#7C7C80",
+      "dark_rgb": "124, 124, 128"
+    },
+    {
+      "id": "accessibleGray3",
+      "name": "高对比灰 3 (Accessible Gray 3)",
+      "light_hex": "#AEAEB2",
+      "light_rgb": "174, 174, 178",
+      "dark_hex": "#545456",
+      "dark_rgb": "84, 84, 86"
+    },
+    {
+      "id": "accessibleGray4",
+      "name": "高对比灰 4 (Accessible Gray 4)",
+      "light_hex": "#BCBCC0",
+      "light_rgb": "188, 188, 192",
+      "dark_hex": "#444446",
+      "dark_rgb": "68, 68, 70"
+    },
+    {
+      "id": "accessibleGray5",
+      "name": "高对比灰 5 (Accessible Gray 5)",
+      "light_hex": "#D8D8DC",
+      "light_rgb": "216, 216, 220",
+      "dark_hex": "#363638",
+      "dark_rgb": "54, 54, 56"
+    },
+    {
+      "id": "accessibleGray6",
+      "name": "高对比灰 6 (Accessible Gray 6)",
+      "light_hex": "#EBEBF0",
+      "light_rgb": "235, 235, 240",
+      "dark_hex": "#242426",
+      "dark_rgb": "36, 36, 38"
+    }
+  ],
+  "desktop_variants": [
+    {
+      "id": "desktopGreen",
+      "name": "桌面标准绿 (Desktop Green)",
+      "light_hex": "#28CD41",
+      "light_rgb": "40, 205, 65",
+      "dark_hex": "#32D74B",
+      "dark_rgb": "50, 215, 75",
+      "desc": "桌面级微调绿，亮度与视觉平衡适配大屏幕"
+    },
+    {
+      "id": "desktopTeal",
+      "name": "桌面标准蓝绿 (Desktop Teal)",
+      "light_hex": "#59ADC4",
+      "light_rgb": "89, 173, 196",
+      "dark_hex": "#6AC4DC",
+      "dark_rgb": "106, 196, 220",
+      "desc": "桌面级微调蓝绿，适合桌面工具栏与侧边栏高亮 (已纠正原库 #59ADCC 笔误)"
+    },
+    {
+      "id": "desktopCyan",
+      "name": "桌面标准青蓝 (Desktop Cyan)",
+      "light_hex": "#55BEF0",
+      "light_rgb": "85, 190, 240",
+      "dark_hex": "#5AC8F5",
+      "dark_rgb": "90, 200, 245",
+      "desc": "桌面级微调青蓝，适合大屏窗口标题与标签页"
+    },
+    {
+      "id": "desktopGray",
+      "name": "桌面标准灰 (Desktop Gray)",
+      "light_hex": "#8E8E93",
+      "light_rgb": "142, 142, 147",
+      "dark_hex": "#98989D",
+      "dark_rgb": "152, 152, 157",
+      "desc": "桌面级微调灰，深色模式采用 #98989D 适配大屏窗口"
+    }
+  ],
+  "spatial_palette": [
+    {
+      "id": "spatialRed",
+      "name": "空间红 (Red)",
+      "hex": "#FF453A",
+      "rgb": [255, 69, 58]
+    },
+    {
+      "id": "spatialOrange",
+      "name": "空间橙 (Orange)",
+      "hex": "#FF9F0A",
+      "rgb": [255, 159, 10]
+    },
+    {
+      "id": "spatialYellow",
+      "name": "空间黄 (Yellow)",
+      "hex": "#FFD60A",
+      "rgb": [255, 214, 10]
+    },
+    {
+      "id": "spatialGreen",
+      "name": "空间绿 (Green)",
+      "hex": "#32D74B",
+      "rgb": [50, 215, 75]
+    },
+    {
+      "id": "spatialMint",
+      "name": "空间薄荷绿 (Mint)",
+      "hex": "#66D4CF",
+      "rgb": [102, 212, 207]
+    },
+    {
+      "id": "spatialTeal",
+      "name": "空间蓝绿 (Teal)",
+      "hex": "#6AC4DC",
+      "rgb": [106, 196, 220]
+    },
+    {
+      "id": "spatialCyan",
+      "name": "空间青蓝 (Cyan)",
+      "hex": "#5AC8F5",
+      "rgb": [90, 200, 245]
+    },
+    {
+      "id": "spatialBlue",
+      "name": "空间蓝 (Blue)",
+      "hex": "#0A84FF",
+      "rgb": [10, 132, 255]
+    },
+    {
+      "id": "spatialIndigo",
+      "name": "空间靛蓝 (Indigo)",
+      "hex": "#5E5CE6",
+      "rgb": [94, 92, 230]
+    },
+    {
+      "id": "spatialPurple",
+      "name": "空间紫 (Purple)",
+      "hex": "#BF5AF2",
+      "rgb": [191, 90, 242]
+    },
+    {
+      "id": "spatialPink",
+      "name": "空间粉 (Pink)",
+      "hex": "#FF375F",
+      "rgb": [255, 55, 95]
+    },
+    {
+      "id": "spatialBrown",
+      "name": "空间棕 (Brown)",
+      "hex": "#AC8E68",
+      "rgb": [172, 142, 104]
+    },
+    {
+      "id": "spatialGray",
+      "name": "空间灰 (Gray)",
+      "hex": "#98989D",
+      "rgb": [152, 152, 157]
+    }
+  ],
+  "classic_swatches": [
+    {
+      "id": "white",
+      "name": "White",
+      "hex": "#FFFFFF",
+      "rgb": [255, 255, 255]
+    },
+    {
+      "id": "red",
+      "name": "Red",
+      "hex": "#DF1125",
+      "rgb": [223, 17, 37]
+    },
+    {
+      "id": "neonPink",
+      "name": "NeonPink",
+      "hex": "#FB212F",
+      "rgb": [251, 33, 47]
+    },
+    {
+      "id": "electricPink",
+      "name": "ElectricPink",
+      "hex": "#FC3644",
+      "rgb": [252, 54, 68]
+    },
+    {
+      "id": "hibiscus",
+      "name": "Hibiscus",
+      "hex": "#FB0049",
+      "rgb": [251, 0, 73]
+    },
+    {
+      "id": "pink",
+      "name": "Pink",
+      "hex": "#FD4154",
+      "rgb": [253, 65, 84]
+    },
+    {
+      "id": "pinkCitrus",
+      "name": "PinkCitrus",
+      "hex": "#EA383A",
+      "rgb": [234, 56, 58]
+    },
+    {
+      "id": "dragonFruit",
+      "name": "DragonFruit",
+      "hex": "#F12E6D",
+      "rgb": [241, 46, 109]
+    },
+    {
+      "id": "pomegranate",
+      "name": "Pomegranate",
+      "legacy_alias": "Pomengrate",
+      "hex": "#D8034F",
+      "rgb": [216, 3, 79]
+    },
+    {
+      "id": "camellia",
+      "name": "Camellia",
+      "hex": "#BF3138",
+      "rgb": [191, 49, 56]
+    },
+    {
+      "id": "redRose",
+      "name": "RedRose",
+      "hex": "#AB1438",
+      "rgb": [171, 20, 56]
+    },
+    {
+      "id": "plum",
+      "name": "Plum",
+      "hex": "#81323D",
+      "rgb": [129, 50, 61]
+    },
+    {
+      "id": "orange",
+      "name": "Orange",
+      "hex": "#FC4E12",
+      "rgb": [252, 78, 18]
+    },
+    {
+      "id": "clementine",
+      "name": "Clementine",
+      "hex": "#FD513B",
+      "rgb": [253, 81, 59]
+    },
+    {
+      "id": "apricot",
+      "name": "Apricot",
+      "hex": "#FC5C42",
+      "rgb": [252, 92, 66]
+    },
+    {
+      "id": "papaya",
+      "name": "Papaya",
+      "hex": "#FD7036",
+      "rgb": [253, 112, 54]
+    },
+    {
+      "id": "kumquat",
+      "name": "Kumquat",
+      "hex": "#FD7447",
+      "rgb": [253, 116, 71]
+    },
+    {
+      "id": "lightOrange",
+      "name": "LightOrange",
+      "hex": "#FD820B",
+      "rgb": [253, 130, 11]
+    },
+    {
+      "id": "peach",
+      "name": "Peach",
+      "hex": "#E0694E",
+      "rgb": [224, 105, 78]
+    },
+    {
+      "id": "flamingo",
+      "name": "Flamingo",
+      "hex": "#CA6F59",
+      "rgb": [202, 111, 89]
+    },
+    {
+      "id": "roseGold",
+      "name": "RoseGold",
+      "hex": "#E99475",
+      "rgb": [233, 148, 117]
+    },
+    {
+      "id": "pinkSand",
+      "name": "PinkSand",
+      "hex": "#FEB69C",
+      "rgb": [254, 182, 156]
+    },
+    {
+      "id": "lightPink",
+      "name": "LightPink",
+      "hex": "#F19F9D",
+      "rgb": [241, 159, 157]
+    },
+    {
+      "id": "vintageRose",
+      "name": "VintageRose",
+      "hex": "#F29C98",
+      "rgb": [242, 156, 152]
+    },
+    {
+      "id": "grapeFruit",
+      "name": "GrapeFruit",
+      "hex": "#FDA27E",
+      "rgb": [253, 162, 126]
+    },
+    {
+      "id": "cream",
+      "name": "Cream",
+      "hex": "#FFE0AB",
+      "rgb": [255, 224, 171]
+    },
+    {
+      "id": "mellowYellow",
+      "name": "MellowYellow",
+      "hex": "#F7F6AF",
+      "rgb": [247, 246, 175]
+    },
+    {
+      "id": "canaryYellow",
+      "name": "CanaryYellow",
+      "hex": "#FFDA3A",
+      "rgb": [255, 218, 58]
+    },
+    {
+      "id": "pollen",
+      "name": "Pollen",
+      "hex": "#FECB4D",
+      "rgb": [254, 203, 77]
+    },
+    {
+      "id": "yellow",
+      "name": "Yellow",
+      "hex": "#E8C511",
+      "rgb": [232, 197, 17]
+    },
+    {
+      "id": "flashLight",
+      "name": "FlashLight",
+      "hex": "#FAED0B",
+      "rgb": [250, 237, 11]
+    },
+    {
+      "id": "lemonCream",
+      "name": "LemonCream",
+      "hex": "#FFEB6D",
+      "rgb": [255, 235, 109]
+    },
+    {
+      "id": "flash",
+      "name": "Flash",
+      "hex": "#DFF81E",
+      "rgb": [223, 248, 30]
+    },
+    {
+      "id": "green",
+      "name": "Green",
+      "hex": "#80E220",
+      "rgb": [128, 226, 32]
+    },
+    {
+      "id": "spearMint",
+      "name": "SpearMint",
+      "hex": "#77EA7E",
+      "rgb": [119, 234, 126]
+    },
+    {
+      "id": "mint",
+      "name": "Mint",
+      "hex": "#A2EC8E",
+      "rgb": [162, 236, 142]
+    },
+    {
+      "id": "beryl",
+      "name": "Beryl",
+      "hex": "#D0F2B1",
+      "rgb": [208, 242, 177]
+    },
+    {
+      "id": "seaFoam",
+      "name": "SeaFoam",
+      "hex": "#CFF1D6",
+      "rgb": [207, 241, 214]
+    },
+    {
+      "id": "turquoise",
+      "name": "Turquoise",
+      "hex": "#91CEC2",
+      "rgb": [145, 206, 194]
+    },
+    {
+      "id": "blue",
+      "name": "Blue",
+      "hex": "#1EA5FC",
+      "rgb": [30, 165, 252]
+    },
+    {
+      "id": "lightBlue",
+      "name": "LightBlue",
+      "hex": "#5BEAD9",
+      "rgb": [91, 234, 217]
+    },
+    {
+      "id": "cerulean",
+      "name": "Cerulean",
+      "legacy_alias": "Cerulian",
+      "hex": "#87B9E7",
+      "rgb": [135, 185, 231]
+    },
+    {
+      "id": "surfBlue",
+      "name": "SurfBlue",
+      "hex": "#1871AC",
+      "rgb": [24, 113, 172]
+    },
+    {
+      "id": "pacificGreen",
+      "name": "PacificGreen",
+      "hex": "#0F6D8E",
+      "rgb": [15, 109, 142]
+    },
+    {
+      "id": "blueCobalt",
+      "name": "BlueCobalt",
+      "hex": "#3A6B8E",
+      "rgb": [58, 107, 142]
+    },
+    {
+      "id": "darkTeal",
+      "name": "DarkTeal",
+      "hex": "#2C6184",
+      "rgb": [44, 97, 132]
+    },
+    {
+      "id": "blueHorizon",
+      "name": "BlueHorizon",
+      "hex": "#1E538F",
+      "rgb": [30, 83, 143]
+    },
+    {
+      "id": "denimBlue",
+      "name": "DenimBlue",
+      "hex": "#4B709A",
+      "rgb": [75, 112, 154]
+    },
+    {
+      "id": "linenBlue",
+      "name": "LinenBlue",
+      "hex": "#455785",
+      "rgb": [69, 87, 133]
+    },
+    {
+      "id": "alaskanBlue",
+      "name": "AlaskanBlue",
+      "hex": "#525C73",
+      "rgb": [82, 92, 115]
+    },
+    {
+      "id": "deepNavy",
+      "name": "DeepNavy",
+      "hex": "#3A4565",
+      "rgb": [58, 69, 101]
+    },
+    {
+      "id": "midnightBlue",
+      "name": "MidnightBlue",
+      "hex": "#383B65",
+      "rgb": [56, 59, 101]
+    },
+    {
+      "id": "purple",
+      "name": "Purple",
+      "hex": "#8962F8",
+      "rgb": [137, 98, 248]
+    },
+    {
+      "id": "ultraViolet",
+      "name": "UltraViolet",
+      "hex": "#5F41B2",
+      "rgb": [95, 65, 178]
+    },
+    {
+      "id": "lilac",
+      "name": "Lilac",
+      "hex": "#A990DD",
+      "rgb": [169, 144, 221]
+    },
+    {
+      "id": "oceanBlue",
+      "name": "OceanBlue",
+      "hex": "#6273BD",
+      "rgb": [98, 115, 189]
+    },
+    {
+      "id": "delftBlue",
+      "name": "DelftBlue",
+      "hex": "#4662B2",
+      "rgb": [70, 98, 178]
+    },
+    {
+      "id": "indigo",
+      "name": "Indigo",
+      "hex": "#474E95",
+      "rgb": [71, 78, 149]
+    },
+    {
+      "id": "lavenderGray",
+      "name": "LavenderGray",
+      "legacy_alias": "LavendarGrey",
+      "hex": "#757397",
+      "rgb": [117, 115, 151]
+    },
+    {
+      "id": "lavender",
+      "name": "Lavender",
+      "hex": "#A58998",
+      "rgb": [165, 137, 152]
+    },
+    {
+      "id": "cocoa",
+      "name": "Cocoa",
+      "hex": "#8B7D7D",
+      "rgb": [139, 125, 125]
+    },
+    {
+      "id": "stormGrey",
+      "name": "StormGrey",
+      "hex": "#578887",
+      "rgb": [87, 136, 135]
+    },
+    {
+      "id": "cactus",
+      "name": "Cactus",
+      "hex": "#5B7971",
+      "rgb": [91, 121, 113]
+    },
+    {
+      "id": "pineGreen",
+      "name": "PineGreen",
+      "hex": "#4E6C54",
+      "rgb": [78, 108, 84]
+    },
+    {
+      "id": "cyprusGreen",
+      "name": "CyprusGreen",
+      "hex": "#525D49",
+      "rgb": [82, 93, 73]
+    },
+    {
+      "id": "northernBlue",
+      "name": "NorthernBlue",
+      "hex": "#638A8D",
+      "rgb": [99, 138, 141]
+    },
+    {
+      "id": "azure",
+      "name": "Azure",
+      "hex": "#788991",
+      "rgb": [120, 137, 145]
+    },
+    {
+      "id": "mistBlue",
+      "name": "MistBlue",
+      "hex": "#A7AB99",
+      "rgb": [167, 171, 153]
+    },
+    {
+      "id": "darkOlive",
+      "name": "DarkOlive",
+      "hex": "#7C7A66",
+      "rgb": [124, 122, 102]
+    },
+    {
+      "id": "khaki",
+      "name": "Khaki",
+      "hex": "#7A6E49",
+      "rgb": [122, 110, 73]
+    },
+    {
+      "id": "softWhite",
+      "name": "SoftWhite",
+      "hex": "#D8C9AF",
+      "rgb": [216, 201, 175]
+    },
+    {
+      "id": "antiqueWhite",
+      "name": "AntiqueWhite",
+      "hex": "#CDA986",
+      "rgb": [205, 169, 134]
+    },
+    {
+      "id": "yellowGold",
+      "name": "YellowGold",
+      "hex": "#CC996D",
+      "rgb": [204, 153, 109]
+    },
+    {
+      "id": "gold",
+      "name": "Gold",
+      "hex": "#B08053",
+      "rgb": [176, 128, 83]
+    },
+    {
+      "id": "camel",
+      "name": "Camel",
+      "hex": "#A97D4F",
+      "rgb": [169, 125, 79]
+    },
+    {
+      "id": "walnut",
+      "name": "Walnut",
+      "hex": "#A17455",
+      "rgb": [161, 116, 85]
+    },
+    {
+      "id": "stone",
+      "name": "Stone",
+      "hex": "#A28872",
+      "rgb": [162, 136, 114]
+    },
+    {
+      "id": "pebble",
+      "name": "Pebble",
+      "hex": "#9F8D7E",
+      "rgb": [159, 141, 126]
+    },
+    {
+      "id": "coastalGrey",
+      "name": "CoastalGrey",
+      "hex": "#715D50",
+      "rgb": [113, 93, 80]
+    }
+  ]
+}

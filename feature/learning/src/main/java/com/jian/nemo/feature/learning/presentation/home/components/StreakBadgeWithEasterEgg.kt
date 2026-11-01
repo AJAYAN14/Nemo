@@ -18,7 +18,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
@@ -230,7 +232,7 @@ fun StreakBadgeWithEasterEgg(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "$streakDays 天",
+                    text = stringResource(R.string.learn_streak_days_format, streakDays),
                     color = textColor,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.ExtraBold

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.testTag
+import com.jian.nemo.feature.settings.R
 
 
 /**
@@ -37,11 +39,11 @@ fun ConfirmResetDialog(
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismiss,
-        title = "确认重置",
-        text = "您确定要重置所有学习进度吗？此操作将永久删除本地所有进度数据，且无法撤销。",
+        title = stringResource(R.string.settings_dialog_title_confirm_reset),
+        text = stringResource(R.string.settings_dialog_msg_confirm_reset),
         isDangerous = true,
-        confirmText = if (isResetting) "正在重置..." else "确认重置",
-        dismissText = "取消",
+        confirmText = if (isResetting) stringResource(R.string.settings_dialog_btn_resetting) else stringResource(R.string.settings_dialog_btn_confirm_reset),
+        dismissText = stringResource(R.string.settings_btn_cancel),
         isLoading = isResetting,
         onConfirm = onConfirm
     )

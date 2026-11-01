@@ -18,6 +18,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +31,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ExplanationCardContainer(
     modifier: Modifier = Modifier,
-    title: String = "解析",
+    title: String = stringResource(R.string.test_explanation_container_title),
     content: @Composable () -> Unit
 ) {
     OutlinedCard(

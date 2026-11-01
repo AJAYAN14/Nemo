@@ -18,8 +18,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.settings.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.ui.component.common.CommonHeader
@@ -65,6 +67,7 @@ fun TtsSettingsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val backgroundColor = MaterialTheme.colorScheme.background
+    val sampleChineseText = stringResource(R.string.settings_tts_sample_chinese_text)
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -89,15 +92,15 @@ fun TtsSettingsScreen(
                 // 语音来源
                 // =====================
                 SettingsSectionTitle(
-                    text = "语音来源",
+                    text = stringResource(R.string.settings_tts_section_source),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
 
                 PremiumCard {
                     Column {
                         SquircleSettingItem(
-                            title = "选择日语语音",
-                            subtitle = uiState.ttsVoiceName ?: "系统默认",
+                            title = stringResource(R.string.settings_tts_item_title_select_japanese),
+                            subtitle = uiState.ttsVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
                             icon = Icons.Rounded.RecordVoiceOver,
                             iconColor = IosColors.Red,
                             plumpIcon = PlumpIcon.Mic,
@@ -106,8 +109,8 @@ fun TtsSettingsScreen(
                             showDivider = true
                         )
                         SquircleSettingItem(
-                            title = "选择中文语音",
-                            subtitle = uiState.ttsChineseVoiceName ?: "系统默认",
+                            title = stringResource(R.string.settings_tts_item_title_select_chinese),
+                            subtitle = uiState.ttsChineseVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
                             icon = Icons.Rounded.RecordVoiceOver,
                             iconColor = IosColors.Orange,
                             plumpIcon = PlumpIcon.Languages,
@@ -124,7 +127,7 @@ fun TtsSettingsScreen(
                 // 语速调节
                 // =====================
                 SettingsSectionTitle(
-                    text = "语速调节",
+                    text = stringResource(R.string.settings_tts_section_speed),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
 
@@ -134,7 +137,7 @@ fun TtsSettingsScreen(
                         iconColor = accentColor,
                         plumpIcon = PlumpIcon.Gauge,
                         plumpColor = IsoluminantPalette.LilacViolet,
-                        title = "语速 (Speed)",
+                        title = stringResource(R.string.settings_tts_item_title_speed),
                         value = uiState.ttsSpeechRate,
                         valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsSpeechRate)}x",
                         onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsSpeechRate(it)) },
@@ -152,7 +155,7 @@ fun TtsSettingsScreen(
                 // 音调调节
                 // =====================
                 SettingsSectionTitle(
-                    text = "音调调节",
+                    text = stringResource(R.string.settings_tts_section_pitch),
                     modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
                 )
 
@@ -162,7 +165,7 @@ fun TtsSettingsScreen(
                         iconColor = secondaryAccent,
                         plumpIcon = PlumpIcon.MusicNote,
                         plumpColor = IsoluminantPalette.LakesideCyan,
-                        title = "音调 (Pitch)",
+                        title = stringResource(R.string.settings_tts_item_title_pitch),
                         value = uiState.ttsPitch,
                         valueDisplay = "${String.format(Locale.US, "%.1f", uiState.ttsPitch)}x",
                         onValueChange = { viewModel.onEvent(SettingsEvent.SetTtsPitch(it)) },
@@ -180,7 +183,7 @@ fun TtsSettingsScreen(
             // 试听 & 重置
             // =====================
             SettingsSectionTitle(
-                text = "试听 & 重置",
+                text = stringResource(R.string.settings_tts_section_preview_reset),
                 modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
             )
 
@@ -200,8 +203,8 @@ fun TtsSettingsScreen(
                         Box(modifier = Modifier.weight(1f)) {
                             // 试听按钮 (日语)
                             LiquidPreviewButton(
-                                text = "试听 (日语)",
-                                playingText = "停止 (日语)",
+                                text = stringResource(R.string.settings_tts_btn_preview_japanese),
+                                playingText = stringResource(R.string.settings_tts_btn_stop_japanese),
                                 isPlaying = isPlayingJp,
                                 color = accentColor,
                                 onClick = {
@@ -216,15 +219,15 @@ fun TtsSettingsScreen(
                         Box(modifier = Modifier.weight(1f)) {
                             // 试听按钮 (中文)
                             LiquidPreviewButton(
-                                text = "试听 (中文)",
-                                playingText = "停止 (中文)",
+                                text = stringResource(R.string.settings_tts_btn_preview_chinese),
+                                playingText = stringResource(R.string.settings_tts_btn_stop_chinese),
                                 isPlaying = isPlayingCn,
                                 color = IosColors.Orange,
                                 onClick = {
                                     if (isPlayingCn) {
                                         viewModel.onEvent(SettingsEvent.StopPreviewTts)
                                     } else {
-                                        viewModel.onEvent(SettingsEvent.PreviewChineseVoice(uiState.ttsChineseVoiceName ?: "", "这是中文语音测试。"))
+                                        viewModel.onEvent(SettingsEvent.PreviewChineseVoice(uiState.ttsChineseVoiceName ?: "", sampleChineseText))
                                     }
                                 }
                             )
@@ -233,7 +236,7 @@ fun TtsSettingsScreen(
 
                     // 重置按钮 - 文字按钮
                     FlatTextButton(
-                        text = "重置为默认值",
+                        text = stringResource(R.string.settings_tts_btn_reset_default),
                         color = NemoNeutrals.Gray500,
                         onClick = {
                             viewModel.onEvent(SettingsEvent.StopPreviewTts)
@@ -264,7 +267,7 @@ fun TtsSettingsScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "语音设置",
+                title = stringResource(R.string.settings_tts_title_screen),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -298,10 +301,10 @@ fun TtsSettingsScreen(
                 onDismiss = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(false)) },
                 onVoiceSelected = { voiceName ->
                     viewModel.onEvent(SettingsEvent.SetTtsChineseVoiceName(voiceName))
-                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, "这是中文语音测试。"))
+                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, sampleChineseText))
                 },
                 onPreviewVoice = { voiceName ->
-                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, "这是中文语音测试。"))
+                    viewModel.onEvent(SettingsEvent.PreviewChineseVoice(voiceName, sampleChineseText))
                 },
                 isLoading = uiState.isLoadingVoices,
                 previewingVoiceName = uiState.previewingChineseVoiceName
@@ -487,7 +490,7 @@ private fun LiquidPreviewButton(
         ) {
             Icon(
                 imageVector = if (isPlaying) Icons.Rounded.Stop else Icons.Rounded.PlayArrow,
-                contentDescription = if (isPlaying) "停止" else "试听",
+                contentDescription = if (isPlaying) stringResource(R.string.settings_tts_cd_stop) else stringResource(R.string.settings_tts_cd_play),
                 tint = contentColor,
                 modifier = Modifier.size(20.dp)
             )

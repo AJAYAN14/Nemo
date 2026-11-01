@@ -33,6 +33,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.collection.R
 import com.jian.nemo.core.ui.animation.animateListItem
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -100,10 +102,10 @@ fun FavoriteGrammarsScreen(
     if (showDeleteDialog) {
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = "取消收藏",
-            text = "确定要将选中的 ${selectedGrammarIds.size} 个语法取消收藏吗？",
-            confirmText = "确认移出",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_dialog_unfavorite_title),
+            text = stringResource(R.string.collection_dialog_unfavorite_grammars_format, selectedGrammarIds.size),
+            confirmText = stringResource(R.string.collection_btn_confirm_remove),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 viewModel.deleteGrammarFavorites(selectedGrammarIds)
@@ -134,13 +136,13 @@ fun FavoriteGrammarsScreen(
                             IconButton(onClick = { selectedGrammarIds = emptySet() }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
-                                    contentDescription = "取消选择",
+                                    contentDescription = stringResource(R.string.collection_cd_cancel_selection),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "已选择 ${selectedGrammarIds.size} 项",
+                                text = stringResource(R.string.collection_selected_items_format, selectedGrammarIds.size),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -155,7 +157,7 @@ fun FavoriteGrammarsScreen(
                                 }
                             ) {
                                 Text(
-                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = accentBlue
@@ -165,7 +167,7 @@ fun FavoriteGrammarsScreen(
                             IconButton(onClick = { showDeleteDialog = true }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Delete,
-                                    contentDescription = "批量取消收藏",
+                                    contentDescription = stringResource(R.string.collection_cd_batch_unfavorite),
                                     tint = deleteColor
                                 )
                             }
@@ -173,7 +175,7 @@ fun FavoriteGrammarsScreen(
                     }
                 } else {
                     com.jian.nemo.core.ui.component.common.CommonHeader(
-                        title = "收藏语法",
+                        title = stringResource(R.string.collection_favorites_grammars_screen_title),
                         onBack = onNavigateBack,
                         backgroundColor = backgroundColor
                     )
@@ -232,14 +234,14 @@ fun FavoriteGrammarsScreen(
                             }
                             Spacer(modifier = Modifier.height(24.dp))
                             Text(
-                                text = "暂无收藏语法",
+                                text = stringResource(R.string.collection_empty_grammars_title),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "遇到重点语法记得收藏起来复习哦",
+                                text = stringResource(R.string.collection_empty_grammars_desc),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                 maxLines = 2,
@@ -429,7 +431,7 @@ private fun FavoriteGrammarItem(
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     imageVector = Icons.Rounded.Favorite,
-                                    contentDescription = "Favorited",
+                                    contentDescription = stringResource(R.string.collection_cd_favorited),
                                     tint = heartColor,
                                     modifier = Modifier.size(18.dp)
                                 )

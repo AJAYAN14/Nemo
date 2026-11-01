@@ -44,10 +44,13 @@ fun QuestionCountSelector(
     onCustom: () -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择题目数量", onClose = onCancel)
+    SelectorHeader(stringResource(R.string.test_sheet_title_question_count), onClose = onCancel)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        val allOptionsWithCustom = options.map { it to "$it 题" }
+
+
+        val formatQuestionCount = stringResource(R.string.test_settings_format_question_count)
+        val allOptionsWithCustom = options.map { it to String.format(formatQuestionCount, it) }
 
         // Split into chunks of 3 for grid layout
         allOptionsWithCustom.chunked(3).forEach { rowOptions ->
@@ -90,11 +93,15 @@ fun TimeLimitSelector(
     onCustom: () -> Unit,
     onCancel: () -> Unit
 ) {
-    SelectorHeader("选择时间限制", onClose = onCancel)
+    SelectorHeader(stringResource(R.string.test_sheet_title_time_limit), onClose = onCancel)
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+
+        val unlimitedText = stringResource(R.string.test_settings_time_limit_unlimited)
+        val minutesFormat = stringResource(R.string.test_settings_time_limit_minutes_format)
         val displayOptions = options.map {
-            it to if (it == 0) "无限制" else "$it 分钟"
+            it to if (it == 0) unlimitedText else String.format(minutesFormat, it)
         }
 
         displayOptions.chunked(3).forEach { rowOptions ->
@@ -133,7 +140,7 @@ fun QuestionSourceSelector(
     onCancel: () -> Unit
 ) {
     SingleSelectBottomSheet(
-        title = "选择题目来源",
+        title = stringResource(R.string.test_sheet_title_question_source),
         options = options,
         selectedKey = currentValue,
         onConfirm = onSelect,
@@ -152,7 +159,7 @@ fun ContentTypeSelector(
     onCancel: () -> Unit
 ) {
     SingleSelectBottomSheet(
-        title = "选择测试内容类型",
+        title = stringResource(R.string.test_sheet_title_content_type),
         options = options,
         selectedKey = currentValue,
         onConfirm = onSelect,
@@ -171,7 +178,7 @@ fun WrongAnswerRemovalSelector(
     onCancel: () -> Unit
 ) {
     SingleSelectBottomSheet(
-        title = "答对几次后从错题中移除",
+        title = stringResource(R.string.test_sheet_title_removal_threshold),
         options = options,
         selectedKey = currentValue,
         onConfirm = onSelect,
@@ -229,7 +236,7 @@ private fun SelectorHeader(title: String, onClose: (() -> Unit)? = null) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "关闭",
+                        contentDescription = stringResource(R.string.test_sheet_cd_close),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
@@ -284,7 +291,7 @@ private fun PremiumCustomChip(onClick: () -> Unit) {
             modifier = Modifier.fillMaxSize()
         ) {
             Text(
-                text = "自定义",
+                text = stringResource(R.string.test_sheet_btn_custom),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -333,7 +340,7 @@ private fun QuestionTypeCountRow(
 
                 if (typeKey == "card_matching" && isSupported) {
                     Text(
-                        text = "每组5个单词",
+                        text = stringResource(R.string.test_sheet_card_matching_group_hint),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -341,9 +348,9 @@ private fun QuestionTypeCountRow(
 
                 if (!isSupported) {
                     val reasonText = when (typeKey) {
-                        "typing" -> "语法/无假名拼写场景暂不支持"
-                        "card_matching" -> "语法场景暂不支持"
-                        else -> "暂不支持此题型"
+                        "typing" -> stringResource(R.string.test_sheet_reason_typing_unsupported)
+                        "card_matching" -> stringResource(R.string.test_sheet_reason_matching_unsupported)
+                        else -> stringResource(R.string.test_sheet_reason_general_unsupported)
                     }
                     Text(
                         text = reasonText,
@@ -370,7 +377,7 @@ private fun QuestionTypeCountRow(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Remove,
-                            contentDescription = "减少",
+                            contentDescription = stringResource(R.string.test_sheet_cd_decrease),
                             tint = if (count > 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             modifier = Modifier.size(16.dp)
                         )
@@ -392,7 +399,7 @@ private fun QuestionTypeCountRow(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "增加",
+                            contentDescription = stringResource(R.string.test_sheet_cd_increase),
                             tint = if (isSupported) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f),
                             modifier = Modifier.size(16.dp)
                         )
@@ -425,6 +432,8 @@ fun LevelSelector(
 
     // 数据量统计
     val totalCount = remember(availableLevels) { availableLevels.sumOf { it.second } }
+    // 本地化提示文字，避免在非 @Composable 回调中直接调用 stringResource
+    val levelNotAvailableMsg = stringResource(R.string.test_sheet_level_no_available_content)
 
     // 合并“全部”选项到网格中，总共 6 个项目 (全部, N5, N4, N3, N2, N1)
     val displayLevels = remember(allLevels) { listOf("全部") + allLevels }
@@ -432,6 +441,8 @@ fun LevelSelector(
 
     // 等级网格 (双列布局，刚好 3 行)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+
         rows.forEachIndexed { rowIndex, rowLevels ->
             androidx.compose.runtime.key(rowIndex) {
                 Row(
@@ -442,7 +453,7 @@ fun LevelSelector(
                         androidx.compose.runtime.key(levelKey) {
                             if (levelKey == "全部") {
                                 PremiumLevelChip(
-                                    level = "全部等级",
+                                    level = stringResource(R.string.test_settings_levels_all),
                                     count = totalCount,
                                     isSelected = isAllSelected,
                                     isAvailable = true,
@@ -469,7 +480,7 @@ fun LevelSelector(
                                     isAvailable = isAvailable,
                                     onClick = {
                                         if (!isAvailable) {
-                                            snackbarAction("该等级在当前题源下没有可用内容")
+                                            snackbarAction(levelNotAvailableMsg)
                                         } else {
                                             onLevelToggle(levelKey)
                                         }
@@ -565,7 +576,7 @@ private fun PremiumLevelChip(
                     color = contentColor
                 )
                 Text(
-                    text = if (isAvailable) "$count 词" else "不可用",
+                    text = if (isAvailable) stringResource(R.string.test_sheet_format_words_count, count) else stringResource(R.string.test_sheet_level_unavailable),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (isSelected) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -592,7 +603,7 @@ private fun PremiumLevelChip(
 @Composable
 fun CancelButton(onClick: () -> Unit) {
     Text(
-        text = "取消",
+        text = stringResource(R.string.test_sheet_btn_cancel),
         color = MaterialTheme.colorScheme.error,
         modifier = Modifier
             .fillMaxWidth()

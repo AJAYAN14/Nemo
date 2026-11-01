@@ -42,6 +42,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.animation.animateListItem
@@ -153,23 +155,27 @@ fun CategoryWordsScreen(
             }
         }
 
-        val options = remember(iconStyle) {
+        val tabAllText = stringResource(R.string.lib_category_words_tab_all)
+        val tabLearnedText = stringResource(R.string.lib_category_words_tab_learned)
+        val tabUnlearnedText = stringResource(R.string.lib_category_words_tab_unlearned)
+
+        val options = remember(iconStyle, tabAllText, tabLearnedText, tabUnlearnedText) {
             if (iconStyle == SettingIconStyle.PLUMP_DUO) {
                 listOf(
                     DiscoveryOption(
-                        label = "全部",
+                        label = tabAllText,
                         icon = Icons.Default.Book,
                         plumpIcon = PlumpIcon.BookOpen,
                         activeColor = IsoluminantPalette.SkyIndigo,
                     ),
                     DiscoveryOption(
-                        label = "已学",
+                        label = tabLearnedText,
                         icon = Icons.Default.CheckCircle,
                         plumpIcon = PlumpIcon.BadgeCheck,
                         activeColor = IsoluminantPalette.EmeraldGreen,
                     ),
                     DiscoveryOption(
-                        label = "未学",
+                        label = tabUnlearnedText,
                         icon = Icons.Default.Error,
                         plumpIcon = PlumpIcon.Flame,
                         activeColor = IsoluminantPalette.WarmAmber,
@@ -178,17 +184,17 @@ fun CategoryWordsScreen(
             } else {
                 listOf(
                     DiscoveryOption(
-                        label = "全部",
+                        label = tabAllText,
                         icon = Icons.Default.Book,
                         activeColor = NemoIndigo,
                     ),
                     DiscoveryOption(
-                        label = "已学",
+                        label = tabLearnedText,
                         icon = Icons.Default.CheckCircle,
                         activeColor = NemoSecondary,
                     ),
                     DiscoveryOption(
-                        label = "未学",
+                        label = tabUnlearnedText,
                         icon = Icons.Default.Error,
                         activeColor = NemoOrange,
                     ),
@@ -218,7 +224,7 @@ fun CategoryWordsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = uiState.error ?: "加载失败", color = MaterialTheme.colorScheme.error)
+                Text(text = uiState.error ?: stringResource(R.string.lib_category_words_error_load_failed), color = MaterialTheme.colorScheme.error)
             }
         } else {
             LazyColumn(
@@ -250,7 +256,7 @@ fun CategoryWordsScreen(
                         },
                         searchQuery = searchQuery,
                         onSearchQueryChange = { searchQuery = it },
-                        searchPlaceholder = "搜索：汉字 / 假名 / 释义",
+                        searchPlaceholder = stringResource(R.string.lib_category_words_search_placeholder),
                         style = DiscoveryBarStyle(
                             backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
                             inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -279,10 +285,13 @@ fun CategoryWordsScreen(
                                 if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Inbox
                             val emptyPlumpIcon: PlumpIcon =
                                 if (searchQuery.isNotEmpty()) PlumpIcon.SearchX else PlumpIcon.Globe
+                            val emptyMessage = when {
+                                searchQuery.isNotEmpty() -> stringResource(R.string.lib_category_words_empty_search)
+                                selectedLevel != "ALL" -> stringResource(R.string.lib_category_words_empty_level)
+                                else -> stringResource(R.string.lib_category_words_empty_category)
+                            }
                             EmptyState(
-                                message = if (searchQuery.isNotEmpty()) "未找到相关单词"
-                                    else if (selectedLevel != "ALL") "当前等级暂无单词"
-                                    else "该分类下暂无词汇",
+                                message = emptyMessage,
                                 icon = emptyIcon,
                                 plumpIcon = emptyPlumpIcon
                             )
@@ -310,9 +319,9 @@ fun CategoryWordsScreen(
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
             val titleText = if (selectedLevel == "ALL") {
-                if (uiState.isLoading) categoryTitle else "$categoryTitle (${currentWords.size})"
+                if (uiState.isLoading) categoryTitle else stringResource(R.string.lib_category_words_title_with_count, categoryTitle, currentWords.size)
             } else {
-                "$categoryTitle · $selectedLevel (${currentWords.size})"
+                stringResource(R.string.lib_category_words_title_with_level_count, categoryTitle, selectedLevel, currentWords.size)
             }
 
             CommonHeader(

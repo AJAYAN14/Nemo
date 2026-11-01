@@ -22,9 +22,11 @@ import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jian.nemo.feature.settings.R
 import com.jian.nemo.core.ui.component.dialog.CommonConfigDialog
 import com.jian.nemo.core.designsystem.theme.IosColors
 
@@ -57,14 +59,14 @@ fun BacklogControllerCard(
             // 头部标题与说明 (纯文字左对齐，与全页面各卡片排版规范统一)
             Column {
                 Text(
-                    text = "积压排产与微会话",
+                    text = stringResource(R.string.settings_backlog_title_card),
                     style = MaterialTheme.typography.labelLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "物理防滚雪球收敛，3~5 分钟微会话保底打卡",
+                    text = stringResource(R.string.settings_backlog_desc_card),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -78,18 +80,18 @@ fun BacklogControllerCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "单组微会话容量",
+                        text = stringResource(R.string.settings_backlog_title_session_batch),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "$sessionBatchSize 词 / 组",
+                        text = stringResource(R.string.settings_backlog_format_words_per_group, sessionBatchSize),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = accentColor
                     )
                 }
                 Text(
-                    text = "每组只排少量词汇，极速完成即点亮今日连续打卡",
+                    text = stringResource(R.string.settings_backlog_desc_session_batch),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -178,18 +180,18 @@ fun BacklogControllerCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "每日复习上限",
+                        text = stringResource(R.string.settings_backlog_title_daily_review_limit),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = if (maxDailyReviews == 0) "不设限制" else "$maxDailyReviews 词",
+                        text = if (maxDailyReviews == 0) stringResource(R.string.settings_backlog_label_no_limit) else stringResource(R.string.settings_backlog_format_words_count, maxDailyReviews),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = accentColor
                     )
                 }
                 Text(
-                    text = "设定单日复习最大安全负荷，超出部分由系统智能平滑后推",
+                    text = stringResource(R.string.settings_backlog_desc_daily_review_limit),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -273,12 +275,12 @@ fun BacklogControllerCard(
             // 3. 积压期新词策略
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "积压期新词策略",
+                    text = stringResource(R.string.settings_backlog_title_backlog_strategy),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "当待复习队列积压时，每日首组会话的新词投放策略",
+                    text = stringResource(R.string.settings_backlog_desc_backlog_strategy),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -290,8 +292,8 @@ fun BacklogControllerCard(
                     // 选项 A: 微量尝鲜
                     val isTasteSelected = strategy != "review_only"
                     StrategyOptionCard(
-                        title = "微量尝鲜",
-                        desc = "穿插 2~3 词新知，保持新鲜感",
+                        title = stringResource(R.string.settings_backlog_strategy_title_taste),
+                        desc = stringResource(R.string.settings_backlog_strategy_desc_taste),
                         selected = isTasteSelected,
                         accentColor = accentColor,
                         onClick = { onStrategyChange("taste") },
@@ -301,8 +303,8 @@ fun BacklogControllerCard(
                     // 选项 B: 纯复习优先
                     val isReviewOnlySelected = strategy == "review_only"
                     StrategyOptionCard(
-                        title = "纯复习优先",
-                        desc = "暂停新词，全力冲刺清偿旧账",
+                        title = stringResource(R.string.settings_backlog_strategy_title_review_only),
+                        desc = stringResource(R.string.settings_backlog_strategy_desc_review_only),
                         selected = isReviewOnlySelected,
                         accentColor = accentColor,
                         onClick = { onStrategyChange("review_only") },
@@ -318,15 +320,15 @@ fun BacklogControllerCard(
         CommonConfigDialog(
             headerIcon = Icons.Rounded.Layers,
             headerIconTint = accentColor,
-            title = "单组微会话容量",
-            subtitle = "自定义每组排产词数，极速完成即点亮连续打卡",
+            title = stringResource(R.string.settings_backlog_title_session_batch),
+            subtitle = stringResource(R.string.settings_backlog_dialog_subtitle_session_batch),
             initialValue = sessionBatchSize,
             min = 5,
             max = 100,
             step = 1,
             presets = listOf(10, 15, 20, 25, 30, 50),
             presetLabelFormatter = { "$it 词" },
-            confirmText = "确认保存",
+            confirmText = stringResource(R.string.settings_btn_confirm_save),
             confirmButtonColor = accentColor,
             onDismissRequest = { showBatchDialog = false },
             onConfirm = { newVal ->
@@ -341,15 +343,15 @@ fun BacklogControllerCard(
         CommonConfigDialog(
             headerIcon = Icons.Rounded.Shield,
             headerIconTint = accentColor,
-            title = "每日复习上限",
-            subtitle = "设定单日最大安全负荷（输入 0 表示不设限制）",
+            title = stringResource(R.string.settings_backlog_title_daily_review_limit),
+            subtitle = stringResource(R.string.settings_backlog_dialog_subtitle_daily_limit),
             initialValue = maxDailyReviews,
             min = 0,
             max = 500,
             step = 5,
             presets = listOf(0, 30, 50, 80, 100, 150),
             presetLabelFormatter = { if (it == 0) "不限" else "$it 词" },
-            confirmText = "确认保存",
+            confirmText = stringResource(R.string.settings_btn_confirm_save),
             confirmButtonColor = accentColor,
             onDismissRequest = { showReviewLimitDialog = false },
             onConfirm = { newVal ->

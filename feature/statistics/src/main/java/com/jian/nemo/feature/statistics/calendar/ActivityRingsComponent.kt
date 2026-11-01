@@ -35,7 +35,9 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -99,7 +101,13 @@ fun calculateRingsForDay(
     todayEpochDay: Long,
     todayStats: LearningStats?,
     record: StudyRecord?,
-    forecast: ReviewForecast?
+    forecast: ReviewForecast?,
+    wordsLabel: String = "",
+    wordsUnit: String = "",
+    grammarsLabel: String = "",
+    grammarsUnit: String = "",
+    reviewLabel: String = "",
+    reviewUnit: String = ""
 ): List<ActivityRingItemData> {
     val wordGoal = todayStats?.wordDailyGoal?.coerceAtLeast(1) ?: 50
     val grammarGoal = todayStats?.grammarDailyGoal?.coerceAtLeast(1) ?: 10
@@ -143,27 +151,27 @@ fun calculateRingsForDay(
 
     return listOf(
         ActivityRingItemData(
-            label = "新学单词",
+            label = wordsLabel,
             color = ActivityRingColors.MovePink,
             actual = wordsLearned,
             goal = wordsGoal,
-            unit = " 个",
+            unit = wordsUnit,
             progress = wordsProgress
         ),
         ActivityRingItemData(
-            label = "新学语法",
+            label = grammarsLabel,
             color = ActivityRingColors.ExerciseGreen,
             actual = grammarsLearned,
             goal = grammarsGoal,
-            unit = " 条",
+            unit = grammarsUnit,
             progress = grammarsProgress
         ),
         ActivityRingItemData(
-            label = "复习达成",
+            label = reviewLabel,
             color = ActivityRingColors.StandCyan,
             actual = reviewed,
             goal = reviewGoal,
-            unit = " 次",
+            unit = reviewUnit,
             progress = reviewProgress
         )
     )
@@ -505,7 +513,15 @@ fun ActivityMonthGrid(
         ActivityRingPalette.SurfaceWarmLight
     }
 
-    val weekDayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
+    val weekDayLabels = listOf(
+        stringResource(R.string.stats_calendar_weekday_mon),
+        stringResource(R.string.stats_calendar_weekday_tue),
+        stringResource(R.string.stats_calendar_weekday_wed),
+        stringResource(R.string.stats_calendar_weekday_thu),
+        stringResource(R.string.stats_calendar_weekday_fri),
+        stringResource(R.string.stats_calendar_weekday_sat),
+        stringResource(R.string.stats_calendar_weekday_sun)
+    )
 
     Column(modifier = modifier.fillMaxWidth()) {
         // 月份切换控制栏
@@ -522,13 +538,13 @@ fun ActivityMonthGrid(
             }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                    contentDescription = "上一月",
+                    contentDescription = stringResource(R.string.stats_rings_cd_prev_month),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Text(
-                text = "${displayedCal.get(Calendar.YEAR)}年 ${displayedCal.get(Calendar.MONTH) + 1}月",
+                text = stringResource(R.string.stats_rings_month_year_format, displayedCal.get(Calendar.YEAR), displayedCal.get(Calendar.MONTH) + 1),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -540,7 +556,7 @@ fun ActivityMonthGrid(
             }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                    contentDescription = "下一月",
+                    contentDescription = stringResource(R.string.stats_rings_cd_next_month),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -709,14 +725,40 @@ fun ActivityRingsCard(
 
     val selectedEpochDay = remember(selectedDate) { selectedDate.toEpochDay() }
 
+    val wordsLabel = stringResource(R.string.stats_rings_label_new_words)
+    val wordsUnit = stringResource(R.string.stats_rings_unit_words)
+    val grammarsLabel = stringResource(R.string.stats_rings_label_new_grammars)
+    val grammarsUnit = stringResource(R.string.stats_rings_unit_grammars)
+    val reviewLabel = stringResource(R.string.stats_rings_label_review)
+    val reviewUnit = stringResource(R.string.stats_rings_unit_review)
+
+    val weekDayLabels = listOf(
+        stringResource(R.string.stats_calendar_weekday_mon),
+        stringResource(R.string.stats_calendar_weekday_tue),
+        stringResource(R.string.stats_calendar_weekday_wed),
+        stringResource(R.string.stats_calendar_weekday_thu),
+        stringResource(R.string.stats_calendar_weekday_fri),
+        stringResource(R.string.stats_calendar_weekday_sat),
+        stringResource(R.string.stats_calendar_weekday_sun)
+    )
+
     // 计算选中当天的三环数据
-    val currentRings = remember(selectedEpochDay, todayStats, recordsMap, forecastMap) {
+    val currentRings = remember(
+        selectedEpochDay, todayStats, recordsMap, forecastMap,
+        wordsLabel, wordsUnit, grammarsLabel, grammarsUnit, reviewLabel, reviewUnit
+    ) {
         calculateRingsForDay(
             epochDay = selectedEpochDay,
             todayEpochDay = todayEpochDay,
             todayStats = todayStats,
             record = recordsMap[selectedEpochDay],
-            forecast = forecastMap[selectedEpochDay]
+            forecast = forecastMap[selectedEpochDay],
+            wordsLabel = wordsLabel,
+            wordsUnit = wordsUnit,
+            grammarsLabel = grammarsLabel,
+            grammarsUnit = grammarsUnit,
+            reviewLabel = reviewLabel,
+            reviewUnit = reviewUnit
         )
     }
 
@@ -790,7 +832,7 @@ fun ActivityRingsCard(
         val diffToMonday = if (dayOfWeek == Calendar.SUNDAY) -6 else Calendar.MONDAY - dayOfWeek
         cal.add(Calendar.DAY_OF_MONTH, diffToMonday)
 
-        val labels = listOf("一", "二", "三", "四", "五", "六", "日")
+        val labels = weekDayLabels
         val list = mutableListOf<DayRingSummary>()
 
         for (i in 0 until 7) {
@@ -862,12 +904,14 @@ fun ActivityRingsCard(
         }
     }
 
-    val selectedDateText = remember(selectedDate, selectedEpochDay, todayEpochDay) {
+    val dateTodayFormat = stringResource(R.string.stats_rings_date_today_format)
+    val dateFormat = stringResource(R.string.stats_rings_date_format)
+    val selectedDateText = remember(selectedDate, selectedEpochDay, todayEpochDay, dateTodayFormat, dateFormat) {
         val cal = Calendar.getInstance().apply { time = selectedDate }
         val m = cal.get(Calendar.MONTH) + 1
         val d = cal.get(Calendar.DAY_OF_MONTH)
         val isToday = selectedEpochDay == todayEpochDay
-        if (isToday) "今天 · ${m}月${d}日" else "${m}月${d}日"
+        if (isToday) String.format(dateTodayFormat, m, d) else String.format(dateFormat, m, d)
     }
 
     PremiumCard(
@@ -880,7 +924,7 @@ fun ActivityRingsCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "活动进度",
+                text = stringResource(R.string.stats_rings_title_activity_progress),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Black,
                 letterSpacing = (-0.03).sp
@@ -989,9 +1033,13 @@ fun ActivityRingsCard(
             },
             label = "periodClosedDaysSummary"
         ) { monthMode ->
-            val periodText = if (!monthMode) "本周" else "本月"
+            val periodText = if (!monthMode) {
+                stringResource(R.string.stats_rings_period_week)
+            } else {
+                stringResource(R.string.stats_rings_period_month)
+            }
             Text(
-                text = "${periodText}三环全合上天数：${closedDaysCount} 天",
+                text = stringResource(R.string.stats_rings_summary_closed_days_format, periodText, closedDaysCount),
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),

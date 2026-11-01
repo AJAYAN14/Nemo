@@ -1,6 +1,6 @@
 ---
 name: fullstack-developer
-description: Modern web development expertise covering React, Node.js, databases, and full-stack architecture. Use when building web applications, developing APIs, creating frontends, setting up databases, deploying web apps, or when user mentions React, Next.js, Express, REST API, GraphQL, MongoDB, PostgreSQL, or full-stack development. 及时上网搜索学习新技术和方法。
+description: "现代全栈工程开发。涵盖 React、Next.js、Node.js 服务端、数据库集成与全栈通信架构。"
 version: 2.0.0
 ---
 

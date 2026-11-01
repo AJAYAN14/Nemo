@@ -12,4 +12,178 @@
     <string name="core_common_btn_cancel">取消</string>
     <string name="core_common_btn_close">关闭</string>
     <string name="core_common_btn_scroll_to_top">返回顶部</string>
+
+    <!-- Google TTS 弹窗文案 -->
+    <string name="core_ui_dialog_google_tts_title">需要 Google 语音服务</string>
+    <string name="core_ui_dialog_google_tts_desc">为了给您提供最地道的日语发音体验，Nemo 推荐使用 Google TTS 引擎。</string>
+    <string name="core_ui_dialog_google_tts_downloading">正在下载安装包...</string>
+    <string name="core_ui_btn_install">安装</string>
+    <string name="core_ui_btn_later">暂不</string>
+
+    <!-- 时长选择器 -->
+    <string name="core_ui_unit_second">秒</string>
+
+    <!-- 版本更新弹窗 -->
+    <string name="core_ui_update_title">发现新版本</string>
+    <string name="core_ui_update_version_ready">V%1$s 已准备就绪</string>
+    <string name="core_ui_update_changelog_title">更新内容</string>
+    <string name="core_ui_update_status_downloaded">下载完成</string>
+    <string name="core_ui_update_status_downloading">下载中...</string>
+    <string name="core_ui_update_status_downloading_full">正在下载...</string>
+    <string name="core_ui_btn_later_update">暂不更新</string>
+    <string name="core_ui_update_btn_install_now">立即安装</string>
+    <string name="core_ui_update_btn_downloading">下载中...</string>
+    <string name="core_ui_update_btn_upgrade_now">立即更新</string>
+
+    <!-- 步进器组件 (PremiumStepper) -->
+    <string name="core_ui_stepper_cd_decrease">减少</string>
+    <string name="core_ui_stepper_cd_increase">增加</string>
+
+    <!-- 对话框组件 (NemoDialog & CommonConfigDialog) -->
+    <string name="core_ui_dialog_default_title">提示</string>
+    <string name="core_ui_dialog_btn_confirm">确定</string>
+    <string name="core_ui_dialog_btn_cancel">取消</string>
+    <string name="core_ui_dialog_cd_close">关闭</string>
+
+    <!-- 头像组件 (AvatarImage) -->
+    <string name="core_ui_avatar_cd_fallback_error">用户 %1$s 的默认头像，显示首字母 %2$s (图片加载失败)</string>
+    <string name="core_ui_avatar_cd_image">用户 %1$s 的个人头像图片</string>
+    <string name="core_ui_avatar_cd_fallback">用户 %1$s 的默认头像，显示首字母 %2$s</string>
+
+    <!-- 头像编辑弹窗 (AvatarEditDialog & PresetAvatarSelectorDialog) -->
+    <string name="core_ui_avatar_edit_dialog_title">编辑头像</string>
+    <string name="core_ui_avatar_edit_hint_empty">尚未设置个性头像</string>
+    <string name="core_ui_avatar_edit_hint_current">当前的视觉识别符号</string>
+    <string name="core_ui_avatar_edit_action_gallery">相册</string>
+    <string name="core_ui_avatar_edit_action_camera">拍照</string>
+    <string name="core_ui_avatar_edit_action_preset">预设</string>
+    <string name="core_ui_avatar_edit_action_remove">移除</string>
+    <string name="core_ui_preset_selector_dialog_title">选择预设头像</string>
+    <string name="core_ui_preset_selector_dialog_subtitle">从精美的渐变色头像中选择一个</string>
+
+    <!-- 加餐配置底部弹窗 (BonusStudyBottomSheet) -->
+    <string name="core_ui_bonus_sheet_title">今日加餐</string>
+    <string name="core_ui_bonus_sheet_subtitle">不修改常规每日目标，仅针对今天追加自选微会话</string>
+    <string name="core_ui_bonus_sheet_mode_title">加餐目标模式</string>
+    <string name="core_ui_bonus_sheet_mode_backlog">消化积压 (推荐)</string>
+    <string name="core_ui_bonus_sheet_mode_new">学习新词</string>
+    <string name="core_ui_bonus_sheet_preset_title">快捷预设数量</string>
+    <string name="core_ui_bonus_sheet_preset_format">+%1$d</string>
+    <string name="core_ui_bonus_sheet_custom_stepper_title">自定义数量微调</string>
+    <string name="core_ui_bonus_sheet_btn_start_backlog">开始消化积压 (+%1$d)</string>
+    <string name="core_ui_bonus_sheet_btn_start_new">开始学习新词 (+%1$d)</string>
+
+    <!-- 加餐居中对话框 (BonusStudyDialog) -->
+    <string name="core_ui_bonus_dialog_title">今日加餐</string>
+    <string name="core_ui_bonus_dialog_subtitle">突破常规，设定追加练习目标</string>
+    <string name="core_ui_bonus_dialog_mode_backlog">消化积压</string>
+    <string name="core_ui_bonus_dialog_mode_new">学习新词</string>
+    <string name="core_ui_bonus_dialog_preset_item_format">%1$d项</string>
+    <string name="core_ui_bonus_dialog_btn_start">开始挑战 →</string>
+
+    <!-- 悬浮回顶按钮 (ScrollToTopButton) -->
+    <string name="core_ui_scroll_to_top_cd_btn">返回顶部</string>
+    <string name="core_ui_scroll_to_top_cd_back">回到顶部</string>
+
+    <!-- 圆形勾选框 (NemoRoundCheckbox) -->
+    <string name="core_ui_checkbox_cd_checked">已选中</string>
+    <string name="core_ui_checkbox_cd_unchecked">未选中</string>
+
+    <!-- 下拉形变菜单 (NemoMorphMenu) -->
+    <string name="core_ui_morph_menu_cd_more">更多选项</string>
+
+    <!-- 语法卡片 (CommonGrammarCard) -->
+    <string name="core_ui_grammar_card_cd_favorited">已收藏</string>
+
+    <!-- 列表组件 (ListComponents) -->
+    <string name="core_ui_list_item_type_word">单词</string>
+    <string name="core_ui_list_header_jlpt_format">JLPT %1$s</string>
+    <string name="core_ui_list_header_count_word_format">%1$d 词</string>
+    <string name="core_ui_list_header_count_grammar_format">%1$d 条</string>
+    <string name="core_ui_list_header_cd_collapse">折叠</string>
+    <string name="core_ui_list_header_cd_expand">展开</string>
+
+    <!-- 朗读按钮 (SpeakerButton) -->
+    <string name="core_ui_speaker_cd_read">朗读</string>
+
+    <!-- 头像操作结果 (AvatarResult) -->
+    <string name="core_ui_avatar_result_success">头像已保存</string>
+    <string name="core_ui_avatar_result_permission_denied">权限被拒绝</string>
+    <string name="core_ui_avatar_result_permission_denied_details">需要存储或相机权限才能设置头像</string>
+    <string name="core_ui_avatar_result_file_not_found">文件不存在</string>
+    <string name="core_ui_avatar_result_file_not_found_details">选择的图片文件不存在或已被删除</string>
+    <string name="core_ui_avatar_result_storage_full">存储空间不足</string>
+    <string name="core_ui_avatar_result_storage_full_details">需要至少 %1$dMB 空间</string>
+    <string name="core_ui_avatar_result_invalid_image">无效的图片文件</string>
+    <string name="core_ui_avatar_result_image_too_large">图片文件过大</string>
+    <string name="core_ui_avatar_result_image_too_large_details">图片大小 %1$dMB 超过限制 %2$dMB</string>
+    <string name="core_ui_avatar_result_compression_failed">图片处理失败</string>
+    <string name="core_ui_avatar_result_save_failed">保存失败</string>
+    <string name="core_ui_avatar_result_unknown">操作失败</string>
+    <string name="core_ui_avatar_result_format_with_details">%1$s：%2$s</string>
+
+    <!-- 词性分类与描述 (PartOfSpeechExt) -->
+    <string name="core_ui_pos_verb">动词</string>
+    <string name="core_ui_pos_noun">名词</string>
+    <string name="core_ui_pos_adjective">形容词</string>
+    <string name="core_ui_pos_adverb">副词</string>
+    <string name="core_ui_pos_particle">助词</string>
+    <string name="core_ui_pos_conjunction">接续词</string>
+    <string name="core_ui_pos_rentai">连体词</string>
+    <string name="core_ui_pos_prefix">接头词</string>
+    <string name="core_ui_pos_suffix">接尾词</string>
+    <string name="core_ui_pos_interjection">感叹词</string>
+    <string name="core_ui_pos_fixed_expression">固定表达</string>
+    <string name="core_ui_pos_loan_word">外来语</string>
+
+    <string name="core_ui_pos_desc_verb">自動詞・他動詞・自他動詞</string>
+    <string name="core_ui_pos_desc_noun">名詞・代名词</string>
+    <string name="core_ui_pos_desc_adjective">イ形容词・ナ形容词</string>
+    <string name="core_ui_pos_desc_adverb">副詞</string>
+    <string name="core_ui_pos_desc_particle">助詞</string>
+    <string name="core_ui_pos_desc_conjunction">接続詞</string>
+    <string name="core_ui_pos_desc_rentai">連体詞</string>
+    <string name="core_ui_pos_desc_prefix">接頭語</string>
+    <string name="core_ui_pos_desc_suffix">接尾語</string>
+    <string name="core_ui_pos_desc_interjection">感動詞</string>
+    <string name="core_ui_pos_desc_fixed_expression">慣用句・連語</string>
+    <string name="core_ui_pos_desc_loan_word">カタカナ語</string>
+
+    <!-- 预设头像名称 (PresetAvatars) -->
+    <string name="core_ui_preset_avatar_sunset">日落</string>
+    <string name="core_ui_preset_avatar_ocean">海洋</string>
+    <string name="core_ui_preset_avatar_forest">森林</string>
+    <string name="core_ui_preset_avatar_lavender">薰衣草</string>
+    <string name="core_ui_preset_avatar_mint">薄荷</string>
+    <string name="core_ui_preset_avatar_coral">珊瑚</string>
+    <string name="core_ui_preset_avatar_golden">金色</string>
+    <string name="core_ui_preset_avatar_aurora">极光</string>
+    <string name="core_ui_preset_avatar_peach">蜜桃</string>
+    <string name="core_ui_preset_avatar_autumn">秋叶</string>
+    <string name="core_ui_preset_avatar_sky">天空</string>
+    <string name="core_ui_preset_avatar_lemon">柠檬</string>
+    <string name="core_ui_preset_avatar_midnight">午夜</string>
+    <string name="core_ui_preset_avatar_galaxy">星系</string>
+    <string name="core_ui_preset_avatar_tropical">热带</string>
+    <string name="core_ui_preset_avatar_cherry">樱花</string>
+
+    <!-- 详情页通用组件 (DetailComponents) -->
+    <string name="core_ui_detail_cd_back">返回</string>
+
+    <!-- 搜索列表 (GenericExpandableListScreen) -->
+    <string name="core_ui_search_cd_search">搜索</string>
+
+    <!-- 发现栏 (DiscoveryBar) -->
+    <string name="core_ui_discovery_cd_search">Search</string>
+    <string name="core_ui_discovery_cd_close">Close</string>
+
+    <!-- 启动屏 (SplashScreen) -->
+    <string name="core_ui_splash_cd_logo">Nemo Frog Logo</string>
+
+    <!-- 下载进度百分比格式 -->
+    <string name="core_ui_format_percent">%1$d%%</string>
+
+    <!-- SRS 记忆状态 -->
+    <string name="core_ui_srs_status_unlearned">未学习</string>
+    <string name="core_ui_srs_status_due_today">今日待复习</string>
 </resources>

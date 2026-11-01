@@ -19,9 +19,11 @@ import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.modifier.softShadow
@@ -58,11 +60,11 @@ fun AvatarEditDialog(
             when (result) {
                 is AvatarResult.Success -> {
                     onAvatarChanged(result.path)
-                    android.widget.Toast.makeText(context, result.message, android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(context, result.getUserMessage(context), android.widget.Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }
                 is AvatarResult.Error -> {
-                    android.widget.Toast.makeText(context, result.getUserMessage(), android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(context, result.getUserMessage(context), android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -98,8 +100,8 @@ fun AvatarEditDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "编辑头像",
-        dismissText = "取消",
+        title = stringResource(R.string.core_ui_avatar_edit_dialog_title),
+        dismissText = stringResource(R.string.core_ui_dialog_btn_cancel),
         confirmText = null,
         onDismiss = onDismiss,
         content = {
@@ -140,7 +142,11 @@ fun AvatarEditDialog(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = if (currentAvatarPath.isNullOrEmpty()) "尚未设置个性头像" else "当前的视觉识别符号",
+                    text = if (currentAvatarPath.isNullOrEmpty()) {
+                        stringResource(R.string.core_ui_avatar_edit_hint_empty)
+                    } else {
+                        stringResource(R.string.core_ui_avatar_edit_hint_current)
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -156,7 +162,7 @@ fun AvatarEditDialog(
                 ) {
                     AvatarActionCard(
                         icon = Icons.Default.PhotoLibrary,
-                        label = "相册",
+                        label = stringResource(R.string.core_ui_avatar_edit_action_gallery),
                         containerColor = blueColor,
                         contentColor = blueColor,
                         modifier = itemModifier,
@@ -164,7 +170,7 @@ fun AvatarEditDialog(
                     )
                     AvatarActionCard(
                         icon = Icons.Default.CameraAlt,
-                        label = "拍照",
+                        label = stringResource(R.string.core_ui_avatar_edit_action_camera),
                         containerColor = greenColor,
                         contentColor = greenColor,
                         modifier = itemModifier,
@@ -189,7 +195,7 @@ fun AvatarEditDialog(
                 ) {
                     AvatarActionCard(
                         icon = Icons.Default.Palette,
-                        label = "预设",
+                        label = stringResource(R.string.core_ui_avatar_edit_action_preset),
                         containerColor = purpleColor,
                         contentColor = purpleColor,
                         modifier = itemModifier,
@@ -199,7 +205,7 @@ fun AvatarEditDialog(
                     if (!currentAvatarPath.isNullOrEmpty()) {
                         AvatarActionCard(
                             icon = Icons.Default.DeleteOutline,
-                            label = "移除",
+                            label = stringResource(R.string.core_ui_avatar_edit_action_remove),
                             containerColor = redColor,
                             contentColor = redColor,
                             modifier = itemModifier,
@@ -331,8 +337,7 @@ private fun saveImageToInternalStorage(context: Context, uri: Uri): AvatarResult
         }
 
         AvatarResult.Success(
-            path = file.absolutePath,
-            message = "头像已保存"
+            path = file.absolutePath
         )
     } catch (e: SecurityException) {
         AvatarResult.Error.PermissionDenied()

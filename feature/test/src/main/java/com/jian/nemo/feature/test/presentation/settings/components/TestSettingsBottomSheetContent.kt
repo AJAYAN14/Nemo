@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.feature.test.domain.model.QuestionSource
@@ -88,12 +90,12 @@ fun TestSettingsBottomSheetContent(
                 val available = uiState.availableWordLevels
                 
                 LevelSelector(
-                    title = "选择单词等级",
+                    title = stringResource(R.string.test_sheet_title_select_word_level),
                     allLevels = allLevels,
                     selectedLevels = currentLevels,
                     availableLevels = available,
                     needsRestriction = true,
-                    emptyMessage = "当前题源下没有可用的单词等级",
+                    emptyMessage = stringResource(R.string.test_sheet_empty_word_levels),
                     isAllSelected = uiState.isAllWordLevelsSelected,
                     onLevelToggle = { onToggleLevel(it, false) },
                     onLevelExclusive = { onExclusiveSelectLevel(it, false) },
@@ -107,12 +109,12 @@ fun TestSettingsBottomSheetContent(
                 val available = uiState.availableGrammarLevels
                 
                 LevelSelector(
-                    title = "选择语法等级",
+                    title = stringResource(R.string.test_sheet_title_select_grammar_level),
                     allLevels = allLevels,
                     selectedLevels = currentLevels,
                     availableLevels = available,
                     needsRestriction = config.questionSource != QuestionSource.ALL,
-                    emptyMessage = "当前题源下没有可用的语法等级",
+                    emptyMessage = stringResource(R.string.test_sheet_empty_grammar_levels),
                     isAllSelected = uiState.isAllGrammarLevelsSelected,
                     onLevelToggle = { onToggleLevel(it, true) },
                     onLevelExclusive = { onExclusiveSelectLevel(it, true) },

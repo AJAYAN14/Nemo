@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -66,7 +68,7 @@ fun SpeakerButton(
             // 默认状态：静态喇叭图标
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = "朗读",
+                contentDescription = stringResource(R.string.core_ui_speaker_cd_read),
                 tint = tint,
                 modifier = Modifier.size(size * 0.55f)
             )

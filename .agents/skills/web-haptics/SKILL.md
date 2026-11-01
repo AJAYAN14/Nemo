@@ -1,6 +1,6 @@
 ---
 name: web-haptics
-description: Add haptic feedback to web apps using the web-haptics library. Use when building mobile-facing UIs that need tactile feedback on buttons, toggles, forms, pickers, and other interactive elements.
+description: "移动端触觉振动反馈。为移动端 Web 界面的按钮、开关、表单和选择器注入真实的物理触感。"
 license: MIT
 metadata:
   author: lochie

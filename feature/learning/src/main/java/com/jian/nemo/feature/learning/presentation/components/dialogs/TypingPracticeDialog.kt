@@ -46,9 +46,9 @@ fun TypingPracticeDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "跟打练习",
-        confirmText = "确定",
-        dismissText = "清空",
+        title = stringResource(R.string.learn_typing_dialog_title),
+        confirmText = stringResource(R.string.ai_reading_btn_confirm),
+        dismissText = stringResource(R.string.learn_typing_btn_clear),
         confirmButtonColor = themeColor,
         onConfirm = onConfirm,
         onDismiss = {
@@ -120,7 +120,7 @@ fun TypingPracticeDialog(
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
-                                    text = "回答正确！",
+                                    text = stringResource(R.string.learn_typing_feedback_correct),
                                     color = themeColor,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium,
@@ -131,7 +131,7 @@ fun TypingPracticeDialog(
                         }
                         FeedbackState.INCORRECT -> {
                             Text(
-                                text = "回答错误，请检查您的输入",
+                                text = stringResource(R.string.learn_typing_feedback_wrong),
                                 color = MaterialTheme.colorScheme.error,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium,

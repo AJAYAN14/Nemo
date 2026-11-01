@@ -27,6 +27,8 @@ import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -104,7 +106,7 @@ fun TestDashboardScreen(
                     bottom = navigationBarHeight + 100.dp
                 )
         ) {
-            ImmersiveTestHeader(title = "测试")
+            ImmersiveTestHeader(title = stringResource(R.string.test_dashboard_title_screen))
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -112,7 +114,7 @@ fun TestDashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SectionTitle("复习与回顾")
+            SectionTitle(stringResource(R.string.test_dashboard_section_review))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -124,8 +126,8 @@ fun TestDashboardScreen(
                             key = "container_mistakes",
                             shape = RoundedCornerShape(24.dp)
                         ),
-                    title = "我的错题",
-                    subtitle = "${uiState.wrongWordsCount} 个",
+                    title = stringResource(R.string.test_dashboard_item_mistakes),
+                    subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.wrongWordsCount),
                     icon = Icons.Rounded.Cancel,
                     color = dangerColor,
                     onClick = onNavigateToMistakes,
@@ -139,8 +141,8 @@ fun TestDashboardScreen(
                             key = "container_favorites",
                             shape = RoundedCornerShape(24.dp)
                         ),
-                    title = "我的收藏",
-                    subtitle = "${uiState.favoriteWordsCount} 个",
+                    title = stringResource(R.string.test_dashboard_item_favorites),
+                    subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.favoriteWordsCount),
                     icon = Icons.Rounded.Star,
                     color = warningColor,
                     onClick = onNavigateToFavorites,
@@ -151,7 +153,7 @@ fun TestDashboardScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            SectionTitle("基础练习")
+            SectionTitle(stringResource(R.string.test_dashboard_section_basic))
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,8 +166,8 @@ fun TestDashboardScreen(
                                 key = "container_test_multiple_choice",
                                 shape = RoundedCornerShape(24.dp)
                             ),
-                        title = "选择题",
-                        subtitle = "快速认知",
+                        title = stringResource(R.string.test_dashboard_type_choice_title),
+                        subtitle = stringResource(R.string.test_dashboard_type_choice_subtitle),
                         icon = Icons.AutoMirrored.Rounded.Assignment,
                         color = secondaryColor,
                         onClick = { onNavigateToTestSettings("multiple_choice") },
@@ -179,8 +181,8 @@ fun TestDashboardScreen(
                                 key = "container_test_typing",
                                 shape = RoundedCornerShape(24.dp)
                             ),
-                        title = "手打题",
-                        subtitle = "拼写强化",
+                        title = stringResource(R.string.test_dashboard_type_typing_title),
+                        subtitle = stringResource(R.string.test_dashboard_type_typing_subtitle),
                         icon = Icons.Rounded.TextFields,
                         color = NemoIndigo,
                         onClick = { onNavigateToTestSettings("typing") },
@@ -199,8 +201,8 @@ fun TestDashboardScreen(
                                 key = "container_test_card_matching",
                                 shape = RoundedCornerShape(24.dp)
                             ),
-                        title = "卡片题",
-                        subtitle = "翻牌记忆",
+                        title = stringResource(R.string.test_dashboard_type_card_title),
+                        subtitle = stringResource(R.string.test_dashboard_type_card_subtitle),
                         icon = Icons.Rounded.ViewModule,
                         color = NemoTeal,
                         onClick = { onNavigateToTestSettings("card_matching") },
@@ -214,8 +216,8 @@ fun TestDashboardScreen(
                                 key = "container_test_sorting",
                                 shape = RoundedCornerShape(24.dp)
                             ),
-                        title = "排序题",
-                        subtitle = "逻辑构建",
+                        title = stringResource(R.string.test_dashboard_type_sorting_title),
+                        subtitle = stringResource(R.string.test_dashboard_type_sorting_subtitle),
                         icon = Icons.Rounded.Extension,
                         color = NemoPurple,
                         onClick = { onNavigateToTestSettings("sorting") },
@@ -228,14 +230,14 @@ fun TestDashboardScreen(
             if (isAbilityWorkshopEnabled) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                SectionTitle("其他测试")
+                SectionTitle(stringResource(R.string.test_dashboard_section_other))
                 DashboardBanner(
                     modifier = Modifier.containerTransform(
                         key = "container_ability_workshop",
                         shape = RoundedCornerShape(24.dp)
                     ),
-                    title = "能力工坊",
-                    subtitle = "提升语感，全方位进阶",
+                    title = stringResource(R.string.test_dashboard_workshop_title),
+                    subtitle = stringResource(R.string.test_dashboard_workshop_subtitle),
                     icon = Icons.Rounded.AllInclusive,
                     gradientColors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)),
                     onClick = onNavigateToAbilityWorkshop
@@ -306,32 +308,32 @@ private fun StatsPager(
 
     val pages = listOf(
         CompactStatsPage(
-            title = "今日测试",
+            title = stringResource(R.string.test_dashboard_stat_today_title),
             icon = Icons.Rounded.Bolt,
             plumpIcon = PlumpIcon.Zap,
             paletteColor = IsoluminantPalette.SkyIndigo,
             accent = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else MaterialTheme.colorScheme.primary,
             primaryValue = uiState.todayTestCount.toString(),
-            primaryLabel = "已测题目",
+            primaryLabel = stringResource(R.string.test_dashboard_stat_tested_questions),
             secondaryValue = uiState.consecutiveTestDays.toString(),
-            secondaryUnit = "天",
-            secondaryLabel = "连续学习",
+            secondaryUnit = stringResource(R.string.test_dashboard_stat_unit_day),
+            secondaryLabel = stringResource(R.string.test_dashboard_stat_streak_learn),
             ringValue = (uiState.todayAccuracy * 100).roundToInt(),
-            ringLabel = "今日正确率"
+            ringLabel = stringResource(R.string.test_dashboard_stat_accuracy_today)
         ),
         CompactStatsPage(
-            title = "总体统计",
+            title = stringResource(R.string.test_dashboard_stat_total_title),
             icon = Icons.Rounded.EmojiEvents,
             plumpIcon = PlumpIcon.Trophy,
             paletteColor = IsoluminantPalette.WarmAmber,
             accent = if (isPlumpDuo) IsoluminantPalette.WarmAmber else NemoDanger,
             primaryValue = uiState.totalTestCount.toString(),
-            primaryLabel = "累计测试",
+            primaryLabel = stringResource(R.string.test_dashboard_stat_total_tests),
             secondaryValue = uiState.maxTestStreak.toString(),
-            secondaryUnit = "天",
-            secondaryLabel = "最高连签",
+            secondaryUnit = stringResource(R.string.test_dashboard_stat_unit_day),
+            secondaryLabel = stringResource(R.string.test_dashboard_stat_max_streak),
             ringValue = (uiState.overallAccuracy * 100).roundToInt(),
-            ringLabel = "累计正确率",
+            ringLabel = stringResource(R.string.test_dashboard_stat_accuracy_total),
             useSoftRingColor = true
         )
     )

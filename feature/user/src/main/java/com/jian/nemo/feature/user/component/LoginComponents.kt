@@ -36,6 +36,8 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.kyant.backdrop.Backdrop
 import com.jian.nemo.core.designsystem.theme.UserPalette
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.user.R
 
 /**
  * 当前获得输入焦点的表单输入框类型枚举
@@ -178,7 +180,7 @@ fun AppLoginForm(
         AppStyleTextField(
             value = email,
             onValueChange = onEmailChange,
-            placeholder = "电子邮箱地址",
+            placeholder = stringResource(R.string.user_auth_placeholder_email),
             leadingIcon = Icons.Rounded.Mail,
             isDark = isDark,
             isError = emailError,
@@ -196,7 +198,7 @@ fun AppLoginForm(
         AppStyleTextField(
             value = password,
             onValueChange = onPasswordChange,
-            placeholder = "输入登录密码",
+            placeholder = stringResource(R.string.user_auth_placeholder_password),
             leadingIcon = Icons.Rounded.Lock,
             trailingIcon = if (isPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
             onTrailingIconClick = onTogglePasswordVisibility,
@@ -240,7 +242,7 @@ fun AppLoginForm(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "忘记密码",
+                        text = stringResource(R.string.user_auth_btn_forgot_password),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryBtnText
@@ -269,7 +271,7 @@ fun AppLoginForm(
                         NemoChasingDotsLoader(size = 22.dp, color = Color.White)
                     } else {
                         Text(
-                            text = "立即登录",
+                            text = stringResource(R.string.user_auth_btn_login_submit),
                             fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -299,7 +301,7 @@ fun AppLoginForm(
                 thickness = 1.dp
             )
             Text(
-                text = "或",
+                text = stringResource(R.string.user_auth_label_divider_or),
                 modifier = Modifier.padding(horizontal = 14.dp),
                 color = dividerTextColor,
                 fontSize = 12.sp,
@@ -330,13 +332,13 @@ fun AppLoginForm(
             ) {
                 Icon(
                     imageVector = GoogleIcon,
-                    contentDescription = "Google",
+                    contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "使用 Google 账号登录",
+                    text = stringResource(R.string.user_auth_btn_google_login),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = googleBtnText
@@ -392,7 +394,7 @@ fun AppRegisterForm(
         AppStyleTextField(
             value = username,
             onValueChange = { if (it.length <= 16) onUsernameChange(it) },
-            placeholder = "您的称呼（选填，最多16字）",
+            placeholder = stringResource(R.string.user_register_placeholder_username),
             leadingIcon = Icons.Rounded.Person,
             isDark = isDark,
             isError = usernameError,
@@ -410,7 +412,7 @@ fun AppRegisterForm(
         AppStyleTextField(
             value = email,
             onValueChange = onEmailChange,
-            placeholder = "电子邮箱地址",
+            placeholder = stringResource(R.string.user_auth_placeholder_email),
             leadingIcon = Icons.Rounded.Mail,
             isDark = isDark,
             isError = emailError,
@@ -426,7 +428,7 @@ fun AppRegisterForm(
         AppStyleTextField(
             value = password,
             onValueChange = onPasswordChange,
-            placeholder = "设置密码（至少 8 位）",
+            placeholder = stringResource(R.string.user_register_placeholder_password),
             leadingIcon = Icons.Rounded.Lock,
             trailingIcon = if (isPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
             onTrailingIconClick = onTogglePasswordVisibility,
@@ -447,7 +449,7 @@ fun AppRegisterForm(
         AppStyleTextField(
             value = confirmPassword,
             onValueChange = onConfirmPasswordChange,
-            placeholder = "确认密码",
+            placeholder = stringResource(R.string.user_register_placeholder_confirm_password),
             leadingIcon = Icons.Rounded.Lock,
             trailingIcon = if (isConfirmPasswordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
             onTrailingIconClick = onToggleConfirmPasswordVisibility,
@@ -490,7 +492,7 @@ fun AppRegisterForm(
                     NemoChasingDotsLoader(size = 22.dp, color = Color.White)
                 } else {
                     Text(
-                        text = "立即注册",
+                        text = stringResource(R.string.user_auth_btn_register_submit),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
@@ -519,7 +521,7 @@ fun AppRegisterForm(
                 thickness = 1.dp
             )
             Text(
-                text = "或",
+                text = stringResource(R.string.user_auth_label_divider_or),
                 modifier = Modifier.padding(horizontal = 14.dp),
                 color = dividerTextColor,
                 fontSize = 12.sp,
@@ -550,13 +552,13 @@ fun AppRegisterForm(
             ) {
                 Icon(
                     imageVector = GoogleIcon,
-                    contentDescription = "Google",
+                    contentDescription = null,
                     modifier = Modifier.size(20.dp),
                     tint = Color.Unspecified
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "使用 Google 账号快捷注册",
+                    text = stringResource(R.string.user_register_btn_google),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = googleBtnText

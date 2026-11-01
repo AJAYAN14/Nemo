@@ -1,7 +1,10 @@
 package com.jian.nemo.feature.statistics.presentation.curve
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.feature.statistics.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.jian.nemo.core.domain.algorithm.FsrsAlgorithm
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.ReviewLogRepository
@@ -48,6 +51,7 @@ data class ForgettingCurveUiState(
  */
 @HiltViewModel
 class ForgettingCurveViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val wordRepository: WordRepository,
     private val grammarRepository: GrammarRepository,
     private val settingsRepository: SettingsRepository,
@@ -275,8 +279,8 @@ class ForgettingCurveViewModel @Inject constructor(
         return when (stage) {
             CurveStage.YOUNG_EARLY -> AlertInsight(
                 level = AlertLevel.CRITICAL,
-                title = "极速遗忘预警 · 脆弱初识期",
-                message = "初识词群预计将在 ${days} 天后跌破 ${thresholdPercent}% 记忆安全阈值。海马体印记脆弱，需重点及时复习。",
+                title = context.getString(R.string.stats_curve_title_fragile),
+                message = context.getString(R.string.stats_curve_msg_fragile, days, thresholdPercent),
                 criticalDays = days,
                 color = CurveStage.YOUNG_EARLY.themeColor,
                 alertThreshold = alertThreshold,
@@ -285,8 +289,8 @@ class ForgettingCurveViewModel @Inject constructor(
             )
             CurveStage.YOUNG_DEVELOPING -> AlertInsight(
                 level = AlertLevel.WARNING,
-                title = "稳步爬坡期 · 黄金巩固窗口",
-                message = "发展期词汇约在 ${days} 天后进入遗忘加速区间（低于 ${thresholdPercent}% 阈值）。建议按时完成常规复习，避免知识回生。",
+                title = context.getString(R.string.stats_curve_title_consolidation),
+                message = context.getString(R.string.stats_curve_msg_consolidation, days, thresholdPercent),
                 criticalDays = days,
                 color = CurveStage.YOUNG_DEVELOPING.themeColor,
                 alertThreshold = alertThreshold,
@@ -295,8 +299,8 @@ class ForgettingCurveViewModel @Inject constructor(
             )
             CurveStage.MATURE -> AlertInsight(
                 level = AlertLevel.SAFE,
-                title = "稳固长时记忆 · 坚实知识屏障",
-                message = "该群组词汇已进入长期突触储存，未来 ${days} 天内仍可稳定保持 ${thresholdPercent}% 以上高回忆率。",
+                title = context.getString(R.string.stats_curve_title_solid),
+                message = context.getString(R.string.stats_curve_msg_solid, days, thresholdPercent),
                 criticalDays = days,
                 color = CurveStage.MATURE.themeColor,
                 alertThreshold = alertThreshold,
@@ -305,8 +309,8 @@ class ForgettingCurveViewModel @Inject constructor(
             )
             CurveStage.EXPERT -> AlertInsight(
                 level = AlertLevel.SAFE,
-                title = "永久直觉印记 · 接近母语级",
-                message = "长效知识已高度固化，预计维持 ${thresholdPercent}% 以上留存率长达 ${days} 天，无需频繁打扰。",
+                title = context.getString(R.string.stats_curve_title_permanent),
+                message = context.getString(R.string.stats_curve_msg_permanent, thresholdPercent, days),
                 criticalDays = days,
                 color = CurveStage.EXPERT.themeColor,
                 alertThreshold = alertThreshold,
@@ -315,8 +319,8 @@ class ForgettingCurveViewModel @Inject constructor(
             )
             CurveStage.COMPOSITE -> AlertInsight(
                 level = if (days < 10) AlertLevel.WARNING else AlertLevel.SAFE,
-                title = "全库综合推演 · 整体记忆态",
-                message = "当前全库中位数记忆保持在 ${thresholdPercent}% 警戒线以上的窗口约为 ${days} 天，整体抗遗忘表现健康平稳。",
+                title = context.getString(R.string.stats_curve_title_deduction),
+                message = context.getString(R.string.stats_curve_msg_deduction, thresholdPercent, days),
                 criticalDays = days,
                 color = CurveStage.COMPOSITE.themeColor,
                 alertThreshold = alertThreshold,

@@ -84,10 +84,10 @@ fun WrongGrammarsScreen(
     if (showDeleteDialog) {
         NemoDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = "移出错题本",
-            text = "确定要将选中的 ${selectedGrammarIds.size} 个语法从错题本中移除吗？此操作不会删除语法本身，仅清除错题记录。",
-            confirmText = "确认移除",
-            dismissText = "取消",
+            title = stringResource(R.string.collection_dialog_remove_mistake_title),
+            text = stringResource(R.string.collection_dialog_remove_grammars_format, selectedGrammarIds.size),
+            confirmText = stringResource(R.string.collection_btn_confirm_remove_mistake),
+            dismissText = stringResource(R.string.collection_btn_cancel),
             isDangerous = true,
             onConfirm = {
                 viewModel.deleteWrongGrammars(selectedGrammarIds)
@@ -118,13 +118,13 @@ fun WrongGrammarsScreen(
                             IconButton(onClick = { selectedGrammarIds = emptySet() }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
-                                    contentDescription = "取消选择",
+                                    contentDescription = stringResource(R.string.collection_cd_cancel_selection),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "已选择 ${selectedGrammarIds.size} 项",
+                                text = stringResource(R.string.collection_selected_items_format, selectedGrammarIds.size),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -139,7 +139,7 @@ fun WrongGrammarsScreen(
                                 }
                             ) {
                                 Text(
-                                    text = if (isAllSelected) "取消全选" else "全选",
+                                    text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.Bold,
                                     color = accentBlue
@@ -149,7 +149,7 @@ fun WrongGrammarsScreen(
                             IconButton(onClick = { showDeleteDialog = true }) {
                                 Icon(
                                     imageVector = Icons.Rounded.Delete,
-                                    contentDescription = "批量删除",
+                                    contentDescription = stringResource(R.string.collection_cd_batch_delete),
                                     tint = deleteColor
                                 )
                             }
@@ -157,7 +157,7 @@ fun WrongGrammarsScreen(
                     }
                 } else {
                     com.jian.nemo.core.ui.component.common.CommonHeader(
-                        title = "错误的语法",
+                        title = stringResource(R.string.collection_mistakes_grammars_title),
                         onBack = onNavigateBack,
                         backgroundColor = backgroundColor
                     )
@@ -344,7 +344,7 @@ private fun WrongGrammarCard(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = mistake.grammar?.grammar ?: "未知语法",
+                        text = mistake.grammar?.grammar ?: stringResource(R.string.collection_unknown_grammar),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.weight(1f)
@@ -389,7 +389,7 @@ private fun WrongGrammarCard(
                             Icon(Icons.Rounded.Close, null, tint = accentRed, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "你的答案：${mistake.userAnswer}",
+                                text = stringResource(R.string.collection_your_answer_format_colon, mistake.userAnswer),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = accentRed,
                                 fontWeight = FontWeight.Medium
@@ -400,7 +400,7 @@ private fun WrongGrammarCard(
                             Icon(Icons.Rounded.Check, null, tint = accentGreen, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "正确答案：${mistake.correctAnswer}",
+                                text = stringResource(R.string.collection_correct_answer_format_colon, mistake.correctAnswer),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = accentGreen,
                                 fontWeight = FontWeight.Bold
@@ -419,7 +419,7 @@ private fun WrongGrammarCard(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = if (expanded) "收起解析" else "查看解析",
+                                text = if (expanded) stringResource(R.string.collection_collapse_explanation) else stringResource(R.string.collection_expand_explanation),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = if (isPlumpDuo) accentBlue else MaterialTheme.colorScheme.primary
                             )

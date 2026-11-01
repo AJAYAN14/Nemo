@@ -4,6 +4,7 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,8 +34,8 @@ fun NemoCircularProgress(
     progress: Float,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    color: Color = Color.Black,
-    trackColor: Color = Color.LightGray.copy(alpha = 0.3f),
+    color: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
     strokeWidth: Dp = 12.dp
 ) {
     // 进度值从 0 平滑生长至目标值 (Cubic 曲线)

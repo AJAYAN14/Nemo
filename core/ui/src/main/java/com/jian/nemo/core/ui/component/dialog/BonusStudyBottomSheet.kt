@@ -31,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,7 +83,7 @@ fun BonusStudyBottomSheet(
         ) {
             // 标题与副标题
             Text(
-                text = "今日加餐",
+                text = stringResource(R.string.core_ui_bonus_sheet_title),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -91,7 +93,7 @@ fun BonusStudyBottomSheet(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "不修改常规每日目标，仅针对今天追加自选微会话",
+                text = stringResource(R.string.core_ui_bonus_sheet_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -101,7 +103,7 @@ fun BonusStudyBottomSheet(
 
             // 模式选择 Choice Chips 区域
             Text(
-                text = "加餐目标模式",
+                text = stringResource(R.string.core_ui_bonus_sheet_mode_title),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -114,8 +116,8 @@ fun BonusStudyBottomSheet(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 val modeList = listOf(
-                    BonusMode.ReviewBacklog to "消化积压 (推荐)",
-                    BonusMode.NewItems to "学习新词"
+                    BonusMode.ReviewBacklog to stringResource(R.string.core_ui_bonus_sheet_mode_backlog),
+                    BonusMode.NewItems to stringResource(R.string.core_ui_bonus_sheet_mode_new)
                 )
                 modeList.forEach { (mode, title) ->
                     val isSelected = selectedMode == mode
@@ -169,7 +171,7 @@ fun BonusStudyBottomSheet(
 
             // 快捷预设 Choice Chips 选项组
             Text(
-                text = "快捷预设数量",
+                text = stringResource(R.string.core_ui_bonus_sheet_preset_title),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -219,7 +221,7 @@ fun BonusStudyBottomSheet(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "+$preset",
+                            text = stringResource(R.string.core_ui_bonus_sheet_preset_format, preset),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                             ),
@@ -233,7 +235,7 @@ fun BonusStudyBottomSheet(
 
             // 自定义微调控件区域
             Text(
-                text = "自定义数量微调",
+                text = stringResource(R.string.core_ui_bonus_sheet_custom_stepper_title),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -254,8 +256,8 @@ fun BonusStudyBottomSheet(
 
             // 开始加餐提交按钮
             val confirmButtonText = when (selectedMode) {
-                BonusMode.ReviewBacklog -> "开始消化积压 (+$selectedQuantity)"
-                BonusMode.NewItems -> "开始学习新词 (+$selectedQuantity)"
+                BonusMode.ReviewBacklog -> stringResource(R.string.core_ui_bonus_sheet_btn_start_backlog, selectedQuantity)
+                BonusMode.NewItems -> stringResource(R.string.core_ui_bonus_sheet_btn_start_new, selectedQuantity)
             }
 
             Button(

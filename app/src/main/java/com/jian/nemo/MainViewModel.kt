@@ -17,6 +17,7 @@ import com.jian.nemo.core.domain.repository.AuthRepository
 import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.TtsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +32,8 @@ class MainViewModel @Inject constructor(
     private val configRepository: ConfigRepository,
     private val authRepository: AuthRepository,
     private val downloader: Downloader,
-    private val audioRepository: AudioRepository
+    private val audioRepository: AudioRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     companion object {
@@ -74,7 +76,7 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (isManual) {
-                    _updateCheckEvents.send(UpdateCheckEvent.Error(e.message ?: "检查更新失败"))
+                    _updateCheckEvents.send(UpdateCheckEvent.Error(e.message ?: context.getString(R.string.app_update_error_check_failed)))
                 }
             }
         }
@@ -124,7 +126,8 @@ class MainViewModel @Inject constructor(
                             is DownloadState.Failed -> {
                                 com.jian.nemo.util.NotificationHelper.cancel(appContext)
                                 _uiState.update { it.copy(isDownloading = false) }
-                                _updateCheckEvents.send(UpdateCheckEvent.Error("下载失败: ${state.error?.message ?: "未知错误"}"))
+                                val errorMessage = state.error?.message ?: context.getString(R.string.app_update_error_unknown)
+                                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_failed, errorMessage)))
                             }
                         }
                     }
@@ -132,7 +135,7 @@ class MainViewModel @Inject constructor(
                     Log.e("MainViewModel", "下载更新异常", e)
                     com.jian.nemo.util.NotificationHelper.cancel(appContext)
                     _uiState.update { it.copy(isDownloading = false) }
-                    _updateCheckEvents.send(UpdateCheckEvent.Error("下载异常: ${e.message}"))
+                    _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_exception, e.message ?: "")))
                 }
             }
         }
@@ -145,13 +148,13 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Show initial notification
-                com.jian.nemo.util.NotificationHelper.showProgress(appContext, 0, "正在下载 Google 语音服务...")
+                com.jian.nemo.util.NotificationHelper.showProgress(appContext, 0, context.getString(R.string.app_update_notification_tts_downloading))
 
                 downloader.download(url, targetFile).collect { state ->
                     when (state) {
                         is DownloadState.Downloading -> {
                             val progress = (state.progress * 100).toInt()
-                            com.jian.nemo.util.NotificationHelper.showProgress(appContext, progress, "正在下载 Google 语音服务...")
+                            com.jian.nemo.util.NotificationHelper.showProgress(appContext, progress, context.getString(R.string.app_update_notification_tts_downloading))
 
                             _uiState.update {
                                 it.copy(
@@ -164,8 +167,8 @@ class MainViewModel @Inject constructor(
                             com.jian.nemo.util.NotificationHelper.showSuccess(
                                 appContext,
                                 state.file,
-                                "Google 语音服务下载完成",
-                                "点击立即安装"
+                                context.getString(R.string.app_update_notification_tts_success_title),
+                                context.getString(R.string.app_notification_click_to_install)
                             )
 
                             _uiState.update {
@@ -180,7 +183,8 @@ class MainViewModel @Inject constructor(
                         is DownloadState.Failed -> {
                             com.jian.nemo.util.NotificationHelper.cancel(appContext)
                             _uiState.update { it.copy(isDownloadingGoogleTts = false) }
-                            _updateCheckEvents.send(UpdateCheckEvent.Error("下载失败: ${state.error?.message ?: "未知错误"}"))
+                            val errorMessage = state.error?.message ?: context.getString(R.string.app_update_error_unknown)
+                            _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_failed, errorMessage)))
                         }
                     }
                 }
@@ -188,7 +192,7 @@ class MainViewModel @Inject constructor(
                 Log.e("MainViewModel", "下载 Google TTS 异常", e)
                 com.jian.nemo.util.NotificationHelper.cancel(appContext)
                 _uiState.update { it.copy(isDownloadingGoogleTts = false) }
-                _updateCheckEvents.send(UpdateCheckEvent.Error("下载异常: ${e.message}"))
+                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_exception, e.message ?: "")))
             }
         }
     }
@@ -196,7 +200,7 @@ class MainViewModel @Inject constructor(
     fun installApk(context: Context, file: File? = _uiState.value.apkFile) {
         if (file == null || !file.exists()) {
             viewModelScope.launch {
-                _updateCheckEvents.send(UpdateCheckEvent.Error("安装失败：找不到文件"))
+                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_file_not_found)))
             }
             return
         }
@@ -217,7 +221,7 @@ class MainViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("MainViewModel", "安装过程捕获到异常", e)
             viewModelScope.launch {
-                _updateCheckEvents.send(UpdateCheckEvent.Error("安装程序启动失败: ${e.message}"))
+                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_install_failed, e.message ?: "")))
             }
         }
     }

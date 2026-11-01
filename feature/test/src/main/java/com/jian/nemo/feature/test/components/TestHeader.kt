@@ -14,6 +14,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +68,7 @@ fun TestHeader(
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "返回菜单",
+                contentDescription = stringResource(R.string.test_header_cd_back_menu),
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(22.dp)
             )
@@ -99,7 +101,7 @@ fun TestHeader(
             ) {
                 Icon(
                     imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = "更多选项",
+                    contentDescription = stringResource(R.string.test_header_cd_more_options),
                     tint = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.size(24.dp)
                 )
@@ -114,7 +116,7 @@ fun TestHeader(
                 // 收藏选项 (保留业务逻辑)
                 if (itemId != 0) {
                     NemoMenuItem(
-                        text = if (isFavorite) "取消收藏" else "收藏",
+                        text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
                         onClick = {
                             expanded = false
                             onToggleFavorite(itemId, !isFavorite)
@@ -127,7 +129,7 @@ fun TestHeader(
 
                 // 暂停测试选项
                 NemoMenuItem(
-                    text = "暂停测试",
+                    text = stringResource(R.string.test_header_menu_pause),
                     onClick = {
                         expanded = false
                         onPause()

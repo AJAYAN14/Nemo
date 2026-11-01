@@ -29,12 +29,12 @@ fun BasicSettingsSection(
     currentContentTypeLabel: String,
     onSettingClick: (String) -> Unit
 ) {
-    SectionTitle("基础设置")
+    SectionTitle(stringResource(R.string.test_settings_section_basic))
     PremiumGroupCard {
         // 1. 题目数量
         PremiumSettingRow(
-            label = "题目数量",
-            value = "${config.questionCount} 题",
+            label = stringResource(R.string.test_settings_label_question_count),
+            value = stringResource(R.string.test_settings_format_question_count, config.questionCount),
             onClick = { onSettingClick("questionCount") }
         )
 
@@ -44,9 +44,9 @@ fun BasicSettingsSection(
         val effectiveContentType = if (testModeId == "typing" || testModeId == "card_matching") TestContentType.WORDS else config.testContentType
         val (wordCount, grammarCount) = uiState.availableDataCount ?: (0 to 0)
         val dataCountText = when (effectiveContentType) {
-            TestContentType.WORDS -> "可用: ${if (wordCount >= 1000) "1000+" else "$wordCount"} 词"
-            TestContentType.GRAMMAR -> "可用: ${if (grammarCount >= 1000) "1000+" else "$grammarCount"} 语法"
-            else -> "可用: ${if (wordCount >= 1000) "1000+" else "$wordCount"} 词 / ${if (grammarCount >= 1000) "1000+" else "$grammarCount"} 语法"
+            TestContentType.WORDS -> stringResource(R.string.test_settings_data_available_words_format, if (wordCount >= 1000) "1000+" else "$wordCount")
+            TestContentType.GRAMMAR -> stringResource(R.string.test_settings_data_available_grammars_format, if (grammarCount >= 1000) "1000+" else "$grammarCount")
+            else -> stringResource(R.string.test_settings_data_available_mixed_format, if (wordCount >= 1000) "1000+" else "$wordCount", if (grammarCount >= 1000) "1000+" else "$grammarCount")
         }
         val isInsufficient = when (effectiveContentType) {
             TestContentType.WORDS -> wordCount < config.questionCount
@@ -64,7 +64,7 @@ fun BasicSettingsSection(
         ) {
             Text(stringResource(R.string.test_common_title_data_overview), style = MaterialTheme.typography.bodyLarge)
             Text(
-                text = if (uiState.isLoadingDataCount) "查询中..." else if (isInsufficient) "$dataCountText (不足)" else dataCountText,
+                text = if (uiState.isLoadingDataCount) stringResource(R.string.test_settings_data_querying) else if (isInsufficient) stringResource(R.string.test_settings_data_insufficient_format, dataCountText) else dataCountText,
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (!uiState.isLoadingDataCount && isInsufficient) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -74,17 +74,17 @@ fun BasicSettingsSection(
 
         // 3. 时间限制
         PremiumSettingRow(
-            label = "时间限制",
-            value = if (config.timeLimitMinutes == 0) "无限制" else "${config.timeLimitMinutes} 分钟",
+            label = stringResource(R.string.test_settings_label_time_limit),
+            value = if (config.timeLimitMinutes == 0) stringResource(R.string.test_settings_time_limit_unlimited) else stringResource(R.string.test_settings_time_limit_minutes_format, config.timeLimitMinutes),
             onClick = { onSettingClick("timeLimit") }
         )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 
         // 4. 题目来源
-        val currentSourceLabel = questionSourceOptions.find { it.key == config.questionSource.key }?.title ?: "未知"
+        val currentSourceLabel = questionSourceOptions.find { it.key == config.questionSource.key }?.title ?: stringResource(R.string.test_settings_source_unknown)
         PremiumSettingRow(
-            label = "题目来源",
+            label = stringResource(R.string.test_settings_label_source),
             value = currentSourceLabel,
             onClick = { onSettingClick("questionSource") }
         )
@@ -92,9 +92,9 @@ fun BasicSettingsSection(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 
         // 5. 错题移除
-        val removalLabel = wrongAnswerRemovalLabels[config.wrongAnswerRemovalThreshold] ?: "不移除"
+        val removalLabel = wrongAnswerRemovalLabels[config.wrongAnswerRemovalThreshold] ?: stringResource(R.string.test_removal_none_title)
         PremiumSettingRow(
-            label = "错题移除",
+            label = stringResource(R.string.test_settings_label_removal),
             value = removalLabel,
             onClick = { onSettingClick("wrongAnswerRemoval") }
         )
@@ -103,7 +103,7 @@ fun BasicSettingsSection(
         if (testModeId == "multiple_choice" || testModeId == "comprehensive") {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             PremiumSettingRow(
-                label = "测试内容",
+                label = stringResource(R.string.test_settings_label_content_type),
                 value = currentContentTypeLabel,
                 onClick = { onSettingClick("contentType") }
             )
@@ -116,7 +116,7 @@ fun BasicSettingsSection(
         val isRestrictedMode = testModeId in listOf("typing", "card_matching", "sorting")
         
         if (isRestrictedMode || config.testContentType != TestContentType.MIXED) {
-            val label = if (isRestrictedMode) "测试等级" else if (config.testContentType == TestContentType.WORDS) "单词等级" else "语法等级"
+            val label = if (isRestrictedMode) stringResource(R.string.test_settings_label_test_level) else if (config.testContentType == TestContentType.WORDS) stringResource(R.string.test_settings_label_word_level) else stringResource(R.string.test_settings_label_grammar_level)
             val levels = if (config.testContentType == TestContentType.GRAMMAR && !isRestrictedMode) config.selectedGrammarLevels else config.selectedWordLevels
             val settingType = if (config.testContentType == TestContentType.GRAMMAR && !isRestrictedMode) "grammarLevel" else "wordLevel"
             
@@ -132,13 +132,13 @@ fun BasicSettingsSection(
             val allLevels = listOf("N5", "N4", "N3", "N2", "N1")
             
             PremiumSettingRow(
-                label = "单词等级",
+                label = stringResource(R.string.test_settings_label_word_level),
                 value = formatLevelsDisplay(config.selectedWordLevels, allLevels),
                 onClick = { onSettingClick("wordLevel") }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             PremiumSettingRow(
-                label = "语法等级",
+                label = stringResource(R.string.test_settings_label_grammar_level),
                 value = formatLevelsDisplay(config.selectedGrammarLevels, allLevels),
                 onClick = { onSettingClick("grammarLevel") }
             )
@@ -152,50 +152,51 @@ fun QuizSettingsSection(
     testModeId: String?,
     onUpdateConfig: (TestConfig) -> Unit
 ) {
-    SectionTitle("答题设置")
+    SectionTitle(stringResource(R.string.test_settings_section_quiz))
     PremiumGroupCard {
         PremiumSwitchRow(
-            label = "题目乱序",
+            label = stringResource(R.string.test_settings_switch_shuffle_questions),
             checked = config.shuffleQuestions,
             onCheckedChange = { onUpdateConfig(config.copy(shuffleQuestions = it)) }
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         PremiumSwitchRow(
-            label = "选项乱序",
+            label = stringResource(R.string.test_settings_switch_shuffle_options),
             checked = config.shuffleOptions,
             onCheckedChange = { onUpdateConfig(config.copy(shuffleOptions = it)) }
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         if (testModeId != "card_matching") {
             PremiumSwitchRow(
-                label = "自动跳转",
+                label = stringResource(R.string.test_settings_switch_auto_advance),
                 checked = config.autoAdvance,
                 onCheckedChange = { onUpdateConfig(config.copy(autoAdvance = it)) }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         }
         PremiumSwitchRow(
-            label = "错题优先",
+            label = stringResource(R.string.test_settings_switch_prioritize_wrong),
             checked = config.prioritizeWrong,
             onCheckedChange = { onUpdateConfig(config.copy(prioritizeWrong = it, prioritizeNew = if(it) false else config.prioritizeNew)) }
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         PremiumSwitchRow(
-            label = "未做题优先",
+            label = stringResource(R.string.test_settings_switch_prioritize_new),
             checked = config.prioritizeNew,
             onCheckedChange = { onUpdateConfig(config.copy(prioritizeNew = it, prioritizeWrong = if(it) false else config.prioritizeWrong)) }
         )
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
         PremiumSwitchRow(
-            label = "答题自动朗读假名",
+            label = stringResource(R.string.test_settings_switch_auto_play_audio),
             checked = config.autoPlayAudio,
             onCheckedChange = { onUpdateConfig(config.copy(autoPlayAudio = it)) }
         )
     }
 }
 
+@Composable
 private fun formatLevelsDisplay(levels: List<String>, allLevels: List<String>): String = when {
-    levels.size == allLevels.size && levels.containsAll(allLevels) -> "全部等级"
-    levels.isEmpty() -> "未选择"
+    levels.size == allLevels.size && levels.containsAll(allLevels) -> stringResource(R.string.test_settings_levels_all)
+    levels.isEmpty() -> stringResource(R.string.test_settings_levels_none)
     else -> levels.sorted().joinToString(", ")
 }

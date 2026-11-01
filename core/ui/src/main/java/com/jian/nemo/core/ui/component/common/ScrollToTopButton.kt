@@ -28,7 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
@@ -113,7 +115,7 @@ fun TwoStageScrollToTopButton(
         ) {
             Icon(
                 imageVector = Icons.Rounded.KeyboardArrowUp,
-                contentDescription = "返回顶部",
+                contentDescription = stringResource(R.string.core_ui_scroll_to_top_cd_btn),
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
@@ -163,7 +165,7 @@ fun ScrollToTopButton(
         ) {
             Icon(
                 imageVector = Icons.Rounded.KeyboardArrowUp,
-                contentDescription = "返回顶部",
+                contentDescription = stringResource(R.string.core_ui_scroll_to_top_cd_btn),
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
             )
@@ -220,7 +222,7 @@ fun BoxScope.LiquidScrollToTopButton(
         ) {
             Icon(
                 painter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_scroll_to_top),
-                contentDescription = "回到顶部",
+                contentDescription = stringResource(R.string.core_ui_scroll_to_top_cd_back),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(buttonSize * (30f / 48f))
             )

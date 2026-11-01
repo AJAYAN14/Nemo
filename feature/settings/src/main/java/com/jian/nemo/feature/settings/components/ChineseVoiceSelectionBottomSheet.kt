@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
+import com.jian.nemo.feature.settings.R
 
 /**
  * 独立的中文 TTS 语音选择抽屉弹窗 (Flat UI 风格)
@@ -36,11 +38,13 @@ fun ChineseVoiceSelectionBottomSheet(
 ) {
     val accentColor = IosColors.Orange // 中文语音采用优雅的橙色区分于日语红
     val haptic = LocalHapticFeedback.current
+    val cloudGroupName = stringResource(R.string.settings_tts_group_cloud_chinese)
+    val localGroupName = stringResource(R.string.settings_tts_group_local_chinese)
 
     // 按本地/云端分组
-    val groupedVoices = remember(voices) {
+    val groupedVoices = remember(voices, cloudGroupName, localGroupName) {
         voices.groupBy { voice ->
-            if (voice.name.lowercase().contains("network")) "云端中文语音" else "本地中文语音"
+            if (voice.name.lowercase().contains("network")) cloudGroupName else localGroupName
         }
     }
 
@@ -73,12 +77,12 @@ fun ChineseVoiceSelectionBottomSheet(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column {
                     Text(
-                        text = "选择中文语音",
+                        text = stringResource(R.string.settings_tts_dialog_title_select_chinese),
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "用于学习例句中的中文翻译朗读",
+                        text = stringResource(R.string.settings_tts_dialog_desc_select_chinese),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -107,7 +111,7 @@ fun ChineseVoiceSelectionBottomSheet(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "未找到可用中文语音引擎",
+                            text = stringResource(R.string.settings_tts_empty_chinese_engine),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -150,30 +154,30 @@ fun ChineseVoiceSelectionBottomSheet(
 /**
  * 格式化中文语音名称
  */
+@Composable
 private fun formatChineseVoiceName(voice: com.jian.nemo.core.domain.model.TtsVoice): VoiceDisplayInfo {
     val rawName = voice.name.lowercase()
 
     val isNetwork = rawName.contains("network")
-    val tag = if (isNetwork) "云端" else "本地"
+    val tag = if (isNetwork) stringResource(R.string.settings_tts_tag_cloud) else stringResource(R.string.settings_tts_tag_local)
 
     val idMatch = Regex("zh-[a-z]+-x-([a-z]+)").find(rawName)
     val coreId = idMatch?.groupValues?.get(1)?.uppercase() ?: rawName.takeLast(4).uppercase()
 
     val genderInfo = when {
-        voice.gender == "female" || rawName.contains("female") -> " (女声)"
-        voice.gender == "male" || rawName.contains("male") -> " (男声)"
+        voice.gender == "female" || rawName.contains("female") -> stringResource(R.string.settings_tts_voice_female_suffix)
+        voice.gender == "male" || rawName.contains("male") -> stringResource(R.string.settings_tts_voice_male_suffix)
         else -> ""
     }
 
     val friendlyName = when {
-        rawName.contains("language") -> "系统默认中文"
-        coreId.isNotEmpty() -> "中文语音 $coreId$genderInfo"
-        else -> "中文语音 ${coreId}$genderInfo"
+        rawName.contains("language") -> stringResource(R.string.settings_tts_voice_system_default_chinese)
+        else -> stringResource(R.string.settings_tts_format_chinese_voice_name, coreId, genderInfo)
     }
 
     return VoiceDisplayInfo(
         title = friendlyName,
-        subtitle = if (voice.quality == "high" || voice.quality == "very_high") "高质量" else "",
+        subtitle = if (voice.quality == "high" || voice.quality == "very_high") stringResource(R.string.settings_tts_quality_high) else "",
         tag = tag
     )
 }

@@ -28,7 +28,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -178,7 +180,7 @@ fun ForgettingCurveScreen(
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
-                title = "遗忘曲线",
+                title = stringResource(R.string.stats_curve_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -336,16 +338,16 @@ private fun CurveLegend(
     ) {
         LegendItem(
             color = stageColor,
-            text = "${selectedStage.label}遗忘曲线"
+            text = stringResource(R.string.stats_curve_legend_stage_curve_format, selectedStage.label)
         )
         LegendItem(
             color = stdColor,
-            text = "艾宾浩斯遗忘曲线 (标准参考)",
+            text = stringResource(R.string.stats_curve_legend_ebbinghaus),
             isDashed = true
         )
         LegendItem(
             color = alertColor,
-            text = "自适应警戒线 (${thresholdPercent}%)",
+            text = stringResource(R.string.stats_curve_legend_adaptive_alert_format, thresholdPercent),
             isDashed = true
         )
     }
@@ -448,7 +450,7 @@ private fun CurveAlertCard(
                         color = alertInsight.color.copy(alpha = 0.12f)
                     ) {
                         Text(
-                            text = "${thresholdPercent}%临界: ${alertInsight.criticalDays}天",
+                            text = stringResource(R.string.stats_curve_alert_critical_badge_format, thresholdPercent, alertInsight.criticalDays),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = alertInsight.color,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -471,16 +473,16 @@ private fun CurveAlertCard(
                     val delta = target - actual
                     val actualPercent = (actual * 100).roundToInt()
                     val (label, color) = when {
-                        abs(delta) <= 0.02f -> "表现平稳" to ChartColors.FreshGreen
-                        delta > 0.02f && target <= 0.90f -> "负荷偏高" to StatisticsPalette.CompositeOrange
-                        target >= 0.92f && actual < target -> "强化监控" to StatisticsPalette.EarlyRed
-                        actual - target > 0.02f -> "掌握扎实" to ChartColors.FreshGreen
-                        target <= 0.85f -> "轻量维护" to StatisticsPalette.DevelopingBlue
-                        else -> "自适应微调" to MaterialTheme.colorScheme.primary
+                        abs(delta) <= 0.02f -> stringResource(R.string.stats_curve_status_stable) to ChartColors.FreshGreen
+                        delta > 0.02f && target <= 0.90f -> stringResource(R.string.stats_curve_status_high_load) to StatisticsPalette.CompositeOrange
+                        target >= 0.92f && actual < target -> stringResource(R.string.stats_curve_status_monitoring) to StatisticsPalette.EarlyRed
+                        actual - target > 0.02f -> stringResource(R.string.stats_curve_status_solid) to ChartColors.FreshGreen
+                        target <= 0.85f -> stringResource(R.string.stats_curve_status_light_maintenance) to StatisticsPalette.DevelopingBlue
+                        else -> stringResource(R.string.stats_curve_status_adaptive_tuning) to MaterialTheme.colorScheme.primary
                     }
-                    Triple("目标保留率: ${targetPercent}%  |  实际回忆率: ${actualPercent}%", label, color)
+                    Triple(stringResource(R.string.stats_curve_diagnosis_retention_format, targetPercent, actualPercent), label, color)
                 } else {
-                    Triple("目标保留率: ${targetPercent}%  |  实际回忆率: 采集中", "样本不足(需≥10条)", MaterialTheme.colorScheme.primary)
+                    Triple(stringResource(R.string.stats_curve_diagnosis_collecting_format, targetPercent), stringResource(R.string.stats_curve_status_sample_insufficient), MaterialTheme.colorScheme.primary)
                 }
 
                 Surface(
@@ -518,7 +520,7 @@ private fun CurveAlertCard(
             }
         } else {
             Text(
-                text = "学习的时间越久，你的遗忘曲线统计将越精准。",
+                text = stringResource(R.string.stats_curve_empty_tip),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp),
@@ -691,7 +693,7 @@ private fun TimeRangeSelector(
                             fullArea = true
                         ) {
                             Text(
-                                text = "${range.days}天",
+                                text = stringResource(R.string.stats_curve_range_days_format, range.days),
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                     fontSize = 14.sp

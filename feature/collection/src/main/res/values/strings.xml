@@ -2,4 +2,88 @@
     <!-- 错题本展示文本 -->
     <string name="collection_mistakes_empty_title">暂无错题记录</string>
     <string name="collection_mistakes_empty_desc">语法掌握得很好！继续保持。</string>
+
+    <!-- 操作菜单与对话框 -->
+    <string name="collection_cd_more_options">更多选项</string>
+    <string name="collection_menu_clear_all_format">清除所有%1$s</string>
+    <string name="collection_menu_clear_words_format">清除单词%1$s</string>
+    <string name="collection_menu_clear_grammars_format">清除语法%1$s</string>
+    <string name="collection_dialog_msg_clear_all_format">确定要清除所有%1$s吗？此操作无法撤销，所有记录将永久删除。</string>
+    <string name="collection_dialog_msg_clear_words_format">确定要清除所有单词%1$s吗？此操作无法撤销。</string>
+    <string name="collection_dialog_msg_clear_grammars_format">确定要清除所有语法%1$s吗？此操作无法撤销。</string>
+    <string name="collection_btn_clear_all">清除全部</string>
+    <string name="collection_btn_clear">清除</string>
+    <string name="collection_btn_cancel">取消</string>
+
+    <!-- 收藏主页与错题主页 -->
+    <string name="collection_favorites_title_screen">我的收藏</string>
+    <string name="collection_suffix_favorites">收藏</string>
+    <string name="collection_favorites_words_title">收藏的单词</string>
+    <string name="collection_favorites_words_subtitle">已收藏的重点单词</string>
+    <string name="collection_favorites_questions_title">收藏的题目</string>
+    <string name="collection_favorites_questions_subtitle">已收藏的重点题目</string>
+    <string name="collection_mistakes_title_screen">我的错题</string>
+    <string name="collection_suffix_mistakes">错题</string>
+    <string name="collection_mistakes_blindspot_rate">知识盲点率</string>
+    <string name="collection_mistakes_words_title">错误的单词</string>
+    <string name="collection_mistakes_words_subtitle">学习和测试中答错的单词</string>
+    <string name="collection_mistakes_grammars_title">错误的语法</string>
+    <string name="collection_mistakes_grammars_subtitle">学习和测试中答错的语法</string>
+
+    <!-- 盲点率激励文案 -->
+    <string name="collection_mistakes_encouragement_zero">开始学习，消灭知识盲点！</string>
+    <string name="collection_mistakes_encouragement_perfect">完美！所有知识点都已掌握</string>
+    <string name="collection_mistakes_encouragement_great">状态极佳，继续保持！</string>
+    <string name="collection_mistakes_encouragement_warn">有些小漏洞，及时复习哦</string>
+    <string name="collection_mistakes_encouragement_danger">盲点较多，建议专项突破</string>
+    <string name="collection_mistakes_encouragement_critical">基础不牢，地动山摇，快去复习！</string>
+
+    <!-- 列表项与通用卡片 -->
+    <string name="collection_cd_unfavorite">取消收藏</string>
+    <string name="collection_test_mode_format">测试模式: %1$s</string>
+    <string name="collection_your_answer_format">你的答案: %1$s</string>
+    <string name="collection_correct_answer_format">正确答案: %1$s</string>
+    <string name="collection_cd_delete_mistake">删除错题</string>
+    <string name="collection_mode_multiple_choice">选择题</string>
+    <string name="collection_mode_typing">打字练习</string>
+    <string name="collection_mode_matching">卡片匹配</string>
+    <string name="collection_mode_sorting">排序题</string>
+
+    <!-- 批量管理与多选 -->
+    <string name="collection_dialog_unfavorite_title">取消收藏</string>
+    <string name="collection_dialog_unfavorite_words_format">确定要将选中的 %1$d 个单词取消收藏吗？</string>
+    <string name="collection_dialog_unfavorite_grammars_format">确定要将选中的 %1$d 个语法取消收藏吗？</string>
+    <string name="collection_dialog_unfavorite_questions_format">确定要将选中的 %1$d 个题目取消收藏吗？</string>
+    <string name="collection_btn_confirm_remove">确认移出</string>
+    <string name="collection_cd_cancel_selection">取消选择</string>
+    <string name="collection_selected_items_format">已选择 %1$d 项</string>
+    <string name="collection_btn_select_all">全选</string>
+    <string name="collection_btn_deselect_all">取消全选</string>
+    <string name="collection_cd_batch_unfavorite">批量取消收藏</string>
+    <string name="collection_cd_batch_delete">批量删除</string>
+    <string name="collection_cd_favorited">Favorited</string>
+
+    <!-- 独立列表页面标题与空状态 -->
+    <string name="collection_favorites_words_screen_title">收藏单词</string>
+    <string name="collection_empty_words_title">暂无收藏单词</string>
+    <string name="collection_empty_words_desc">在学习过程中遇到喜欢的单词可以收藏哦</string>
+    <string name="collection_favorites_grammars_screen_title">收藏语法</string>
+    <string name="collection_empty_grammars_title">暂无收藏语法</string>
+    <string name="collection_empty_grammars_desc">遇到重点语法记得收藏起来复习哦</string>
+    <string name="collection_favorites_questions_screen_title">收藏题目</string>
+    <string name="collection_empty_questions_title">暂无收藏题目</string>
+    <string name="collection_empty_questions_desc">做题时点击 ❤️ 收藏重点题目</string>
+
+    <!-- 错题相关弹窗与空状态 -->
+    <string name="collection_dialog_remove_mistake_title">移出错题本</string>
+    <string name="collection_dialog_remove_words_format">确定要将选中的 %1$d 个单词从错题本中移除吗？此操作不会删除单词本身，仅清除错题记录。</string>
+    <string name="collection_dialog_remove_grammars_format">确定要将选中的 %1$d 个语法从错题本中移除吗？此操作不会删除语法本身，仅清除错题记录。</string>
+    <string name="collection_btn_confirm_remove_mistake">确认移除</string>
+    <string name="collection_empty_mistakes_words_title">暂无错词记录</string>
+    <string name="collection_empty_mistakes_words_desc">太棒了！继续保持全对的状态。</string>
+    <string name="collection_unknown_grammar">未知语法</string>
+    <string name="collection_your_answer_format_colon">你的答案：%1$s</string>
+    <string name="collection_correct_answer_format_colon">正确答案：%1$s</string>
+    <string name="collection_expand_explanation">查看解析</string>
+    <string name="collection_collapse_explanation">收起解析</string>
 </resources>

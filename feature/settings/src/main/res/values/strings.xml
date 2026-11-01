@@ -17,6 +17,98 @@
     <string name="settings_about_section_build_info">版本与构建信息</string>
 
     <!-- 主题设置页文案 -->
+    <string name="settings_theme_title_screen">主题外观</string>
+    <string name="settings_theme_label_light">浅色</string>
+    <string name="settings_theme_label_dark">深色</string>
+    <string name="settings_theme_label_auto">自动</string>
+    <string name="settings_theme_desc_auto_switch">根据设置在浅色与深色外观间自动切换</string>
+    <string name="settings_theme_title_follow_system">跟随系统</string>
+    <string name="settings_theme_subtitle_follow_system">根据系统设置自动切换深浅色主题</string>
+    <string name="settings_theme_title_scheduled">定时深色模式</string>
+    <string name="settings_theme_subtitle_scheduled">在指定时间段开启深色模式</string>
+    <string name="settings_theme_section_scheduled_time">深色模式定时</string>
+    <string name="settings_theme_title_icon_style">图标风格</string>
+    <string name="settings_theme_icon_style_md3">Material Design 3 (圆角卡片)</string>
+    <string name="settings_theme_icon_style_plump_duo">Plump Duo (双色通透)</string>
+    <string name="settings_theme_section_app_icon">桌面图标</string>
+    <string name="settings_theme_dialog_title_change_app_icon">更换桌面图标</string>
+    <string name="settings_theme_btn_confirm_change">确认更换</string>
+    <string name="settings_theme_dialog_msg_change_app_icon">更换桌面图标需要刷新系统快捷方式，应用将自动返回手机桌面以完成生效。\n\n是否确认更换？</string>
+    <string name="settings_theme_dialog_title_select_icon_style">选择图标风格</string>
+    <string name="settings_theme_icon_style_desc_md3">经典圆角彩色背景底框，单色聚焦图标</string>
+    <string name="settings_theme_icon_style_desc_plump_duo">现代无背景通透设计，双色线面与等亮度调色板</string>
+    <string name="settings_btn_confirm">确定</string>
+    <string name="settings_btn_cancel">取消</string>
+
+    <!-- 主设置页常规项 -->
+    <string name="settings_title_screen">设置</string>
+    <string name="settings_item_title_login">登录/注册</string>
+    <string name="settings_item_subtitle_login">登录以体验完整功能</string>
+    <string name="settings_item_title_backup">备份到云端</string>
+    <string name="settings_item_subtitle_backup">将当前进度安全保存在云端</string>
+    <string name="settings_item_title_backup_history">云端备份历史</string>
+    <string name="settings_item_subtitle_backup_history">查看或从云端恢复历史备份</string>
+    <string name="settings_item_title_daily_word_goal">每日单词目标</string>
+    <string name="settings_item_subtitle_daily_word_goal">设置每天要学习的单词数量</string>
+    <string name="settings_format_count_piece">%1$d个</string>
+    <string name="settings_item_title_daily_grammar_goal">每日语法目标</string>
+    <string name="settings_item_subtitle_daily_grammar_goal">设置每天要学习的语法数量</string>
+    <string name="settings_format_count_item">%1$d条</string>
+    <string name="settings_item_title_day_reset">学习日重置时间</string>
+    <string name="settings_item_subtitle_day_reset">零点跨天保护，过了此时间才算新的一天</string>
+    <string name="settings_item_title_random_extract">新内容乱序抽取</string>
+    <string name="settings_item_subtitle_random_extract_on">随机抽取新内容</string>
+    <string name="settings_item_subtitle_random_extract_off">按顺序抽取新内容</string>
+    <string name="settings_item_title_algorithm">记忆算法配置</string>
+    <string name="settings_item_subtitle_algorithm">步进、提前复习与 Leech 策略</string>
+    <string name="settings_item_title_ai_workshop">AI 工坊配置</string>
+    <string name="settings_item_subtitle_ai_workshop">设置 API Key 与 AI 模型</string>
+    <string name="settings_item_title_tts">语音参数</string>
+    <string name="settings_item_subtitle_tts">调节语速和音调</string>
+    <string name="settings_item_title_export">导出数据</string>
+    <string name="settings_item_subtitle_export">导出本地数据文件</string>
+    <string name="settings_item_title_import">导入本地数据</string>
+    <string name="settings_item_subtitle_import">从文件恢复进度</string>
+    <string name="settings_item_title_reset">重置学习进度</string>
+    <string name="settings_item_subtitle_reset">清空所有数据 (慎用)</string>
+    <string name="settings_item_title_liquid_lab">液态玻璃实验室</string>
+    <string name="settings_item_subtitle_liquid_lab">体验透镜折射与动态物理流体按钮</string>
+    <string name="settings_item_title_corner_lab">圆角实验室</string>
+    <string name="settings_item_subtitle_corner_lab">标准圆角与苹果平滑圆角 (G2) 对比</string>
+    <string name="corner_lab_title">圆角实验室</string>
+    <string name="corner_lab_desc">实时对比 Material 标准圆角与苹果 G2 平滑圆角。滑动调节半径检视曲率过渡。</string>
+    <string name="corner_lab_radius_label">圆角半径</string>
+    <string name="corner_lab_mode_side_by_side">并排对比</string>
+    <string name="corner_lab_mode_overlay">重叠透光</string>
+    <string name="corner_lab_mode_macro">拐角特写</string>
+    <string name="corner_lab_style_circular">标准圆角 (Circular G1)</string>
+    <string name="corner_lab_style_continuous">平滑圆角 (Continuous G2)</string>
+    <string name="corner_lab_aspect_card">大卡片</string>
+    <string name="corner_lab_aspect_square">方图标</string>
+    <string name="corner_lab_aspect_capsule">胶囊条</string>
+    <string name="corner_lab_render_fill">填充呈现</string>
+    <string name="corner_lab_render_border">线框描边</string>
+    <string name="corner_lab_explanation_g1">G1 连续：直线直接接入圆弧，交接处曲率产生突变，视觉有轻微折痕。</string>
+    <string name="corner_lab_explanation_g2">G2 连续：三次贝塞尔高阶拟合，曲率自直线向转角平滑渐进，浑然天成。</string>
+    <string name="corner_lab_section_canvas">实时对比画布</string>
+    <string name="corner_lab_section_controls">交互控制与参数调节</string>
+    <string name="corner_lab_label_view_mode">检视视图模式</string>
+    <string name="corner_lab_label_aspect">几何比例</string>
+    <string name="corner_lab_label_render">绘制渲染</string>
+    <string name="corner_lab_section_continuity_spec">连续性几何原理 (Continuity Spec)</string>
+    <string name="corner_lab_macro_g1">G1 拐角特写</string>
+    <string name="corner_lab_macro_g2">G2 平滑特写</string>
+    <string name="corner_lab_legend_circular">Circular (G1)</string>
+    <string name="corner_lab_legend_continuous">Continuous (G2)</string>
+    <string name="corner_lab_switch_comb">曲率梳分析 (Curvature Comb)</string>
+    <string name="corner_lab_desc_comb">法线梳齿高度代表局部曲率大小。G1 在接缝处瞬间突跃成垂直断崖，G2 则像连绵山峰平滑过渡。</string>
+    <string name="settings_format_about_subtitle">版本 v%1$s • 更新检测与更新日志</string>
+
+    <!-- 乱序抽取弹窗 -->
+    <string name="settings_dialog_title_random_on">开启乱序抽取</string>
+    <string name="settings_dialog_title_random_off">关闭乱序抽取</string>
+    <string name="settings_dialog_msg_random_on">确定要开启新内容乱序抽取吗？开启后将随机抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。</string>
+    <string name="settings_dialog_msg_random_off">确定要关闭新内容乱序抽取吗？关闭后将按顺序抽取新内容（下一次开始新学习或加餐时生效，当前进行中的会话不受影响）。</string>
     <string name="settings_theme_title_dark_mode_start">开启深色模式</string>
     <string name="settings_theme_title_dark_mode_end">结束深色模式</string>
     <string name="settings_theme_title_color_palette">主题色彩</string>
@@ -25,6 +117,33 @@
 
     <!-- 关于页操作文案 -->
     <string name="settings_about_btn_fetch_log">重新拉取日志</string>
+    <string name="settings_about_title_screen">关于 Nemo</string>
+    <string name="settings_about_title_auto_check">启动时检测更新</string>
+    <string name="settings_about_subtitle_auto_check">应用启动时自动检查最新版本</string>
+    <string name="settings_about_title_check_update">检查新版本</string>
+    <string name="settings_about_subtitle_checking">正在检测新版本...</string>
+    <string name="settings_about_subtitle_current_version_format">当前版本 v%1$s (Build %2$d)</string>
+    <string name="settings_about_title_changelog">更新日志</string>
+    <string name="settings_about_log_loading">正在拉取云端更新日志...</string>
+    <string name="settings_about_log_syncing">正在同步后端更新日志...</string>
+    <string name="settings_about_log_expand_tip">点击展开详细更新日志</string>
+    <string name="settings_about_log_collapse_tip">点击收起详细更新日志</string>
+    <string name="settings_about_cd_expand_log">展开更新日志</string>
+    <string name="settings_about_cd_collapse_log">收起更新日志</string>
+    <string name="settings_about_log_empty">云端暂未配置本版本更新详情。</string>
+    <string name="settings_about_log_error_fallback">未能成功获取云端更新日志</string>
+    <string name="settings_about_title_github">GitHub 项目</string>
+    <string name="settings_about_subtitle_github">访问开源代码仓库，欢迎 Star &amp; Issue</string>
+    <string name="settings_about_toast_copied_open_browser">已复制项目地址并打开浏览器</string>
+    <string name="settings_about_toast_copied_format">已复制项目地址：%1$s</string>
+    <string name="settings_about_title_developer">主开发者</string>
+    <string name="settings_about_subtitle_developer">AJAYAN14 • 致力于极致体验的日语学习伴侣</string>
+    <string name="settings_about_toast_developer_cheer">感谢使用 Nemo！陪伴你的每一次记忆成长。</string>
+    <string name="settings_about_label_app_name">应用名称</string>
+    <string name="settings_about_value_app_name">Nemo 记忆伴侣</string>
+    <string name="settings_about_label_version">当前版本</string>
+    <string name="settings_about_label_build">内部构建代号 (Build)</string>
+    <string name="settings_about_label_tech_stack">技术架构</string>
 
     <!-- 还原预览弹窗文案 -->
     <string name="settings_restore_title_word_merge">词库合并：</string>
@@ -58,4 +177,316 @@
     <string name="settings_adv_preset_micro_session_capacity">• 单组微会话容量: 20 词</string>
     <string name="settings_adv_preset_daily_review_limit">• 每日复习上限: 不设限制</string>
     <string name="settings_adv_preset_backlog_strategy">• 积压新词策略: 微量尝鲜</string>
+
+    <!-- AI 设置与工坊界面文案 -->
+    <string name="settings_ai_title_workshop">AI 智能工坊</string>
+    <string name="settings_ai_desc_workshop">配置专属密钥，解锁AI单词智能解析、实时翻译与发音评估等强大功能。</string>
+    <string name="settings_ai_section_config_list">配置列表</string>
+    <string name="settings_ai_title_screen">AI 模型配置</string>
+    <string name="settings_ai_cd_new_config">新建配置</string>
+    <string name="settings_ai_msg_test_success">API 连接正常，测试成功</string>
+    <string name="settings_ai_dialog_title_delete">确认删除此配置？</string>
+    <string name="settings_ai_dialog_msg_delete">您确认要删除 AI 配置 \"%1$s\" 吗？删除后该配置的密钥和代理信息将永久丢失，且无法恢复。</string>
+    <string name="settings_ai_dialog_btn_confirm_delete">确认删除</string>
+    <string name="settings_ai_cd_delete_config">删除配置</string>
+    <string name="settings_ai_platform_doubao">豆包</string>
+    <string name="settings_ai_platform_glm">智谱 GLM</string>
+    <string name="settings_ai_platform_qwen">通义千问</string>
+    <string name="settings_ai_platform_custom">自定义平台</string>
+    <string name="settings_ai_badge_active">当前启用</string>
+    <string name="settings_ai_cd_test_connection">测试连通性</string>
+    <string name="settings_ai_cd_edit_config">编辑配置</string>
+    <string name="settings_ai_platform_custom_desc">自定义平台 (OpenAI 格式)</string>
+    <string name="settings_ai_label_recommended_presets">推荐预设：</string>
+    <string name="settings_ai_btn_testing">测试中...</string>
+    <string name="settings_ai_btn_test_connection">验证连接</string>
+    <string name="settings_ai_btn_save_config">保存配置</string>
+    <string name="settings_ai_cd_hide_key">隐藏密钥</string>
+    <string name="settings_ai_cd_show_key">显示密钥</string>
+    <string name="settings_ai_empty_title">暂无 AI 模型配置</string>
+    <string name="settings_ai_empty_desc">点击右上角「+」添加您的第一个 AI 模型配置</string>
+
+    <!-- AI 模型独立全屏视界 (AI Model Studio) 文案 -->
+    <string name="settings_ai_format_platform_config_name">%1$s 配置</string>
+    <string name="settings_ai_title_new_config">新建 AI 配置</string>
+    <string name="settings_ai_title_edit_config">编辑 AI 配置</string>
+    <string name="settings_ai_title_service_platform">AI 服务平台</string>
+    <string name="settings_ai_label_swipe_tap_switch">滑动轻触切换</string>
+    <string name="settings_ai_label_mounted">● 已挂载</string>
+    <string name="settings_ai_label_click_to_mount">点击挂载</string>
+    <string name="settings_ai_title_select_model">选择模型</string>
+    <string name="settings_ai_label_recommended_model">推荐型号</string>
+    <string name="settings_ai_label_manual_input">手动输入</string>
+    <string name="settings_ai_placeholder_custom_model">输入自定义模型代号, 例如: %1$s</string>
+    <string name="settings_ai_tip_custom_model_permission">提示：自定义模型需确保您的 API Key 具备该模型调用权限</string>
+    <string name="settings_ai_desc_reasoner_model">满血深度逻辑推理 / 长思维链</string>
+    <string name="settings_ai_desc_light_model">超低延迟极速响应 / 经济轻量</string>
+    <string name="settings_ai_desc_flagship_model">通用全能旗舰主力模型</string>
+    <string name="settings_ai_title_security_and_gateway">安全凭证与网关</string>
+    <string name="settings_ai_subtitle_security_and_gateway">端到端密钥本地加密保护，绝不上报云端</string>
+    <string name="settings_ai_label_config_name">配置名称</string>
+    <string name="settings_ai_placeholder_config_name">例如: %1$s 极速引擎</string>
+    <string name="settings_ai_label_api_key">API 访问密钥</string>
+    <string name="settings_ai_btn_paste_key">嗅探到密钥 · 一键注入</string>
+    <string name="settings_ai_placeholder_api_key">输入或粘贴 %1$s API Key</string>
+    <string name="settings_ai_cd_hide">隐藏</string>
+    <string name="settings_ai_cd_show">显示</string>
+    <string name="settings_ai_label_gateway_endpoint">服务网关端点</string>
+    <string name="settings_ai_btn_restore_default_url">恢复官方预设</string>
+    <string name="settings_ai_placeholder_gateway_endpoint">例如: %1$s</string>
+    <string name="settings_ai_title_network_test">网络连通性测试</string>
+    <string name="settings_ai_subtitle_network_test">发送轻量 Ping 探测端点有效性与首字延迟</string>
+    <string name="settings_ai_status_testing">正在测试连通性...</string>
+    <string name="settings_ai_status_success">连接成功</string>
+    <string name="settings_ai_status_failed">连接失败</string>
+    <string name="settings_ai_status_test_connection">测试连通性</string>
+    <string name="settings_ai_status_verifying">正在验证 API 与模型响应...</string>
+    <string name="settings_ai_status_desc_idle">验证当前密钥与端点可用性</string>
+    <string name="settings_ai_btn_retest">重测</string>
+    <string name="settings_ai_btn_probe">探测</string>
+
+    <!-- TTS 语音设置文案 -->
+    <string name="settings_tts_section_source">语音来源</string>
+    <string name="settings_tts_item_title_select_japanese">选择日语语音</string>
+    <string name="settings_tts_item_title_select_chinese">选择中文语音</string>
+    <string name="settings_tts_value_system_default">系统默认</string>
+    <string name="settings_tts_section_speed">语速调节</string>
+    <string name="settings_tts_item_title_speed">语速 (Speed)</string>
+    <string name="settings_tts_section_pitch">音调调节</string>
+    <string name="settings_tts_item_title_pitch">音调 (Pitch)</string>
+    <string name="settings_tts_section_preview_reset">试听 &amp; 重置</string>
+    <string name="settings_tts_btn_preview_japanese">试听 (日语)</string>
+    <string name="settings_tts_btn_stop_japanese">停止 (日语)</string>
+    <string name="settings_tts_btn_preview_chinese">试听 (中文)</string>
+    <string name="settings_tts_btn_stop_chinese">停止 (中文)</string>
+    <string name="settings_tts_sample_chinese_text">这是中文语音测试。</string>
+    <string name="settings_tts_btn_reset_default">重置为默认值</string>
+    <string name="settings_tts_title_screen">语音设置</string>
+    <string name="settings_tts_cd_stop">停止</string>
+    <string name="settings_tts_cd_play">试听</string>
+    <string name="settings_tts_group_cloud">云端语音</string>
+    <string name="settings_tts_group_local">本地语音</string>
+    <string name="settings_tts_group_cloud_chinese">云端中文语音</string>
+    <string name="settings_tts_group_local_chinese">本地中文语音</string>
+    <string name="settings_tts_dialog_title_select_chinese">选择中文语音</string>
+    <string name="settings_tts_dialog_desc_select_chinese">用于学习例句中的中文翻译朗读</string>
+    <string name="settings_tts_sheet_title_select_voice">选择语音</string>
+    <string name="settings_tts_empty_voice">未找到可用语音</string>
+    <string name="settings_tts_empty_chinese_engine">未找到可用中文语音引擎</string>
+    <string name="settings_tts_tag_cloud">云端</string>
+    <string name="settings_tts_tag_local">本地</string>
+    <string name="settings_tts_voice_female_suffix"> (女声)</string>
+    <string name="settings_tts_voice_male_suffix"> (男声)</string>
+    <string name="settings_tts_voice_system_default">系统默认</string>
+    <string name="settings_tts_voice_system_default_chinese">系统默认中文</string>
+    <string name="settings_tts_format_japanese_voice_name">日语语音 %1$s</string>
+    <string name="settings_tts_format_chinese_voice_name">中文语音 %1$s%2$s</string>
+    <string name="settings_tts_format_voice_name">语音 %1$s</string>
+    <string name="settings_tts_quality_high">高质量</string>
+
+    <!-- 主题与配色文案 -->
+    <string name="settings_theme_section_display_mode">显示模式</string>
+    <string name="settings_theme_section_auto_switch_mode">自动切换模式</string>
+    <string name="settings_theme_color_default">默认</string>
+    <string name="settings_theme_color_rose">蔷薇红</string>
+    <string name="settings_theme_color_orange">活力橙</string>
+    <string name="settings_theme_color_yellow">明快黄</string>
+    <string name="settings_theme_color_mint">薄荷绿</string>
+    <string name="settings_theme_color_sky_blue">天空蓝</string>
+    <string name="settings_theme_color_classic_blue">经典蓝</string>
+    <string name="settings_theme_color_lavender">薰衣草紫</string>
+    <string name="settings_theme_color_violet">罗兰紫</string>
+    <string name="settings_theme_color_cyan">荧光青</string>
+    <string name="settings_theme_color_teal">亮青绿</string>
+    <string name="settings_theme_color_bright_red">炽热红</string>
+    <string name="settings_theme_dialog_title_color_ring">环形配色选择器</string>
+    <string name="settings_theme_format_current_color">当前选择：%1$s</string>
+
+    <!-- 云端备份与恢复文案 -->
+    <string name="settings_backup_status_preparing_dict">正在准备基础词库...</string>
+    <string name="settings_backup_status_preparing_dict_desc">请稍候，基础词库下载完成后将自动展示历史备份</string>
+    <string name="settings_backup_banner_dict_preparing">基础词库正在准备中，请稍候恢复...</string>
+    <string name="settings_backup_badge_cloud_sync">云端档案同步</string>
+    <string name="settings_backup_hero_title">恢复你的学习档案</string>
+    <string name="settings_backup_hero_subtitle">检测到云端历史记录，选择一份备份同步至本机</string>
+    <string name="settings_backup_cd_refresh">刷新列表</string>
+    <string name="settings_backup_btn_skip_restore">跳过，稍后在设置中恢复</string>
+    <string name="settings_backup_empty_title">暂无云端备份</string>
+    <string name="settings_backup_empty_desc">返回上一页点击“备份到云端”将数据安全地保存在云端</string>
+    <string name="settings_backup_badge_latest">最新进度</string>
+    <string name="settings_backup_format_file_size">文件大小: %1$s KB</string>
+    <string name="settings_backup_cd_restore">恢复此备份</string>
+    <string name="settings_backup_cd_restore_disabled">词库准备中，暂不可恢复</string>
+
+    <!-- 恢复策略与结果弹窗文案 -->
+    <string name="settings_restore_title_preview_merge">合并恢复预览</string>
+    <string name="settings_restore_title_preview_overwrite">覆盖恢复预览</string>
+    <string name="settings_restore_btn_confirm_restore">确认恢复</string>
+    <string name="settings_restore_dialog_title_strategy">选择恢复方式</string>
+    <string name="settings_restore_format_strategy_msg">即将恢复备份: %1$s\n请选择以下数据处理方式：</string>
+    <string name="settings_restore_strategy_title_merge">智能合并</string>
+    <string name="settings_restore_strategy_desc_merge">保留本地较新的学习记录，仅合并云端进度。这是最安全的选项。</string>
+    <string name="settings_restore_strategy_title_replace">完全覆盖</string>
+    <string name="settings_restore_strategy_desc_replace">清空本地所有学习进度，完全使用云端数据。适用于彻底重置。</string>
+    <string name="settings_restore_badge_recommended">推荐</string>
+    <string name="settings_restore_title_success">档案恢复成功</string>
+    <string name="settings_restore_subtitle_success">云端学习档案已安全同步至本机</string>
+    <string name="settings_restore_label_word_archive">词库档案</string>
+    <string name="settings_restore_format_archive_stats">更新: %1$s  /  新增: %2$s  /  跳过: %3$s</string>
+    <string name="settings_restore_label_grammar_archive">语法档案</string>
+    <string name="settings_restore_format_validation_note">校验说明: %1$s</string>
+    <string name="settings_restore_btn_start_learning">开启学习之旅</string>
+    <string name="settings_restore_btn_finish">完成</string>
+
+    <!-- 积压控制与记忆算法文案 -->
+    <string name="settings_backlog_title_card">积压排产与微会话</string>
+    <string name="settings_backlog_desc_card">物理防滚雪球收敛，3~5 分钟微会话保底打卡</string>
+    <string name="settings_backlog_title_session_batch">单组微会话容量</string>
+    <string name="settings_backlog_format_words_per_group">%1$d 词 / 组</string>
+    <string name="settings_backlog_desc_session_batch">每组只排少量词汇，极速完成即点亮今日连续打卡</string>
+    <string name="settings_backlog_label_custom">自定义</string>
+    <string name="settings_backlog_title_daily_review_limit">每日复习上限</string>
+    <string name="settings_backlog_label_no_limit">不设限制</string>
+    <string name="settings_backlog_format_words_count">%1$d 词</string>
+    <string name="settings_backlog_desc_daily_review_limit">设定单日复习最大安全负荷，超出部分由系统智能平滑后推</string>
+    <string name="settings_backlog_label_unlimited">不限</string>
+    <string name="settings_backlog_title_backlog_strategy">积压期新词策略</string>
+    <string name="settings_backlog_desc_backlog_strategy">当待复习队列积压时，每日首组会话的新词投放策略</string>
+    <string name="settings_backlog_strategy_title_taste">微量尝鲜</string>
+    <string name="settings_backlog_strategy_desc_taste">穿插 2~3 词新知，保持新鲜感</string>
+    <string name="settings_backlog_strategy_title_review_only">纯复习优先</string>
+    <string name="settings_backlog_strategy_desc_review_only">暂停新词，全力冲刺清偿旧账</string>
+    <string name="settings_backlog_dialog_subtitle_session_batch">自定义每组排产词数，极速完成即点亮连续打卡</string>
+    <string name="settings_btn_confirm_save">确认保存</string>
+    <string name="settings_backlog_dialog_subtitle_daily_limit">设定单日最大安全负荷（输入 0 表示不设限制）</string>
+
+    <string name="settings_algo_burden_light">清爽微负荷</string>
+    <string name="settings_algo_burden_balanced">黄金平衡态</string>
+    <string name="settings_algo_burden_heavy">极客高密度</string>
+    <string name="settings_algo_title_simulation">记忆动力沙盘</string>
+    <string name="settings_algo_desc_simulation">FSRS 遗忘曲面与复习负荷实时映射</string>
+    <string name="settings_algo_label_half_life">参考记忆半衰期</string>
+    <string name="settings_algo_format_half_life_days">≈ %1$s 天</string>
+    <string name="settings_algo_title_target_retention">目标保留率</string>
+    <string name="settings_algo_desc_target_retention">滑动刻度微调 · 建议设定于 85% ~ 92%</string>
+    <string name="settings_algo_cd_decrease_one_percent">减少1%</string>
+    <string name="settings_algo_cd_increase_one_percent">增加1%</string>
+    <string name="settings_algo_preset_retention_80">80% 宽松</string>
+    <string name="settings_algo_preset_retention_85">85% 平衡</string>
+    <string name="settings_algo_preset_retention_90">90% 黄金</string>
+    <string name="settings_algo_preset_retention_95">95% 冲刺</string>
+    <string name="settings_algo_cd_add_step">添加阶段</string>
+    <string name="settings_algo_btn_add_step">增加阶梯</string>
+    <string name="settings_algo_dialog_title_add_step">新增复习阶段</string>
+    <string name="settings_algo_cd_delete_step">删除该阶段</string>
+    <string name="settings_algo_dialog_title_edit_step">调整复习阶段时长</string>
+    <string name="settings_algo_dialog_subtitle_edit_step">设定记忆间隔时长（支持分位加减与手写输入）</string>
+    <string name="settings_algo_format_minutes">%1$s 分钟</string>
+    <string name="settings_algo_format_hours">%1$d 小时</string>
+    <string name="settings_algo_format_days">%1$d 天</string>
+    <string name="settings_algo_title_leech_threshold">顽固卡片判定阈值</string>
+    <string name="settings_algo_desc_leech_threshold">某张卡片累计遗忘此次数后自动触发防爆防护</string>
+    <string name="settings_algo_cd_decrease">减少</string>
+    <string name="settings_algo_format_count_times">%1$d 次</string>
+    <string name="settings_algo_cd_increase">增加</string>
+    <string name="settings_algo_title_leech_action">防爆触发后的处置策略</string>
+    <string name="settings_algo_action_skip_title">冻结卡片</string>
+    <string name="settings_algo_action_skip_desc">彻底移出复习，沉淀至复学清单</string>
+    <string name="settings_algo_action_bury_title">埋藏今日</string>
+    <string name="settings_algo_action_bury_desc">今日不再提示，明日自动回归</string>
+    <string name="settings_algo_title_early_review">提前复习容差窗口</string>
+    <string name="settings_algo_desc_early_review">卡片冷却剩余低于此时间时，允许提前温习</string>
+    <string name="settings_algo_format_minutes_int">%1$d 分钟</string>
+    <string name="settings_algo_island_title_updated">算法参数已更新</string>
+    <string name="settings_algo_island_desc_updated">点击应用以同步生效至引擎</string>
+    <string name="settings_algo_btn_apply_now">立即应用</string>
+
+    <!-- 设置通用组件与重置弹窗文案 -->
+    <string name="settings_goal_format_word_count">%1$d 个单词</string>
+    <string name="settings_goal_format_grammar_count">%1$d 条语法</string>
+    <string name="settings_reset_hour_subtitle">每天此时间后开始新的学习日</string>
+    <string name="settings_reset_hour_0">凌晨 0:00 (午夜)</string>
+    <string name="settings_reset_hour_2">凌晨 2:00</string>
+    <string name="settings_reset_hour_4">凌晨 4:00 (推荐)</string>
+    <string name="settings_reset_hour_5">凌晨 5:00</string>
+    <string name="settings_reset_hour_6">凌晨 6:00</string>
+    <string name="settings_reset_hour_format">%1$d:00</string>
+    <string name="settings_format_count_parentheses">(%1$d)</string>
+    <string name="settings_dialog_title_confirm_reset">确认重置</string>
+    <string name="settings_dialog_msg_confirm_reset">您确定要重置所有学习进度吗？此操作将永久删除本地所有进度数据，且无法撤销。</string>
+    <string name="settings_dialog_btn_resetting">正在重置...</string>
+    <string name="settings_dialog_btn_confirm_reset">确认重置</string>
+
+    <!-- 液态玻璃实验室文案 -->
+    <string name="settings_lab_tip_drag_buttons">按住按钮可自由拖拽到不同背景上对比透镜折射</string>
+    <string name="settings_lab_btn_clear">全透明液态按钮</string>
+    <string name="settings_lab_btn_frosted">带底色液态按钮</string>
+    <string name="settings_lab_btn_colored_blue">彩色液态按钮 (蓝)</string>
+    <string name="settings_lab_btn_colored_orange">彩色液态按钮 (橙)</string>
+    <string name="settings_lab_cd_back">返回</string>
+    <string name="settings_lab_sample_title">物理透镜光学折射样本</string>
+    <string name="settings_lab_stat_thickness">透镜厚度</string>
+    <string name="settings_lab_stat_refraction_range">折射范围</string>
+    <string name="settings_lab_stat_framerate">实时帧率</string>
+
+    <!-- 关于页补充文案 -->
+    <string name="settings_about_format_version_v">v%1$s</string>
+    <string name="settings_about_cd_logo">Logo</string>
+
+    <!-- 弹窗通用文案补充 -->
+    <string name="settings_dialog_title_unsaved_changes">未保存的更改</string>
+    <string name="settings_dialog_msg_unsaved_changes">您对参数进行了修改，是否在离开前应用这些配置？</string>
+    <string name="settings_dialog_btn_apply_changes">应用更改</string>
+    <string name="settings_dialog_btn_discard_changes">放弃更改</string>
+    <string name="settings_dialog_btn_apply_leave">应用并离开</string>
+    <string name="settings_dialog_btn_discard_leave">不保存离开</string>
+    <string name="settings_dialog_title_export_options">导出选项</string>
+    <string name="settings_dialog_msg_export_options">压缩导出能大幅减小文件体积并保护数据结构；纯文本导出则文件较大，但可用文本编辑器直接阅读，适合用于调试。</string>
+    <string name="settings_dialog_btn_export_zip_recommended">压缩导出 (推荐)</string>
+    <string name="settings_dialog_btn_export_text">纯文本导出</string>
+    <string name="settings_dialog_btn_export_zip">压缩导出 (.zip)</string>
+    <string name="settings_dialog_btn_export_json">纯文本导出 (.json)</string>
+    <string name="settings_theme_title_display_mode">显示模式</string>
+    <string name="settings_theme_title_auto_switch_mode">自动切换模式</string>
+    <string name="settings_theme_icon_style_md3_short">Material Design 3</string>
+    <string name="settings_theme_icon_style_plump_duo_short">Plump Duo</string>
+
+    <!-- 云端备份历史界面文案 -->
+    <string name="settings_backup_preparing_dict_title">正在准备基础词库...</string>
+    <string name="settings_backup_preparing_dict_desc">请稍候，基础词库下载完成后将自动展示历史备份</string>
+    <string name="settings_backup_preparing_dict_banner">基础词库正在准备中，请稍候恢复...</string>
+    <string name="settings_backup_cloud_sync_tag">云端档案同步</string>
+    <string name="settings_backup_restore_archive_title">恢复你的学习档案</string>
+    <string name="settings_backup_restore_archive_subtitle">检测到云端历史记录，选择一份备份同步至本机</string>
+    <string name="settings_backup_btn_refresh_list">刷新列表</string>
+    <string name="settings_backup_history_title">云端备份历史</string>
+    <string name="settings_backup_tag_latest">最新进度</string>
+    <string name="settings_backup_format_size">文件大小: %1$s KB</string>
+
+    <!-- 恢复策略与恢复成功弹窗文案 -->
+    <string name="settings_restore_strategy_title">选择恢复方式</string>
+    <string name="settings_restore_strategy_prompt">即将恢复备份: %1$s\n请选择以下数据处理方式：</string>
+    <string name="settings_restore_strategy_smart_title">智能合并</string>
+    <string name="settings_restore_strategy_smart_desc">保留本地已有学习记录，仅合并云端差异进度。冲突时以复习次数较多的记录为准。</string>
+    <string name="settings_restore_strategy_overwrite_title">完全覆盖</string>
+    <string name="settings_restore_strategy_overwrite_desc">清空本地当前学习进度，严格恢复为云端备份状态。适合换机后首次全量还原。</string>
+    <string name="settings_restore_strategy_badge_recommended">推荐</string>
+    <string name="settings_restore_success_title">档案恢复成功</string>
+    <string name="settings_restore_success_tag_word">词库档案</string>
+    <string name="settings_restore_success_tag_grammar">语法档案</string>
+    <string name="settings_restore_success_btn_start">进入主页开始学习</string>
+    <string name="settings_restore_success_btn_done">完成</string>
+
+    <!-- 设置项组件补充文案 -->
+    <string name="settings_item_daily_word_goal">每日单词目标</string>
+    <string name="settings_item_daily_grammar_goal">每日语法目标</string>
+    <string name="settings_item_learning_day_reset_time">学习日重置时间</string>
+    <string name="settings_item_select_voice">选择语音</string>
+    <string name="settings_item_no_voice_available">未找到可用语音</string>
+
+    <!-- 高级学习算法设置页面文案 -->
+    <string name="settings_adv_ladder_new_title">初学阶梯 (分)</string>
+    <string name="settings_adv_ladder_relearn_title">重学阶梯 (分)</string>
+    <string name="settings_adv_memory_algo_title">记忆算法调校</string>
+    <string name="settings_adv_btn_restore_defaults">恢复默认</string>
 </resources>

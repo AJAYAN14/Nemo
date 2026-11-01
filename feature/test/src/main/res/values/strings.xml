@@ -95,32 +95,294 @@
     <string name="test_common_btn_retry">重试</string>
 
     <!-- 听力挑战 (ListeningComprehensionScreen) -->
+    <string name="test_listening_header_title">听力挑战</string>
     <string name="test_listening_empty_history">暂无挑战记录</string>
     <string name="test_listening_subtitle">本地听辨强化训练</string>
+    <string name="test_listening_cd_history">历史记录</string>
+    <string name="test_listening_exit_dialog_title">退出听力挑战</string>
+    <string name="test_listening_history_title">听力挑战记录</string>
     <string name="test_listening_title_select_level">选择听力挑战等级</string>
     <string name="test_listening_desc_select_level">声波频段已锁定，系统将基于本地词库出题</string>
+    <string name="test_listening_level_n5_desc">初级基础词汇听辨</string>
+    <string name="test_listening_level_n4_desc">常用社交词汇听辨</string>
+    <string name="test_listening_level_n3_desc">中级日常词汇听辨</string>
+    <string name="test_listening_level_n2_desc">中高级书面词汇听辨</string>
+    <string name="test_listening_level_n1_desc">高级专业词汇听辨</string>
     <string name="test_listening_title_generate_failed">出题失败</string>
+    <string name="test_listening_cd_refresh">换一批</string>
+    <string name="test_listening_prompt_identify_word">听录音辨析日语单词</string>
+    <string name="test_listening_prompt_identify_meaning">听录音辨析中文释义</string>
+    <string name="test_listening_cd_play_slow">慢速播放</string>
+    <string name="test_listening_cd_play">播放</string>
+    <string name="test_listening_cd_play_fast">快速播放</string>
     <string name="test_listening_speed_slow">0.75x 慢速</string>
     <string name="test_listening_speed_standard">1.0x 标准</string>
     <string name="test_listening_speed_fast">1.25x 快速</string>
+    <string name="test_listening_label_content_locked">听力内容已锁定</string>
+    <string name="test_listening_desc_content_locked">请仔细聆听上方的纯正录音，并在下方选出最匹配的选项。答题后将完整解密词汇拼写与释义。</string>
+    <string name="test_listening_btn_finish">完成练习</string>
+    <string name="test_listening_btn_next">下一题</string>
+    <string name="test_listening_sheet_correct">回答正确！解锁发音卡</string>
+    <string name="test_listening_sheet_wrong">回答错误，解锁发音卡</string>
+    <string name="test_listening_btn_continue">继续</string>
     <string name="test_listening_title_completed">听力练习完成！</string>
     <string name="test_listening_format_result">本次通关：答对 %1$d 题 / 共 %2$d 题</string>
     <string name="test_listening_btn_retry_new_words">换一批单词重新听</string>
     <string name="test_listening_btn_back_to_levels">返回等级选择</string>
 
     <!-- 动词活用 (VerbConjugationScreen) -->
+    <string name="test_verb_header_title">动词活用</string>
     <string name="test_verb_empty_history">暂无记录</string>
     <string name="test_verb_subtitle">智能动词活用训练</string>
+    <string name="test_verb_cd_history">历史记录</string>
+    <string name="test_verb_history_title">练习记录</string>
     <string name="test_verb_title_no_ai">未连接 AI 大脑</string>
+    <string name="test_verb_desc_no_ai">您尚未在设置中配置大模型 API Key，无法使用动态出题功能。</string>
     <string name="test_verb_btn_back_to_config">返回去配置</string>
     <string name="test_verb_title_select_level">选择挑战难度</string>
     <string name="test_verb_desc_select_level">AI 将根据您的本地词库出题</string>
+    <string name="test_verb_level_n5_desc">初级基础</string>
+    <string name="test_verb_level_n4_desc">初级进阶</string>
+    <string name="test_verb_level_n3_desc">中级应用</string>
+    <string name="test_verb_level_n2_desc">中高级进阶</string>
+    <string name="test_verb_level_n1_desc">高级熟练</string>
+    <string name="test_verb_loading_text_1">AI 正在脑洞大开地为您现编题目，请稍候...</string>
+    <string name="test_verb_loading_text_2">正在翻找日语语法秘笈... 马上出炉！</string>
+    <string name="test_verb_loading_text_3">大语言模型正在抓耳挠腮中，不要走开哦...</string>
+    <string name="test_verb_loading_text_4">正在为您量身定制动词活用挑战...</string>
+    <string name="test_verb_loading_text_5">正在抓取词库中的最强动词... 马上就好！</string>
     <string name="test_verb_btn_abort_generate">放弃生成</string>
     <string name="test_verb_btn_regenerate">重新生成</string>
     <string name="test_verb_title_generate_failed">出题失败</string>
+    <string name="test_verb_cd_refresh">换一批</string>
+    <string name="test_verb_cd_play_audio">播放音频</string>
     <string name="test_verb_badge_text">文</string>
+    <string name="test_verb_btn_finish">完成练习</string>
+    <string name="test_verb_btn_next">下一题</string>
+    <string name="test_verb_feedback_correct_format">✓ 正确答案：%1$s</string>
+    <string name="test_verb_feedback_wrong_format">✗ 正确答案：%1$s</string>
+    <string name="test_verb_btn_continue">继续</string>
     <string name="test_verb_title_completed">练习完成！</string>
     <string name="test_verb_format_result">本次挑战：答对 %1$d 题 / 共 %2$d 题</string>
     <string name="test_verb_btn_new_batch">换一批新题</string>
     <string name="test_verb_btn_back_to_levels">返回难度选择</string>
+
+    <!-- 测验仪表盘 (TestDashboardScreen) -->
+    <string name="test_dashboard_title_screen">测试</string>
+    <string name="test_dashboard_section_review">复习与回顾</string>
+    <string name="test_dashboard_item_mistakes">我的错题</string>
+    <string name="test_dashboard_item_favorites">我的收藏</string>
+    <string name="test_dashboard_format_count_items">%1$d 个</string>
+    <string name="test_dashboard_section_basic">基础练习</string>
+    <string name="test_dashboard_type_choice_title">选择题</string>
+    <string name="test_dashboard_type_choice_subtitle">快速认知</string>
+    <string name="test_dashboard_type_typing_title">手打题</string>
+    <string name="test_dashboard_type_typing_subtitle">拼写强化</string>
+    <string name="test_dashboard_type_card_title">卡片题</string>
+    <string name="test_dashboard_type_card_subtitle">翻牌记忆</string>
+    <string name="test_dashboard_type_sorting_title">排序题</string>
+    <string name="test_dashboard_type_sorting_subtitle">逻辑构建</string>
+    <string name="test_dashboard_section_other">其他测试</string>
+    <string name="test_dashboard_workshop_title">能力工坊</string>
+    <string name="test_dashboard_workshop_subtitle">提升语感，全方位进阶</string>
+    <string name="test_dashboard_stat_today_title">今日测试</string>
+    <string name="test_dashboard_stat_tested_questions">已测题目</string>
+    <string name="test_dashboard_stat_unit_day">天</string>
+    <string name="test_dashboard_stat_streak_learn">连续学习</string>
+    <string name="test_dashboard_stat_accuracy_today">今日正确率</string>
+    <string name="test_dashboard_stat_total_title">总体统计</string>
+    <string name="test_dashboard_stat_total_tests">累计测试</string>
+    <string name="test_dashboard_stat_max_streak">最高连签</string>
+    <string name="test_dashboard_stat_accuracy_total">累计正确率</string>
+
+    <!-- 测试设置主页面 -->
+    <string name="test_settings_title_multiple_choice">选择题设置</string>
+    <string name="test_settings_title_typing">手打题设置</string>
+    <string name="test_settings_title_card_matching">卡片题设置</string>
+    <string name="test_settings_title_sorting">排序题设置</string>
+    <string name="test_settings_title_default">测试设置</string>
+    <string name="test_source_wrong_title">我的错题</string>
+    <string name="test_source_favorite_title">我的收藏</string>
+    <string name="test_source_today_title">今日学习的内容</string>
+    <string name="test_source_today_reviewed_title">今日复习的内容</string>
+    <string name="test_source_learned_title">所有已学习过的内容</string>
+    <string name="test_source_all_title">所有内容</string>
+    <string name="test_source_words_grammars_format">%1$d 词 · %2$d 语法</string>
+    <string name="test_removal_none_title">不移除</string>
+    <string name="test_removal_none_subtitle">做对后保留在错题本中，由您手动管理</string>
+    <string name="test_removal_count_format_title">连续答对 %1$d 次</string>
+    <string name="test_removal_count_format_subtitle">在测试中连续答对 %1$d 次后自动移出错题本</string>
+    <string name="test_removal_count_10_subtitle">深度掌握标准，连续答对 10 次后自动移出错题本</string>
+    <string name="test_removal_times_format">%1$d次</string>
+    <string name="test_content_type_words_title">仅测试单词</string>
+    <string name="test_content_type_words_subtitle">仅抽取词汇库中的单词进行测试</string>
+    <string name="test_content_type_grammar_title">仅测试语法</string>
+    <string name="test_content_type_grammar_subtitle">仅抽取文法库中的语法条目进行测试</string>
+    <string name="test_content_type_mixed_title">单词和语法混合</string>
+    <string name="test_content_type_mixed_subtitle">按设置比例混合抽取词汇与语法进行综合测试</string>
+    <string name="test_content_type_unknown">未知类型</string>
+
+    <!-- 测试设置分组与条目 -->
+    <string name="test_settings_section_basic">基础设置</string>
+    <string name="test_settings_label_question_count">题目数量</string>
+    <string name="test_settings_format_question_count">%1$d 题</string>
+    <string name="test_settings_data_available_words_format">可用: %1$s 词</string>
+    <string name="test_settings_data_available_grammars_format">可用: %1$s 语法</string>
+    <string name="test_settings_data_available_mixed_format">可用: %1$s 词 / %2$s 语法</string>
+    <string name="test_settings_data_querying">查询中...</string>
+    <string name="test_settings_data_insufficient_format">%1$s (不足)</string>
+    <string name="test_settings_label_time_limit">时间限制</string>
+    <string name="test_settings_time_limit_unlimited">无限制</string>
+    <string name="test_settings_time_limit_minutes_format">%1$d 分钟</string>
+    <string name="test_settings_label_source">题目来源</string>
+    <string name="test_settings_source_unknown">未知</string>
+    <string name="test_settings_label_removal">错题移除</string>
+    <string name="test_settings_label_content_type">测试内容</string>
+    <string name="test_settings_label_test_level">测试等级</string>
+    <string name="test_settings_label_word_level">单词等级</string>
+    <string name="test_settings_label_grammar_level">语法等级</string>
+    <string name="test_settings_levels_all">全部等级</string>
+    <string name="test_settings_levels_none">未选择</string>
+    <string name="test_settings_section_quiz">答题设置</string>
+    <string name="test_settings_switch_shuffle_questions">题目乱序</string>
+    <string name="test_settings_switch_shuffle_options">选项乱序</string>
+    <string name="test_settings_switch_auto_advance">自动跳转</string>
+    <string name="test_settings_switch_prioritize_wrong">错题优先</string>
+    <string name="test_settings_switch_prioritize_new">未做题优先</string>
+    <string name="test_settings_switch_auto_play_audio">答题自动朗读假名</string>
+
+    <!-- 底部抽屉与选择器 -->
+    <string name="test_sheet_title_question_count">选择题目数量</string>
+    <string name="test_sheet_title_time_limit">选择时间限制</string>
+    <string name="test_sheet_title_question_source">选择题目来源</string>
+    <string name="test_sheet_title_content_type">选择测试内容类型</string>
+    <string name="test_sheet_title_removal_threshold">答对几次后从错题中移除</string>
+    <string name="test_sheet_cd_close">关闭</string>
+    <string name="test_sheet_btn_custom">自定义</string>
+    <string name="test_sheet_card_matching_group_hint">每组5个单词</string>
+    <string name="test_sheet_reason_typing_unsupported">语法/无假名拼写场景暂不支持</string>
+    <string name="test_sheet_reason_matching_unsupported">语法场景暂不支持</string>
+    <string name="test_sheet_reason_general_unsupported">暂不支持此题型</string>
+    <string name="test_sheet_cd_decrease">减少</string>
+    <string name="test_sheet_cd_increase">增加</string>
+    <string name="test_sheet_level_tab_all">全部</string>
+    <string name="test_sheet_level_no_available_content">该等级在当前题源下没有可用内容</string>
+    <string name="test_sheet_format_words_count">%1$d 词</string>
+    <string name="test_sheet_level_unavailable">不可用</string>
+    <string name="test_sheet_btn_cancel">取消</string>
+    <string name="test_sheet_btn_confirm_done">完成</string>
+    <string name="test_sheet_title_select_word_level">选择单词等级</string>
+    <string name="test_sheet_empty_word_levels">当前题源下没有可用的单词等级</string>
+    <string name="test_sheet_title_select_grammar_level">选择语法等级</string>
+    <string name="test_sheet_empty_grammar_levels">当前题源下没有可用的语法等级</string>
+
+    <!-- 自定义对话框 -->
+    <string name="test_dialog_custom_count_title">自定义题数</string>
+    <string name="test_dialog_custom_count_subtitle">设置本次测试的题目数量</string>
+    <string name="test_dialog_format_preset_count">%1$d题</string>
+    <string name="test_dialog_btn_save_config">保存配置</string>
+    <string name="test_dialog_custom_time_title">自定义时长</string>
+    <string name="test_dialog_custom_time_subtitle">设置测试时间限制 (分钟)，0为不限时</string>
+    <string name="test_dialog_time_unlimited">不限时</string>
+    <string name="test_dialog_format_preset_time">%1$d分钟</string>
+
+    <!-- 暂停对话框 -->
+    <string name="test_pause_dialog_title">测试已暂停</string>
+    <string name="test_pause_dialog_desc">休息一下，点击按钮继续测试。</string>
+
+    <!-- 测试结果与统计 -->
+    <string name="test_result_cd_rating_icon">评级图标</string>
+    <string name="test_result_title_completed">测试完成！</string>
+    <string name="test_result_label_accuracy">正确率</string>
+    <string name="test_result_accuracy_format">%.0f%%</string>
+    <string name="test_result_stat_correct">答对</string>
+    <string name="test_result_stat_wrong">答错</string>
+    <string name="test_result_stat_time">用时</string>
+    <string name="test_result_btn_back_menu">返回菜单</string>
+    <string name="test_result_btn_retake">再来一次</string>
+    <string name="test_result_title_content_analysis">测试内容分布</string>
+    <string name="test_result_format_words_percent">单词 %1$d%%</string>
+    <string name="test_result_format_grammars_percent">语法 %1$d%%</string>
+    <string name="test_result_title_today_summary">今日累计战报</string>
+    <string name="test_result_format_today_completed">已完成 %1$d 次测试</string>
+    <string name="test_result_label_avg_accuracy">平均正确率</string>
+    <string name="test_result_quote_perfect">完美！你是学习大师！</string>
+    <string name="test_result_quote_great">太棒了！继续保持！</string>
+    <string name="test_result_quote_good">不错！离成功又近了一步！</string>
+    <string name="test_result_quote_cheer">别灰心，温故而知新！</string>
+
+    <!-- 能力工坊 (AbilityWorkshopScreen & AbilityExitDialog) -->
+    <string name="test_ability_workshop_listening_title">听力挑战</string>
+    <string name="test_ability_workshop_listening_desc">聆听本地纯正单词发音，检验听辨与词义联想能力。</string>
+    <string name="test_ability_workshop_cloze_title">单词填空</string>
+    <string name="test_ability_workshop_cloze_desc">根据释义和句子提示，拼写填入被挖空的假名。</string>
+    <string name="test_ability_workshop_verb_title">动词活用</string>
+    <string name="test_ability_workshop_verb_desc">为真实句子选择自然的动词形式。</string>
+    <string name="test_ability_workshop_synonym_title">近义词连接</string>
+    <string name="test_ability_workshop_synonym_desc">连接意思相近的单词。</string>
+    <string name="test_ability_workshop_antonym_title">反义词消消乐</string>
+    <string name="test_ability_workshop_antonym_desc">匹配反义词，消除单词对。</string>
+    <string name="test_ability_workshop_collocation_title">自然搭配</string>
+    <string name="test_ability_workshop_collocation_desc">组合听起来自然的词语搭配。</string>
+    <string name="test_ability_workshop_grammar_title">语法纠错</string>
+    <string name="test_ability_workshop_grammar_desc">找出语法错误，并选择正确改法。</string>
+    <string name="test_ability_exit_btn_keep_exit">保留并退出挑战</string>
+    <string name="test_ability_exit_btn_continue">继续挑战</string>
+    <string name="test_ability_exit_btn_discard_exit">放弃本次进度并退出</string>
+
+    <!-- 题目卡片与选择题 (QuestionCard & MultipleChoiceTestContent) -->
+    <string name="test_question_hint_jp_to_cn">请选择对应的中文释义</string>
+    <string name="test_question_hint_cn_to_jp">请选择对应的日语单词</string>
+    <string name="test_question_hint_kana">请选择正确的假名</string>
+    <string name="test_question_hint_example">请选择例句的意思</string>
+    <string name="test_question_hint_random">请选择正确答案</string>
+    <string name="test_choice_status_answered_locked">已回答，无法修改</string>
+
+    <!-- 手打题 (TypingTestContent) -->
+    <string name="test_typing_hint_input_kana">输入对应的日语假名</string>
+    <string name="test_typing_hint_input_kanji">输入对应的日语汉字</string>
+    <string name="test_typing_hint_input_meaning">输入对应的中文释义</string>
+    <string name="test_typing_feedback_correct">回答正确！</string>
+    <string name="test_typing_feedback_wrong">回答错误</string>
+    <string name="test_typing_label_correct_answer">正确答案</string>
+
+    <!-- 头部与底部组件 (TestHeader, TestHeaderComponents, TestFooter) -->
+    <string name="test_header_cd_back_menu">返回菜单</string>
+    <string name="test_header_cd_more_options">更多选项</string>
+    <string name="test_header_menu_unfavorite">取消收藏</string>
+    <string name="test_header_menu_favorite">收藏</string>
+    <string name="test_header_menu_pause">暂停测试</string>
+    <string name="test_footer_btn_prev">上一题</string>
+    <string name="test_footer_btn_submit">提交</string>
+    <string name="test_footer_btn_finish">完成测试</string>
+    <string name="test_footer_btn_next">下一题</string>
+
+    <!-- 卡片匹配 (CardMatchingComponents) -->
+    <string name="test_matching_cd_paired">已配对</string>
+    <string name="test_matching_feedback_success">配对成功！</string>
+    <string name="test_matching_feedback_skipped_too_many_errors">错误次数过多，已跳过此题</string>
+    <string name="test_matching_feedback_wrong_retry">配对错误，请重试</string>
+
+    <!-- 抽屉选择器与测试主界面 (SingleSelectBottomSheet & TestScreen) -->
+    <string name="test_sheet_cd_selected">已选中</string>
+    <string name="test_screen_exit_dialog_title">确认退出测试</string>
+    <string name="test_screen_exit_dialog_msg">确定要退出测试吗？当前未提交进度将丢失。</string>
+    <string name="test_screen_exit_dialog_confirm">确认退出</string>
+    <string name="test_screen_exit_dialog_dismiss">继续测试</string>
+
+    <!-- 题目解析卡片 (ExplanationCard) -->
+    <string name="test_explanation_container_title">解析</string>
+    <string name="test_explanation_label_kanji">汉字</string>
+    <string name="test_explanation_label_kana">假名</string>
+    <string name="test_explanation_label_meaning">意思</string>
+
+    <!-- 简易进度指示器 (SimpleProgressIndicator) -->
+    <string name="test_progress_label">进度</string>
+
+    <!-- 动词活用测验 (VerbConjugationScreen) -->
+    <string name="test_verb_title_history">练习记录</string>
+    <string name="test_verb_cd_refresh_batch">换一批</string>
+
+    <!-- 听力理解解析模板 (ListeningComprehensionViewModel) -->
+    <string name="test_listening_analysis_template">【正确答案】%1$s。本题主要考察根据语音识别出正确的%2$s。</string>
 </resources>

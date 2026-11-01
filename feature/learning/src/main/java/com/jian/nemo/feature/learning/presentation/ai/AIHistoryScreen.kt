@@ -19,7 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.learning.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -107,7 +109,7 @@ fun AIHistoryScreen(
                     .padding(bottom = 8.dp)
             ) {
                 CommonHeader(
-                    title = "练习历史",
+                    title = stringResource(R.string.learn_ai_history_title),
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
                     backdrop = backdrop,
@@ -124,7 +126,7 @@ fun AIHistoryScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Delete,
-                                    contentDescription = "清空历史",
+                                    contentDescription = stringResource(R.string.learn_ai_history_cd_clear),
                                     tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(30.dp)
                                 )
@@ -157,10 +159,10 @@ fun AIHistoryScreen(
             if (showClearConfirm) {
                 NemoDialog(
                     onDismissRequest = { showClearConfirm = false },
-                    title = "清空历史记录",
-                    text = "确定要清空所有的练习历史吗？此操作不可撤销。",
-                    confirmText = "确认清空",
-                    dismissText = "取消",
+                    title = stringResource(R.string.learn_ai_history_dialog_clear_title),
+                    text = stringResource(R.string.learn_ai_history_dialog_clear_msg),
+                    confirmText = stringResource(R.string.learn_ai_history_confirm_clear),
+                    dismissText = stringResource(R.string.ai_reading_btn_cancel),
                     isDangerous = true,
                     onConfirm = {
                         viewModel.clearAllHistory()
@@ -220,7 +222,7 @@ private fun EmptyHistoryView(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "暂无练习历史",
+                text = stringResource(R.string.learn_ai_history_empty_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = if (isPlumpDuo) colorScheme.onSurface else colorScheme.primary,
@@ -230,7 +232,7 @@ private fun EmptyHistoryView(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "在这里记录并回顾您的 AI 翻译与语法练习表现",
+                text = stringResource(R.string.learn_ai_history_empty_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 maxLines = 2,
@@ -281,7 +283,7 @@ private fun HistoryItemCard(
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
-                        text = if (history.type == "CN_TO_JP") "中翻日" else "日翻中",
+                        text = if (history.type == "CN_TO_JP") stringResource(R.string.learn_ai_history_cn_to_jp) else stringResource(R.string.learn_ai_history_jp_to_cn),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         color = typeTagColor,
@@ -341,7 +343,7 @@ private fun HistoryItemCard(
                 Spacer(modifier = Modifier.width(12.dp))
                 
                 Text(
-                    text = "难度: ${history.difficulty}",
+                    text = stringResource(R.string.learn_ai_history_difficulty_format, history.difficulty),
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onSurfaceVariant
                 )

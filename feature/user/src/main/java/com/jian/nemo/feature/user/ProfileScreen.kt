@@ -128,7 +128,7 @@ fun ProfileScreen(
                     ProfileMenuItem(
                         icon = Icons.Default.Info,
                         title = stringResource(R.string.user_profile_title_about),
-                        subtitle = "版本 1.0.0",
+                        subtitle = stringResource(R.string.user_profile_label_version),
                         onClick = { /* TODO */ }
                     )
                 }

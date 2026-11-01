@@ -15,6 +15,8 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NemoText
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.text.FuriganaText
 
 /**
@@ -38,7 +40,7 @@ fun DetailHeader(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "返回",
+                    contentDescription = stringResource(R.string.core_ui_detail_cd_back),
                     modifier = Modifier.size(22.dp),
                     tint = MaterialTheme.colorScheme.onSurface
                 )
@@ -79,7 +81,7 @@ fun DetailHeaderDark(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "返回",
+                    contentDescription = stringResource(R.string.core_ui_detail_cd_back),
                     modifier = Modifier.size(22.dp),
                     tint = MaterialTheme.colorScheme.onSurface
                 )

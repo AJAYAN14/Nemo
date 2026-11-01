@@ -26,7 +26,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,10 +62,10 @@ import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 @Composable
 fun NemoDialog(
     onDismissRequest: () -> Unit,
-    title: String = "提示",
+    title: String = stringResource(R.string.core_ui_dialog_default_title),
     text: String? = null,
-    confirmText: String? = "确定",
-    dismissText: String? = "取消",
+    confirmText: String? = stringResource(R.string.core_ui_dialog_btn_confirm),
+    dismissText: String? = stringResource(R.string.core_ui_dialog_btn_cancel),
     onConfirm: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null,
     isDangerous: Boolean = false,

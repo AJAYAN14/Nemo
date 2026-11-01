@@ -129,13 +129,27 @@ private fun VerbConjugationHandbookContent(
     
     val scope = rememberCoroutineScope()
 
+    val vTitle1 = stringResource(R.string.learn_verb_form_dictionary)
+    val vTitle2 = stringResource(R.string.learn_verb_form_masu)
+    val vTitle3 = stringResource(R.string.learn_verb_form_te)
+    val vTitle4 = stringResource(R.string.learn_verb_form_ta)
+    val vTitle5 = stringResource(R.string.learn_verb_form_nai)
+    val vTitle6 = stringResource(R.string.learn_verb_form_volitional)
+    val vTitle7 = stringResource(R.string.learn_verb_form_imperative)
+    val vTitle8 = stringResource(R.string.learn_verb_form_prohibitive)
+    val vTitle9 = stringResource(R.string.learn_verb_form_conditional)
+    val vTitle10 = stringResource(R.string.learn_verb_form_potential)
+    val vTitle11 = stringResource(R.string.learn_verb_form_passive)
+    val vTitle12 = stringResource(R.string.learn_verb_form_causative)
+    val vTitle13 = stringResource(R.string.learn_verb_form_causative_passive)
+
     // 13 种变形的教科书级数据源 (已将前缀与标题分离定义，并支持等亮度感知调色板与双风格自适应)
-    val grammarList = remember {
+    val grammarList = remember(vTitle1, vTitle2, vTitle3, vTitle4, vTitle5, vTitle6, vTitle7, vTitle8, vTitle9, vTitle10, vTitle11, vTitle12, vTitle13) {
         listOf(
             GrammarData(
                 id = 1,
                 prefix = "1. ",
-                title = "辞书形 (基本形 / 原形)",
+                title = vTitle1,
                 usage = "动词在字典里的原始形态。用于普通体的现在时/将来时，或连接特定语法（如「～ことができる」）。",
                 plumpColor = IsoluminantPalette.SkyIndigo,
                 colorLight = IosColors.Blue,
@@ -151,7 +165,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 2,
                 prefix = "2. ",
-                title = "ます形 (敬体连用形)",
+                title = vTitle2,
                 usage = "日语中最基础、最礼貌的表达方式（敬体）。",
                 plumpColor = IsoluminantPalette.LakesideCyan,
                 colorLight = IosColors.Indigo,
@@ -167,7 +181,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 3,
                 prefix = "3. ",
-                title = "て形 (中顿 / 请求)",
+                title = vTitle3,
                 usage = "用于表示动作的先后顺序、原因、中顿，或与「～てください」连用表示请求。一类动词有音便现象。",
                 plumpColor = IsoluminantPalette.EmeraldGreen,
                 colorLight = IosColors.Green,
@@ -187,7 +201,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 4,
                 prefix = "4. ",
-                title = "た形 (过去式)",
+                title = vTitle4,
                 usage = "表达动作已经发生（普通体的过去式）。变形规则与「て形」完全一致，只需把て/で换成た/だ。",
                 plumpColor = IsoluminantPalette.GlazeMint,
                 colorLight = IosColors.Teal,
@@ -203,7 +217,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 5,
                 prefix = "5. ",
-                title = "ない形 (否定形)",
+                title = vTitle5,
                 usage = "表达否定意义（普通体），或连接「～ない对ください」（请不要做...）。",
                 plumpColor = IsoluminantPalette.RoseRuby,
                 colorLight = IosColors.Red,
@@ -219,7 +233,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 6,
                 prefix = "6. ",
-                title = "意志形",
+                title = vTitle6,
                 usage = "表达说话人的决心、意愿，或提议“一起做某事吧”。",
                 plumpColor = IsoluminantPalette.WarmAmber,
                 colorLight = IosColors.Orange,
@@ -235,7 +249,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 7,
                 prefix = "7. ",
-                title = "命令形",
+                title = vTitle7,
                 usage = "强硬地命令他人做某事，常用于男性粗鲁用语、标语、紧急情况。",
                 plumpColor = IsoluminantPalette.CoralFlame,
                 colorLight = IosColors.RedDark,
@@ -251,7 +265,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 8,
                 prefix = "8. ",
-                title = "禁止形",
+                title = vTitle8,
                 usage = "强硬地命令他人“不准做某事”。",
                 plumpColor = IsoluminantPalette.fromOklch(20f),
                 colorLight = LearningPalette.VerbBanRedLight,
@@ -265,7 +279,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 9,
                 prefix = "9. ",
-                title = "条件形 (ば形)",
+                title = vTitle9,
                 usage = "表示假定条件，即“如果……的话”。",
                 plumpColor = IsoluminantPalette.SeaMarine,
                 colorLight = IosColors.Cyan,
@@ -281,7 +295,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 10,
                 prefix = "10. ",
-                title = "可能形",
+                title = vTitle10,
                 usage = "表示能力或客观条件允许，即“能够做某事”。",
                 plumpColor = IsoluminantPalette.LilacViolet,
                 colorLight = IosColors.Purple,
@@ -297,7 +311,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 11,
                 prefix = "11. ",
-                title = "被动形 (受身形)",
+                title = vTitle11,
                 usage = "表示动作的承受者（被做某事），也可表示受害或间接尊敬。",
                 plumpColor = IsoluminantPalette.fromOklch(335f),
                 colorLight = IosColors.Pink,
@@ -313,7 +327,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 12,
                 prefix = "12. ",
-                title = "使役形",
+                title = vTitle12,
                 usage = "表示让某人做某事，或者允许某人做某事。",
                 plumpColor = IsoluminantPalette.fromOklch(50f),
                 colorLight = IosColors.OrangeDark,
@@ -329,7 +343,7 @@ private fun VerbConjugationHandbookContent(
             GrammarData(
                 id = 13,
                 prefix = "13. ",
-                title = "使役被动形",
+                title = vTitle13,
                 usage = "表示被迫做某事（“被逼着不得不做……”），是使役形 + 被动形的结合。",
                 plumpColor = IsoluminantPalette.OceanBlue,
                 colorLight = NemoNeutrals.Gray600,
@@ -807,7 +821,7 @@ private fun VerbConjugationHandbookContent(
                 .padding(bottom = 16.dp)
         ) {
             CommonHeader(
-                title = "日语动词活用大全",
+                title = stringResource(R.string.learn_verb_handbook_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop

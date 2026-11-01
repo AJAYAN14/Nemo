@@ -23,7 +23,9 @@ import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import com.jian.nemo.feature.learning.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -239,7 +241,7 @@ private fun ForcedNotificationCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "我知道了",
+                        text = stringResource(R.string.learn_notification_btn_got_it),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )

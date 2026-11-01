@@ -1,7 +1,12 @@
 package com.jian.nemo.core.ui.util
 
+import android.content.Context
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.UiPalette
+import com.jian.nemo.core.ui.R
 
 /**
  * 预设头像管理器
@@ -12,13 +17,13 @@ object PresetAvatars {
     /**
      * 预设头像数据类
      * @param id 唯一标识
-     * @param name 头像名称
+     * @param nameRes 头像名称资源 ID
      * @param colors 渐变色列表
      * @param emoji 代表emoji（可选）
      */
     data class PresetAvatar(
         val id: String,
-        val name: String,
+        @StringRes val nameRes: Int,
         val colors: List<Color>,
         val emoji: String? = null
     )
@@ -30,25 +35,25 @@ object PresetAvatars {
         // 经典系列
         PresetAvatar(
             id = "sunset",
-            name = "日落",
+            nameRes = R.string.core_ui_preset_avatar_sunset,
             colors = UiPalette.Presets.Sunset,
             emoji = "🌅"
         ),
         PresetAvatar(
             id = "ocean",
-            name = "海洋",
+            nameRes = R.string.core_ui_preset_avatar_ocean,
             colors = UiPalette.Presets.Ocean,
             emoji = "🌊"
         ),
         PresetAvatar(
             id = "forest",
-            name = "森林",
+            nameRes = R.string.core_ui_preset_avatar_forest,
             colors = UiPalette.Presets.Forest,
             emoji = "🌲"
         ),
         PresetAvatar(
             id = "lavender",
-            name = "薰衣草",
+            nameRes = R.string.core_ui_preset_avatar_lavender,
             colors = UiPalette.Presets.Lavender,
             emoji = "💜"
         ),
@@ -56,25 +61,25 @@ object PresetAvatars {
         // 现代系列
         PresetAvatar(
             id = "mint",
-            name = "薄荷",
+            nameRes = R.string.core_ui_preset_avatar_mint,
             colors = UiPalette.Presets.Mint,
             emoji = "🍃"
         ),
         PresetAvatar(
             id = "coral",
-            name = "珊瑚",
+            nameRes = R.string.core_ui_preset_avatar_coral,
             colors = UiPalette.Presets.Coral,
             emoji = "🪸"
         ),
         PresetAvatar(
             id = "golden",
-            name = "金色",
+            nameRes = R.string.core_ui_preset_avatar_golden,
             colors = UiPalette.Presets.Golden,
             emoji = "✨"
         ),
         PresetAvatar(
             id = "aurora",
-            name = "极光",
+            nameRes = R.string.core_ui_preset_avatar_aurora,
             colors = UiPalette.Presets.Aurora,
             emoji = "🌌"
         ),
@@ -82,13 +87,13 @@ object PresetAvatars {
         // 温暖系列
         PresetAvatar(
             id = "peach",
-            name = "蜜桃",
+            nameRes = R.string.core_ui_preset_avatar_peach,
             colors = UiPalette.Presets.Peach,
             emoji = "🍑"
         ),
         PresetAvatar(
             id = "autumn",
-            name = "秋叶",
+            nameRes = R.string.core_ui_preset_avatar_autumn,
             colors = UiPalette.Presets.Autumn,
             emoji = "🍂"
         ),
@@ -96,13 +101,13 @@ object PresetAvatars {
         // 清新系列
         PresetAvatar(
             id = "sky",
-            name = "天空",
+            nameRes = R.string.core_ui_preset_avatar_sky,
             colors = UiPalette.Presets.Sky,
             emoji = "☁️"
         ),
         PresetAvatar(
             id = "lemon",
-            name = "柠檬",
+            nameRes = R.string.core_ui_preset_avatar_lemon,
             colors = UiPalette.Presets.Lemon,
             emoji = "🍋"
         ),
@@ -110,13 +115,13 @@ object PresetAvatars {
         // 神秘系列
         PresetAvatar(
             id = "midnight",
-            name = "午夜",
+            nameRes = R.string.core_ui_preset_avatar_midnight,
             colors = UiPalette.Presets.Midnight,
             emoji = "🌙"
         ),
         PresetAvatar(
             id = "galaxy",
-            name = "星系",
+            nameRes = R.string.core_ui_preset_avatar_galaxy,
             colors = UiPalette.Presets.Galaxy,
             emoji = "🌟"
         ),
@@ -124,13 +129,13 @@ object PresetAvatars {
         // 活力系列
         PresetAvatar(
             id = "tropical",
-            name = "热带",
+            nameRes = R.string.core_ui_preset_avatar_tropical,
             colors = UiPalette.Presets.Tropical,
             emoji = "🏖️"
         ),
         PresetAvatar(
             id = "cherry",
-            name = "樱花",
+            nameRes = R.string.core_ui_preset_avatar_cherry,
             colors = UiPalette.Presets.Cherry,
             emoji = "🌸"
         )
@@ -184,3 +189,15 @@ object PresetAvatars {
      */
     fun createPresetPath(id: String): String = "$PRESET_PREFIX$id"
 }
+
+/**
+ * 预设头像显示名称扩展属性 (Composable)
+ */
+val PresetAvatars.PresetAvatar.name: String
+    @Composable
+    get() = stringResource(nameRes)
+
+/**
+ * 预设头像显示名称获取方法 (非 Composable)
+ */
+fun PresetAvatars.PresetAvatar.getName(context: Context): String = context.getString(nameRes)

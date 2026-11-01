@@ -199,7 +199,7 @@ fun AIWorkshopScreen(
                 .padding(bottom = 16.dp)
         ) {
             CommonHeader(
-                title = "AI 例文工坊",
+                title = stringResource(R.string.learn_workshop_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
@@ -232,7 +232,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.Rounded.History, contentDescription = "历史记录", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            Icon(Icons.Rounded.History, contentDescription = stringResource(R.string.learn_workshop_desc_history), modifier = Modifier.size(30.dp), tint = textPrimary)
                         }
                         FrostedLiquidGlassButton(
                             onClick = { showHelp = true },
@@ -242,7 +242,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = "帮助", modifier = Modifier.size(30.dp), tint = textPrimary)
+                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = stringResource(R.string.learn_workshop_desc_help), modifier = Modifier.size(30.dp), tint = textPrimary)
                         }
                     }
                 }
@@ -454,7 +454,7 @@ fun AIWorkshopScreen(
     uiState.error?.let {
             NemoSnackbar(
                 visible = true,
-                message = "操作失败，请重试",
+                message = stringResource(R.string.learn_workshop_error_retry),
                 type = NemoSnackbarType.ERROR,
                 icon = Icons.Rounded.ErrorOutline,
                 onDismiss = { viewModel.onEvent(AIWorkshopEvent.ClearError) },
@@ -543,7 +543,7 @@ private fun ModeSection(
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
     val modes = listOf(WorkshopMode.FREE, WorkshopMode.GRAMMAR)
-    val modeLabels = listOf(stringResource(R.string.workshop_mode_free), stringResource(R.string.workshop_mode_grammar))
+    val modeLabels = listOf(stringResource(R.string.learn_workshop_mode_free), stringResource(R.string.learn_workshop_mode_grammar))
     val selectedIndex = modes.indexOf(currentMode).coerceAtLeast(0)
 
     Box(
@@ -663,14 +663,14 @@ private fun GrammarDataEmptyView() {
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "本地暂无该等级语法数据",
+            text = stringResource(R.string.learn_workshop_empty_grammar_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "请先返回主页同步数据\n或切换到「自由模式」进行练习",
+            text = stringResource(R.string.learn_workshop_empty_grammar_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -782,12 +782,12 @@ private fun HeroStartView(
         else -> Icons.Rounded.AutoAwesome
     }
     val title = when {
-        isGrammarMode -> "语法专项训练"
-        else -> "开启智能练习"
+        isGrammarMode -> stringResource(R.string.learn_workshop_hero_title_grammar)
+        else -> stringResource(R.string.learn_workshop_hero_title_free)
     }
     val desc = when {
-        isGrammarMode -> "AI 将从本地语法库中随机抽取\n一个语法点为您生成针对性练习"
-        else -> "AI 将根据您的日语等级\n为您实时生成专属的翻译例文"
+        isGrammarMode -> stringResource(R.string.learn_workshop_hero_desc_grammar)
+        else -> stringResource(R.string.learn_workshop_hero_desc_free)
     }
 
     Column(
@@ -892,7 +892,7 @@ private fun ExerciseContent(
                         shape = RoundedCornerShape(6.dp)
                     ) {
                         Text(
-                            text = if (isCnToJp) "中翻日" else "日翻中",
+                            text = if (isCnToJp) stringResource(R.string.learn_workshop_type_cn_to_jp) else stringResource(R.string.learn_workshop_type_jp_to_cn),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
                             color = labelColor,
@@ -942,7 +942,7 @@ private fun ExerciseContent(
                             } else {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                    contentDescription = "朗读",
+                                    contentDescription = stringResource(R.string.learn_workshop_desc_speak),
                                     tint = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -966,7 +966,7 @@ private fun ExerciseContent(
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.Refresh,
-                                contentDescription = "换一题",
+                                contentDescription = stringResource(R.string.learn_workshop_desc_refresh),
                                 tint = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray600,
                                 modifier = Modifier.size(22.dp)
                             )
@@ -1028,7 +1028,7 @@ private fun ExerciseContent(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = stringResource(R.string.workshop_hint_prefix, exercise.hints.joinToString(", ")),
+                                text = stringResource(R.string.learn_workshop_hint_prefix, exercise.hints.joinToString(", ")),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 lineHeight = 18.sp
@@ -1082,7 +1082,7 @@ private fun InputSection(
                 .heightIn(min = 160.dp),
             placeholder = { 
                 Text(
-                    "在这里输入您的翻译答案...",
+                    stringResource(R.string.learn_workshop_input_placeholder),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyMedium
                 ) 
@@ -1118,7 +1118,7 @@ private fun InputSection(
             enabled = answer.isNotBlank() && enabled,
             elevation = null
         ) {
-            Text(stringResource(R.string.workshop_btn_submit_eval), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.learn_workshop_btn_submit_eval), fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -1169,13 +1169,13 @@ private fun FeedbackSection(
                 ) {
                     Column {
                         Text(
-                            text = if (result.is_correct) "完成得很棒！" else "继续加油！",
+                            text = if (result.is_correct) stringResource(R.string.learn_workshop_feedback_great) else stringResource(R.string.learn_workshop_feedback_keep_going),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "AI 综合评分结果",
+                            text = stringResource(R.string.learn_workshop_feedback_score_title),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1186,7 +1186,7 @@ private fun FeedbackSection(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "${result.score} 分",
+                            text = stringResource(R.string.learn_workshop_feedback_score_format, result.score),
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             color = Color.White,
                             style = MaterialTheme.typography.titleLarge,
@@ -1198,7 +1198,7 @@ private fun FeedbackSection(
                 // 我的答案
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "我的答案",
+                    text = stringResource(R.string.learn_workshop_label_my_answer),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -1223,7 +1223,7 @@ private fun FeedbackSection(
                 result.standard_answer?.let { answer ->
                     Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = "标准参考答案",
+                        text = stringResource(R.string.learn_workshop_label_standard_answer),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = NemoSecondary
@@ -1265,7 +1265,7 @@ private fun FeedbackSection(
                                     } else {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                            contentDescription = "朗读",
+                                            contentDescription = stringResource(R.string.learn_workshop_desc_speak),
                                             tint = NemoSecondary,
                                             modifier = Modifier.size(18.dp)
                                         )
@@ -1282,7 +1282,7 @@ private fun FeedbackSection(
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Text(
-                    text = "AI 详细点评",
+                    text = stringResource(R.string.learn_workshop_label_ai_review),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -1310,7 +1310,7 @@ private fun FeedbackSection(
                 .fillMaxWidth()
                 .height(60.dp)
         ) {
-            Text(stringResource(R.string.workshop_btn_next_question), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(stringResource(R.string.learn_workshop_btn_next_question), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }
@@ -1355,14 +1355,14 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "未配置 AI 服务",
+            text = stringResource(R.string.learn_workshop_config_required_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "请前往“设置 -> AI 工坊配置”\n填写 API Key 即可开启智能练习",
+            text = stringResource(R.string.learn_workshop_config_required_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -1395,7 +1395,7 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "立即去配置",
+                stringResource(R.string.learn_workshop_btn_go_config),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = Color.White
@@ -1408,16 +1408,16 @@ private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
 private fun HelpDialog(onDismiss: () -> Unit) {
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "工坊使用指南",
-        confirmText = "我知道了",
+        title = stringResource(R.string.learn_workshop_help_title),
+        confirmText = stringResource(R.string.learn_workshop_help_btn_confirm),
         dismissText = null,
         onConfirm = onDismiss,
         content = {
             Column {
-                HelpItem("1", "定制化练习", "AI 会根据您设置的日语等级（N1-N5）生成针对性的练习题。")
-                HelpItem("2", "多样化题型", "包含中译日和日译中两种类型，全面提升翻译和表达能力。")
-                HelpItem("3", "专业反馈", "提交后 AI 会即时评分并提供详细的语法及用词点评建议。")
-                HelpItem("4", "记录回顾", "所有练习均保存 30 天，可随时通过顶部历史图标回顾。")
+                HelpItem("1", stringResource(R.string.learn_workshop_help_item_1_title), stringResource(R.string.learn_workshop_help_item_1_desc))
+                HelpItem("2", stringResource(R.string.learn_workshop_help_item_2_title), stringResource(R.string.learn_workshop_help_item_2_desc))
+                HelpItem("3", stringResource(R.string.learn_workshop_help_item_3_title), stringResource(R.string.learn_workshop_help_item_3_desc))
+                HelpItem("4", stringResource(R.string.learn_workshop_help_item_4_title), stringResource(R.string.learn_workshop_help_item_4_desc))
             }
         }
     )

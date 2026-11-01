@@ -59,6 +59,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -132,38 +133,19 @@ fun HomeScreen(
     val iconBgBlue = if (isDark) BentoColors.AccentBlue.copy(alpha = 0.15f) else BentoColors.IconBgBlue
     val iconBgPurple = if (isDark) BentoColors.AccentPurple.copy(alpha = 0.15f) else BentoColors.IconBgPurple
 
-    // 动态生成副标题短语 (中文随机版本)
-    val subGreeting = remember {
+    val morningPhrases = stringArrayResource(R.array.home_greeting_subtitles_morning)
+    val afternoonPhrases = stringArrayResource(R.array.home_greeting_subtitles_afternoon)
+    val eveningPhrases = stringArrayResource(R.array.home_greeting_subtitles_evening)
+    val nightPhrases = stringArrayResource(R.array.home_greeting_subtitles_night)
+
+    // 动态生成副标题短语
+    val subGreeting = remember(morningPhrases, afternoonPhrases, eveningPhrases, nightPhrases) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val phrases = when (hour) {
-            in 5..10 -> listOf(
-                "新的一天，从第一项学习开始。",
-                "晨间微凉，静心学习最相宜。",
-                "早安，今天也要元气满满。",
-                "清晨的学习，是为了遇见更好的自己。",
-                "日积月累，梦想终会开花。"
-            )
-            in 11..17 -> listOf(
-                "享受午后的学习时光吧。",
-                "阳光正好，适合温故而知新。",
-                "午后的宁静，是进步最好的陪伴。",
-                "偶尔小憩，是为了更有力地前进。",
-                "慢慢来，每一步积累都算数。"
-            )
-            in 18..23 -> listOf(
-                "今天辛苦了，收个好尾吧。",
-                "晚风习习，伴你复习今日所得。",
-                "总结今日，满怀期待迎接明天。",
-                "夜晚的学习，是对心灵最好的慰藉。",
-                "今日事今日毕，晚安前的最后冲刺。"
-            )
-            else -> listOf(
-                "夜深了，忙完这项就早点休息哦。",
-                "星光不问赶路人，但也要记得睡觉。",
-                "深夜的灵感，请留给明天的晨曦。",
-                "熬夜是不行的哦，身体才是本钱。",
-                "静谧的夜，愿你带着收获入梦。"
-            )
+            in 5..10 -> morningPhrases
+            in 11..17 -> afternoonPhrases
+            in 18..23 -> eveningPhrases
+            else -> nightPhrases
         }
         phrases.random()
     }
@@ -334,7 +316,7 @@ fun HomeScreen(
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "今日新学进度",
+                                    text = stringResource(R.string.home_bento_learn_progress_title),
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                     color = textSub
                                 )
@@ -371,7 +353,7 @@ fun HomeScreen(
                                 }
                                 Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = "新学目标 ${uiState.dailyGoal}",
+                                    text = stringResource(R.string.home_bento_learn_goal_format, uiState.dailyGoal),
                                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                                     color = textMuted
                                 )
@@ -463,14 +445,14 @@ fun HomeScreen(
                                     } else {
                                         Column {
                                             Text(
-                                                text = "暂无复习项目",
+                                                text = stringResource(R.string.home_bento_review_empty),
                                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                                                 color = textMain
                                             )
                                         }
                                     }
                                     Text(
-                                        text = "复习进度",
+                                        text = stringResource(R.string.home_bento_review_progress_title),
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 13.sp,
                                             fontWeight = FontWeight.SemiBold
@@ -892,13 +874,13 @@ fun HomeScreen(
                                     }
                                     Column {
                                         Text(
-                                            text = "动词活用",
+                                            text = stringResource(R.string.home_menu_verb_conjugation_title),
                                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                             color = textMain
                                         )
                                         Spacer(Modifier.height(2.dp))
                                         Text(
-                                            text = "13种变形速查",
+                                            text = stringResource(R.string.home_menu_verb_conjugation_subtitle),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = textSub
                                         )
@@ -1036,13 +1018,13 @@ fun HomeScreen(
                                     }
                                     Column {
                                         Text(
-                                            text = "AI 阅读",
+                                            text = stringResource(R.string.home_menu_ai_reading_title),
                                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                             color = textMain
                                         )
                                         Spacer(Modifier.height(2.dp))
                                         Text(
-                                            text = "分级智能短文",
+                                            text = stringResource(R.string.home_menu_ai_reading_subtitle),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = textSub
                                         )

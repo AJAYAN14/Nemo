@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: This skill should be used when the user asks to "review code", "review a pull request", "check PR", or needs code quality assessment. Supports both GitHub PR review (using MCP tools) and local changes review (staged or working tree). Covers correctness, maintainability, security, performance, and adherence to project standards.
+description: "通用代码质量审查与 PR 评估。评估代码正确性、可维护性、性能开销、安全漏洞及项目规范符合度。"
 version: 2.0.0
 ---
 

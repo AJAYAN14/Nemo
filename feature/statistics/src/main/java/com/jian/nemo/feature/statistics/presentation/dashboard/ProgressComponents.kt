@@ -29,7 +29,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
@@ -142,36 +144,39 @@ fun LearningSummaryCard(
     }
 
     val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
+    val unitItems = stringResource(R.string.stats_dashboard_unit_items)
+    val unitDays = stringResource(R.string.stats_dashboard_unit_days)
+    val unitPercent = stringResource(R.string.stats_dashboard_unit_percent)
 
     val pageModels = listOf(
         BentoPageModel(
-            title = "日间概览",
+            title = stringResource(R.string.stats_dashboard_bento_title_daily_overview),
             icon = Icons.Rounded.Today,
             plumpIcon = PlumpIcon.Calendar,
             accentColor = if (isPlumpDuo) IsoluminantPalette.SkyIndigo else NemoPrimary,
-            main = BentoMetric("今日已学", todayLearned.toString(), "项"),
-            topRight = BentoMetric("待复习", dueCount.toString(), "项"),
-            bottomRight = BentoMetric("目标完成度", todayProgress.toString(), "%"),
+            main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_today_learned), todayLearned.toString(), unitItems),
+            topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_due_review), dueCount.toString(), unitItems),
+            bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_goal_rate), todayProgress.toString(), unitPercent),
             visualType = BentoVisualType.Progress
         ),
         BentoPageModel(
-            title = "学习轨迹",
+            title = stringResource(R.string.stats_dashboard_bento_title_learning_track),
             icon = Icons.Rounded.Timeline,
             plumpIcon = PlumpIcon.Activity,
             accentColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else NemoSecondary,
-            main = BentoMetric("连续学习", studyStreak.toString(), "天"),
-            topRight = BentoMetric("累计掌握", masteredCount.toString(), "项"),
-            bottomRight = BentoMetric("待学习", unmasteredCount.toString(), "项"),
+            main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_streak), studyStreak.toString(), unitDays),
+            topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_mastered), masteredCount.toString(), unitItems),
+            bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_unmastered), unmasteredCount.toString(), unitItems),
             visualType = BentoVisualType.Dots
         ),
         BentoPageModel(
-            title = "成长总览",
+            title = stringResource(R.string.stats_dashboard_bento_title_growth_overview),
             icon = Icons.AutoMirrored.Rounded.TrendingUp,
             plumpIcon = PlumpIcon.TrendingUp,
             accentColor = if (isPlumpDuo) IsoluminantPalette.LilacViolet else StatisticsPalette.GrowthAccentGold,
-            main = BentoMetric("总进度", (progress * 100).toInt().toString(), "%"),
-            topRight = BentoMetric("累计学习", totalStudyDays.toString(), "天"),
-            bottomRight = BentoMetric("本周学习", weekStudyDays.toString(), "天"),
+            main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_total_progress), (progress * 100).toInt().toString(), unitPercent),
+            topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_total_days), totalStudyDays.toString(), unitDays),
+            bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_week_days), weekStudyDays.toString(), unitDays),
             visualType = BentoVisualType.Bars
         )
     )
@@ -514,14 +519,14 @@ fun DataAndResourcesSection(
 ) {
      Column(modifier = Modifier.fillMaxWidth()) {
         // 1. 统计与分析
-        SectionTitle("统计与分析")
+        SectionTitle(stringResource(R.string.stats_dashboard_section_stats_analysis))
         PremiumCard {
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.QueryStats,
                     color = NemoDanger,
-                    title = "今日统计",
-                    subtitle = "查看今日详细的学习统计",
+                    title = stringResource(R.string.stats_dashboard_item_today_stats_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_today_stats_desc),
                     onClick = onStatisticsClick,
                     plumpIcon = PlumpIcon.ChartPie,
                     paletteColor = IsoluminantPalette.RoseRuby,
@@ -530,8 +535,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.Insights,
                     color = IosColors.Purple,
-                    title = "历史统计",
-                    subtitle = "查看所有详细的学习统计",
+                    title = stringResource(R.string.stats_dashboard_item_history_stats_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_history_stats_desc),
                     onClick = onHistoricalStatisticsClick,
                     plumpIcon = PlumpIcon.History,
                     paletteColor = IsoluminantPalette.LilacViolet,
@@ -540,8 +545,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.ShowChart,
                     color = ChartColors.FreshGreen,
-                    title = "遗忘曲线",
-                    subtitle = "记忆衰减可视化分析",
+                    title = stringResource(R.string.stats_dashboard_item_curve_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_curve_desc),
                     onClick = onForgettingCurveClick,
                     plumpIcon = PlumpIcon.TrendingDown,
                     paletteColor = IsoluminantPalette.EmeraldGreen,
@@ -550,8 +555,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.BubbleChart,
                     color = NemoPrimary,
-                    title = "学习日历",
-                    subtitle = "查看学习计划与记录",
+                    title = stringResource(R.string.stats_dashboard_item_calendar_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_calendar_desc),
                     onClick = onLearningCalendarClick,
                     plumpIcon = PlumpIcon.Calendar,
                     paletteColor = IsoluminantPalette.SkyIndigo,
@@ -563,14 +568,14 @@ fun DataAndResourcesSection(
         Spacer(modifier = Modifier.height(20.dp))
 
         // 2. 资料与词库
-        SectionTitle("资料与词库")
+        SectionTitle(stringResource(R.string.stats_dashboard_section_materials_lexicon))
         PremiumCard {
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.SortByAlpha,
                     color = NemoSecondary,
-                    title = "单词列表",
-                    subtitle = "词汇库管理",
+                    title = stringResource(R.string.stats_dashboard_item_word_list_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_word_list_desc),
                     onClick = onWordListClick,
                     plumpIcon = PlumpIcon.SpellCheck,
                     paletteColor = IsoluminantPalette.WarmAmber,
@@ -579,8 +584,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.Book,
                     color = NemoPrimary,
-                    title = "语法列表",
-                    subtitle = "语法知识库",
+                    title = stringResource(R.string.stats_dashboard_item_grammar_list_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_grammar_list_desc),
                     onClick = onGrammarListClick,
                     plumpIcon = PlumpIcon.GrammarLayers,
                     paletteColor = IsoluminantPalette.SkyIndigo,
@@ -589,8 +594,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.Dataset,
                     color = NemoPrimary,
-                    title = "专项词汇",
-                    subtitle = "按分类查看词汇",
+                    title = stringResource(R.string.stats_dashboard_item_category_vocab_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_category_vocab_desc),
                     onClick = onCategoryClassificationClick,
                     plumpIcon = PlumpIcon.LayoutGrid,
                     paletteColor = IsoluminantPalette.LakesideCyan,
@@ -599,8 +604,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.AutoAwesome,
                     color = NemoSecondary,
-                    title = "地道表达",
-                    subtitle = "日语惯用句与常用搭配库",
+                    title = stringResource(R.string.stats_dashboard_item_authentic_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_authentic_desc),
                     onClick = onLibraryClick,
                     plumpIcon = PlumpIcon.Sparkles,
                     paletteColor = IsoluminantPalette.GlazeMint,
@@ -612,14 +617,14 @@ fun DataAndResourcesSection(
         Spacer(modifier = Modifier.height(20.dp))
 
         // 3. 强化与突破
-        SectionTitle("强化与突破")
+        SectionTitle(stringResource(R.string.stats_dashboard_section_reinforce_breakthrough))
         PremiumCard {
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.SportsEsports,
                     color = NemoSecondary,
-                    title = "专项训练",
-                    subtitle = "针对性强化练习",
+                    title = stringResource(R.string.stats_dashboard_item_practice_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_practice_desc),
                     onClick = onCategoryPracticeClick,
                     plumpIcon = PlumpIcon.Gamepad,
                     paletteColor = IsoluminantPalette.SeaMarine,
@@ -628,8 +633,8 @@ fun DataAndResourcesSection(
                 SquircleListItem(
                     icon = Icons.Rounded.AutoFixHigh,
                     color = NemoDanger,
-                    title = "复学清单",
-                    subtitle = "难点项召回与复习",
+                    title = stringResource(R.string.stats_dashboard_item_leech_title),
+                    subtitle = stringResource(R.string.stats_dashboard_item_leech_desc),
                     onClick = onLeechManagementClick,
                     plumpIcon = PlumpIcon.Flame,
                     paletteColor = IsoluminantPalette.CoralFlame,

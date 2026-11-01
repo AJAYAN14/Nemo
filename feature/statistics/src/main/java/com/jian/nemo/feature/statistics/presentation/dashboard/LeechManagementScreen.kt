@@ -29,7 +29,9 @@ import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -86,7 +88,7 @@ fun LeechManagementScreen(
             snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 CommonHeader(
-                    title = "复学清单",
+                    title = stringResource(R.string.stats_leech_title_screen),
                     onBack = onBack,
                     backgroundColor = backgroundColor
                 )
@@ -107,7 +109,7 @@ fun LeechManagementScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 LeechPillTab(
-                    title = "单词",
+                    title = stringResource(R.string.stats_leech_tab_words),
                     count = uiState.skippedWords.size,
                     isSelected = uiState.selectedTab == LeechTab.Word,
                     selectedColor = wordAccentColor,
@@ -115,7 +117,7 @@ fun LeechManagementScreen(
                 )
 
                 LeechPillTab(
-                    title = "语法",
+                    title = stringResource(R.string.stats_leech_tab_grammars),
                     count = uiState.skippedGrammars.size,
                     isSelected = uiState.selectedTab == LeechTab.Grammar,
                     selectedColor = grammarAccentColor,
@@ -143,8 +145,8 @@ fun LeechManagementScreen(
                         LeechTab.Word -> {
                             LeechList(
                                 items = uiState.skippedWords,
-                                emptyTitle = "暂无待复学单词",
-                                emptySubtitle = "当前没有被冻结的难点单词，继续保持哦",
+                                emptyTitle = stringResource(R.string.stats_leech_empty_words_title),
+                                emptySubtitle = stringResource(R.string.stats_leech_empty_words_desc),
                                 onItemKey = { it.id },
                                 isPlumpDuo = isPlumpDuo,
                                 accentColor = wordAccentColor,
@@ -162,8 +164,8 @@ fun LeechManagementScreen(
                         LeechTab.Grammar -> {
                             LeechList(
                                 items = uiState.skippedGrammars,
-                                emptyTitle = "暂无待复学语法",
-                                emptySubtitle = "当前没有被冻结的难点语法，继续保持哦",
+                                emptyTitle = stringResource(R.string.stats_leech_empty_grammars_title),
+                                emptySubtitle = stringResource(R.string.stats_leech_empty_grammars_desc),
                                 onItemKey = { it.id },
                                 isPlumpDuo = isPlumpDuo,
                                 accentColor = grammarAccentColor,
@@ -222,7 +224,7 @@ private fun RowScope.LeechPillTab(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "$title ($count)",
+                text = stringResource(R.string.stats_leech_tab_count_format, title, count),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 ),
@@ -410,7 +412,7 @@ private fun LeechItemCardBase(
                     } else {
                         Icon(
                             imageVector = Icons.Rounded.Restore,
-                            contentDescription = "Recover",
+                            contentDescription = stringResource(R.string.stats_leech_btn_recover),
                             tint = tagColor,
                             modifier = Modifier.size(22.dp)
                         )

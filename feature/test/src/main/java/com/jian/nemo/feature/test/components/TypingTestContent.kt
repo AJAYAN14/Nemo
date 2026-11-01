@@ -43,13 +43,13 @@ fun TypingTestContent(
 ) {
     // 根据 questionType 确定显示内容和提示
     val (displayText, hintText) = when (question.questionType) {
-        1 -> question.word.chinese to "输入对应的日语假名"
-        2 -> question.word.chinese to "输入对应的日语汉字"
-        3 -> question.word.hiragana to "输入对应的日语汉字"
-        4 -> question.word.japanese to "输入对应的日语假名"
-        5 -> question.word.hiragana to "输入对应的中文释义"
-        6 -> question.word.japanese to "输入对应的中文释义"
-        else -> question.word.chinese to "输入对应的日语假名"
+        1 -> question.word.chinese to stringResource(R.string.test_typing_hint_input_kana)
+        2 -> question.word.chinese to stringResource(R.string.test_typing_hint_input_kanji)
+        3 -> question.word.hiragana to stringResource(R.string.test_typing_hint_input_kanji)
+        4 -> question.word.japanese to stringResource(R.string.test_typing_hint_input_kana)
+        5 -> question.word.hiragana to stringResource(R.string.test_typing_hint_input_meaning)
+        6 -> question.word.japanese to stringResource(R.string.test_typing_hint_input_meaning)
+        else -> question.word.chinese to stringResource(R.string.test_typing_hint_input_kana)
     }
 
     Column(
@@ -197,7 +197,7 @@ private fun TypingFeedback(question: TestQuestion.Typing) {
                         modifier = Modifier.size(32.dp).padding(bottom = 8.dp)
                     )
                     Text(
-                        text = "回答正确！",
+                        text = stringResource(R.string.test_typing_feedback_correct),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.titleMedium
@@ -210,7 +210,7 @@ private fun TypingFeedback(question: TestQuestion.Typing) {
                         modifier = Modifier.size(32.dp).padding(bottom = 8.dp)
                     )
                     Text(
-                        text = "回答错误",
+                        text = stringResource(R.string.test_typing_feedback_wrong),
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.titleMedium
@@ -220,7 +220,7 @@ private fun TypingFeedback(question: TestQuestion.Typing) {
 
                     // Show correct answer prominently
                     Text(
-                        text = "正确答案",
+                        text = stringResource(R.string.test_typing_label_correct_answer),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

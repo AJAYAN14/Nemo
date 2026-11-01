@@ -48,7 +48,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -171,7 +173,7 @@ fun DurationPickerDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
-                        contentDescription = "关闭",
+                        contentDescription = stringResource(R.string.core_common_btn_close),
                         tint = if (isDark) Color.White else UiPalette.DialogSlateTextLight,
                         modifier = Modifier.size(18.dp)
                     )
@@ -228,7 +230,7 @@ fun DurationPickerDialog(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "秒",
+                            text = stringResource(R.string.core_ui_unit_second),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
@@ -315,7 +317,7 @@ fun DurationPickerDialog(
                                 .height(48.dp)
                         ) {
                             Text(
-                                text = "取消",
+                                text = stringResource(R.string.core_common_btn_cancel),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -335,7 +337,7 @@ fun DurationPickerDialog(
                                 .height(48.dp)
                         ) {
                             Text(
-                                text = "确定",
+                                text = stringResource(R.string.core_common_btn_confirm),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color.White
                             )

@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +50,7 @@ fun AbilityWorkshopScreen(
             ),
         topBar = {
             CommonHeader(
-                title = "能力工坊",
+                title = stringResource(R.string.test_dashboard_workshop_title),
                 onBack = onBack
             )
         },
@@ -63,8 +65,8 @@ fun AbilityWorkshopScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             AbilityItemCard(
-                title = "听力挑战",
-                description = "聆听本地纯正单词发音，检验听辨与词义联想能力。",
+                title = stringResource(R.string.test_ability_workshop_listening_title),
+                description = stringResource(R.string.test_ability_workshop_listening_desc),
                 icon = Icons.Rounded.Headphones,
                 iconColor = IosColors.Indigo,
                 plumpIcon = PlumpIcon.AudioVolume,
@@ -73,8 +75,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("listening_comprehension") }
             )
             AbilityItemCard(
-                title = "单词填空",
-                description = "根据释义和句子提示，拼写填入被挖空的假名。",
+                title = stringResource(R.string.test_ability_workshop_cloze_title),
+                description = stringResource(R.string.test_ability_workshop_cloze_desc),
                 icon = Icons.Rounded.EditCalendar,
                 iconColor = IosColors.Orange,
                 plumpIcon = PlumpIcon.SpellCheck,
@@ -83,8 +85,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("word_cloze") }
             )
             AbilityItemCard(
-                title = "动词活用",
-                description = "为真实句子选择自然的动词形式。",
+                title = stringResource(R.string.test_ability_workshop_verb_title),
+                description = stringResource(R.string.test_ability_workshop_verb_desc),
                 icon = Icons.Rounded.AutoFixHigh,
                 iconColor = IosColors.Blue,
                 plumpIcon = PlumpIcon.Sparkles,
@@ -93,8 +95,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("verb_conjugation") }
             )
             AbilityItemCard(
-                title = "近义词连接",
-                description = "连接意思相近的单词。",
+                title = stringResource(R.string.test_ability_workshop_synonym_title),
+                description = stringResource(R.string.test_ability_workshop_synonym_desc),
                 icon = Icons.Rounded.Schema,
                 iconColor = IosColors.Orange,
                 plumpIcon = PlumpIcon.Link2,
@@ -103,8 +105,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("synonym_connection") }
             )
             AbilityItemCard(
-                title = "反义词消消乐",
-                description = "匹配反义词，消除单词对。",
+                title = stringResource(R.string.test_ability_workshop_antonym_title),
+                description = stringResource(R.string.test_ability_workshop_antonym_desc),
                 icon = Icons.Rounded.SwapHoriz,
                 iconColor = IosColors.Teal,
                 plumpIcon = PlumpIcon.Zap,
@@ -113,8 +115,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("antonym_matching") }
             )
             AbilityItemCard(
-                title = "自然搭配",
-                description = "组合听起来自然的词语搭配。",
+                title = stringResource(R.string.test_ability_workshop_collocation_title),
+                description = stringResource(R.string.test_ability_workshop_collocation_desc),
                 icon = Icons.Rounded.Hub,
                 iconColor = IosColors.Green,
                 plumpIcon = PlumpIcon.Puzzle,
@@ -123,8 +125,8 @@ fun AbilityWorkshopScreen(
                 onClick = { onNavigateToGame("collocation") }
             )
             AbilityItemCard(
-                title = "语法纠错",
-                description = "找出语法错误，并选择正确改法。",
+                title = stringResource(R.string.test_ability_workshop_grammar_title),
+                description = stringResource(R.string.test_ability_workshop_grammar_desc),
                 icon = Icons.Rounded.Spellcheck,
                 iconColor = IosColors.Purple,
                 plumpIcon = PlumpIcon.BadgeCheck,

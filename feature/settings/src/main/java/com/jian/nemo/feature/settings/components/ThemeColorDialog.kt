@@ -187,10 +187,14 @@ fun ThemeColorDialog(
                                 .clip(CircleShape)
                                 .background(themeColor.color)
                                 .clickable(
-                                    enabled = !isSelected,
                                     onClick = {
                                         performHapticTick()
-                                        currentlySelectedColor = themeColor.color
+                                        if (isSelected) {
+                                            val nextIndex = (index + 1) % themeColors.size
+                                            currentlySelectedColor = themeColors[nextIndex].color
+                                        } else {
+                                            currentlySelectedColor = themeColor.color
+                                        }
                                     },
                                     interactionSource = remember { MutableInteractionSource() },
                                     indication = null

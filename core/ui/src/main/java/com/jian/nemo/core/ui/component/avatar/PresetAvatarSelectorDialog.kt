@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.util.PresetAvatars
 
@@ -35,9 +37,9 @@ fun PresetAvatarSelectorDialog(
 
     NemoDialog(
         onDismissRequest = onDismiss,
-        title = "选择预设头像",
-        confirmText = "确定",
-        dismissText = "取消",
+        title = stringResource(R.string.core_ui_preset_selector_dialog_title),
+        confirmText = stringResource(R.string.core_ui_dialog_btn_confirm),
+        dismissText = stringResource(R.string.core_ui_dialog_btn_cancel),
         confirmEnabled = selectedPreset != null,
         onConfirm = {
             selectedPreset?.let { onPresetSelected(it) }
@@ -46,7 +48,7 @@ fun PresetAvatarSelectorDialog(
         content = {
             Column {
                 Text(
-                    text = "从精美的渐变色头像中选择一个",
+                    text = stringResource(R.string.core_ui_preset_selector_dialog_subtitle),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -90,7 +92,7 @@ private fun PresetAvatarItem(
                 if (isSelected) {
                     Modifier.border(3.dp, MaterialTheme.colorScheme.primary, CircleShape)
                 } else {
-                    Modifier.border(1.dp, Color.Gray.copy(alpha = 0.3f), CircleShape)
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f), CircleShape)
                 }
             )
             .clickable(onClick = onClick),

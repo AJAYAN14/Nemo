@@ -24,7 +24,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.jian.nemo.core.ui.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -39,15 +41,15 @@ fun GoogleTtsInstallDialog(
 ) {
     com.jian.nemo.core.ui.component.NemoDialog(
         onDismissRequest = onDismissClick,
-        title = "需要 Google 语音服务",
-        confirmText = if (isDownloading) null else "安装",
-        dismissText = if (isDownloading) null else "暂不",
+        title = stringResource(R.string.core_ui_dialog_google_tts_title),
+        confirmText = if (isDownloading) null else stringResource(R.string.core_ui_btn_install),
+        dismissText = if (isDownloading) null else stringResource(R.string.core_ui_btn_later),
         confirmButtonColor = MaterialTheme.colorScheme.primary,
         onConfirm = onInstallClick,
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "为了给您提供最地道的日语发音体验，Nemo 推荐使用 Google TTS 引擎。",
+                    text = stringResource(R.string.core_ui_dialog_google_tts_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -60,7 +62,7 @@ fun GoogleTtsInstallDialog(
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
-                            text = "正在下载安装包...",
+                            text = stringResource(R.string.core_ui_dialog_google_tts_downloading),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
