@@ -1,7 +1,6 @@
 package com.jian.nemo.feature.learning.presentation.kana
 
 import android.view.HapticFeedbackConstants
-import com.jian.nemo.core.designsystem.theme.NemoCategoryColors
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.screenBackground
@@ -115,24 +114,6 @@ private enum class KanaType {
     Katakana
 }
 
-private data class KanaCardColorPair(
-    val bg: Color,
-    val text: Color
-)
-
-private val PremiumCategoryPalette = listOf(
-    KanaCardColorPair(NemoCategoryColors.CardVerbBgLight, NemoCategoryColors.CardVerbTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardAdjIBgLight, NemoCategoryColors.CardAdjITextLight),
-    KanaCardColorPair(NemoCategoryColors.CardAdjNaBgLight, NemoCategoryColors.CardAdjNaTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardNounBgLight, NemoCategoryColors.CardNounTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardAdvBgLight, NemoCategoryColors.CardAdvTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardConjBgLight, NemoCategoryColors.CardConjTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardFixBgLight, NemoCategoryColors.CardFixTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardKataBgLight, NemoCategoryColors.CardKataTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardKeigoBgLight, NemoCategoryColors.CardKeigoTextLight),
-    KanaCardColorPair(NemoCategoryColors.CardSoundBgLight, NemoCategoryColors.CardSoundTextLight)
-)
-
 private val CategoryRowColors = listOf(
     IosColors.Indigo,  // あ行
     IosColors.Green,   // か行
@@ -168,17 +149,6 @@ private fun getCategoryRowColor(rowIndex: Int, isDark: Boolean): Color {
 
 private val EP = KanaCell("", "", "", isEmpty = true)
 
-private object KanaSectionIndex {
-    const val Seion = 0
-    const val Dakuon = 2
-    const val Yoon = 5
-}
-
-private val LightPrimaryChip = LearningPalette.KanaChipBgLight
-private val LightAccent = LearningPalette.KanaAccentLight
-private val LightQuickNavBase = LearningPalette.KanaQuickNavBaseLight
-private val LightQuickNavSelected = LearningPalette.KanaQuickNavSelectedLight
-
 @Composable
 fun KanaChartScreen(
     onNavigateBack: () -> Unit,
@@ -192,7 +162,7 @@ fun KanaChartScreen(
     val view = LocalView.current
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
+    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val textMain = if (isDark) colorScheme.onSurface else LearningPalette.KanaSlateDark
     val textSub = if (isDark) colorScheme.onSurfaceVariant else LearningPalette.KanaSlateSub
     var currentType by remember { mutableIntStateOf(0) }
@@ -204,10 +174,6 @@ fun KanaChartScreen(
         "yoon" -> if (isDark) IosColors.PurpleDark else IosColors.Purple
         else -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
     }
-    val tabContainerColor = if (isDark) colorScheme.surfaceContainer else LearningPalette.KanaTabBgLight
-    val tabSelectedColor = if (isDark) colorScheme.surfaceContainerHigh else Color.White
-    val quickNavBaseColor = if (isDark) surfaceColor else LightQuickNavBase
-    val quickNavSelectedColor = if (isDark) colorScheme.primary.copy(alpha = 0.28f) else LightQuickNavSelected
 
     val scope = rememberCoroutineScope()
     val playingAudioId by viewModel.playingAudioId.collectAsState()
@@ -269,7 +235,6 @@ fun KanaChartScreen(
                                 textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
-                                playingBorderColor = colorScheme.primary,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
                                 onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
                             )
@@ -290,7 +255,6 @@ fun KanaChartScreen(
                                 textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
-                                playingBorderColor = colorScheme.primary,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
                                 onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
                             )
@@ -311,7 +275,6 @@ fun KanaChartScreen(
                                 textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
-                                playingBorderColor = colorScheme.primary,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
                                 onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
                             )
@@ -409,7 +372,7 @@ fun KanaChartScreen(
                 val textFg = if (isSelected) {
                     if (isDark) Color.White else activeThemeColor
                 } else {
-                    if (isDark) Color.White.copy(alpha = 0.7f) else LearningPalette.KanaSlateDark
+                    if (isDark) Color.White.copy(alpha = 0.7f) else colorScheme.onSurfaceVariant
                 }
 
                 FrostedLiquidGlassButton(
@@ -498,13 +461,9 @@ private fun KanaGrid(
     textSub: Color,
     isDark: Boolean,
     playingAudioId: String?,
-    playingBorderColor: Color,
     onSpeak: (String, String) -> Unit,
     onHaptic: () -> Unit
 ) {
-    val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
-
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         cells.chunked(columns).forEachIndexed { rowIndex, row ->
             val rowColor = getCategoryRowColor(rowIndex, isDark)
@@ -513,29 +472,18 @@ private fun KanaGrid(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 row.forEach { cell ->
-                    val (cardColor, cardTextMain, cardBorderColor) = if (cell?.isPlaceholder == false && cell.isEmpty == false) {
-                        val bg = if (isSoftTranslucent) {
-                            rowColor.copy(alpha = if (isDark) 0.15f else 0.10f)
-                        } else {
-                            rowColor.copy(alpha = if (isDark) 0.22f else 0.16f)
-                        }
-                        Triple(bg, rowColor, rowColor)
-                    } else {
-                        Triple(surfaceColor, textMain, playingBorderColor)
-                    }
-
                     KanaCard(
                         modifier = Modifier
                             .weight(1f)
                             .widthIn(min = 0.dp),
                         cell = cell,
                         isKatakana = isKatakana,
-                        surfaceColor = cardColor,
-                        textMain = cardTextMain,
+                        surfaceColor = surfaceColor,
+                        textMain = textMain,
                         textSub = textSub,
                         isDark = isDark,
                         playingAudioId = playingAudioId,
-                        playingBorderColor = cardBorderColor,
+                        playingBorderColor = rowColor,
                         onSpeak = onSpeak,
                         onHaptic = onHaptic
                     )
@@ -596,16 +544,15 @@ private fun KanaCard(
     
     val defaultBorderColor = if (cell.isPlaceholder) NemoNeutrals.Gray300 else Color.Transparent
     val borderColor by animateColorAsState(
-        targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.88f else 0.78f) else defaultBorderColor,
+        targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.95f else 0.85f) else defaultBorderColor,
         animationSpec = tween(180),
         label = "cardPlayingBorder"
     )
 
-
     val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
-    val textOpacity = if (cell.isPlaceholder) 0.3f else 1f
+    val textOpacity = if (cell.isPlaceholder) 0.35f else 1f
     val cardShape = RoundedRectangle(20.dp)
-    val cardBorder = BorderStroke(if (cell.isPlaceholder) 2.dp else 1.dp, borderColor)
+    val cardBorder = BorderStroke(if (isPlaying || cell.isPlaceholder) 1.5.dp else 1.dp, borderColor)
 
     if (cell.isPlaceholder) {
         Surface(
@@ -686,24 +633,6 @@ private fun KanaCard(
                 )
             }
         }
-    }
-}
-
-private fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier {
-    return noRippleClickable(interactionSource = null, onClick = onClick)
-}
-
-private fun Modifier.noRippleClickable(
-    interactionSource: MutableInteractionSource?,
-    onClick: () -> Unit
-): Modifier {
-    return composed {
-        val source = interactionSource ?: remember { MutableInteractionSource() }
-        this.clickable(
-            interactionSource = source,
-            indication = null,
-            onClick = onClick
-        )
     }
 }
 

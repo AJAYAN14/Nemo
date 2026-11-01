@@ -68,9 +68,11 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
+import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
 import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
+import com.jian.nemo.feature.library.presentation.components.WordListItemPremium
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -136,35 +138,6 @@ fun WordListScreen(
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-        val tabAllText = stringResource(R.string.lib_word_list_tab_all)
-        val tabLearnedText = stringResource(R.string.lib_word_list_tab_learned)
-        val tabUnlearnedText = stringResource(R.string.lib_word_list_tab_unlearned)
-
-        val options = remember(tabAllText, tabLearnedText, tabUnlearnedText) {
-            listOf(
-                DiscoveryOption(
-                    label = tabAllText,
-                    icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    activeColor = IosColors.Indigo,
-                ),
-                DiscoveryOption(
-                    label = tabLearnedText,
-                    icon = Icons.Rounded.CheckCircle,
-                    activeColor = IosColors.Green,
-                ),
-                DiscoveryOption(
-                    label = tabUnlearnedText,
-                    icon = Icons.Rounded.HourglassEmpty,
-                    activeColor = IosColors.Orange,
-                ),
-            )
-        }
-        val selectedIndex = when (uiState.filterState) {
-            StudyFilter.ALL -> 0
-            StudyFilter.LEARNED -> 1
-            StudyFilter.UNLEARNED -> 2
-        }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -203,40 +176,19 @@ fun WordListScreen(
                         .fillMaxSize()
                         .layerBackdrop(backdrop),
                     contentPadding = PaddingValues(
-                        top = statusBarTop + 60.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
                     item(key = "discovery_bar") {
-                        DiscoveryBar(
-                            options = options,
-                            selectedOptionIndex = selectedIndex,
-                            onOptionSelected = { index ->
-                                val newFilter = when (index) {
-                                    0 -> StudyFilter.ALL
-                                    1 -> StudyFilter.LEARNED
-                                    2 -> StudyFilter.UNLEARNED
-                                    else -> StudyFilter.ALL
-                                }
-                                viewModel.onFilterStateChanged(newFilter)
-                            },
+                        LibraryDiscoveryBar(
+                            selectedFilter = uiState.filterState,
+                            onFilterSelected = { viewModel.onFilterStateChanged(it) },
                             searchQuery = searchQuery,
                             onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder),
-                            style = DiscoveryBarStyle(
-                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-                                inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            ),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder)
                         )
                     }
 
@@ -353,125 +305,6 @@ fun WordListScreen(
     }
 }
 
-private val AvatarPalette = listOf(
-    IosColors.Blue,
-    IosColors.Orange,
-    IosColors.Green,
-    IosColors.Indigo,
-    IosColors.Teal,
-    IosColors.Purple,
-    IosColors.Pink,
-    IosColors.Cyan
-)
-
-@Composable
-private fun getLevelColor(level: String): Color {
-    return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Blue
-    }
-}
-
-@Composable
-private fun WordListItemPremium(word: Word, onClick: () -> Unit) {
-    val iconStyle = LocalSettingIconStyle.current
-    val avatarColor = AvatarPalette[kotlin.math.abs(word.id.hashCode()) % AvatarPalette.size]
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
-    val containerBg = if (isSoftTranslucent) avatarColor.copy(alpha = 0.15f) else avatarColor
-    val contentColor = if (isSoftTranslucent) avatarColor else Color.White
-
-    PremiumCard(onClick = onClick) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(containerBg, RoundedRectangle(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = word.japanese.firstOrNull()?.toString() ?: "?",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontWeight = FontWeight.W900,
-                    color = contentColor
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = word.japanese,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontWeight = FontWeight.W800
-                )
-                val secondaryAnnotatedText = buildAnnotatedString {
-                    if (word.hiragana.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifJP,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                            )
-                        ) {
-                            append(word.hiragana)
-                        }
-                    }
-                    if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) {
-                        append(" · ")
-                    }
-                    if (word.chinese.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifSC,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("zh")
-                            )
-                        ) {
-                            append(word.chinese)
-                        }
-                    }
-                }
-                Text(
-                    text = secondaryAnnotatedText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
-            if (word.level.isNotBlank()) {
-                val levelColor = getLevelColor(word.level)
-                val levelBg = if (isSoftTranslucent) levelColor.copy(alpha = 0.15f) else levelColor
-                val levelText = if (isSoftTranslucent) levelColor else Color.White
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedRectangle(8.dp))
-                        .background(levelBg)
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = word.level.uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = levelText
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 private fun EmptyState(
     title: String,
@@ -522,26 +355,5 @@ private fun EmptyState(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
-    }
-}
-
-@Composable
-private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) 0.98f else 1f, label = "scale")
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    Surface(
-        onClick = onClick ?: {},
-        enabled = onClick != null,
-        shape = RoundedRectangle(22.dp),
-        color = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-        modifier = Modifier
-            .fillMaxWidth()
-            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-            .graphicsLayer { scaleX = scale; scaleY = scale },
-        interactionSource = interactionSource
-    ) {
-        Column(modifier = Modifier.padding(16.dp), content = content)
     }
 }

@@ -54,16 +54,13 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
+import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
 import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
+import com.jian.nemo.feature.library.presentation.components.WordListItemPremium
+import com.jian.nemo.feature.library.presentation.list.StudyFilter
 import kotlinx.coroutines.launch
-
-private enum class StudyFilter {
-    ALL,      // 全部
-    LEARNED,  // 已学
-    UNLEARNED // 未学
-}
 
 /**
  * 分类单词列表界面 (接入 LibraryListComponents 通用组件)
@@ -153,35 +150,6 @@ fun CategoryWordsScreen(
             }
         }
 
-        val tabAllText = stringResource(R.string.lib_category_words_tab_all)
-        val tabLearnedText = stringResource(R.string.lib_category_words_tab_learned)
-        val tabUnlearnedText = stringResource(R.string.lib_category_words_tab_unlearned)
-
-        val options = remember(tabAllText, tabLearnedText, tabUnlearnedText) {
-            listOf(
-                DiscoveryOption(
-                    label = tabAllText,
-                    icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    activeColor = IosColors.Indigo,
-                ),
-                DiscoveryOption(
-                    label = tabLearnedText,
-                    icon = Icons.Rounded.CheckCircle,
-                    activeColor = IosColors.Green,
-                ),
-                DiscoveryOption(
-                    label = tabUnlearnedText,
-                    icon = Icons.Rounded.HourglassEmpty,
-                    activeColor = IosColors.Orange,
-                ),
-            )
-        }
-        val selectedIndex = when (filterState) {
-            StudyFilter.ALL -> 0
-            StudyFilter.LEARNED -> 1
-            StudyFilter.UNLEARNED -> 2
-        }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -211,39 +179,19 @@ fun CategoryWordsScreen(
                     )
                     .layerBackdrop(backdrop),
                 contentPadding = PaddingValues(
-                    top = statusBarTop + 60.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
                     bottom = navBarBottom + 24.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
                 item(key = "discovery_bar") {
-                    DiscoveryBar(
-                        options = options,
-                        selectedOptionIndex = selectedIndex,
-                        onOptionSelected = { index ->
-                            filterState = when (index) {
-                                0 -> StudyFilter.ALL
-                                1 -> StudyFilter.LEARNED
-                                2 -> StudyFilter.UNLEARNED
-                                else -> StudyFilter.ALL
-                            }
-                        },
+                    LibraryDiscoveryBar(
+                        selectedFilter = filterState,
+                        onFilterSelected = { filterState = it },
                         searchQuery = searchQuery,
                         onSearchQueryChange = { searchQuery = it },
-                        searchPlaceholder = stringResource(R.string.lib_category_words_search_placeholder),
-                        style = DiscoveryBarStyle(
-                            backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-                            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        searchPlaceholder = stringResource(R.string.lib_category_words_search_placeholder)
                     )
                 }
 
@@ -330,152 +278,6 @@ fun CategoryWordsScreen(
 }
 
 @Composable
-private fun WordListItemPremium(
-    word: Word,
-    onClick: () -> Unit
-) {
-    val colorIndex = kotlin.math.abs(word.id.hashCode()) % AvatarColors.size
-    val avatarColor = AvatarColors[colorIndex]
-
-    PremiumCard(onClick = onClick) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Avatar
-            val char = word.japanese.firstOrNull()?.toString() ?: "?"
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .background(avatarColor.copy(alpha = 0.12f), RoundedRectangle(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = char,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.W900,
-                    color = avatarColor
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = word.japanese,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                    ),
-                    fontWeight = FontWeight.W800,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                val secondaryAnnotatedText = buildAnnotatedString {
-                    if (word.hiragana.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifJP,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                            )
-                        ) {
-                            append(word.hiragana)
-                        }
-                    }
-                    if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) {
-                        append(" · ")
-                    }
-                    if (word.chinese.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifSC,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("zh")
-                            )
-                        ) {
-                            append(word.chinese)
-                        }
-                    }
-                }
-
-                Text(
-                    text = secondaryAnnotatedText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                )
-            }
-
-            if (word.level.isNotBlank()) {
-                val levelColor = getLevelColor(word.level)
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedRectangle(8.dp))
-                        .background(levelColor.copy(alpha = 0.12f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = word.level.uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Black,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = levelColor
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PremiumCard(
-    onClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val scale by if (onClick != null) {
-        val isPressed by interactionSource.collectIsPressedAsState()
-        animateFloatAsState(
-            targetValue = if (isPressed) 0.98f else 1f,
-            label = "cardScale",
-            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
-        )
-    } else {
-        remember { mutableFloatStateOf(1f) }
-    }
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-
-
-    Surface(
-        onClick = onClick ?: {},
-        enabled = onClick != null,
-        shape = RoundedRectangle(22.dp),
-        color = containerColor,
-
-        modifier = modifier
-            .fillMaxWidth()
-            .softCardShadow(borderRadius = 22.dp, isDark = isDark)
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            },
-        interactionSource = interactionSource,
-        content = { Column(modifier = Modifier.padding(16.dp), content = content) }
-    )
-}
-
-@Composable
 private fun EmptyState(
     message: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox
@@ -507,25 +309,3 @@ private fun EmptyState(
         )
     }
 }
-
-private fun getLevelColor(level: String): Color {
-    return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Blue
-    }
-}
-
-private val AvatarColors = listOf(
-    IosColors.Blue,
-    IosColors.Orange,
-    IosColors.Green,
-    IosColors.Indigo,
-    IosColors.Teal,
-    IosColors.Purple,
-    IosColors.Pink,
-    IosColors.Cyan
-)

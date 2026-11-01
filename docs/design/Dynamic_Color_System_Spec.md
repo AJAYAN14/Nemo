@@ -6,6 +6,20 @@
 
 ---
 
+## 0. 调色盘资产包与完整规范源（Source of Truth）
+
+本设计规范的底层色值表、Android 资源定义与机器可读契约完整收敛于：
+- **规范资产根目录**：[`docs/design/color-palette/`](file:///e:/Android/Nemo/docs/design/color-palette)
+- **核心文件索引**：
+  - **系统调色盘规范总手册**：[`docs/design/color-palette/COLORS.md`](file:///e:/Android/Nemo/docs/design/color-palette/COLORS.md)（含 18 色系统动态主色、18 色语义层级与文本色、18 色无障碍高对比色及 79 款经典纯色调色板）
+  - **Compose 色彩实现对照**：[`docs/design/color-palette/AppColors.kt`](file:///e:/Android/Nemo/docs/design/color-palette/AppColors.kt)
+  - **Android 标准浅色 XML 资源**：[`docs/design/color-palette/colors.xml`](file:///e:/Android/Nemo/docs/design/color-palette/colors.xml)
+  - **Android 深色夜间 XML 资源**：[`docs/design/color-palette/colors-night.xml`](file:///e:/Android/Nemo/docs/design/color-palette/colors-night.xml)
+  - **全量 JSON 色彩契约**：[`docs/design/color-palette/colors.json`](file:///e:/Android/Nemo/docs/design/color-palette/colors.json)
+  - **实施调整台账**：[`docs/design/color-palette/implementation-notes.md`](file:///e:/Android/Nemo/docs/design/color-palette/implementation-notes.md)
+
+---
+
 ## 1. 核心设计哲学：从"静态色值"到"动态语义层级"
 
 高级界面色彩系统绝非简单的"做一套白底界面，再反色做一套黑底界面"，其底层遵循两大空间隐喻公理：

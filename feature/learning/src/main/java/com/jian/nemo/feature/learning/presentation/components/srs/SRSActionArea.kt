@@ -48,6 +48,11 @@ import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import kotlinx.coroutines.delay
 
+private sealed interface ActionAreaState {
+    data object ShowAnswer : ActionAreaState
+    data class Rating(val intervals: Map<Int, String>) : ActionAreaState
+}
+
 /**
  * SRS 操作区域组件 (100% 还原 HTML Bottom Action Bar)
  *
@@ -117,132 +122,141 @@ fun SRSActionArea(
         }
     }
 
+    val contentState = if (isAnswerShown) {
+        ActionAreaState.Rating(ratingIntervals)
+    } else {
+        ActionAreaState.ShowAnswer
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp) // 仅保留基础内容间距，安全区域由父容器 Scaffold 统一处理
     ) {
         AnimatedContent(
-            targetState = isAnswerShown,
+            targetState = contentState,
             transitionSpec = {
                 fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
             },
             label = "actionAreaTransition"
-        ) { showAnswer ->
-            if (!showAnswer) {
-                // 显示答案按钮
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    LiquidButton(
-                        onClick = {
-                            if (canShowAnswer) {
-                                onShowAnswer()
-                            } else {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                onShowAnswerBlocked?.invoke(remainingSec)
-                            }
-                        },
-                        backgroundColor = if (canShowAnswer) LearningPalette.ActionDarkBg else LearningPalette.ActionMutedText,
-                        shape = RoundedRectangle(16.dp),
-                        elevation = 0.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
+        ) { state ->
+            when (state) {
+                is ActionAreaState.ShowAnswer -> {
+                    // 显示答案按钮
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 24.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = if (canShowAnswer) Icons.Rounded.AutoAwesome else Icons.Rounded.AccessTime,
-                                contentDescription = null,
-                                tint = if (canShowAnswer) effectiveStarColor else Color.White.copy(alpha = 0.88f),
-                                modifier = Modifier
-                                    .padding(end = 8.dp)
-                                    .size(18.dp)
-                            )
-                            Text(
-                                text = if (canShowAnswer) {
-                                    stringResource(R.string.learning_srs_action_show_answer)
+                        LiquidButton(
+                            onClick = {
+                                if (canShowAnswer) {
+                                    onShowAnswer()
                                 } else {
-                                    stringResource(R.string.learning_srs_action_show_answer_countdown, countdownText)
-                                },
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White.copy(alpha = if (canShowAnswer) 1f else 0.9f)
-                            )
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    onShowAnswerBlocked?.invoke(remainingSec)
+                                }
+                            },
+                            backgroundColor = if (canShowAnswer) LearningPalette.ActionDarkBg else LearningPalette.ActionMutedText,
+                            shape = RoundedRectangle(16.dp),
+                            elevation = 0.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 24.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = if (canShowAnswer) Icons.Rounded.AutoAwesome else Icons.Rounded.AccessTime,
+                                    contentDescription = null,
+                                    tint = if (canShowAnswer) effectiveStarColor else Color.White.copy(alpha = 0.88f),
+                                    modifier = Modifier
+                                        .padding(end = 8.dp)
+                                        .size(18.dp)
+                                )
+                                Text(
+                                    text = if (canShowAnswer) {
+                                        stringResource(R.string.learning_srs_action_show_answer)
+                                    } else {
+                                        stringResource(R.string.learning_srs_action_show_answer_countdown, countdownText)
+                                    },
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White.copy(alpha = if (canShowAnswer) 1f else 0.9f)
+                                )
+                            }
                         }
+
                     }
-
                 }
-            } else {
-                // 评分按钮网格 (Anki Mode: 4个按钮)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // 1. 重来 (Again) - Quality 1
-                    SRSRatingButton(
-                        label = stringResource(R.string.learn_srs_rating_again),
-                        time = ratingIntervals[1] ?: "-",
-                        color = effectiveAgainColor,
-                        containerColor = buttonContainerColor,
-                        onClick = { 
-                            safeRate(1) {
-                                view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                                SoundEffectPlayer.playOtherSound(context)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
+                is ActionAreaState.Rating -> {
+                    // 评分按钮网格 (Anki Mode: 4个按钮)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // 1. 重来 (Again) - Quality 1
+                        SRSRatingButton(
+                            label = stringResource(R.string.learn_srs_rating_again),
+                            time = state.intervals[1] ?: "-",
+                            color = effectiveAgainColor,
+                            containerColor = buttonContainerColor,
+                            onClick = { 
+                                safeRate(1) {
+                                    view.performHapticFeedback(HapticFeedbackConstants.REJECT)
+                                    SoundEffectPlayer.playOtherSound(context)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    // 2. 困难 (Hard) - Quality 3
-                    SRSRatingButton(
-                        label = stringResource(R.string.learn_srs_rating_hard),
-                        time = ratingIntervals[3] ?: "-",
-                        color = effectiveHardColor,
-                        containerColor = buttonContainerColor,
-                        onClick = { 
-                            safeRate(3) {
-                                view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                SoundEffectPlayer.playHardSound(context)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
+                        // 2. 困难 (Hard) - Quality 3
+                        SRSRatingButton(
+                            label = stringResource(R.string.learn_srs_rating_hard),
+                            time = state.intervals[3] ?: "-",
+                            color = effectiveHardColor,
+                            containerColor = buttonContainerColor,
+                            onClick = { 
+                                safeRate(3) {
+                                    view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                    SoundEffectPlayer.playHardSound(context)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    // 3. 良好 (Good) - Quality 4
-                    SRSRatingButton(
-                        label = stringResource(R.string.learn_srs_rating_good),
-                        time = ratingIntervals[4] ?: "-",
-                        color = effectiveGoodColor,
-                        containerColor = buttonContainerColor,
-                        onClick = { 
-                            safeRate(4) {
-                                view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                SoundEffectPlayer.playGoodSound(context)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
+                        // 3. 良好 (Good) - Quality 4
+                        SRSRatingButton(
+                            label = stringResource(R.string.learn_srs_rating_good),
+                            time = state.intervals[4] ?: "-",
+                            color = effectiveGoodColor,
+                            containerColor = buttonContainerColor,
+                            onClick = { 
+                                safeRate(4) {
+                                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                    SoundEffectPlayer.playGoodSound(context)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    // 4. 简单 (Easy) - Quality 5
-                    SRSRatingButton(
-                        label = stringResource(R.string.learn_srs_rating_easy),
-                        time = ratingIntervals[5] ?: "-",
-                        color = effectiveEasyColor,
-                        containerColor = buttonContainerColor,
-                        onClick = { 
-                            safeRate(5) {
-                                view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                                SoundEffectPlayer.playEasySound(context)
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
+                        // 4. 简单 (Easy) - Quality 5
+                        SRSRatingButton(
+                            label = stringResource(R.string.learn_srs_rating_easy),
+                            time = state.intervals[5] ?: "-",
+                            color = effectiveEasyColor,
+                            containerColor = buttonContainerColor,
+                            onClick = { 
+                                safeRate(5) {
+                                    view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                                    SoundEffectPlayer.playEasySound(context)
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }

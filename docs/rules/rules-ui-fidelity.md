@@ -1,7 +1,7 @@
 # Nemo UI 视觉与资源规范纪律（Rules）
 
 > **适用对象**：本仓库的所有 AI 与人工开发工作（含代码生成、UI 界面构建、重构与代码审查）  
-> **配套文档**：`.agent/rules/nemorules.md`（行为硬约束）· `docs/rules/rules-code-style.md`（代码风格与注释）· `docs/design/Dynamic_Color_System_Spec.md`（深浅色规范）· `docs/design/标题与卡片对齐设计规范.md`（布局排版规范）
+> **配套文档**：`.agent/rules/nemorules.md`（行为硬约束）· `docs/rules/rules-code-style.md`（代码风格与注释）· `docs/design/Dynamic_Color_System_Spec.md`（深浅色规范）· `docs/design/color-palette/COLORS.md`（系统调色盘手册）· `docs/design/标题与卡片对齐设计规范.md`（布局排版规范）
 
 ---
 
@@ -14,13 +14,13 @@
 
 ## 1. 颜色纪律（集中管理 + 规范对齐）
 
-### 1.1 唯一合法居所
+### 1.1 唯一合法居所与设计规范溯源
 全工程中，色值字面量 `Color(0x...)` 的唯一合法居所为：
-**`:core:designsystem` 的 `theme/Color.kt`**
+**`:core:designsystem` 的 `theme/Color.kt`**，其底层的设计规范源头与权威色值表位于 **[`docs/design/color-palette/`](file:///e:/Android/Nemo/docs/design/color-palette)**（包含 [`COLORS.md`](file:///e:/Android/Nemo/docs/design/color-palette/COLORS.md)、`AppColors.kt` 与 `colors.xml`）。
 
 ```text
 core/designsystem/src/main/java/com/jian/nemo/core/designsystem/theme/
-├── Color.kt             # 全项目唯一允许出现 Color(0x...) 裸色值字面量的文件
+├── Color.kt             # 全项目唯一允许出现 Color(0x...) 裸色值字面量的文件（对齐 docs/design/color-palette）
 ├── Typography.kt        # 字体排版与命名 TextStyle（引用 Color.kt 常量或语义槽位）
 └── Theme.kt             # 主题与 ColorScheme 组装（引用 Color.kt 常量，内部零裸色值）
 ```

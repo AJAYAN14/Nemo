@@ -68,6 +68,7 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
+import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
 import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
@@ -136,35 +137,6 @@ fun GrammarListScreen(
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-        val tabAllText = stringResource(R.string.lib_grammar_list_tab_all)
-        val tabLearnedText = stringResource(R.string.lib_grammar_list_tab_learned)
-        val tabUnlearnedText = stringResource(R.string.lib_grammar_list_tab_unlearned)
-
-        val options = remember(tabAllText, tabLearnedText, tabUnlearnedText) {
-            listOf(
-                DiscoveryOption(
-                    label = tabAllText,
-                    icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    activeColor = IosColors.Indigo,
-                ),
-                DiscoveryOption(
-                    label = tabLearnedText,
-                    icon = Icons.Rounded.CheckCircle,
-                    activeColor = IosColors.Green,
-                ),
-                DiscoveryOption(
-                    label = tabUnlearnedText,
-                    icon = Icons.Rounded.HourglassEmpty,
-                    activeColor = IosColors.Orange,
-                ),
-            )
-        }
-        val selectedIndex = when (uiState.filterState) {
-            StudyFilter.ALL -> 0
-            StudyFilter.LEARNED -> 1
-            StudyFilter.UNLEARNED -> 2
-        }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -203,40 +175,19 @@ fun GrammarListScreen(
                         .fillMaxSize()
                         .layerBackdrop(backdrop),
                     contentPadding = PaddingValues(
-                        top = statusBarTop + 60.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
                     item(key = "discovery_bar") {
-                        DiscoveryBar(
-                            options = options,
-                            selectedOptionIndex = selectedIndex,
-                            onOptionSelected = { index ->
-                                val newFilter = when (index) {
-                                    0 -> StudyFilter.ALL
-                                    1 -> StudyFilter.LEARNED
-                                    2 -> StudyFilter.UNLEARNED
-                                    else -> StudyFilter.ALL
-                                }
-                                viewModel.onFilterStateChanged(newFilter)
-                            },
+                        LibraryDiscoveryBar(
+                            selectedFilter = uiState.filterState,
+                            onFilterSelected = { viewModel.onFilterStateChanged(it) },
                             searchQuery = searchQuery,
                             onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                            searchPlaceholder = stringResource(R.string.lib_grammar_list_search_placeholder),
-                            style = DiscoveryBarStyle(
-                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-                                inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            ),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            searchPlaceholder = stringResource(R.string.lib_grammar_list_search_placeholder)
                         )
                     }
 
