@@ -144,9 +144,9 @@ fun LearningScreen(
     val waitingBackdrop = rememberLayerBackdrop()
     var triggerWaitingBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-    // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，菜单展开或展示分享海报时自动触发背景模糊遮罩)
+    // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，展示分享海报时自动触发背景模糊遮罩)
     val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded || showSharePosterDialog) 18.dp else 0.dp,
+        targetValue = if (showSharePosterDialog) 18.dp else 0.dp,
         animationSpec = tween(durationMillis = 240),
         label = "learningBlur"
     )
@@ -395,7 +395,7 @@ fun LearningScreen(
                 }
             }
 
-            // 2. 页面全屏高斯模糊景深遮罩 (Z = 1，12% 柔光暗化 + 200ms 淡入淡出)
+            // 2. 页面全屏手势遮罩 (Z = 1，纯透明拦截外部点击)
             androidx.compose.animation.AnimatedVisibility(
                 visible = isMenuExpanded,
                 enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
@@ -404,7 +404,7 @@ fun LearningScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.12f))
+                        .background(Color.Transparent)
                         .clickable(
                             interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                             indication = null,

@@ -182,9 +182,9 @@ fun LibraryLevelSelectionMenu(
 
 
 /**
- * 词库列表通用 - 页面全屏高斯模糊景深遮罩
+ * 词库列表通用 - 页面全屏手势遮罩
  *
- * 12% 柔光暗化 + 200ms 淡入淡出，点击外部平滑收起菜单
+ * 纯透明背景拦截外部点击平滑收起菜单，保持底层窗口清晰
  */
 @Composable
 fun LibraryMenuScrimOverlay(
@@ -201,7 +201,7 @@ fun LibraryMenuScrimOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.12f))
+                .background(Color.Transparent)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,

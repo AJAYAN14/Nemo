@@ -77,9 +77,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.library.R
@@ -105,13 +102,6 @@ fun GrammarListScreen(
         val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
         var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
         var isMenuExpanded by remember { mutableStateOf(false) }
-
-        // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡，对齐学习界面景深规范)
-        val animatedBlurRadius by animateDpAsState(
-            targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-            animationSpec = tween(durationMillis = 200),
-            label = "grammarListBlur"
-        )
 
         // 回顶悬浮按钮触发状态（滑出首屏后优雅显现）
         val showScrollToTop by remember {
@@ -163,11 +153,7 @@ fun GrammarListScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (animatedBlurRadius > 0.dp) Modifier.blur(animatedBlurRadius) else Modifier
-                    )
+                modifier = Modifier.fillMaxSize()
             ) {
                 LazyColumn(
                     state = lazyListState,

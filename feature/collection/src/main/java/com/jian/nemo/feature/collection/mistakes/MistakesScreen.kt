@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.collection.R
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -75,13 +74,6 @@ fun MistakesScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    // 动态高斯模糊半径 (0dp -> 14dp 平滑过渡)
-    val animatedBlurRadius by animateDpAsState(
-        targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-        animationSpec = tween(durationMillis = 200),
-        label = "mistakesBlur"
-    )
-
     // 图标风格双自适应（MD3 / Plump Duo）下发给整页子组件
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         Box(
@@ -97,10 +89,6 @@ fun MistakesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .then(
-                    if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
-                    else Modifier
-                )
                 .layerBackdrop(backdrop)
                 .verticalScroll(rememberScrollState())
                 .padding(
@@ -166,7 +154,7 @@ fun MistakesScreen(
             )
         }
 
-        // 3. 页面全屏高斯模糊景深遮罩 (12% 柔光暗化 + 200ms 淡入淡出)
+        // 3. 页面全屏手势遮罩（纯透明拦截外部点击）
         androidx.compose.animation.AnimatedVisibility(
             visible = isMenuExpanded,
             enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
@@ -175,7 +163,7 @@ fun MistakesScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.12f))
+                    .background(Color.Transparent)
                     .clickable(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null,
