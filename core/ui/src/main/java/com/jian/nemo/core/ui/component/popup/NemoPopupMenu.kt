@@ -455,11 +455,15 @@ fun NemoPopupMenu(
                     when (item) {
                         is NemoSelectivePopupMenuItem -> {
                             val selected = item.isSelected()
+                            val itemInteractionSource = remember { MutableInteractionSource() }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(46.dp)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = itemInteractionSource,
+                                        indication = null
+                                    ) {
                                         hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         item.onClick()
                                         if (item.dismissOnClick) {
@@ -492,11 +496,15 @@ fun NemoPopupMenu(
                         }
 
                         is NemoActionPopupMenuItem -> {
+                            val actionInteractionSource = remember { MutableInteractionSource() }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(46.dp)
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = actionInteractionSource,
+                                        indication = null
+                                    ) {
                                         hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         onDismiss()
                                         item.onClick()

@@ -1,6 +1,10 @@
 package com.jian.nemo.feature.test.presentation.settings.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
@@ -16,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -81,13 +86,29 @@ fun PremiumSettingRow(
     onClickWithBounds: (Rect) -> Unit
 ) {
     var boundsInWindow by remember { mutableStateOf(Rect.Zero) }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.985f else 1f,
+        label = "scale",
+        animationSpec = tween(150)
+    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates ->
                 boundsInWindow = coordinates.boundsInWindow()
             }
-            .clickable { onClickWithBounds(boundsInWindow) }
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = { onClickWithBounds(boundsInWindow) }
+            )
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .padding(horizontal = 24.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

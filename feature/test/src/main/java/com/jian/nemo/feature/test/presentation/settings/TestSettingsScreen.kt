@@ -550,7 +550,6 @@ fun TestSettingsScreen(
                              }
                          }
                      },
-                     backdrop = backdrop,
                      tint = MaterialTheme.colorScheme.primary,
                      isInteractive = !isGenerating,
                      shape = RoundedRectangle(28.dp),
