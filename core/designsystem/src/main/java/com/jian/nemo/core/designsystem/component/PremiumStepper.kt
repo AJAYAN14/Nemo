@@ -61,6 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.R
 import com.jian.nemo.core.designsystem.theme.DesignSystemPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -96,13 +97,18 @@ fun PremiumStepper(
     max: Int = 999,
     step: Int = 1,
     enabled: Boolean = true,
-    accentColor: Color = DesignSystemPalette.StepperOrange
+    accentColor: Color = Color.Unspecified
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val effectiveAccentColor = if (accentColor != Color.Unspecified) {
+        accentColor
+    } else {
+        if (isDark) IosColors.OrangeDark else IosColors.Orange
+    }
 
     // 硬件 Vibrator 初始化
     val vibrator = remember(context) {
@@ -222,7 +228,7 @@ fun PremiumStepper(
                 .clip(RoundedRectangle(16.dp))
                 .background(
                     if (isEditing) {
-                        if (isDark) accentColor.copy(alpha = 0.16f) else accentColor.copy(alpha = 0.08f)
+                        if (isDark) effectiveAccentColor.copy(alpha = 0.16f) else effectiveAccentColor.copy(alpha = 0.08f)
                     } else {
                         Color.Transparent
                     }
@@ -230,7 +236,7 @@ fun PremiumStepper(
                 .then(
                     if (isEditing) {
                         Modifier.border(
-                            BorderStroke(1.5.dp, accentColor),
+                            BorderStroke(1.5.dp, effectiveAccentColor),
                             RoundedRectangle(16.dp)
                         )
                     } else {
@@ -250,8 +256,8 @@ fun PremiumStepper(
             if (isEditing) {
                 // 自定义选中颜色，配合 16.dp 软圆角外框
                 val customSelectionColors = TextSelectionColors(
-                    handleColor = accentColor,
-                    backgroundColor = accentColor.copy(alpha = 0.20f)
+                    handleColor = effectiveAccentColor,
+                    backgroundColor = effectiveAccentColor.copy(alpha = 0.20f)
                 )
 
                 CompositionLocalProvider(LocalTextSelectionColors provides customSelectionColors) {
@@ -265,11 +271,11 @@ fun PremiumStepper(
                         textStyle = TextStyle(
                             fontSize = 42.sp,
                             fontWeight = FontWeight.Black,
-                            color = accentColor,
+                            color = effectiveAccentColor,
                             textAlign = TextAlign.Center
                         ),
                         singleLine = true,
-                        cursorBrush = SolidColor(accentColor),
+                        cursorBrush = SolidColor(effectiveAccentColor),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done

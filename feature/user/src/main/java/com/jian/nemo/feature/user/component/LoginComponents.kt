@@ -70,12 +70,13 @@ fun AppStyleTextField(
     isError: Boolean = false,
     enabled: Boolean = true
 ) {
-    val containerBg = if (isDark) UserPalette.FieldContainerDark else Color.White
-    val focusedBorder = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate900
-    val unfocusedBorder = if (isDark) Color.White.copy(alpha = 0.15f) else UserPalette.FieldBorderSlate
-    val textColor = if (isDark) Color.White else UserPalette.TextSlate900
-    val placeholderColor = if (isDark) Color.White.copy(alpha = 0.40f) else UserPalette.SlatePlaceholder
-    val iconColor = if (isDark) Color.White.copy(alpha = 0.50f) else UserPalette.SlatePlaceholder
+    val containerBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
+    val focusedBorder = MaterialTheme.colorScheme.primary
+    val unfocusedBorder = MaterialTheme.colorScheme.outline
+    val textColor = MaterialTheme.colorScheme.onSurface
+    val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val cursorColor = MaterialTheme.colorScheme.primary
 
     OutlinedTextField(
         value = value,
@@ -135,7 +136,7 @@ fun AppStyleTextField(
             unfocusedBorderColor = unfocusedBorder,
             focusedTextColor = textColor,
             unfocusedTextColor = textColor,
-            cursorColor = textColor
+            cursorColor = cursorColor
         )
     )
 }

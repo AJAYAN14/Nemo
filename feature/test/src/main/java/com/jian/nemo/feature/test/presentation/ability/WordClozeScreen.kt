@@ -770,7 +770,7 @@ private fun ReadyView(
                                         if (hasError) {
                                             if (isDark) NemoDangerDark else NemoDanger
                                         } else if (isActive && isGlobalFocused) {
-                                            IosColors.Orange
+                                            if (isDark) IosColors.OrangeDark else IosColors.Orange
                                         } else {
                                             Color.Transparent
                                         }
@@ -860,7 +860,7 @@ private fun ReadyView(
                                                                 .width(2.dp)
                                                                 .height(22.dp)
                                                                 .graphicsLayer(alpha = cursorAlpha)
-                                                                .background(IosColors.Orange)
+                                                                .background(if (isDark) IosColors.OrangeDark else IosColors.Orange)
                                                         )
                                                     }
                                                 }

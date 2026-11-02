@@ -1036,7 +1036,7 @@ fun AISettingTextField(
                 Text(
                     text = placeholder, 
                     style = MaterialTheme.typography.bodyMedium, 
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isDark) 0.6f else 0.7f)
                 ) 
             },
             shape = RoundedRectangle(14.dp),

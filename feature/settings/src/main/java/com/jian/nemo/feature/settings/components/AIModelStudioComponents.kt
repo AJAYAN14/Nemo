@@ -97,6 +97,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.AIPalette
+import com.jian.nemo.core.designsystem.theme.NemoNeutralGray
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
+import com.jian.nemo.core.designsystem.theme.NemoText
+import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.graphics.Path
@@ -135,14 +144,14 @@ import kotlin.math.sin
  * 界面专属中性高级调色板 (全面去 MD3 化，专为深浅色模式物理折射定制)
  */
 object StudioThemePalette {
-    fun cardBackground(isDark: Boolean) = if (isDark) AIPalette.StudioCardBgDark else AIPalette.StudioCardBgLight
-    fun cardBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.13f) else UserPalette.TextSlate900.copy(alpha = 0.08f)
-    fun surfacePill(isDark: Boolean) = if (isDark) AIPalette.StudioPillBgDark else AIPalette.StudioPillBgLight
-    fun surfacePillBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.16f) else UserPalette.TextSlate900.copy(alpha = 0.09f)
-    fun textPrimary(isDark: Boolean) = if (isDark) AIPalette.StudioInputContainerLight else UserPalette.TextSlate900
-    fun textSecondary(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder else UserPalette.TextSlate500
-    fun textMuted(isDark: Boolean) = if (isDark) UserPalette.TextSlate500 else UserPalette.SlatePlaceholder
-    fun inputBorder(isDark: Boolean) = if (isDark) UserPalette.SlatePlaceholder.copy(alpha = 0.16f) else UserPalette.TextSlate900.copy(alpha = 0.12f)
+    fun cardBackground(isDark: Boolean) = if (isDark) NemoSurfaceCardDark else NemoSurfaceCard
+    fun cardBorder(isDark: Boolean) = if (isDark) NemoSurfaceBorderDark else NemoSurfaceBorder
+    fun surfacePill(isDark: Boolean) = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceSubcard
+    fun surfacePillBorder(isDark: Boolean) = if (isDark) NemoSurfaceBorderDark else NemoSurfaceBorder
+    fun textPrimary(isDark: Boolean) = if (isDark) Color.White else NemoText
+    fun textSecondary(isDark: Boolean) = if (isDark) NemoNeutralGray else NemoTextLight
+    fun textMuted(isDark: Boolean) = if (isDark) NemoNeutralGray else NemoTextLight
+    fun inputBorder(isDark: Boolean) = if (isDark) NemoSurfaceBorderDark else NemoSurfaceBorder
 }
 
 /**
@@ -582,20 +591,22 @@ fun SlotModelPicker(
                             placeholder = {
                                 Text(
                                     text = stringResource(R.string.settings_ai_placeholder_custom_model, platform.flagshipModels.firstOrNull() ?: "model-id"),
-                                    style = MaterialTheme.typography.bodySmall
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = StudioThemePalette.textMuted(isDark)
                                 )
                             },
                             singleLine = true,
                             shape = RoundedRectangle(16.dp),
                             textStyle = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = StudioThemePalette.textPrimary(isDark)
                             ),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = platform.brandColor,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                focusedContainerColor = if (isDark) AIPalette.StudioInputContainerDark else AIPalette.StudioInputContainerLight,
-                                unfocusedContainerColor = if (isDark) AIPalette.StudioInputContainerDark else AIPalette.StudioInputContainerLight
+                                unfocusedBorderColor = StudioThemePalette.inputBorder(isDark),
+                                focusedContainerColor = StudioThemePalette.surfacePill(isDark),
+                                unfocusedContainerColor = StudioThemePalette.surfacePill(isDark)
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )

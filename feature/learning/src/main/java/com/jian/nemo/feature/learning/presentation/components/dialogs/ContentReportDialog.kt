@@ -61,12 +61,12 @@ fun ContentReportDialog(
     val chipUnselectedBorder = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc200
     val chipUnselectedText = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc600
 
-    val inputBg = if (isDark) LearningPalette.ReportZinc800 else LearningPalette.ReportZinc100
-    val inputBorderFocused = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc600
-    val inputBorderUnfocused = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc200
-    val inputCursor = if (isDark) Color.White else LearningPalette.ReportZinc900
-    val inputTextColor = if (isDark) LearningPalette.ReportZinc100 else LearningPalette.ReportZinc900
-    val hintTextColor = if (isDark) LearningPalette.ReportZinc400.copy(alpha = 0.6f) else LearningPalette.ReportZinc500.copy(alpha = 0.7f)
+    val inputBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant
+    val inputBorderFocused = MaterialTheme.colorScheme.primary
+    val inputBorderUnfocused = MaterialTheme.colorScheme.outline
+    val inputCursor = MaterialTheme.colorScheme.primary
+    val inputTextColor = MaterialTheme.colorScheme.onSurface
+    val hintTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     val promptTextColor = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc500
 
     val confirmButtonColor = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc900

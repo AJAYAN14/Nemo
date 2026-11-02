@@ -124,6 +124,17 @@ fun DiscoveryBar(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val searchIconTint = if (isDark) Color.White else Color.Black
     val effectiveBgColor = if (style.backgroundColor != Color.Unspecified) style.backgroundColor else if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
+    val effectiveInputTextColor = if (style.activeTextStyle.color != Color.Black && style.activeTextStyle.color != Color.Unspecified) {
+        style.activeTextStyle.color
+    } else {
+        if (isDark) Color.White else Color.Black
+    }
+    val effectiveInputTextStyle = style.activeTextStyle.copy(color = effectiveInputTextColor)
+    val effectivePlaceholderColor = if (isDark) {
+        Color.White.copy(alpha = 0.35f)
+    } else {
+        style.textStyle.color.copy(alpha = 0.35f)
+    }
 
     BoxWithConstraints(
         modifier = modifier
@@ -206,8 +217,8 @@ fun DiscoveryBar(
                                 onSearchQueryChange?.invoke(it)
                             },
                             singleLine = true,
-                            textStyle = style.activeTextStyle,
-                            cursorBrush = SolidColor(style.activeTextStyle.color),
+                            textStyle = effectiveInputTextStyle,
+                            cursorBrush = SolidColor(effectiveInputTextColor),
                             decorationBox = { innerTextField ->
                                 Box(
                                     contentAlignment = Alignment.CenterStart,
@@ -217,7 +228,7 @@ fun DiscoveryBar(
                                         Text(
                                             text = searchPlaceholder,
                                             style = style.textStyle.copy(
-                                                color = style.textStyle.color.copy(alpha = 0.3f),
+                                                color = effectivePlaceholderColor,
                                             ),
                                         )
                                     }

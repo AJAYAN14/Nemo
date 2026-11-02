@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
@@ -93,6 +94,7 @@ fun <T> GenericExpandableListScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 8.dp),
+                    shape = RoundedRectangle(12.dp),
                     placeholder = { Text(searchPlaceholder) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

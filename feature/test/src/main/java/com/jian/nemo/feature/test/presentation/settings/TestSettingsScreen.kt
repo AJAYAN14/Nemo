@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -34,8 +35,12 @@ import kotlinx.coroutines.launch
 
 import com.jian.nemo.feature.test.presentation.settings.components.BasicSettingsSection
 import com.jian.nemo.feature.test.presentation.settings.components.QuizSettingsSection
-import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
-import com.jian.nemo.feature.test.presentation.settings.components.TestSettingsBottomSheetContent
+import com.jian.nemo.feature.test.presentation.settings.components.NemoActionPopupMenuItem
+import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenu
+import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuDivider
+import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuState
+import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuItem
+import com.jian.nemo.feature.test.presentation.settings.components.NemoSelectivePopupMenuItem
 
 
 /**
@@ -89,6 +94,12 @@ fun TestSettingsScreen(
     val labelMixedContentTypeSubtitle = stringResource(R.string.test_content_type_mixed_subtitle)
     val labelUnknownContentType = stringResource(R.string.test_content_type_unknown)
 
+    val customText = stringResource(R.string.test_sheet_btn_custom)
+    val allLevelsText = stringResource(R.string.test_settings_levels_all)
+    val formatQuestionCount = stringResource(R.string.test_settings_format_question_count)
+    val timeLimitUnlimitedText = stringResource(R.string.test_settings_time_limit_unlimited)
+    val formatTimeLimitMinutes = stringResource(R.string.test_settings_time_limit_minutes_format)
+
     // 🎯 动态页面标题
     val pageTitle = remember(testModeId) {
         when (testModeId) {
@@ -100,9 +111,9 @@ fun TestSettingsScreen(
         }
     }
 
-    // BottomSheet 控制
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var currentSetting by remember { mutableStateOf("") }
+    // 液态气泡悬浮菜单状态控制
+    var popupMenuState by remember { mutableStateOf(NemoPopupMenuState()) }
+    var activeSettingType by remember { mutableStateOf("") }
 
     // 自定义输入对话框
     var showCustomQuestionCountDialog by remember { mutableStateOf(false) }
@@ -119,7 +130,7 @@ fun TestSettingsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    // 监听错误信息 (Keep for compatibility if error is still used, but prefer messages)
+    // 监听错误信息
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error)
@@ -148,9 +159,7 @@ fun TestSettingsScreen(
         viewModel.setTestModeId(testModeId)
     }
 
-    // Loop removed - logic moved to ViewModel
-
-    // 选项数据准备 - 使用 remember 优化
+    // 选项数据准备
     val questionCountOptions = remember { listOf(10, 15, 20, 25, 30, 40) }
     val timeLimitOptions = remember { listOf(0, 5, 10, 15, 30) }
 
@@ -202,43 +211,13 @@ fun TestSettingsScreen(
         )
     }
 
-    val wrongAnswerRemovalOptions = remember {
-        listOf(
-            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
-                key = 0,
-                title = labelRemovalNoneTitle,
-                subtitle = labelRemovalNoneSubtitle
-            ),
-            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
-                key = 3,
-                title = String.format(formatRemovalCountTitle, 3),
-                subtitle = String.format(formatRemovalCountSubtitle, 3)
-            ),
-            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
-                key = 5,
-                title = String.format(formatRemovalCountTitle, 5),
-                subtitle = String.format(formatRemovalCountSubtitle, 5)
-            ),
-            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
-                key = 7,
-                title = String.format(formatRemovalCountTitle, 7),
-                subtitle = String.format(formatRemovalCountSubtitle, 7)
-            ),
-            com.jian.nemo.feature.test.presentation.settings.components.SingleSelectOptionItem(
-                key = 10,
-                title = String.format(formatRemovalCountTitle, 10),
-                subtitle = labelRemovalCount10Subtitle
-            )
-        )
-    }
-
     val wrongAnswerRemovalLabels = remember {
         mapOf(
             0 to labelRemovalNoneTitle,
-            3 to String.format(formatRemovalTimes, 3),
-            5 to String.format(formatRemovalTimes, 5),
-            7 to String.format(formatRemovalTimes, 7),
-            10 to String.format(formatRemovalTimes, 10)
+            3 to String.format(formatRemovalCountTitle, 3),
+            5 to String.format(formatRemovalCountTitle, 5),
+            7 to String.format(formatRemovalCountTitle, 7),
+            10 to String.format(formatRemovalCountTitle, 10)
         )
     }
 
@@ -276,47 +255,176 @@ fun TestSettingsScreen(
     }
     val allLevels = remember { listOf("N5", "N4", "N3", "N2", "N1") }
 
-    // BottomSheet 逻辑
-    if (showBottomSheet) {
-        NemoModalBottomSheet(
-            onDismissRequest = {
-                viewModel.ensureValidLevels()
-                showBottomSheet = false
-            },
-            containerColor = MaterialTheme.colorScheme.surface,
-            dragHandle = null // 由内容组件内置居中 Indicator 和关闭按钮
-        ) {
-            TestSettingsBottomSheetContent(
-                currentSetting = currentSetting,
-                config = config,
-                uiState = uiState,
-                testModeId = testModeId,
-                questionCountOptions = questionCountOptions,
-                timeLimitOptions = timeLimitOptions,
-                questionSourceOptions = questionSourceOptions,
-                wrongAnswerRemovalOptions = wrongAnswerRemovalOptions,
-                contentTypeOptions = contentTypeOptions,
-                allLevels = allLevels,
-                onUpdateConfig = { viewModel.updateConfig(it) },
-                isQuestionTypeSupported = { viewModel.isQuestionTypeSupported(it) },
-                onToggleLevel = { level, isGrammar -> viewModel.toggleLevel(level, isGrammar) },
-                onExclusiveSelectLevel = { level, isGrammar -> viewModel.exclusiveSelectLevel(level, isGrammar) },
-                onToggleAllLevels = { isGrammar -> viewModel.toggleAllLevels(isGrammar) },
-                onShowCustomQuestionCount = { showCustomQuestionCountDialog = true },
-                onShowCustomTimeLimit = { showCustomTimeLimitDialog = true },
-                onDismiss = {
-                    viewModel.ensureValidLevels()
-                    showBottomSheet = false
-                },
-                onSnackbar = { msg -> scope.launch { snackbarHostState.showSnackbar(msg) } }
-            )
+    // 动态构建当前激活的气泡菜单项
+    val currentMenuItems = remember(activeSettingType, config, uiState, isRestrictedMode) {
+        when (activeSettingType) {
+            "questionCount" -> {
+                val list = mutableListOf<NemoPopupMenuItem>()
+                questionCountOptions.forEach { count ->
+                    list.add(
+                        NemoSelectivePopupMenuItem(
+                            text = String.format(formatQuestionCount, count),
+                            isSelected = { config.questionCount == count },
+                            dismissOnClick = true,
+                            onClick = { updateConfig { it.copy(questionCount = count) } }
+                        )
+                    )
+                }
+                list.add(NemoPopupMenuDivider)
+                list.add(
+                    NemoActionPopupMenuItem(
+                        text = customText,
+                        onClick = { showCustomQuestionCountDialog = true }
+                    )
+                )
+                list
+            }
+
+            "timeLimit" -> {
+                val list = mutableListOf<NemoPopupMenuItem>()
+                timeLimitOptions.forEach { minutes ->
+                    val label = if (minutes == 0) {
+                        timeLimitUnlimitedText
+                    } else {
+                        String.format(formatTimeLimitMinutes, minutes)
+                    }
+                    list.add(
+                        NemoSelectivePopupMenuItem(
+                            text = label,
+                            isSelected = { config.timeLimitMinutes == minutes },
+                            dismissOnClick = true,
+                            onClick = { updateConfig { it.copy(timeLimitMinutes = minutes) } }
+                        )
+                    )
+                }
+                list.add(NemoPopupMenuDivider)
+                list.add(
+                    NemoActionPopupMenuItem(
+                        text = customText,
+                        onClick = { showCustomTimeLimitDialog = true }
+                    )
+                )
+                list
+            }
+
+            "questionSource" -> {
+                listOf(
+                    QuestionSource.TODAY to labelTodaySource,
+                    QuestionSource.WRONG to labelWrongSource,
+                    QuestionSource.FAVORITE to labelFavoriteSource,
+                    QuestionSource.TODAY_REVIEWED to labelTodayReviewedSource,
+                    QuestionSource.LEARNED to labelLearnedSource,
+                    QuestionSource.ALL to labelAllSource
+                ).map { (source, label) ->
+                    NemoSelectivePopupMenuItem(
+                        text = label,
+                        isSelected = { config.questionSource == source },
+                        dismissOnClick = true,
+                        onClick = { updateConfig { it.copy(questionSource = source) } }
+                    )
+                }
+            }
+
+            "wrongAnswerRemoval" -> {
+                listOf(0, 3, 5, 7, 10).map { count ->
+                    val label = wrongAnswerRemovalLabels[count] ?: ""
+                    NemoSelectivePopupMenuItem(
+                        text = label,
+                        isSelected = { config.wrongAnswerRemovalThreshold == count },
+                        dismissOnClick = true,
+                        onClick = { updateConfig { it.copy(wrongAnswerRemovalThreshold = count) } }
+                    )
+                }
+            }
+
+            "contentType" -> {
+                val types = if (isRestrictedMode) {
+                    listOf(TestContentType.WORDS)
+                } else {
+                    listOf(TestContentType.WORDS, TestContentType.GRAMMAR, TestContentType.MIXED)
+                }
+                types.map { type ->
+                    val label = when (type) {
+                        TestContentType.WORDS -> labelWordsContentType
+                        TestContentType.GRAMMAR -> labelGrammarContentType
+                        TestContentType.MIXED -> labelMixedContentType
+                    }
+                    NemoSelectivePopupMenuItem(
+                        text = label,
+                        isSelected = { config.testContentType == type },
+                        dismissOnClick = true,
+                        onClick = { updateConfig { it.copy(testContentType = type) } }
+                    )
+                }
+            }
+
+            "wordLevel" -> {
+                val list = mutableListOf<NemoPopupMenuItem>()
+                list.add(
+                    NemoSelectivePopupMenuItem(
+                        text = allLevelsText,
+                        isSelected = { uiState.isAllWordLevelsSelected },
+                        dismissOnClick = false,
+                        onClick = { viewModel.toggleAllLevels(false) }
+                    )
+                )
+                list.add(NemoPopupMenuDivider)
+                allLevels.forEach { level ->
+                    list.add(
+                        NemoSelectivePopupMenuItem(
+                            text = level,
+                            isSelected = { level in config.selectedWordLevels },
+                            dismissOnClick = false,
+                            onClick = { viewModel.toggleLevel(level, false) }
+                        )
+                    )
+                }
+                list
+            }
+
+            "grammarLevel" -> {
+                val list = mutableListOf<NemoPopupMenuItem>()
+                list.add(
+                    NemoSelectivePopupMenuItem(
+                        text = allLevelsText,
+                        isSelected = { uiState.isAllGrammarLevelsSelected },
+                        dismissOnClick = false,
+                        onClick = { viewModel.toggleAllLevels(true) }
+                    )
+                )
+                list.add(NemoPopupMenuDivider)
+                allLevels.forEach { level ->
+                    list.add(
+                        NemoSelectivePopupMenuItem(
+                            text = level,
+                            isSelected = { level in config.selectedGrammarLevels },
+                            dismissOnClick = false,
+                            onClick = { viewModel.toggleLevel(level, true) }
+                        )
+                    )
+                }
+                list
+            }
+
+            else -> emptyList()
         }
     }
 
-    CustomQuestionCountDialog(showCustomQuestionCountDialog, config.questionCount, { showCustomQuestionCountDialog = false }) { count ->
+    CustomQuestionCountDialog(
+        showCustomQuestionCountDialog,
+        config.questionCount,
+        { showCustomQuestionCountDialog = false }
+    ) { count ->
         updateConfig { it.copy(questionCount = count) }
     }
-    CustomTimeLimitDialog(showCustomTimeLimitDialog, config.timeLimitMinutes, { showCustomTimeLimitDialog = false }) { updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) } }
+
+    CustomTimeLimitDialog(
+        showCustomTimeLimitDialog,
+        config.timeLimitMinutes,
+        { showCustomTimeLimitDialog = false }
+    ) {
+        updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) }
+    }
 
     Scaffold(
         modifier = Modifier
@@ -351,9 +459,13 @@ fun TestSettingsScreen(
                     questionSourceOptions = questionSourceOptions,
                     wrongAnswerRemovalLabels = wrongAnswerRemovalLabels,
                     currentContentTypeLabel = currentContentTypeLabel,
-                    onSettingClick = { setting ->
-                        currentSetting = setting
-                        showBottomSheet = true
+                    onSettingClick = { setting, bounds ->
+                        activeSettingType = setting
+                        popupMenuState = NemoPopupMenuState(
+                            isVisible = true,
+                            anchorBounds = bounds,
+                            items = emptyList() // items 由 remember(activeSettingType, ...) 绑定
+                        )
                     }
                 )
 
@@ -460,6 +572,17 @@ fun TestSettingsScreen(
                      }
                  }
             }
+
+            // 4. 液态气泡悬浮菜单 (就地停靠、物理折射、微触觉震动)
+            NemoPopupMenu(
+                state = popupMenuState.copy(items = currentMenuItems),
+                backdrop = backdrop,
+                onDismiss = {
+                    viewModel.ensureValidLevels()
+                    popupMenuState = popupMenuState.copy(isVisible = false)
+                    activeSettingType = ""
+                }
+            )
         }
     }
 }

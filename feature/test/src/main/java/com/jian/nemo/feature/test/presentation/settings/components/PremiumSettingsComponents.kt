@@ -4,14 +4,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,10 +67,27 @@ fun PremiumSettingRow(
     value: String,
     onClick: () -> Unit
 ) {
+    PremiumSettingRow(
+        label = label,
+        value = value,
+        onClickWithBounds = { onClick() }
+    )
+}
+
+@Composable
+fun PremiumSettingRow(
+    label: String,
+    value: String,
+    onClickWithBounds: (Rect) -> Unit
+) {
+    var boundsInWindow by remember { mutableStateOf(Rect.Zero) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .onGloballyPositioned { coordinates ->
+                boundsInWindow = coordinates.boundsInWindow()
+            }
+            .clickable { onClickWithBounds(boundsInWindow) }
             .padding(horizontal = 24.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -83,7 +107,7 @@ fun PremiumSettingRow(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icons.Rounded.ChevronRight,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)

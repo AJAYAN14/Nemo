@@ -258,7 +258,7 @@ fun RegisterCaptchaDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
 
-    val primaryTint = if (isDark) UserPalette.PrimaryGlassTintDark else UserPalette.PrimaryGlassTintLight
+    val primaryTint = MaterialTheme.colorScheme.primary
     val errorColor = if (isDark) IosColors.RedDark else IosColors.Red
     val descTextColor = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate500
     val errEmptyResult = stringResource(R.string.user_captcha_err_empty_result)
@@ -387,7 +387,7 @@ fun RegisterCaptchaDialog(
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryTint,
-                    unfocusedBorderColor = if (isDark) Color.White.copy(alpha = 0.15f) else CaptchaPalette.UnfocusedBorderLight,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                     cursorColor = primaryTint
                 )
             )

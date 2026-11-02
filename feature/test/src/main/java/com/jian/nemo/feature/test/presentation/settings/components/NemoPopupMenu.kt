@@ -1,0 +1,466 @@
+package com.jian.nemo.feature.test.presentation.settings.components
+
+import android.graphics.BlurMaskFilter
+import android.graphics.Paint as AndroidPaint
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.asAndroidPath
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.vibrancy
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlin.math.max
+
+sealed interface NemoPopupMenuItem
+
+/**
+ * 具有单选/多选选中指示器的菜单项
+ *
+ * @param text 展示文本
+ * @param isSelected 当前是否被选中
+ * @param dismissOnClick 点击后是否立即关闭菜单（单选项为 true，等级多选为 false）
+ * @param onClick 点击事件回调
+ */
+data class NemoSelectivePopupMenuItem(
+    val text: String,
+    val isSelected: () -> Boolean,
+    val dismissOnClick: Boolean = true,
+    val onClick: () -> Unit
+) : NemoPopupMenuItem
+
+/**
+ * 普通动作菜单项（如“自定义…”）
+ */
+data class NemoActionPopupMenuItem(
+    val text: String,
+    val onClick: () -> Unit
+) : NemoPopupMenuItem
+
+/**
+ * 菜单分割线
+ */
+object NemoPopupMenuDivider : NemoPopupMenuItem
+
+/**
+ * 气泡菜单状态类
+ */
+data class NemoPopupMenuState(
+    val isVisible: Boolean = false,
+    val anchorBounds: Rect = Rect.Zero,
+    val items: List<NemoPopupMenuItem> = emptyList()
+)
+
+private enum class PopupCorner { RightTop, RightBottom, LeftTop, LeftBottom }
+
+private data class PopupPlacement(
+    val x: Float,
+    val y: Float,
+    val origin: TransformOrigin
+)
+
+private fun cornerToOrigin(corner: PopupCorner): TransformOrigin = when (corner) {
+    PopupCorner.LeftTop -> TransformOrigin(0f, 0f)
+    PopupCorner.RightTop -> TransformOrigin(1f, 0f)
+    PopupCorner.RightBottom -> TransformOrigin(1f, 1f)
+    PopupCorner.LeftBottom -> TransformOrigin(0f, 1f)
+}
+
+/**
+ * 根据点击锚点与视口安全边界智能计算停靠位置
+ */
+private fun pickPlacement(
+    anchorBounds: Rect,
+    menuSize: IntSize,
+    availableBounds: Rect,
+    marginPx: Float,
+    gapPx: Float
+): PopupPlacement {
+    val minX = availableBounds.left + marginPx
+    val minY = availableBounds.top + marginPx
+    val maxX = (availableBounds.right - menuSize.width - marginPx).coerceAtLeast(minX)
+    val maxY = (availableBounds.bottom - menuSize.height - marginPx).coerceAtLeast(minY)
+
+    fun overflow(x: Float, y: Float): Float {
+        val left = (minX - x).coerceAtLeast(0f)
+        val top = (minY - y).coerceAtLeast(0f)
+        val right = (x - maxX).coerceAtLeast(0f)
+        val bottom = (y - maxY).coerceAtLeast(0f)
+        return left + top + right + bottom
+    }
+
+    // 设置项的值在右侧，优先靠右展开 (RightTop, RightBottom)
+    val candidates = listOf(
+        PopupCorner.RightTop to Offset(
+            anchorBounds.right - menuSize.width,
+            anchorBounds.bottom + gapPx
+        ),
+        PopupCorner.RightBottom to Offset(
+            anchorBounds.right - menuSize.width,
+            anchorBounds.top - menuSize.height - gapPx
+        ),
+        PopupCorner.LeftTop to Offset(anchorBounds.left, anchorBounds.bottom + gapPx),
+        PopupCorner.LeftBottom to Offset(
+            anchorBounds.left,
+            anchorBounds.top - menuSize.height - gapPx
+        ),
+    )
+
+    val chosen = candidates.firstOrNull { (_, p) -> overflow(p.x, p.y) == 0f }
+        ?: candidates.minByOrNull { (_, p) -> overflow(p.x, p.y) }
+        ?: candidates.first()
+
+    val clampedX = chosen.second.x.coerceIn(minX, maxX)
+    val clampedY = chosen.second.y.coerceIn(minY, maxY)
+
+    return PopupPlacement(clampedX, clampedY, cornerToOrigin(chosen.first))
+}
+
+/**
+ * Nemo 液态气泡悬浮菜单组件
+ *
+ * 采用 G2 连续平滑曲率 [RoundedRectangle]，结合底层物理折射 [Backdrop] 与弹簧缩放动画，
+ * 呈现就地展开的精致液态磨砂悬浮菜单。
+ */
+@Composable
+fun NemoPopupMenu(
+    state: NemoPopupMenuState,
+    backdrop: Backdrop? = null,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (!state.isVisible && state.items.isEmpty()) return
+
+    var menuSize by remember { mutableStateOf(IntSize.Zero) }
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+
+    val viewport = with(density) {
+        IntSize(configuration.screenWidthDp.dp.roundToPx(), configuration.screenHeightDp.dp.roundToPx())
+    }
+
+    val statusBarTopPx = WindowInsets.statusBars.getTop(density).toFloat()
+    val navBarLeftPx = WindowInsets.navigationBars.getLeft(density, layoutDirection).toFloat()
+    val navBarRightPx = WindowInsets.navigationBars.getRight(density, layoutDirection).toFloat()
+    val navBarBottomPx = WindowInsets.navigationBars.getBottom(density).toFloat()
+    val imeBottomPx = WindowInsets.ime.getBottom(density).toFloat()
+
+    val liveAvailableBounds = Rect(
+        left = navBarLeftPx,
+        top = statusBarTopPx,
+        right = (viewport.width - navBarRightPx).coerceAtLeast(navBarLeftPx),
+        bottom = (viewport.height - max(navBarBottomPx, imeBottomPx)).coerceAtLeast(statusBarTopPx)
+    )
+
+    var placementAnchorBounds by remember { mutableStateOf(state.anchorBounds) }
+    var placementAvailableBounds by remember { mutableStateOf(liveAvailableBounds) }
+
+    LaunchedEffect(state.isVisible) {
+        if (state.isVisible) {
+            placementAnchorBounds = state.anchorBounds
+            placementAvailableBounds = liveAvailableBounds
+        }
+    }
+
+    val menuWidthPx = with(density) { 220.dp.roundToPx() }
+    val fallbackHeightPx = with(density) { 200.dp.roundToPx() }
+    val effectiveMenuSize =
+        if (menuSize == IntSize.Zero) IntSize(menuWidthPx, fallbackHeightPx) else menuSize
+
+    val placement = remember(placementAnchorBounds, effectiveMenuSize, placementAvailableBounds) {
+        pickPlacement(
+            anchorBounds = placementAnchorBounds,
+            menuSize = effectiveMenuSize,
+            availableBounds = placementAvailableBounds,
+            marginPx = with(density) { 12.dp.toPx() },
+            gapPx = with(density) { 6.dp.toPx() }
+        )
+    }
+
+    var isReady by remember { mutableStateOf(false) }
+    val scaleAni = remember { Animatable(0.4f) }
+    val alphaAni = remember { Animatable(0f) }
+    var isMenuInComposition by remember { mutableStateOf(false) }
+    val hapticController = LocalHapticFeedback.current
+
+    LaunchedEffect(isReady, isMenuInComposition, state.isVisible) {
+        if (isReady && isMenuInComposition && state.isVisible) {
+            coroutineScope {
+                launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
+                launch { alphaAni.animateTo(1f) }
+            }
+        }
+    }
+
+    LaunchedEffect(state.isVisible) {
+        if (state.isVisible) {
+            hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            isMenuInComposition = true
+        } else {
+            coroutineScope {
+                launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
+                launch { alphaAni.animateTo(0f) }
+            }
+            isMenuInComposition = false
+            isReady = false
+        }
+    }
+
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val shadowRadiusPx = with(density) { 24.dp.toPx() }
+    val shadowDyPx = with(density) { 10.dp.toPx() }
+
+    val shadowPaint = remember(shadowRadiusPx) {
+        AndroidPaint().apply {
+            isAntiAlias = true
+            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+    val shadowBaseColor = if (isDark) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
+    val shape = RoundedRectangle(18.dp)
+
+    val surfaceContainerColor = if (isDark) {
+        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)
+    } else {
+        Color.White.copy(alpha = 0.92f)
+    }
+    val borderColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.06f)
+
+    if (state.isVisible) {
+        BackHandler { onDismiss() }
+        // 全屏透明遮罩层拦截外部点击
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(98f)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss
+                )
+        )
+    }
+
+    if (isMenuInComposition) {
+        Box(
+            modifier = modifier
+                .zIndex(99f)
+                .graphicsLayer {
+                    translationX = placement.x
+                    translationY = placement.y
+                    scaleX = scaleAni.value
+                    scaleY = scaleAni.value
+                    alpha = alphaAni.value
+                    transformOrigin = placement.origin
+                }
+                .width(220.dp)
+                .onSizeChanged { menuSize = it }
+                .drawBehind {
+                    val currentAlpha = alphaAni.value
+                    if (currentAlpha > 0f) {
+                        val paintColor = shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
+                        shadowPaint.color = paintColor.toArgb()
+
+                        drawIntoCanvas { canvas ->
+                            canvas.save()
+                            canvas.translate(0f, shadowDyPx)
+                            when (val outline = shape.createOutline(size, layoutDirection, this)) {
+                                is Outline.Rectangle -> {
+                                    canvas.nativeCanvas.drawRect(
+                                        outline.rect.left, outline.rect.top,
+                                        outline.rect.right, outline.rect.bottom,
+                                        shadowPaint
+                                    )
+                                }
+                                is Outline.Rounded -> {
+                                    canvas.nativeCanvas.drawRoundRect(
+                                        outline.roundRect.left, outline.roundRect.top,
+                                        outline.roundRect.right, outline.roundRect.bottom,
+                                        outline.roundRect.bottomLeftCornerRadius.x,
+                                        outline.roundRect.bottomLeftCornerRadius.y,
+                                        shadowPaint
+                                    )
+                                }
+                                is Outline.Generic -> {
+                                    canvas.nativeCanvas.drawPath(outline.path.asAndroidPath(), shadowPaint)
+                                }
+                            }
+                            canvas.restore()
+                        }
+                    }
+                }
+                .clip(shape)
+                .border(width = 0.8.dp, color = borderColor, shape = shape)
+                .then(
+                    if (backdrop != null) {
+                        Modifier
+                            .drawBackdrop(
+                                backdrop = backdrop,
+                                shape = { shape },
+                                effects = {
+                                    vibrancy()
+                                    blur(20.dp.toPx())
+                                }
+                            )
+                            .background(surfaceContainerColor)
+                    } else {
+                        Modifier.background(surfaceContainerColor)
+                    }
+                )
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        placeable.place(0, 0)
+                        if (!isReady) isReady = true
+                    }
+                }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 380.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 6.dp)
+            ) {
+                state.items.forEach { item ->
+                    when (item) {
+                        is NemoSelectivePopupMenuItem -> {
+                            val selected = item.isSelected()
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(46.dp)
+                                    .clickable {
+                                        hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        item.onClick()
+                                        if (item.dismissOnClick) {
+                                            onDismiss()
+                                        }
+                                    }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                if (selected) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Check,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.size(20.dp))
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = item.text,
+                                    fontSize = 15.sp,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        is NemoActionPopupMenuItem -> {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(46.dp)
+                                    .clickable {
+                                        hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onDismiss()
+                                        item.onClick()
+                                    }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Spacer(modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = item.text,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+
+                        is NemoPopupMenuDivider -> {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

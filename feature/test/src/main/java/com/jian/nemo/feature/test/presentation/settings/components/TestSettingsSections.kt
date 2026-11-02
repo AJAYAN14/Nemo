@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Rect
 import com.jian.nemo.feature.test.R
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,7 @@ fun BasicSettingsSection(
     questionSourceOptions: List<SingleSelectOptionItem<String>>,
     wrongAnswerRemovalLabels: Map<Int, String>,
     currentContentTypeLabel: String,
-    onSettingClick: (String) -> Unit
+    onSettingClick: (setting: String, bounds: Rect) -> Unit
 ) {
     SectionTitle(stringResource(R.string.test_settings_section_basic))
     PremiumGroupCard {
@@ -35,7 +36,7 @@ fun BasicSettingsSection(
         PremiumSettingRow(
             label = stringResource(R.string.test_settings_label_question_count),
             value = stringResource(R.string.test_settings_format_question_count, config.questionCount),
-            onClick = { onSettingClick("questionCount") }
+            onClickWithBounds = { bounds -> onSettingClick("questionCount", bounds) }
         )
 
         // 2. 可用数据量展示
@@ -76,7 +77,7 @@ fun BasicSettingsSection(
         PremiumSettingRow(
             label = stringResource(R.string.test_settings_label_time_limit),
             value = if (config.timeLimitMinutes == 0) stringResource(R.string.test_settings_time_limit_unlimited) else stringResource(R.string.test_settings_time_limit_minutes_format, config.timeLimitMinutes),
-            onClick = { onSettingClick("timeLimit") }
+            onClickWithBounds = { bounds -> onSettingClick("timeLimit", bounds) }
         )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
@@ -86,7 +87,7 @@ fun BasicSettingsSection(
         PremiumSettingRow(
             label = stringResource(R.string.test_settings_label_source),
             value = currentSourceLabel,
-            onClick = { onSettingClick("questionSource") }
+            onClickWithBounds = { bounds -> onSettingClick("questionSource", bounds) }
         )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
@@ -96,7 +97,7 @@ fun BasicSettingsSection(
         PremiumSettingRow(
             label = stringResource(R.string.test_settings_label_removal),
             value = removalLabel,
-            onClick = { onSettingClick("wrongAnswerRemoval") }
+            onClickWithBounds = { bounds -> onSettingClick("wrongAnswerRemoval", bounds) }
         )
 
         // 6. 内容类型 (如果适用)
@@ -105,7 +106,7 @@ fun BasicSettingsSection(
             PremiumSettingRow(
                 label = stringResource(R.string.test_settings_label_content_type),
                 value = currentContentTypeLabel,
-                onClick = { onSettingClick("contentType") }
+                onClickWithBounds = { bounds -> onSettingClick("contentType", bounds) }
             )
         }
 
@@ -125,7 +126,7 @@ fun BasicSettingsSection(
             PremiumSettingRow(
                 label = label,
                 value = formatLevelsDisplay(levels, allLevels),
-                onClick = { onSettingClick(settingType) }
+                onClickWithBounds = { bounds -> onSettingClick(settingType, bounds) }
             )
         } else {
             // Mixed: Show both
@@ -134,13 +135,13 @@ fun BasicSettingsSection(
             PremiumSettingRow(
                 label = stringResource(R.string.test_settings_label_word_level),
                 value = formatLevelsDisplay(config.selectedWordLevels, allLevels),
-                onClick = { onSettingClick("wordLevel") }
+                onClickWithBounds = { bounds -> onSettingClick("wordLevel", bounds) }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
             PremiumSettingRow(
                 label = stringResource(R.string.test_settings_label_grammar_level),
                 value = formatLevelsDisplay(config.selectedGrammarLevels, allLevels),
-                onClick = { onSettingClick("grammarLevel") }
+                onClickWithBounds = { bounds -> onSettingClick("grammarLevel", bounds) }
             )
         }
     }
