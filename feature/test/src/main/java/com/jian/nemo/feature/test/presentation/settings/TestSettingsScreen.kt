@@ -35,12 +35,12 @@ import kotlinx.coroutines.launch
 
 import com.jian.nemo.feature.test.presentation.settings.components.BasicSettingsSection
 import com.jian.nemo.feature.test.presentation.settings.components.QuizSettingsSection
-import com.jian.nemo.feature.test.presentation.settings.components.NemoActionPopupMenuItem
-import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenu
-import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuDivider
-import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuState
-import com.jian.nemo.feature.test.presentation.settings.components.NemoPopupMenuItem
-import com.jian.nemo.feature.test.presentation.settings.components.NemoSelectivePopupMenuItem
+import com.jian.nemo.core.ui.component.popup.NemoActionPopupMenuItem
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenu
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenuDivider
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenuState
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenuItem
+import com.jian.nemo.core.ui.component.popup.NemoSelectivePopupMenuItem
 
 
 /**

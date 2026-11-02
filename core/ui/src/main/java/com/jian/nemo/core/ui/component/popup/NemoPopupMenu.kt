@@ -1,4 +1,4 @@
-package com.jian.nemo.feature.test.presentation.settings.components
+package com.jian.nemo.core.ui.component.popup
 
 import android.graphics.BlurMaskFilter
 import android.graphics.Paint as AndroidPaint
@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.TransformOrigin
@@ -70,7 +71,10 @@ import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.effect
+import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
+import com.kyant.backdrop.highlight.Highlight
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -180,10 +184,11 @@ private fun pickPlacement(
 }
 
 /**
- * Nemo 液态气泡悬浮菜单组件
+ * Nemo 液态气泡悬浮菜单组件 - Glasense 顶级液态磨砂物理质感版 (支持项间分割线)
  *
- * 采用 G2 连续平滑曲率 [RoundedRectangle]，结合底层物理折射 [Backdrop] 与弹簧缩放动画，
- * 呈现就地展开的精致液态磨砂悬浮菜单。
+ * 采用 G2 连续平滑曲率 [RoundedRectangle]，结合底层物理折射 [Backdrop]、
+ * AGSL 贝塞尔曲线亮度重映射着色器（Material Recipes）、50dp 超大模糊半径、
+ * 垂直渐变双阶物理边缘高光与弹簧缩放动画，精准复现如 Cresto / iOS 的晶莹亚克力液态玻璃质感。
  */
 @Composable
 fun NemoPopupMenu(
@@ -242,7 +247,8 @@ fun NemoPopupMenu(
     }
 
     var isReady by remember { mutableStateOf(false) }
-    val scaleAni = remember { Animatable(0.4f) }
+    val scaleXAni = remember { Animatable(0.65f) }
+    val scaleYAni = remember { Animatable(0.45f) }
     val alphaAni = remember { Animatable(0f) }
     var isMenuInComposition by remember { mutableStateOf(false) }
     val hapticController = LocalHapticFeedback.current
@@ -250,7 +256,8 @@ fun NemoPopupMenu(
     LaunchedEffect(isReady, isMenuInComposition, state.isVisible) {
         if (isReady && isMenuInComposition && state.isVisible) {
             coroutineScope {
-                launch { scaleAni.animateTo(1f, spring(0.8f, 450f, 0.001f)) }
+                launch { scaleXAni.animateTo(1f, spring(0.82f, 420f, 0.001f)) }
+                launch { scaleYAni.animateTo(1f, spring(0.76f, 400f, 0.001f)) }
                 launch { alphaAni.animateTo(1f) }
             }
         }
@@ -262,7 +269,8 @@ fun NemoPopupMenu(
             isMenuInComposition = true
         } else {
             coroutineScope {
-                launch { scaleAni.animateTo(0.4f, spring(0.7f, 600f)) }
+                launch { scaleXAni.animateTo(0.65f, spring(0.75f, 550f)) }
+                launch { scaleYAni.animateTo(0.45f, spring(0.75f, 600f)) }
                 launch { alphaAni.animateTo(0f) }
             }
             isMenuInComposition = false
@@ -271,24 +279,59 @@ fun NemoPopupMenu(
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val shadowRadiusPx = with(density) { 24.dp.toPx() }
-    val shadowDyPx = with(density) { 10.dp.toPx() }
 
-    val shadowPaint = remember(shadowRadiusPx) {
+    // 🌟 iOS 标准双层复合物理阴影：
+    // 1. 贴身环境光阴影 (Ambient) - 8dp 模糊 + 2dp Y 偏移，精密锁住卡片立体轮廓
+    val ambientShadowRadiusPx = with(density) { 8.dp.toPx() }
+    val ambientShadowDyPx = with(density) { 2.dp.toPx() }
+    val ambientShadowPaint = remember(ambientShadowRadiusPx) {
         AndroidPaint().apply {
             isAntiAlias = true
-            maskFilter = BlurMaskFilter(shadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+            maskFilter = BlurMaskFilter(ambientShadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
         }
     }
-    val shadowBaseColor = if (isDark) Color.Black.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.12f)
+    val ambientShadowColor = if (isDark) Color.Black.copy(alpha = 0.35f) else Color.Black.copy(alpha = 0.04f)
+
+    // 2. 扩散主漫反射投影 (Key) - 26dp 模糊 + 12dp Y 偏移，提供悬浮纵深空气感
+    val keyShadowRadiusPx = with(density) { 26.dp.toPx() }
+    val keyShadowDyPx = with(density) { 12.dp.toPx() }
+    val keyShadowPaint = remember(keyShadowRadiusPx) {
+        AndroidPaint().apply {
+            isAntiAlias = true
+            maskFilter = BlurMaskFilter(keyShadowRadiusPx, BlurMaskFilter.Blur.NORMAL)
+        }
+    }
+    val keyShadowColor = if (isDark) Color.Black.copy(alpha = 0.45f) else Color.Black.copy(alpha = 0.08f)
+
     val shape = RoundedRectangle(18.dp)
 
-    val surfaceContainerColor = if (isDark) {
-        MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.88f)
-    } else {
-        Color.White.copy(alpha = 0.92f)
+    // 🌟 Cresto 同款 AGSL 材质着色器 (贝塞尔明度映射 + 饱和度提升)
+    val materialRecipe = if (isDark) GlasenseMenuRegularDark else GlasenseMenuRegularLight
+    val materialEffect = rememberGlasenseMaterialRenderEffectOrNull(materialRecipe)
+
+    // 🌟 垂直物理入射光渐变高光边框 (模拟玻璃上边缘反光与物理厚度)
+    val highlightBorderBrush = remember(isDark) {
+        if (isDark) {
+            Brush.verticalGradient(
+                0.0f to Color.White.copy(alpha = 0.35f),
+                0.5f to Color.White.copy(alpha = 0.12f),
+                1.0f to Color.White.copy(alpha = 0.03f)
+            )
+        } else {
+            Brush.verticalGradient(
+                0.0f to Color.White.copy(alpha = 0.70f),
+                0.5f to Color.White.copy(alpha = 0.25f),
+                1.0f to Color.White.copy(alpha = 0.08f)
+            )
+        }
     }
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.06f)
+
+    // 低版本无 AGSL 时的兜底实体卡片底色
+    val fallbackContainerColor = if (isDark) {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    } else {
+        Color.White.copy(alpha = 0.95f)
+    }
 
     if (state.isVisible) {
         BackHandler { onDismiss() }
@@ -312,8 +355,8 @@ fun NemoPopupMenu(
                 .graphicsLayer {
                     translationX = placement.x
                     translationY = placement.y
-                    scaleX = scaleAni.value
-                    scaleY = scaleAni.value
+                    scaleX = scaleXAni.value
+                    scaleY = scaleYAni.value
                     alpha = alphaAni.value
                     transformOrigin = placement.origin
                 }
@@ -322,53 +365,75 @@ fun NemoPopupMenu(
                 .drawBehind {
                     val currentAlpha = alphaAni.value
                     if (currentAlpha > 0f) {
-                        val paintColor = shadowBaseColor.copy(alpha = shadowBaseColor.alpha * currentAlpha)
-                        shadowPaint.color = paintColor.toArgb()
+                        val outline = shape.createOutline(size, layoutDirection, this)
 
                         drawIntoCanvas { canvas ->
+                            // 1. 绘制深远扩散主投影 (Key Shadow)
+                            val keyColor = keyShadowColor.copy(alpha = keyShadowColor.alpha * currentAlpha)
+                            keyShadowPaint.color = keyColor.toArgb()
                             canvas.save()
-                            canvas.translate(0f, shadowDyPx)
-                            when (val outline = shape.createOutline(size, layoutDirection, this)) {
-                                is Outline.Rectangle -> {
-                                    canvas.nativeCanvas.drawRect(
-                                        outline.rect.left, outline.rect.top,
-                                        outline.rect.right, outline.rect.bottom,
-                                        shadowPaint
-                                    )
-                                }
-                                is Outline.Rounded -> {
-                                    canvas.nativeCanvas.drawRoundRect(
-                                        outline.roundRect.left, outline.roundRect.top,
-                                        outline.roundRect.right, outline.roundRect.bottom,
-                                        outline.roundRect.bottomLeftCornerRadius.x,
-                                        outline.roundRect.bottomLeftCornerRadius.y,
-                                        shadowPaint
-                                    )
-                                }
-                                is Outline.Generic -> {
-                                    canvas.nativeCanvas.drawPath(outline.path.asAndroidPath(), shadowPaint)
-                                }
+                            canvas.translate(0f, keyShadowDyPx)
+                            when (outline) {
+                                is Outline.Rectangle -> canvas.nativeCanvas.drawRect(outline.rect.left, outline.rect.top, outline.rect.right, outline.rect.bottom, keyShadowPaint)
+                                is Outline.Rounded -> canvas.nativeCanvas.drawRoundRect(outline.roundRect.left, outline.roundRect.top, outline.roundRect.right, outline.roundRect.bottom, outline.roundRect.bottomLeftCornerRadius.x, outline.roundRect.bottomLeftCornerRadius.y, keyShadowPaint)
+                                is Outline.Generic -> canvas.nativeCanvas.drawPath(outline.path.asAndroidPath(), keyShadowPaint)
+                            }
+                            canvas.restore()
+
+                            // 2. 绘制贴身环境光立体阴影 (Ambient Shadow)
+                            val ambientColor = ambientShadowColor.copy(alpha = ambientShadowColor.alpha * currentAlpha)
+                            ambientShadowPaint.color = ambientColor.toArgb()
+                            canvas.save()
+                            canvas.translate(0f, ambientShadowDyPx)
+                            when (outline) {
+                                is Outline.Rectangle -> canvas.nativeCanvas.drawRect(outline.rect.left, outline.rect.top, outline.rect.right, outline.rect.bottom, ambientShadowPaint)
+                                is Outline.Rounded -> canvas.nativeCanvas.drawRoundRect(outline.roundRect.left, outline.roundRect.top, outline.roundRect.right, outline.roundRect.bottom, outline.roundRect.bottomLeftCornerRadius.x, outline.roundRect.bottomLeftCornerRadius.y, ambientShadowPaint)
+                                is Outline.Generic -> canvas.nativeCanvas.drawPath(outline.path.asAndroidPath(), ambientShadowPaint)
                             }
                             canvas.restore()
                         }
                     }
                 }
                 .clip(shape)
-                .border(width = 0.8.dp, color = borderColor, shape = shape)
+                .border(width = 1.dp, brush = highlightBorderBrush, shape = shape)
                 .then(
-                    if (backdrop != null) {
+                    if (backdrop != null && isRuntimeShaderSupported()) {
+                        // 🌟 AndroidLiquidGlass 玻璃游乐场矩形同款：vibrancy() 色彩提纯 + 16dp 黄金中值模糊 + lens(...) 物理透镜厚度折射 + Highlight.Plain
                         Modifier
                             .drawBackdrop(
                                 backdrop = backdrop,
                                 shape = { shape },
                                 effects = {
+                                    val minDimension = size.minDimension
                                     vibrancy()
-                                    blur(20.dp.toPx())
+                                    blur(16.dp.toPx())
+                                    lens(
+                                        refractionHeight = 0.2f * minDimension * 0.5f,
+                                        refractionAmount = 0.2f * minDimension,
+                                        depthEffect = true
+                                    )
+                                },
+                                highlight = { Highlight.Plain },
+                                layerBlock = {
+                                    this.alpha = alphaAni.value
                                 }
                             )
-                            .background(surfaceContainerColor)
+                    } else if (backdrop != null) {
+                        Modifier
+                            .drawBackdrop(
+                                backdrop = backdrop,
+                                shape = { shape },
+                                layerBlock = {
+                                    this.alpha = alphaAni.value
+                                },
+                                effects = {
+                                    padding = 24.dp.toPx() * 2
+                                    blur(24.dp.toPx())
+                                }
+                            )
+                            .background(fallbackContainerColor.copy(alpha = 0.85f))
                     } else {
-                        Modifier.background(surfaceContainerColor)
+                        Modifier.background(fallbackContainerColor)
                     }
                 )
                 .layout { measurable, constraints ->
@@ -386,7 +451,7 @@ fun NemoPopupMenu(
                     .verticalScroll(rememberScrollState())
                     .padding(vertical = 6.dp)
             ) {
-                state.items.forEach { item ->
+                state.items.forEachIndexed { index, item ->
                     when (item) {
                         is NemoSelectivePopupMenuItem -> {
                             val selected = item.isSelected()
@@ -455,9 +520,21 @@ fun NemoPopupMenu(
                         is NemoPopupMenuDivider -> {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)
+                                color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
                             )
                         }
+                    }
+
+                    // 🌟 项与项之间的微透分割线（用户明确要求：“对了加上分割线”）
+                    if (index < state.items.size - 1 &&
+                        state.items[index + 1] !is NemoPopupMenuDivider &&
+                        item !is NemoPopupMenuDivider
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 14.dp),
+                            color = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f),
+                            thickness = 0.5.dp
+                        )
                     }
                 }
             }

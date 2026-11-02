@@ -92,3 +92,127 @@
 3. **深浅光学明度补偿公理**：强调色在深色底色下必须使用系统专属发光色阶（`OrangeDark`），保障无障碍阅读。
 4. **编译验证**：全工程 `compileDebugKotlin` 0 警告中断、0 错误，顺利通过构建（BUILD SUCCESSFUL）。
 
+
+
+---
+
+## 五、测试设置界面液态气泡菜单 Cresto 级玻璃着色器与高光升级台账
+
+> **目标**：100% 还原 Cresto 原生 `glasense-ui` 的高级亚克力液态玻璃质感，将基础磨砂卡片彻底升级为基于 AGSL 贝塞尔明度映射、50dp 极柔模糊与垂直物理渐变高光的真实玻璃容器。
+
+### 1. 改动与新增组件
+* **新增组件**：`GlasenseMaterialShader.kt`
+  * 移植 Cresto 核心 AGSL RuntimeShader 材质配方：
+    * 三次贝塞尔曲线亮度重映射（`bezierMap`）+ 饱和度提升（1.5f）+ 微观抖动防断层噪点（Dither）；
+    * 封装 `RegularLight`（浅色模式）与 `RegularDark`（深色模式）专属菜单材质配方；
+    * 提供 `rememberGlasenseMaterialRenderEffectOrNull`，在 Android 13+（API 33+）上动态创建 RuntimeShader，低版本优雅降级。
+* **升级渲染管线**：`NemoPopupMenu.kt`
+  * **超大模糊与扩展采样**：Backdrop 效果升级为 `padding = 50.dp.toPx() * 2`（外扩 100dp 采样消除硬边与边缘黑斑）+ `blur(50.dp.toPx())` 深度高斯模糊 + `materialEffect` 贝塞尔材质着色注入；
+  * **双阶物理边缘高光（Glass Highlight）**：边框升级为垂直多阶微光渐变描边（`Brush.verticalGradient`，顶部纯白 22%~55% 入射高光，中部 8%~20%，底部 2%~6% 隐去），勾勒真实玻璃物体的厚度与晶莹反光；
+  * **阴影与微染色**：漫反射软阴影半径提升至 32dp（偏移 14dp），表面叠加 25%~32% 微染色保持文字选项可读性；
+  * **编译验证**：全工程 `compileDebugKotlin` 验证通过（BUILD SUCCESSFUL，0 错误）。
+
+---
+
+## 六、主设置界面（SettingsScreen）学习目标项液态气泡菜单与微透分割线升级台账
+
+> **目标**：响应用户指令，将主设置界面（`SettingsScreen.kt`）的“每日单词目标”、“每日语法目标”、“学习日重置时间”从原有的 BottomSheet 升级为与 Cresto 一致的真·液态磨砂气泡悬浮菜单（`NemoPopupMenu`），并且在菜单项与项之间加入优雅的 0.5dp 微透分割线。
+
+### 1. 核心改造与组件架构
+* **升级基础列表项组件**：`SettingsComponents.kt`
+  * 为 `SquircleSettingItem` 两个公开重载及底层实现增加 `onClickWithBounds: ((Rect) -> Unit)? = null` 可选回调；
+  * 列表项底层容器接入 `onGloballyPositioned`，实时捕获整行在窗口中的绝对矩形 `boundsInWindow()`，点击时精准回传自身屏幕位置；
+  * 保持已有 `onClick: () -> Unit = {}` 参数默认值不变，100% 向后兼容全工程其他调用。
+* **沉淀菜单项间微透分割线**：`NemoPopupMenu.kt`
+  * 在 `state.items.forEachIndexed` 遍历中，在相邻选项之间自动注入 `0.5.dp` 的极细微透水平分割线（`HorizontalDivider`）；
+  * 深浅色自适应透明度：深色模式 8% 白微光，浅色模式 6% 黑轻影，两侧带 14dp 内缩边距，与分割线对象（`NemoPopupMenuDivider`）实现智能防重互斥，极大提升层级节奏感与视觉秩序。
+* **主设置界面接入与升级**：`SettingsScreen.kt`
+  * 实例化 `val backdrop = rememberLayerBackdrop()`，将外层 `LazyColumn` 挂载为物理折射采样源 `.layerBackdrop(backdrop)`；
+  * 移除“每日单词目标”、“每日语法目标”、“学习日重置时间”原有的 3 个 BottomSheet 对话框代码；
+  * 将这三项的点击事件接入 `onClickWithBounds`，分别弹出对应选项（单词目标：5/10/20/30/50个；语法目标：5/10/15/20/25条；重置时间：0点/2点/4点(推荐)/5点/6点）；
+  * 选项文本严格复用原有 `strings.xml` 资源，零硬编码；
+  * 在页面根容器顶层统一挂载 `NemoPopupMenu`，享受就地停靠、贝塞尔曲线明度重映射、50dp 极柔模糊折射与微触觉反馈。
+
+### 2. 编译与规范核验
+* **编译检查**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。
+* **规范符合度**：
+  * 严禁硬编码颜色字面量与 UI 界面文本：颜色全走系统语义及调色盘，文本 100% 收编至 `strings.xml`；
+  * 严格遵循最小变更原则，不改动无关代码；
+  * 注释纯净，杜绝任何元说明与口水套话。
+
+---
+
+## 七、液态气泡菜单超透亮水晶光学材质与边缘高光调优台账
+
+> **目标**：响应用户指令（“优化一下，改成更透亮一点的”），彻底排查导致此前视觉上略显厚重、发白雾化的根因，对标 Cresto 原生清透玻璃质感，将气泡菜单全面调优为超透亮高采光水晶玻璃容器。
+
+### 1. 核心调优与配方升级
+* **去除厚重蒙层，还原 100% 穿透折射**：
+  * 将原先覆盖在物理折射层之上的 `32%` 浅色白底与 `25%` 深色黑底（`glassTintOverlay`）大幅削减至仅 `6%` 呼吸感晶体透光层，消除类似磨砂塑料的泛白硬质感，让底层界面的背景色彩、卡片边缘与光影直接穿透玻璃体；
+* **升级 AGSL 材质着色器为清透配方（Thin / Clear Recipe）**：
+  * 在 `GlasenseMaterialShader.kt` 中将明度映射强度从偏沉重的 `0.75f` 收敛至轻盈通透的 `0.58f`，采用更平缓自然的 Thin 贝塞尔明度映射曲线；
+  * 明度补偿微调为 `extraBrightness = 0.12f`，使折射出的背景像素明亮清晰、晶莹透光；
+* **强化晶体边缘垂直高光与清爽阴影**：
+  * 顶部物理入射高光提升至 70% 纯白亮光（`Color.White.copy(alpha = 0.70f)`），中部 25%，底部 8%，勾勒出宛如宝石切割面的晶莹反光与立体厚度；
+  * 浅色漫反射软阴影从 15% 优化至 8%，整体更轻灵清爽，无灰暗脏污感；
+  * 0.5dp 微透分割线调整为 5% 黑轻影（浅色）/ 8% 白微光（深色），与清澈玻璃背景无缝融为一体。
+
+### 2. 编译与验收验证
+* **构建验证**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。
+
+---
+
+## 八、气泡菜单 iOS 原生级双层复合阴影与表面张力非对称弹性动效台账
+
+> **目标**：彻底拉齐与 iOS 官方系统组件最后的 5% 细节差异，将气泡菜单从常规单层阴影与各向同性缩放，全面升级为 iOS 标准的“双层复合物理投影（Ambient + Key）”与“表面张力非对称物理弹性动效（Asymmetric Spring）”。
+
+### 1. 核心升级与工程落地
+* **iOS 标准双层复合物理阴影（Dual Composite Shadows）**：
+  * **第一层（贴身微环境光阴影 Ambient Shadow）**：8dp 模糊半径 + 2dp Y 轴微偏移（深色 35% 黑，浅色 4% 黑），精细锁紧卡片边缘立体轮廓，解决超大单一投影造成的边缘发虚问题；
+  * **第二层（深远扩散主漫反射投影 Key Shadow）**：26dp 模糊半径 + 12dp Y 轴主偏移（深色 45% 黑，浅色 8% 黑），在三维空间中将悬浮气泡自然托起；
+  * 在 `drawBehind` 的同一离屏 Canvas 树中分阶段绘制并融合，兼具轮廓精密感与空间深邃感。
+* **表面张力非对称物理弹性形变动效（Asymmetric Spring Animation）**：
+  * 将缩放动画拆解为 `scaleXAni`（X 轴初态 0.65f，`dampingRatio = 0.82f`，`stiffness = 420f`）与 `scaleYAni`（Y 轴初态 0.45f，`dampingRatio = 0.76f`，`stiffness = 400f`）；
+  * 展开瞬间呈现极其细腻的表面张力形变（横向先伸展、纵向弹性回弹泵出），模拟物理液体气泡脱离锚点瞬间的有机生命感。
+
+### 2. 构建与规范核验
+* **构建验证**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。
+
+---
+
+## 九、气泡菜单 22dp 黄金光斑与 100% 零遮挡纯净折射调优台账
+
+> **目标**：彻底解决此前因模糊半径过大（50dp）导致光影被抹成死板单色、以及因贝塞尔映射压暗导致的“发闷不够透亮”问题，全面调优为 22dp 黄金光斑清晰穿透与零背景遮挡的水晶玻璃。
+
+### 1. 核心重构与调优落地
+* **模糊半径回归 iOS 黄金光斑档位（`22dp`）**：
+  * 将模糊半径从抹平光影的 `50dp` 调整为黄金光斑档位的 `22dp`（外扩采样 `44dp`）；
+  * 恢复了底层卡片边缘与图文的光晕轮廓，背后的光线与明暗起伏能够自然斑斓地透射进玻璃体中，透亮感大增。
+* **彻底拔除 AGSL 渲染层的实色背景遮盖**：
+  * 在 `drawBackdrop` 渲染层中移除 `.background(glassTintOverlay)`，100% 开放底层 GPU 帧缓冲的纯粹折射光。
+* **升级 AGSL 贝塞尔曲线为高采光晶体配方**：
+  * 引入 `CrystalLightCurve = (0.92f, 0.95f, 0.98f, 0.96f)`，将亮度映射最高点拉升至 0.98，彻底解决纯白被压暗的问题；
+  * `mapIntensity` 收敛至 `0.50f`（一半底色采光 + 一半贝塞尔提亮），`saturation` 提升至 `1.45x`，`extraBrightness` 提升至 `0.16f`；
+  * 确保 RenderEffect 顺序先 `blur(22.dp)` 再注入 `materialEffect` 提纯，保证色彩鲜活灵动。
+
+### 2. 构建与验证
+* **构建验证**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。
+
+---
+
+## 十、气泡菜单移植 AndroidLiquidGlass 玻璃游乐场矩形管线台账
+
+> **目标**：响应用户明确指定，将气泡菜单彻底换装为 `E:\Android\AndroidLiquidGlass` 项目中“玻璃游乐场（Glass Playground）”悬浮矩形同款渲染管线，并将模糊半径严格设为滑块中值 16dp。
+
+### 1. 核心管线重构与落地
+* **`AndroidLiquidGlass` 玻璃游乐场矩形同款渲染链**：
+  * **色彩提纯（`vibrancy()`）**：接入 Kyant 官方纯净色彩饱和度与明度提纯，彻底消除底层像素被高斯模糊后发脏变暗的弊端；
+  * **模糊半径精准拉到一半（`16.dp`）**：严格对应游乐场滑块（0~32dp）的一半中值 `blur(16.dp.toPx())`，背景物体既拥有柔美光斑，又绝不抹平成单色死板；
+  * **边缘物理透镜折射弯曲（`lens(...)`）**：注入真实凸透镜光学形变（`refractionHeight = 0.2f * minDimension * 0.5f`，`refractionAmount = 0.2f * minDimension`，`depthEffect = true`），底层元素在穿透气泡边缘时会像透过真实液态水滴一样产生物理折射形变；
+  * **内置晶莹高光（`Highlight.Plain`）**：完美接入游乐场矩形原汁原味的宝石切面微反光；
+  * **100% 零实色遮挡**：完全无背景底色干扰，水光透亮感拉满。
+* **双层阴影与非对称动效完美融合**：
+  * 继续保留上一阶段调优完成的 iOS 标准双层复合物理阴影（Ambient 8dp + Key 26dp）与表面张力非对称弹性形变动效，整套气泡菜单呈现顶级的物理水感。
+
+### 2. 构建与核验
+* **构建验证**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。

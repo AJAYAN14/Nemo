@@ -36,6 +36,12 @@ import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenu
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenuState
+import com.jian.nemo.core.ui.component.popup.NemoPopupMenuItem
+import com.jian.nemo.core.ui.component.popup.NemoSelectivePopupMenuItem
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 import com.jian.nemo.feature.settings.components.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -78,6 +84,59 @@ fun SettingsScreen(
     var snackbarVisible by remember { mutableStateOf(false) }
     var snackbarMessage by remember { mutableStateOf("") }
     var snackbarType by remember { mutableStateOf(NemoSnackbarType.INFO) }
+
+    // 物理折射与气泡悬浮菜单
+    val backdrop = rememberLayerBackdrop()
+    var popupMenuState by remember { mutableStateOf(NemoPopupMenuState()) }
+    var activeMenuType by remember { mutableStateOf("") }
+
+    val currentMenuItems: List<NemoPopupMenuItem> = when (activeMenuType) {
+        "dailyGoal" -> {
+            listOf(5, 10, 20, 30, 50).map { goal ->
+                NemoSelectivePopupMenuItem(
+                    text = stringResource(R.string.settings_components_format_word_goal, goal),
+                    isSelected = { uiState.dailyGoal == goal },
+                    dismissOnClick = true,
+                    onClick = {
+                        viewModel.onEvent(SettingsEvent.SetDailyGoal(goal))
+                    }
+                )
+            }
+        }
+        "grammarGoal" -> {
+            listOf(5, 10, 15, 20, 25).map { goal ->
+                NemoSelectivePopupMenuItem(
+                    text = stringResource(R.string.settings_components_format_grammar_goal, goal),
+                    isSelected = { uiState.grammarDailyGoal == goal },
+                    dismissOnClick = true,
+                    onClick = {
+                        viewModel.onEvent(SettingsEvent.SetGrammarDailyGoal(goal))
+                    }
+                )
+            }
+        }
+        "resetHour" -> {
+            listOf(0, 2, 4, 5, 6).map { hour ->
+                val label = when (hour) {
+                    0 -> stringResource(R.string.settings_components_reset_hour_midnight)
+                    2 -> stringResource(R.string.settings_components_reset_hour_2am)
+                    4 -> stringResource(R.string.settings_components_reset_hour_4am_recommended)
+                    5 -> stringResource(R.string.settings_components_reset_hour_5am)
+                    6 -> stringResource(R.string.settings_components_reset_hour_6am)
+                    else -> "${hour}:00"
+                }
+                NemoSelectivePopupMenuItem(
+                    text = label,
+                    isSelected = { uiState.learningDayResetHour == hour },
+                    dismissOnClick = true,
+                    onClick = {
+                        viewModel.onEvent(SettingsEvent.SetLearningDayResetHour(hour))
+                    }
+                )
+            }
+        }
+        else -> emptyList()
+    }
 
     val keywordFailure = stringResource(R.string.settings_keyword_label_failure)
     val keywordException = stringResource(R.string.settings_keyword_label_exception)
@@ -139,7 +198,9 @@ fun SettingsScreen(
                 .background(backgroundColor)
         ) {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop),
                 contentPadding = PaddingValues(
                     start = 16.dp,
                     end = 16.dp,
@@ -231,7 +292,13 @@ fun SettingsScreen(
                             iconColor = IosColors.Orange,
                             title = stringResource(R.string.settings_item_title_daily_word_goal),
                             subtitle = stringResource(R.string.settings_item_subtitle_daily_word_goal),
-                            onClick = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(true)) },
+                            onClickWithBounds = { bounds ->
+                                activeMenuType = "dailyGoal"
+                                popupMenuState = NemoPopupMenuState(
+                                    isVisible = true,
+                                    anchorBounds = bounds
+                                )
+                            },
                             showDivider = true,
                             trailing = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -256,7 +323,13 @@ fun SettingsScreen(
                             iconColor = IosColors.Green,
                             title = stringResource(R.string.settings_item_title_daily_grammar_goal),
                             subtitle = stringResource(R.string.settings_item_subtitle_daily_grammar_goal),
-                            onClick = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(true)) },
+                            onClickWithBounds = { bounds ->
+                                activeMenuType = "grammarGoal"
+                                popupMenuState = NemoPopupMenuState(
+                                    isVisible = true,
+                                    anchorBounds = bounds
+                                )
+                            },
                             showDivider = true,
                             trailing = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -281,7 +354,13 @@ fun SettingsScreen(
                             iconColor = IosColors.Mint,
                             title = stringResource(R.string.settings_item_title_day_reset),
                             subtitle = stringResource(R.string.settings_item_subtitle_day_reset),
-                            onClick = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(true)) },
+                            onClickWithBounds = { bounds ->
+                                activeMenuType = "resetHour"
+                                popupMenuState = NemoPopupMenuState(
+                                    isVisible = true,
+                                    anchorBounds = bounds
+                                )
+                            },
                             showDivider = true,
                             trailing = {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -474,36 +553,18 @@ fun SettingsScreen(
                     .align(Alignment.TopCenter)
                     .padding(top = statusBarHeight + 8.dp)
             )
+
+            // 液态磨砂气泡悬浮菜单 (就地锚定、贝塞尔明度映射、物理折射、微透分割线)
+            NemoPopupMenu(
+                state = popupMenuState.copy(items = currentMenuItems),
+                backdrop = backdrop,
+                onDismiss = {
+                    popupMenuState = popupMenuState.copy(isVisible = false)
+                    activeMenuType = ""
+                }
+            )
         }
     }
-
-    // 对话框和 Bottom Sheet 保持不变
-    if (uiState.showDailyGoalDialog) {
-        DailyGoalSelectionBottomSheet(
-            currentGoal = uiState.dailyGoal,
-            onDismiss = { viewModel.onEvent(SettingsEvent.ShowDailyGoalDialog(false)) },
-            onGoalSelected = { viewModel.onEvent(SettingsEvent.SetDailyGoal(it)) }
-        )
-    }
-
-    if (uiState.showGrammarDailyGoalDialog) {
-        GrammarDailyGoalSelectionBottomSheet(
-            currentGoal = uiState.grammarDailyGoal,
-            onDismiss = { viewModel.onEvent(SettingsEvent.ShowGrammarDailyGoalDialog(false)) },
-            onGoalSelected = { viewModel.onEvent(SettingsEvent.SetGrammarDailyGoal(it)) }
-        )
-    }
-
-
-
-    if (uiState.showLearningDayResetHourDialog) {
-        LearningDayResetHourBottomSheet(
-            currentHour = uiState.learningDayResetHour,
-            onDismiss = { viewModel.onEvent(SettingsEvent.ShowLearningDayResetHourDialog(false)) },
-            onHourSelected = { viewModel.onEvent(SettingsEvent.SetLearningDayResetHour(it)) }
-        )
-    }
-
 
     // 重置确认对话框
     if (showConfirmDialog) {

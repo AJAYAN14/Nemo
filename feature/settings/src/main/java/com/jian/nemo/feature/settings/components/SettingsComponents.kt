@@ -14,6 +14,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
@@ -110,7 +113,8 @@ fun SquircleSettingItem(
     iconColor: Color,
     title: String,
     subtitle: String? = null,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
+    onClickWithBounds: ((Rect) -> Unit)? = null,
     showDivider: Boolean = true,
     trailing: (@Composable () -> Unit)? = null
 ) {
@@ -122,6 +126,7 @@ fun SquircleSettingItem(
         title = title,
         subtitle = subtitle,
         onClick = onClick,
+        onClickWithBounds = onClickWithBounds,
         showDivider = showDivider,
         trailing = trailing
     )
@@ -136,7 +141,8 @@ fun SquircleSettingItem(
     iconColor: Color,
     title: String,
     subtitle: String? = null,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
+    onClickWithBounds: ((Rect) -> Unit)? = null,
     showDivider: Boolean = true,
     trailing: (@Composable () -> Unit)? = null
 ) {
@@ -148,6 +154,7 @@ fun SquircleSettingItem(
         title = title,
         subtitle = subtitle,
         onClick = onClick,
+        onClickWithBounds = onClickWithBounds,
         showDivider = showDivider,
         trailing = trailing
     )
@@ -166,7 +173,8 @@ fun SquircleSettingItem(
     iconRotation: Float = 0f,
     title: String,
     subtitle: String? = null,
-    onClick: () -> Unit,
+    onClick: () -> Unit = {},
+    onClickWithBounds: ((Rect) -> Unit)? = null,
     showDivider: Boolean = true,
     trailing: (@Composable () -> Unit)? = null // 用于 Switch 或 TextArrow
 ) {
@@ -177,15 +185,25 @@ fun SquircleSettingItem(
         label = "scale",
         animationSpec = tween(ANIMATION_DURATION)
     )
+    var itemBounds by remember { mutableStateOf(Rect.Zero) }
 
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    itemBounds = coordinates.boundsInWindow()
+                }
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null, // 自定义按压效果，去除默认 ripple
-                    onClick = onClick
+                    onClick = {
+                        if (onClickWithBounds != null) {
+                            onClickWithBounds(itemBounds)
+                        } else {
+                            onClick()
+                        }
+                    }
                 )
                 .graphicsLayer {
                     scaleX = scale
