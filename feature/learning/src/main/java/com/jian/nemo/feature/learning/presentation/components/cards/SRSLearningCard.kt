@@ -61,7 +61,13 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
-import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.NemoText
+import com.jian.nemo.core.designsystem.theme.NemoTextLight
+import com.jian.nemo.core.designsystem.theme.NemoNeutralGray
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import com.jian.nemo.core.designsystem.theme.IosColors
@@ -98,18 +104,16 @@ fun SRSLearningCard(
     // 根据主题选择颜色
     val cardBackground = if (isDarkTheme) NemoSurfaceCardDark else NemoSurfaceCard
 
-    // Border/Divider
-    // Border/Divider - Refined to 0.5dp for premium feel
-    val borderColor = if (isDarkTheme) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-    val dividerColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray100
+    // Divider
+    val dividerColor = if (isDarkTheme) NemoSurfaceBorderDark else NemoSurfaceBorder
 
-    // Text: 使用 NemoNeutrals 定义的精准色值
-    val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
-    val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray400
+    // Text: 严格对齐 Dynamic_Color_System_Spec 四级文本明度阶梯
+    val primaryTextColor = if (isDarkTheme) Color.White else NemoText
+    val secondaryTextColor = if (isDarkTheme) NemoNeutralGray else NemoTextLight
 
-    // Labels
-    val labelBgColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray100
-    val labelTextColor = if (isDarkTheme) NemoNeutrals.DarkTextSecondary else NemoNeutrals.Gray500
+    // Labels: 二级表面与二级文本
+    val labelBgColor = if (isDarkTheme) NemoSurfaceSubcardDark else NemoSurfaceSubcard
+    val labelTextColor = if (isDarkTheme) NemoNeutralGray else NemoTextLight
 
     // 标准调色盘统一色彩系统
     val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
@@ -292,12 +296,7 @@ fun SRSLearningCard(
                                 .height(440.dp)
                                 .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
                                 .clip(RoundedRectangle(26.dp))
-                                .background(cardBackground.copy(alpha = if (isDarkTheme) 0.85f else 0.95f))
-                                .border(
-                                    width = 0.8.dp,
-                                    color = borderColor,
-                                    shape = RoundedRectangle(26.dp)
-                                )
+                                .background(cardBackground)
                                 .drawBehind {
                                     val dotSpacing = 18.dp.toPx()
                                     val dotRadius = 1.25.dp.toPx()
@@ -386,7 +385,7 @@ fun SRSLearningCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .softCardShadow(borderRadius = 26.dp, isDark = isDarkTheme)
-                        .background(cardBackground.copy(alpha = 0.95f), RoundedRectangle(26.dp))
+                        .background(cardBackground, RoundedRectangle(26.dp))
                         .padding(24.dp)
                 ) {
                     // Meaning

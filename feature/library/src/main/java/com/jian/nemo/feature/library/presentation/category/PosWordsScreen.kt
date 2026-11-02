@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,78 +32,94 @@ import com.jian.nemo.core.ui.util.displayName
  *
  * 展示某个词性下的所有单词
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PosWordsScreen(
     onNavigateBack: () -> Unit,
     viewModel: PosWordsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val containerColor = MaterialTheme.colorScheme.background
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(uiState.partOfSpeech.displayName)
-                        Text(
-                            text = stringResource(R.string.lib_pos_words_count_format, uiState.words.size),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.lib_pos_words_nav_back)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
+        if (uiState.isLoading) {
+            NemoChasingDotsLoader(
+                modifier = Modifier.align(Alignment.Center)
             )
+        } else if (uiState.words.isEmpty()) {
+            Text(
+                text = stringResource(R.string.lib_pos_words_empty_format, uiState.partOfSpeech.displayName),
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.words) { word ->
+                    Box(modifier = Modifier.animateListItem()) {
+                        WordListItem(word = word)
+                    }
+                }
+            }
         }
-    ) { paddingValues ->
+
+        uiState.errorMessage?.let { error ->
+            Snackbar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = navBarBottom + 16.dp, start = 16.dp, end = 16.dp)
+            ) {
+                Text(error)
+            }
+        }
+
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.95f),
+                            containerColor.copy(alpha = 0.75f),
+                            containerColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
         ) {
-            if (uiState.isLoading) {
-                NemoChasingDotsLoader(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else if (uiState.words.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.lib_pos_words_empty_format, uiState.partOfSpeech.displayName),
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(uiState.words) { word ->
-                        Box(modifier = Modifier.animateListItem()) {
-                            WordListItem(word = word)
-                        }
-                    }
+            CommonHeader(
+                title = uiState.partOfSpeech.displayName,
+                onBack = onNavigateBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    Text(
+                        text = stringResource(R.string.lib_pos_words_count_format, uiState.words.size),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            }
-
-            uiState.errorMessage?.let { error ->
-                Snackbar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(error)
-                }
-            }
+            )
         }
     }
 }

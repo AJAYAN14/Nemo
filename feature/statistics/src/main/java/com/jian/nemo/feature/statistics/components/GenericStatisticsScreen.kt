@@ -19,6 +19,11 @@ import com.jian.nemo.feature.statistics.R
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.core.ui.component.list.LevelHeader
 import com.jian.nemo.core.ui.component.card.CommonGrammarCard
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.LayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import kotlinx.coroutines.launch
 
@@ -46,16 +51,21 @@ fun GenericStatisticsScreen(
     val pagerState = rememberPagerState(pageCount = { tabItems.size })
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = title,
-                onBack = onBack,
-                backgroundColor = Color.Transparent
-            )
-        }
-    ) { paddingValues ->
-        Column(modifier = modifier.padding(paddingValues)) {
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = statusBarTop + 60.dp + 8.dp)
+        ) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
                 containerColor = Color.Transparent,
@@ -73,22 +83,54 @@ fun GenericStatisticsScreen(
                     )
                 }
             }
-            HorizontalPager(state = pagerState) { page ->
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { page ->
                 when (page) {
                     0 -> StatisticsContent(
                         type = wordTab,
                         items = wordItems,
                         onItemClick = onItemClick,
-                        emptyMessage = emptyWordMessage
+                        emptyMessage = emptyWordMessage,
+                        backdrop = backdrop,
+                        bottomPadding = navBarBottom + 24.dp
                     )
                     1 -> StatisticsContent(
                         type = grammarTab,
                         items = grammarItems,
                         onItemClick = onItemClick,
-                        emptyMessage = emptyGrammarMessage
+                        emptyMessage = emptyGrammarMessage,
+                        backdrop = backdrop,
+                        bottomPadding = navBarBottom + 24.dp
                     )
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = title,
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }
@@ -98,7 +140,9 @@ private fun StatisticsContent(
     type: String,
     items: List<StatisticDisplayItem>,
     onItemClick: (type: String, item: StatisticDisplayItem) -> Unit,
-    emptyMessage: String
+    emptyMessage: String,
+    backdrop: LayerBackdrop,
+    bottomPadding: androidx.compose.ui.unit.Dp
 ) {
     val groupedItems = items.groupBy { it.level }
     val expandedState = remember { mutableStateMapOf<String, Boolean>() }
@@ -122,8 +166,9 @@ private fun StatisticsContent(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .layerBackdrop(backdrop)
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 10.dp, bottom = 20.dp)
+            contentPadding = PaddingValues(top = 10.dp, bottom = bottomPadding)
         ) {
             groupedItems.forEach { (level, itemsInLevel) ->
                 item(key = "header_$level") {

@@ -24,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.feature.statistics.R
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.statistics.ActivityHeatmapUiState
 import com.jian.nemo.feature.statistics.util.ShareBitmapHelper
@@ -159,7 +158,7 @@ fun HeatmapShareBottomSheet(
                         .weight(1f)
                         .height(48.dp),
                     shape = RoundedRectangle(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = NemoPrimary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     enabled = !isSharing
                 ) {
                     if (isSharing) {

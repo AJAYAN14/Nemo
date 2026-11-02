@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -86,6 +87,8 @@ fun AccountManagementScreen(
     val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
 
     val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -93,26 +96,16 @@ fun AccountManagementScreen(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(backdrop)
-            )
-
-            Column(
-                modifier = Modifier.fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    )
             ) {
-                CommonHeader(
-                    title = stringResource(R.string.user_account_title_screen),
-                    onBack = onNavigateBack,
-                    backgroundColor = backgroundColor
-                )
-
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(scrollState)
-                ) {
                     ProfileHeaderSection(
                         uiState = uiState,
                         avatarPath = avatarPath,
@@ -133,7 +126,7 @@ fun AccountManagementScreen(
                         ) {
                             PremiumSettingsItem(
                                 icon = Icons.Rounded.Badge,
-                                iconTint = IosColors.Blue,
+                                iconTint = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
                                 title = stringResource(R.string.user_account_btn_change_username),
                                 onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
                             )
@@ -145,7 +138,7 @@ fun AccountManagementScreen(
                                 )
                                 PremiumSettingsItem(
                                     icon = Icons.Rounded.Mail,
-                                    iconTint = IosColors.Green,
+                                    iconTint = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
                                     title = stringResource(R.string.user_account_btn_change_email),
                                     onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
                                 )
@@ -161,7 +154,7 @@ fun AccountManagementScreen(
                         ) {
                             PremiumSettingsItem(
                                 icon = Icons.Rounded.LockReset,
-                                iconTint = IosColors.Orange,
+                                iconTint = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
                                 title = stringResource(R.string.user_account_btn_reset_password),
                                 onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
                             )
@@ -176,7 +169,7 @@ fun AccountManagementScreen(
                         ) {
                             PremiumSettingsItem(
                                 icon = Icons.Rounded.DeleteForever,
-                                iconTint = IosColors.Red,
+                                iconTint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
                                 title = stringResource(R.string.user_account_btn_delete_account),
                                 titleColor = MaterialTheme.colorScheme.error,
                                 onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
@@ -190,7 +183,7 @@ fun AccountManagementScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(52.dp),
-                            tint = IosColors.Red,
+                            tint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
                             backdrop = backdrop,
                             shape = Capsule()
                         ) {
@@ -204,9 +197,34 @@ fun AccountManagementScreen(
                         Spacer(modifier = Modifier.height(48.dp))
                     }
                 }
+
+                // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.TopCenter)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    backgroundColor.copy(alpha = 0.95f),
+                                    backgroundColor.copy(alpha = 0.75f),
+                                    backgroundColor.copy(alpha = 0.35f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                        .padding(bottom = 8.dp)
+                ) {
+                    CommonHeader(
+                        title = stringResource(R.string.user_account_title_screen),
+                        onBack = onNavigateBack,
+                        backgroundColor = Color.Transparent,
+                        backdrop = backdrop,
+                        backButtonSize = 48.dp
+                    )
+                }
             }
         }
-    }
 
     when (uiState.activeDialog) {
         UserDialogType.RESET_PASSWORD -> {

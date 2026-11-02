@@ -9,6 +9,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -295,7 +296,8 @@ fun DailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 20, 30, 50)
-    val accentColor = IosColors.Orange
+    val isDark = isSystemInDarkTheme()
+    val accentColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -366,7 +368,8 @@ fun GrammarDailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 15, 20, 25)
-    val accentColor = IosColors.Green
+    val isDark = isSystemInDarkTheme()
+    val accentColor = if (isDark) IosColors.GreenDark else IosColors.Green
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -481,7 +484,8 @@ fun LearningDayResetHourBottomSheet(
     onHourSelected: (Int) -> Unit
 ) {
     val hours = listOf(0, 2, 4, 5, 6)
-    val accentColor = IosColors.Mint
+    val isDark = isSystemInDarkTheme()
+    val accentColor = if (isDark) IosColors.MintDark else IosColors.Mint
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -616,7 +620,8 @@ fun VoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val accentColor = IosColors.Pink
+    val isDark = isSystemInDarkTheme()
+    val accentColor = if (isDark) IosColors.PinkDark else IosColors.Pink
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor

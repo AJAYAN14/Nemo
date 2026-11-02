@@ -12,15 +12,21 @@
     <string name="settings_tts_sample_japanese_text">これは音声テストです。</string>
 
     <!-- 主题颜色名称 (弹窗专属) -->
-    <string name="settings_theme_dialog_color_default">默认</string>
-    <string name="settings_theme_dialog_color_rose_red">蔷薇红</string>
-    <string name="settings_theme_dialog_color_vibrant_orange">活力橙</string>
-    <string name="settings_theme_dialog_color_bright_yellow">明快黄</string>
+    <string name="settings_theme_dialog_color_default">默认 (经典蓝)</string>
+    <string name="settings_theme_dialog_color_sky_blue">天空青蓝</string>
+    <string name="settings_theme_dialog_color_teal">系统蓝绿</string>
     <string name="settings_theme_dialog_color_mint_green">薄荷绿</string>
-    <string name="settings_theme_dialog_color_sky_blue">天空蓝</string>
-    <string name="settings_theme_dialog_color_classic_blue">经典蓝</string>
-    <string name="settings_theme_dialog_color_lavender_purple">薰衣草紫</string>
+    <string name="settings_theme_dialog_color_vibrant_green">生机绿</string>
+    <string name="settings_theme_dialog_color_bright_yellow">明快黄</string>
+    <string name="settings_theme_dialog_color_vibrant_orange">活力橙</string>
+    <string name="settings_theme_dialog_color_system_red">热情红</string>
+    <string name="settings_theme_dialog_color_rose_red">蔷薇粉</string>
     <string name="settings_theme_dialog_color_violet_purple">罗兰紫</string>
+    <string name="settings_theme_dialog_color_lavender_purple">薰衣草紫</string>
+    <string name="settings_theme_dialog_color_elegant_brown">雅致棕</string>
+
+    <!-- 兼容保留历史 key 避免资源丢失 -->
+    <string name="settings_theme_dialog_color_classic_blue">经典蓝</string>
     <string name="settings_theme_dialog_color_electric_cyan">荧光青</string>
     <string name="settings_theme_dialog_color_bright_teal">亮青绿</string>
     <string name="settings_theme_dialog_color_bright_orange_red">炽热红</string>

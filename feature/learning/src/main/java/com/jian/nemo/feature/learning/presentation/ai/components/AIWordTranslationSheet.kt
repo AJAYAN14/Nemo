@@ -23,9 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.BentoColors
-import com.jian.nemo.core.designsystem.theme.LearningPalette
-import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
@@ -65,8 +63,8 @@ fun AIWordTranslationSheet(
 
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val sheetBg = if (isDark) colorScheme.surfaceContainer else BentoColors.Surface
-    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
+    val sheetBg = if (isDark) colorScheme.surfaceContainer else colorScheme.surface
+    val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else colorScheme.outlineVariant.copy(alpha = 0.2f)
 
     NemoModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -176,7 +174,8 @@ private fun TranslationLoadingContent(
         label = "textAlpha"
     )
 
-    val drawerBg = if (isDark) LearningPalette.DrawerBgDark else Color.White
+    val colorScheme = MaterialTheme.colorScheme
+    val drawerBg = if (isDark) colorScheme.surfaceContainer else Color.White
     val handleBg = if (isDark) Color.White.copy(alpha = 0.28f) else Color.Black.copy(alpha = 0.18f)
 
     Box(
@@ -214,7 +213,7 @@ private fun TranslationLoadingContent(
                 color = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.85f),
                 border = BorderStroke(
                     1.dp,
-                    if (isDark) Color.White.copy(alpha = 0.18f) else LearningPalette.DrawerBorderLight
+                    if (isDark) Color.White.copy(alpha = 0.18f) else colorScheme.outlineVariant.copy(alpha = 0.35f)
                 ),
                 shadowElevation = 0.dp
             ) {
@@ -225,7 +224,7 @@ private fun TranslationLoadingContent(
                     Icon(
                         imageVector = Icons.Rounded.Search,
                         contentDescription = null,
-                        tint = if (isDark) LearningPalette.SkyLight else BentoColors.Primary,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
@@ -236,7 +235,7 @@ private fun TranslationLoadingContent(
                             fontSize = 18.sp,
                             letterSpacing = 0.5.sp
                         ),
-                        color = if (isDark) Color.White else BentoColors.TextMain,
+                        color = if (isDark) Color.White else colorScheme.onSurface,
                         maxLines = 1
                     )
                 }
@@ -254,9 +253,7 @@ private fun TranslationLoadingContent(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(
-                        (if (isDark) LearningPalette.SkyLight else BentoColors.Primary).copy(alpha = textAlpha)
-                    )
+                    .background(colorScheme.primary.copy(alpha = textAlpha))
             )
             Spacer(Modifier.width(8.dp))
             Text(
@@ -265,7 +262,7 @@ private fun TranslationLoadingContent(
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = 0.5.sp
                 ),
-                color = if (isDark) Color.White.copy(alpha = textAlpha * 0.9f) else Color.Black.copy(alpha = textAlpha * 0.8f)
+                color = if (isDark) Color.White.copy(alpha = textAlpha * 0.9f) else colorScheme.onSurface.copy(alpha = textAlpha * 0.8f)
             )
         }
     }
@@ -286,7 +283,7 @@ private fun TranslationErrorContent(errorMsg: String, isDark: Boolean) {
         Icon(
             imageVector = Icons.Rounded.ErrorOutline,
             contentDescription = null,
-            tint = LearningPalette.AccentRed,
+            tint = colorScheme.error,
             modifier = Modifier.size(40.dp)
         )
 
@@ -295,7 +292,7 @@ private fun TranslationErrorContent(errorMsg: String, isDark: Boolean) {
         Text(
             text = errorMsg,
             style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-            color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub,
+            color = colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
 
@@ -314,6 +311,7 @@ private fun TranslationSuccessContent(
     onSpeakWord: ((String) -> Unit)?
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    val orangeAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
 
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -332,7 +330,7 @@ private fun TranslationSuccessContent(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             letterSpacing = 2.sp
                         ),
-                        color = BentoColors.Primary
+                        color = colorScheme.primary
                     )
                 }
 
@@ -343,7 +341,7 @@ private fun TranslationSuccessContent(
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.sp
                     ),
-                    color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+                    color = colorScheme.onSurface
                 )
             }
 
@@ -355,7 +353,7 @@ private fun TranslationSuccessContent(
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
                         contentDescription = stringResource(R.string.learn_reading_sheet_desc_speak),
-                        tint = BentoColors.Primary,
+                        tint = colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -368,12 +366,12 @@ private fun TranslationSuccessContent(
         if (result.pos.isNotBlank()) {
             Surface(
                 shape = CircleShape,
-                color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.PrimaryLight.copy(alpha = 0.7f)
+                color = if (isDark) colorScheme.surfaceContainerHigh else colorScheme.primaryContainer.copy(alpha = 0.5f)
             ) {
                 Text(
                     text = result.pos,
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = BentoColors.Primary,
+                    color = colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp)
                 )
             }
@@ -393,7 +391,7 @@ private fun TranslationSuccessContent(
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                 contentDescription = null,
-                tint = BentoColors.AccentOrange,
+                tint = orangeAccent,
                 modifier = Modifier
                     .size(20.dp)
                     .padding(top = 2.dp)
@@ -403,7 +401,7 @@ private fun TranslationSuccessContent(
                 Text(
                     text = stringResource(R.string.learn_reading_sheet_meaning_title),
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
+                    color = colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
@@ -412,7 +410,7 @@ private fun TranslationSuccessContent(
                         fontWeight = FontWeight.Medium,
                         lineHeight = 26.sp
                     ),
-                    color = if (isDark) colorScheme.onSurface else BentoColors.TextMain
+                    color = colorScheme.onSurface
                 )
             }
         }
@@ -422,7 +420,7 @@ private fun TranslationSuccessContent(
             Spacer(Modifier.height(16.dp))
 
             Surface(
-                color = if (isDark) colorScheme.surfaceContainerHigh else BentoColors.BgBase.copy(alpha = 0.5f),
+                color = if (isDark) colorScheme.surfaceContainerHigh else colorScheme.surfaceVariant.copy(alpha = 0.35f),
                 shape = RoundedRectangle(12.dp),
                 border = BorderStroke(1.dp, borderColor)
             ) {
@@ -435,14 +433,14 @@ private fun TranslationSuccessContent(
                     Icon(
                         imageVector = Icons.Rounded.Lightbulb,
                         contentDescription = null,
-                        tint = BentoColors.AccentOrange,
+                        tint = orangeAccent,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = result.note,
                         style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 22.sp),
-                        color = if (isDark) colorScheme.onSurfaceVariant else BentoColors.TextSub
+                        color = colorScheme.onSurfaceVariant
                     )
                 }
             }

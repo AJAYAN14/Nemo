@@ -40,7 +40,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -171,46 +174,64 @@ fun CategoryDashboard(
     onCategorySelect: (ExpressionCategory) -> Unit,
     onNavigateBack: (() -> Unit)? = null
 ) {
-    Scaffold(
-        topBar = {
-            if (onNavigateBack != null) {
-                CommonHeader(
-                    title = stringResource(R.string.lib_expression_title),
-                    onBack = onNavigateBack
-                )
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        Column(
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        // 1. 底层滚动网格（录入 backdrop）
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .run {
-                    if (onNavigateBack == null) {
-                        statusBarsPadding()
-                    } else {
-                        this
-                    }
-                }
-                .padding(horizontal = 16.dp)
+                .layerBackdrop(backdrop),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp,
+                end = 16.dp,
+                top = if (onNavigateBack != null) statusBarTop + 60.dp + 16.dp else statusBarTop + 16.dp,
+                bottom = navBarBottom + 24.dp
+            )
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            items(categories) { category ->
+                CategoryFlatCard(
+                    category = category,
+                    onClick = { onCategorySelect(category) }
+                )
+            }
+        }
 
-            // 响应式2列网格，大圆角 24.dp 扁平卡片展示
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                items(categories) { category ->
-                    CategoryFlatCard(
-                        category = category,
-                        onClick = { onCategorySelect(category) }
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        if (onNavigateBack != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
                     )
-                }
+                    .padding(bottom = 8.dp)
+            ) {
+                CommonHeader(
+                    title = stringResource(R.string.lib_expression_title),
+                    onBack = onNavigateBack,
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp
+                )
             }
         }
     }
@@ -346,22 +367,26 @@ fun ExpressionBrowser(
     onLevelSelect: (String) -> Unit
 ) {
     val themeColor = getCategoryColor(category.categoryKey)
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val backgroundColor = MaterialTheme.colorScheme.background
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = category.levelName,
-                onBack = onBack,
-                backgroundColor = MaterialTheme.colorScheme.background
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .layerBackdrop(backdrop)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                )
         ) {
             // 记忆口诀横幅 (Banner Card) — 高质感扁平
             Card(
@@ -388,48 +413,74 @@ fun ExpressionBrowser(
             // 极具扁平美感的搜索框与JLPT过滤器
             FlatFilterBar(
                 searchQuery = uiState.searchQuery,
-            selectedLevel = uiState.selectedLevel,
-            onSearchChange = onSearchChange,
-            onLevelSelect = onLevelSelect
-        )
+                selectedLevel = uiState.selectedLevel,
+                onSearchChange = onSearchChange,
+                onLevelSelect = onLevelSelect
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // 列表区域 (NEMO_UI_SPEC: items 垂直间距 20.dp)
-        if (uiState.filteredExpressions.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.lib_expression_empty_filter),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                items(
-                    items = uiState.filteredExpressions,
-                    key = { it.id } // 绑定永久唯一字符 ID，极其流畅！
-                ) { expression ->
-                    ExpressionFlatCard(
-                        expression = expression,
-                        themeColor = themeColor
+            // 列表区域 (NEMO_UI_SPEC: items 垂直间距 20.dp)
+            if (uiState.filteredExpressions.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.lib_expression_empty_filter),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
                     )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp)
+                ) {
+                    items(
+                        items = uiState.filteredExpressions,
+                        key = { it.id } // 绑定永久唯一字符 ID，极其流畅！
+                    ) { expression ->
+                        ExpressionFlatCard(
+                            expression = expression,
+                            themeColor = themeColor
+                        )
+                    }
                 }
             }
         }
+
+        // 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = category.levelName,
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
+        }
     }
-}
 }
 
 /**

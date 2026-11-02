@@ -13,6 +13,11 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
@@ -96,79 +101,20 @@ fun FavoriteGrammarsScreen(
         )
     }
 
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        Scaffold(
-            containerColor = backgroundColor,
-            topBar = {
-                if (isSelectionMode) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .statusBarsPadding()
-                            .height(56.dp),
-                        color = backgroundColor
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(onClick = { selectedGrammarIds = emptySet() }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Close,
-                                    contentDescription = stringResource(R.string.collection_cd_cancel_selection),
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(R.string.collection_selected_items_format, selectedGrammarIds.size),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
-                            
-                            val allGrammarIds = uiState.favoriteGrammars.map { it.id }.toSet()
-                            val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
-                            TextButton(
-                                onClick = {
-                                    selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
-                                }
-                            ) {
-                                Text(
-                                    text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = accentBlue
-                                )
-                            }
-                            
-                            IconButton(onClick = { showDeleteDialog = true }) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Delete,
-                                    contentDescription = stringResource(R.string.collection_cd_batch_unfavorite),
-                                    tint = deleteColor
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    com.jian.nemo.core.ui.component.common.CommonHeader(
-                        title = stringResource(R.string.collection_favorites_grammars_screen_title),
-                        onBack = onNavigateBack,
-                        backgroundColor = backgroundColor
-                    )
-                }
-            }
-        ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+        ) {
             when {
                 uiState.isLoading -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         NemoChasingDotsLoader()
@@ -176,9 +122,7 @@ fun FavoriteGrammarsScreen(
                 }
                 uiState.favoriteGrammars.isEmpty() -> {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues),
+                        modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
@@ -223,10 +167,14 @@ fun FavoriteGrammarsScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(vertical = 24.dp)
+                            .layerBackdrop(backdrop),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = statusBarTop + 60.dp + 16.dp,
+                            bottom = navBarBottom + 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(
                             items = uiState.favoriteGrammars,
@@ -262,6 +210,99 @@ fun FavoriteGrammarsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                if (isSelectionMode) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FrostedLiquidGlassButton(
+                            onClick = { selectedGrammarIds = emptySet() },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Close,
+                                contentDescription = stringResource(R.string.collection_cd_cancel_selection),
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(R.string.collection_selected_items_format, selectedGrammarIds.size),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        val allGrammarIds = uiState.favoriteGrammars.map { it.id }.toSet()
+                        val isAllSelected = selectedGrammarIds.size == allGrammarIds.size
+                        TextButton(
+                            onClick = {
+                                selectedGrammarIds = if (isAllSelected) emptySet() else allGrammarIds
+                            }
+                        ) {
+                            Text(
+                                text = if (isAllSelected) stringResource(R.string.collection_btn_deselect_all) else stringResource(R.string.collection_btn_select_all),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = accentColor
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        FrostedLiquidGlassButton(
+                            onClick = { showDeleteDialog = true },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.collection_cd_batch_unfavorite),
+                                tint = deleteColor,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
+                    }
+                } else {
+                    com.jian.nemo.core.ui.component.common.CommonHeader(
+                        title = stringResource(R.string.collection_favorites_grammars_screen_title),
+                        onBack = onNavigateBack,
+                        backgroundColor = Color.Transparent,
+                        backdrop = backdrop,
+                        backButtonSize = 48.dp
+                    )
                 }
             }
         }

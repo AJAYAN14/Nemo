@@ -70,7 +70,11 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
-import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.NemoText
+import com.jian.nemo.core.designsystem.theme.NemoTextLight
+import com.jian.nemo.core.designsystem.theme.NemoNeutralGray
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
@@ -118,9 +122,9 @@ fun SRSGrammarCard(
 
     // 颜色系统
     val cardBackground = if (isDarkTheme) NemoSurfaceCardDark else NemoSurfaceCard
-    val borderColor = if (isDarkTheme) Color.White.copy(alpha = 0.1f) else NemoNeutrals.Gray200
-    val primaryTextColor = if (isDarkTheme) Color.White else Color.Black
-    val secondaryTextColor = if (isDarkTheme) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
+    val borderColor = if (isDarkTheme) NemoSurfaceBorderDark else NemoSurfaceBorder
+    val primaryTextColor = if (isDarkTheme) Color.White else NemoText
+    val secondaryTextColor = if (isDarkTheme) NemoNeutralGray else NemoTextLight
 
     // 标准调色盘统一色彩系统
     val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
@@ -308,12 +312,7 @@ fun SRSGrammarCard(
                                 .height(440.dp)
                                 .softCardShadow(borderRadius = 24.dp, isDark = isDarkTheme)
                                 .clip(RoundedRectangle(24.dp))
-                                .background(cardBackground.copy(alpha = if (isDarkTheme) 0.85f else 0.95f))
-                                .border(
-                                    width = 0.8.dp,
-                                    color = borderColor,
-                                    shape = RoundedRectangle(24.dp)
-                                )
+                                .background(cardBackground)
                                 .drawBehind {
                                     val dotSpacing = 18.dp.toPx()
                                     val dotRadius = 1.25.dp.toPx()

@@ -58,6 +58,14 @@ import com.jian.nemo.core.designsystem.theme.RatingGuideBodyText
 import com.jian.nemo.core.designsystem.theme.RatingGuideCoreText
 import com.jian.nemo.core.designsystem.theme.RatingGuidePrimaryButton
 import com.jian.nemo.core.designsystem.theme.RatingGuideTitleText
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.ui.graphics.Brush
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 @Composable
@@ -76,28 +84,28 @@ fun RatingGuideScreen(
     val adviceText = if (isDark) colorScheme.onSurfaceVariant else RatingGuideAdviceText
     val buttonColor = if (isDark) colorScheme.primary else RatingGuidePrimaryButton
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = backgroundColor
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            CommonHeader(
-                title = stringResource(R.string.rating_guide_title),
-                onBack = onDismiss,
-                backgroundColor = backgroundColor
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedRectangle(16.dp),
@@ -192,8 +200,32 @@ fun RatingGuideScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.rating_guide_title),
+                onBack = onDismiss,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }

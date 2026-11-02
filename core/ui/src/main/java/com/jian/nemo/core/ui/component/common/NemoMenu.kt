@@ -100,14 +100,17 @@ fun NemoMenuItem(
     enabled: Boolean = true,
     isDestructive: Boolean = false
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val destructiveColor = if (isDark) IosColors.RedDark else IosColors.Red
+
     val effectiveIconColor = if (isDestructive) {
-        IosColors.Red
+        destructiveColor
     } else {
         iconColor ?: MaterialTheme.colorScheme.primary
     }
 
     val mainColor = if (isDestructive) {
-        IosColors.Red
+        destructiveColor
     } else {
         MaterialTheme.colorScheme.onSurface
     }

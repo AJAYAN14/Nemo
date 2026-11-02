@@ -2,6 +2,7 @@ package com.jian.nemo.feature.settings.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
@@ -38,7 +39,8 @@ fun ChineseVoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val accentColor = IosColors.Orange // 中文语音采用优雅的橙色区分于日语红
+    val isDark = isSystemInDarkTheme()
+    val accentColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
     val haptic = LocalHapticFeedback.current
     val cloudGroupName = stringResource(R.string.settings_tts_group_cloud_chinese)
     val localGroupName = stringResource(R.string.settings_tts_group_local_chinese)

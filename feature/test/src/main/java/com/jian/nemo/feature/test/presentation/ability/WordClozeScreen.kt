@@ -63,8 +63,17 @@ import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
 import com.jian.nemo.core.designsystem.theme.NemoWarning
 import com.jian.nemo.core.designsystem.theme.NemoWarningDark
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -109,43 +118,23 @@ fun WordClozeScreen(
         return
     }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.test_cloze_header_title),
-                onBack = {
-                    if (uiState is ClozeUiState.Ready) {
-                        showExitDialog = true
-                    } else {
-                        onNavigateBack()
-                    }
-                },
-                actions = {
-                    if (uiState is ClozeUiState.Ready) {
-                        IconButton(onClick = { viewModel.forceRegenerate() }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Refresh,
-                                contentDescription = stringResource(R.string.test_cloze_cd_refresh),
-                                tint = textMain
-                            )
-                        }
-                    }
-                    IconButton(onClick = { showHelpDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Help,
-                            contentDescription = stringResource(R.string.test_cloze_cd_guide),
-                            tint = textMain
-                        )
-                    }
-                }
-            )
-        },
-        containerColor = containerColor
-    ) { padding ->
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
         Box(
             modifier = Modifier
-                .padding(padding)
                 .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .padding(
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 16.dp
+                )
         ) {
             val pageType = when (uiState) {
                 is ClozeUiState.Loading -> 0
@@ -209,6 +198,71 @@ fun WordClozeScreen(
                     }
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.95f),
+                            containerColor.copy(alpha = 0.75f),
+                            containerColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.test_cloze_header_title),
+                onBack = {
+                    if (uiState is ClozeUiState.Ready) {
+                        showExitDialog = true
+                    } else {
+                        onNavigateBack()
+                    }
+                },
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    if (uiState is ClozeUiState.Ready) {
+                        FrostedLiquidGlassButton(
+                            onClick = { viewModel.forceRegenerate() },
+                            backdrop = backdrop,
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            isInteractive = true,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = stringResource(R.string.test_cloze_cd_refresh),
+                                tint = textMain,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                    FrostedLiquidGlassButton(
+                        onClick = { showHelpDialog = true },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Help,
+                            contentDescription = stringResource(R.string.test_cloze_cd_guide),
+                            tint = textMain,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            )
         }
     }
 
@@ -615,7 +669,7 @@ private fun ReadyView(
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = IosColors.Green
+                        color = if (isDark) IosColors.GreenDark else IosColors.Green
                     )
                 )
             }
@@ -626,8 +680,8 @@ private fun ReadyView(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedRectangle(3.dp)),
-                color = IosColors.Orange,
-                trackColor = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray200
+                color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                trackColor = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceSubcard
             )
 
             // 核心释义提示卡片 (完全剔除日语汉字与任何例句)
@@ -971,9 +1025,9 @@ private fun ReadyView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .softCardShadow(borderRadius = 28.dp, isDark = isDark),
-                color = (if (isDark) NemoNeutrals.Gray900 else Color.White).copy(alpha = 0.88f), // 玻璃半透明感
+                color = if (isDark) NemoSurfaceCardDark else NemoSurfaceCard,
                 shape = RoundedRectangle(28.dp),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+                border = BorderStroke(1.dp, if (isDark) NemoSurfaceBorderDark else NemoSurfaceBorder)
             ) {
                 Box(
                     modifier = Modifier.padding(24.dp)
@@ -1105,14 +1159,14 @@ private fun ResultView(
             CircularProgressIndicator(
                 progress = { 1f },
                 modifier = Modifier.fillMaxSize(),
-                color = if (isDark) NemoNeutrals.Gray800 else NemoNeutrals.Gray100,
+                color = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceSubcard,
                 strokeWidth = 14.dp,
                 strokeCap = StrokeCap.Round
             )
             CircularProgressIndicator(
                 progress = { animAccuracy.value },
                 modifier = Modifier.fillMaxSize(),
-                color = IosColors.Orange,
+                color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
                 strokeWidth = 14.dp,
                 strokeCap = StrokeCap.Round
             )
@@ -1125,7 +1179,7 @@ private fun ResultView(
                     style = TextStyle(
                         fontSize = 44.sp,
                         fontWeight = FontWeight.Black,
-                        color = IosColors.Orange,
+                        color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
                         letterSpacing = (-1).sp
                     )
                 )
@@ -1243,20 +1297,23 @@ private fun ClozeHistoryView(
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val containerColor = MaterialTheme.colorScheme.background
     
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.test_cloze_history_title),
-                onBack = onBack
-            )
-        },
-        containerColor = containerColor
-    ) { padding ->
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
         if (historyRecords.isEmpty()) {
             Box(
                 modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -1279,9 +1336,14 @@ private fun ClozeHistoryView(
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(historyRecords) { record ->
@@ -1345,6 +1407,31 @@ private fun ClozeHistoryView(
                     }
                 }
             }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.95f),
+                            containerColor.copy(alpha = 0.75f),
+                            containerColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.test_cloze_history_title),
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }
@@ -1668,7 +1755,7 @@ private fun JapaneseInputGuideDialog(
                         .height(48.dp)
                         .softCardShadow(borderRadius = 24.dp, isDark = isDark),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = IosColors.Orange,
+                        containerColor = if (isDark) IosColors.OrangeDark else IosColors.Orange,
                         contentColor = Color.White
                     ),
                     shape = RoundedRectangle(24.dp)

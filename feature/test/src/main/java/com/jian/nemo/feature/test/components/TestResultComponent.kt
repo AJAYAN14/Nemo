@@ -521,8 +521,8 @@ fun ContentAnalysisSection(
     val wordPercent = (wordWeight * 100).toInt()
     val grammarPercent = 100 - wordPercent
 
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-    val outlineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface
+    val outlineColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outline
 
     Surface(
         modifier = Modifier
@@ -604,7 +604,7 @@ fun TodaySummarySection(
     todayAccuracy: Float,
     isDark: Boolean
 ) {
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
     
     Surface(
         modifier = Modifier

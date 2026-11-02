@@ -47,6 +47,10 @@ import com.jian.nemo.core.designsystem.theme.NemoWarningDark
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import androidx.compose.foundation.shape.CircleShape
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.core.data.local.entity.TestRecordEntity
@@ -90,27 +94,24 @@ fun ListeningComprehensionScreen(
         return
     }
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.test_listening_header_title),
-                onBack = {
-                    if (uiState is ListeningUiState.Ready) {
-                        showExitDialog = true
-                    } else {
-                        onNavigateBack()
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showHistoryView = true }) {
-                        Icon(Icons.Rounded.History, contentDescription = stringResource(R.string.test_listening_cd_history), tint = textMain)
-                    }
-                }
-            )
-        },
-        containerColor = containerColor
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+                .padding(
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 16.dp
+                )
+        ) {
             Crossfade(targetState = uiState, label = "state_transition") { state ->
                 when (state) {
                     is ListeningUiState.Loading -> {
@@ -149,6 +150,55 @@ fun ListeningComprehensionScreen(
                 }
             }
         }
+
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.95f),
+                            containerColor.copy(alpha = 0.75f),
+                            containerColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.test_listening_header_title),
+                onBack = {
+                    if (uiState is ListeningUiState.Ready) {
+                        showExitDialog = true
+                    } else {
+                        onNavigateBack()
+                    }
+                },
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = { showHistoryView = true },
+                        backdrop = backdrop,
+                        shape = CircleShape,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = stringResource(R.string.test_listening_cd_history),
+                            tint = textMain,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            )
+        }
     }
 
     AbilityExitDialog(
@@ -180,43 +230,80 @@ private fun ListeningHistoryView(
 ) {
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val containerColor = MaterialTheme.colorScheme.background
+    val backdrop = rememberLayerBackdrop()
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    Scaffold(
-        topBar = {
-            CommonHeader(
-                title = stringResource(R.string.test_listening_history_title),
-                onBack = onBack
-            )
-        },
-        containerColor = containerColor
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 24.dp)) {
-            Spacer(modifier = Modifier.height(16.dp))
-            if (historyRecords.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.test_listening_empty_history), color = NemoNeutrals.Gray500)
-                }
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(historyRecords) { record ->
-                        val dateStr = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(record.date))
-                        val acc = if (record.totalQuestions > 0) record.correctAnswers * 100 / record.totalQuestions else 0
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(stringResource(R.string.test_listening_subtitle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(dateStr, style = MaterialTheme.typography.bodySmall, color = NemoNeutrals.Gray500)
-                            }
-                            Text("$acc%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (acc >= 80) IosColors.Green else if (acc >= 60) IosColors.Yellow else IosColors.Red)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(containerColor)
+    ) {
+        if (historyRecords.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = statusBarTop + 60.dp + 16.dp, bottom = navBarBottom + 24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.test_listening_empty_history), color = NemoNeutrals.Gray500)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop),
+                contentPadding = PaddingValues(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = statusBarTop + 60.dp + 16.dp,
+                    bottom = navBarBottom + 24.dp
+                )
+            ) {
+                items(historyRecords) { record ->
+                    val dateStr = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault()).format(Date(record.date))
+                    val acc = if (record.totalQuestions > 0) record.correctAnswers * 100 / record.totalQuestions else 0
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(stringResource(R.string.test_listening_subtitle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, color = textColor)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(dateStr, style = MaterialTheme.typography.bodySmall, color = NemoNeutrals.Gray500)
                         }
-                        HorizontalDivider(color = if(isDark) MaterialTheme.colorScheme.outlineVariant else NemoNeutrals.Gray200.copy(alpha = 0.5f))
+                        Text("$acc%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (acc >= 80) IosColors.Green else if (acc >= 60) IosColors.Yellow else IosColors.Red)
                     }
+                    HorizontalDivider(color = if(isDark) MaterialTheme.colorScheme.outlineVariant else NemoNeutrals.Gray200.copy(alpha = 0.5f))
                 }
             }
+        }
+
+        // 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            containerColor.copy(alpha = 0.95f),
+                            containerColor.copy(alpha = 0.75f),
+                            containerColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
+                    )
+                )
+                .padding(bottom = 8.dp)
+        ) {
+            CommonHeader(
+                title = stringResource(R.string.test_listening_history_title),
+                onBack = onBack,
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp
+            )
         }
     }
 }
@@ -721,7 +808,11 @@ private fun ReadyView(
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isCorrect) IosColors.Green else IosColors.Red
+                        containerColor = if (isCorrect) {
+                            if (isDark) IosColors.GreenDark else IosColors.Green
+                        } else {
+                            if (isDark) IosColors.RedDark else IosColors.Red
+                        }
                     )
                 ) {
                     Text(text = stringResource(R.string.test_listening_btn_continue), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
