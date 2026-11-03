@@ -69,6 +69,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenu
+import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenuButton
+import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenuOverlay
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingBackground
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
@@ -142,6 +144,7 @@ fun LearningScreen(
     var showSharePosterDialog by remember { mutableStateOf(false) }
     val finishBackdrop = rememberLayerBackdrop()
     val waitingBackdrop = rememberLayerBackdrop()
+    val learningBackdrop = rememberLayerBackdrop()
     var triggerWaitingBlast by remember { mutableStateOf<(() -> Unit)?>(null) }
 
     // 动态高斯模糊半径 (0dp -> 18dp 平滑过渡，展示分享海报时自动触发背景模糊遮罩)
@@ -156,6 +159,10 @@ fun LearningScreen(
             !isWaiting &&
             ((uiState.learningMode == LearningMode.Word && uiState.currentWord == null) ||
              (uiState.learningMode == LearningMode.Grammar && uiState.currentGrammar == null))
+    val remainingTaskCount = if (uiState.learningMode == LearningMode.Word)
+        uiState.wordList.size
+    else
+        uiState.grammarList.size
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Scaffold(
@@ -164,7 +171,20 @@ fun LearningScreen(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 当结算完成时，在最外层（不受 Scaffold padding 限制）绘制贯穿系统状态栏的顶部主题色渐变光晕
+            // 底层录制画布（包含底色、渐变与主体内容，整体录入 learningBackdrop，消除透明空洞）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(learningBackdrop)
+            ) {
+                // 底层实色背景
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(backgroundColor)
+                )
+
+                // 当结算完成时，在最外层（不受 Scaffold padding 限制）绘制贯穿系统状态栏的顶部主题色渐变光晕
             if (isFinished) {
                 Box(
                     modifier = Modifier
@@ -279,11 +299,6 @@ fun LearningScreen(
                         }
                     }
                 } else {
-                    val remainingTaskCount = if (uiState.learningMode == LearningMode.Word)
-                        uiState.wordList.size
-                    else
-                        uiState.grammarList.size
-
                     // Header
                     LearnHeader(
                         learningMode = uiState.learningMode,
@@ -299,51 +314,10 @@ fun LearningScreen(
                         queueRelearnCount = uiState.queueRelearnCount,
                         backdrop = if (isWaiting) waitingBackdrop else null,
                         menu = {
-                            LearnHeaderMoreMenu(
-                                remainingCount = remainingTaskCount,
-                                onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
-                                onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
-                                onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
-                                backdrop = if (isWaiting) waitingBackdrop else null,
-                                onShowRatingGuide = { showRatingGuide = true },
-                                isMenuExpanded = isMenuExpanded,
-                                onToggleMenu = { isMenuExpanded = it },
-                                isAutoAudioEnabled = uiState.isAutoAudioEnabled,
-                                onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
-                                    { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
-                                } else null,
-                                isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
-                                onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
-                                showAnswerDelayDurationLabel = delayDurationLabel,
-                                onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
-                                onOpenShowAnswerDelayDialog = {
-                                    isMenuExpanded = false
-                                    showDelayDurationDialog = true
-                                },
-                                isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
-                                onToggleAutoRevealAnswer = {
-                                    if (uiState.learningMode == LearningMode.Word) {
-                                        viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
-                                    } else {
-                                        viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
-                                    }
-                                },
-                                autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
-                                onCycleAutoRevealAnswerDuration = {
-                                    if (uiState.learningMode == LearningMode.Word) {
-                                        viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
-                                    } else {
-                                        viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
-                                    }
-                                },
-                                onOpenAutoRevealAnswerDialog = {
-                                    isMenuExpanded = false
-                                    showAutoRevealDurationDialog = true
-                                },
-                                isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
-                                isDarkMode = uiState.isDarkMode,
-                                onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
+                            LearnHeaderMoreMenuButton(
+                                isExpanded = isMenuExpanded,
+                                onClick = { isMenuExpanded = !isMenuExpanded },
+                                backdrop = null
                             )
                         }
                     )
@@ -394,24 +368,55 @@ fun LearningScreen(
                     }
                 }
             }
-
-            // 2. 页面全屏手势遮罩 (Z = 1，纯透明拦截外部点击)
-            androidx.compose.animation.AnimatedVisibility(
-                visible = isMenuExpanded,
-                enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
-                exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Transparent)
-                        .clickable(
-                            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                            indication = null,
-                            onClick = { isMenuExpanded = false }
-                        )
-                )
             }
+
+            // 2. 页面全屏手势遮罩与液态玻璃悬浮操作菜单 (同级兄弟节点采样 learningBackdrop，背景保持完全透明清晰)
+            LearnHeaderMoreMenuOverlay(
+                isVisible = isMenuExpanded,
+                backdrop = learningBackdrop,
+                onDismiss = { isMenuExpanded = false },
+                remainingCount = remainingTaskCount,
+                onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
+                onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
+                onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
+                onShowRatingGuide = { showRatingGuide = true },
+                isAutoAudioEnabled = uiState.isAutoAudioEnabled,
+                onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
+                    { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
+                } else null,
+                isShowAnswerDelayEnabled = uiState.isShowAnswerDelayEnabled,
+                onToggleShowAnswerDelay = { viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(it)) },
+                showAnswerDelayDurationLabel = delayDurationLabel,
+                onCycleShowAnswerDelayDuration = { viewModel.onEvent(LearningEvent.CycleShowAnswerDelayDuration) },
+                onOpenShowAnswerDelayDialog = {
+                    isMenuExpanded = false
+                    showDelayDurationDialog = true
+                },
+                isAutoRevealAnswerEnabled = if (uiState.learningMode == LearningMode.Word) uiState.isAutoRevealAnswerEnabled else uiState.isGrammarAutoRevealAnswerEnabled,
+                onToggleAutoRevealAnswer = {
+                    if (uiState.learningMode == LearningMode.Word) {
+                        viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(it))
+                    } else {
+                        viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(it))
+                    }
+                },
+                autoRevealAnswerDurationLabel = "${(if (uiState.learningMode == LearningMode.Word) uiState.autoRevealAnswerMs else uiState.grammarAutoRevealAnswerMs) / 1000}s",
+                onCycleAutoRevealAnswerDuration = {
+                    if (uiState.learningMode == LearningMode.Word) {
+                        viewModel.onEvent(LearningEvent.CycleAutoRevealAnswerDuration)
+                    } else {
+                        viewModel.onEvent(LearningEvent.CycleGrammarAutoRevealAnswerDuration)
+                    }
+                },
+                onOpenAutoRevealAnswerDialog = {
+                    isMenuExpanded = false
+                    showAutoRevealDurationDialog = true
+                },
+                isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
+                isDarkMode = uiState.isDarkMode,
+                onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
+            )
 
             // 动态构建通知列表（最新产生的通知插入在最上方）
             val notificationList = remember(

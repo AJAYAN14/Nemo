@@ -216,3 +216,59 @@
 
 ### 2. 构建与核验
 * **构建验证**：执行 `.\gradlew.bat compileDebugKotlin --quiet` 验证通过（BUILD SUCCESSFUL，0 错误）。
+
+
+---
+
+## 十一、学习界面操作菜单液态玻璃真透镜折射与同级兄弟采样改造台账
+
+> **目标**：对齐 `E:\Android\testapp2` 标杆实现，将学习界面（`LearningScreen.kt`）顶部的更多操作菜单（`LearnHeaderMoreMenu.kt`）彻底换装为同款液态玻璃物理折射架构。取消全屏窗口模糊与暗色蒙层，保持底层 100% 原始清晰，仅菜单面板本身具备高阶液态透镜折射与局部磨砂，菜单内部功能项完全忠实保留原样。
+
+### 1. 核心架构与技术规范落地
+* **同级兄弟采样架构（Sibling Architecture）**：
+  * 将学习界面的实色背景、顶部氛围光与页面主体内容整体装入 `Box.fillMaxSize().layerBackdrop(learningBackdrop)`，确保整屏 1080x2400 像素全量实心录制，彻底根除透明空洞导致的模糊卷积边缘发黑撕裂；
+  * 菜单面板作为同级顶层兄弟节点挂载，直接采样 `learningBackdrop`，杜绝子树递归采样与 RenderNode 循环崩溃风险。
+* **取消全屏背景模糊与暗色压暗**：
+  * 菜单展开时，整个底层窗口与卡片不施加任何全屏高斯模糊与黑色压暗蒙层，全屏仅铺设一层纯透明点击拦截层，点击空白区域即平滑关闭；
+  * 底层卡片内容 100% 原始清晰暴露于菜单透镜之下，形成鲜明的通透物理折射对照。
+* **`testapp2` 标杆液态玻璃材质落地**：
+  * **22.dp G2 连续平滑曲率**：四周采用 `RoundedRectangle(22.dp)` 高阶连续圆角；
+  * **12.dp 黄金甜点位模糊**：`blur(12f.dp.toPx())` 既抹平底层文字突兀感，又完整保留水滴折射弧光；
+  * **响应式尺寸等比透镜**：`lens(refractionHeight = 0.10f * minDimension, refractionAmount = 0.20f * minDimension, depthEffect = true, chromaticAberration = false)`，厚度与强度跟随短边自适应，保障文字清晰可读；
+  * **光学色彩增艳提亮**：`colorControls(brightness = 0.05f/0.10f, saturation = 1.35f)` 替代死白漆涂层；
+  * **物理高光与微光描边**：`Highlight.Plain` 配合 0.6dp 垂直渐变高光描边，微透白雾降至 4%~6%，彻底拔除原生 elevation 黑色脏影；
+  * **右上角非对称流体弹性形变动效**：变换原点设在右上角触发按钮处（`TransformOrigin(0.88f, 0.05f)`），配合 Spring 弹簧曲线实现流畅的流体膨胀与收缩。
+* **菜单内部业务原样无损保持**：
+  * 打分指引、搁置、斩除、报错、自动朗读开关、延迟显示设置、自动翻卡设置、草稿画板、深浅色模式切换等 9 项功能文字、图标（Google Fonts 原生实心图标）、调色盘（`IosColors`）与 `LiquidToggle` 开关 100% 保持原状。
+
+### 2. 涉及文件
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/common/LearnHeaderMoreMenu.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
+
+### 3. 核心踩坑与稳定性防护（RenderNode 递归死锁治理）
+* **陷阱**：在底层录制节点 `Box.layerBackdrop(learningBackdrop)` 的子树内部，如果子组件按钮（如 `LearnHeaderMoreMenuButton`）也传入了 `backdrop = learningBackdrop`，按钮内部的 `drawBackdrop` 会在绘制管线中递归请求父级节点的 DisplayList，导致 Skia `RenderNode::prepareTreeImpl` 递归 512 层引发 Stack Overflow（SIGSEGV 11 崩溃）。
+* **对策**：严格遵守同级兄弟采样准则——处于录制画布内部的常规按钮保持 `backdrop = null`，作为标准磨砂按钮工作；只有位于画布外部、同级浮层位置的 `LearnHeaderMoreMenuOverlay` 才能接收并采样 `learningBackdrop`，从而实现 100% 稳定的真透镜折射效果。
+
+
+---
+
+## 十二、气泡菜单自适应高度与圆润三横/✕连续形变动效改造台账
+
+> **目标**：响应用户指令，取消气泡菜单的滚动条与最大高度限制，恢复为紧凑自适应高度；将触发按钮图标升级为“圆润三横”，并在展开与关闭时实现平滑的几何弹性形变（三横 <-> ✕）。
+
+### 1. 核心技术落地
+* **取消菜单内部滚动限制**：
+  * 移除 `LearnHeaderMoreMenuOverlay` 内写死的 `heightIn(max = 520.dp)` 限制；
+  * 移除 `Column` 上的 `.verticalScroll(rememberScrollState())` 滚动修饰符；
+  * 面板高度自然包裹全部 9~10 个菜单项，保持紧凑排版，一屏完整展现，彻底告别局部滚动。
+* **圆润三横与 ✕ 连续平滑形变动效（`AnimatedMenuCloseIcon`）**：
+  * 采用纯 Compose Canvas 几何线条插值驱动（`StrokeCap.Round` 圆角端点，线条粗细 2.4dp）；
+  * 展开动效：中线向中心收缩淡出，上下两条横线顺畅向中心聚拢并分别旋转 45° 与 -45°，平滑咬合交织为圆润的“✕”；
+  * 收起动效：两根对角线旋转舒展回水平位置，中间横线由中心向外平滑展开，弹性复原为饱满的三横汉堡图标；
+  * 动效使用 Spring 弹簧曲线驱动，状态由 `isExpanded` 双向同步。
+
+### 2. 涉及文件
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/common/LearnHeaderMoreMenu.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
