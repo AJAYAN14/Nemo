@@ -246,6 +246,51 @@
 * `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
 * `implementation-notes.md`
 
+
+---
+
+## 十三、全应用右上角菜单全面统一换装液态玻璃与圆润三横/✕形变动效台账
+
+> **目标**：响应用户指令（“帮我把其他的界面的右上角 menu 也改成一样的效果 /goal 改到一个不剩为止”），在核心通用组件库与各业务模块中进行彻底排查与重构，将全项目所有右上角菜单统一升级为同款高阶液态玻璃材质与圆润三横/✕几何弹性形变动效，实现 0 遗漏覆盖。
+
+### 1. 核心架构与落地范围
+* **通用形变菜单底座升级（`core/ui/component/common/NemoMorphMenu.kt`）**：
+  * **触发按钮升级**：内置 `AnimatedMenuCloseIcon`，默认呈现圆润饱满的三条水平圆角横线（`StrokeCap.Round`，2.4dp 粗细），展开时中线收缩隐去、上下横线平滑靠拢并分别旋转 45° 与 -45° 咬合成圆润的 ✕，关闭时弹性舒展复原，支持再次点击平滑收起；
+  * **材质升级**：面板卡片全面换装 `RoundedRectangle(22.dp)` 高阶连续圆角、0.6dp 垂直微光渐变高光描边（`borderBrush`）；接入 `drawBackdrop` 12dp 黄金模糊、动态比例凸透镜物理折射（`lens`）与着色器光学提亮增艳（`colorControls`），微透白雾降至 4%~6% 无原生 elevation 脏影；
+  * **高度包裹不滚动**：移除固定高度与滚动条限制，面板依据菜单项自然包裹，紧凑清爽展开。
+* **业务模块全面改造覆盖**：
+  * **收藏夹与错题本（`feature/collection`）**：
+    * `CollectionActionMenu.kt` 自动继承升级后的通用底座，在 `FavoritesScreen` 与 `MistakesScreen` 顶部栏中完美呈现圆润三横/✕动效与液态折射材质，保留全屏纯透明手势拦截。
+  * **词库与语法库列表（`feature/library`）**：
+    * `LibraryListComponents.kt`（`LibraryLevelSelectionMenu`）：右上角等级筛选入口移除旧版图标写死限制，无缝接入圆润三横/✕形变动效与同款液态玻璃折射面板，在 `WordListScreen` 与 `GrammarListScreen` 中同步生效。
+  * **测试与答题模块（`feature/test`）**：
+    * `TestHeaderComponents.kt`：所有答题测试界面顶栏（`TestHeaderActions`）自动继承升级；
+    * `TestHeader.kt`：彻底重构淘汰遗留的原生 `IconButton` + `NemoDropdownMenu`，全面接入统一的 `NemoMorphMenu`。
+
+### 2. 涉及文件列表
+* `core/ui/src/main/java/com/jian/nemo/core/ui/component/common/NemoMorphMenu.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/components/LibraryListComponents.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeader.kt`
+* `implementation-notes.md`
+
+---
+
+## 十四、Popup 浮层垂直锚点与 ✕ 按钮穿模遮挡修复台账
+
+> **目标**：修复错题本等界面中，右上角圆形 ✕ 按钮与弹出菜单面板右上角发生重叠穿模、导致第一行文字被遮挡的问题。
+
+### 1. 根因分析
+* 在 `core/ui/component/common/NemoMorphMenu.kt` 中，`Popup` 容器挂在大小为 `buttonSize`（48.dp）的根 Box 内。
+* 原先 `Popup` 的属性为 `alignment = Alignment.TopEnd` 且 `offset = IntOffset(0, 0)`。
+* 这导致 Popup 面板的顶部 Y 坐标与 48dp 按钮的顶部 Y 坐标完全对齐，面板卡片直接覆盖在按钮身下，使得圆形的 ✕ 按钮直接印在面板右上角，遮挡了第一行选项（“清除所有错题”）。
+
+### 2. 解决方案
+* 在 `NemoMorphMenu.kt` 中计算动态垂直下移像素：
+  `val yOffsetPx = with(LocalDensity.current) { (buttonSize + 8.dp).roundToPx() }`
+* 将 `Popup` 的偏移量设置为 `offset = IntOffset(0, yOffsetPx)`。
+* 确保弹出面板严格在圆形触发按钮下方 8dp 处自然展开，两者上下错落分离，彻底消除遮挡穿模。
+
+
 ### 3. 核心踩坑与稳定性防护（RenderNode 递归死锁治理）
 * **陷阱**：在底层录制节点 `Box.layerBackdrop(learningBackdrop)` 的子树内部，如果子组件按钮（如 `LearnHeaderMoreMenuButton`）也传入了 `backdrop = learningBackdrop`，按钮内部的 `drawBackdrop` 会在绘制管线中递归请求父级节点的 DisplayList，导致 Skia `RenderNode::prepareTreeImpl` 递归 512 层引发 Stack Overflow（SIGSEGV 11 崩溃）。
 * **对策**：严格遵守同级兄弟采样准则——处于录制画布内部的常规按钮保持 `backdrop = null`，作为标准磨砂按钮工作；只有位于画布外部、同级浮层位置的 `LearnHeaderMoreMenuOverlay` 才能接收并采样 `learningBackdrop`，从而实现 100% 稳定的真透镜折射效果。
@@ -271,4 +316,120 @@
 ### 2. 涉及文件
 * `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/common/LearnHeaderMoreMenu.kt`
 * `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
+
+
+---
+
+## 十三、全应用右上角菜单全面统一换装液态玻璃与圆润三横/✕形变动效台账
+
+> **目标**：响应用户指令（“帮我把其他的界面的右上角 menu 也改成一样的效果 /goal 改到一个不剩为止”），在核心通用组件库与各业务模块中进行彻底排查与重构，将全项目所有右上角菜单统一升级为同款高阶液态玻璃材质与圆润三横/✕几何弹性形变动效，实现 0 遗漏覆盖。
+
+### 1. 核心架构与落地范围
+* **通用形变菜单底座升级（`core/ui/component/common/NemoMorphMenu.kt`）**：
+  * **触发按钮升级**：内置 `AnimatedMenuCloseIcon`，默认呈现圆润饱满的三条水平圆角横线（`StrokeCap.Round`，2.4dp 粗细），展开时中线收缩隐去、上下横线平滑靠拢并分别旋转 45° 与 -45° 咬合成圆润的 ✕，关闭时弹性舒展复原，支持再次点击平滑收起；
+  * **材质升级**：面板卡片全面换装 `RoundedRectangle(22.dp)` 高阶连续圆角、0.6dp 垂直微光渐变高光描边（`borderBrush`）；接入 `drawBackdrop` 12dp 黄金模糊、动态比例凸透镜物理折射（`lens`）与着色器光学提亮增艳（`colorControls`），微透白雾降至 4%~6% 无原生 elevation 脏影；
+  * **高度包裹不滚动**：移除固定高度与滚动条限制，面板依据菜单项自然包裹，紧凑清爽展开。
+* **业务模块全面改造覆盖**：
+  * **收藏夹与错题本（`feature/collection`）**：
+    * `CollectionActionMenu.kt` 自动继承升级后的通用底座，在 `FavoritesScreen` 与 `MistakesScreen` 顶部栏中完美呈现圆润三横/✕动效与液态折射材质，保留全屏纯透明手势拦截。
+  * **词库与语法库列表（`feature/library`）**：
+    * `LibraryListComponents.kt`（`LibraryLevelSelectionMenu`）：右上角等级筛选入口移除旧版图标写死限制，无缝接入圆润三横/✕形变动效与同款液态玻璃折射面板，在 `WordListScreen` 与 `GrammarListScreen` 中同步生效。
+  * **测试与答题模块（`feature/test`）**：
+    * `TestHeaderComponents.kt`：所有答题测试界面顶栏（`TestHeaderActions`）自动继承升级；
+    * `TestHeader.kt`：彻底重构淘汰遗留的原生 `IconButton` + `NemoDropdownMenu`，全面接入统一的 `NemoMorphMenu`。
+
+### 2. 涉及文件列表
+* `core/ui/src/main/java/com/jian/nemo/core/ui/component/common/NemoMorphMenu.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/components/LibraryListComponents.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeader.kt`
+* `implementation-notes.md`
+
+---
+
+## 十四、Popup 浮层垂直锚点与 ✕ 按钮穿模遮挡修复台账
+
+> **目标**：修复错题本等界面中，右上角圆形 ✕ 按钮与弹出菜单面板右上角发生重叠穿模、导致第一行文字被遮挡的问题。
+
+### 1. 根因分析
+* 在 `core/ui/component/common/NemoMorphMenu.kt` 中，`Popup` 容器挂在大小为 `buttonSize`（48.dp）的根 Box 内。
+* 原先 `Popup` 的属性为 `alignment = Alignment.TopEnd` 且 `offset = IntOffset(0, 0)`。
+* 这导致 Popup 面板的顶部 Y 坐标与 48dp 按钮的顶部 Y 坐标完全对齐，面板卡片直接覆盖在按钮身下，使得圆形的 ✕ 按钮直接印在面板右上角，遮挡了第一行选项（“清除所有错题”）。
+
+### 2. 解决方案
+* 在 `NemoMorphMenu.kt` 中计算动态垂直下移像素：
+  `val yOffsetPx = with(LocalDensity.current) { (buttonSize + 8.dp).roundToPx() }`
+* 将 `Popup` 的偏移量设置为 `offset = IntOffset(0, yOffsetPx)`。
+* 确保弹出面板严格在圆形触发按钮下方 8dp 处自然展开，两者上下错落分离，彻底消除遮挡穿模。
+
+
+
+---
+
+## 十五、我的错题与我的收藏 Menu 全面对齐学习界面实现台账
+
+> **目标**：以学习界面的 Menu（`LearnHeaderMoreMenu.kt`）为黄金基准，在绝对不改动学习界面代码的前提下，彻底将“我的错题”和“我的收藏”界面的 Menu 细节（触感、内缩胶囊按压、排版字号、自适应微光分割线）1:1 完全对齐。
+
+### 1. 核心改进点与对齐细节
+1. **触感反馈（Haptics）100% 对齐**：
+   * 在 `NemoLiquidMenuItem` 的点击事件中补齐 `haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)`，使错题本与收藏夹的每一个菜单条目均具备与学习界面完全一致的清脆震动反馈。
+2. **按压高亮动效与圆角边界（Surface 内缩胶囊）100% 对齐**：
+   * 彻底摒弃贴边 `Row` + `clip` 的粗糙高亮实现；
+   - 换装为学习界面同款架构：外层增加 `padding(horizontal = 6.dp, vertical = 2.dp)` 保护边距，采用 `Surface(shape = RoundedRectangle(12.dp))` 并在按压时动态显隐 `onSurface.copy(alpha = 0.08f)`，内部再设置 `padding(horizontal = 12.dp, vertical = 10.dp)`；
+   - 呈现出两边不贴边框、精致悬浮的岛式内缩胶囊按压质感。
+3. **字体排版与规格 100% 对齐**：
+   * 统一为 `MaterialTheme.typography.titleMedium`，并显式指定 `fontSize = 15.sp`、`FontWeight.Medium`。
+4. **自适应微光分割线 100% 对齐**：
+   * 在 `NemoLiquidMenu.kt` 中封装公共的 `NemoLiquidMenuDivider`；
+   * 采用深浅色自适应半透明黑白微光算法（深色 `White 0.12f`，浅色 `Black 0.08f`），粗细严格统一为 `0.5.dp`，外边距统一为 `padding(horizontal = 12.dp, vertical = 2.dp)`。
+5. **面板容器尺寸与纵向边距 100% 对齐**：
+   * `NemoLiquidMenuOverlay` 面板宽度对齐为 `min = 230.dp, max = 260.dp`，内部列表容器垂直边距对齐为 `padding(vertical = 6.dp)`。
+
+### 2. 涉及文件列表
+* `core/ui/src/main/java/com/jian/nemo/core/ui/component/common/NemoLiquidMenu.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/components/CollectionActionMenu.kt`
+* `implementation-notes.md`
+
+---
+
+## 十六、全项目通用液态悬浮菜单底座沉淀与错题/收藏对齐台账
+
+> **目标**：以学习界面 Menu（`LearnHeaderMoreMenu.kt`）为全项目黄金标准，将其高阶液态透镜折射骨架无损下沉至 `:core:ui` 建立全项目通用底座（`NemoLiquidMenu.kt`），保持错题与收藏业务逻辑 100% 完整，消除旧版弹窗 UI 并彻底对齐学习界面。
+
+### 1. 核心技术点与对齐细节
+1. **通用底座标准补齐**：
+   * 在 `NemoLiquidMenu.kt` 中补齐 `NemoLiquidMenuToggleItem`（集成 `LiquidToggle`），为全项目后续界面的菜单开关提供统一底座；
+   * 在 `NemoLiquidMenuButton` 中对齐 `chromaticAberration = false`，确保触发按钮在各级背景下保持清晰纯净；
+   * 固化 `AnimatedMenuCloseIcon`（圆润三横 <-> ✕）平滑弹性形变。
+2. **Backdrop 采样范式 100% 对齐（消除递归崩溃隐患）**：
+   * 学习界面的核心稳定准则是：处于 `layerBackdrop` 画布子树内部的触发按钮传入 `backdrop = null`，仅同级浮层传入 `backdrop` 采样；
+   * 修正 `FavoritesScreen.kt` 与 `MistakesScreen.kt` 中 `CollectionActionButton` 的参数，将 `backdrop = backdrop` 纠正为 `backdrop = null`，浮层 `CollectionActionOverlay` 接收 `backdrop` 实施真透镜折射。
+3. **业务逻辑 100% 纯净保留**：
+   * 错题和收藏的“清除所有”、“清除单词”、“清除语法”以及三个二次确认弹窗（`NemoDialog`）逻辑原封不动，仅将原本的旧版弹出式 UI 彻底替换为学习界面同款的高阶液态玻璃外壳。
+
+### 2. 涉及文件列表
+* `core/ui/src/main/java/com/jian/nemo/core/ui/component/common/NemoLiquidMenu.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/components/CollectionActionMenu.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/favorites/FavoritesScreen.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/mistakes/MistakesScreen.kt`
+* `implementation-notes.md`
+
+---
+
+## 十七、错题与收藏 Menu 底层画布实底录制与光学折射参数对齐台账
+
+> **目标**：以学习界面（`LearningScreen.kt` 与 `LearnHeaderMoreMenu.kt`）的光学折射渲染管线为基准，将“我的错题”与“我的收藏”界面的 Menu 折射底图采样完整度（消除透明空洞）与折射物理参数扩展性 1:1 彻底对齐。
+
+### 1. 核心改进点与对齐细节
+1. **底层录制画布实底对齐（消除透明空洞）**：
+   * 在 `FavoritesScreen.kt` 与 `MistakesScreen.kt` 的 `layerBackdrop(backdrop)` 画布内部最底层，新增铺设全屏实底 `Box.fillMaxSize().background(backgroundColor)`；
+   * 彻底解决原先实色背景位于画布外层、导致无卡片空白区域录入 Alpha=0 透明像素的问题，使透镜 Shader 折射出的微透光斑与学习界面一致纯净、饱满。
+2. **折射物理参数暴露与透传对齐**：
+   * 在 `CollectionActionOverlay` 中补齐 `blurRadius`（默认 12.dp）、`refractionHeightRatio`（默认 0.10f）、`refractionAmountRatio`（默认 0.20f）参数定义，并完整透传给底座 `NemoLiquidMenuOverlay`；
+   * 保持错题/收藏业务逻辑与二次确认弹窗 100% 原始不变。
+
+### 2. 涉及文件列表
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/components/CollectionActionMenu.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/favorites/FavoritesScreen.kt`
+* `feature/collection/src/main/java/com/jian/nemo/feature/collection/mistakes/MistakesScreen.kt`
 * `implementation-notes.md`

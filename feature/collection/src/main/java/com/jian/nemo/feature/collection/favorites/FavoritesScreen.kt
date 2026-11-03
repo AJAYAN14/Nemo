@@ -42,6 +42,8 @@ import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.graphics.Brush
+import com.jian.nemo.feature.collection.components.CollectionActionButton
+import com.jian.nemo.feature.collection.components.CollectionActionOverlay
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 
@@ -84,28 +86,40 @@ fun FavoritesScreen(
                     shape = RoundedRectangle(0.dp)
                 )
         ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
-        Column(
+        // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
-                )
         ) {
-            // 收藏列表
-            FavoritesList(
-                favoriteWordsCount = uiState.favoriteWordsCount,
-                favoriteGrammarsCount = uiState.favoriteGrammarsCount,
-                onWordFavoritesClick = onNavigateToWordFavorites,
-                onGrammarFavoritesClick = onNavigateToGrammarFavorites
+            // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor)
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    )
+            ) {
+                // 收藏列表
+                FavoritesList(
+                    favoriteWordsCount = uiState.favoriteWordsCount,
+                    favoriteGrammarsCount = uiState.favoriteGrammarsCount,
+                    onWordFavoritesClick = onNavigateToWordFavorites,
+                    onGrammarFavoritesClick = onNavigateToGrammarFavorites
+                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+            }
         }
 
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
@@ -131,38 +145,29 @@ fun FavoritesScreen(
                 backdrop = backdrop,
                 backButtonSize = 48.dp,
                 actions = {
-                    com.jian.nemo.feature.collection.components.CollectionActionMenu(
-                        wordCount = uiState.favoriteWordsCount,
-                        grammarCount = uiState.favoriteGrammarsCount,
-                        titleSuffix = stringResource(R.string.collection_suffix_favorites),
-                        onClearAll = viewModel::clearAll,
-                        onClearWords = viewModel::clearAllWordFavorites,
-                        onClearGrammars = viewModel::clearAllGrammarFavorites,
-                        isExpanded = isMenuExpanded,
-                        onToggleMenu = { isMenuExpanded = it },
-                        backdrop = backdrop
-                    )
+                    if (uiState.favoriteWordsCount > 0 || uiState.favoriteGrammarsCount > 0) {
+                        CollectionActionButton(
+                            isExpanded = isMenuExpanded,
+                            onClick = { isMenuExpanded = !isMenuExpanded },
+                            backdrop = null
+                        )
+                    }
                 }
             )
         }
 
-        // 3. 页面全屏手势遮罩（纯透明拦截外部点击）
-        androidx.compose.animation.AnimatedVisibility(
-            visible = isMenuExpanded,
-            enter = androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200)),
-            exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(200))
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Transparent)
-                    .clickable(
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
-                        indication = null,
-                        onClick = { isMenuExpanded = false }
-                    )
-            )
-        }
+        // 3. 页面同级液态悬浮菜单浮层 (同级兄弟节点采样 backdrop，彻底激活真实物理透镜折射)
+        CollectionActionOverlay(
+            isVisible = isMenuExpanded,
+            onDismiss = { isMenuExpanded = false },
+            wordCount = uiState.favoriteWordsCount,
+            grammarCount = uiState.favoriteGrammarsCount,
+            titleSuffix = stringResource(R.string.collection_suffix_favorites),
+            onClearAll = viewModel::clearAll,
+            onClearWords = viewModel::clearAllWordFavorites,
+            onClearGrammars = viewModel::clearAllGrammarFavorites,
+            backdrop = backdrop
+        )
         }
     }
 }

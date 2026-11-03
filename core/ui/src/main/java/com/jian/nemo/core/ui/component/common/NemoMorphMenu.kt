@@ -6,9 +6,12 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.rememberTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -23,7 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,7 +51,94 @@ import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.colorControls
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.highlight.Highlight
 import androidx.compose.ui.graphics.painter.Painter
+
+/**
+ * 具有连续平滑弹性形变动效的菜单/关闭图标（圆润三横 <-> ✕）
+ *
+ * @param isExpanded 菜单当前是否处于展开状态（true: ✕，false: 三横）
+ * @param modifier 修饰符
+ * @param color 图标线条颜色
+ * @param size 图标尺寸
+ */
+@Composable
+fun AnimatedMenuCloseIcon(
+    isExpanded: Boolean,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onSurface,
+    size: Dp = 22.dp
+) {
+    val progress by animateFloatAsState(
+        targetValue = if (isExpanded) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.78f,
+            stiffness = 380f
+        ),
+        label = "menuCloseMorph"
+    )
+
+    Canvas(modifier = modifier.size(size)) {
+        val w = this.size.width
+        val h = this.size.height
+        val strokeWidth = 2.4.dp.toPx()
+        val cap = StrokeCap.Round
+
+        // 横线宽度比例（留出边缘保护，呈现饱满圆润视觉）
+        val lineWidth = w * 0.70f
+        val left = (w - lineWidth) / 2f
+        val right = left + lineWidth
+        val centerY = h / 2f
+
+        // 三横分布间距
+        val spacing = h * 0.22f
+        val topY = centerY - spacing
+        val bottomY = centerY + spacing
+
+        // 1. 中间横线：随 progress 收缩并快速淡出
+        val centerAlpha = (1f - progress * 2.5f).coerceIn(0f, 1f)
+        val centerWidth = lineWidth * (1f - progress).coerceIn(0f, 1f)
+        if (centerAlpha > 0f && centerWidth > 0f) {
+            val cLeft = (w - centerWidth) / 2f
+            val cRight = cLeft + centerWidth
+            drawLine(
+                color = color.copy(alpha = centerAlpha),
+                start = Offset(cLeft, centerY),
+                end = Offset(cRight, centerY),
+                strokeWidth = strokeWidth,
+                cap = cap
+            )
+        }
+
+        // 2. 顶线：由水平状态 (left, topY) -> (right, topY) 移向中心并旋转 45°
+        val currentTopY = (1f - progress) * topY + progress * centerY
+        rotate(degrees = progress * 45f, pivot = Offset(w / 2f, currentTopY)) {
+            drawLine(
+                color = color,
+                start = Offset(left, currentTopY),
+                end = Offset(right, currentTopY),
+                strokeWidth = strokeWidth,
+                cap = cap
+            )
+        }
+
+        // 3. 底线：由水平状态 (left, bottomY) -> (right, bottomY) 移向中心并旋转 -45°
+        val currentBottomY = (1f - progress) * bottomY + progress * centerY
+        rotate(degrees = progress * -45f, pivot = Offset(w / 2f, currentBottomY)) {
+            drawLine(
+                color = color,
+                start = Offset(left, currentBottomY),
+                end = Offset(right, currentBottomY),
+                strokeWidth = strokeWidth,
+                cap = cap
+            )
+        }
+    }
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // 动画时序与缓动曲线常量
@@ -245,7 +339,7 @@ fun NemoMorphMenu(
                 if (enableHaptic) {
                     haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 }
-                onExpandedChange(true)
+                onExpandedChange(!expanded)
             },
             shape = CircleShape,
             backdrop = backdrop,
@@ -263,20 +357,23 @@ fun NemoMorphMenu(
                     modifier = Modifier.size(effectiveIconSize)
                 )
             } else {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDescription,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(effectiveIconSize)
+                // 圆润三横平滑过渡到 ✕ 几何形变动效
+                AnimatedMenuCloseIcon(
+                    isExpanded = expanded,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    size = 24.dp
                 )
             }
         }
 
-        // 当需要渲染（展开中或正在进行收起动画）时挂载局部精准锚定的 Popup
+        // 当需要渲染（展开中或正在进行收起动画）时挂载局部精准锚定的 Popup (在按钮正下方展开，避免遮挡按钮)
         if (transitionState.currentState || transitionState.targetState) {
+            val density = LocalDensity.current
+            val yOffsetPx = with(density) { (buttonSize + 8.dp).roundToPx() }
+
             Popup(
                 alignment = Alignment.TopEnd,
-                offset = IntOffset(0, 0),
+                offset = IntOffset(0, yOffsetPx),
                 onDismissRequest = { onExpandedChange(false) },
                 properties = PopupProperties(
                     focusable = true,
@@ -288,7 +385,23 @@ fun NemoMorphMenu(
                     onExpandedChange(false)
                 }
 
-                val panelShape = RoundedRectangle(20.dp)
+                val panelShape = RoundedRectangle(22.dp)
+                val borderBrush = Brush.verticalGradient(
+                    colors = if (isDarkTheme) {
+                        listOf(
+                            Color.White.copy(alpha = 0.35f),
+                            Color.White.copy(alpha = 0.12f),
+                            Color.Transparent
+                        )
+                    } else {
+                        listOf(
+                            Color.White.copy(alpha = 0.85f),
+                            Color.White.copy(alpha = 0.30f),
+                            Color.Black.copy(alpha = 0.05f)
+                        )
+                    }
+                )
+
                 // 面板卡片容器（右上角原位弹性下拉展开）
                 Box(
                     modifier = Modifier
@@ -301,26 +414,46 @@ fun NemoMorphMenu(
                             transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 0f)
                         }
                         .then(
-                            if (elevation > 0.dp) {
-                                Modifier.shadow(
-                                    elevation = elevation,
-                                    shape = panelShape
+                            if (backdrop != null) {
+                                Modifier.drawBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { panelShape },
+                                    effects = {
+                                        val minDimension = size.minDimension
+                                        colorControls(
+                                            brightness = if (isDarkTheme) 0.05f else 0.10f,
+                                            saturation = 1.35f
+                                        )
+                                        blur(12.dp.toPx())
+                                        lens(
+                                            refractionHeight = 0.10f * minDimension,
+                                            refractionAmount = 0.20f * minDimension,
+                                            depthEffect = true,
+                                            chromaticAberration = false
+                                        )
+                                    },
+                                    highlight = { Highlight.Plain },
+                                    onDrawSurface = {
+                                        drawRect(
+                                            color = if (isDarkTheme) Color.White.copy(alpha = 0.04f) else Color.White.copy(alpha = 0.06f)
+                                        )
+                                    }
                                 )
                             } else {
                                 Modifier
+                                    .clip(panelShape)
+                                    .background(
+                                        if (isDarkTheme) Color(0xFF1E1E22).copy(alpha = 0.94f)
+                                        else Color.White.copy(alpha = 0.96f)
+                                    )
                             }
                         )
-                        .clip(panelShape)
-                        .background(containerColor)
-                        .border(
-                            BorderStroke(0.5.dp, borderColor),
-                            panelShape
-                        )
+                        .border(0.6.dp, borderBrush, panelShape)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 6.dp)
                     ) {
                         // 重置计数器 → content 中各菜单项按顺序递增 → 捕获总数
                         staggerInfo.counter = 0

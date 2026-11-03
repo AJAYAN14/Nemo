@@ -55,7 +55,9 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
 import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
+import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionButton
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
+import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
 import com.jian.nemo.feature.library.presentation.components.WordListItemPremium
@@ -230,10 +232,17 @@ fun CategoryWordsScreen(
             }
         }
 
-        // 1.5 页面全屏高斯模糊景深遮罩 (对齐学习界面：12% 柔光暗化 + 200ms 淡入淡出，点击外部收起菜单)
-        LibraryMenuScrimOverlay(
-            visible = isMenuExpanded,
-            onDismiss = { isMenuExpanded = false }
+        // 1.5 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
+        LibraryLevelSelectionOverlay(
+            isVisible = isMenuExpanded,
+            onDismiss = { isMenuExpanded = false },
+            selectedLevel = selectedLevel,
+            onLevelSelected = { selectedLevel = it },
+            countsByLevel = countsByLevel,
+            backdrop = backdrop,
+            onScrollToTop = {
+                coroutineScope.launch { lazyListState.scrollToItem(0) }
+            }
         )
 
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
@@ -251,16 +260,10 @@ fun CategoryWordsScreen(
                 backdrop = backdrop,
                 backButtonSize = 48.dp,
                 actions = {
-                    LibraryLevelSelectionMenu(
-                        expanded = isMenuExpanded,
-                        onExpandedChange = { isMenuExpanded = it },
-                        selectedLevel = selectedLevel,
-                        onLevelSelected = { selectedLevel = it },
-                        countsByLevel = countsByLevel,
-                        backdrop = backdrop,
-                        onScrollToTop = {
-                            coroutineScope.launch { lazyListState.scrollToItem(0) }
-                        }
+                    LibraryLevelSelectionButton(
+                        isExpanded = isMenuExpanded,
+                        onClick = { isMenuExpanded = !isMenuExpanded },
+                        backdrop = backdrop
                     )
                 }
             )

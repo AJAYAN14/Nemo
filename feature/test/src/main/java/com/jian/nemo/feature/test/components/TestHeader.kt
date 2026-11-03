@@ -33,8 +33,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.jian.nemo.core.ui.component.common.NemoDropdownMenu
-import com.jian.nemo.core.ui.component.common.NemoMenuItem
+import com.jian.nemo.core.ui.component.common.NemoMorphMenu
+import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 
 /**
  * 测试头部组件（包含返回按钮、倒计时和操作菜单）
@@ -87,53 +87,41 @@ fun TestHeader(
             )
         }
 
-        // 菜单入口按钮 (替代之前的收藏按钮)
+        // 菜单入口按钮 (圆润三横平滑过渡到 ✕ 弹性动效)
         val isFavorite = word?.isFavorite == true || grammar?.isFavorite == true
         val itemId = word?.id ?: grammar?.id ?: 0
 
-        Box {
-            var expanded by remember { mutableStateOf(false) }
+        var menuExpanded by remember { mutableStateOf(false) }
 
-            IconButton(
-                onClick = { expanded = true },
-                modifier = Modifier.size(40.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.MoreVert,
-                    contentDescription = stringResource(R.string.test_header_cd_more_options),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            NemoDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                // 收藏选项 (保留业务逻辑)
-                if (itemId != 0) {
-                    NemoMenuItem(
-                        text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
-                        onClick = {
-                            expanded = false
-                            onToggleFavorite(itemId, !isFavorite)
-                        },
-                        leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                        iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                // 暂停测试选项
-                NemoMenuItem(
-                    text = stringResource(R.string.test_header_menu_pause),
+        NemoMorphMenu(
+            expanded = menuExpanded,
+            onExpandedChange = { menuExpanded = it },
+            buttonSize = 48.dp,
+            menuWidth = 192.dp
+        ) {
+            // 收藏选项
+            if (itemId != 0) {
+                NemoMorphMenuItem(
+                    text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
+                    leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                    iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
                     onClick = {
-                        expanded = false
-                        onPause()
-                    },
-                    leadingIcon = Icons.Rounded.Pause,
-                    iconColor = IosColors.Orange
+                        close()
+                        onToggleFavorite(itemId, !isFavorite)
+                    }
                 )
             }
+
+            // 暂停测试选项
+            NemoMorphMenuItem(
+                text = stringResource(R.string.test_header_menu_pause),
+                leadingIcon = Icons.Rounded.Pause,
+                iconColor = IosColors.Orange,
+                onClick = {
+                    close()
+                    onPause()
+                }
+            )
         }
     }
 

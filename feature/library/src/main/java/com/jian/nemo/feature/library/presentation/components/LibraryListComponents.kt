@@ -47,6 +47,9 @@ import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.NotoSerifSC
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
@@ -111,48 +114,64 @@ fun BoxScope.LibraryScrollToTopButton(
 }
 
 /**
- * 词库列表通用 - 等级筛选 NemoMorphMenu
- *
- * 48dp 液态玻璃透镜按钮，专属几何图标，全部等级与 N5~N1 纯文字对齐、选中打勾、无震动
- * 遵循单一官方原生图标规范与标准设计调色盘 IosColors。
+ * 48dp 词库等级筛选触发按钮 (圆润三横形变为 ✕ 动效)
  */
 @Composable
-fun LibraryLevelSelectionMenu(
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+fun LibraryLevelSelectionButton(
+    isExpanded: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null,
+    buttonSize: Dp = 48.dp
+) {
+    NemoLiquidMenuButton(
+        isExpanded = isExpanded,
+        onClick = onClick,
+        backdrop = backdrop,
+        buttonSize = buttonSize,
+        enableHaptic = false
+    )
+}
+
+/**
+ * 词库等级筛选全屏悬浮组件
+ */
+@Composable
+fun LibraryLevelSelectionOverlay(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
     selectedLevel: String,
     onLevelSelected: (String) -> Unit,
     countsByLevel: Map<String, Int>,
     backdrop: Backdrop?,
-    onScrollToTop: () -> Unit
+    onScrollToTop: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    NemoMorphMenu(
-        expanded = expanded,
-        onExpandedChange = onExpandedChange,
-        buttonSize = 48.dp,
-        menuWidth = 200.dp,
-        enableHaptic = false,
+    NemoLiquidMenuOverlay(
+        isVisible = isVisible,
+        onDismiss = onDismiss,
         backdrop = backdrop,
-        iconPainter = painterResource(id = com.jian.nemo.core.ui.R.drawable.ic_level_all),
-        contentDescription = stringResource(R.string.lib_components_select_level_cd)
+        menuWidth = 240.dp,
+        modifier = modifier
     ) {
         val allCount = countsByLevel.values.sum()
         val isAllSelected = selectedLevel == "ALL"
 
-        NemoMorphMenuItem(
+        NemoLiquidMenuItem(
             text = stringResource(R.string.lib_components_all_levels_count_format, allCount),
             leadingIcon = Icons.Rounded.School,
             iconColor = IosColors.Blue,
-            trailingIcon = if (isAllSelected) Icons.Rounded.Check else null,
+            trailingText = if (isAllSelected) "✓" else null,
             onClick = {
                 onLevelSelected("ALL")
-                close()
+                onDismiss()
                 onScrollToTop()
             }
         )
 
         HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
         )
 
         val levelsList = listOf(
@@ -165,19 +184,39 @@ fun LibraryLevelSelectionMenu(
         levelsList.forEach { (level, levelColor) ->
             val count = countsByLevel[level] ?: 0
             val isSelected = selectedLevel.equals(level, ignoreCase = true)
-            NemoMorphMenuItem(
+            NemoLiquidMenuItem(
                 text = stringResource(R.string.lib_components_level_count_format, level, count),
                 leadingIcon = Icons.Rounded.School,
                 iconColor = levelColor,
-                trailingIcon = if (isSelected) Icons.Rounded.Check else null,
+                trailingText = if (isSelected) "✓" else null,
                 onClick = {
                     onLevelSelected(level)
-                    close()
+                    onDismiss()
                     onScrollToTop()
                 }
             )
         }
     }
+}
+
+/**
+ * 单词/语法等级筛选菜单 (封装版)
+ */
+@Composable
+fun LibraryLevelSelectionMenu(
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    selectedLevel: String,
+    onLevelSelected: (String) -> Unit,
+    countsByLevel: Map<String, Int>,
+    backdrop: Backdrop?,
+    onScrollToTop: () -> Unit
+) {
+    LibraryLevelSelectionButton(
+        isExpanded = expanded,
+        onClick = { onExpandedChange(!expanded) },
+        backdrop = backdrop
+    )
 }
 
 
