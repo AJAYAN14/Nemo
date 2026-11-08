@@ -38,6 +38,7 @@ import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.avatar.AvatarEditDialog
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.user.component.*
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -45,8 +46,6 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 private const val ANIMATION_DURATION = 200
 private const val PRESS_SCALE = 0.97f
-
-val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,125 +105,125 @@ fun AccountManagementScreen(
                         bottom = navBarBottom + 24.dp
                     )
             ) {
-                    ProfileHeaderSection(
-                        uiState = uiState,
-                        avatarPath = avatarPath,
-                        onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
-                    )
+                ProfileHeaderSection(
+                    uiState = uiState,
+                    avatarPath = avatarPath,
+                    onEditAvatar = { viewModel.showDialog(UserDialogType.UPDATE_AVATAR) }
+                )
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        // Group 1: Profile Settings
-                        PremiumSettingsGroup(
-                            title = stringResource(R.string.user_account_title_profile_section),
-                            cardBg = cardBg
-                        ) {
-                            PremiumSettingsItem(
-                                icon = Icons.Rounded.Badge,
-                                iconTint = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
-                                title = stringResource(R.string.user_account_btn_change_username),
-                                onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
-                            )
-                            if (uiState.user?.isOnlyGoogleIdentity != true) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(start = 74.dp),
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                                    thickness = 0.5.dp
-                                )
-                                PremiumSettingsItem(
-                                    icon = Icons.Rounded.Mail,
-                                    iconTint = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
-                                    title = stringResource(R.string.user_account_btn_change_email),
-                                    onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // Group 2: Security Settings
-                        PremiumSettingsGroup(
-                            title = stringResource(R.string.user_account_title_security_section),
-                            cardBg = cardBg
-                        ) {
-                            PremiumSettingsItem(
-                                icon = Icons.Rounded.LockReset,
-                                iconTint = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
-                                title = stringResource(R.string.user_account_btn_reset_password),
-                                onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        // Group 3: Danger Zone
-                        PremiumSettingsGroup(
-                            title = stringResource(R.string.user_account_title_danger_section),
-                            cardBg = cardBg
-                        ) {
-                            PremiumSettingsItem(
-                                icon = Icons.Rounded.DeleteForever,
-                                iconTint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
-                                title = stringResource(R.string.user_account_btn_delete_account),
-                                titleColor = MaterialTheme.colorScheme.error,
-                                onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(36.dp))
-
-                        ColoredLiquidGlassButton(
-                            onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(52.dp),
-                            tint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
-                            backdrop = backdrop,
-                            shape = Capsule()
-                        ) {
-                            Text(
-                                text = stringResource(R.string.user_account_btn_logout),
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(48.dp))
-                    }
-                }
-
-                // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
-                Box(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    backgroundColor.copy(alpha = 0.95f),
-                                    backgroundColor.copy(alpha = 0.75f),
-                                    backgroundColor.copy(alpha = 0.35f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                        .padding(bottom = 8.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
-                    CommonHeader(
-                        title = stringResource(R.string.user_account_title_screen),
-                        onBack = onNavigateBack,
-                        backgroundColor = Color.Transparent,
-                        backdrop = backdrop,
-                        backButtonSize = 48.dp
-                    )
+                    // Group 1: Profile Settings
+                    PremiumSettingsGroup(
+                        title = stringResource(R.string.user_account_title_profile_section),
+                        cardBg = cardBg
+                    ) {
+                        PremiumSettingsItem(
+                            icon = Icons.Rounded.Badge,
+                            iconTint = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
+                            title = stringResource(R.string.user_account_btn_change_username),
+                            onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
+                        )
+                        if (uiState.user?.isOnlyGoogleIdentity != true) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 74.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+                                thickness = 0.5.dp
+                            )
+                            PremiumSettingsItem(
+                                icon = Icons.Rounded.Mail,
+                                iconTint = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
+                                title = stringResource(R.string.user_account_btn_change_email),
+                                onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Group 2: Security Settings
+                    PremiumSettingsGroup(
+                        title = stringResource(R.string.user_account_title_security_section),
+                        cardBg = cardBg
+                    ) {
+                        PremiumSettingsItem(
+                            icon = Icons.Rounded.LockReset,
+                            iconTint = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
+                            title = stringResource(R.string.user_account_btn_reset_password),
+                            onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Group 3: Danger Zone
+                    PremiumSettingsGroup(
+                        title = stringResource(R.string.user_account_title_danger_section),
+                        cardBg = cardBg
+                    ) {
+                        PremiumSettingsItem(
+                            icon = Icons.Rounded.DeleteForever,
+                            iconTint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
+                            title = stringResource(R.string.user_account_btn_delete_account),
+                            titleColor = MaterialTheme.colorScheme.error,
+                            onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(36.dp))
+
+                    ColoredLiquidGlassButton(
+                        onClick = { viewModel.showDialog(UserDialogType.LOGOUT_CONFIRM) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        tint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
+                        backdrop = null,
+                        shape = Capsule()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.user_account_btn_logout),
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(48.dp))
                 }
             }
+
+            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                CommonHeader(
+                    title = stringResource(R.string.user_account_title_screen),
+                    onBack = onNavigateBack,
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp
+                )
+            }
         }
+    }
 
     when (uiState.activeDialog) {
         UserDialogType.RESET_PASSWORD -> {

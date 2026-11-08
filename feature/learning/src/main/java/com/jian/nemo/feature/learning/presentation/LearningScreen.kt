@@ -266,7 +266,7 @@ fun LearningScreen(
                                     showAnswerDelayHint = true
                                 },
                                 onBackClick = onNavigateBack,
-                                topContentPadding = statusBarTop + 60.dp + 16.dp
+                                topContentPadding = statusBarTop + 72.dp + 24.dp
                             )
                         }
                     }

@@ -626,3 +626,64 @@
 * `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
 * `implementation-notes.md`
 
+---
+
+## 二十五、账户管理界面液态玻璃递归采样闪退修复与设计系统统一台账
+
+> **目标**：彻底解决点击进入账户管理界面（`AccountManagementScreen`）时的 RenderThread 闪退崩溃，并规范顶栏实现与全局设计系统单一来源。
+
+### 1. 核心改进点与根因机制
+1. **解除液态玻璃父子自包含递归采样死锁**：
+   * 原代码中主滚动 `Column` 挂载了 `Modifier.layerBackdrop(backdrop)`；其内部末尾的退出登录按钮 `ColoredLiquidGlassButton` 又传入了同一个 `backdrop = backdrop`；
+   * 在 RenderThread 流水线中，子图层绘制时采样正在录制自身的父层 RenderNode，导致渲染管道重入与死锁崩溃（SIGSEGV 11）；
+   * 将该按钮的 `backdrop` 显式设为 `null`（内部安全退化至 `emptyBackdrop()`），彻底切断死锁链条。
+2. **单一数据源收编 `LocalSettingIconStyle`**：
+   * 移除文件顶层重复声明的局部 `LocalSettingIconStyle`，统一引入 `:core:ui` 官方单一来源 `com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle`。
+3. **嵌套层级缩进规范化**：
+   * 修复 `Box` 与 `Column` 的嵌套缩进，确保代码结构严谨清晰。
+
+### 2. 涉及文件列表
+* `feature/user/src/main/java/com/jian/nemo/feature/user/AccountManagementScreen.kt`
+* `implementation-notes.md`
+
+
+
+---
+
+## 二十四、单词学习与语法学习内容卡片默认顶部间距优化台账
+
+> **目标**：解决单词学习（`WordLearningContent`）与语法学习（`GrammarLearningContent`）的内容卡片（`SRSLearningCard` / `SRSGrammarCard`）在默认情况下距离顶栏太近、视觉拥挤且部分落入渐变遮罩的问题。
+
+### 1. 核心改进点与排版对齐
+1. **真实物理尺寸度量**：
+   * 悬浮顶栏控件内容底边缘位于 `statusBarTop + 72.dp`，背景四阶渐变遮罩覆盖至 `statusBarTop + 80.dp`；
+   * 原 `topContentPadding = statusBarTop + 60.dp + 16.dp`（76dp）使卡片上边缘距离顶栏控件仅留出 4dp，卡片顶部有 4dp 落在渐变遮罩内；
+   * 且学习界面第一项为大实体卡片（无分组标题过渡），导致卡片上边缘紧贴顶栏大按钮。
+2. **规范呼吸间距对齐**：
+   * 遵循《标题与卡片对齐设计规范》中 20dp ~ 24dp 组间大间距标准，将 `topContentPadding` 调整为 `statusBarTop + 72.dp + 24.dp`（96dp）；
+   * 默认状态下卡片距离顶栏控件下边缘留出 24dp 黄金呼吸间距，距离渐变遮罩底部留出 16dp 纯净间隙；
+   * 卡片向上滑动时保持无缝滑入顶栏遮罩与液态玻璃折射透镜下方，兼顾默认状态舒适留白与滚动穿透体验。
+
+### 2. 涉及文件列表
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
+
+---
+
+## 二十五、账户管理界面液态玻璃递归采样闪退修复与设计系统统一台账
+
+> **目标**：彻底解决点击进入账户管理界面（`AccountManagementScreen`）时的 RenderThread 闪退崩溃，并规范顶栏实现与全局设计系统单一来源。
+
+### 1. 核心改进点与根因机制
+1. **解除液态玻璃父子自包含递归采样死锁**：
+   * 原代码中主滚动 `Column` 挂载了 `Modifier.layerBackdrop(backdrop)`；其内部末尾的退出登录按钮 `ColoredLiquidGlassButton` 又传入了同一个 `backdrop = backdrop`；
+   * 在 RenderThread 流水线中，子图层绘制时采样正在录制自身的父层 RenderNode，导致渲染管道重入与死锁崩溃（SIGSEGV 11）；
+   * 将该按钮的 `backdrop` 显式设为 `null`（内部安全退化至 `emptyBackdrop()`），彻底切断死锁链条。
+2. **单一数据源收编 `LocalSettingIconStyle`**：
+   * 移除文件顶层重复声明的局部 `LocalSettingIconStyle`，统一引入 `:core:ui` 官方单一来源 `com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle`。
+3. **嵌套层级缩进规范化**：
+   * 修复 `Box` 与 `Column` 的嵌套缩进，确保代码结构严谨清晰。
+
+### 2. 涉及文件列表
+* `feature/user/src/main/java/com/jian/nemo/feature/user/AccountManagementScreen.kt`
+* `implementation-notes.md`
