@@ -87,7 +87,8 @@ fun NemoLiquidMenuButton(
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
     buttonSize: Dp = 48.dp,
-    enableHaptic: Boolean = true
+    enableHaptic: Boolean = true,
+    chromaticAberration: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -101,7 +102,7 @@ fun NemoLiquidMenuButton(
         shape = CircleShape,
         backdrop = backdrop,
         hasLens = backdrop != null,
-        chromaticAberration = false,
+        chromaticAberration = chromaticAberration,
         contentPadding = PaddingValues(0.dp),
         isInteractive = true,
         modifier = modifier.size(buttonSize)

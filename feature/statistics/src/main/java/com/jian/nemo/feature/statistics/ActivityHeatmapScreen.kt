@@ -162,9 +162,9 @@ fun ActivityHeatmapScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            backgroundColor.copy(alpha = 0.95f),
-                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.60f),
                             backgroundColor.copy(alpha = 0.35f),
+                            backgroundColor.copy(alpha = 0.10f),
                             Color.Transparent
                         )
                     )
@@ -191,7 +191,7 @@ fun ActivityHeatmapScreen(
                                 painter = painterResource(id = R.drawable.ic_share_ios),
                                 contentDescription = stringResource(R.string.stats_heatmap_cd_share),
                                 tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(30.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }

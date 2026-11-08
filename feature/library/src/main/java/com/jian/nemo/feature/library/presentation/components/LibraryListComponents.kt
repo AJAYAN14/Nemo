@@ -123,13 +123,16 @@ fun LibraryLevelSelectionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
-    buttonSize: Dp = 48.dp
+    buttonSize: Dp = 48.dp,
+    chromaticAberration: Boolean = false
 ) {
     NemoLiquidMenuButton(
         isExpanded = isExpanded,
         onClick = onClick,
+        modifier = modifier,
         backdrop = backdrop,
-        buttonSize = buttonSize
+        buttonSize = buttonSize,
+        chromaticAberration = chromaticAberration
     )
 }
 
@@ -268,9 +271,9 @@ fun FloatingHeaderGradientContainer(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        backgroundColor.copy(alpha = 0.95f),
-                        backgroundColor.copy(alpha = 0.75f),
+                        backgroundColor.copy(alpha = 0.60f),
                         backgroundColor.copy(alpha = 0.35f),
+                        backgroundColor.copy(alpha = 0.10f),
                         Color.Transparent
                     )
                 )

@@ -88,6 +88,7 @@ import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import androidx.compose.ui.res.stringResource
+import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.feature.learning.R
 import kotlin.math.sin
@@ -117,38 +118,31 @@ fun LearnHeader(
     var showTodayOverviewDialog by remember { mutableStateOf(false) }
 
     val remainingCount = totalCount
-
-    // MD3: 使用 MaterialTheme 的颜色系统
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val contentColor = MaterialTheme.colorScheme.onSurface
+    val headerTitle = if (learningMode == LearningMode.Word) {
+        stringResource(R.string.learn_common_title_word_learning)
+    } else {
+        stringResource(R.string.learn_common_title_grammar_learning)
+    }
 
-    // 导航按钮组背景：深色模式用半透明白色，浅色模式用纯白色
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
-    val progressBackground = MaterialTheme.colorScheme.surfaceVariant
-
-    // MD3: 使用 Surface 提供容器结构，但背景透明以融入界面
-    Box(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp, vertical = 4.dp)
-        ) {
-            // Top Row - 无剪裁弹性容器
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Left: Navigation Icon + Title
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.weight(1f)
+    Box(modifier = modifier.fillMaxWidth()) {
+        CommonHeader(
+            title = headerTitle,
+            onBack = onClose,
+            backgroundColor = Color.Transparent,
+            backdrop = backdrop,
+            backButtonSize = 48.dp,
+            chromaticAberration = (backdrop != null),
+            actions = {
+                // 撤销上一次评分按钮 (动态平滑展开/收起)
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = onUndo != null && canUndo,
+                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
+                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally()
                 ) {
                     FrostedLiquidGlassButton(
-                        onClick = onClose,
+                        onClick = { onUndo?.invoke() },
                         shape = CircleShape,
                         backdrop = backdrop,
                         hasLens = true,
@@ -158,101 +152,58 @@ fun LearnHeader(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                            contentDescription = stringResource(R.string.learn_common_desc_back),
+                            imageVector = Icons.AutoMirrored.Rounded.Undo,
+                            contentDescription = stringResource(R.string.learn_common_desc_undo),
                             tint = contentColor,
                             modifier = Modifier.size(30.dp)
                         )
                     }
-
-                    // MD3: 标题使用 titleLarge (22sp)
-                    Text(
-                        text = if (learningMode == LearningMode.Word) stringResource(R.string.learn_common_title_word_learning) else stringResource(R.string.learn_common_title_grammar_learning),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = contentColor,
-                        modifier = Modifier.padding(start = 8.dp) // MD3: navigation 和 title 之间间距
-                    )
                 }
 
-                // Right: Navigation Group & Menu
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // 撤销上一次评分按钮 (动态平滑展开/收起)
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = onUndo != null && canUndo,
-                        enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
-                        exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally()
+                // 【硬约束】剩余数量 (Remaining Count)
+                if (remainingCount > 0) {
+                    FrostedLiquidGlassButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            showTodayOverviewDialog = true
+                        },
+                        shape = CircleShape,
+                        backdrop = backdrop,
+                        hasLens = true,
+                        chromaticAberration = backdrop != null,
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.height(48.dp)
                     ) {
-                        FrostedLiquidGlassButton(
-                            onClick = { onUndo?.invoke() },
-                            shape = CircleShape,
-                            backdrop = backdrop,
-                            hasLens = true,
-                            chromaticAberration = backdrop != null,
-                            contentPadding = PaddingValues(0.dp),
-                            isInteractive = true,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.Undo,
-                                contentDescription = stringResource(R.string.learn_common_desc_undo),
-                                tint = contentColor,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-                    }
-
-                    // 【硬约束】剩余数量 (Remaining Count) 定义：
-                    // 这里显示的是当前学习队列（wordList/grammarList）中的总数。
-                    // 它是“待处理任务量”，而不是“页面浏览进度”。
-                    // 只要卡片没有被评分（Rate）并移出队列，该数字在滑动浏览时不应减小。
-                    if (remainingCount > 0) {
-                        FrostedLiquidGlassButton(
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                showTodayOverviewDialog = true
-                            },
-                            shape = CircleShape,
-                            backdrop = backdrop,
-                            hasLens = true,
-                            chromaticAberration = backdrop != null,
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                            isInteractive = true,
-                            modifier = Modifier.height(48.dp)
-                        ) {
-                            val annotatedText = buildAnnotatedString {
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = contentColor.copy(alpha = 0.6f),
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                ) {
-                                    append(stringResource(R.string.learn_common_label_remaining_prefix))
-                                }
-                                withStyle(
-                                    style = SpanStyle(
-                                        color = contentColor.copy(alpha = 0.95f),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                ) {
-                                    append("$remainingCount")
-                                }
+                        val annotatedText = buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    color = contentColor.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            ) {
+                                append(stringResource(R.string.learn_common_label_remaining_prefix))
                             }
-                            Text(
-                                text = annotatedText,
-                                style = MaterialTheme.typography.labelMedium
-                            )
+                            withStyle(
+                                style = SpanStyle(
+                                    color = contentColor.copy(alpha = 0.95f),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append("$remainingCount")
+                            }
                         }
+                        Text(
+                            text = annotatedText,
+                            style = MaterialTheme.typography.labelMedium
+                        )
                     }
-
-                    // More Menu Slot
-                    menu?.invoke()
                 }
-            }
 
-        }
+                // More Menu Slot
+                menu?.invoke()
+            }
+        )
 
         // 今日学习概览面板弹窗
         if (showTodayOverviewDialog) {

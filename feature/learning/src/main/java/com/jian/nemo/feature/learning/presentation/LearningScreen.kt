@@ -88,6 +88,7 @@ import com.jian.nemo.feature.learning.presentation.components.srs.SRSActionArea
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.dialog.DurationPickerDialog
 
 
@@ -281,49 +282,25 @@ fun LearningScreen(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                backgroundColor.copy(alpha = 0.95f),
-                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.60f),
                                 backgroundColor.copy(alpha = 0.35f),
+                                backgroundColor.copy(alpha = 0.10f),
                                 Color.Transparent
                             )
                         )
                     )
                     .padding(bottom = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
-                ) {
-                    if (isFinished) {
-                        // 结算状态下：极简轻量化顶部导航（接入真实液态凸透镜折射）
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // 左侧：返回按钮（液态凸透镜物理折射）
-                            FrostedLiquidGlassButton(
-                                onClick = onNavigateBack,
-                                backdrop = learningBackdrop,
-                                shape = CircleShape,
-                                hasLens = true,
-                                contentPadding = PaddingValues(0.dp),
-                                isInteractive = true,
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                    contentDescription = stringResource(R.string.learn_screen_desc_back),
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(30.dp)
-                                )
-                            }
-
-                            // 中间：已连续打卡胶囊徽章（HTML 同款设计，橙底暖色）
+                if (isFinished) {
+                    // 结算状态下：极简轻量化顶部导航（CommonHeader 架构，居中打卡徽章，右侧分享）
+                    CommonHeader(
+                        title = "",
+                        onBack = onNavigateBack,
+                        backgroundColor = Color.Transparent,
+                        backdrop = learningBackdrop,
+                        backButtonSize = 48.dp,
+                        chromaticAberration = true,
+                        centerContent = {
                             Surface(
                                 shape = CircleShape,
                                 color = if (isDarkTheme) LearningPalette.BannerOrangeBgDark else LearningPalette.BannerOrangeBgLight,
@@ -343,13 +320,14 @@ fun LearningScreen(
                                     )
                                 }
                             }
-
-                            // 右侧：分享按钮（液态凸透镜物理折射，使用热力图同款 ic_share_ios）
+                        },
+                        actions = {
                             FrostedLiquidGlassButton(
                                 onClick = { showSharePosterDialog = true },
                                 backdrop = learningBackdrop,
                                 shape = CircleShape,
                                 hasLens = true,
+                                chromaticAberration = true,
                                 contentPadding = PaddingValues(0.dp),
                                 isInteractive = true,
                                 modifier = Modifier.size(48.dp)
@@ -358,34 +336,34 @@ fun LearningScreen(
                                     painter = painterResource(id = R.drawable.ic_share_ios),
                                     contentDescription = stringResource(R.string.learn_screen_desc_share),
                                     tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(30.dp)
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
-                    } else {
-                        // Header
-                        LearnHeader(
-                            learningMode = uiState.learningMode,
-                            completedCount = uiState.completedToday,
-                            dailyGoal = uiState.dailyGoal,
-                            totalCount = remainingTaskCount,
-                            onClose = onNavigateBack,
-                            canUndo = uiState.canUndo,
-                            onUndo = { viewModel.onEvent(LearningEvent.Undo) },
-                            queueNewCount = uiState.queueNewCount,
-                            queueLearningCount = uiState.queueLearningCount,
-                            queueReviewCount = uiState.queueReviewCount,
-                            queueRelearnCount = uiState.queueRelearnCount,
-                            backdrop = learningBackdrop,
-                            menu = {
-                                LearnHeaderMoreMenuButton(
-                                    isExpanded = isMenuExpanded,
-                                    onClick = { isMenuExpanded = !isMenuExpanded },
-                                    backdrop = learningBackdrop
-                                )
-                            }
-                        )
-                    }
+                    )
+                } else {
+                    // Header
+                    LearnHeader(
+                        learningMode = uiState.learningMode,
+                        completedCount = uiState.completedToday,
+                        dailyGoal = uiState.dailyGoal,
+                        totalCount = remainingTaskCount,
+                        onClose = onNavigateBack,
+                        canUndo = uiState.canUndo,
+                        onUndo = { viewModel.onEvent(LearningEvent.Undo) },
+                        queueNewCount = uiState.queueNewCount,
+                        queueLearningCount = uiState.queueLearningCount,
+                        queueReviewCount = uiState.queueReviewCount,
+                        queueRelearnCount = uiState.queueRelearnCount,
+                        backdrop = learningBackdrop,
+                        menu = {
+                            LearnHeaderMoreMenuButton(
+                                isExpanded = isMenuExpanded,
+                                onClick = { isMenuExpanded = !isMenuExpanded },
+                                backdrop = learningBackdrop
+                            )
+                        }
+                    )
                 }
             }
 

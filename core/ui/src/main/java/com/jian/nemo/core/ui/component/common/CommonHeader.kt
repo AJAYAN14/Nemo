@@ -51,7 +51,8 @@ fun CommonHeader(
     centerContent: @Composable (() -> Unit)? = null,
     actions: @Composable (RowScope.() -> Unit)? = null,
     backdrop: Backdrop? = null,
-    backButtonSize: Dp = 48.dp
+    backButtonSize: Dp = 48.dp,
+    chromaticAberration: Boolean = false
 ) {
     Box(
         modifier = Modifier
@@ -75,6 +76,8 @@ fun CommonHeader(
                         onClick = onBack,
                         backdrop = backdrop,
                         shape = CircleShape,
+                        hasLens = true,
+                        chromaticAberration = chromaticAberration,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
                         modifier = Modifier.size(backButtonSize)
@@ -112,12 +115,11 @@ fun CommonHeader(
                 // 右侧：Actions 与头像
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
                 ) {
                     actions?.invoke(this)
 
                     if (username != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
