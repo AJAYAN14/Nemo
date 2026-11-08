@@ -270,7 +270,7 @@ fun GrammarListScreen(
                     LibraryLevelSelectionButton(
                         isExpanded = isMenuExpanded,
                         onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = null
+                        backdrop = backdrop
                     )
                 }
             )
