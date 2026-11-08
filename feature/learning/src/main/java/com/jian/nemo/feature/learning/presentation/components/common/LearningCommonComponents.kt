@@ -113,18 +113,7 @@ fun LearnHeader(
     backdrop: Backdrop? = null,
     menu: @Composable (() -> Unit)? = null
 ) {
-    val rawProgress = if (dailyGoal > 0) completedCount.toFloat() / dailyGoal else 0f
-    val animatedProgress by animateFloatAsState(
-        targetValue = rawProgress.coerceIn(0f, 1f),
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "learn_header_progress"
-    )
-
     val haptic = LocalHapticFeedback.current
-    var showQueueExplanationDialog by remember { mutableStateOf(false) }
     var showTodayOverviewDialog by remember { mutableStateOf(false) }
 
     val remainingCount = totalCount
@@ -263,100 +252,6 @@ fun LearnHeader(
                 }
             }
 
-            // Progress Bar + Queue Badge Counts
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Progress Bar - MD3: 使用 LinearProgressIndicator 风格（平滑插值动画）
-                val effectiveProgressColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp) // MD3: 推荐的进度条高度 4dp
-                        .background(progressBackground, RoundedRectangle(2.dp))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(animatedProgress)
-                            .fillMaxSize()
-                            .background(
-                                color = effectiveProgressColor,
-                                shape = RoundedRectangle(2.dp)
-                            )
-                    )
-                }
-
-                // 四色状态计数（点击可查看各状态说明）
-                Row(
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .clip(RoundedRectangle(8.dp))
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            showQueueExplanationDialog = true
-                        }
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // 新学 (NEW) - 蓝色
-                    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-
-                    Text(
-                        text = "$queueNewCount",
-                        color = newColor.copy(alpha = if (queueNewCount > 0) 1f else 0.3f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    // 在学 (LEARNING) - 青色
-                    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-
-                    Text(
-                        text = "$queueLearningCount",
-                        color = learningColor.copy(alpha = if (queueLearningCount > 0) 1f else 0.3f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    // 复习 (REVIEW) - 绿色
-                    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-
-                    Text(
-                        text = "$queueReviewCount",
-                        color = reviewColor.copy(alpha = if (queueReviewCount > 0) 1f else 0.3f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    // 重学 (RELEARN) - 橙色
-                    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
-
-                    Text(
-                        text = "$queueRelearnCount",
-                        color = relearnColor.copy(alpha = if (queueRelearnCount > 0) 1f else 0.3f),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        // 队列状态说明弹窗
-        if (showQueueExplanationDialog) {
-            QueueExplanationDialog(
-                onDismissRequest = { showQueueExplanationDialog = false },
-                queueNewCount = queueNewCount,
-                queueLearningCount = queueLearningCount,
-                queueReviewCount = queueReviewCount,
-                queueRelearnCount = queueRelearnCount,
-                isDarkTheme = isDarkTheme,
-
-            )
         }
 
         // 今日学习概览面板弹窗

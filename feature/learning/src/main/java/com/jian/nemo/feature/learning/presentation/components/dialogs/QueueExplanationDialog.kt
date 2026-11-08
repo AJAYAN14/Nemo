@@ -25,6 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
+import com.jian.nemo.core.designsystem.theme.NemoText
+import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 
@@ -46,6 +50,10 @@ fun QueueExplanationDialog(
     val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
     val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
 
+    val itemBgColor = if (isDarkTheme) NemoSurfaceSubcardDark else NemoSurfaceSubcard
+    val primaryTextColor = if (isDarkTheme) Color.White else NemoText
+    val secondaryTextColor = if (isDarkTheme) Color(0xFF8E8E93) else NemoTextLight
+
     NemoDialog(
         onDismissRequest = onDismissRequest,
         title = stringResource(R.string.title_queue_explanation),
@@ -62,32 +70,44 @@ fun QueueExplanationDialog(
             Text(
                 text = stringResource(R.string.desc_queue_explanation_intro),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = secondaryTextColor
             )
 
             QueueExplanationItem(
                 title = stringResource(R.string.queue_stage_new_title),
                 count = queueNewCount,
                 color = newColor,
-                description = stringResource(R.string.queue_stage_new_desc)
+                description = stringResource(R.string.queue_stage_new_desc),
+                backgroundColor = itemBgColor,
+                primaryTextColor = primaryTextColor,
+                secondaryTextColor = secondaryTextColor
             )
             QueueExplanationItem(
                 title = stringResource(R.string.queue_stage_learning_title),
                 count = queueLearningCount,
                 color = learningColor,
-                description = stringResource(R.string.queue_stage_learning_desc)
+                description = stringResource(R.string.queue_stage_learning_desc),
+                backgroundColor = itemBgColor,
+                primaryTextColor = primaryTextColor,
+                secondaryTextColor = secondaryTextColor
             )
             QueueExplanationItem(
                 title = stringResource(R.string.queue_stage_review_title),
                 count = queueReviewCount,
                 color = reviewColor,
-                description = stringResource(R.string.queue_stage_review_desc)
+                description = stringResource(R.string.queue_stage_review_desc),
+                backgroundColor = itemBgColor,
+                primaryTextColor = primaryTextColor,
+                secondaryTextColor = secondaryTextColor
             )
             QueueExplanationItem(
                 title = stringResource(R.string.queue_stage_relearn_title),
                 count = queueRelearnCount,
                 color = relearnColor,
-                description = stringResource(R.string.queue_stage_relearn_desc)
+                description = stringResource(R.string.queue_stage_relearn_desc),
+                backgroundColor = itemBgColor,
+                primaryTextColor = primaryTextColor,
+                secondaryTextColor = secondaryTextColor
             )
         }
     }
@@ -98,13 +118,16 @@ private fun QueueExplanationItem(
     title: String,
     count: Int,
     color: Color,
-    description: String
+    description: String,
+    backgroundColor: Color,
+    primaryTextColor: Color,
+    secondaryTextColor: Color
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedRectangle(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f))
+            .background(backgroundColor)
             .padding(horizontal = 12.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -124,7 +147,7 @@ private fun QueueExplanationItem(
                     text = title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = primaryTextColor
                 )
                 Text(
                     text = "$count",
@@ -137,7 +160,7 @@ private fun QueueExplanationItem(
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = secondaryTextColor,
                 fontSize = 12.sp
             )
         }

@@ -49,8 +49,10 @@ fun SpeakerButton(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.primary,
     size: Dp = 44.dp,
+    iconSize: Dp? = null,
     backgroundColor: Color = Color.Transparent
 ) {
+    val actualIconSize = iconSize ?: (size * 0.55f)
     LiquidButton(
         onClick = onClick,
         backgroundColor = backgroundColor,
@@ -62,7 +64,7 @@ fun SpeakerButton(
             // 播放状态：显示声纹动画
             SoundWaveAnimation(
                 tint = tint,
-                size = size * 0.55f
+                size = actualIconSize
             )
         } else {
             // 默认状态：静态喇叭图标
@@ -70,7 +72,7 @@ fun SpeakerButton(
                 imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                 contentDescription = stringResource(R.string.core_ui_speaker_cd_read),
                 tint = tint,
-                modifier = Modifier.size(size * 0.55f)
+                modifier = Modifier.size(actualIconSize)
             )
         }
     }

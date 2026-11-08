@@ -107,7 +107,8 @@ fun SRSGrammarCard(
     onSpeakExample: ((String, String, String) -> Unit)? = null,
     playingAudioId: String? = null,
     isWhiteboardEnabled: Boolean = false,
-    autoRevealProgress: Float? = null
+    autoRevealProgress: Float? = null,
+    topPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(grammar.id) { mutableStateOf(false) }
@@ -143,6 +144,10 @@ fun SRSGrammarCard(
             .padding(bottom = 100.dp), // 为底部评分按钮区域预留空间
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (topPadding > 0.dp) {
+            Spacer(modifier = Modifier.height(topPadding))
+        }
+
         // ========== 问题卡片 ==========
         Box(
             modifier = Modifier

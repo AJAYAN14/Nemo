@@ -256,17 +256,19 @@ private fun WordDetailContent(
                         color = MaterialTheme.colorScheme.onBackground
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    if (word.hiragana != word.japanese) {
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    // Hiragana
-                    Text(
-                        text = word.hiragana,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = NotoSerifJP
-                        ),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                    )
+                        // Hiragana
+                        Text(
+                            text = word.hiragana,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = NotoSerifJP
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(24.dp))
 

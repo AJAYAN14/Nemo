@@ -48,6 +48,7 @@ import com.jian.nemo.core.designsystem.theme.NotoSerifSC
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
@@ -128,8 +129,7 @@ fun LibraryLevelSelectionButton(
         isExpanded = isExpanded,
         onClick = onClick,
         backdrop = backdrop,
-        buttonSize = buttonSize,
-        enableHaptic = false
+        buttonSize = buttonSize
     )
 }
 
@@ -145,13 +145,19 @@ fun LibraryLevelSelectionOverlay(
     countsByLevel: Map<String, Int>,
     backdrop: Backdrop?,
     onScrollToTop: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    blurRadius: Dp = 12.dp,
+    refractionHeightRatio: Float = 0.10f,
+    refractionAmountRatio: Float = 0.20f
 ) {
     NemoLiquidMenuOverlay(
         isVisible = isVisible,
         onDismiss = onDismiss,
         backdrop = backdrop,
-        menuWidth = 240.dp,
+        menuWidth = 260.dp,
+        blurRadius = blurRadius,
+        refractionHeightRatio = refractionHeightRatio,
+        refractionAmountRatio = refractionAmountRatio,
         modifier = modifier
     ) {
         val allCount = countsByLevel.values.sum()
@@ -169,10 +175,7 @@ fun LibraryLevelSelectionOverlay(
             }
         )
 
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-        )
+        NemoLiquidMenuDivider()
 
         val levelsList = listOf(
             "N5" to IosColors.Green,

@@ -18,6 +18,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import com.jian.nemo.feature.learning.presentation.components.dialogs.QueueExplanationDialog
+import com.jian.nemo.feature.learning.presentation.components.common.TrackProgressIndicator
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -93,8 +105,16 @@ fun SRSLearningCard(
     onSpeakExample: ((String, String, String) -> Unit)? = null,
     playingAudioId: String? = null,
     isWhiteboardEnabled: Boolean = false,
-    autoRevealProgress: Float? = null
+    autoRevealProgress: Float? = null,
+    progress: Float = 0f,
+    queueNewCount: Int = 0,
+    queueLearningCount: Int = 0,
+    queueReviewCount: Int = 0,
+    queueRelearnCount: Int = 0,
+    topPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
+    val haptic = LocalHapticFeedback.current
+    var showQueueExplanationDialog by remember { mutableStateOf(false) }
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(word.id) { mutableStateOf(false) }
 
@@ -136,6 +156,10 @@ fun SRSLearningCard(
             .verticalScroll(rememberScrollState())
             .padding(bottom = 100.dp)
     ) {
+        if (topPadding > 0.dp) {
+            Spacer(modifier = Modifier.height(topPadding))
+        }
+
         // --- Question Area ---
         Box(
             modifier = Modifier
@@ -210,52 +234,75 @@ fun SRSLearningCard(
                 }
             }
 
-            // 左上角等级徽章 (镜像对称)
-            Box(
+            // 顶部栏：等级徽章 (左) + 跑道进度条 (中) + 状态徽章 (右)
+            Row(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(top = 24.dp, start = 16.dp)
-                    .background(levelBg, CircleShape)
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 14.dp, start = 16.dp, end = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = word.level,
-                    color = levelText,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 1.2.sp
-                )
-            }
-
-            cardBadge?.let { badge ->
-                val badgeColor = when (badge) {
-                    CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-                    CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-                    CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-                    CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
-                }
-                val badgeText = when (badge) {
-                    CardBadge.NEW -> stringResource(R.string.card_badge_new)
-                    CardBadge.LEARNING -> stringResource(R.string.card_badge_learning)
-                    CardBadge.REVIEW -> stringResource(R.string.card_badge_review)
-                    CardBadge.RELEARN -> stringResource(R.string.card_badge_relearn)
-                }
-                val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
-
+                // 等级徽章 (高度 28dp)
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 24.dp, end = 16.dp)
-                        .background(badgeBg, CircleShape)
+                        .background(levelBg, CircleShape)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = badgeText,
-                        color = badgeColor,
+                        text = word.level,
+                        color = levelText,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.2.sp
                     )
+                }
+
+                // 400米跑道进度条 (高度 28dp，宽度 124dp，沿赛道转圈推进)
+                TrackProgressIndicator(
+                    progress = progress,
+                    queueNewCount = queueNewCount,
+                    queueLearningCount = queueLearningCount,
+                    queueReviewCount = queueReviewCount,
+                    queueRelearnCount = queueRelearnCount,
+                    isDarkTheme = isDarkTheme,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        showQueueExplanationDialog = true
+                    }
+                )
+
+                // 状态徽章 (高度 28dp)
+                if (cardBadge != null) {
+                    val badgeColor = when (cardBadge) {
+                        CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+                        CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+                        CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+                        CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                    }
+                    val badgeText = when (cardBadge) {
+                        CardBadge.NEW -> stringResource(R.string.card_badge_new)
+                        CardBadge.LEARNING -> stringResource(R.string.card_badge_learning)
+                        CardBadge.REVIEW -> stringResource(R.string.card_badge_review)
+                        CardBadge.RELEARN -> stringResource(R.string.card_badge_relearn)
+                    }
+                    val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+
+                    Box(
+                        modifier = Modifier
+                            .background(badgeBg, CircleShape)
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = badgeText,
+                            color = badgeColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.2.sp
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(48.dp))
                 }
             }
         }
@@ -391,19 +438,79 @@ fun SRSLearningCard(
                     // Meaning
                     Column(modifier = Modifier.padding(bottom = 16.dp)) {
                         // POS Tag
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .padding(bottom = 8.dp)
-                                .background(labelBgColor, CircleShape)
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = word.pos ?: stringResource(R.string.pos_unknown),
-                                color = labelTextColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .background(labelBgColor, CircleShape)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = word.pos ?: stringResource(R.string.pos_unknown),
+                                    color = labelTextColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
+                            }
+
+                            // 按钮区域：朗读 + 跟打练习 + 临时手写板
+                            Row(
+                                modifier = Modifier.offset(y = (-10).dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // 1. 朗读单词按钮
+                                if (onSpeakWord != null) {
+                                    SpeakerButton(
+                                        isPlaying = playingAudioId == "word",
+                                        onClick = { onSpeakWord() },
+                                        tint = audioColor,
+                                        size = 48.dp,
+                                        iconSize = 30.dp,
+                                        backgroundColor = audioBg
+                                    )
+                                }
+
+                                // 2. 跟打练习按钮
+                                if (onPracticeClick != null) {
+                                    LiquidButton(
+                                        onClick = { onPracticeClick() },
+                                        backgroundColor = practiceBg,
+                                        shape = CircleShape,
+                                        elevation = 0.dp,
+                                        modifier = Modifier.size(48.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Translate,
+                                            contentDescription = stringResource(R.string.btn_practice_typing),
+                                            tint = practiceColor,
+                                            modifier = Modifier.size(30.dp)
+                                        )
+                                    }
+                                }
+
+                                // 3. 手写白板按钮
+                                LiquidButton(
+                                    onClick = { showBackWhiteboard = !showBackWhiteboard },
+                                    backgroundColor = whiteboardBg,
+                                    shape = CircleShape,
+                                    elevation = 0.dp,
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Edit,
+                                        contentDescription = stringResource(R.string.btn_temp_whiteboard),
+                                        tint = whiteboardTint,
+                                        modifier = Modifier.size(30.dp)
+                                    )
+                                }
+                            }
                         }
 
                         Text(
@@ -504,59 +611,18 @@ fun SRSLearningCard(
                     }
                 }
 
-                // 按钮区域（右上角）：朗读 + 跟打练习 + 临时手写板
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // 1. 朗读单词按钮
-                    if (onSpeakWord != null) {
-                        SpeakerButton(
-                            isPlaying = playingAudioId == "word",
-                            onClick = { onSpeakWord() },
-                            tint = audioColor,
-                            size = 42.dp,
-                            backgroundColor = audioBg
-                        )
-                    }
-
-                    // 2. 跟打练习按钮
-                    if (onPracticeClick != null) {
-                        LiquidButton(
-                            onClick = { onPracticeClick() },
-                            backgroundColor = practiceBg,
-                            shape = CircleShape,
-                            elevation = 0.dp,
-                            modifier = Modifier.size(42.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Translate,
-                                contentDescription = stringResource(R.string.btn_practice_typing),
-                                tint = practiceColor,
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
-                    }
-
-                    // 3. 手写白板按钮
-                    LiquidButton(
-                        onClick = { showBackWhiteboard = !showBackWhiteboard },
-                        backgroundColor = whiteboardBg,
-                        shape = CircleShape,
-                        elevation = 0.dp,
-                        modifier = Modifier.size(42.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = stringResource(R.string.btn_temp_whiteboard),
-                            tint = whiteboardTint,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
             }
         }
+    }
+
+    if (showQueueExplanationDialog) {
+        QueueExplanationDialog(
+            onDismissRequest = { showQueueExplanationDialog = false },
+            queueNewCount = queueNewCount,
+            queueLearningCount = queueLearningCount,
+            queueReviewCount = queueReviewCount,
+            queueRelearnCount = queueRelearnCount,
+            isDarkTheme = isDarkTheme
+        )
     }
 }

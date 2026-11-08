@@ -177,18 +177,20 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 furiganaFontFamily = NotoSerifJP
             )
             
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            Text(
-                text = word.hiragana,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    letterSpacing = 1.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = NotoSerifJP,
-                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                ),
-                color = NemoTextLight.copy(alpha = 0.8f)
-            )
+            if (word.hiragana != word.japanese) {
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = word.hiragana,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        letterSpacing = 1.sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = NotoSerifJP,
+                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                    ),
+                    color = NemoTextLight.copy(alpha = 0.8f)
+                )
+            }
             
             Spacer(modifier = Modifier.height(32.dp))
             
@@ -279,16 +281,18 @@ private fun WordCardBack(
             color = themeColor
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        if (word.hiragana != word.japanese) {
+            Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = word.hiragana,
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontFamily = NotoSerifJP,
-                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-            ),
-            color = NemoTextLight
-        )
+            Text(
+                text = word.hiragana,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = NotoSerifJP,
+                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                ),
+                color = NemoTextLight
+            )
+        }
 
         HorizontalDivider(
             modifier = Modifier.padding(vertical = 24.dp),

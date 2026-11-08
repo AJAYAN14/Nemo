@@ -33,8 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.jian.nemo.core.ui.component.common.NemoMorphMenu
-import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
 
 /**
  * 测试头部组件（包含返回按钮、倒计时和操作菜单）
@@ -93,36 +92,22 @@ fun TestHeader(
 
         var menuExpanded by remember { mutableStateOf(false) }
 
-        NemoMorphMenu(
-            expanded = menuExpanded,
-            onExpandedChange = { menuExpanded = it },
-            buttonSize = 48.dp,
-            menuWidth = 192.dp
-        ) {
-            // 收藏选项
-            if (itemId != 0) {
-                NemoMorphMenuItem(
-                    text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
-                    leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                    iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = {
-                        close()
-                        onToggleFavorite(itemId, !isFavorite)
-                    }
-                )
-            }
+        NemoLiquidMenuButton(
+            isExpanded = menuExpanded,
+            onClick = { menuExpanded = !menuExpanded },
+            backdrop = null,
+            buttonSize = 48.dp
+        )
 
-            // 暂停测试选项
-            NemoMorphMenuItem(
-                text = stringResource(R.string.test_header_menu_pause),
-                leadingIcon = Icons.Rounded.Pause,
-                iconColor = IosColors.Orange,
-                onClick = {
-                    close()
-                    onPause()
-                }
-            )
-        }
+        TestMenuOverlay(
+            isVisible = menuExpanded,
+            onDismiss = { menuExpanded = false },
+            isFavorite = isFavorite,
+            itemId = itemId,
+            onToggleFavorite = onToggleFavorite,
+            onPause = onPause,
+            backdrop = null
+        )
     }
 
     // 添加底部边框

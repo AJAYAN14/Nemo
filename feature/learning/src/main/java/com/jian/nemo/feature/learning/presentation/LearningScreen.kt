@@ -13,6 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -164,174 +168,72 @@ fun LearningScreen(
     else
         uiState.grammarList.size
 
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
-        Scaffold(
-            containerColor = backgroundColor
-        ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
         ) {
-            // 底层录制画布（包含底色、渐变与主体内容，整体录入 learningBackdrop，消除透明空洞）
+            // 1. 底层录制画布（包含底色、渐变与主体卡片内容，整体录入 learningBackdrop，消除透明空洞）
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(learningBackdrop)
             ) {
-                // 底层实色背景
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(backgroundColor)
-                )
-
-                // 当结算完成时，在最外层（不受 Scaffold padding 限制）绘制贯穿系统状态栏的顶部主题色渐变光晕
-            if (isFinished) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.22f else 0.14f),
-                                    Color.Transparent
-                                )
-                            )
-                        )
-                )
-            }
-
-            // 冷却等待流光背景透明度渐变 (240ms 柔和淡入/淡出)
-            val waitingAlpha by animateFloatAsState(
-                targetValue = if (isWaiting) 1f else 0f,
-                animationSpec = tween(durationMillis = 240),
-                label = "waitingBackgroundAlpha"
-            )
-
-            // 全屏铺设 WebGL 2 原生流光粒子背景（常驻预热消除冷启动延迟，非等待时自动 onPause 零能耗，等待时第 1 帧零延迟平滑呈现）
-            WaitingBackground(
-                backdrop = waitingBackdrop,
-                isDark = isDarkTheme,
-                isActive = isWaiting,
-                onControllerReady = { trigger ->
-                    triggerWaitingBlast = trigger
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .alpha(waitingAlpha)
-            )
-
-            // 1. 页面主体内容 (Z = 0，高斯模糊景深)
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
-                        else Modifier
-                    )
-                    .padding(padding)
-                    .padding(horizontal = 16.dp)
-            ) {
+                // 当结算完成时，在最外层绘制贯穿系统状态栏的顶部主题色渐变光晕
                 if (isFinished) {
-                    // 结算状态下：极简轻量化顶部导航（接入真实液态凸透镜折射，去除残留进度条与 0 0 0 0）
-                    Row(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // 左侧：返回按钮（液态凸透镜物理折射）
-                        FrostedLiquidGlassButton(
-                            onClick = onNavigateBack,
-                            backdrop = finishBackdrop,
-                            shape = CircleShape,
-                            hasLens = true,
-                            contentPadding = PaddingValues(0.dp),
-                            isInteractive = true,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                                contentDescription = stringResource(R.string.learn_screen_desc_back),
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(30.dp)
-                            )
-                        }
-
-                        // 中间：已连续打卡胶囊徽章（HTML 同款设计，橙底暖色）
-                        Surface(
-                            shape = CircleShape,
-                            color = if (isDarkTheme) LearningPalette.BannerOrangeBgDark else LearningPalette.BannerOrangeBgLight,
-                            border = BorderStroke(1.dp, if (isDarkTheme) LearningPalette.BannerOrangeBorderDark else LearningPalette.BannerOrangeBorderLight)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(text = "🔥", fontSize = 13.sp)
-                                Text(
-                                    text = stringResource(R.string.learn_screen_badge_daily_streak, uiState.dailyStreak),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = if (isDarkTheme) LearningPalette.BannerOrangeTextDark else LearningPalette.BannerOrangeTextLight
+                            .height(300.dp)
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.22f else 0.14f),
+                                        Color.Transparent
+                                    )
                                 )
-                            }
-                        }
-
-                        // 右侧：分享按钮（液态凸透镜物理折射，使用热力图同款 ic_share_ios）
-                        FrostedLiquidGlassButton(
-                            onClick = { showSharePosterDialog = true },
-                            backdrop = finishBackdrop,
-                            shape = CircleShape,
-                            hasLens = true,
-                            contentPadding = PaddingValues(0.dp),
-                            isInteractive = true,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_share_ios),
-                                contentDescription = stringResource(R.string.learn_screen_desc_share),
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(30.dp)
                             )
-                        }
-                    }
-                } else {
-                    // Header
-                    LearnHeader(
-                        learningMode = uiState.learningMode,
-                        completedCount = uiState.completedToday,
-                        dailyGoal = uiState.dailyGoal,
-                        totalCount = remainingTaskCount,
-                        onClose = onNavigateBack,
-                        canUndo = uiState.canUndo,
-                        onUndo = { viewModel.onEvent(LearningEvent.Undo) },
-                        queueNewCount = uiState.queueNewCount,
-                        queueLearningCount = uiState.queueLearningCount,
-                        queueReviewCount = uiState.queueReviewCount,
-                        queueRelearnCount = uiState.queueRelearnCount,
-                        backdrop = if (isWaiting) waitingBackdrop else null,
-                        menu = {
-                            LearnHeaderMoreMenuButton(
-                                isExpanded = isMenuExpanded,
-                                onClick = { isMenuExpanded = !isMenuExpanded },
-                                backdrop = null
-                            )
-                        }
                     )
                 }
 
-                // Content（结算时作为 finishBackdrop 的光学采样源）
+                // 冷却等待流光背景透明度渐变 (240ms 柔和淡入/淡出)
+                val waitingAlpha by animateFloatAsState(
+                    targetValue = if (isWaiting) 1f else 0f,
+                    animationSpec = tween(durationMillis = 240),
+                    label = "waitingBackgroundAlpha"
+                )
+
+                // 全屏铺设 WebGL 2 原生流光粒子背景（常驻预热消除冷启动延迟，非等待时自动 onPause 零能耗，等待时第 1 帧零延迟平滑呈现）
+                WaitingBackground(
+                    backdrop = waitingBackdrop,
+                    isDark = isDarkTheme,
+                    isActive = isWaiting,
+                    onControllerReady = { trigger ->
+                        triggerWaitingBlast = trigger
+                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .alpha(waitingAlpha)
+                )
+
+                // 页面主体内容 (Z = 0，全屏向上贯穿至状态栏，使得可滚动卡片向上滑动时能够穿透进入顶栏背后)
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .then(if (isFinished) Modifier.layerBackdrop(finishBackdrop) else Modifier)
+                        .fillMaxSize()
+                        .then(
+                            if (animatedBlurRadius > 0.dp) Modifier.blur(radius = animatedBlurRadius)
+                            else Modifier
+                        )
+                        .padding(bottom = navBarBottom)
+                        .padding(horizontal = 16.dp)
                 ) {
                     when (uiState.status) {
                         LearningStatus.Loading -> {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Box(modifier = Modifier.fillMaxSize().padding(top = statusBarTop + 60.dp), contentAlignment = Alignment.Center) {
                                 NemoChasingDotsLoader()
                             }
                         }
@@ -348,26 +250,143 @@ fun LearningScreen(
                                 isDark = isDarkTheme,
                                 backdrop = waitingBackdrop,
                                 onTriggerCenterBlast = triggerWaitingBlast,
-                                showBackground = false
+                                showBackground = false,
+                                modifier = Modifier.padding(top = statusBarTop + 60.dp)
                             )
                         }
                         else -> {
                             LearningContent(
                                 uiState = uiState,
                                 onEvent = viewModel::onEvent,
-                                backgroundColor = backgroundColor, // 传递背景色
+                                backgroundColor = backgroundColor,
                                 showShareDialog = showSharePosterDialog,
                                 onDismissShareDialog = { showSharePosterDialog = false },
                                 onShowAnswerBlocked = { remainingSec ->
                                     showAnswerDelayHintSec = remainingSec
                                     showAnswerDelayHint = true
                                 },
-                                onBackClick = onNavigateBack
+                                onBackClick = onNavigateBack,
+                                topContentPadding = statusBarTop + 60.dp + 16.dp
                             )
                         }
                     }
                 }
             }
+
+            // 2. 悬浮固定顶栏与液态玻璃按钮（热力图同款四阶垂直渐变保护遮罩，读取 learningBackdrop 激活真实物理折射）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
+                                backgroundColor.copy(alpha = 0.35f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+                    .padding(bottom = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                ) {
+                    if (isFinished) {
+                        // 结算状态下：极简轻量化顶部导航（接入真实液态凸透镜折射）
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // 左侧：返回按钮（液态凸透镜物理折射）
+                            FrostedLiquidGlassButton(
+                                onClick = onNavigateBack,
+                                backdrop = learningBackdrop,
+                                shape = CircleShape,
+                                hasLens = true,
+                                contentPadding = PaddingValues(0.dp),
+                                isInteractive = true,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                                    contentDescription = stringResource(R.string.learn_screen_desc_back),
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+
+                            // 中间：已连续打卡胶囊徽章（HTML 同款设计，橙底暖色）
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isDarkTheme) LearningPalette.BannerOrangeBgDark else LearningPalette.BannerOrangeBgLight,
+                                border = BorderStroke(1.dp, if (isDarkTheme) LearningPalette.BannerOrangeBorderDark else LearningPalette.BannerOrangeBorderLight)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(text = "🔥", fontSize = 13.sp)
+                                    Text(
+                                        text = stringResource(R.string.learn_screen_badge_daily_streak, uiState.dailyStreak),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isDarkTheme) LearningPalette.BannerOrangeTextDark else LearningPalette.BannerOrangeTextLight
+                                    )
+                                }
+                            }
+
+                            // 右侧：分享按钮（液态凸透镜物理折射，使用热力图同款 ic_share_ios）
+                            FrostedLiquidGlassButton(
+                                onClick = { showSharePosterDialog = true },
+                                backdrop = learningBackdrop,
+                                shape = CircleShape,
+                                hasLens = true,
+                                contentPadding = PaddingValues(0.dp),
+                                isInteractive = true,
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_share_ios),
+                                    contentDescription = stringResource(R.string.learn_screen_desc_share),
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(30.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        // Header
+                        LearnHeader(
+                            learningMode = uiState.learningMode,
+                            completedCount = uiState.completedToday,
+                            dailyGoal = uiState.dailyGoal,
+                            totalCount = remainingTaskCount,
+                            onClose = onNavigateBack,
+                            canUndo = uiState.canUndo,
+                            onUndo = { viewModel.onEvent(LearningEvent.Undo) },
+                            queueNewCount = uiState.queueNewCount,
+                            queueLearningCount = uiState.queueLearningCount,
+                            queueReviewCount = uiState.queueReviewCount,
+                            queueRelearnCount = uiState.queueRelearnCount,
+                            backdrop = learningBackdrop,
+                            menu = {
+                                LearnHeaderMoreMenuButton(
+                                    isExpanded = isMenuExpanded,
+                                    onClick = { isMenuExpanded = !isMenuExpanded },
+                                    backdrop = learningBackdrop
+                                )
+                            }
+                        )
+                    }
+                }
             }
 
             // 2. 页面全屏手势遮罩与液态玻璃悬浮操作菜单 (同级兄弟节点采样 learningBackdrop，背景保持完全透明清晰)
@@ -525,7 +544,6 @@ fun LearningScreen(
             }
         }
     }
-    }
 }
 
 @Composable
@@ -536,7 +554,8 @@ fun LearningContent(
     showShareDialog: Boolean = false,
     onDismissShareDialog: () -> Unit = {},
     onShowAnswerBlocked: (Int) -> Unit,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    topContentPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     if (uiState.learningMode == LearningMode.Word) {
         WordLearningContent(
@@ -546,7 +565,8 @@ fun LearningContent(
             showShareDialog = showShareDialog,
             onDismissShareDialog = onDismissShareDialog,
             onShowAnswerBlocked = onShowAnswerBlocked,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            topContentPadding = topContentPadding
         )
     } else {
         GrammarLearningContent(
@@ -556,7 +576,8 @@ fun LearningContent(
             showShareDialog = showShareDialog,
             onDismissShareDialog = onDismissShareDialog,
             onShowAnswerBlocked = onShowAnswerBlocked,
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            topContentPadding = topContentPadding
         )
     }
 }
@@ -569,7 +590,8 @@ fun WordLearningContent(
     showShareDialog: Boolean = false,
     onDismissShareDialog: () -> Unit = {},
     onShowAnswerBlocked: (Int) -> Unit,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    topContentPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     // 跟打练习对话框状态
     var showTypingDialog by remember { mutableStateOf(false) }
@@ -607,10 +629,6 @@ fun WordLearningContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // SubHeader and Progress Bar are now moved to LearnHeader common component for pixel-perfect match with HTML top bar.
-
-        Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
-
         if (uiState.currentWord != null) {
             val cardBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.weight(1f)) {
@@ -642,6 +660,11 @@ fun WordLearningContent(
                          if (targetWord != null) {
                          SRSLearningCard(
                              word = targetWord,
+                             progress = if (uiState.dailyGoal > 0) uiState.completedToday.toFloat() / uiState.dailyGoal else 0f,
+                             queueNewCount = uiState.queueNewCount,
+                             queueLearningCount = uiState.queueLearningCount,
+                             queueReviewCount = uiState.queueReviewCount,
+                             queueRelearnCount = uiState.queueRelearnCount,
                              isAnswerShown = uiState.isAnswerShown,
                              cardBadge = LearningItem.WordItem(targetWord).cardBadge,
                              modifier = Modifier.fillMaxSize(),
@@ -652,7 +675,8 @@ fun WordLearningContent(
                              onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                              playingAudioId = uiState.playingAudioId,
                              isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                             autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                             autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null,
+                             topPadding = topContentPadding
                          )
                          }
                      }
@@ -751,7 +775,8 @@ fun GrammarLearningContent(
     showShareDialog: Boolean = false,
     onDismissShareDialog: () -> Unit = {},
     onShowAnswerBlocked: (Int) -> Unit,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    topContentPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
     val autoRevealAnim = remember { androidx.compose.animation.core.Animatable(1f) }
 
@@ -778,8 +803,6 @@ fun GrammarLearningContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Spacer(modifier = Modifier.height(4.dp)) // Add some spacing from header
-
         if (uiState.currentGrammar != null) {
             val cardBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.weight(1f)) {
@@ -817,7 +840,8 @@ fun GrammarLearningContent(
                                  onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                                  playingAudioId = uiState.playingAudioId,
                                  isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                 autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null
+                                 autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null,
+                                 topPadding = topContentPadding
                              )
                          }
                      }

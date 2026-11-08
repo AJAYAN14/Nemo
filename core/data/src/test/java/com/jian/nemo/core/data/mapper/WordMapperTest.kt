@@ -18,6 +18,7 @@ class WordMapperTest {
     fun `entity to domain model conversion is correct`() {
         val entity = WordEntity(
             id = 1,
+            rawId = "N5_001",
             japanese = "単語",
             hiragana = "たんご",
             chinese = "单词",
@@ -60,9 +61,71 @@ class WordMapperTest {
     }
 
     @Test
+    fun `loanword with english letters replaces japanese with hiragana`() {
+        val entity = WordEntity(
+            id = 10,
+            rawId = "N5_010",
+            japanese = "tennis",
+            hiragana = "テニス",
+            chinese = "网球",
+            level = "n5",
+            isDelisted = false
+        )
+
+        val domain = entity.toDomainModel()
+
+        assertEquals("テニス", domain.japanese)
+        assertEquals("テニス", domain.hiragana)
+    }
+
+    @Test
+    fun `loanword with symbols and numbers replaces japanese with hiragana`() {
+        val entity = WordEntity(
+            id = 11,
+            rawId = "N5_011",
+            japanese = "Wi-Fi",
+            hiragana = "ワイファイ",
+            chinese = "无线网络",
+            level = "n5",
+            isDelisted = false
+        )
+
+        val domain = entity.toDomainModel()
+
+        assertEquals("ワイファイ", domain.japanese)
+        assertEquals("ワイファイ", domain.hiragana)
+    }
+
+    @Test
+    fun `regular kanji and kana words keep original japanese`() {
+        val kanjiEntity = WordEntity(
+            id = 12,
+            rawId = "N5_012",
+            japanese = "学生",
+            hiragana = "がくせい",
+            chinese = "学生",
+            level = "n5",
+            isDelisted = false
+        )
+        val kanaEntity = WordEntity(
+            id = 13,
+            rawId = "N5_013",
+            japanese = "かわいい",
+            hiragana = "かわいい",
+            chinese = "可爱",
+            level = "n5",
+            isDelisted = false
+        )
+
+        assertEquals("学生", kanjiEntity.toDomainModel().japanese)
+        assertEquals("かわいい", kanaEntity.toDomainModel().japanese)
+    }
+
+    @Test
     fun `domain model to entity conversion is correct`() {
         val domain = com.jian.nemo.core.domain.model.Word(
             id = 2,
+            rawId = "N4_002",
             japanese = "文法",
             hiragana = "ぶんぽう",
             chinese = "语法",
@@ -119,6 +182,7 @@ class WordMapperTest {
 
     private fun createTestEntity(id: Int) = WordEntity(
         id = id,
+        rawId = "N5_$id",
         japanese = "テスト$id",
         hiragana = "てすと$id",
         chinese = "测试$id",

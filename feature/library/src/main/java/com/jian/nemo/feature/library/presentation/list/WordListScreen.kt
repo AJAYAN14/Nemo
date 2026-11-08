@@ -135,34 +135,45 @@ fun WordListScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                NemoChasingDotsLoader()
-            }
-        } else {
-            val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
-            PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.onRefresh() },
-                state = pullToRefreshState,
-                indicator = {
-                    androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = statusBarTop + 60.dp),
-                        isRefreshing = uiState.isRefreshing,
-                        state = pullToRefreshState,
-                        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .layerBackdrop(backdrop),
+        // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+        ) {
+            // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(backgroundColor)
+            )
+
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    NemoChasingDotsLoader()
+                }
+            } else {
+                val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = { viewModel.onRefresh() },
+                    state = pullToRefreshState,
+                    indicator = {
+                        androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = statusBarTop + 60.dp),
+                            isRefreshing = uiState.isRefreshing,
+                            state = pullToRefreshState,
+                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
@@ -226,6 +237,7 @@ fun WordListScreen(
                 }
             }
         }
+    }
 
         // 1.5 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
         LibraryLevelSelectionOverlay(
@@ -259,7 +271,7 @@ fun WordListScreen(
                     LibraryLevelSelectionButton(
                         isExpanded = isMenuExpanded,
                         onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = backdrop
+                        backdrop = null
                     )
                 }
             )

@@ -416,6 +416,33 @@
 
 ---
 
+## 十八、词库三列表与测试界面 Menu 全面对齐学习界面黄金范式台账
+
+> **目标**：响应用户指令，将单词列表、语法列表、分类列表以及测试界面的 Menu 全面按照学习界面的黄金标准深度对齐重构，统一接入 `:core:ui` 通用底座 `NemoLiquidMenu`，补齐底层实底画布录制，彻底清理遗留的全屏变暗与全局 14dp 模糊遮罩。
+
+### 1. 核心改进点与落地细节
+1. **词库三列表（单词/语法/分类）实底画布与规范全面对齐**：
+   * **底层实底录制**：在 `WordListScreen.kt`、`GrammarListScreen.kt`、`CategoryWordsScreen.kt` 的 `layerBackdrop(backdrop)` 画布内部最底层新增铺设 `Box.fillMaxSize().background(backgroundColor)`，消除空白透明像素，提供 100% 饱满纯净折射；
+   * **规范与动效细节**：面板宽度升级为标准 `260.dp`，暴露并透传物理折射参数；微光分割线换装为 `NemoLiquidMenuDivider`；触发按钮恢复 `enableHaptic = true`（清脆微触感震动）；按钮传参修正为标准范式 `backdrop = null`（消除递归采样隐患）；
+   * **清除遗留模糊**：彻底清理 `CategoryWordsScreen.kt` 中遗留的 `animatedBlurRadius` 与 `Modifier.blur`。
+2. **测试界面顶层统领架构重构与旧版遮罩清理**：
+   * **淘汰旧版组件**：彻底淘汰基于原生 Popup 的遗留组件 `NemoMorphMenu` 和 `NemoMorphMenuItem`；
+   * **清理全屏变暗与高斯模糊**：在 `UnifiedTestScreen.kt` 中彻底移除 `Color.Black.copy(alpha = 0.12f)` 全屏暗化遮罩与 `14.dp` 全局高斯模糊动画，保持底层 100% 原始清晰；
+   * **顶层真折射浮层**：在 `UnifiedTestScreen.kt` 建立底层实底 `layerBackdrop` 画布，最外层挂载同级 `TestMenuOverlay`，接入真透镜物理折射与全屏纯透明手势拦截；
+   * **条目结构与微光分割线**：测试菜单包含“收藏/取消收藏”、自适应微光分割线 `NemoLiquidMenuDivider` 与“暂停测试”，支持岛式内缩胶囊按压与清脆微震动。
+
+### 2. 涉及文件列表
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/components/LibraryListComponents.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/list/WordListScreen.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/list/GrammarListScreen.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/category/CategoryWordsScreen.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/UnifiedTestScreen.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeaderComponents.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeader.kt`
+* `implementation-notes.md`
+
+---
+
 ## 十七、错题与收藏 Menu 底层画布实底录制与光学折射参数对齐台账
 
 > **目标**：以学习界面（`LearningScreen.kt` 与 `LearnHeaderMoreMenu.kt`）的光学折射渲染管线为基准，将“我的错题”与“我的收藏”界面的 Menu 折射底图采样完整度（消除透明空洞）与折射物理参数扩展性 1:1 彻底对齐。
@@ -433,3 +460,169 @@
 * `feature/collection/src/main/java/com/jian/nemo/feature/collection/favorites/FavoritesScreen.kt`
 * `feature/collection/src/main/java/com/jian/nemo/feature/collection/mistakes/MistakesScreen.kt`
 * `implementation-notes.md`
+
+---
+
+## 十八、词库三列表与测试界面 Menu 全面对齐学习界面黄金范式台账
+
+> **目标**：响应用户指令，将单词列表、语法列表、分类列表以及测试界面的 Menu 全面按照学习界面的黄金标准深度对齐重构，统一接入 `:core:ui` 通用底座 `NemoLiquidMenu`，补齐底层实底画布录制，彻底清理遗留的全屏变暗与全局 14dp 模糊遮罩。
+
+### 1. 核心改进点与落地细节
+1. **词库三列表（单词/语法/分类）实底画布与规范全面对齐**：
+   * **底层实底录制**：在 `WordListScreen.kt`、`GrammarListScreen.kt`、`CategoryWordsScreen.kt` 的 `layerBackdrop(backdrop)` 画布内部最底层新增铺设 `Box.fillMaxSize().background(backgroundColor)`，消除空白透明像素，提供 100% 饱满纯净折射；
+   * **规范与动效细节**：面板宽度升级为标准 `260.dp`，暴露并透传物理折射参数；微光分割线换装为 `NemoLiquidMenuDivider`；触发按钮恢复 `enableHaptic = true`（清脆微触感震动）；按钮传参修正为标准范式 `backdrop = null`（消除递归采样隐患）；
+   * **清除遗留模糊**：彻底清理 `CategoryWordsScreen.kt` 中遗留的 `animatedBlurRadius` 与 `Modifier.blur`。
+2. **测试界面顶层统领架构重构与旧版遮罩清理**：
+   * **淘汰旧版组件**：彻底淘汰基于原生 Popup 的遗留组件 `NemoMorphMenu` 和 `NemoMorphMenuItem`；
+   * **清理全屏变暗与高斯模糊**：在 `UnifiedTestScreen.kt` 中彻底移除 `Color.Black.copy(alpha = 0.12f)` 全屏暗化遮罩与 `14.dp` 全局高斯模糊动画，保持底层 100% 原始清晰；
+   * **顶层真折射浮层**：在 `UnifiedTestScreen.kt` 建立底层实底 `layerBackdrop` 画布，最外层挂载同级 `TestMenuOverlay`，接入真透镜物理折射与全屏纯透明手势拦截；
+   * **条目结构与微光分割线**：测试菜单包含“收藏/取消收藏”、自适应微光分割线 `NemoLiquidMenuDivider` 与“暂停测试”，支持岛式内缩胶囊按压与清脆微震动。
+
+### 2. 涉及文件列表
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/components/LibraryListComponents.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/list/WordListScreen.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/list/GrammarListScreen.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/category/CategoryWordsScreen.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/UnifiedTestScreen.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeaderComponents.kt`
+* `feature/test/src/main/java/com/jian/nemo/feature/test/components/TestHeader.kt`
+* `implementation-notes.md`
+
+
+---
+
+## 十九、学习卡片操作按钮组尺寸与水平对齐重构台账
+
+> **目标**：响应用户指令，将单词学习卡片（`SRSLearningCard`）背面操作区的播放按钮、手打练习按钮与手写白板按钮尺寸统一升级至 48dp（图标 30dp），并将按钮组与左侧词性标签（POS Tag）重构成同一个水平行，实现严格的几何居中对齐。
+
+### 1. 核心改进点与落地细节
+1. **统一水平行排版（方案 B 落地）**：
+   * 在 `SRSLearningCard.kt` 中淘汰原本外层 Box 的右上角悬浮图层（`align(Alignment.TopEnd).padding(12.dp)`）；
+   * 将词性标签与操作按钮组并入同一个 `Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)`；
+   * 词性胶囊居左、三按钮组居右，左右边距严格遵循卡片内边距 `24.dp` 对称，消除了原先 12dp 的顶端错位，实现数学与视觉上的严格水平居中对齐。
+2. **按钮与图标尺寸统一升级**：
+   * **通用朗读组件能力扩展**：在 `SpeakerButton.kt` 中新增可选参数 `iconSize: Dp? = null`（默认回退为 `size * 0.55f`），既支持显式定制图标大小，又完全向后兼容其他调用处；
+   * **播放按钮**：容器设定为 `size = 48.dp`，图标与波形动效尺寸显式指定为 `iconSize = 30.dp`；
+   * **跟打练习按钮**：容器设定为 `Modifier.size(48.dp)`，内部翻译键盘图标设定为 `Modifier.size(30.dp)`；
+   * **手写板按钮**：容器设定为 `Modifier.size(48.dp)`，内部编辑画笔图标设定为 `Modifier.size(30.dp)`。
+
+3. **正面等级与状态徽章上移微调**：
+   * 将正面左上角等级徽章（`word.level`）与右上角状态徽章（`cardBadge`）的顶部边距由原本的 `top = 24.dp` 微调提升 10dp 至 `top = 14.dp`，与左右 `16.dp` 边距达到协调呼吸比，为中央日文字符释放更加舒展的视觉空间。
+
+### 2. 涉及文件列表
+* `core/ui/src/main/java/com/jian/nemo/core/ui/component/speaker/SpeakerButton.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/cards/SRSLearningCard.kt`
+* `implementation-notes.md`
+
+
+---
+
+## 二十、跑道风格进度条与四色状态数字镶嵌重构台账
+
+> **目标**：响应用户指令，将原先悬挂在顶栏底部的 4dp 细线进度条与零散的四色数字彻底移除，重构成嵌入在学习卡片正面顶部、位于“等级徽章”与“状态徽章”正中央的 28dp 跑道胶囊风格进度条（方案 A）。
+
+### 1. 核心改进点与落地细节
+1. **顶栏减负重归纯粹**：
+   * 在 `LearningCommonComponents.kt` 的 `LearnHeader` 中彻底移除底部横贯全宽的 4dp 进度条及右侧 4 个零散数字，顶栏下边缘彻底清爽通透。
+2. **跑道进度条组件开发（TrackProgressBar）**：
+   * 在 `SRSLearningCard.kt` 中设计并实现了 `TrackProgressBar` 私有 Composable；
+   * 高度严格锁定为 **`28.dp`**（与左侧等级徽章和右侧状态徽章高度 100% 绝对一致）；
+   * 采用全圆角胶囊底轨（`CircleShape`，圆角 14dp），底色为半透明自适应灰底；
+   * 内部底层采用微透发光主色从左至右平滑灌注当前学习进度（0% ~ 100% 弹性动画）；
+   * 跑道中央居中平铺排列 4 个带对应语义色彩的数值（蓝·新学、青·在学、绿·复习、橙·重学）；
+   * 点击整个跑道胶囊区域，伴随微触感震动平滑呼出《学习队列说明》详细弹窗。
+3. **正面顶部三胶囊对齐 Row 架构**：
+   * 在 `SRSLearningCard.kt` 中将左侧等级徽章、中间跑道进度条与右侧状态徽章收纳进同一个水平 `Row(modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter).padding(top = 14.dp, start = 16.dp, end = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically)`；
+   * 三者高度全为 28dp，顶边、底边与中心轴线实现像素级绝对齐平。
+4. **数据透传链路贯通**：
+   * 在 `LearningScreen.kt` 中实时计算 `currentDailyProgress` 并将四态数量与进度完整透传给 `SRSLearningCard`。
+
+### 2. 涉及文件列表
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/common/LearningCommonComponents.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/cards/SRSLearningCard.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
+
+
+---
+
+## 二十一、400米跑道转圈赛道线独立模块化与操作按钮组上移10dp台账
+
+> **目标**：响应用户对“太长了”、“不要大块背景色”、“一条线像跑四百米转圈跑动”的视觉纠偏，并将释义卡片右上角的播放按钮、手打练习按钮与手写板按钮组向上提升 10dp 消除下沉感。
+
+### 1. 核心改进点与落地细节
+1. **400米跑圈赛道线独立模块化（TrackProgressIndicator）**：
+   * 在 `feature/learning/.../components/common/TrackProgressIndicator.kt` 中独立封装通用组件；
+   * **宽度收敛与去大底色**：容器宽度由全屏拉伸紧凑收敛至 **`124.dp`**（高度保持 `28.dp`），彻底移除大面积半透明底色填充，内场保持纯净通透；
+   * **Canvas 赛道线绘制**：基于封闭胶囊轮廓（上下直道 + 左右半圆弯道），绘制 1.5dp 半透明跑道底轨线；
+   * **PathMeasure 顺时针转圈进度线**：进度由顶部直道出发，沿 400 米封闭赛道轮廓顺时针转圈飞驰推进，线宽 2.5dp 且端头圆润（`StrokeCap.Round`）；
+   * **内场 4 色数字**：赛道线圈起的内场居中整齐悬浮 4 个状态数字，点击触觉微震动并弹出说明弹窗。
+2. **操作按钮组向上提升 10dp**：
+   * 在 `SRSLearningCard.kt` 中，为朗读、跟打练习、临时手写板三个大按钮（48dp）所在的 Row 施加 `Modifier.offset(y = (-10).dp)`；
+   * 抵消了并入内容 `Column(padding(24.dp))` 带来的垂直下沉感，使按钮顶端回到舒展的 `14.dp` 安全线，彻底释放了下方“含义”文字的垂直空间。
+
+### 2. 涉及文件列表
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/common/TrackProgressIndicator.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/cards/SRSLearningCard.kt`
+* `implementation-notes.md`
+
+
+---
+
+## 二十二、客户端外来语英文汉字清洗与假名位置自适应显示台账
+
+> **目标**：针对词库数据中外来语汉字字段（`japanese`）为英文字母词源的问题，在客户端映射层进行清洗转换，将假名移至汉字主位置；同时在卡片与详情页中避免出现两处完全相同的假名，在列表中保持主副标题双行对称。
+
+### 1. 核心改进点与落地细节
+1. **外来语词源高精度判定（`isEnglishLoanwordSource`）**：
+   * 在 `WordMapper.kt` 中实现 `isEnglishLoanwordSource(text: String)`；
+   * 判定条件：必须包含 ASCII 英文字母，允许数字、连字符、斜杠、点号、空格等外来语常见词源符号，且严禁包含任何汉字（CJK）与假名（平假名/片假名）；
+   * 精准覆盖 `Wi-Fi`、`e-mail`、`ice cream`、`CD`、`tennis` 等外来语，同时严格排除 `学生`、`食べる`、`かわいい`、`Tシャツ` 等正常日文词汇。
+2. **领域模型映射清洗（`WordMapper.toDomainModel`）**：
+   * 当检测到 `entity.japanese` 属于外来语英文词源且 `entity.hiragana` 非空时，将领域模型 `Word.japanese` 动态赋值为其对应的假名（`entity.hiragana`）；
+   * 本地 Room 数据库底层原始数据保持不变，保证 SQL 语句对原始英文的搜索匹配能力不受任何影响；
+   * 朗读音频播放接口（TTS）调用 `word.japanese` 时自动以日文假名正确发音。
+3. **学习翻转卡片正面与背面自适应收缩（`WordCard.kt`）**：
+   * 在正面 `WordCardFront` 与背面 `WordCardBack` 中增加 `if (word.hiragana != word.japanese)` 校验；
+   * 当两者相同时，原假名文字与多余垂直 `Spacer` 完全隐藏不渲染，卡片主假名内容自然居中，消除两个相同假名重复堆叠的问题。
+4. **单词详情页头部自适应隐藏（`WordDetailScreen.kt`）**：
+   * 在顶部展示卡片中增加 `if (word.hiragana != word.japanese)` 校验；
+   * 当两者相同时，大号主标题展示假名，下方副标题读音行完全隐藏不占位；
+   * 页面中央大号发音按钮传入 `word.japanese`（此时为假名），保证发音自然准确。
+5. **单词列表双行排版保持（`WordListItemPremium` / `WordListItem`）**：
+   * 列表项主标题读取 `word.japanese`（已转换为假名），副标题继续读取 `word.hiragana` 与中文释义，自然满足列表两处同时展示假名的对称要求。
+
+### 2. 涉及文件列表
+* `core/data/src/main/java/com/jian/nemo/core/data/mapper/WordMapper.kt`
+* `core/data/src/test/java/com/jian/nemo/core/data/mapper/WordMapperTest.kt`
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/components/cards/WordCard.kt`
+* `feature/library/src/main/java/com/jian/nemo/feature/library/presentation/detail/WordDetailScreen.kt`
+* `implementation-notes.md`
+
+---
+
+## 二十三、学习界面顶部四阶垂直渐变遮罩与液态玻璃物理折射重构台账
+
+> **目标**：彻底解决学习界面顶部栏与热力图标杆范式不一致的问题。将学习界面顶部重构为层叠悬浮架构，引入热力图同款四阶垂直渐变遮罩，并为返回、撤销、剩余数量和更多菜单等全部液态玻璃按钮打通真实底层物理折射与色散。
+
+### 1. 核心改进点与落地细节
+1. **渲染解耦与层级重构**：
+   * 移除原 `Scaffold` 机械包裹，采用热力图同款全屏层叠 `Box(modifier = Modifier.fillMaxSize().background(backgroundColor))` 作为根容器；
+   * 底层录制画布（Z = 0）：由 `layerBackdrop(learningBackdrop)` 录制背景、WebGL 流光粒子和卡片主体内容；
+   * 页面主体卡片内容区顶部内边距动态配置为 `top = statusBarTop + 60.dp`，底部配置为 `bottom = navBarBottom`，严格动态避让状态栏与悬浮顶栏，卡片可用高度与旧布局完全一致且手势安全。
+2. **四阶垂直渐变保护遮罩**：
+   * 悬浮固定顶栏（Z = 1）采用热力图同款垂直渐变遮罩：`Brush.verticalGradient(listOf(backgroundColor.copy(0.95f), backgroundColor.copy(0.75f), backgroundColor.copy(0.35f), Color.Transparent))`；
+   * 配合 `Modifier.statusBarsPadding()`，使渐变从屏幕顶端无缝向下铺展，卡片滚动穿透时呈现画廊级自然柔化过渡。
+3. **真实物理透镜折射全链路激活**：
+   * 悬浮顶栏移至 `learningBackdrop` 录制画布外部同级节点，彻底消除 Backdrop 自采样死循环风险；
+   * 将有效采样源 `learningBackdrop` 注入 `LearnHeader` 以及内部的全部 4 个按钮：
+     - **返回按钮**：48dp `FrostedLiquidGlassButton(backdrop = learningBackdrop, hasLens = true, chromaticAberration = true)`；
+     - **撤销按钮**：48dp `FrostedLiquidGlassButton(backdrop = learningBackdrop, hasLens = true, chromaticAberration = true)`；
+     - **剩余任务胶囊**：48dp `FrostedLiquidGlassButton(backdrop = learningBackdrop, hasLens = true, chromaticAberration = true)`；
+     - **更多菜单按钮**：48dp `LearnHeaderMoreMenuButton(backdrop = learningBackdrop)`；
+   * 结算完成状态（`isFinished`）下的顶部返回与分享按钮亦同步接入 `learningBackdrop` 物理折射。
+
+### 2. 涉及文件列表
+* `feature/learning/src/main/java/com/jian/nemo/feature/learning/presentation/LearningScreen.kt`
+* `implementation-notes.md`
+

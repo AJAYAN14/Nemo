@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.PaddingValues
 import com.jian.nemo.core.designsystem.theme.NemoDanger
@@ -33,11 +35,78 @@ import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.ui.component.common.NemoMorphMenu
-import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.graphics.lerp
+
+/**
+ * 测试题目菜单状态数据
+ */
+data class TestMenuData(
+    val isFavorite: Boolean,
+    val itemId: Int,
+    val onToggleFavorite: (Int, Boolean) -> Unit,
+    val onPause: () -> Unit
+)
+
+val LocalTestMenuData = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<TestMenuData?>?> { null }
+
+/**
+ * 测试界面液态悬浮菜单浮层
+ */
+@Composable
+fun TestMenuOverlay(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    isFavorite: Boolean,
+    itemId: Int,
+    onToggleFavorite: (Int, Boolean) -> Unit,
+    onPause: () -> Unit,
+    modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null,
+    blurRadius: Dp = 12.dp,
+    refractionHeightRatio: Float = 0.10f,
+    refractionAmountRatio: Float = 0.20f
+) {
+    NemoLiquidMenuOverlay(
+        isVisible = isVisible,
+        onDismiss = onDismiss,
+        backdrop = backdrop,
+        menuWidth = 260.dp,
+        blurRadius = blurRadius,
+        refractionHeightRatio = refractionHeightRatio,
+        refractionAmountRatio = refractionAmountRatio,
+        modifier = modifier
+    ) {
+        if (itemId != 0) {
+            NemoLiquidMenuItem(
+                text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
+                leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
+                onClick = {
+                    onDismiss()
+                    onToggleFavorite(itemId, !isFavorite)
+                }
+            )
+
+            NemoLiquidMenuDivider()
+        }
+
+        NemoLiquidMenuItem(
+            text = stringResource(R.string.test_header_menu_pause),
+            leadingIcon = Icons.Rounded.Pause,
+            iconColor = IosColors.Orange,
+            onClick = {
+                onDismiss()
+                onPause()
+            }
+        )
+    }
+}
 
 /**
  * 测试头部中间内容：倒计时显示（液态按钮容器）
@@ -99,11 +168,7 @@ fun TestHeaderCenterContent(
 }
 
 /**
- * 测试头部右侧操作区：学习界面同款形变菜单按钮 (NemoMorphMenu)
- *
- * 遵循单一官方原生图标与调色盘标准规范：
- * - 统一使用 Google Fonts 官方原生实心 Rounded 图标
- * - 配色体系全面收编至设计调色盘 IosColors (一套颜色体系)
+ * 测试头部右侧操作区：液态悬浮菜单触发按钮
  */
 @Composable
 fun TestHeaderActions(
@@ -117,6 +182,18 @@ fun TestHeaderActions(
     val itemId = word?.id ?: grammar?.id ?: 0
 
     val menuExpandedState = LocalTestMenuExpanded.current
+    val menuDataState = LocalTestMenuData.current
+
+    // 同步当前题目的菜单状态数据至宿主页面
+    LaunchedEffect(isFavorite, itemId, onToggleFavorite, onPause) {
+        menuDataState?.value = TestMenuData(
+            isFavorite = isFavorite,
+            itemId = itemId,
+            onToggleFavorite = onToggleFavorite,
+            onPause = onPause
+        )
+    }
+
     var internalExpanded by remember { mutableStateOf(false) }
     val expanded = menuExpandedState?.value ?: internalExpanded
     val setExpanded: (Boolean) -> Unit = { expandedValue ->
@@ -127,37 +204,10 @@ fun TestHeaderActions(
         }
     }
 
-    NemoMorphMenu(
-        expanded = expanded,
-        onExpandedChange = setExpanded,
-        buttonSize = 48.dp,
-        menuWidth = 192.dp,
-        backdrop = backdrop,
-        icon = Icons.Rounded.MoreVert,
-        contentDescription = stringResource(R.string.test_header_cd_more_options)
-    ) {
-        // 收藏/取消收藏选项
-        if (itemId != 0) {
-            NemoMorphMenuItem(
-                text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
-                leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
-                onClick = {
-                    close()
-                    onToggleFavorite(itemId, !isFavorite)
-                }
-            )
-        }
-
-        // 暂停测试选项
-        NemoMorphMenuItem(
-            text = stringResource(R.string.test_header_menu_pause),
-            leadingIcon = Icons.Rounded.Pause,
-            iconColor = IosColors.Orange,
-            onClick = {
-                close()
-                onPause()
-            }
-        )
-    }
+    NemoLiquidMenuButton(
+        isExpanded = expanded,
+        onClick = { setExpanded(!expanded) },
+        backdrop = null,
+        buttonSize = 48.dp
+    )
 }

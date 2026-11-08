@@ -98,12 +98,6 @@ fun CategoryWordsScreen(
         var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
         var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
-        val animatedBlurRadius by animateDpAsState(
-            targetValue = if (isMenuExpanded) 14.dp else 0.dp,
-            animationSpec = tween(durationMillis = 200),
-            label = "category_blur"
-        )
-
         // 过滤词汇数据
         val currentWords = remember(uiState.words, selectedLevel, searchQuery, filterState) {
             uiState.words.filter { word ->
@@ -157,35 +151,43 @@ fun CategoryWordsScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        if (uiState.isLoading) {
+        // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop)
+        ) {
+            // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                NemoChasingDotsLoader()
-            }
-        } else if (uiState.error != null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = uiState.error ?: stringResource(R.string.lib_category_words_error_load_failed), color = MaterialTheme.colorScheme.error)
-            }
-        } else {
-            LazyColumn(
-                state = lazyListState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .then(
-                        if (animatedBlurRadius > 0.dp) Modifier.blur(animatedBlurRadius) else Modifier
-                    )
-                    .layerBackdrop(backdrop),
-                contentPadding = PaddingValues(
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+                    .background(backgroundColor)
+            )
+
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    NemoChasingDotsLoader()
+                }
+            } else if (uiState.error != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = uiState.error ?: stringResource(R.string.lib_category_words_error_load_failed), color = MaterialTheme.colorScheme.error)
+                }
+            } else {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = statusBarTop + 60.dp + 16.dp,
+                        bottom = navBarBottom + 24.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                 // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
                 item(key = "discovery_bar") {
                     LibraryDiscoveryBar(
@@ -231,6 +233,7 @@ fun CategoryWordsScreen(
                 }
             }
         }
+    }
 
         // 1.5 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
         LibraryLevelSelectionOverlay(
@@ -263,7 +266,7 @@ fun CategoryWordsScreen(
                     LibraryLevelSelectionButton(
                         isExpanded = isMenuExpanded,
                         onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = backdrop
+                        backdrop = null
                     )
                 }
             )

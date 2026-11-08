@@ -16,13 +16,41 @@ import com.jian.nemo.core.domain.model.Word
 object WordMapper {
 
     /**
+     * 判断文本是否为由英文字母、数字和常见外来语符号组成的外来语词源
+     */
+    fun isEnglishLoanwordSource(text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return false
+
+        val hasLatinLetter = trimmed.any { it in 'A'..'Z' || it in 'a'..'z' }
+        if (!hasLatinLetter) return false
+
+        val hasKanji = trimmed.any { it in '\u4E00'..'\u9FFF' || it in '\u3400'..'\u4DBF' }
+        if (hasKanji) return false
+
+        val hasKana = trimmed.any { it in '\u3040'..'\u30FF' }
+        if (hasKana) return false
+
+        return trimmed.all { ch ->
+            ch in 'A'..'Z' || ch in 'a'..'z' || ch in '0'..'9' ||
+            ch in " -/._()&'\"·・"
+        }
+    }
+
+    /**
      * 将 WordEntity 和 WordStudyStateEntity 组合转换为 Domain Model
      */
     fun toDomainModel(entity: WordEntity, state: WordStudyStateEntity?): Word {
+        val resolvedJapanese = if (isEnglishLoanwordSource(entity.japanese) && entity.hiragana.isNotBlank()) {
+            entity.hiragana
+        } else {
+            entity.japanese
+        }
+
         return Word(
             id = entity.id,
             rawId = entity.rawId,
-            japanese = entity.japanese,
+            japanese = resolvedJapanese,
             hiragana = entity.hiragana,
             chinese = entity.chinese,
             level = entity.level,
