@@ -184,6 +184,22 @@ fun LearningScreen(
                     .fillMaxSize()
                     .layerBackdrop(learningBackdrop)
             ) {
+                // 顶部氛围微光光晕（贯穿系统状态栏，使 Backdrop 采样具备真实色彩与明度梯度，激发液态玻璃折射）
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(statusBarTop + 88.dp)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
+                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.04f else 0.02f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+
                 // 当结算完成时，在最外层绘制贯穿系统状态栏的顶部主题色渐变光晕
                 if (isFinished) {
                     Box(
@@ -274,7 +290,7 @@ fun LearningScreen(
                 }
             }
 
-            // 2. 悬浮固定顶栏与液态玻璃按钮（热力图同款四阶垂直渐变保护遮罩，读取 learningBackdrop 激活真实物理折射）
+            // 2. 悬浮固定顶栏与液态玻璃按钮（标杆四阶垂直渐变保护遮罩，读取 learningBackdrop 激活真实物理折射）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -282,9 +298,9 @@ fun LearningScreen(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                backgroundColor.copy(alpha = 0.60f),
+                                backgroundColor.copy(alpha = 0.95f),
+                                backgroundColor.copy(alpha = 0.75f),
                                 backgroundColor.copy(alpha = 0.35f),
-                                backgroundColor.copy(alpha = 0.10f),
                                 Color.Transparent
                             )
                         )
@@ -299,7 +315,7 @@ fun LearningScreen(
                         backgroundColor = Color.Transparent,
                         backdrop = learningBackdrop,
                         backButtonSize = 48.dp,
-                        chromaticAberration = true,
+                        chromaticAberration = false,
                         centerContent = {
                             Surface(
                                 shape = CircleShape,
@@ -327,7 +343,7 @@ fun LearningScreen(
                                 backdrop = learningBackdrop,
                                 shape = CircleShape,
                                 hasLens = true,
-                                chromaticAberration = true,
+                                chromaticAberration = false,
                                 contentPadding = PaddingValues(0.dp),
                                 isInteractive = true,
                                 modifier = Modifier.size(48.dp)

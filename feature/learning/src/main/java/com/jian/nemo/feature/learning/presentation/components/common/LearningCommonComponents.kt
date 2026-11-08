@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
@@ -126,6 +127,28 @@ fun LearnHeader(
         stringResource(R.string.learn_common_title_grammar_learning)
     }
 
+    // 0.6dp 顶部拟态微光渐变描边（上亮下透，呈现晶体玻璃倒角反光切面）
+    val capsuleBorderBrush = Brush.verticalGradient(
+        colors = if (isDarkTheme) {
+            listOf(
+                Color.White.copy(alpha = 0.35f),
+                Color.White.copy(alpha = 0.12f),
+                Color.Transparent
+            )
+        } else {
+            listOf(
+                Color.White.copy(alpha = 0.85f),
+                Color.White.copy(alpha = 0.30f),
+                Color.Black.copy(alpha = 0.05f)
+            )
+        }
+    )
+    val capsuleSurfaceColor = if (isDarkTheme) {
+        Color.White.copy(alpha = 0.08f)
+    } else {
+        Color.White.copy(alpha = 0.15f)
+    }
+
     Box(modifier = modifier.fillMaxWidth()) {
         CommonHeader(
             title = headerTitle,
@@ -133,7 +156,7 @@ fun LearnHeader(
             backgroundColor = Color.Transparent,
             backdrop = backdrop,
             backButtonSize = 48.dp,
-            chromaticAberration = (backdrop != null),
+            chromaticAberration = false,
             actions = {
                 // 撤销上一次评分按钮 (动态平滑展开/收起)
                 androidx.compose.animation.AnimatedVisibility(
@@ -146,7 +169,7 @@ fun LearnHeader(
                         shape = CircleShape,
                         backdrop = backdrop,
                         hasLens = true,
-                        chromaticAberration = backdrop != null,
+                        chromaticAberration = false,
                         contentPadding = PaddingValues(0.dp),
                         isInteractive = true,
                         modifier = Modifier.size(48.dp)
@@ -167,10 +190,12 @@ fun LearnHeader(
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             showTodayOverviewDialog = true
                         },
-                        shape = CircleShape,
+                        shape = Capsule(),
+                        border = BorderStroke(0.6.dp, capsuleBorderBrush),
+                        surfaceColor = capsuleSurfaceColor,
                         backdrop = backdrop,
                         hasLens = true,
-                        chromaticAberration = backdrop != null,
+                        chromaticAberration = false,
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                         isInteractive = true,
                         modifier = Modifier.height(48.dp)

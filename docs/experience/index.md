@@ -25,6 +25,7 @@
 | 14 | [输入框调色盘收敛与G2连续曲率圆角落地经验](file:///e:/Android/Nemo/docs/experience/14-输入框调色盘收敛与G2连续曲率圆角落地经验.md) | `GenericExpandableListScreen.kt`, `PremiumStepper.kt`, `DiscoveryBar.kt`, `LoginComponents.kt`, `ContentReportDialog.kt`, `AISettingsScreen.kt` / 输入框调色盘、G2平滑圆角、深浅光学补偿、语义化槽位映射 | **语义化槽位映射与G2平滑连续曲率公理**：输入框样式优先映射 `MaterialTheme.colorScheme.*` 语义槽位；全量绑定 `RoundedRectangle`（G2）；深色模式强调色与光标采用自发光光学补偿（`OrangeDark`）。 | 活跃 |
 | 15 | [Glasense液态磨砂气泡菜单移植与AGSL材质着色器避坑指南](file:///e:/Android/Nemo/docs/experience/15-Glasense液态磨砂气泡菜单移植与AGSL材质着色器避坑指南.md) | `NemoPopupMenu.kt`, `GlasenseMaterialShader.kt`, `TestSettingsScreen.kt` / Glasense玻璃质感、AGSL着色器、50dp极柔模糊、双阶高光描边、深浅双轨自适应 | **材质着色器物理真实与视口尺寸单一稳定来源公理**：真实玻璃效果通过 AGSL 贝塞尔明度映射与大半径采样外扩唤醒环境通透折射；视口尺寸统一基于 LocalConfiguration 计算，严禁未公开试验性接口。 | 活跃 |
 | 16 | [液态玻璃气泡菜单真透镜物理折射与iOS双层复合阴影避坑指南](file:///e:/Android/Nemo/docs/experience/16-液态玻璃气泡菜单真透镜物理折射与iOS双层复合阴影避坑指南.md) | `NemoPopupMenu.kt`, `LiquidGlassButtons.kt`, `Lens.kt`, `Highlight.Plain` / 物理凸透镜折射、vibrancy色彩提纯、16dp黄金光斑模糊、iOS双层复合阴影、非对称弹性形变动效 | **透镜物理形变真实性与环境光斑可辨性公理**：液态玻璃依托凸透镜（Lens）对底层边缘的物理折射弯折与 vibrancy 色彩提纯；模糊半径保持在 16dp 黄金光斑中值并彻底拔除实色背景遮挡；弹窗采用双层复合阴影（Ambient+Key）与非对称流体表面张力弹性展开。 | 活跃 |
+| 17 | [学习界面顶栏液态玻璃按钮光学参数与胶囊高光重构避坑指南](file:///e:/Android/Nemo/docs/experience/17-学习界面顶栏液态玻璃按钮光学参数与胶囊高光重构避坑指南.md) | `LearningScreen.kt`, `LearningCommonComponents.kt`, `Capsule.kt` / 液态玻璃按钮、关闭色散消除重影、0.6dp微光渐变描边、单卡无滚动采样空洞补偿、四阶渐变遮罩 | **无杂色纯净光学与高光锁边公理**：含文字按钮严格关闭色散以防发虚；横向胶囊压低底色至8%~15%并配置0.6dp渐变描边锁紧边缘；无滚动物件穿透的顶栏在采样图层植入环境色彩梯度以激活折射。 | 活跃 |
 
 ---
 
