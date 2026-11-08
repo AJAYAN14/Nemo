@@ -184,18 +184,26 @@ fun LearningScreen(
                     .fillMaxSize()
                     .layerBackdrop(learningBackdrop)
             ) {
-                // 顶部氛围微光光晕（贯穿系统状态栏，使 Backdrop 采样具备真实色彩与明度梯度，激发液态玻璃折射）
+                // 顶部纯净中性明度光晕（贯穿系统状态栏，无彩色偏色，提供纯净黑白明度梯度以激发水晶水滴折射）
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(statusBarTop + 88.dp)
                         .background(
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.12f else 0.08f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.04f else 0.02f),
-                                    Color.Transparent
-                                )
+                                colors = if (isDarkTheme) {
+                                    listOf(
+                                        Color.White.copy(alpha = 0.08f),
+                                        Color.White.copy(alpha = 0.02f),
+                                        Color.Transparent
+                                    )
+                                } else {
+                                    listOf(
+                                        Color.White.copy(alpha = 0.85f),
+                                        Color.White.copy(alpha = 0.40f),
+                                        Color.Transparent
+                                    )
+                                }
                             )
                         )
                 )
