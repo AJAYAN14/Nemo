@@ -26,6 +26,10 @@ internal object GlassIcons {
             moveTo(3.5f, 7f); lineTo(20.5f, 7f); moveTo(6.5f, 12f); lineTo(17.5f, 12f); moveTo(9.5f, 17f); lineTo(14.5f, 17f)
         }
         "ellipsis" -> Path().apply { for (x in listOf(5f, 12f, 19f)) addCircle(x, 12f, .9f, Path.Direction.CW) }
+        "pause" -> Path().apply {
+            moveTo(8f, 5.5f); lineTo(8f, 18.5f)
+            moveTo(16f, 5.5f); lineTo(16f, 18.5f)
+        }
         "trash" -> Path().apply {
             moveTo(4f, 6.5f); lineTo(20f, 6.5f)
             moveTo(9f, 6.5f); lineTo(9f, 4f); lineTo(15f, 4f); lineTo(15f, 6.5f)

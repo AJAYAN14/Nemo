@@ -17,6 +17,7 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +40,9 @@ import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
+import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
 import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.graphics.lerp
 
@@ -54,6 +57,21 @@ data class TestMenuData(
 )
 
 val LocalTestMenuData = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<TestMenuData?>?> { null }
+
+/**
+ * 全局共享的活跃原生测试顶栏菜单项清单
+ */
+internal val ActiveNativeTestMenuItems = mutableStateOf<List<GlassMenuItemRecord>>(emptyList())
+
+/**
+ * 全局共享的活跃原生测试顶栏菜单选项动作分发回调
+ */
+internal val ActiveNativeTestMenuActionHandler = mutableStateOf<((String) -> Unit)?>(null)
+
+/**
+ * 全局共享的原生测试顶栏菜单展开状态
+ */
+internal val ActiveNativeTestMenuOpenState = mutableStateOf(false)
 
 /**
  * 测试界面液态悬浮菜单浮层
@@ -72,39 +90,45 @@ fun TestMenuOverlay(
     refractionHeightRatio: Float = 0.10f,
     refractionAmountRatio: Float = 0.20f
 ) {
-    NemoLiquidMenuOverlay(
-        isVisible = isVisible,
-        onDismiss = onDismiss,
-        backdrop = backdrop,
-        menuWidth = 260.dp,
-        blurRadius = blurRadius,
-        refractionHeightRatio = refractionHeightRatio,
-        refractionAmountRatio = refractionAmountRatio,
-        modifier = modifier
-    ) {
+    val favoriteTitle = if (isFavorite) {
+        stringResource(R.string.test_header_menu_unfavorite)
+    } else {
+        stringResource(R.string.test_header_menu_favorite)
+    }
+    val pauseTitle = stringResource(R.string.test_header_menu_pause)
+
+    val nativeItems = remember(itemId, isFavorite, favoriteTitle, pauseTitle) {
+        val list = mutableListOf<GlassMenuItemRecord>()
         if (itemId != 0) {
-            NemoLiquidMenuItem(
-                text = if (isFavorite) stringResource(R.string.test_header_menu_unfavorite) else stringResource(R.string.test_header_menu_favorite),
-                leadingIcon = if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
-                iconColor = if (isFavorite) IosColors.Pink else MaterialTheme.colorScheme.onSurfaceVariant,
-                onClick = {
-                    onDismiss()
-                    onToggleFavorite(itemId, !isFavorite)
-                }
+            list.add(
+                GlassMenuItemRecord(
+                    id = "favorite",
+                    title = favoriteTitle,
+                    icon = "heart",
+                    checked = isFavorite
+                )
             )
-
-            NemoLiquidMenuDivider()
+            list.add(GlassMenuItemRecord(separator = true))
         }
-
-        NemoLiquidMenuItem(
-            text = stringResource(R.string.test_header_menu_pause),
-            leadingIcon = Icons.Rounded.Pause,
-            iconColor = IosColors.Orange,
-            onClick = {
-                onDismiss()
-                onPause()
-            }
+        list.add(
+            GlassMenuItemRecord(
+                id = "pause",
+                title = pauseTitle,
+                icon = "pause"
+            )
         )
+        list
+    }
+
+    SideEffect {
+        ActiveNativeTestMenuItems.value = nativeItems
+        ActiveNativeTestMenuActionHandler.value = { id ->
+            onDismiss()
+            when (id) {
+                "favorite" -> onToggleFavorite(itemId, !isFavorite)
+                "pause" -> onPause()
+            }
+        }
     }
 }
 
@@ -176,7 +200,9 @@ fun TestHeaderActions(
     grammar: Grammar? = null,
     onToggleFavorite: (Int, Boolean) -> Unit,
     onPause: () -> Unit,
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    buttonSize: Dp = 48.dp,
+    content: (@Composable () -> Unit)? = null
 ) {
     val isFavorite = word?.isFavorite == true || grammar?.isFavorite == true
     val itemId = word?.id ?: grammar?.id ?: 0
@@ -204,10 +230,33 @@ fun TestHeaderActions(
         }
     }
 
-    NemoLiquidMenuButton(
-        isExpanded = expanded,
-        onClick = { setExpanded(!expanded) },
-        backdrop = null,
-        buttonSize = 48.dp
-    )
+    val items = ActiveNativeTestMenuItems.value
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    if (items.isNotEmpty()) {
+        NemoNativeLiquidMenuTrigger(
+            items = items,
+            buttonSize = buttonSize,
+            colorScheme = if (isDarkTheme) "dark" else "light",
+            menuWidth = 260.dp,
+            onSelect = { item, _ ->
+                ActiveNativeTestMenuActionHandler.value?.invoke(item.id)
+            },
+            onOpenChange = { open ->
+                ActiveNativeTestMenuOpenState.value = open
+                if (open != expanded) {
+                    setExpanded(open)
+                }
+            },
+            content = content
+        )
+    } else {
+        NemoLiquidMenuButton(
+            isExpanded = expanded,
+            onClick = { setExpanded(!expanded) },
+            backdrop = null,
+            buttonSize = buttonSize,
+            content = content
+        )
+    }
 }

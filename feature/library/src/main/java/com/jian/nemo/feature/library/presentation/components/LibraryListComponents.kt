@@ -51,12 +51,14 @@ import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
+import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.library.presentation.list.StudyFilter
@@ -115,7 +117,22 @@ fun BoxScope.LibraryScrollToTopButton(
 }
 
 /**
- * 48dp 词库等级筛选触发按钮 (圆润三横形变为 ✕ 动效)
+ * 全局共享的活跃原生词库等级筛选菜单项清单
+ */
+internal val ActiveNativeLibraryLevelMenuItems = mutableStateOf<List<GlassMenuItemRecord>>(emptyList())
+
+/**
+ * 全局共享的活跃原生词库等级筛选菜单选项动作分发回调
+ */
+internal val ActiveNativeLibraryLevelActionHandler = mutableStateOf<((String) -> Unit)?>(null)
+
+/**
+ * 全局共享的原生词库等级筛选菜单展开状态
+ */
+internal val ActiveNativeLibraryLevelOpenState = mutableStateOf(false)
+
+/**
+ * 48dp 词库等级筛选触发按钮 (底层无缝对接原生 NemoGlassMenuView 引擎)
  */
 @Composable
 fun LibraryLevelSelectionButton(
@@ -124,16 +141,41 @@ fun LibraryLevelSelectionButton(
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
     buttonSize: Dp = 48.dp,
-    chromaticAberration: Boolean = false
+    chromaticAberration: Boolean = false,
+    content: (@Composable () -> Unit)? = null
 ) {
-    NemoLiquidMenuButton(
-        isExpanded = isExpanded,
-        onClick = onClick,
-        modifier = modifier,
-        backdrop = backdrop,
-        buttonSize = buttonSize,
-        chromaticAberration = chromaticAberration
-    )
+    val items = ActiveNativeLibraryLevelMenuItems.value
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    if (items.isNotEmpty()) {
+        NemoNativeLiquidMenuTrigger(
+            items = items,
+            modifier = modifier,
+            buttonSize = buttonSize,
+            colorScheme = if (isDarkTheme) "dark" else "light",
+            menuWidth = 260.dp,
+            onSelect = { item, _ ->
+                ActiveNativeLibraryLevelActionHandler.value?.invoke(item.id)
+            },
+            onOpenChange = { open ->
+                ActiveNativeLibraryLevelOpenState.value = open
+                if (open != isExpanded) {
+                    onClick()
+                }
+            },
+            content = content
+        )
+    } else {
+        NemoLiquidMenuButton(
+            isExpanded = isExpanded,
+            onClick = onClick,
+            modifier = modifier,
+            backdrop = backdrop,
+            buttonSize = buttonSize,
+            chromaticAberration = chromaticAberration,
+            content = content
+        )
+    }
 }
 
 /**
@@ -153,54 +195,55 @@ fun LibraryLevelSelectionOverlay(
     refractionHeightRatio: Float = 0.10f,
     refractionAmountRatio: Float = 0.20f
 ) {
-    NemoLiquidMenuOverlay(
-        isVisible = isVisible,
-        onDismiss = onDismiss,
-        backdrop = backdrop,
-        menuWidth = 260.dp,
-        blurRadius = blurRadius,
-        refractionHeightRatio = refractionHeightRatio,
-        refractionAmountRatio = refractionAmountRatio,
-        modifier = modifier
-    ) {
-        val allCount = countsByLevel.values.sum()
-        val isAllSelected = selectedLevel == "ALL"
+    val allCount = countsByLevel.values.sum()
+    val isAllSelected = selectedLevel == "ALL"
+    val allLevelsTitle = stringResource(R.string.lib_components_all_levels_count_format, allCount)
 
-        NemoLiquidMenuItem(
-            text = stringResource(R.string.lib_components_all_levels_count_format, allCount),
-            leadingIcon = Icons.Rounded.School,
-            iconColor = IosColors.Blue,
-            trailingText = if (isAllSelected) "✓" else null,
-            onClick = {
-                onLevelSelected("ALL")
-                onDismiss()
-                onScrollToTop()
-            }
-        )
+    val levelsList = remember { listOf("N5", "N4", "N3", "N2", "N1") }
+    val n5Title = stringResource(R.string.lib_components_level_count_format, "N5", countsByLevel["N5"] ?: 0)
+    val n4Title = stringResource(R.string.lib_components_level_count_format, "N4", countsByLevel["N4"] ?: 0)
+    val n3Title = stringResource(R.string.lib_components_level_count_format, "N3", countsByLevel["N3"] ?: 0)
+    val n2Title = stringResource(R.string.lib_components_level_count_format, "N2", countsByLevel["N2"] ?: 0)
+    val n1Title = stringResource(R.string.lib_components_level_count_format, "N1", countsByLevel["N1"] ?: 0)
 
-        NemoLiquidMenuDivider()
-
-        val levelsList = listOf(
-            "N5" to IosColors.Green,
-            "N4" to IosColors.Cyan,
-            "N3" to IosColors.Indigo,
-            "N2" to IosColors.Purple,
-            "N1" to IosColors.Red
-        )
-        levelsList.forEach { (level, levelColor) ->
-            val count = countsByLevel[level] ?: 0
-            val isSelected = selectedLevel.equals(level, ignoreCase = true)
-            NemoLiquidMenuItem(
-                text = stringResource(R.string.lib_components_level_count_format, level, count),
-                leadingIcon = Icons.Rounded.School,
-                iconColor = levelColor,
-                trailingText = if (isSelected) "✓" else null,
-                onClick = {
-                    onLevelSelected(level)
-                    onDismiss()
-                    onScrollToTop()
-                }
+    val nativeItems = remember(selectedLevel, countsByLevel, allLevelsTitle, n5Title, n4Title, n3Title, n2Title, n1Title) {
+        val list = mutableListOf<GlassMenuItemRecord>()
+        list.add(
+            GlassMenuItemRecord(
+                id = "ALL",
+                title = allLevelsTitle,
+                icon = "grid",
+                checked = isAllSelected
             )
+        )
+        list.add(GlassMenuItemRecord(separator = true))
+        val titleMap = mapOf(
+            "N5" to n5Title,
+            "N4" to n4Title,
+            "N3" to n3Title,
+            "N2" to n2Title,
+            "N1" to n1Title
+        )
+        levelsList.forEach { level ->
+            val isSelected = selectedLevel.equals(level, ignoreCase = true)
+            list.add(
+                GlassMenuItemRecord(
+                    id = level,
+                    title = titleMap[level] ?: level,
+                    icon = "filter",
+                    checked = isSelected
+                )
+            )
+        }
+        list
+    }
+
+    SideEffect {
+        ActiveNativeLibraryLevelMenuItems.value = nativeItems
+        ActiveNativeLibraryLevelActionHandler.value = { level ->
+            onLevelSelected(level)
+            onDismiss()
+            onScrollToTop()
         }
     }
 }
@@ -218,6 +261,15 @@ fun LibraryLevelSelectionMenu(
     backdrop: Backdrop?,
     onScrollToTop: () -> Unit
 ) {
+    LibraryLevelSelectionOverlay(
+        isVisible = expanded,
+        onDismiss = { onExpandedChange(false) },
+        selectedLevel = selectedLevel,
+        onLevelSelected = onLevelSelected,
+        countsByLevel = countsByLevel,
+        backdrop = backdrop,
+        onScrollToTop = onScrollToTop
+    )
     LibraryLevelSelectionButton(
         isExpanded = expanded,
         onClick = { onExpandedChange(!expanded) },

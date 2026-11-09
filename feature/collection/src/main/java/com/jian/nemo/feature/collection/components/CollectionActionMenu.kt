@@ -1,24 +1,34 @@
 package com.jian.nemo.feature.collection.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.DeleteSweep
-import androidx.compose.material.icons.rounded.FolderDelete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
-import com.jian.nemo.feature.collection.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
+import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
+import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
+import com.jian.nemo.feature.collection.R
 import com.kyant.backdrop.Backdrop
+
+/**
+ * 全局共享的活跃原生收藏/错题菜单项清单
+ */
+internal val ActiveNativeCollectionMenuItems = mutableStateOf<List<GlassMenuItemRecord>>(emptyList())
+
+/**
+ * 全局共享的活跃原生收藏/错题菜单选项动作分发回调
+ */
+internal val ActiveNativeCollectionMenuActionHandler = mutableStateOf<((String) -> Unit)?>(null)
+
+/**
+ * 全局共享的原生收藏/错题菜单展开状态
+ */
+internal val ActiveNativeCollectionMenuOpenState = mutableStateOf(false)
 
 /**
  * 收藏与错题操作菜单全屏悬浮组件
@@ -43,52 +53,46 @@ fun CollectionActionOverlay(
     var showClearWordsDialog by remember { mutableStateOf(false) }
     var showClearGrammarsDialog by remember { mutableStateOf(false) }
 
-    NemoLiquidMenuOverlay(
-        isVisible = isVisible,
-        onDismiss = onDismiss,
-        backdrop = backdrop,
-        menuWidth = 260.dp,
-        blurRadius = blurRadius,
-        refractionHeightRatio = refractionHeightRatio,
-        refractionAmountRatio = refractionAmountRatio,
-        modifier = modifier
-    ) {
-        NemoLiquidMenuItem(
-            text = stringResource(R.string.collection_menu_clear_all_format, titleSuffix),
-            leadingIcon = Icons.Rounded.DeleteSweep,
-            iconColor = IosColors.Red,
-            isDestructive = true,
-            onClick = {
-                onDismiss()
-                showClearAllDialog = true
-            }
-        )
+    val titleClearAll = stringResource(R.string.collection_menu_clear_all_format, titleSuffix)
+    val titleClearWords = stringResource(R.string.collection_menu_clear_words_format, titleSuffix)
+    val titleClearGrammars = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix)
 
-        NemoLiquidMenuDivider()
-
-        NemoLiquidMenuItem(
-            text = stringResource(R.string.collection_menu_clear_words_format, titleSuffix),
-            leadingIcon = Icons.Rounded.Delete,
-            iconColor = IosColors.Orange,
-            isDestructive = true,
-            enabled = wordCount > 0,
-            onClick = {
-                onDismiss()
-                showClearWordsDialog = true
-            }
+    val nativeItems = remember(wordCount, grammarCount, titleSuffix, titleClearAll, titleClearWords, titleClearGrammars) {
+        listOf(
+            GlassMenuItemRecord(
+                id = "clear_all",
+                title = titleClearAll,
+                icon = "trash",
+                destructive = true
+            ),
+            GlassMenuItemRecord(separator = true),
+            GlassMenuItemRecord(
+                id = "clear_words",
+                title = titleClearWords,
+                icon = "trash",
+                destructive = true,
+                disabled = wordCount <= 0
+            ),
+            GlassMenuItemRecord(
+                id = "clear_grammars",
+                title = titleClearGrammars,
+                icon = "folder",
+                destructive = true,
+                disabled = grammarCount <= 0
+            )
         )
+    }
 
-        NemoLiquidMenuItem(
-            text = stringResource(R.string.collection_menu_clear_grammars_format, titleSuffix),
-            leadingIcon = Icons.Rounded.FolderDelete,
-            iconColor = IosColors.Green,
-            isDestructive = true,
-            enabled = grammarCount > 0,
-            onClick = {
-                onDismiss()
-                showClearGrammarsDialog = true
+    SideEffect {
+        ActiveNativeCollectionMenuItems.value = nativeItems
+        ActiveNativeCollectionMenuActionHandler.value = { id ->
+            onDismiss()
+            when (id) {
+                "clear_all" -> showClearAllDialog = true
+                "clear_words" -> showClearWordsDialog = true
+                "clear_grammars" -> showClearGrammarsDialog = true
             }
-        )
+        }
     }
 
     if (showClearAllDialog) {
@@ -146,13 +150,38 @@ fun CollectionActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
-    buttonSize: androidx.compose.ui.unit.Dp = 48.dp
+    buttonSize: Dp = 48.dp,
+    content: (@Composable () -> Unit)? = null
 ) {
-    NemoLiquidMenuButton(
-        isExpanded = isExpanded,
-        onClick = onClick,
-        backdrop = backdrop,
-        buttonSize = buttonSize
-    )
-}
+    val items = ActiveNativeCollectionMenuItems.value
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
+    if (items.isNotEmpty()) {
+        NemoNativeLiquidMenuTrigger(
+            items = items,
+            modifier = modifier,
+            buttonSize = buttonSize,
+            colorScheme = if (isDarkTheme) "dark" else "light",
+            menuWidth = 260.dp,
+            onSelect = { item, _ ->
+                ActiveNativeCollectionMenuActionHandler.value?.invoke(item.id)
+            },
+            onOpenChange = { open ->
+                ActiveNativeCollectionMenuOpenState.value = open
+                if (open != isExpanded) {
+                    onClick()
+                }
+            },
+            content = content
+        )
+    } else {
+        NemoLiquidMenuButton(
+            isExpanded = isExpanded,
+            onClick = onClick,
+            modifier = modifier,
+            backdrop = backdrop,
+            buttonSize = buttonSize,
+            content = content
+        )
+    }
+}

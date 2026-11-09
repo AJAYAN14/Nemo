@@ -33,7 +33,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
+import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
 
 /**
  * 测试头部组件（包含返回按钮、倒计时和操作菜单）
@@ -86,18 +88,11 @@ fun TestHeader(
             )
         }
 
-        // 菜单入口按钮 (圆润三横平滑过渡到 ✕ 弹性动效)
+        // 菜单入口按钮 (圆润三横平滑过渡到 ✕ 弹性动效，原生物理液态菜单引擎)
         val isFavorite = word?.isFavorite == true || grammar?.isFavorite == true
         val itemId = word?.id ?: grammar?.id ?: 0
 
         var menuExpanded by remember { mutableStateOf(false) }
-
-        NemoLiquidMenuButton(
-            isExpanded = menuExpanded,
-            onClick = { menuExpanded = !menuExpanded },
-            backdrop = null,
-            buttonSize = 48.dp
-        )
 
         TestMenuOverlay(
             isVisible = menuExpanded,
@@ -108,6 +103,32 @@ fun TestHeader(
             onPause = onPause,
             backdrop = null
         )
+
+        val items = ActiveNativeTestMenuItems.value
+        val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+        if (items.isNotEmpty()) {
+            NemoNativeLiquidMenuTrigger(
+                items = items,
+                buttonSize = 48.dp,
+                colorScheme = if (isDarkTheme) "dark" else "light",
+                menuWidth = 260.dp,
+                onSelect = { item, _ ->
+                    ActiveNativeTestMenuActionHandler.value?.invoke(item.id)
+                },
+                onOpenChange = { open ->
+                    ActiveNativeTestMenuOpenState.value = open
+                    menuExpanded = open
+                }
+            )
+        } else {
+            NemoLiquidMenuButton(
+                isExpanded = menuExpanded,
+                onClick = { menuExpanded = !menuExpanded },
+                backdrop = null,
+                buttonSize = 48.dp
+            )
+        }
     }
 
     // 添加底部边框

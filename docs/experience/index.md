@@ -27,6 +27,7 @@
 | 16 | [液态玻璃气泡菜单真透镜物理折射与iOS双层复合阴影避坑指南](file:///e:/Android/Nemo/docs/experience/16-液态玻璃气泡菜单真透镜物理折射与iOS双层复合阴影避坑指南.md) | `NemoPopupMenu.kt`, `LiquidGlassButtons.kt`, `Lens.kt`, `Highlight.Plain` / 物理凸透镜折射、vibrancy色彩提纯、16dp黄金光斑模糊、iOS双层复合阴影、非对称弹性形变动效 | **透镜物理形变真实性与环境光斑可辨性公理**：液态玻璃依托凸透镜（Lens）对底层边缘的物理折射弯折与 vibrancy 色彩提纯；模糊半径保持在 16dp 黄金光斑中值并彻底拔除实色背景遮挡；弹窗采用双层复合阴影（Ambient+Key）与非对称流体表面张力弹性展开。 | 活跃 |
 | 17 | [学习界面顶栏液态玻璃按钮光学参数与胶囊高光重构避坑指南](file:///e:/Android/Nemo/docs/experience/17-学习界面顶栏液态玻璃按钮光学参数与胶囊高光重构避坑指南.md) | `LearningScreen.kt`, `LearningCommonComponents.kt`, `Capsule.kt` / 液态玻璃按钮、关闭色散消除重影、0.6dp微光渐变描边、单卡无滚动采样空洞补偿、四阶渐变遮罩 | **无杂色纯净光学与高光锁边公理**：含文字按钮严格关闭色散以防发虚；横向胶囊压低底色至8%~15%并配置0.6dp渐变描边锁紧边缘；无滚动物件穿透的顶栏在采样图层植入环境色彩梯度以激活折射。 | 活跃 |
 | 18 | [液态玻璃菜单原生手势引擎复用与Compose单向事件闭环避坑指南](file:///e:/Android/Nemo/docs/experience/18-液态玻璃菜单原生手势引擎复用与Compose单向事件闭环避坑指南.md) | `GlassMenuOverlay.kt`, `GlassMenuSession.kt`, `NemoGlassMenuView.kt`, `LearnHeaderMoreMenu.kt` / 原生Overlay手势接管、长按零延迟受力、Jelly流体拉伸、Compose单向闭环 | **全局单一捕获公理与连续手势闭环原则**：流体物理菜单手势必须由顶层原生Overlay单源捕获，杜绝Compose细碎子项拦截；DOWN事件零延迟响应受力与高光，彻底还原iOS级拖拽滑选与弹性晃动。 | 活跃 |
+| 19 | [全工程顶栏液态菜单原生化平滑迁移指南](file:///e:/Android/Nemo/docs/experience/19-全工程顶栏液态菜单原生化平滑迁移指南.md) | `CollectionActionMenu.kt`, `LibraryListComponents.kt`, `TestHeaderComponents.kt`, `TestHeader.kt`, `GlassIcons.kt` / 全局桥接三件套、SideEffect单向注入、NemoNativeLiquidMenuTrigger、无缝二次确认 | **单一捕获与零破坏适配公理**：保留原业务界面对外组件签名，底层通过单向注册状态彻底抽离为原生视图引擎，杜绝手势竞争；时序解耦保障高层弹窗平滑衔接。 | 活跃 |
 
 ---
 

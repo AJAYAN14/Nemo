@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.library.R
@@ -235,19 +236,6 @@ fun CategoryWordsScreen(
         }
     }
 
-        // 1.5 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
-        LibraryLevelSelectionOverlay(
-            isVisible = isMenuExpanded,
-            onDismiss = { isMenuExpanded = false },
-            selectedLevel = selectedLevel,
-            onLevelSelected = { selectedLevel = it },
-            countsByLevel = countsByLevel,
-            backdrop = backdrop,
-            onScrollToTop = {
-                coroutineScope.launch { lazyListState.scrollToItem(0) }
-            }
-        )
-
         // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
             val titleText = if (selectedLevel == "ALL") {
@@ -278,6 +266,20 @@ fun CategoryWordsScreen(
             backdrop = backdrop,
             isMenuExpanded = isMenuExpanded,
             bottomPadding = navBarBottom + 20.dp
+        )
+
+        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
+        LibraryLevelSelectionOverlay(
+            isVisible = isMenuExpanded,
+            onDismiss = { isMenuExpanded = false },
+            selectedLevel = selectedLevel,
+            onLevelSelected = { selectedLevel = it },
+            countsByLevel = countsByLevel,
+            backdrop = backdrop,
+            onScrollToTop = {
+                coroutineScope.launch { lazyListState.scrollToItem(0) }
+            },
+            modifier = Modifier.zIndex(10f)
         )
     }
     }
