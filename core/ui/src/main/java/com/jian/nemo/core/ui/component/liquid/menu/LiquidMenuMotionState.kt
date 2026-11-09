@@ -101,6 +101,14 @@ class LiquidMenuMotionState internal constructor(
     var lensHeightPx by mutableFloatStateOf(0f)
         private set
 
+    // 菜单展开极性与视口最大高度限制
+    var opensAbove by mutableStateOf(false)
+        private set
+    var opensFromRight by mutableStateOf(true)
+        private set
+    var maximumHeightPx by mutableFloatStateOf(0f)
+        private set
+
     // 液体粘连融合系数（像素）
     var smoothing by mutableFloatStateOf(0f)
         private set
@@ -209,64 +217,116 @@ class LiquidMenuMotionState internal constructor(
         }
     }
 
-    // 缓存几何矩形
-    private val sourceRectF = RectF()
-    private val throughRectF = RectF()
-    private val targetRectF = RectF()
-    private var contentHeightLocked = false
+    // 缓存几何矩形与视口边界
+    internal val sourceRectF = RectF()
+    internal val throughRectF = RectF()
+    internal val targetRectF = RectF()
+    private var cachedStatusBarTop = 0f
 
-    fun updateAnchorBounds(rect: Rect) {
+    fun updateAnchorBounds(
+        rect: Rect,
+        menuSize: IntSize? = null,
+        windowWidth: Float = 0f,
+        windowHeight: Float = 0f,
+        statusBarTopPx: Float = 0f,
+        targetCornerRadiusPx: Float = 0f
+    ) {
         sourceRectF.set(rect.left, rect.top, rect.right, rect.bottom)
         throughRectF.set(sourceRectF)
         motion.updateSource(sourceRectF, throughRectF)
+        if (menuSize != null && windowWidth > 0f) {
+            calculateTargetRect(rect, menuSize, windowWidth, windowHeight, statusBarTopPx)
+            motion.updateTarget(targetRectF, targetCornerRadiusPx)
+        }
+    }
+
+    fun updateTargetSize(
+        menuSize: IntSize,
+        windowWidth: Float,
+        windowHeight: Float,
+        statusBarTopPx: Float,
+        targetCornerRadiusPx: Float
+    ) {
+        if (!motion.initialized || sourceRectF.isEmpty) return
+        calculateTargetRect(
+            anchorRect = Rect(sourceRectF.left, sourceRectF.top, sourceRectF.right, sourceRectF.bottom),
+            menuSize = menuSize,
+            windowWidth = windowWidth,
+            windowHeight = windowHeight,
+            statusBarTopPx = statusBarTopPx
+        )
+        motion.updateTarget(targetRectF, targetCornerRadiusPx)
+        renderTick++
+        startAnimationLoop()
     }
 
     internal fun syncToSurfaceState(state: GlassSurfaceState, isDark: Boolean, hasSource: Boolean = true) {
         val frame = motion.frame
         val liveBounds = RectF(frame.bounds)
-        jelly.deformMenu(liveBounds, -1f, 1f, density, 1f)
+        jelly.deformMenu(
+            liveBounds,
+            if (opensFromRight) -1f else 1f,
+            if (opensAbove) -1f else 1f,
+            density,
+            1f
+        )
 
         state.incoming.set(liveBounds)
         val hasValidSource = hasSource && sourceRectF.width() > 0f
+        // 关键修复：当菜单展开且动画完成、次级实体已经完全隐去且拉丝断开时，关闭次级实体 SDF 并集计算，消除右上角小圆凸起
+        val isSecondaryActive = hasValidSource && (!isExpanded || frame.sourceOpacity > 0.005f || frame.smoothing > 0.5f)
         state.captureBounds.set(liveBounds)
-        if (hasValidSource) {
+        if (isSecondaryActive) {
             state.captureBounds.union(frame.sourceLobe)
             state.captureBounds.union(sourceRectF)
         }
         state.captureBounds.union(targetRectF)
-        val captureMargin = 64f * density
+        val captureMargin = 48f * density
         state.captureBounds.inset(-captureMargin, -captureMargin)
+        val neckSigma = 20f * density
+        state.lockedFieldStep = max(
+            neckSigma / 4f,
+            max(state.captureBounds.width(), state.captureBounds.height()) / 64f
+        )
 
         state.radiusX = frame.radiusX
         state.radiusY = frame.radiusY
-        state.hasSource = hasValidSource
+        state.hasSource = isSecondaryActive
         state.source.set(frame.sourceLobe)
         state.sourceRadius = frame.sourceRadius
         state.smoothing = frame.smoothing
         state.lensHeight = frame.lensHeight
         state.lensAmount = frame.lensAmount
         state.materialProgress = frame.contentProgress
-        state.surfaceOpacity = if (state.hasSource) 1f else frame.contentProgress
+        state.surfaceOpacity = if (isSecondaryActive) 1f else frame.contentProgress
         state.dark = isDark
         val t = frame.contentProgress.coerceIn(0f, 1f)
-        state.rimLift = 0.5f * (1f - t)
+        val glow = jelly.glowValue * t
+        state.pressX = jelly.lightPositionX
+        state.pressY = jelly.lightPositionY
+        state.pressRadius = 80f * density
+        state.poolGain = 0.03f * glow
+        state.pressLift = 0.018f * glow
+        state.rimLift = 0.12f * glow + 0.5f * (1f - t)
     }
 
     fun updateContentHeight(heightPx: Float, targetCornerRadiusPx: Float, windowHeight: Float) {
-        if (!motion.initialized || heightPx <= 50f || contentHeightLocked) return
-        contentHeightLocked = true
+        if (!motion.initialized || heightPx <= 50f) return
         val currentH = targetRectF.height()
-        if (kotlin.math.abs(currentH - heightPx) > 2f) {
-            val margin = 16f * density
-            val maxBottom = windowHeight - margin
-            val naturalTop = if (sourceRectF.bottom > 0f) sourceRectF.bottom + 10f * density else targetRectF.top
-            val newTop = if (naturalTop + heightPx > maxBottom) {
-                (maxBottom - heightPx).coerceAtLeast(margin)
-            } else {
-                naturalTop
-            }
+        if (heightPx <= currentH) return
+        val (newTop, constrainedHeight) = calculateUpdatedContentHeight(
+            newHeightPx = heightPx,
+            maximumHeightPx = maximumHeightPx,
+            anchorTop = sourceRectF.top,
+            anchorBottom = sourceRectF.bottom,
+            opensAbove = opensAbove,
+            statusBarTopPx = cachedStatusBarTop,
+            windowHeight = windowHeight,
+            density = density
+        )
+        if (kotlin.math.abs(currentH - constrainedHeight) > 1f) {
             targetRectF.top = newTop
-            targetRectF.bottom = newTop + heightPx
+            targetRectF.bottom = newTop + constrainedHeight
             targetTopPx = targetRectF.top
             targetHeightPx = targetRectF.height()
             motion.updateTarget(targetRectF, targetCornerRadiusPx)
@@ -276,7 +336,34 @@ class LiquidMenuMotionState internal constructor(
     }
 
     fun registerMenuItem(item: LiquidMenuItemBounds) {
-        registeredItems[item.id] = item
+        val existing = registeredItems[item.id]
+        if (existing != null) {
+            registeredItems[item.id] = existing.copy(
+                boundsInMenu = item.boundsInMenu,
+                boundsInWindow = item.boundsInWindow,
+                isEnabled = item.isEnabled,
+                keepOpen = item.keepOpen,
+                onSelect = item.onSelect
+            )
+        } else {
+            registeredItems[item.id] = item
+        }
+    }
+
+    fun updateMenuItem(
+        id: Any,
+        isEnabled: Boolean,
+        keepOpen: Boolean,
+        onSelect: () -> Unit
+    ) {
+        val existing = registeredItems[id]
+        if (existing != null) {
+            registeredItems[id] = existing.copy(
+                isEnabled = isEnabled,
+                keepOpen = keepOpen,
+                onSelect = onSelect
+            )
+        }
     }
 
     fun unregisterMenuItem(id: Any) {
@@ -299,7 +386,12 @@ class LiquidMenuMotionState internal constructor(
         if (item == null) {
             plateVisible = false
             isPlateVisible = false
-            plateAlpha.target(0f, PlateFade)
+            if (immediate) {
+                plateAlpha.reset(0f)
+                plateAlphaVal = 0f
+            } else {
+                plateAlpha.target(0f, PlateFade)
+            }
         } else {
             if (!plateVisible && !hadItem) {
                 plateTop.reset(item.boundsInMenu.top)
@@ -314,6 +406,11 @@ class LiquidMenuMotionState internal constructor(
             if (immediate) plateAlpha.reset(1f) else plateAlpha.target(1f, PlateFade)
         }
         startAnimationLoop()
+    }
+
+    fun highlightItemById(id: Any?, immediate: Boolean = false) {
+        val item = id?.let { registeredItems[it] }
+        highlightItem(item, immediate)
     }
 
     fun findNearestItem(windowX: Float, windowY: Float, slackPx: Float): LiquidMenuItemBounds? {
@@ -350,17 +447,25 @@ class LiquidMenuMotionState internal constructor(
         highlightItem(nearest, immediate = false, onHapticTick = onHapticTick)
     }
 
-    fun handleDragRelease(onSelectDismiss: () -> Unit): Boolean {
+    fun handleDragRelease(
+        dismissIfNoSelection: Boolean = true,
+        onSelectDismiss: () -> Unit
+    ): Boolean {
         val currentId = activeItemId
         val currentItem = if (currentId != null) registeredItems[currentId] else null
         highlightItem(null, immediate = false)
-        close()
         return if (currentItem != null && currentItem.isEnabled) {
             currentItem.onSelect()
-            onSelectDismiss()
+            if (!currentItem.keepOpen) {
+                close()
+                onSelectDismiss()
+            }
             true
         } else {
-            onSelectDismiss()
+            if (dismissIfNoSelection) {
+                close()
+                onSelectDismiss()
+            }
             false
         }
     }
@@ -373,12 +478,16 @@ class LiquidMenuMotionState internal constructor(
         statusBarTopPx: Float,
         targetCornerRadiusPx: Float
     ) {
-        contentHeightLocked = false
         activeItemId = null
         activeItemKey = null
         plateVisible = false
         isPlateVisible = false
         plateAlpha.reset(0f)
+        plateTop.reset(0f)
+        plateHeight.reset(0f)
+        plateTopPx = 0f
+        plateHeightPx = 0f
+        plateAlphaVal = 0f
         updateAnchorBounds(anchorRect)
         calculateTargetRect(anchorRect, menuSize, windowWidth, windowHeight, statusBarTopPx)
 
@@ -401,7 +510,14 @@ class LiquidMenuMotionState internal constructor(
     fun close() {
         if (!isExpanded && !isShowing) return
         isExpanded = false
-        highlightItem(null, immediate = false)
+        activeItemId = null
+        activeItemKey = null
+        plateVisible = false
+        isPlateVisible = false
+        plateAlpha.reset(0f)
+        plateTopPx = 0f
+        plateHeightPx = 0f
+        plateAlphaVal = 0f
         motion.retarget(false)
         jelly.release()
         startAnimationLoop()
@@ -429,37 +545,129 @@ class LiquidMenuMotionState internal constructor(
         windowHeight: Float,
         statusBarTopPx: Float
     ) {
-        val margin = 16f * density
-        val width = max(menuSize.width.toFloat(), 200f * density)
-        val height = max(menuSize.height.toFloat(), 48f * density)
-
-        // 默认靠右对齐触发按钮
-        val isRightAligned = anchorRect.center.x > windowWidth / 2f
-        val left = if (isRightAligned) {
-            (anchorRect.right - width).coerceIn(margin, windowWidth - width - margin)
-        } else {
-            anchorRect.left.coerceIn(margin, windowWidth - width - margin)
-        }
-
-        val top = (anchorRect.bottom + 10f * density).coerceIn(
-            statusBarTopPx + 8f * density,
-            (windowHeight - height - margin).coerceAtLeast(statusBarTopPx + 8f * density)
+        cachedStatusBarTop = statusBarTopPx
+        val geometry = calculateLiquidMenuGeometry(
+            anchorLeft = anchorRect.left,
+            anchorTop = anchorRect.top,
+            anchorRight = anchorRect.right,
+            anchorBottom = anchorRect.bottom,
+            menuWidth = menuSize.width.toFloat(),
+            menuHeight = menuSize.height.toFloat(),
+            windowWidth = windowWidth,
+            windowHeight = windowHeight,
+            statusBarTopPx = statusBarTopPx,
+            density = density
         )
-
-        targetRectF.set(left, top, left + width, top + height)
-        targetLeftPx = left
-        targetTopPx = top
-        targetWidthPx = width
-        targetHeightPx = height
+        opensAbove = geometry.opensAbove
+        opensFromRight = geometry.opensFromRight
+        maximumHeightPx = geometry.maximumHeightPx
+        targetLeftPx = geometry.left
+        targetTopPx = geometry.top
+        targetWidthPx = geometry.width
+        targetHeightPx = geometry.height
+        targetRectF.set(geometry.left, geometry.top, geometry.left + geometry.width, geometry.top + geometry.height)
     }
 
     private fun startAnimationLoop() {
-        Choreographer.getInstance().removeFrameCallback(frameCallback)
-        isAnimating = true
-        lastFrameTimeNanos = 0L
-        renderTick++
-        Choreographer.getInstance().postFrameCallback(frameCallback)
+        try {
+            Choreographer.getInstance().removeFrameCallback(frameCallback)
+            isAnimating = true
+            lastFrameTimeNanos = 0L
+            renderTick++
+            Choreographer.getInstance().postFrameCallback(frameCallback)
+        } catch (_: Throwable) {
+            isAnimating = true
+            renderTick++
+        }
     }
+}
+
+/**
+ * 液态菜单目标几何计算结果
+ */
+data class LiquidMenuTargetGeometry(
+    val left: Float,
+    val top: Float,
+    val width: Float,
+    val height: Float,
+    val opensAbove: Boolean,
+    val opensFromRight: Boolean,
+    val maximumHeightPx: Float
+)
+
+/**
+ * 按照 Demo Session 几何模型计算菜单展开的目标区域
+ */
+internal fun calculateLiquidMenuGeometry(
+    anchorLeft: Float,
+    anchorTop: Float,
+    anchorRight: Float,
+    anchorBottom: Float,
+    menuWidth: Float,
+    menuHeight: Float,
+    windowWidth: Float,
+    windowHeight: Float,
+    statusBarTopPx: Float,
+    density: Float
+): LiquidMenuTargetGeometry {
+    val margin = 16f * density
+    val topBound = statusBarTopPx
+    val bottomBound = windowHeight - margin
+    val maximumHeightPx = maxOf(bottomBound - topBound - margin, 100f * density)
+
+    val height = minOf(maxOf(menuHeight, 48f * density), maximumHeightPx)
+    val width = minOf(maxOf(menuWidth, 200f * density), windowWidth - margin * 2f)
+
+    val fromRight = (anchorLeft + anchorRight) / 2f > windowWidth / 2f
+    val left = (if (fromRight) anchorRight - width else anchorLeft)
+        .coerceIn(margin, maxOf(windowWidth - width - margin, margin))
+
+    val roomBelow = bottomBound - anchorTop
+    val roomAbove = anchorBottom - topBound
+    val isAnchorInTopHalf = anchorTop < windowHeight * 0.5f
+    val above = !isAnchorInTopHalf && roomBelow < height && roomAbove > roomBelow
+
+    val menuTop = (if (above) anchorBottom - height else anchorTop)
+        .coerceIn(topBound, maxOf(bottomBound - height, topBound))
+
+    return LiquidMenuTargetGeometry(
+        left = left,
+        top = menuTop,
+        width = width,
+        height = height,
+        opensAbove = above,
+        opensFromRight = fromRight,
+        maximumHeightPx = maximumHeightPx
+    )
+}
+
+/**
+ * 按照单边锚定规则计算动态内容高度变化后的新几何位置
+ */
+internal fun calculateUpdatedContentHeight(
+    newHeightPx: Float,
+    maximumHeightPx: Float,
+    anchorTop: Float,
+    anchorBottom: Float,
+    opensAbove: Boolean,
+    statusBarTopPx: Float,
+    windowHeight: Float,
+    density: Float
+): Pair<Float, Float> {
+    val constrainedHeight = minOf(
+        newHeightPx,
+        if (maximumHeightPx > 0f) maximumHeightPx else windowHeight - statusBarTopPx - 16f * density
+    )
+    val margin = 16f * density
+    val topBound = statusBarTopPx
+    val bottomBound = windowHeight - margin
+
+    val newTop = if (opensAbove) {
+        (anchorBottom - constrainedHeight).coerceIn(topBound, maxOf(bottomBound - constrainedHeight, topBound))
+    } else {
+        anchorTop.coerceIn(topBound, maxOf(bottomBound - constrainedHeight, topBound))
+    }
+    return Pair(newTop, constrainedHeight)
 }
 
 /**
@@ -482,6 +690,7 @@ data class LiquidMenuItemBounds(
     val boundsInMenu: Rect,
     val boundsInWindow: Rect = Rect.Zero,
     val isEnabled: Boolean = true,
+    val keepOpen: Boolean = false,
     val onSelect: () -> Unit
 )
 

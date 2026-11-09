@@ -16,16 +16,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
+import com.jian.nemo.core.ui.component.liquid.menu.field.GlassFieldTexture
+import com.jian.nemo.core.ui.component.liquid.menu.field.GlassGaussianField
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * 液态玻璃着色器管线与 RenderNode 多通道渲染器
- */
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-internal class GlassRenderer(private val density: Float) {
+internal class GlassRenderer(
+    private val density: Float,
+    private val minimumFieldStep: Float = 1.5f
+) {
     private val material = RuntimeShader(GlassMaterialShader)
     private val shadow = RuntimeShader(GlassShadowShader)
     private val shadowPaint = Paint().apply { shader = shadow }
@@ -34,15 +36,42 @@ internal class GlassRenderer(private val density: Float) {
     private val warmPaint = Paint().apply { color = Color.WHITE }
     private val windowLimits = Rect()
     private val portal = RuntimeShader(GlassPortalShader)
-    private val glassNode = RenderNode("NemoLiquidGlass.glass")
-    private val foregroundNode = RenderNode("NemoLiquidGlass.foreground")
+    private val glassNode = RenderNode("NemoGlassMenu.glass")
+    private val foregroundNode = RenderNode("NemoGlassMenu.foreground")
+    private val field = GlassGaussianField(minimumFieldStep)
+    private val texture = GlassFieldTexture()
     private val nodeRect = Rect()
     private val union = RectF()
     private var warmed = false
 
+    init {
+        warmField()
+    }
+
+    private fun warmField() {
+        val step = minimumFieldStep
+        val unit = density
+        Thread({
+            val warm = GlassGaussianField(step)
+            val menu = RectF(0f, 0f, 250f * unit, 335f * unit)
+            val trigger = RectF(100f * unit, 0f, 250f * unit, 44f * unit)
+            repeat(WarmRounds) { round ->
+                warm.update(menu, 80f * unit, 80f * unit, trigger, 22f * unit, (2f + round % 18) * unit)
+            }
+        }, "NemoGlassMenu.warm").apply {
+            isDaemon = true
+            priority = Thread.MIN_PRIORITY
+            start()
+        }
+    }
+
     fun warmPipelines(canvas: Canvas): Boolean {
         if (warmed) return false
         warmed = true
+        texture.preallocate()
+        texture.bindPrepared(material)
+        texture.bindPrepared(portal)
+        texture.bindPrepared(shadow)
         material.setFloatUniform("surfaceOpacity", 0f)
         shadow.setFloatUniform("surfaceOpacity", 0f)
         canvas.drawRect(0f, 0f, WarmSize.toFloat(), WarmSize.toFloat(), shadowPaint)
@@ -58,7 +87,7 @@ internal class GlassRenderer(private val density: Float) {
     }
 
     private fun warm(canvas: Canvas, effect: RenderEffect) {
-        val node = RenderNode("NemoLiquidGlass.warm")
+        val node = RenderNode("NemoGlassMenu.warm")
         node.setPosition(0, 0, WarmSize, WarmSize)
         node.alpha = WarmAlpha
         node.setRenderEffect(effect)
@@ -69,6 +98,11 @@ internal class GlassRenderer(private val density: Float) {
     }
 
     fun prepare(state: GlassSurfaceState) {
+        val active = field.update(
+            state.incoming, state.radiusX, state.radiusY,
+            if (state.hasSource) state.source else null, state.sourceRadius, state.smoothing, state.lockedFieldStep,
+        )
+        texture.update(if (active) field else null)
         bindField(material, state)
         bindField(portal, state)
         bindField(shadow, state)
@@ -85,6 +119,7 @@ internal class GlassRenderer(private val density: Float) {
         shader.setFloatUniform("secondaryHalfSize", b.width() / 2f, b.height() / 2f)
         shader.setFloatUniform("secondaryRadii", state.sourceRadius, state.sourceRadius)
         shader.setFloatUniform("smoothing", state.smoothing)
+        texture.bind(shader)
     }
 
     fun drawGlass(
@@ -101,17 +136,12 @@ internal class GlassRenderer(private val density: Float) {
         val trigger = state.trigger
         val clearing = min(t * 6f, 1f)
         val base = trigger.blur + (MorphBlur - trigger.blur) * clearing
-        val blurRadius = max(base + (config.blur - base) * t * t * t, 0.01f) * density
+        val blurRadius = max(base + (config.blur - base) * t * t * t, .01f) * density
 
         val shadowRadius = (4f + 20f * t) * density
         val shadowGuard = shadowRadius * 2f + 9f * density + state.smoothing
-        shadowRect.set(
-            union.left - shadowGuard,
-            union.top - shadowGuard,
-            union.right + shadowGuard,
-            union.bottom + shadowGuard
-        )
-        shadow.setFloatUniform("shadowParams", shadowRadius, 0.04f + 0.56f * t, 8f * density, 0.3f)
+        shadowRect.set(union.left - shadowGuard, union.top - shadowGuard, union.right + shadowGuard, union.bottom + shadowGuard)
+        shadow.setFloatUniform("shadowParams", shadowRadius, .04f + .56f * t, 8f * density, .3f)
         shadow.setFloatUniform("surfaceOpacity", state.surfaceOpacity)
         canvas.drawRect(shadowRect, shadowPaint)
 
@@ -129,13 +159,8 @@ internal class GlassRenderer(private val density: Float) {
         material.setFloatUniform("sampleExtent", width.toFloat(), height.toFloat())
         material.setFloatUniform("density", density)
         val saturation = mix(control.saturation * trigger.saturation, menu.saturation * config.saturation)
-        material.setFloatUniform(
-            "face",
-            saturation,
-            mix(control.black, menu.black),
-            mix(control.white, menu.white),
-            mix(control.rollOff, menu.rollOff)
-        )
+        material.setFloatUniform("face", saturation, mix(control.black, menu.black),
+            mix(control.white, menu.white), mix(control.rollOff, menu.rollOff))
         material.setFloatUniform("faceFill", 1f, 1f, 1f, mix(control.fillAlpha, menu.fillAlpha))
         val tintProgress = min(t * 3f, 1f)
         val menuTint = config.tintColor
@@ -152,25 +177,22 @@ internal class GlassRenderer(private val density: Float) {
             channel(menuTint?.red(), triggerTint?.red()),
             channel(menuTint?.green(), triggerTint?.green()),
             channel(menuTint?.blue(), triggerTint?.blue()),
-            triggerAlpha + (menuAlpha - triggerAlpha) * tintProgress
+            triggerAlpha + (menuAlpha - triggerAlpha) * tintProgress,
         )
         val refraction = mix(trigger.refraction, config.refraction)
         val extent = min(union.width(), union.height()) / density
-        val innerHeight = min(extent * 0.25f, 20f) * density
-        val innerAmount = min(extent * 0.5f, 60f) * density
-        val outerHeight = max(16f, extent * 0.2f) * density
-        val outerAmount = max(16f, extent * 0.25f) * density
+        val innerHeight = min(extent * .25f, 20f) * density
+        val innerAmount = min(extent * .5f, 60f) * density
+        val outerHeight = max(16f, extent * .2f) * density
+        val outerAmount = max(16f, extent * .25f) * density
         val lensHeight = max(state.lensHeight, innerHeight)
         material.setFloatUniform("lensHeight", lensHeight)
         material.setFloatUniform("lensAmount", min(state.lensAmount, -innerAmount) * refraction)
         material.setFloatUniform("outerHeight", outerHeight)
         material.setFloatUniform("outerAmount", -outerAmount * refraction)
-        material.setFloatUniform("keyThreshold", if (state.dark) 0.2588f else -0.2756f)
+        material.setFloatUniform("keyThreshold", if (state.dark) .2588f else -.2756f)
         material.setFloatUniform("highlightAlpha", 1f)
-        material.setFloatUniform(
-            "rimAlpha",
-            ((if (state.dark) RimAlphaDark else RimAlphaLight) * mix(trigger.rim, config.rim)).coerceIn(0f, 1f)
-        )
+        material.setFloatUniform("rimAlpha", ((if (state.dark) RimAlphaDark else RimAlphaLight) * mix(trigger.rim, config.rim)).coerceIn(0f, 1f))
         material.setFloatUniform("surfaceOpacity", state.surfaceOpacity)
         material.setFloatUniform("press", state.pressX, state.pressY, state.pressRadius, state.poolGain)
         material.setFloatUniform("pressLift", state.pressLift)
@@ -178,7 +200,7 @@ internal class GlassRenderer(private val density: Float) {
 
         val blur = RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.CLAMP)
         glassNode.setRenderEffect(
-            RenderEffect.createChainEffect(RenderEffect.createRuntimeShaderEffect(material, "content"), blur)
+            RenderEffect.createChainEffect(RenderEffect.createRuntimeShaderEffect(material, "content"), blur),
         )
         glassNode.setPosition(nodeRect)
         val recording = glassNode.beginRecording(width, height)
@@ -188,7 +210,12 @@ internal class GlassRenderer(private val density: Float) {
         canvas.drawRenderNode(glassNode)
     }
 
-    fun drawGlass(canvas: Canvas, backdrop: RenderNode, state: GlassSurfaceState, limits: Rect) {
+    fun drawGlass(
+        canvas: Canvas,
+        backdrop: RenderNode,
+        state: GlassSurfaceState,
+        limits: Rect
+    ) {
         drawGlass(canvas, state, limits) { recording ->
             recording.drawRenderNode(backdrop)
         }
@@ -200,23 +227,13 @@ internal class GlassRenderer(private val density: Float) {
         originY: Float,
         portalBlur: Float
     ): RenderEffect? {
-        val t = state.materialProgress.coerceIn(0f, 1f)
-        val hasWarp = (state.lensHeight > 0.001f || kotlin.math.abs(state.lensAmount) > 0.001f || portalBlur > 0.01f) && t < 0.999f
-        if (!hasWarp) return null
-
-        bindField(portal, state)
         portal.setFloatUniform("nodeOrigin", originX, originY)
         portal.setFloatUniform("height", state.lensHeight)
         portal.setFloatUniform("amount", state.lensAmount * state.config.refraction)
         val bend = RenderEffect.createRuntimeShaderEffect(portal, "content")
         return if (portalBlur > 0.01f) {
-            RenderEffect.createChainEffect(
-                bend,
-                RenderEffect.createBlurEffect(portalBlur, portalBlur, Shader.TileMode.DECAL)
-            )
-        } else {
-            bend
-        }
+            RenderEffect.createChainEffect(bend, RenderEffect.createBlurEffect(portalBlur, portalBlur, Shader.TileMode.DECAL))
+        } else bend
     }
 
     fun drawForeground(
@@ -235,12 +252,9 @@ internal class GlassRenderer(private val density: Float) {
             portal.setFloatUniform("amount", state.lensAmount * state.config.refraction)
             val bend = RenderEffect.createRuntimeShaderEffect(portal, "content")
             foregroundNode.setRenderEffect(
-                if (portalBlur > 0.01f) {
-                    RenderEffect.createChainEffect(
-                        bend,
-                        RenderEffect.createBlurEffect(portalBlur, portalBlur, Shader.TileMode.DECAL)
-                    )
-                } else bend
+                if (portalBlur > .01f) {
+                    RenderEffect.createChainEffect(bend, RenderEffect.createBlurEffect(portalBlur, portalBlur, Shader.TileMode.DECAL))
+                } else bend,
             )
         } else {
             foregroundNode.setRenderEffect(null)
@@ -257,7 +271,7 @@ internal class GlassRenderer(private val density: Float) {
             max(floor(bounds.left - guard).toInt(), limits.left),
             max(floor(bounds.top - guard).toInt(), limits.top),
             min(ceil(bounds.right + guard).toInt(), limits.right),
-            min(ceil(bounds.bottom + guard).toInt(), limits.bottom)
+            min(ceil(bounds.bottom + guard).toInt(), limits.bottom),
         )
     }
 
@@ -266,22 +280,26 @@ internal class GlassRenderer(private val density: Float) {
         foregroundNode.discardDisplayList()
     }
 
-    companion object {
-        private const val MorphBlur = 1.2f
-        private const val BlurReach = 2f
-        private const val PortalReach = 28f
-        private const val WarmSize = 32
-        private const val WarmAlpha = 0.004f
-        private const val WarmSample = 4f
-        private val WarmBlurRadii = floatArrayOf(
+    private companion object {
+        const val MorphBlur = 1.2f
+        const val BlurReach = 2f
+        const val PortalReach = 28f
+        const val WarmRounds = 40
+        const val WarmSize = 32
+        const val WarmAlpha = .004f
+        const val WarmSample = 4f
+        val WarmBlurRadii = floatArrayOf(
             1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f, 10f, 11f, 12f, 13f, 14f, 15f, 16f,
-            20f, 24f, 28f, 32f, 36f, 40f, 48f, 56f, 64f
+            20f, 24f, 28f, 32f, 36f, 40f, 48f, 56f, 64f,
         )
-        private const val RimAlphaDark = 1f
-        private const val RimAlphaLight = 0.55f
+        const val RimAlphaDark = 1f
+        const val RimAlphaLight = .55f
     }
 }
 
+/**
+ * 在 Composable 环境中管理 GlassRenderer 的生命周期与缓存
+ */
 @Composable
 internal fun rememberGlassRenderer(): GlassRenderer? {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null

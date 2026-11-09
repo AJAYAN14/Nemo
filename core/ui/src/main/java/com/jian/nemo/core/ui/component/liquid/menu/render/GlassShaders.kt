@@ -45,7 +45,6 @@ float3 nativeGlassRoundedField(float2 point, float2 halfExtent, float2 radii, fl
     return float3(distance, normal * inverseAxis);
 }
 """
-
 private const val FieldFunctions = SdfFunctions + """
 uniform float2 center;
 uniform float2 halfSize;
@@ -55,7 +54,11 @@ uniform float2 secondaryCenter;
 uniform float2 secondaryHalfSize;
 uniform float2 secondaryRadii;
 uniform float smoothing;
-
+uniform shader smoothedField;
+uniform float smoothedFieldEnabled;
+uniform float2 fieldCoordinateScale;
+uniform float2 fieldCoordinateOffset;
+uniform float2 fieldExtent;
 float3 liquidAnalyticFieldGradient(float2 point) {
     float3 a = nativeGlassRoundedField(point - center, halfSize, cornerRadii, 0.5);
     if (secondaryEnabled < 0.5) return a;
@@ -65,12 +68,37 @@ float3 liquidAnalyticFieldGradient(float2 point) {
     float h = clamp(0.5 + 0.5 * (a.x - b.x) / k, 0.0, 1.0);
     return float3(mix(a.x, b.x, h) - k * h * (1.0 - h), mix(a.yz, b.yz, h));
 }
-
+float3 smoothedFieldSample(float2 pixel) {
+    float2 st = pixel - 0.5;
+    float2 base = floor(st);
+    float2 f = st - base;
+    float2 f2 = f * f;
+    float2 f3 = f2 * f;
+    float2 w0 = (1.0 - 3.0 * f + 3.0 * f2 - f3) / 6.0;
+    float2 w1 = (4.0 - 6.0 * f2 + 3.0 * f3) / 6.0;
+    float2 w2 = (1.0 + 3.0 * f + 3.0 * f2 - 3.0 * f3) / 6.0;
+    float2 w3 = f3 / 6.0;
+    float2 g0 = w0 + w1;
+    float2 g1 = w2 + w3;
+    float2 h0 = base + 0.5 + w1 / g0 - 1.0;
+    float2 h1 = base + 0.5 + w3 / g1 + 1.0;
+    float3 top = float3(smoothedField.eval(float2(h0.x, h0.y)).rgb) * g0.x
+        + float3(smoothedField.eval(float2(h1.x, h0.y)).rgb) * g1.x;
+    float3 bottom = float3(smoothedField.eval(float2(h0.x, h1.y)).rgb) * g0.x
+        + float3(smoothedField.eval(float2(h1.x, h1.y)).rgb) * g1.x;
+    return top * g0.y + bottom * g1.y;
+}
 float3 liquidFieldGradient(float2 point) {
+    if (smoothedFieldEnabled > 0.5) {
+        float2 pixel = point * fieldCoordinateScale + fieldCoordinateOffset;
+        if (pixel.x >= 1.5 && pixel.y >= 1.5 &&
+            pixel.x <= fieldExtent.x - 1.5 && pixel.y <= fieldExtent.y - 1.5) {
+            return smoothedFieldSample(pixel);
+        }
+    }
     return liquidAnalyticFieldGradient(point);
 }
 """
-
 private const val EdgeFunctions = """
 float nativeGaussianTail(float value) {
     float x = clamp(value, -2.0, 2.0);
@@ -91,21 +119,21 @@ float nativeHighlightBias(float coverage, float bias) {
 }
 float nativeGlassShapeCoverage(float3 field) {
     float aa = max(abs(field.y) + abs(field.z), 0.0001);
-    return clamp(0.5 - field.x / aa, 0.0, 1.0);
+    return clamp(.5 - field.x / aa, 0.0, 1.0);
 }
 float nativeGlassStrokeKeyFill(float3 field, float density, float threshold) {
-    float aa = max(abs(field.y) + abs(field.z), 0.0001);
+    float aa = max(abs(field.y) + abs(field.z), .0001);
     float coverage = nativeGlassShapeCoverage(field);
-    float height = 0.5333333333333333 * density;
-    float strip = (1.0 - coverage) * clamp((height - field.x) / aa + 0.5, 0.0, 1.0);
+    float height = .5333333333333333 * density;
+    float strip = (1.0 - coverage) * clamp((height - field.x) / aa + .5, 0.0, 1.0);
     float key = strip * nativeHighlightAngular(field.y, threshold);
     float fill = strip * nativeHighlightAngular(-field.y, threshold);
-    return nativeHighlightBias(key, 0.5) + nativeHighlightBias(fill, 0.5);
+    return nativeHighlightBias(key, .5) + nativeHighlightBias(fill, .5);
 }
 float nativeGlassRingCoverage(float shiftedDistance, float coverage, float density) {
-    float a = shiftedDistance / (5.0 * density) * 0.7071067811865476;
-    float b = (shiftedDistance + 4.0 * density) / (5.0 * density) * 0.7071067811865476;
-    return clamp(nativeGaussianTail(a) - nativeGaussianTail(b), 0.0, 1.0) * 0.06 * coverage;
+    float a = shiftedDistance / (5.0 * density) * .7071067811865476;
+    float b = (shiftedDistance + 4.0 * density) / (5.0 * density) * .7071067811865476;
+    return clamp(nativeGaussianTail(a) - nativeGaussianTail(b), 0.0, 1.0) * .06 * coverage;
 }
 float nativeCasdfHighlightCoverage(float signedDistance, float2 gradient,
     float height, float angle, float curvature) {
@@ -126,8 +154,7 @@ float nativeCasdfHighlightCoverage(float signedDistance, float2 gradient,
         + nativeHighlightBias(diffuseFill, 11.333333333333334);
 }
 """
-
-internal const val GlassMaterialShader: String = """
+internal const val GlassMaterialShader = """
 uniform shader content;
 uniform float2 nodeOrigin;
 uniform float2 sampleExtent;
@@ -157,11 +184,11 @@ float3 glassSample(float2 coord) {
 }
 float3 glassFace(float3 sampled) {
     float3 color = sampled;
-    float luminance = dot(color, float3(0.2126, 0.7152, 0.0722));
+    float luminance = dot(color, float3(.2126, .7152, .0722));
     if (face.w > 0.0) {
         float gain = clamp(1.0 - luminance * face.w, 0.0, 1.0);
-        color = mix(float3(luminance * gain), color * gain, 1.0 + 0.3 * (1.0 - gain));
-        luminance = dot(color, float3(0.2126, 0.7152, 0.0722));
+        color = mix(float3(luminance * gain), color * gain, 1.0 + .3 * (1.0 - gain));
+        luminance = dot(color, float3(.2126, .7152, .0722));
     }
     color = (luminance * (face.z - face.y) + face.y) + (color - luminance) * face.x;
     color = mix(color, faceFill.rgb, faceFill.a);
@@ -169,9 +196,9 @@ float3 glassFace(float3 sampled) {
 }
 float3 glassVibrant(float3 c) {
     return float3(
-        dot(float3(1.1201999187, -0.1894000024, -0.0189999994), c),
-        dot(float3(-0.0562999994, 0.9870999455, -0.0190999992), c),
-        dot(float3(-0.0562999994, -0.1893000007, 1.1574000120), c)) + 0.1471000016;
+        dot(float3(1.1201999187, -.1894000024, -.0189999994), c),
+        dot(float3(-.0562999994, .9870999455, -.0190999992), c),
+        dot(float3(-.0562999994, -.1893000007, 1.1574000120), c)) + .1471000016;
 }
 half4 main(float2 coord) {
     float2 p = coord + nodeOrigin;
@@ -184,7 +211,7 @@ half4 main(float2 coord) {
         float shifted = liquidFieldGradient(p - float2(0.0, 8.0 * density)).x;
         ring = nativeGlassRingCoverage(shifted, coverage, density);
     }
-    if (coverage <= 0.0 && key <= 0.000001) return half4(0.0);
+    if (coverage <= 0.0 && key <= .000001) return half4(0.0);
 
     float3 original = glassSample(coord);
     float3 filtered = original;
@@ -193,7 +220,7 @@ half4 main(float2 coord) {
         if (lensHeight > 0.0 && depth < lensHeight) {
             filtered = glassSample(coord + glassDisplacement(field.x, 1.0 / lensHeight, lensAmount) * grad);
         }
-        float weight = clamp((field.x + density) / density, 0.0, 1.0) * 0.6;
+        float weight = clamp((field.x + density) / density, 0.0, 1.0) * .6;
         if (outerHeight > 0.0 && weight > 0.0) {
             float3 outer = glassSample(coord + glassDisplacement(field.x, 1.0 / outerHeight, outerAmount) * grad);
             filtered = mix(filtered, outer, weight);
@@ -204,7 +231,7 @@ half4 main(float2 coord) {
     covered.rgb *= 1.0 - ring;
     covered.a = covered.a * (1.0 - ring) + ring;
 
-    if (key > 0.000001 && covered.a < 1.0) {
+    if (key > .000001 && covered.a < 1.0) {
         float3 corrected = min(glassFace(original), original);
         covered.rgb += (1.0 - covered.a) * mix(original, corrected, key);
         covered.a = mix(covered.a, 1.0, key);
@@ -218,24 +245,23 @@ half4 main(float2 coord) {
     }
 
     float mask = 0.0;
-    float aa = max(abs(field.y) + abs(field.z), 0.0001);
+    float aa = max(abs(field.y) + abs(field.z), .0001);
     float strip = 0.0;
     if (depth < 9.0 * density) {
-        strip = nativeHighlightStrip(depth, density, 0.75, aa);
-        float directional = nativeCasdfHighlightCoverage(field.x, field.yz, density, 0.0, 0.75) * highlightAlpha;
+        strip = nativeHighlightStrip(depth, density, .75, aa);
+        float directional = nativeCasdfHighlightCoverage(field.x, field.yz, density, 0.0, .75) * highlightAlpha;
         mask = clamp(max(directional, strip * rimAlpha), 0.0, 1.0);
     }
     if (mask > 0.0) {
         float3 actual = covered.rgb + (1.0 - covered.a) * original;
-        float3 light = clamp(glassVibrant(actual), float3(-0.75), float3(1.2));
+        float3 light = clamp(glassVibrant(actual), float3(-.75), float3(1.2));
         covered = float4(light * mask + covered.rgb * (1.0 - mask), mask + covered.a * (1.0 - mask));
-        covered.rgb += (rimLift * (0.45 + 0.55 * pool)) * strip;
+        covered.rgb += (rimLift * (.45 + .55 * pool)) * strip;
     }
     return half4(covered * surfaceOpacity);
 }
 """
-
-internal const val GlassPortalShader: String = """
+internal const val GlassPortalShader = """
 uniform shader content;
 uniform float2 nodeOrigin;
 uniform float height;
@@ -255,7 +281,7 @@ half4 main(float2 coord) {
 }
 """
 
-internal const val GlassShadowShader: String = """
+internal const val GlassShadowShader = """
 uniform float4 shadowParams;
 uniform float surfaceOpacity;
 """ + FieldFunctions + EdgeFunctions + """

@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +86,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
+import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceContainerLowDark
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -198,15 +200,16 @@ fun NemoLiquidMenuButton(
                     val startTime = System.currentTimeMillis()
                     val wasExpandedAtDown = currentIsExpanded
                     var hasEnteredDrag = false
+                    val anchorAtDown = anchorBoundsState.value ?: ActiveLiquidMenuAnchorBounds.value
+                    val originWindowX = anchorAtDown?.left ?: 0f
+                    val originWindowY = anchorAtDown?.top ?: 0f
+                    val winDownX = originWindowX + startPos.x
+                    val winDownY = originWindowY + startPos.y
 
                     if (enableHaptic) {
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                     }
-                    currentMotionState()?.onPointerDown(startPos.x, startPos.y)
-
-                    val anchorAtDown = anchorBoundsState.value ?: ActiveLiquidMenuAnchorBounds.value
-                    val originWindowX = anchorAtDown?.left ?: 0f
-                    val originWindowY = anchorAtDown?.top ?: 0f
+                    currentMotionState()?.onPointerDown(winDownX, winDownY)
 
                     // 若按下瞬间菜单处于收起状态，立即触发展开动画
                     if (!wasExpandedAtDown) {
@@ -230,9 +233,9 @@ fun NemoLiquidMenuButton(
                             val winX = (currentAnchor?.left ?: originWindowX) + currentPointer.position.x
                             val winY = (currentAnchor?.top ?: originWindowY) + currentPointer.position.y
 
-                            currentMotionState()?.onPointerMove(currentPointer.position.x, currentPointer.position.y)
+                            currentMotionState()?.onPointerMove(winX, winY)
 
-                            if (hasEnteredDrag) {
+                            if (hasEnteredDrag && wasExpandedAtDown) {
                                 currentPointer.consume()
                                 currentMotionState()?.handleDragMove(
                                     windowX = winX,
@@ -249,7 +252,7 @@ fun NemoLiquidMenuButton(
                             currentPointer.consume()
                             currentMotionState()?.onPointerUp()
 
-                            if (hasEnteredDrag) {
+                            if (hasEnteredDrag && wasExpandedAtDown) {
                                 val handled = currentMotionState()?.handleDragRelease(
                                     onSelectDismiss = {
                                         if (currentIsExpanded) currentOnClick()
@@ -259,6 +262,7 @@ fun NemoLiquidMenuButton(
                                     currentOnClick()
                                 }
                             } else {
+                                currentMotionState()?.highlightItem(null, immediate = true)
                                 val duration = System.currentTimeMillis() - startTime
                                 if (wasExpandedAtDown && duration < 350L) {
                                     currentOnClick()
@@ -353,11 +357,12 @@ fun NemoLiquidMenuOverlay(
     }
 
     val containerCoordsState = remember { mutableStateOf<LayoutCoordinates?>(null) }
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(isVisible) {
         if (isVisible) {
             val fallbackAnchor = effectiveAnchor ?: Rect(
-                offset = Offset(windowWidthPx - with(density) { 64.dp.toPx() }, statusBarTopPx + with(density) { 16.dp.toPx() }),
+                offset = Offset(windowWidthPx - with(density) { 68.dp.toPx() }, statusBarTopPx + with(density) { 6.dp.toPx() }),
                 size = androidx.compose.ui.geometry.Size(with(density) { 48.dp.toPx() }, with(density) { 48.dp.toPx() })
             )
             motionState.open(
@@ -375,7 +380,26 @@ fun NemoLiquidMenuOverlay(
 
     LaunchedEffect(effectiveAnchor) {
         if (isVisible && effectiveAnchor != null) {
-            motionState.updateAnchorBounds(effectiveAnchor)
+            motionState.updateAnchorBounds(
+                rect = effectiveAnchor,
+                menuSize = initialEstimatedSize,
+                windowWidth = windowWidthPx,
+                windowHeight = windowHeightPx,
+                statusBarTopPx = statusBarTopPx,
+                targetCornerRadiusPx = targetCornerRadiusPx
+            )
+        }
+    }
+
+    LaunchedEffect(initialEstimatedSize) {
+        if (isVisible) {
+            motionState.updateTargetSize(
+                menuSize = initialEstimatedSize,
+                windowWidth = windowWidthPx,
+                windowHeight = windowHeightPx,
+                statusBarTopPx = statusBarTopPx,
+                targetCornerRadiusPx = targetCornerRadiusPx
+            )
         }
     }
 
@@ -389,7 +413,10 @@ fun NemoLiquidMenuOverlay(
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
-                    onClick = onDismiss
+                    onClick = {
+                        motionState.highlightItem(null, immediate = true)
+                        onDismiss()
+                    }
                 )
         ) {
             val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -489,86 +516,108 @@ fun NemoLiquidMenuOverlay(
                         clip = true
                         shape = menuShape
                     }
+                    .clip(menuShape)
                     .then(
                         if (!isGlassActive) {
-                            Modifier
-                                .drawBackdrop(
-                                    backdrop = effectiveBackdrop,
-                                    shape = { menuShape },
-                                    effects = {
-                                        val minDimension = size.minDimension
-                                        val dynamicLensHeight = refractionHeightRatio * minDimension + (motionState.lensHeightPx * 0.15f)
-                                        colorControls(
-                                            brightness = if (isDark) 0.05f else 0.10f,
-                                            saturation = 1.35f
-                                        )
-                                        blur(blurRadius.toPx())
-                                        lens(
-                                            refractionHeight = dynamicLensHeight,
-                                            refractionAmount = refractionAmountRatio * minDimension,
-                                            depthEffect = true,
-                                            chromaticAberration = false
-                                        )
-                                    },
-                                    highlight = { Highlight.Plain },
-                                    onDrawSurface = {}
-                                )
-                                .background(
-                                    color = if (isDark) NemoSurfaceCardDark.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.72f),
-                                    shape = menuShape
-                                )
-                                .border(0.6.dp, borderBrush, menuShape)
-                                .clip(menuShape)
+                            Modifier.drawBackdrop(
+                                backdrop = effectiveBackdrop,
+                                shape = { menuShape },
+                                effects = {
+                                    val minDimension = size.minDimension
+                                    val dynamicLensHeight = refractionHeightRatio * minDimension + (motionState.lensHeightPx * 0.15f)
+                                    colorControls(
+                                        brightness = if (isDark) 0.05f else 0.10f,
+                                        saturation = 1.35f
+                                    )
+                                    blur(blurRadius.toPx())
+                                    lens(
+                                        refractionHeight = dynamicLensHeight,
+                                        refractionAmount = refractionAmountRatio * minDimension,
+                                        depthEffect = true,
+                                        chromaticAberration = false
+                                    )
+                                },
+                                highlight = { Highlight.Plain },
+                                onDrawSurface = {}
+                            )
                         } else {
                             Modifier
                         }
                     )
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { offset ->
-                                motionState.onPointerDown(offset.x, offset.y)
-                                val originX = motionState.menuLeft
-                                val originY = motionState.menuTop
-                                val winX = originX + offset.x
-                                val winY = originY + offset.y
-                                motionState.handleDragMove(winX, winY, with(density) { 24.dp.toPx() }) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }
-                            },
-                            onDrag = { change, _ ->
-                                change.consume()
-                                motionState.onPointerMove(change.position.x, change.position.y)
-                                val originX = motionState.menuLeft
-                                val originY = motionState.menuTop
-                                val winX = originX + change.position.x
-                                val winY = originY + change.position.y
-                                motionState.handleDragMove(winX, winY, with(density) { 24.dp.toPx() }) {
-                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                }
-                            },
-                            onDragEnd = {
-                                motionState.onPointerUp()
-                                motionState.handleDragRelease(onSelectDismiss = onDismiss)
-                            },
-                            onDragCancel = {
-                                motionState.onPointerUp()
-                                motionState.highlightItem(null, immediate = false)
-                            }
-                        )
-                    }
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { /* 阻断背景点击穿透 */ }
+                    .background(
+                        color = if (isDark) NemoSurfaceCardDark.copy(alpha = 0.94f) else Color.White.copy(alpha = 0.96f),
+                        shape = menuShape
                     )
-            ) {
-                // 悬浮高亮药丸组件（底层渲染，支持微光菲涅尔描边与 PlateSlide 阻尼弹簧磁吸动画）
-                GlassPlate(
-                    motionState = motionState,
-                    isDark = isDark,
-                    modifier = Modifier.fillMaxSize()
-                )
+                    .border(0.6.dp, borderBrush, menuShape)
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            val down = awaitFirstDown(requireUnconsumed = false)
+                            val targetPointerId = down.id
+                            val startPos = down.position
+                            var lastPos = startPos
+                            var isScrolling = false
+                            var hasEnteredDrag = false
+                            val scrollThresholdPx = with(density) { 10.dp.toPx() }
+                            val slackPx = with(density) { 24.dp.toPx() }
 
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                val currentPointer = event.changes.firstOrNull { it.id == targetPointerId } ?: break
+
+                                if (currentPointer.pressed) {
+                                    val currentPos = currentPointer.position
+                                    val dx = currentPos.x - startPos.x
+                                    val dy = currentPos.y - startPos.y
+                                    val distSq = dx * dx + dy * dy
+
+                                    if (!hasEnteredDrag && distSq > scrollThresholdPx * scrollThresholdPx) {
+                                        hasEnteredDrag = true
+                                        val winX = motionState.targetLeftPx + motionState.translationX + currentPos.x
+                                        val winY = motionState.targetTopPx + motionState.translationY + currentPos.y
+                                        motionState.onPointerDown(winX, winY)
+                                    }
+
+                                    if (hasEnteredDrag) {
+                                        currentPointer.consume()
+                                        val maxScroll = scrollState.maxValue
+                                        val deltaY = currentPos.y - lastPos.y
+                                        lastPos = currentPos
+
+                                        if (maxScroll > 0 && (isScrolling || kotlin.math.abs(dy) > scrollThresholdPx)) {
+                                            if (!isScrolling) {
+                                                isScrolling = true
+                                                motionState.highlightItem(null, immediate = false)
+                                                motionState.jelly.releaseDrag()
+                                            }
+                                            scrollState.dispatchRawDelta(-deltaY)
+                                        } else {
+                                            val winX = motionState.targetLeftPx + motionState.translationX + currentPos.x
+                                            val winY = motionState.targetTopPx + motionState.translationY + currentPos.y
+                                            motionState.onPointerMove(winX, winY)
+                                            motionState.handleDragMove(winX, winY, slackPx) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    // 手指抬起（ACTION_UP）
+                                    if (hasEnteredDrag) {
+                                        currentPointer.consume()
+                                        motionState.onPointerUp()
+                                        if (isScrolling) {
+                                            motionState.highlightItem(null, immediate = false)
+                                        } else {
+                                            motionState.handleDragRelease(dismissIfNoSelection = false, onSelectDismiss = onDismiss)
+                                        }
+                                    } else {
+                                        motionState.highlightItem(null, immediate = false)
+                                    }
+                                    break
+                                }
+                            }
+                        }
+                    }
+            ) {
                 // 3. 菜单条目列表（通过 GlassPortalShader 获得透镜放大与径向模糊动效）
                 CompositionLocalProvider(
                     LocalLiquidMenuContainerCoordinates provides containerCoordsState
@@ -577,10 +626,13 @@ fun NemoLiquidMenuOverlay(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 10.dp)
-                            .verticalScroll(rememberScrollState())
-                            .onSizeChanged { size ->
-                                motionState.updateContentHeight(size.height.toFloat(), targetCornerRadiusPx, windowHeightPx)
-                            }
+                            .then(
+                                if (scrollState.maxValue > 0) {
+                                    Modifier.verticalScroll(scrollState, enabled = false)
+                                } else {
+                                    Modifier
+                                }
+                            )
                             .graphicsLayer {
                                 alpha = motionState.contentAlpha
                                 if (isGlassActive) {
@@ -588,7 +640,7 @@ fun NemoLiquidMenuOverlay(
                                         (motionState.lensHeightPx > 0.001f || motionState.motion.frame.portalBlur > 0.001f)
                                     renderEffect = if (warp) {
                                         val currentOriginX = motionState.targetLeftPx + motionState.translationX
-                                        val currentOriginY = motionState.targetTopPx + motionState.translationY + 10f * density.density
+                                        val currentOriginY = motionState.targetTopPx + motionState.translationY
                                         glassRenderer.createPortalRenderEffect(
                                             state = surfaceState,
                                             originX = currentOriginX,
@@ -619,24 +671,31 @@ fun NemoLiquidMenuOverlay(
 }
 
 /**
- * 液态悬浮菜单微光微透分割线
+ * 液态悬浮菜单微光微透分割线（严格对齐 Demo: SeparatorBlock = 21dp, SeparatorInset = 24dp）
  */
 @Composable
 fun NemoLiquidMenuDivider(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val dividerColor = if (isDark) Color.White.copy(alpha = 0.12f) else Color.Black.copy(alpha = 0.08f)
+    val dividerColor = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.10f)
 
-    HorizontalDivider(
-        modifier = modifier.padding(horizontal = 12.dp, vertical = 2.dp),
-        color = dividerColor,
-        thickness = 0.5.dp
-    )
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(21.dp)
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        HorizontalDivider(
+            color = dividerColor,
+            thickness = 0.5.dp
+        )
+    }
 }
 
 /**
- * 液态悬浮菜单分组段落小标题
+ * 液态悬浮菜单分组段落小标题（严格对齐 Demo: HeadingHeight = 30dp, SubtitleSize = 13sp）
  *
  * @param text 标题文本
  * @param modifier 修饰符
@@ -650,17 +709,17 @@ fun NemoLiquidMenuLabel(
         modifier = modifier
             .fillMaxWidth()
             .height(30.dp)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 24.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 0.5.sp
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 0.2.sp
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.65f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f)
         )
     }
 }
@@ -692,7 +751,8 @@ fun NemoLiquidMenuItem(
     iconColor: Color? = null,
     trailingText: String? = null,
     enabled: Boolean = true,
-    isDestructive: Boolean = false
+    isDestructive: Boolean = false,
+    keepOpen: Boolean = false
 ) {
     val haptic = LocalHapticFeedback.current
     val currentMotionState = LocalLiquidMenuMotionState.current ?: ActiveLiquidMenuMotionState.value
@@ -712,12 +772,22 @@ fun NemoLiquidMenuItem(
         else -> MaterialTheme.colorScheme.onSurface
     }
 
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentEnabled by rememberUpdatedState(enabled)
+    val currentKeepOpen by rememberUpdatedState(keepOpen)
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val itemId = remember { Any() }
-    val isItemActive = currentMotionState?.activeItemKey == itemId
-    val bgAlpha = if ((isPressed || isItemActive) && enabled && currentMotionState?.isPlateVisible != true) 0.08f else 0f
-    val itemShape = RoundedRectangle(22.dp)
+    val itemHeight = if (subtitle != null) 58.dp else 42.dp
+
+    LaunchedEffect(isPressed) {
+        if (isPressed && enabled) {
+            currentMotionState?.highlightItemById(itemId, immediate = true)
+        } else if (!isPressed && currentMotionState?.activeItemKey == itemId) {
+            currentMotionState?.highlightItem(null, immediate = false)
+        }
+    }
 
     DisposableEffect(itemId) {
         onDispose {
@@ -725,18 +795,32 @@ fun NemoLiquidMenuItem(
         }
     }
 
-    Surface(
-        onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onClick()
-        },
-        enabled = enabled,
-        interactionSource = interactionSource,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = bgAlpha),
-        shape = itemShape,
+    SideEffect {
+        (currentMotionState ?: ActiveLiquidMenuMotionState.value)?.updateMenuItem(
+            id = itemId,
+            isEnabled = currentEnabled,
+            keepOpen = currentKeepOpen,
+            onSelect = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                currentOnClick()
+            }
+        )
+    }
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .height(itemHeight)
+            .padding(horizontal = 8.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = currentEnabled,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    currentOnClick()
+                }
+            )
             .onGloballyPositioned { coordinates ->
                 val boundsInWindow = coordinates.boundsInWindow()
                 val boundsInMenu = if (containerCoords != null && containerCoords.isAttached && coordinates.isAttached) {
@@ -749,18 +833,21 @@ fun NemoLiquidMenuItem(
                         id = itemId,
                         boundsInMenu = boundsInMenu,
                         boundsInWindow = boundsInWindow,
-                        isEnabled = enabled,
+                        isEnabled = currentEnabled,
+                        keepOpen = currentKeepOpen,
                         onSelect = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onClick()
+                            currentOnClick()
                         }
                     )
                 )
-            }
+            },
+        contentAlignment = Alignment.CenterStart
     ) {
-        val rowVerticalPadding = if (subtitle != null) 8.dp else 10.dp
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = rowVerticalPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val needsCheckSlot = checked != null || reservesCheck
@@ -785,7 +872,7 @@ fun NemoLiquidMenuItem(
                 Icon(
                     imageVector = leadingIcon,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(19.5.dp),
                     tint = effectiveIconColor
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -794,20 +881,21 @@ fun NemoLiquidMenuItem(
             if (subtitle != null) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = text,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 15.sp,
+                        fontSize = 17.sp,
+                        letterSpacing = (-0.2).sp,
                         color = contentColor
                     )
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.70f)
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f)
                     )
                 }
             } else {
@@ -815,7 +903,8 @@ fun NemoLiquidMenuItem(
                     text = text,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp,
+                    fontSize = 17.sp,
+                    letterSpacing = (-0.2).sp,
                     color = contentColor,
                     modifier = Modifier.weight(1f)
                 )
@@ -824,8 +913,9 @@ fun NemoLiquidMenuItem(
             if (trailingText != null) {
                 Text(
                     text = trailingText,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.60f)
                 )
             }
         }
@@ -849,6 +939,10 @@ fun NemoLiquidMenuToggleItem(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
+    val currentChecked by rememberUpdatedState(checked)
+    val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
+    val currentEnabled by rememberUpdatedState(enabled)
+
     val haptic = LocalHapticFeedback.current
     val currentMotionState = LocalLiquidMenuMotionState.current ?: ActiveLiquidMenuMotionState.value
     val containerCoords = LocalLiquidMenuContainerCoordinates.current.value
@@ -862,12 +956,24 @@ fun NemoLiquidMenuToggleItem(
         }
     }
 
+    SideEffect {
+        (currentMotionState ?: ActiveLiquidMenuMotionState.value)?.updateMenuItem(
+            id = itemId,
+            isEnabled = currentEnabled,
+            keepOpen = true,
+            onSelect = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                currentOnCheckedChange(!currentChecked)
+            }
+        )
+    }
+
     Surface(
         onClick = {
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            onCheckedChange(!checked)
+            currentOnCheckedChange(!currentChecked)
         },
-        enabled = enabled,
+        enabled = currentEnabled,
         color = if (isItemActive && currentMotionState?.isPlateVisible != true) {
             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
         } else {
@@ -889,10 +995,11 @@ fun NemoLiquidMenuToggleItem(
                         id = itemId,
                         boundsInMenu = boundsInMenu,
                         boundsInWindow = boundsInWindow,
-                        isEnabled = enabled,
+                        isEnabled = currentEnabled,
+                        keepOpen = true,
                         onSelect = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            onCheckedChange(!checked)
+                            currentOnCheckedChange(!currentChecked)
                         }
                     )
                 )

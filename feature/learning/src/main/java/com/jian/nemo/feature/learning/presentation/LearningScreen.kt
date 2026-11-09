@@ -38,6 +38,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -175,7 +177,18 @@ fun LearningScreen(
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    val menuAnchorBounds = remember { mutableStateOf<Rect?>(null) }
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val statusBarTopPx = with(density) { statusBarTop.toPx() }
+    val defaultAnchor = remember(screenWidthPx, statusBarTopPx) {
+        val buttonSizePx = with(density) { 48.dp.toPx() }
+        val rightMarginPx = with(density) { 16.dp.toPx() }
+        val topOffsetPx = statusBarTopPx + with(density) { 6.dp.toPx() }
+        val left = screenWidthPx - rightMarginPx - buttonSizePx
+        Rect(left = left, top = topOffsetPx, right = left + buttonSizePx, bottom = topOffsetPx + buttonSizePx)
+    }
+    val menuAnchorBounds = remember { mutableStateOf<Rect?>(defaultAnchor) }
     val liquidMenuMotionState = rememberLiquidMenuMotionState()
 
     CompositionLocalProvider(
@@ -199,6 +212,7 @@ fun LearningScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(statusBarTop + 88.dp)
+                        .alpha(if (isMenuExpanded) 0f else 1f)
                         .background(
                             Brush.verticalGradient(
                                 colors = if (isDarkTheme) {

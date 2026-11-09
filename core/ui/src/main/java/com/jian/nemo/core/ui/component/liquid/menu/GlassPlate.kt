@@ -39,6 +39,7 @@ fun GlassPlate(
     isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
     plateInset: Dp = 8.dp
 ) {
+    if (!motionState.isPlateVisible || motionState.activeItemKey == null) return
     val alpha = motionState.plateAlphaVal
     if (alpha <= 0.001f) return
 

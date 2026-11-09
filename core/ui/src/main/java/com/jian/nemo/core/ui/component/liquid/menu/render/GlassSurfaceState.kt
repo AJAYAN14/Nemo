@@ -40,6 +40,7 @@ internal data class GlassTriggerConfig(
 internal class GlassSurfaceState {
     val incoming: RectF = RectF()
     val captureBounds: RectF = RectF()
+    var lockedFieldStep: Float = 0f
     var radiusX: Float = 0f
     var radiusY: Float = 0f
     val source: RectF = RectF()

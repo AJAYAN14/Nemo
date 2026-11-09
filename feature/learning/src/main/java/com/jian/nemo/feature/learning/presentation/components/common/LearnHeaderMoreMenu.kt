@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.components.common
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.DarkMode
@@ -33,7 +34,6 @@ import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuLabel
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuToggleItem
 import com.jian.nemo.core.ui.component.liquid.menu.rememberLiquidMenuMotionState
 import com.jian.nemo.feature.learning.R
 import com.kyant.backdrop.Backdrop
@@ -79,6 +79,56 @@ fun LearnHeaderMoreMenuButton(
     )
 }
 
+internal fun calculateLearnMenuHeight(
+    hasRatingGuide: Boolean,
+    hasRemainingActions: Boolean,
+    hasAutoAudio: Boolean,
+    hasDelay: Boolean,
+    hasAutoReveal: Boolean,
+    hasWhiteboard: Boolean
+): Dp {
+    var height = 20.dp
+
+    var hasTopSection = false
+    if (hasRatingGuide) {
+        height += 42.dp
+        hasTopSection = true
+    }
+    if (hasRemainingActions) {
+        height += 42.dp * 3
+        hasTopSection = true
+    }
+    if (hasTopSection) {
+        height += 21.dp
+    }
+
+    var hasPreferences = false
+    if (hasAutoAudio) {
+        height += 42.dp
+        hasPreferences = true
+    }
+    if (hasDelay) {
+        height += 58.dp
+        hasPreferences = true
+    }
+    if (hasAutoReveal) {
+        height += 58.dp
+        hasPreferences = true
+    }
+    if (hasWhiteboard) {
+        height += 42.dp
+        hasPreferences = true
+    }
+    if (hasPreferences) {
+        height += 21.dp
+    }
+
+    height += 30.dp
+    height += 42.dp * 3
+
+    return height
+}
+
 /**
  * 学习界面液态玻璃悬浮操作菜单浮层
  */
@@ -115,18 +165,17 @@ fun LearnHeaderMoreMenuOverlay(
     onCycleDarkMode: () -> Unit = {},
     onSelectDarkMode: ((Boolean?) -> Unit)? = null
 ) {
-    val estimatedMenuHeight = remember(onToggleAutoAudio, onShowRatingGuide, remainingCount, onToggleWhiteboard) {
-        var h = 24.dp
-        if (onShowRatingGuide != null) h += 48.dp
-        if (remainingCount > 0) h += 48.dp * 3
-        if (onShowRatingGuide != null || remainingCount > 0) h += 8.dp
-        if (onToggleAutoAudio != null) h += 48.dp
-        h += 60.dp * 2
-        if (onToggleWhiteboard != null) h += 60.dp
-        h += 8.dp
-        h += 32.dp
-        h += 48.dp * 3
-        h
+    val hasDelay = onToggleShowAnswerDelay != null || onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null
+    val hasAutoReveal = onToggleAutoRevealAnswer != null || onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null
+    val estimatedMenuHeight = remember(onToggleAutoAudio, onShowRatingGuide, remainingCount, onToggleWhiteboard, hasDelay, hasAutoReveal) {
+        calculateLearnMenuHeight(
+            hasRatingGuide = onShowRatingGuide != null,
+            hasRemainingActions = remainingCount > 0,
+            hasAutoAudio = onToggleAutoAudio != null,
+            hasDelay = hasDelay,
+            hasAutoReveal = hasAutoReveal,
+            hasWhiteboard = onToggleWhiteboard != null
+        )
     }
 
     NemoLiquidMenuOverlay(
@@ -135,7 +184,7 @@ fun LearnHeaderMoreMenuOverlay(
         modifier = modifier,
         backdrop = backdrop,
         anchorBounds = anchorBounds,
-        menuWidth = 260.dp,
+        menuWidth = 295.dp,
         estimatedHeight = estimatedMenuHeight,
         blurRadius = blurRadius,
         refractionHeightRatio = refractionHeightRatio,
@@ -146,6 +195,7 @@ fun LearnHeaderMoreMenuOverlay(
                 text = stringResource(R.string.learn_menu_item_rating_guide),
                 leadingIcon = Icons.Rounded.CheckCircle,
                 iconColor = IosColors.Green,
+                reservesCheck = true,
                 onClick = {
                     onDismiss()
                     onShowRatingGuide()
@@ -158,6 +208,7 @@ fun LearnHeaderMoreMenuOverlay(
                 text = stringResource(R.string.learn_menu_item_bury),
                 leadingIcon = Icons.Rounded.AccessTime,
                 iconColor = IosColors.Indigo,
+                reservesCheck = true,
                 onClick = {
                     onDismiss()
                     onBury()
@@ -168,6 +219,7 @@ fun LearnHeaderMoreMenuOverlay(
                 leadingIcon = Icons.Rounded.Pause,
                 iconColor = IosColors.Orange,
                 isDestructive = true,
+                reservesCheck = true,
                 onClick = {
                     onDismiss()
                     onSuspend()
@@ -177,6 +229,7 @@ fun LearnHeaderMoreMenuOverlay(
                 text = stringResource(R.string.learn_menu_item_report_error),
                 leadingIcon = Icons.Rounded.Report,
                 iconColor = IosColors.Red,
+                reservesCheck = true,
                 onClick = {
                     onDismiss()
                     onReportError()
@@ -189,10 +242,16 @@ fun LearnHeaderMoreMenuOverlay(
         }
 
         if (onToggleAutoAudio != null) {
-            NemoLiquidMenuToggleItem(
+            NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_toggle_auto_audio),
                 checked = isAutoAudioEnabled,
-                onCheckedChange = { onToggleAutoAudio(it) }
+                reservesCheck = true,
+                leadingIcon = Icons.AutoMirrored.Rounded.VolumeUp,
+                iconColor = IosColors.Teal,
+                keepOpen = true,
+                onClick = {
+                    onToggleAutoAudio(!isAutoAudioEnabled)
+                }
             )
         }
 
@@ -200,11 +259,13 @@ fun LearnHeaderMoreMenuOverlay(
             NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_toggle_delay),
                 subtitle = stringResource(R.string.learn_menu_subtitle_current_duration, showAnswerDelayDurationLabel),
+                reservesCheck = true,
                 leadingIcon = Icons.Rounded.Timer,
                 iconColor = IosColors.Purple,
+                keepOpen = onOpenShowAnswerDelayDialog == null,
                 onClick = {
-                    onDismiss()
                     if (onOpenShowAnswerDelayDialog != null) {
+                        onDismiss()
                         onOpenShowAnswerDelayDialog()
                     } else {
                         onCycleShowAnswerDelayDuration?.invoke()
@@ -217,11 +278,13 @@ fun LearnHeaderMoreMenuOverlay(
             NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_toggle_auto_reveal),
                 subtitle = stringResource(R.string.learn_menu_subtitle_current_duration, autoRevealAnswerDurationLabel),
+                reservesCheck = true,
                 leadingIcon = Icons.Rounded.Timer,
                 iconColor = IosColors.Purple,
+                keepOpen = onOpenAutoRevealAnswerDialog == null,
                 onClick = {
-                    onDismiss()
                     if (onOpenAutoRevealAnswerDialog != null) {
+                        onDismiss()
                         onOpenAutoRevealAnswerDialog()
                     } else {
                         onCycleAutoRevealAnswerDuration?.invoke()
@@ -231,16 +294,13 @@ fun LearnHeaderMoreMenuOverlay(
         }
 
         if (onToggleWhiteboard != null) {
-            val whiteboardLabel = if (isWhiteboardEnabled) {
-                stringResource(R.string.learn_menu_status_enabled)
-            } else {
-                stringResource(R.string.learn_menu_status_disabled)
-            }
             NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_title_whiteboard),
-                subtitle = whiteboardLabel,
+                checked = isWhiteboardEnabled,
+                reservesCheck = true,
                 leadingIcon = Icons.Rounded.Edit,
                 iconColor = IosColors.Blue,
+                keepOpen = true,
                 onClick = {
                     onToggleWhiteboard(!isWhiteboardEnabled)
                 }
