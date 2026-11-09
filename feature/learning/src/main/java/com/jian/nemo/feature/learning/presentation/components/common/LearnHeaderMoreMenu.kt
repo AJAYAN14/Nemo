@@ -66,14 +66,16 @@ fun LearnHeaderMoreMenuButton(
     modifier: Modifier = Modifier,
     isExpanded: Boolean = false,
     backdrop: Backdrop? = null,
-    buttonSize: Dp = 48.dp
+    buttonSize: Dp = 48.dp,
+    content: (@Composable () -> Unit)? = null
 ) {
     NemoLiquidMenuButton(
         isExpanded = isExpanded,
         onClick = onClick,
         modifier = modifier,
         backdrop = backdrop,
-        buttonSize = buttonSize
+        buttonSize = buttonSize,
+        content = content
     )
 }
 

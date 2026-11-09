@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -154,6 +155,8 @@ internal val ActiveLiquidMenuAnchorBounds = mutableStateOf<Rect?>(null)
  * @param backdrop 背景采样层（同级非空时启用透镜折射）
  * @param buttonSize 按钮尺寸（默认 48.dp）
  * @param enableHaptic 是否触发触感振动
+ * @param chromaticAberration 是否启用色差弥散
+ * @param content 自定义按钮内部图标内容，为空时默认呈现画廊级水平三点操作图标
  */
 @Composable
 fun NemoLiquidMenuButton(
@@ -163,7 +166,8 @@ fun NemoLiquidMenuButton(
     backdrop: Backdrop? = null,
     buttonSize: Dp = 48.dp,
     enableHaptic: Boolean = true,
-    chromaticAberration: Boolean = false
+    chromaticAberration: Boolean = false,
+    content: (@Composable () -> Unit)? = null
 ) {
     val haptic = LocalHapticFeedback.current
     val anchorBoundsState = LocalLiquidMenuAnchorBounds.current
@@ -287,11 +291,16 @@ fun NemoLiquidMenuButton(
                 modifier = Modifier.fillMaxSize()
             ) {}
         }
-        AnimatedMenuCloseIcon(
-            isExpanded = isExpanded,
-            color = MaterialTheme.colorScheme.onSurface,
-            size = 24.dp
-        )
+        if (content != null) {
+            content()
+        } else {
+            Icon(
+                imageVector = Icons.Rounded.MoreHoriz,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
 
