@@ -931,7 +931,7 @@ private fun AppIconSelectionGrid(
         AppIconOption(
             drawableRes = DesignR.drawable.ic_launcher_default_foreground,
             isSelected = selectedStyle == AppIconStyle.DEFAULT,
-            imageScale = 1.5f,
+            imageScale = 1.0f,
             onClick = { onStyleSelected(AppIconStyle.DEFAULT) }
         )
         AppIconOption(

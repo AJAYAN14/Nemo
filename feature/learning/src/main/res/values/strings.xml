@@ -344,6 +344,9 @@
     <string name="learn_menu_status_enabled">已开启</string>
     <string name="learn_menu_status_disabled">已关闭</string>
     <string name="learn_menu_item_whiteboard">手写白板: %1$s</string>
+    <string name="learn_menu_title_whiteboard">手写白板</string>
+    <string name="learn_menu_subtitle_current_duration">当前: %1$s</string>
+    <string name="learn_menu_section_display_mode">显示模式</string>
     <string name="learn_menu_theme_system">跟随系统</string>
     <string name="learn_menu_theme_dark">深色模式</string>
     <string name="learn_menu_theme_light">浅色模式</string>

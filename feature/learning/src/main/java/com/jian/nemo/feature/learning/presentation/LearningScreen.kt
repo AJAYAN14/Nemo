@@ -75,6 +75,10 @@ import com.jian.nemo.feature.learning.presentation.components.common.LearnHeader
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenu
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenuButton
 import com.jian.nemo.feature.learning.presentation.components.common.LearnHeaderMoreMenuOverlay
+import com.jian.nemo.core.ui.component.common.LocalLiquidMenuAnchorBounds
+import com.jian.nemo.core.ui.component.common.LocalLiquidMenuMotionState
+import com.jian.nemo.core.ui.component.liquid.menu.rememberLiquidMenuMotionState
+import androidx.compose.ui.geometry.Rect
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingBackground
 import com.jian.nemo.feature.learning.presentation.components.common.WaitingContent
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
@@ -171,8 +175,14 @@ fun LearningScreen(
 
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val menuAnchorBounds = remember { mutableStateOf<Rect?>(null) }
+    val liquidMenuMotionState = rememberLiquidMenuMotionState()
 
-    CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
+    CompositionLocalProvider(
+        LocalSettingIconStyle provides uiState.settingIconStyle,
+        LocalLiquidMenuAnchorBounds provides menuAnchorBounds,
+        LocalLiquidMenuMotionState provides liquidMenuMotionState
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -395,6 +405,7 @@ fun LearningScreen(
             LearnHeaderMoreMenuOverlay(
                 isVisible = isMenuExpanded,
                 backdrop = learningBackdrop,
+                anchorBounds = menuAnchorBounds.value,
                 onDismiss = { isMenuExpanded = false },
                 remainingCount = remainingTaskCount,
                 onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
@@ -436,6 +447,7 @@ fun LearningScreen(
                 isWhiteboardEnabled = uiState.isWhiteboardEnabled,
                 onToggleWhiteboard = { viewModel.onEvent(LearningEvent.ToggleWhiteboard(it)) },
                 isDarkMode = uiState.isDarkMode,
+                onSelectDarkMode = { viewModel.onEvent(LearningEvent.SetDarkMode(it)) },
                 onCycleDarkMode = { viewModel.onEvent(LearningEvent.CycleDarkMode) }
             )
 

@@ -12,22 +12,29 @@ import androidx.compose.material.icons.rounded.SettingsBrightness
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.AnimatedMenuCloseIcon as CoreAnimatedMenuCloseIcon
+import com.jian.nemo.core.ui.component.common.LocalLiquidMenuAnchorBounds
+import com.jian.nemo.core.ui.component.common.LocalLiquidMenuMotionState
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
+import com.jian.nemo.core.ui.component.common.NemoLiquidMenuLabel
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuToggleItem
+import com.jian.nemo.core.ui.component.liquid.menu.rememberLiquidMenuMotionState
 import com.jian.nemo.feature.learning.R
 import com.kyant.backdrop.Backdrop
 
@@ -83,6 +90,7 @@ fun LearnHeaderMoreMenuOverlay(
     onReportError: () -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
+    anchorBounds: androidx.compose.ui.geometry.Rect? = null,
     blurRadius: Dp = 12.dp,
     refractionHeightRatio: Float = 0.10f,
     refractionAmountRatio: Float = 0.20f,
@@ -102,14 +110,31 @@ fun LearnHeaderMoreMenuOverlay(
     isWhiteboardEnabled: Boolean = false,
     onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     isDarkMode: Boolean? = null,
-    onCycleDarkMode: () -> Unit = {}
+    onCycleDarkMode: () -> Unit = {},
+    onSelectDarkMode: ((Boolean?) -> Unit)? = null
 ) {
+    val estimatedMenuHeight = remember(onToggleAutoAudio, onShowRatingGuide, remainingCount, onToggleWhiteboard) {
+        var h = 24.dp
+        if (onShowRatingGuide != null) h += 48.dp
+        if (remainingCount > 0) h += 48.dp * 3
+        if (onShowRatingGuide != null || remainingCount > 0) h += 8.dp
+        if (onToggleAutoAudio != null) h += 48.dp
+        h += 60.dp * 2
+        if (onToggleWhiteboard != null) h += 60.dp
+        h += 8.dp
+        h += 32.dp
+        h += 48.dp * 3
+        h
+    }
+
     NemoLiquidMenuOverlay(
         isVisible = isVisible,
         onDismiss = onDismiss,
         modifier = modifier,
         backdrop = backdrop,
+        anchorBounds = anchorBounds,
         menuWidth = 260.dp,
+        estimatedHeight = estimatedMenuHeight,
         blurRadius = blurRadius,
         refractionHeightRatio = refractionHeightRatio,
         refractionAmountRatio = refractionAmountRatio
@@ -124,20 +149,9 @@ fun LearnHeaderMoreMenuOverlay(
                     onShowRatingGuide()
                 }
             )
-
-            NemoLiquidMenuDivider()
         }
 
         if (remainingCount > 0) {
-            NemoLiquidMenuItem(
-                text = stringResource(R.string.learn_menu_item_suspend),
-                leadingIcon = Icons.Rounded.Pause,
-                iconColor = IosColors.Orange,
-                onClick = {
-                    onDismiss()
-                    onSuspend()
-                }
-            )
             NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_item_bury),
                 leadingIcon = Icons.Rounded.AccessTime,
@@ -148,16 +162,27 @@ fun LearnHeaderMoreMenuOverlay(
                 }
             )
             NemoLiquidMenuItem(
+                text = stringResource(R.string.learn_menu_item_suspend),
+                leadingIcon = Icons.Rounded.Pause,
+                iconColor = IosColors.Orange,
+                isDestructive = true,
+                onClick = {
+                    onDismiss()
+                    onSuspend()
+                }
+            )
+            NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_item_report_error),
                 leadingIcon = Icons.Rounded.Report,
                 iconColor = IosColors.Red,
-                isDestructive = true,
                 onClick = {
                     onDismiss()
                     onReportError()
                 }
             )
+        }
 
+        if (onShowRatingGuide != null || remainingCount > 0) {
             NemoLiquidMenuDivider()
         }
 
@@ -169,52 +194,38 @@ fun LearnHeaderMoreMenuOverlay(
             )
         }
 
-        if (onToggleShowAnswerDelay != null) {
-            NemoLiquidMenuToggleItem(
+        if (onToggleShowAnswerDelay != null || onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
+            NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_toggle_delay),
-                checked = isShowAnswerDelayEnabled,
-                onCheckedChange = { onToggleShowAnswerDelay(it) }
-            )
-
-            if (onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null) {
-                NemoLiquidMenuItem(
-                    text = stringResource(R.string.learn_menu_item_delay_duration, showAnswerDelayDurationLabel),
-                    leadingIcon = Icons.Rounded.Timer,
-                    iconColor = IosColors.Purple,
-                    onClick = {
-                        onDismiss()
-                        if (onOpenShowAnswerDelayDialog != null) {
-                            onOpenShowAnswerDelayDialog()
-                        } else {
-                            onCycleShowAnswerDelayDuration?.invoke()
-                        }
+                subtitle = stringResource(R.string.learn_menu_subtitle_current_duration, showAnswerDelayDurationLabel),
+                leadingIcon = Icons.Rounded.Timer,
+                iconColor = IosColors.Purple,
+                onClick = {
+                    onDismiss()
+                    if (onOpenShowAnswerDelayDialog != null) {
+                        onOpenShowAnswerDelayDialog()
+                    } else {
+                        onCycleShowAnswerDelayDuration?.invoke()
                     }
-                )
-            }
+                }
+            )
         }
 
-        if (onToggleAutoRevealAnswer != null) {
-            NemoLiquidMenuToggleItem(
+        if (onToggleAutoRevealAnswer != null || onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
+            NemoLiquidMenuItem(
                 text = stringResource(R.string.learn_menu_toggle_auto_reveal),
-                checked = isAutoRevealAnswerEnabled,
-                onCheckedChange = { onToggleAutoRevealAnswer(it) }
-            )
-
-            if (onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null) {
-                NemoLiquidMenuItem(
-                    text = stringResource(R.string.learn_menu_item_auto_reveal_duration, autoRevealAnswerDurationLabel),
-                    leadingIcon = Icons.Rounded.Timer,
-                    iconColor = IosColors.Purple,
-                    onClick = {
-                        onDismiss()
-                        if (onOpenAutoRevealAnswerDialog != null) {
-                            onOpenAutoRevealAnswerDialog()
-                        } else {
-                            onCycleAutoRevealAnswerDuration?.invoke()
-                        }
+                subtitle = stringResource(R.string.learn_menu_subtitle_current_duration, autoRevealAnswerDurationLabel),
+                leadingIcon = Icons.Rounded.Timer,
+                iconColor = IosColors.Purple,
+                onClick = {
+                    onDismiss()
+                    if (onOpenAutoRevealAnswerDialog != null) {
+                        onOpenAutoRevealAnswerDialog()
+                    } else {
+                        onCycleAutoRevealAnswerDuration?.invoke()
                     }
-                )
-            }
+                }
+            )
         }
 
         if (onToggleWhiteboard != null) {
@@ -224,7 +235,8 @@ fun LearnHeaderMoreMenuOverlay(
                 stringResource(R.string.learn_menu_status_disabled)
             }
             NemoLiquidMenuItem(
-                text = stringResource(R.string.learn_menu_item_whiteboard, whiteboardLabel),
+                text = stringResource(R.string.learn_menu_title_whiteboard),
+                subtitle = whiteboardLabel,
                 leadingIcon = Icons.Rounded.Edit,
                 iconColor = IosColors.Blue,
                 onClick = {
@@ -233,30 +245,62 @@ fun LearnHeaderMoreMenuOverlay(
             )
         }
 
-        NemoLiquidMenuDivider()
+        val hasPreferenceItems = onToggleAutoAudio != null ||
+            onToggleShowAnswerDelay != null || onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null ||
+            onToggleAutoRevealAnswer != null || onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null ||
+            onToggleWhiteboard != null
 
-        val themeLabel = when (isDarkMode) {
-            null -> stringResource(R.string.learn_menu_theme_system)
-            true -> stringResource(R.string.learn_menu_theme_dark)
-            false -> stringResource(R.string.learn_menu_theme_light)
+        if (hasPreferenceItems) {
+            NemoLiquidMenuDivider()
         }
-        val themeIcon = when (isDarkMode) {
-            null -> Icons.Rounded.SettingsBrightness
-            true -> Icons.Rounded.DarkMode
-            false -> Icons.Rounded.LightMode
-        }
-        val themeColor = when (isDarkMode) {
-            null -> IosColors.Blue
-            true -> IosColors.Indigo
-            false -> IosColors.Orange
-        }
+
+        NemoLiquidMenuLabel(text = stringResource(R.string.learn_menu_section_display_mode))
 
         NemoLiquidMenuItem(
-            text = stringResource(R.string.learn_menu_item_display_mode, themeLabel),
-            leadingIcon = themeIcon,
-            iconColor = themeColor,
+            text = stringResource(R.string.learn_menu_theme_system),
+            checked = isDarkMode == null,
+            reservesCheck = true,
+            leadingIcon = Icons.Rounded.SettingsBrightness,
+            iconColor = IosColors.Blue,
             onClick = {
-                onCycleDarkMode()
+                onDismiss()
+                if (onSelectDarkMode != null) {
+                    onSelectDarkMode(null)
+                } else {
+                    onCycleDarkMode()
+                }
+            }
+        )
+
+        NemoLiquidMenuItem(
+            text = stringResource(R.string.learn_menu_theme_dark),
+            checked = isDarkMode == true,
+            reservesCheck = true,
+            leadingIcon = Icons.Rounded.DarkMode,
+            iconColor = IosColors.Indigo,
+            onClick = {
+                onDismiss()
+                if (onSelectDarkMode != null) {
+                    onSelectDarkMode(true)
+                } else {
+                    onCycleDarkMode()
+                }
+            }
+        )
+
+        NemoLiquidMenuItem(
+            text = stringResource(R.string.learn_menu_theme_light),
+            checked = isDarkMode == false,
+            reservesCheck = true,
+            leadingIcon = Icons.Rounded.LightMode,
+            iconColor = IosColors.Orange,
+            onClick = {
+                onDismiss()
+                if (onSelectDarkMode != null) {
+                    onSelectDarkMode(false)
+                } else {
+                    onCycleDarkMode()
+                }
             }
         )
     }
@@ -290,6 +334,7 @@ fun LearnHeaderMoreMenu(
     onToggleWhiteboard: ((Boolean) -> Unit)? = null,
     isDarkMode: Boolean? = null,
     onCycleDarkMode: () -> Unit = {},
+    onSelectDarkMode: ((Boolean?) -> Unit)? = null,
     isMenuExpanded: Boolean = false,
     onToggleMenu: ((Boolean) -> Unit)? = null
 ) {
@@ -300,37 +345,47 @@ fun LearnHeaderMoreMenu(
         onToggleMenu?.invoke(expandedValue)
     }
 
-    LearnHeaderMoreMenuButton(
-        onClick = { setExpanded(!expanded) },
-        isExpanded = expanded,
-        modifier = modifier,
-        backdrop = backdrop
-    )
+    val anchorBoundsState = remember { mutableStateOf<Rect?>(null) }
+    val motionState = rememberLiquidMenuMotionState()
 
-    LearnHeaderMoreMenuOverlay(
-        isVisible = expanded,
-        onDismiss = { setExpanded(false) },
-        remainingCount = remainingCount,
-        onSuspend = onSuspend,
-        onBury = onBury,
-        onReportError = onReportError,
-        backdrop = backdrop,
-        onShowRatingGuide = onShowRatingGuide,
-        isAutoAudioEnabled = isAutoAudioEnabled,
-        onToggleAutoAudio = onToggleAutoAudio,
-        isShowAnswerDelayEnabled = isShowAnswerDelayEnabled,
-        onToggleShowAnswerDelay = onToggleShowAnswerDelay,
-        showAnswerDelayDurationLabel = showAnswerDelayDurationLabel,
-        onCycleShowAnswerDelayDuration = onCycleShowAnswerDelayDuration,
-        onOpenShowAnswerDelayDialog = onOpenShowAnswerDelayDialog,
-        isAutoRevealAnswerEnabled = isAutoRevealAnswerEnabled,
-        onToggleAutoRevealAnswer = onToggleAutoRevealAnswer,
-        autoRevealAnswerDurationLabel = autoRevealAnswerDurationLabel,
-        onCycleAutoRevealAnswerDuration = onCycleAutoRevealAnswerDuration,
-        onOpenAutoRevealAnswerDialog = onOpenAutoRevealAnswerDialog,
-        isWhiteboardEnabled = isWhiteboardEnabled,
-        onToggleWhiteboard = onToggleWhiteboard,
-        isDarkMode = isDarkMode,
-        onCycleDarkMode = onCycleDarkMode
-    )
+    CompositionLocalProvider(
+        LocalLiquidMenuAnchorBounds provides anchorBoundsState,
+        LocalLiquidMenuMotionState provides motionState
+    ) {
+        LearnHeaderMoreMenuButton(
+            onClick = { setExpanded(!expanded) },
+            isExpanded = expanded,
+            modifier = modifier,
+            backdrop = backdrop
+        )
+
+        LearnHeaderMoreMenuOverlay(
+            isVisible = expanded,
+            onDismiss = { setExpanded(false) },
+            remainingCount = remainingCount,
+            onSuspend = onSuspend,
+            onBury = onBury,
+            onReportError = onReportError,
+            backdrop = backdrop,
+            anchorBounds = anchorBoundsState.value,
+            onShowRatingGuide = onShowRatingGuide,
+            isAutoAudioEnabled = isAutoAudioEnabled,
+            onToggleAutoAudio = onToggleAutoAudio,
+            isShowAnswerDelayEnabled = isShowAnswerDelayEnabled,
+            onToggleShowAnswerDelay = onToggleShowAnswerDelay,
+            showAnswerDelayDurationLabel = showAnswerDelayDurationLabel,
+            onCycleShowAnswerDelayDuration = onCycleShowAnswerDelayDuration,
+            onOpenShowAnswerDelayDialog = onOpenShowAnswerDelayDialog,
+            isAutoRevealAnswerEnabled = isAutoRevealAnswerEnabled,
+            onToggleAutoRevealAnswer = onToggleAutoRevealAnswer,
+            autoRevealAnswerDurationLabel = autoRevealAnswerDurationLabel,
+            onCycleAutoRevealAnswerDuration = onCycleAutoRevealAnswerDuration,
+            onOpenAutoRevealAnswerDialog = onOpenAutoRevealAnswerDialog,
+            isWhiteboardEnabled = isWhiteboardEnabled,
+            onToggleWhiteboard = onToggleWhiteboard,
+            isDarkMode = isDarkMode,
+            onCycleDarkMode = onCycleDarkMode,
+            onSelectDarkMode = onSelectDarkMode
+        )
+    }
 }
