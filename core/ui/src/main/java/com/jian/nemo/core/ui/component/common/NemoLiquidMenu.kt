@@ -513,10 +513,8 @@ fun NemoLiquidMenuOverlay(
                         translationX = motionState.menuLeft + motionState.menuWidth * 0.5f * (1f - zoom)
                         translationY = motionState.menuTop + motionState.menuHeight * 0.5f * (1f - zoom)
                         alpha = motionState.contentAlpha.coerceIn(0f, 1f)
-                        clip = true
-                        shape = menuShape
+                        clip = false
                     }
-                    .clip(menuShape)
                     .then(
                         if (!isGlassActive) {
                             Modifier.drawBackdrop(
@@ -548,7 +546,14 @@ fun NemoLiquidMenuOverlay(
                         color = if (isDark) NemoSurfaceCardDark.copy(alpha = 0.94f) else Color.White.copy(alpha = 0.96f),
                         shape = menuShape
                     )
-                    .border(0.6.dp, borderBrush, menuShape)
+                    .then(
+                        if (!isGlassActive) {
+                            Modifier.border(0.8.dp, borderBrush, menuShape)
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .clip(menuShape)
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             val down = awaitFirstDown(requireUnconsumed = false)

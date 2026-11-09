@@ -228,11 +228,9 @@ half4 main(float2 coord) {
     }
 
     float4 covered = float4(glassFace(filtered), 1.0) * coverage;
-    covered.rgb *= 1.0 - ring;
-    covered.a = covered.a * (1.0 - ring) + ring;
 
     if (key > .000001 && covered.a < 1.0) {
-        float3 corrected = min(glassFace(original), original);
+        float3 corrected = glassFace(original);
         covered.rgb += (1.0 - covered.a) * mix(original, corrected, key);
         covered.a = mix(covered.a, 1.0, key);
     }
@@ -254,7 +252,7 @@ half4 main(float2 coord) {
     }
     if (mask > 0.0) {
         float3 actual = covered.rgb + (1.0 - covered.a) * original;
-        float3 light = clamp(glassVibrant(actual), float3(-.75), float3(1.2));
+        float3 light = clamp(glassVibrant(actual), float3(0.0), float3(1.2));
         covered = float4(light * mask + covered.rgb * (1.0 - mask), mask + covered.a * (1.0 - mask));
         covered.rgb += (rimLift * (.45 + .55 * pool)) * strip;
     }
@@ -286,8 +284,12 @@ uniform float4 shadowParams;
 uniform float surfaceOpacity;
 """ + FieldFunctions + EdgeFunctions + """
 half4 main(float2 p) {
+    float topEdge = center.y - halfSize.y;
+    if (p.y <= topEdge) return half4(0.0);
+    float cornerBand = cornerRadii.y;
+    float fade = p.y < topEdge + cornerBand ? clamp((p.y - topEdge) / max(cornerBand, 0.001), 0.0, 1.0) : 1.0;
     float distance = liquidFieldGradient(p - float2(0.0, shadowParams.z)).x;
-    float shadow = nativeGaussianTail(distance / shadowParams.x) * shadowParams.y * shadowParams.w * surfaceOpacity;
+    float shadow = nativeGaussianTail(distance / shadowParams.x) * shadowParams.y * shadowParams.w * surfaceOpacity * fade * fade;
     return half4(0.0, 0.0, 0.0, shadow);
 }
 """

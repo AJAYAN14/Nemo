@@ -140,7 +140,8 @@ internal class GlassRenderer(
 
         val shadowRadius = (4f + 20f * t) * density
         val shadowGuard = shadowRadius * 2f + 9f * density + state.smoothing
-        shadowRect.set(union.left - shadowGuard, union.top - shadowGuard, union.right + shadowGuard, union.bottom + shadowGuard)
+        val shadowTop = union.top
+        shadowRect.set(union.left - shadowGuard, shadowTop, union.right + shadowGuard, union.bottom + shadowGuard)
         shadow.setFloatUniform("shadowParams", shadowRadius, .04f + .56f * t, 8f * density, .3f)
         shadow.setFloatUniform("surfaceOpacity", state.surfaceOpacity)
         canvas.drawRect(shadowRect, shadowPaint)
