@@ -35,6 +35,7 @@ class NemoGlassMenuView @JvmOverloads constructor(
     private var glassRenderer: Any? = null
     private var contentNode: Any? = null
     private var menuActive = false
+    val isMenuActive get() = menuActive
     private val density = resources.displayMetrics.density
     internal val jelly = GlassJelly()
     private var pressX = 0f

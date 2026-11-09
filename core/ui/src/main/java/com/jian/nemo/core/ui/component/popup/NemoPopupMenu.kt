@@ -5,6 +5,7 @@ import android.graphics.Paint as AndroidPaint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,7 +72,6 @@ import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.effect
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
@@ -184,11 +184,10 @@ private fun pickPlacement(
 }
 
 /**
- * Nemo 液态气泡悬浮菜单组件 - Glasense 顶级液态磨砂物理质感版 (支持项间分割线)
+ * Nemo 液态气泡悬浮菜单组件 - 原生物理果冻弹性液态毛玻璃版
  *
- * 采用 G2 连续平滑曲率 [RoundedRectangle]，结合底层物理折射 [Backdrop]、
- * AGSL 贝塞尔曲线亮度重映射着色器（Material Recipes）、50dp 超大模糊半径、
- * 垂直渐变双阶物理边缘高光与弹簧缩放动画，精准复现如 Cresto / iOS 的晶莹亚克力液态玻璃质感。
+ * 采用 G2 连续平滑曲率 [RoundedRectangle]、真实物理折射 [Backdrop]、非对称果冻弹性（Jelly Spring）展开微晃，
+ * 结合 iOS 双层复合物理阴影与双阶高光渐变边框，100% 稳健即时响应并完美复现通透流体质感。
  */
 @Composable
 fun NemoPopupMenu(
@@ -247,6 +246,8 @@ fun NemoPopupMenu(
     }
 
     var isReady by remember { mutableStateOf(false) }
+
+    // 🌟 原生同款果冻弹性拉伸弹簧 (Jelly Spring 动力学：非对称 X/Y 阻尼与刚度)
     val scaleXAni = remember { Animatable(0.65f) }
     val scaleYAni = remember { Animatable(0.45f) }
     val alphaAni = remember { Animatable(0f) }
@@ -256,9 +257,10 @@ fun NemoPopupMenu(
     LaunchedEffect(isReady, isMenuInComposition, state.isVisible) {
         if (isReady && isMenuInComposition && state.isVisible) {
             coroutineScope {
-                launch { scaleXAni.animateTo(1f, spring(0.82f, 420f, 0.001f)) }
-                launch { scaleYAni.animateTo(1f, spring(0.76f, 400f, 0.001f)) }
-                launch { alphaAni.animateTo(1f) }
+                // 非对称果冻弹性（X 与 Y 轴微差刚度，产生生动的流体物理微晃感）
+                launch { scaleXAni.animateTo(1f, spring(dampingRatio = 0.72f, stiffness = 420f, visibilityThreshold = 0.001f)) }
+                launch { scaleYAni.animateTo(1f, spring(dampingRatio = 0.68f, stiffness = 380f, visibilityThreshold = 0.001f)) }
+                launch { alphaAni.animateTo(1f, tween(150)) }
             }
         }
     }
@@ -271,7 +273,7 @@ fun NemoPopupMenu(
             coroutineScope {
                 launch { scaleXAni.animateTo(0.65f, spring(0.75f, 550f)) }
                 launch { scaleYAni.animateTo(0.45f, spring(0.75f, 600f)) }
-                launch { alphaAni.animateTo(0f) }
+                launch { alphaAni.animateTo(0f, tween(120)) }
             }
             isMenuInComposition = false
             isReady = false
@@ -305,11 +307,7 @@ fun NemoPopupMenu(
 
     val shape = RoundedRectangle(18.dp)
 
-    // 🌟 Cresto 同款 AGSL 材质着色器 (贝塞尔明度映射 + 饱和度提升)
-    val materialRecipe = if (isDark) GlasenseMenuRegularDark else GlasenseMenuRegularLight
-    val materialEffect = rememberGlasenseMaterialRenderEffectOrNull(materialRecipe)
-
-    // 🌟 垂直物理入射光渐变高光边框 (模拟玻璃上边缘反光与物理厚度)
+    // 🌟 原生同款垂直物理入射光双阶高光渐变边框 (上边缘物理反光)
     val highlightBorderBrush = remember(isDark) {
         if (isDark) {
             Brush.verticalGradient(
@@ -326,11 +324,11 @@ fun NemoPopupMenu(
         }
     }
 
-    // 低版本无 AGSL 时的兜底实体卡片底色
-    val fallbackContainerColor = if (isDark) {
-        MaterialTheme.colorScheme.surfaceContainerHigh
+    // 晶莹通透的液态毛玻璃底色
+    val containerColor = if (isDark) {
+        Color(0xFF1E1E22).copy(alpha = 0.90f)
     } else {
-        Color.White.copy(alpha = 0.95f)
+        Color.White.copy(alpha = 0.88f)
     }
 
     if (state.isVisible) {
@@ -397,8 +395,8 @@ fun NemoPopupMenu(
                 .clip(shape)
                 .border(width = 1.dp, brush = highlightBorderBrush, shape = shape)
                 .then(
-                    if (backdrop != null && isRuntimeShaderSupported()) {
-                        // 🌟 AndroidLiquidGlass 玻璃游乐场矩形同款：vibrancy() 色彩提纯 + 16dp 黄金中值模糊 + lens(...) 物理透镜厚度折射 + Highlight.Plain
+                    if (backdrop != null) {
+                        // 🌟 物理折射：vibrancy() 色彩提纯 + 16dp 黄金中值模糊 + lens(...) 凸透镜物理厚度折射 + Highlight.Plain
                         Modifier
                             .drawBackdrop(
                                 backdrop = backdrop,
@@ -418,22 +416,9 @@ fun NemoPopupMenu(
                                     this.alpha = alphaAni.value
                                 }
                             )
-                    } else if (backdrop != null) {
-                        Modifier
-                            .drawBackdrop(
-                                backdrop = backdrop,
-                                shape = { shape },
-                                layerBlock = {
-                                    this.alpha = alphaAni.value
-                                },
-                                effects = {
-                                    padding = 24.dp.toPx() * 2
-                                    blur(24.dp.toPx())
-                                }
-                            )
-                            .background(fallbackContainerColor.copy(alpha = 0.85f))
+                            .background(containerColor)
                     } else {
-                        Modifier.background(fallbackContainerColor)
+                        Modifier.background(containerColor)
                     }
                 )
                 .layout { measurable, constraints ->
@@ -465,10 +450,10 @@ fun NemoPopupMenu(
                                         indication = null
                                     ) {
                                         hapticController.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        item.onClick()
                                         if (item.dismissOnClick) {
                                             onDismiss()
                                         }
+                                        item.onClick()
                                     }
                                     .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -533,7 +518,7 @@ fun NemoPopupMenu(
                         }
                     }
 
-                    // 🌟 项与项之间的微透分割线（用户明确要求：“对了加上分割线”）
+                    // 项与项之间的微透分割线
                     if (index < state.items.size - 1 &&
                         state.items[index + 1] !is NemoPopupMenuDivider &&
                         item !is NemoPopupMenuDivider
