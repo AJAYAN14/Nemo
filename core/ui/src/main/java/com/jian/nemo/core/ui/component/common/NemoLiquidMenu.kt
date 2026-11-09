@@ -1,7 +1,12 @@
 package com.jian.nemo.core.ui.component.common
 
 import android.os.Build
+import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.viewinterop.AndroidView
+import com.jian.nemo.core.ui.component.liquid.menu.NemoGlassMenuView
+import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -147,6 +152,58 @@ internal val ActiveLiquidMenuMotionState = mutableStateOf<LiquidMenuMotionState?
  */
 internal val ActiveLiquidMenuAnchorBounds = mutableStateOf<Rect?>(null)
 
+
+/**
+ * 原生液态毛玻璃菜单触发按钮（直接复用原生 GlassMenuOverlay 与 GlassMenuSession 架构）
+ */
+@Composable
+fun NemoNativeLiquidMenuTrigger(
+    items: List<GlassMenuItemRecord>,
+    modifier: Modifier = Modifier,
+    buttonSize: Dp = 48.dp,
+    colorScheme: String = "auto",
+    menuWidth: Dp = 295.dp,
+    alignment: String = "auto",
+    onSelect: (item: GlassMenuItemRecord, index: Int) -> Unit = { _, _ -> },
+    onOpenChange: (Boolean) -> Unit = {},
+    content: (@Composable () -> Unit)? = null
+) {
+    val density = LocalDensity.current
+    val menuWidthPx = with(density) { menuWidth.toPx() }
+    val currentItems by rememberUpdatedState(items)
+    val currentOnSelect by rememberUpdatedState(onSelect)
+    val currentOnOpenChange by rememberUpdatedState(onOpenChange)
+
+    AndroidView(
+        modifier = modifier.size(buttonSize),
+        factory = { context ->
+            NemoGlassMenuView(context).apply {
+                this.items = currentItems
+                this.menuWidth = menuWidthPx
+                this.alignment = alignment
+                this.colorScheme = colorScheme
+                this.onItemSelect = { item, index -> currentOnSelect(item, index) }
+                this.onMenuOpenChange = { open -> currentOnOpenChange(open) }
+                if (content != null) {
+                    val composeView = ComposeView(context).apply {
+                        setContent {
+                            content()
+                        }
+                    }
+                    addView(composeView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+                }
+            }
+        },
+        update = { view ->
+            view.items = currentItems
+            view.menuWidth = menuWidthPx
+            view.alignment = alignment
+            view.colorScheme = colorScheme
+            view.onItemSelect = { item, index -> currentOnSelect(item, index) }
+            view.onMenuOpenChange = { open -> currentOnOpenChange(open) }
+        }
+    )
+}
 
 /**
  * 液态悬浮菜单触发按钮（圆润三横平滑形变变为 ✕）
