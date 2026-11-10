@@ -97,9 +97,6 @@ fun LearnHeaderMoreMenuButton(
             },
             onOpenChange = { open ->
                 ActiveNativeLearnMenuOpenState.value = open
-                if (open) {
-                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                }
                 if (open != isExpanded) {
                     onClick()
                 }

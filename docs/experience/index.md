@@ -32,6 +32,7 @@
 | 21 | [原生液态菜单长短按双轨分发与功能开关时长微调避坑指南](file:///e:/Android/Nemo/docs/experience/21-原生液态菜单长短按双轨分发与功能开关时长微调避坑指南.md) | `GlassMenuSession.kt`, `NemoGlassMenuView.kt`, `NemoLiquidMenu.kt`, `LearnHeaderMoreMenu.kt`, `LearningScreen.kt` / 长短按双轨分发、原生手势长按拦截、触觉震动反馈、参数调节联动激活 | **长短按双轨解耦与参数配置联动激活公理**：高频二态操作单点即开即关且菜单不关；低频参数调节长按呼出刻度尺弹窗；弹窗确认调整后自动激活启用。 | 活跃 |
 | 22 | [学习卡片顶部胶囊组件高度对齐与文本度量避坑指南](file:///e:/Android/Nemo/docs/experience/22-学习卡片顶部胶囊组件高度对齐与文本度量避坑指南.md) | `SRSLearningCard.kt`, `SRSGrammarCard.kt`, `TrackProgressIndicator.kt` / 胶囊容器高度对齐、28dp黄金高度、includeFontPadding、文本度量偏差消除 | **容器几何确定性与字形度量中立原则**：横向并排胶囊组件显式锁定统一高度并几何居中；强制禁用 includeFontPadding 杜绝系统多语言度量膨胀与高差错位。 | 活跃 |
 | 23 | [受控液态开关二次确认拦截与外部状态未决回弹避坑指南](file:///e:/Android/Nemo/docs/experience/23-受控液态开关二次确认拦截与外部状态未决回弹避坑指南.md) | `LiquidToggle.kt`, `SettingsScreen.kt`, `resetSignal`, `LaunchedEffect` / 受控开关、二次确认拦截、假关闭回弹、阻尼弹簧动效、信号解耦 | **受控组件状态闭环公理与事件信号解耦原则**：带手势动效的开关在外部未采纳或取消时必须主动回弹复位；状态未变动但需通知重置时必须以独立版本信号驱动副作用执行。 | 活跃 |
+| 24 | [原生菜单触发器触感重叠与单一来源公理](file:///e:/Android/Nemo/docs/experience/24-原生菜单触发器触感重叠与单一来源公理.md) | `NemoGlassMenuView.kt`, `LearnHeaderMoreMenu.kt`, `performHapticFeedback` / 触感重叠、底层自带振动、马达波形叠加、单一来源 | **触感反馈单一来源公理**：原生视图引擎已封装的标准触感反馈，上层业务回调严禁二次叠加；全工程同一交互组件的振动手感必须在物理层保持绝对一致。 | 活跃 |
 
 ---
 
