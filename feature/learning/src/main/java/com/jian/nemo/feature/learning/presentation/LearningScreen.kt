@@ -730,75 +730,81 @@ fun WordLearningContent(
                      modifier = Modifier.align(Alignment.BottomCenter)
                  )
             }
-        } else if (uiState.shouldShowDailyGoalMet) {
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_daily_goal_title),
-                subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
-                },
-                onBackClick = onBackClick
-            )
-        } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
-            val remainingWords = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_micro_session_title),
-                subtitle = stringResource(R.string.learn_screen_finish_micro_session_words_subtitle, uiState.dailyStreak, remainingWords),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
-                },
-                onBackClick = onBackClick,
-                showBonusCard = false,
-                showNextGroupButton = true,
-                onNextGroupClick = {
-                    onEvent(LearningEvent.StartLearning(mode = LearningMode.Word))
-                }
-            )
         } else {
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_no_words_title),
-                subtitle = stringResource(R.string.learn_screen_finish_no_words_subtitle),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
-                },
-                onBackClick = onBackClick
-            )
+            val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
+            if (uiState.shouldShowDailyGoalMet) {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_daily_goal_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                    },
+                    onBackClick = onBackClick,
+                    topContentPadding = finishTopPadding
+                )
+            } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+                val remainingWords = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_micro_session_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_micro_session_words_subtitle, uiState.dailyStreak, remainingWords),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                    },
+                    onBackClick = onBackClick,
+                    showBonusCard = false,
+                    showNextGroupButton = true,
+                    onNextGroupClick = {
+                        onEvent(LearningEvent.StartLearning(mode = LearningMode.Word))
+                    },
+                    topContentPadding = finishTopPadding
+                )
+            } else {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_no_words_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_no_words_subtitle),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                    },
+                    onBackClick = onBackClick,
+                    topContentPadding = finishTopPadding
+                )
+            }
         }
     }
 }
@@ -901,75 +907,81 @@ fun GrammarLearningContent(
                       modifier = Modifier.align(Alignment.BottomCenter)
                   )
             }
-        } else if (uiState.shouldShowDailyGoalMet) {
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_daily_goal_title),
-                subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
-                },
-                onBackClick = onBackClick
-            )
-        } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
-            val remainingGrammars = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_micro_session_title),
-                subtitle = stringResource(R.string.learn_screen_finish_micro_session_grammars_subtitle, uiState.dailyStreak, remainingGrammars),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
-                },
-                onBackClick = onBackClick,
-                showBonusCard = false,
-                showNextGroupButton = true,
-                onNextGroupClick = {
-                    onEvent(LearningEvent.StartLearning(mode = LearningMode.Grammar))
-                }
-            )
         } else {
-            LearningFinishedContent(
-                title = stringResource(R.string.learn_screen_finish_no_grammars_title),
-                subtitle = stringResource(R.string.learn_screen_finish_no_grammars_subtitle),
-                completedToday = uiState.completedToday,
-                dailyGoal = uiState.dailyGoal,
-                dailyStreak = uiState.dailyStreak,
-                sessionDurationSeconds = uiState.sessionDurationSeconds,
-                sessionMaxCombo = uiState.sessionMaxCombo,
-                sessionNewCount = uiState.sessionNewCount,
-                sessionReviewCount = uiState.sessionReviewCount,
-                sessionRelearnCount = uiState.sessionRelearnCount,
-                tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
-                todayDueReviewCount = uiState.todayDueReviewCount,
-                showShareDialog = showShareDialog,
-                onDismissShareDialog = onDismissShareDialog,
-                onConfirmBonus = { bonusCount, bonusMode ->
-                    onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
-                },
-                onBackClick = onBackClick
-            )
+            val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
+            if (uiState.shouldShowDailyGoalMet) {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_daily_goal_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                    },
+                    onBackClick = onBackClick,
+                    topContentPadding = finishTopPadding
+                )
+            } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
+                val remainingGrammars = (uiState.dailyGoal - uiState.completedToday).coerceAtLeast(0)
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_micro_session_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_micro_session_grammars_subtitle, uiState.dailyStreak, remainingGrammars),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                    },
+                    onBackClick = onBackClick,
+                    showBonusCard = false,
+                    showNextGroupButton = true,
+                    onNextGroupClick = {
+                        onEvent(LearningEvent.StartLearning(mode = LearningMode.Grammar))
+                    },
+                    topContentPadding = finishTopPadding
+                )
+            } else {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_no_grammars_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_no_grammars_subtitle),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                    },
+                    onBackClick = onBackClick,
+                    topContentPadding = finishTopPadding
+                )
+            }
         }
     }
 }

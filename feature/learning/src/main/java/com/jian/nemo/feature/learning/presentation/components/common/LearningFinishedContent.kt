@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.dialog.BonusMode
 import com.jian.nemo.core.ui.component.dialog.BonusStudyDialog
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.feature.learning.presentation.components.dialogs.DailyAchievementShareDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -114,9 +115,12 @@ fun LearningFinishedContent(
     showBonusCard: Boolean = true,
     showNextGroupButton: Boolean = false,
     onNextGroupClick: () -> Unit = {},
+    topContentPadding: androidx.compose.ui.unit.Dp? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val effectiveTopPadding = topContentPadding ?: (statusBarTop + 60.dp + 16.dp)
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     // 动态跟随 App 主题色系统
@@ -206,11 +210,10 @@ fun LearningFinishedContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(effectiveTopPadding))
 
             // ==========================================
             // 1. 核心成就区 (Hero Area - 居中基线对齐，现代通透视觉)
@@ -952,28 +955,28 @@ fun LearningFinishedContent(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 左侧：完成今日学习（次要描边按钮）
-                    OutlinedButton(
+                    // 左侧：完成今日学习（次要磨砂液态玻璃按钮）
+                    FrostedLiquidGlassButton(
                         onClick = onBackClick,
                         shape = RoundedRectangle(18.dp),
-                        border = BorderStroke(1.5.dp, themePrimary.copy(alpha = 0.6f)),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = themePrimary
-                        ),
+                        border = BorderStroke(1.dp, themePrimary.copy(alpha = if (isDark) 0.35f else 0.45f)),
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight()
+                            .fillMaxHeight(),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Check,
                             contentDescription = null,
+                            tint = themePrimary,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = stringResource(R.string.learn_finish_btn_complete_today),
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = themePrimary
                         )
                     }
 
@@ -1012,17 +1015,18 @@ fun LearningFinishedContent(
                         .fillMaxWidth()
                         .height(52.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.learn_finish_btn_complete_today),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.learn_finish_btn_complete_today),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
             }

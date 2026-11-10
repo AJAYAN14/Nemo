@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -80,6 +81,30 @@ fun DailyAchievementShareDialog(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val themePrimary = MaterialTheme.colorScheme.primary
+
+    val posterGradientColors = remember(themePrimary) {
+        val hsv = FloatArray(3)
+        android.graphics.Color.colorToHSV(themePrimary.toArgb(), hsv)
+        val h = hsv[0]
+        val s = hsv[1]
+        val v = hsv[2]
+
+        val midHsv = floatArrayOf(
+            (h + 12f) % 360f,
+            s.coerceAtLeast(0.70f),
+            (v * 1.04f).coerceAtMost(1f)
+        )
+        val midColor = Color(android.graphics.Color.HSVToColor(midHsv))
+
+        val endHsv = floatArrayOf(
+            (h + 24f) % 360f,
+            (s * 0.95f).coerceAtLeast(0.65f),
+            (v * 0.92f).coerceAtLeast(0.60f)
+        )
+        val endColor = Color(android.graphics.Color.HSVToColor(endHsv))
+
+        listOf(themePrimary, midColor, endColor)
+    }
 
     val graphicsLayer = rememberGraphicsLayer()
     var isSaving by remember { mutableStateOf(false) }
@@ -151,11 +176,7 @@ fun DailyAchievementShareDialog(
                                 .fillMaxWidth()
                                 .background(
                                     Brush.linearGradient(
-                                        colors = listOf(
-                                            themePrimary,
-                                            themePrimary.copy(alpha = 0.88f),
-                                            LearningPalette.ShareGradTeal
-                                        )
+                                        colors = posterGradientColors
                                     )
                                 )
                                 .padding(horizontal = 20.dp, vertical = 22.dp)
