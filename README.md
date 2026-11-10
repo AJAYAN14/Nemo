@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.1-release.apk"><img src="https://img.shields.io/badge/Release-v1.1-FFA000?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
+  <a href="https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2-release.apk"><img src="https://img.shields.io/badge/Release-v1.2.0-FFA000?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
   <img src="https://img.shields.io/badge/Powered%20by-AI-blueviolet?style=for-the-badge&logo=openai" alt="AI Powered">
   <img src="https://img.shields.io/badge/Language-Japanese-red?style=for-the-badge" alt="Language">
   <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
@@ -13,9 +13,13 @@
 </p>
 
 > [!IMPORTANT]
-> 🚀 **最新版本发布：v1.1**  
-> 现已开放官方 Release 安装包下载！全新融入**「液态玻璃（Liquid Glass）」**与**「同源弥散光晕」**交互美学：  
-> 👉 **[📥 点击直接下载 Nemo v1.1 安装包 (nemo-v1.1-release.apk)](https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.1-release.apk)**（大小约 13.8MB，已签名正式版）  
+> 🚀 **最新版本发布：v1.2.0**  
+> 现已开放官方 Release 安装包下载！核心升级与改进亮点：  
+> 1. **更新了最新的液态菜单**：全新流体手势引擎接管，支持长短按双轨分发与细腻触觉反馈。  
+> 2. **更新并添加了新LOGO**：全套全新品牌 LOGO 与自适应多层矢量图标焕新呈现。  
+> 3. **通用居中弹窗与胶囊进度条**：全新居中更新弹窗，按钮原地平滑演变为全宽胶囊进度条，支持物理弹簧阻尼与主题色双层反色裁切。  
+> 4. **修复部分已知问题**：优化通知栏高频刷新负载，消除主线程卡顿，提升系统稳定性。  
+> 👉 **[📥 点击直接下载 Nemo v1.2.0 安装包 (nemo-v1.2-release.apk)](https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2-release.apk)**（大小约 17.2MB，已签名正式版）  
 > 亦可在 [GitHub Releases 页面](https://github.com/AJAYAN14/Nemo/releases) 查看所有发布历史与更新日志。
 
 ---
