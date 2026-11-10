@@ -1,4 +1,4 @@
-# 🌊 Nemo
+# <img src="nemo_logo.svg" width="36" height="36" valign="middle" alt="Nemo Logo"> Nemo
 
 <p align="center">
   <strong>一款由 AI 驱动、基于现代 Android 技术栈构建的灵动日语词法学习应用</strong>
