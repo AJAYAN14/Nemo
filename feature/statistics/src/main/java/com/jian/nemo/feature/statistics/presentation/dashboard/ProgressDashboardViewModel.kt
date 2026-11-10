@@ -15,7 +15,7 @@ data class ProgressDashboardUiState(
     val stats: LearningStats? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 ) {
     val totalProgress: Float
         get() {

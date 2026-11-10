@@ -27,7 +27,7 @@ class KanaChartViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.MD3
+            initialValue = SettingIconStyle.SOFT_TRANSLUCENT
         )
 
     private val _playingAudioId = MutableStateFlow<String?>(null)

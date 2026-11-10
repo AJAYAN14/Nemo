@@ -43,7 +43,7 @@ data class AIReadingUiState(
     val translationResult: AIWordTranslation? = null,
     val isTranslating: Boolean = false,
     val translationError: String? = null,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 )
 
 sealed interface AIReadingEvent {

@@ -174,7 +174,7 @@ data class HomeUiState(
     val user: User? = null,
 
     // 图标视觉风格
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 ) {
     val progressFraction: Float
         get() = if (dailyGoal > 0) (currentProgress.toFloat() / dailyGoal).coerceIn(0f, 1f) else 0f

@@ -320,7 +320,7 @@ fun EmptyStatisticsState(
     accentColor: Color = IosColors.Green
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
@@ -691,7 +691,7 @@ private fun StatCard(
     modifier: Modifier = Modifier
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
     val iconTint = if (isSoftTranslucent) color else Color.White
 

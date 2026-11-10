@@ -35,7 +35,7 @@ class CategoryWordsViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.MD3
+            initialValue = SettingIconStyle.SOFT_TRANSLUCENT
         )
 
     private val _uiState = MutableStateFlow(CategoryWordsUiState())

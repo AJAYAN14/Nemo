@@ -23,7 +23,7 @@ data class SettingsUiState(
     val darkModeEndTime: String = "19:00",
     val isDynamicColorEnabled: Boolean = false,
     val toggleStyle: com.jian.nemo.core.domain.repository.ToggleStyle = com.jian.nemo.core.domain.repository.ToggleStyle.LIQUID_GLASS, // 开关控件风格
-    val settingIconStyle: com.jian.nemo.core.domain.repository.SettingIconStyle = com.jian.nemo.core.domain.repository.SettingIconStyle.MD3, // 设置图标风格 (默认 MD3)
+    val settingIconStyle: com.jian.nemo.core.domain.repository.SettingIconStyle = com.jian.nemo.core.domain.repository.SettingIconStyle.SOFT_TRANSLUCENT, // 设置图标风格 (默认 MD3)
     val appIconStyle: com.jian.nemo.core.domain.repository.AppIconStyle = com.jian.nemo.core.domain.repository.AppIconStyle.DEFAULT, // 桌面图标风格 (默认 DEFAULT)
 
     // 学习设置

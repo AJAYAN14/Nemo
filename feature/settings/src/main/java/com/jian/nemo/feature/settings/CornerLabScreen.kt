@@ -558,7 +558,7 @@ private fun SideBySideComparisonView(
             )
         }
 
-        // 苹果平滑圆角 (Continuous G2) - 蓝色
+        // G2 连续平滑曲率圆角 (Continuous G2) - 蓝色
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(R.string.corner_lab_style_continuous),
@@ -614,7 +614,7 @@ private fun OverlayComparisonView(
                 strokeColor = redColor
             )
 
-            // 顶层：苹果平滑圆角 (蓝色)
+            // 顶层：G2 连续平滑曲率圆角 (蓝色)
             ShapeBox(
                 shape = RoundedRectangle(radius, RoundedCornerStyle.Continuous),
                 width = aspect.width,
@@ -712,7 +712,7 @@ private fun MacroZoomCornerView(
             }
         }
 
-        // 苹果平滑圆角放大特写 (截取左上角) - 蓝色
+        // G2 连续平滑曲率圆角放大特写 (截取左上角) - 蓝色
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = stringResource(R.string.corner_lab_macro_g2),

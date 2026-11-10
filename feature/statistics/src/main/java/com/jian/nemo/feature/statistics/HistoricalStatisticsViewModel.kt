@@ -49,7 +49,7 @@ data class OverallPredictionSummary(
  * 历史统计界面 UI 状态
  */
 data class HistoricalStatisticsUiState(
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID,
     val learnedWords: List<StatisticDisplayItem> = emptyList(),
     val learnedGrammars: List<StatisticDisplayItem> = emptyList(),
     val wordTotalCountMap: Map<String, Int> = emptyMap(),

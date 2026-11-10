@@ -45,7 +45,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
  * TTS 语音设置界面 (Flat UI 风格)
  *
  * 采用项目统一的 PremiumCard + Squircle 布局
- * 使用 Nemo iOS 风格配色，避免 MD3 默认色板
+ * 采用工程标准语义调色盘，避免 MD3 默认生成色
  */
 @Composable
 fun TtsSettingsScreen(
@@ -332,7 +332,7 @@ private fun FlatSliderSettingItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
             val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
             val iconTint = if (isSoftTranslucent) iconColor else Color.White
 

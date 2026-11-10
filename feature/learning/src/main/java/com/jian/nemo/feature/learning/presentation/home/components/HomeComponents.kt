@@ -129,8 +129,8 @@ fun PremiumCard(
  * 1. 严格 2:3 黄金比例公理 (图标尺寸 = 容器尺寸 * 2/3)；
  * 2. G2 连续平滑曲率 (RoundedRectangle)；
  * 3. 单源同色单容器架构：
- *    - 柔和微透 (MD3): 15% 透明度底框 + 原色图标 (iconColor)；
- *    - 活力纯色 (PLUMP_DUO/SOLID): 100% 实心底框 + 纯白反白图标 (Color.White)；
+ *    - 柔和微透 (SOFT_TRANSLUCENT): 15% 透明度底框 + 原色图标 (iconColor)；
+ *    - 活力纯色 (VIBRANT_SOLID): 100% 实心底框 + 纯白反白图标 (Color.White)；
  * 4. 两套风格切换时图标物理尺寸绝对恒定。
  */
 @Composable
@@ -143,7 +143,7 @@ fun HomeSquircleIconBox(
     modifier: Modifier = Modifier
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
     val iconTint = if (isSoftTranslucent) iconColor else Color.White
 

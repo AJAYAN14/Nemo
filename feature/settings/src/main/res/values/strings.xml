@@ -28,15 +28,15 @@
     <string name="settings_theme_subtitle_scheduled">在指定时间段开启深色模式</string>
     <string name="settings_theme_section_scheduled_time">深色模式定时</string>
     <string name="settings_theme_title_icon_style">图标风格</string>
-    <string name="settings_theme_icon_style_md3">柔和微透 (浅色底)</string>
-    <string name="settings_theme_icon_style_plump_duo">活力纯色 (实心底)</string>
+    <string name="settings_theme_icon_style_soft_translucent">柔和微透 (浅色底)</string>
+    <string name="settings_theme_icon_style_vibrant_solid">活力纯色 (实心底)</string>
     <string name="settings_theme_section_app_icon">桌面图标</string>
     <string name="settings_theme_dialog_title_change_app_icon">更换桌面图标</string>
     <string name="settings_theme_btn_confirm_change">确认更换</string>
     <string name="settings_theme_dialog_msg_change_app_icon">更换桌面图标需要刷新系统快捷方式，应用将自动返回手机桌面以完成生效。\n\n是否确认更换？</string>
     <string name="settings_theme_dialog_title_select_icon_style">选择图标风格</string>
-    <string name="settings_theme_icon_style_desc_md3">15% 半透明圆角底框，彩色原生图标聚焦</string>
-    <string name="settings_theme_icon_style_desc_plump_duo">100% 实心高饱和底框，纯白原生图标反白</string>
+    <string name="settings_theme_icon_style_desc_soft_translucent">15% 半透明圆角底框，彩色原生图标聚焦</string>
+    <string name="settings_theme_icon_style_desc_vibrant_solid">100% 实心高饱和底框，纯白原生图标反白</string>
     <string name="settings_btn_confirm">确定</string>
     <string name="settings_btn_cancel">取消</string>
 
@@ -448,8 +448,8 @@
     <string name="settings_dialog_btn_export_json">纯文本导出 (.json)</string>
     <string name="settings_theme_title_display_mode">显示模式</string>
     <string name="settings_theme_title_auto_switch_mode">自动切换模式</string>
-    <string name="settings_theme_icon_style_md3_short">柔和微透</string>
-    <string name="settings_theme_icon_style_plump_duo_short">活力纯色</string>
+    <string name="settings_theme_icon_style_soft_translucent_short">柔和微透</string>
+    <string name="settings_theme_icon_style_vibrant_solid_short">活力纯色</string>
 
     <!-- 云端备份历史界面文案 -->
     <string name="settings_backup_preparing_dict_title">正在准备基础词库...</string>

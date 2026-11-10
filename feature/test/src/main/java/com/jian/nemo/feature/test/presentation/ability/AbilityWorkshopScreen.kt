@@ -200,7 +200,7 @@ private fun AbilityItemCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
 
     val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
     val iconTint = if (isSoftTranslucent) iconColor else Color.White

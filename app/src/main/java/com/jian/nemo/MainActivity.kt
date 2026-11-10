@@ -173,7 +173,7 @@ class MainActivity : ComponentActivity() {
 
             // 4. 获取用户自定义主题色与图标风格
             val themeColorLong by settingsRepository.themeColorFlow.collectAsState(initial = null)
-            val settingIconStyle by settingsRepository.settingIconStyleFlow.collectAsState(initial = SettingIconStyle.MD3)
+            val settingIconStyle by settingsRepository.settingIconStyleFlow.collectAsState(initial = SettingIconStyle.SOFT_TRANSLUCENT)
 
             NemoTheme(
                 darkTheme = isDarkTheme,

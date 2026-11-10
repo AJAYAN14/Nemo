@@ -621,7 +621,7 @@ fun SquircleListItem(
     showDivider: Boolean = true
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
     val iconTint = if (isSoftTranslucent) color else Color.White
 

@@ -312,7 +312,7 @@ private fun RichStatItem(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             val iconStyle = LocalSettingIconStyle.current
-            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
             val containerBg = if (isSoftTranslucent) color.copy(alpha = if (isDark) 0.20f else 0.15f) else color
             val iconTint = if (isSoftTranslucent) color else Color.White
 
@@ -444,7 +444,7 @@ private fun MemoryPanoramaCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     val iconStyle = LocalSettingIconStyle.current
-                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                     val baseColor = IosColors.Green
                     val containerBg = if (isSoftTranslucent) {
                         if (isDarkTheme) baseColor.copy(alpha = 0.20f) else StatisticsPalette.EmeraldBgLight

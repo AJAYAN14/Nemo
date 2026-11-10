@@ -74,7 +74,7 @@ fun WrongWordsScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val accentColor = IosColors.Blue
     val deleteColor = IosColors.Red
     val emptyIconColor = IosColors.Green
@@ -316,7 +316,7 @@ fun WrongWordsScreen(
 }
 
 /**
- * 获取 JLPT 等级对应颜色（统一收拢至标准设计色彩手册 IosColors）
+ * 获取 JLPT 等级对应语义颜色
  */
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {

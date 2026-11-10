@@ -47,7 +47,7 @@ class SettingsDelegate(
             }
         }
 
-        // 监听图标风格设置 (Plump Duo 等)
+        // 监听图标风格设置 (活力纯色等)
         scope.launch {
             settingsRepository.settingIconStyleFlow.collect { iconStyle ->
                 stateUpdater.update { it.copy(settingIconStyle = iconStyle) }

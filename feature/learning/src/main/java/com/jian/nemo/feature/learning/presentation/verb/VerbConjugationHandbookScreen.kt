@@ -84,7 +84,7 @@ class VerbConjugationHandbookViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.PLUMP_DUO
+            initialValue = SettingIconStyle.VIBRANT_SOLID
         )
 }
 
@@ -107,8 +107,7 @@ private fun VerbConjugationHandbookContent(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = iconStyle == SettingIconStyle.MD3
-    val isPlumpDuo = iconStyle == SettingIconStyle.PLUMP_DUO
+    val isSoftTranslucent = iconStyle == SettingIconStyle.SOFT_TRANSLUCENT
 
     val textMain = if (isDark) MaterialTheme.colorScheme.onSurface else NemoNeutrals.Gray800
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
@@ -442,24 +441,21 @@ private fun VerbConjugationHandbookContent(
                             title = stringResource(R.string.verb_group_1_title),
                             desc = stringResource(R.string.verb_group_1_desc),
                             tintColor = group1Color,
-                            isDark = isDark,
-                            isPlumpDuo = isPlumpDuo
+                            isDark = isDark
                         )
                         VerbGroupItem(
                             number = "2",
                             title = stringResource(R.string.verb_group_2_title),
                             desc = stringResource(R.string.verb_group_2_desc),
                             tintColor = group2Color,
-                            isDark = isDark,
-                            isPlumpDuo = isPlumpDuo
+                            isDark = isDark
                         )
                         VerbGroupItem(
                             number = "3",
                             title = stringResource(R.string.verb_group_3_title),
                             desc = stringResource(R.string.verb_group_3_desc),
                             tintColor = group3Color,
-                            isDark = isDark,
-                            isPlumpDuo = isPlumpDuo
+                            isDark = isDark
                         )
                     }
 
@@ -503,7 +499,7 @@ private fun VerbConjugationHandbookContent(
                             Text(
                                 text = stringResource(R.string.verb_handbook_warning_desc),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (isDark) NemoNeutrals.DarkTextSecondary else (if (isPlumpDuo) warningColor.copy(alpha = 0.85f) else LearningPalette.VerbWarningRose),
+                                color = if (isDark) NemoNeutrals.DarkTextSecondary else LearningPalette.VerbWarningRose,
                                 lineHeight = 16.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
@@ -806,8 +802,7 @@ private fun VerbGroupItem(
     title: String,
     desc: String,
     tintColor: Color,
-    isDark: Boolean,
-    isPlumpDuo: Boolean = false
+    isDark: Boolean
 ) {
     Row(
         verticalAlignment = Alignment.Top,
@@ -818,7 +813,7 @@ private fun VerbGroupItem(
             modifier = Modifier
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(tintColor.copy(alpha = if (isPlumpDuo) (if (isDark) 0.16f else 0.10f) else (if (isDark) 0.15f else 0.1f))),
+                .background(tintColor.copy(alpha = if (isDark) 0.15f else 0.10f)),
             contentAlignment = Alignment.Center
         ) {
             Text(

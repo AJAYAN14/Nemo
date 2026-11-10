@@ -42,7 +42,7 @@ import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
  *
  * 遵循单一官方原生图标与调色盘标准规范：
  * - 统一使用 Google Fonts 官方原生实心 Rounded 图标
- * - 配色体系全面收编至设计调色盘 IosColors (一套颜色体系)
+ * - 配色体系全面收编至工程标准调色盘体系
  */
 @Composable
 fun TestHeader(

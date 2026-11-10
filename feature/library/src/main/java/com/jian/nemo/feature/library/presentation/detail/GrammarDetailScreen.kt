@@ -188,7 +188,7 @@ private fun GrammarDetailContent(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
-    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
     val accentColor = if (isDark) IosColors.GreenDark else IosColors.Green
     val connectionColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
     val notesColor = if (isDark) IosColors.RedDark else IosColors.Red
@@ -483,7 +483,7 @@ private fun SectionIconBadge(
     baseColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
     val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
     val iconTint = if (isSoftTranslucent) baseColor else Color.White
 
@@ -530,7 +530,7 @@ private fun DetailTag(
     horizontalPadding: androidx.compose.ui.unit.Dp = 12.dp,
     textStyle: androidx.compose.ui.text.TextStyle? = null
 ) {
-    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
     val containerBg = if (isSoftTranslucent) tagColor.copy(alpha = 0.15f) else tagColor
     val contentColor = if (isSoftTranslucent) tagColor else Color.White
 

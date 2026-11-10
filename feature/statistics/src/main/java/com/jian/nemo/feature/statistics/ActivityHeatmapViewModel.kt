@@ -36,7 +36,7 @@ data class ActivityHeatmapUiState(
     val dailyAverage: Int = 0,
     val todayCount: Int = 0,
     val isLoading: Boolean = true,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 )
 
 data class MemoryPanoramaData(

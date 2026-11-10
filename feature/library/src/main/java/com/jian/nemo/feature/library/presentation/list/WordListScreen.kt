@@ -315,7 +315,7 @@ private fun EmptyState(
     icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.AutoMirrored.Rounded.MenuBook
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val accentColor = IosColors.Indigo
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White

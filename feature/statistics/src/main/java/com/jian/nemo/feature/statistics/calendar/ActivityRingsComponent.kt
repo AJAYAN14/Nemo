@@ -489,7 +489,7 @@ fun ActivityWeekPicker(
 }
 
 /**
- * 月模式 7x5/6 微型三环月历网格 (Apple Fitness 经典风格)
+ * 月模式 7x5/6 微型三环月历网格
  */
 @Composable
 fun ActivityMonthGrid(

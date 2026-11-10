@@ -50,9 +50,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.designsystem.R as DesignR
-import com.jian.nemo.feature.settings.components.IsoluminantPalette
 import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
-import com.jian.nemo.feature.settings.components.PlumpIcon
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
@@ -246,9 +244,7 @@ fun ThemeSettingsScreen(
                                 PremiumCard {
                                     SquircleSettingItem(
                                         icon = Icons.Rounded.DarkMode,
-                                        plumpIcon = PlumpIcon.Moon,
                                         iconColor = NemoIndigo,
-                                        plumpColor = IsoluminantPalette.LilacViolet,
                                         title = stringResource(R.string.settings_theme_title_dark_mode_start),
                                         subtitle = uiState.darkModeStartTime,
                                         onClick = { showStartTimePicker = true },
@@ -263,9 +259,7 @@ fun ThemeSettingsScreen(
                                     )
                                     SquircleSettingItem(
                                         icon = Icons.Rounded.LightMode,
-                                        plumpIcon = PlumpIcon.Sun,
                                         iconColor = NemoWarning,
-                                        plumpColor = IsoluminantPalette.WarmAmber,
                                         title = stringResource(R.string.settings_theme_title_dark_mode_end),
                                         subtitle = uiState.darkModeEndTime,
                                         showDivider = false,
@@ -294,9 +288,7 @@ fun ThemeSettingsScreen(
                 PremiumCard {
                     SquircleSettingItem(
                         icon = Icons.Rounded.Palette,
-                        plumpIcon = PlumpIcon.ThemePalette,
                         iconColor = NemoPink,
-                        plumpColor = IsoluminantPalette.RoseRuby,
                         title = stringResource(R.string.settings_theme_title_color_palette),
                         subtitle = stringResource(R.string.settings_theme_subtitle_color_palette),
                         onClick = { showThemeColorDialog = true },
@@ -304,13 +296,11 @@ fun ThemeSettingsScreen(
                     )
                     SquircleSettingItem(
                         icon = Icons.Rounded.Category,
-                        plumpIcon = PlumpIcon.IconStyle,
                         iconColor = NemoIndigo,
-                        plumpColor = IsoluminantPalette.SkyIndigo,
                         title = stringResource(R.string.settings_theme_title_icon_style),
                         subtitle = when (uiState.settingIconStyle) {
-                            SettingIconStyle.MD3 -> stringResource(R.string.settings_theme_icon_style_md3)
-                            SettingIconStyle.PLUMP_DUO -> stringResource(R.string.settings_theme_icon_style_plump_duo)
+                            SettingIconStyle.SOFT_TRANSLUCENT -> stringResource(R.string.settings_theme_icon_style_soft_translucent)
+                            SettingIconStyle.VIBRANT_SOLID -> stringResource(R.string.settings_theme_icon_style_vibrant_solid)
                         },
                         onClick = { showIconStyleDialog = true },
                         showDivider = false
@@ -726,16 +716,16 @@ private fun IconStyleSelectionDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 IconStyleOptionRow(
-                    title = stringResource(R.string.settings_theme_icon_style_md3_short),
-                    description = stringResource(R.string.settings_theme_icon_style_desc_md3),
-                    isSelected = selectedStyle == SettingIconStyle.MD3,
-                    onClick = { selectedStyle = SettingIconStyle.MD3 }
+                    title = stringResource(R.string.settings_theme_icon_style_soft_translucent_short),
+                    description = stringResource(R.string.settings_theme_icon_style_desc_soft_translucent),
+                    isSelected = selectedStyle == SettingIconStyle.SOFT_TRANSLUCENT,
+                    onClick = { selectedStyle = SettingIconStyle.SOFT_TRANSLUCENT }
                 )
                 IconStyleOptionRow(
-                    title = stringResource(R.string.settings_theme_icon_style_plump_duo_short),
-                    description = stringResource(R.string.settings_theme_icon_style_desc_plump_duo),
-                    isSelected = selectedStyle == SettingIconStyle.PLUMP_DUO,
-                    onClick = { selectedStyle = SettingIconStyle.PLUMP_DUO }
+                    title = stringResource(R.string.settings_theme_icon_style_vibrant_solid_short),
+                    description = stringResource(R.string.settings_theme_icon_style_desc_vibrant_solid),
+                    isSelected = selectedStyle == SettingIconStyle.VIBRANT_SOLID,
+                    onClick = { selectedStyle = SettingIconStyle.VIBRANT_SOLID }
                 )
             }
         }
@@ -829,15 +819,15 @@ private fun IconStyleOptionRowPreview() {
     MaterialTheme {
         Column(modifier = Modifier.padding(16.dp)) {
             IconStyleOptionRow(
-                title = "Material Design 3",
-                description = stringResource(R.string.settings_theme_icon_style_md3_desc),
+                title = stringResource(R.string.settings_theme_icon_style_soft_translucent_short),
+                description = stringResource(R.string.settings_theme_icon_style_soft_translucent_desc),
                 isSelected = true,
                 onClick = {}
             )
             Spacer(modifier = Modifier.height(8.dp))
             IconStyleOptionRow(
-                title = "Plump Duo",
-                description = stringResource(R.string.settings_theme_icon_style_plump_desc),
+                title = stringResource(R.string.settings_theme_icon_style_vibrant_solid_short),
+                description = stringResource(R.string.settings_theme_icon_style_vibrant_solid_desc),
                 isSelected = false,
                 onClick = {}
             )
@@ -852,15 +842,15 @@ private fun IconStyleOptionRowDarkPreview() {
         Surface {
             Column(modifier = Modifier.padding(16.dp)) {
                 IconStyleOptionRow(
-                    title = "Material Design 3",
-                    description = stringResource(R.string.settings_theme_icon_style_md3_desc),
+                    title = stringResource(R.string.settings_theme_icon_style_soft_translucent_short),
+                    description = stringResource(R.string.settings_theme_icon_style_soft_translucent_desc),
                     isSelected = true,
                     onClick = {}
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 IconStyleOptionRow(
-                    title = "Plump Duo",
-                    description = stringResource(R.string.settings_theme_icon_style_plump_desc),
+                    title = stringResource(R.string.settings_theme_icon_style_vibrant_solid_short),
+                    description = stringResource(R.string.settings_theme_icon_style_vibrant_solid_desc),
                     isSelected = false,
                     onClick = {}
                 )

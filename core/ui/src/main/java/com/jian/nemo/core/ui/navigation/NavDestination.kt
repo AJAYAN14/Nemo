@@ -29,7 +29,7 @@ object NavDestination {
     const val LISTENING_COMPREHENSION = "listening_comprehension" // 听力理解
     const val WORD_CLOZE = "word_cloze" // 单词挖空测试
     const val LIQUID_GLASS_LAB = "liquid_glass_lab" // 液态玻璃实验室
-    const val CORNER_LAB = "corner_lab" // 圆角实验室 (标准圆角 vs 苹果平滑圆角)
+    const val CORNER_LAB = "corner_lab" // 圆角实验室 (标准圆弧 vs G2 连续平滑曲率圆角)
     const val ABOUT = "about" // 关于 Nemo 页面
 
 
@@ -37,7 +37,7 @@ object NavDestination {
     // 保留HOME作为LEARNING的别名，确保兼容性
     const val HOME = LEARNING
 
-    // 二级页面路由 (⚠️ 迁移中: 建议由各 feature 模块内部定义路由字符串)
+    // 二级页面路由（统一由各 feature 模块收敛定义）
     @Deprecated("Move to feature:learning module", ReplaceWith("LearningDestination.WORD_LEARNING"))
     const val WORD_LEARNING = "word_learning/{level}"
     @Deprecated("Move to feature:learning module", ReplaceWith("LearningDestination.GRAMMAR_LEARNING"))

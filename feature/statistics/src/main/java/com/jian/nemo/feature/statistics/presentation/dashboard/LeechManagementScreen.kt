@@ -427,7 +427,7 @@ private fun LeechItemCardBase(
 
             // 单容器计算属性架构：紧凑级 36dp 底块搭配 24dp 图标 (严格 2:3 黄金比例)
             val iconStyle = LocalSettingIconStyle.current
-            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
             val containerBg = if (isSoftTranslucent) tagColor.copy(alpha = 0.15f) else tagColor
             val iconTint = if (isSoftTranslucent) tagColor else Color.White
 
@@ -466,7 +466,7 @@ private fun EmptyLeechView(
     accentColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor.copy(alpha = 0.2f)
 
     Box(

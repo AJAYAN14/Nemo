@@ -24,7 +24,7 @@ data class TestDashboardUiState(
     val maxTestStreak: Int = 0,
     val wrongWordsCount: Int = 0,
     val favoriteWordsCount: Int = 0,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 )
 
 @HiltViewModel

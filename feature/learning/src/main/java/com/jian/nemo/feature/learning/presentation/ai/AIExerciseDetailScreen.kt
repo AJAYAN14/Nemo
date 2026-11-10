@@ -27,9 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.feature.learning.R
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.AIExerciseHistory
 import com.jian.nemo.core.domain.repository.SettingIconStyle
@@ -95,8 +92,6 @@ fun AIExerciseDetailDialog(
                     content = history.question,
                     icon = Icons.Rounded.Info,
                     iconColor = MaterialTheme.colorScheme.primary,
-                    plumpIcon = PlumpIcon.CircleQuestion,
-                    plumpColor = IsoluminantPalette.SkyIndigo,
                     isSpeaking = playingAudioId == "question",
                     showSpeaker = history.type == "JP_TO_CN",
                     onSpeak = { onSpeak(history.question, "question") }
@@ -108,9 +103,7 @@ fun AIExerciseDetailDialog(
                     title = stringResource(R.string.learn_ai_detail_my_answer),
                     content = history.userAnswer,
                     icon = Icons.Rounded.Translate,
-                    iconColor = LearningPalette.SuccessGreen,
-                    plumpIcon = PlumpIcon.Languages,
-                    plumpColor = IsoluminantPalette.EmeraldGreen
+                    iconColor = LearningPalette.SuccessGreen
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -120,8 +113,6 @@ fun AIExerciseDetailDialog(
                     content = history.standardAnswer,
                     icon = Icons.Rounded.CheckCircle,
                     iconColor = MaterialTheme.colorScheme.primary,
-                    plumpIcon = PlumpIcon.BadgeCheck,
-                    plumpColor = IsoluminantPalette.SkyIndigo,
                     isSpeaking = playingAudioId == "standard",
                     showSpeaker = history.type == "CN_TO_JP",
                     onSpeak = { onSpeak(history.standardAnswer, "standard") }
@@ -134,9 +125,7 @@ fun AIExerciseDetailDialog(
                     title = stringResource(R.string.learn_ai_detail_eval_title),
                     content = history.feedback,
                     icon = Icons.Rounded.Psychology,
-                    iconColor = MaterialTheme.colorScheme.secondary,
-                    plumpIcon = PlumpIcon.AiBot,
-                    plumpColor = IsoluminantPalette.LilacViolet
+                    iconColor = MaterialTheme.colorScheme.secondary
                 )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -171,12 +160,8 @@ fun AIExerciseDetailDialog(
 
 @Composable
 private fun ScoreCard(score: Int, difficulty: String) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val colorScheme = MaterialTheme.colorScheme
     val scoreColor = when {
-        isPlumpDuo && score >= 80 -> IsoluminantPalette.EmeraldGreen
-        isPlumpDuo && score >= 60 -> IsoluminantPalette.WarmAmber
-        isPlumpDuo -> IsoluminantPalette.CoralFlame
         score >= 80 -> NemoSecondary
         score >= 60 -> NemoYellow
         else -> NemoDanger
@@ -235,13 +220,10 @@ private fun DetailSectionCard(
     content: String,
     icon: ImageVector,
     iconColor: Color,
-    plumpIcon: PlumpIcon? = null,
-    plumpColor: Color? = null,
     showSpeaker: Boolean = false,
     isSpeaking: Boolean = false,
     onSpeak: () -> Unit = {}
 ) {
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     
@@ -253,31 +235,18 @@ private fun DetailSectionCard(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (isPlumpDuo && plumpIcon != null && plumpColor != null) {
-                    Box(
-                        modifier = Modifier.size(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        PlumpDuoIcon(
-                            icon = plumpIcon,
-                            color = plumpColor,
-                            size = 24.dp
-                        )
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(iconColor.copy(alpha = 0.1f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = iconColor
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .background(iconColor.copy(alpha = 0.1f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = iconColor
+                    )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -289,13 +258,12 @@ private fun DetailSectionCard(
                 )
                 
                 if (showSpeaker) {
-                    val speakerTint = if (isPlumpDuo && plumpColor != null) plumpColor else iconColor
                     SpeakerButton(
                         isPlaying = isSpeaking,
                         onClick = onSpeak,
                         size = 32.dp,
-                        backgroundColor = speakerTint.copy(alpha = if (isPlumpDuo) 0.08f else 0.05f),
-                        tint = speakerTint
+                        backgroundColor = iconColor.copy(alpha = 0.05f),
+                        tint = iconColor
                     )
                 }
             }

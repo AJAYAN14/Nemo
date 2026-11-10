@@ -270,7 +270,7 @@ data class StatisticsUiState(
     /**
      * 图标设计风格
      */
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID,
 
     /**
      * 是否正在加载

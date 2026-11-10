@@ -110,7 +110,7 @@ data class LearningUiState(
     val tomorrowReviewForecastCount: Int = 0,
     val todayDueReviewCount: Int = 0,
     val dailyStreak: Int = 1,
-    val settingIconStyle: com.jian.nemo.core.domain.repository.SettingIconStyle = com.jian.nemo.core.domain.repository.SettingIconStyle.MD3
+    val settingIconStyle: com.jian.nemo.core.domain.repository.SettingIconStyle = com.jian.nemo.core.domain.repository.SettingIconStyle.SOFT_TRANSLUCENT
 ) {
     val hasPendingItems: Boolean
         get() = when (learningMode) {

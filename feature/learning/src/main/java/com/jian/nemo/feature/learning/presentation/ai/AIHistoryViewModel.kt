@@ -30,7 +30,7 @@ class AIHistoryViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.PLUMP_DUO
+            initialValue = SettingIconStyle.VIBRANT_SOLID
         )
 
     private val _playingAudioId = MutableStateFlow<String?>(null)
@@ -73,7 +73,7 @@ class AIHistoryViewModel @Inject constructor(
 
 
     fun deleteHistory(historyId: Int) {
-        // TODO: Repository 还没加删除单个的方法，以后再说
+        // TODO(Data): 待 Repository 补充单项历史记录删除接口后接入
     }
 
     fun clearAllHistory() {

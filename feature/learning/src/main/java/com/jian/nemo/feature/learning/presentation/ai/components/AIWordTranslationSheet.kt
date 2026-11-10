@@ -154,7 +154,7 @@ fun AIWordTranslationSheet(
 }
 
 /**
- * 加载态：100% 对齐 抽屉弹窗.html 原型规范
+ * 加载态骨架屏组件
  * 采用全屏升腾的 WebGL2 极光引擎（高度 380dp，圆角 32dp），待翻译单词置于左上角，深浅色自适应
  */
 @Composable
@@ -191,7 +191,7 @@ private fun TranslationLoadingContent(
             modifier = Modifier.fillMaxSize()
         )
 
-        // 2. 抽屉顶部标准拖拽指示条 (对齐 抽屉弹窗.html：宽 40px，高 5px)
+        // 2. 抽屉顶部标准拖拽指示条（宽 40dp，高 5dp）
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)

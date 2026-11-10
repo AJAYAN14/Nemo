@@ -2036,13 +2036,12 @@ class SettingsRepositoryImpl @Inject constructor(
         }
     }
 
-    /** 设置项图标视觉风格 Flow (默认 MD3) */
+    /** 设置项图标视觉风格 Flow (默认 SOFT_TRANSLUCENT) */
     override val settingIconStyleFlow: Flow<SettingIconStyle> = dataStore.data.map { preferences ->
         val styleStr = preferences[PreferencesKeys.SETTING_ICON_STYLE]
-        try {
-            if (styleStr != null) SettingIconStyle.valueOf(styleStr) else SettingIconStyle.MD3
-        } catch (e: Exception) {
-            SettingIconStyle.MD3
+        when (styleStr) {
+            SettingIconStyle.VIBRANT_SOLID.name -> SettingIconStyle.VIBRANT_SOLID
+            else -> SettingIconStyle.SOFT_TRANSLUCENT
         }
     }
 

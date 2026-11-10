@@ -126,7 +126,7 @@ import kotlin.math.sin
 /**
  * 模块 ①: 流体记忆视界 HUD 仿真卡片 (Liquid Memory Simulation HUD)
  *
- * 结合 react-bits 的 SloshGauge 流体负荷蓄水池概念与 FSRS 动态衰减曲面，
+ * 结合流体负荷蓄水池概念与 FSRS 动态衰减曲面，
  * 实时推演卡片半衰期与学习复习负荷。
  */
 @Composable
@@ -342,7 +342,7 @@ fun LiquidMemoryHud(
 /**
  * 模块 ②: 目标保留率磁吸精密标尺 (Modern Fractional Picker)
  *
- * 借鉴 portal_labs 的水平磁吸刻度微交互，支持 70% ~ 99% 范围，
+ * 水平磁吸刻度微交互，支持 70% ~ 99% 范围，
  * 在 85%、90%、95% 黄金档提供磁吸和平滑阻尼。
  */
 @Composable
@@ -597,8 +597,7 @@ fun RetentionPrecisionRuler(
 /**
  * 模块 ③: 流体时空胶囊链 (Step Pipeline Capsules)
  *
- * 借鉴 portal_labs 的 Split to Edit 交互，彻底颠覆原本敲字符串的体验，
- * 将学习步长转化为直观的药丸时间节点链。
+ * 分离编辑微交互，将学习步长转化为直观的药丸时间节点链。
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -840,7 +839,7 @@ private fun formatStepDuration(context: Context, step: String): String {
 /**
  * 模块 ④: 水蛭哨兵与果冻分段控制器 (Leech Sentinel & Rubber Segment)
  *
- * 融合 portal_labs 的机械翻牌步进器与 react-bits 的果冻分段器。
+ * 融合机械步进器与果冻弹性分段器。
  */
 @Composable
 fun LeechSentinelCard(

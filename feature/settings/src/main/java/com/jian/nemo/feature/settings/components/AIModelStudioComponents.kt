@@ -297,7 +297,7 @@ object AIPlatformRegistry {
 /**
  * 模块 ①: 服务商能量晶片坞 (Matrix Chip Dock)
  *
- * 借鉴 portal_labs 与 Bento Grid 理念，将原本简陋的下拉框重构为具有全息呼吸微光与物理缩放的晶片磁吸阵列。
+ * 采用便当盒（Bento Grid）排版，呈现具有呼吸微光与物理缩放的晶片磁吸阵列。
  */
 @Composable
 fun MatrixChipDock(
@@ -310,7 +310,7 @@ fun MatrixChipDock(
 
     Column(modifier = modifier.fillMaxWidth()) {
         val iconStyle = LocalSettingIconStyle.current
-        val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+        val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
         val baseColor = IosColors.Orange
         val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
         val iconTint = if (isSoftTranslucent) baseColor else Color.White
@@ -463,10 +463,9 @@ fun MatrixChipDock(
 }
 
 /**
- * 模块 ②: 旗舰模型老虎机滚轮选择舱 (Slot Picker + CodeSlots)
+ * 模块 ②: 旗舰模型滚轮选择舱 (Slot Picker + CodeSlots)
  *
- * 借鉴 portal_labs/slot_picker_interaction 与 react-bits/OptionWheel，
- * 彻底颠覆单调的输入框，支持齿轮机械阻尼拨动选型，并支持一键切换极客代码卡槽。
+ * 支持齿轮机械阻尼拨动选型，并支持一键切换极客代码卡槽。
  */
 @Composable
 fun SlotModelPicker(
@@ -501,7 +500,7 @@ fun SlotModelPicker(
                         .padding(end = 12.dp)
                 ) {
                     val iconStyle = LocalSettingIconStyle.current
-                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                     val baseColor = platform.brandColor
                     val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
                     val iconTint = if (isSoftTranslucent) baseColor else Color.White
@@ -712,7 +711,7 @@ fun SlotModelPicker(
 /**
  * 模块 ③: 神经突触加密插槽 (Cryptographic Key Socket & Gateway)
  *
- * 借鉴 react-bits 智能插槽与剪贴板感知：
+ * 智能插槽与剪贴板感知：
  * 1. 自动嗅探剪贴板并提供一键脉冲注入；
  * 2. 点阵流光密文展示与视网膜显隐切换；
  * 3. 官方网关与自定义网关快速切换。
@@ -756,7 +755,7 @@ fun CryptKeySocket(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val iconStyle = LocalSettingIconStyle.current
-                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                     val baseColor = platform.brandColor
                     val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
                     val iconTint = if (isSoftTranslucent) baseColor else Color.White
@@ -993,8 +992,7 @@ fun CryptKeySocket(
 /**
  * 模块 ④: 神经共振蓄水池 (SloshGaugeProbe 连通性测试)
  *
- * 借鉴 react-bits/SloshGauge：
- * 将单调的按钮变成具有流体物理波浪的共振探测器，全流程展示 DNS ➔ TLS ➔ TTFT 握手延迟。
+ * 具有流体物理波浪的共振探测器，全流程展示 DNS ➔ TLS ➔ TTFT 握手延迟。
  */
 @Composable
 fun SloshGaugeProbe(
@@ -1032,7 +1030,7 @@ fun SloshGaugeProbe(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val iconStyle = LocalSettingIconStyle.current
-                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                     val baseColor = platform.brandColor
                     val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
                     val iconTint = if (isSoftTranslucent) baseColor else Color.White

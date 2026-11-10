@@ -189,7 +189,7 @@ private fun pickPlacement(
  * Nemo 液态气泡悬浮菜单组件 - 原生物理果冻弹性液态毛玻璃版
  *
  * 采用 G2 连续平滑曲率 [RoundedRectangle]、真实物理折射 [Backdrop]、非对称果冻弹性（Jelly Spring）展开微晃，
- * 结合 iOS 双层复合物理阴影与双阶高光渐变边框，100% 稳健即时响应并完美复现通透流体质感。
+ * 结合双层复合物理阴影与双阶高光渐变边框，确保稳健即时响应并呈现通透流体质感。
  */
 @Composable
 fun NemoPopupMenu(
@@ -305,7 +305,7 @@ fun NemoPopupMenu(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // 🌟 iOS 标准双层复合物理阴影：
+    // 双层复合物理阴影：
     // 1. 贴身环境光阴影 (Ambient) - 8dp 模糊 + 2dp Y 偏移，精密锁住卡片立体轮廓
     val ambientShadowRadiusPx = with(density) { 8.dp.toPx() }
     val ambientShadowDyPx = with(density) { 2.dp.toPx() }

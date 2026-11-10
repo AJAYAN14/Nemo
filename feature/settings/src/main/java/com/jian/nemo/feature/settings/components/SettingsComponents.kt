@@ -22,9 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
-import com.jian.nemo.core.designsystem.icon.PlumpDuoIcon
-import com.jian.nemo.core.designsystem.icon.PlumpIcon
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -100,9 +97,9 @@ fun PremiumCard(
 }
 
 /**
- * 当前设置界面全局图标视觉风格 CompositionLocal (默认 MD3)
+ * 当前设置界面全局图标视觉风格 CompositionLocal (默认 SOFT_TRANSLUCENT)
  */
-val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
+val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.SOFT_TRANSLUCENT }
 
 /**
  * 设置列表项组件 (支持传统单 ImageVector)
@@ -111,64 +108,6 @@ val LocalSettingIconStyle = compositionLocalOf { SettingIconStyle.MD3 }
 fun SquircleSettingItem(
     icon: ImageVector,
     iconColor: Color,
-    title: String,
-    subtitle: String? = null,
-    onClick: () -> Unit = {},
-    onClickWithBounds: ((Rect) -> Unit)? = null,
-    showDivider: Boolean = true,
-    trailing: (@Composable () -> Unit)? = null
-) {
-    SquircleSettingItem(
-        icon = icon,
-        plumpIcon = null,
-        iconColor = iconColor,
-        plumpColor = iconColor,
-        title = title,
-        subtitle = subtitle,
-        onClick = onClick,
-        onClickWithBounds = onClickWithBounds,
-        showDivider = showDivider,
-        trailing = trailing
-    )
-}
-
-/**
- * 设置列表项组件 (支持单独指定 Plump Duo 图标)
- */
-@Composable
-fun SquircleSettingItem(
-    plumpIcon: PlumpIcon,
-    iconColor: Color,
-    title: String,
-    subtitle: String? = null,
-    onClick: () -> Unit = {},
-    onClickWithBounds: ((Rect) -> Unit)? = null,
-    showDivider: Boolean = true,
-    trailing: (@Composable () -> Unit)? = null
-) {
-    SquircleSettingItem(
-        icon = null,
-        plumpIcon = plumpIcon,
-        iconColor = iconColor,
-        plumpColor = iconColor,
-        title = title,
-        subtitle = subtitle,
-        onClick = onClick,
-        onClickWithBounds = onClickWithBounds,
-        showDivider = showDivider,
-        trailing = trailing
-    )
-}
-
-/**
- * 设置列表项底层实现 (同时支持 MD3 与 Plump Duo 双模式，自适应渲染)
- */
-@Composable
-fun SquircleSettingItem(
-    icon: ImageVector? = null,
-    plumpIcon: PlumpIcon? = null,
-    iconColor: Color,
-    plumpColor: Color = iconColor,
     iconStyle: SettingIconStyle = LocalSettingIconStyle.current,
     iconRotation: Float = 0f,
     title: String,
@@ -215,10 +154,9 @@ fun SquircleSettingItem(
             // 双轨风格支持 (单容器纯复用架构)：
             // 风格 1 (柔和微透): 15% 半透明底框 + 彩色原色图标
             // 风格 2 (活力纯色): 100% 实心高饱和底框 + 纯白反白图标
-            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
             val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
             val iconTint = if (isSoftTranslucent) iconColor else Color.White
-            val plumpTint = if (isSoftTranslucent) plumpColor else Color.White
 
             Box(
                 modifier = Modifier
@@ -226,23 +164,14 @@ fun SquircleSettingItem(
                     .background(containerBgColor, RoundedRectangle(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                if (icon != null) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .graphicsLayer { rotationZ = iconRotation }
-                    )
-                } else if (plumpIcon != null) {
-                    PlumpDuoIcon(
-                        icon = plumpIcon,
-                        color = plumpTint,
-                        size = 28.dp,
-                        modifier = Modifier.graphicsLayer { rotationZ = iconRotation }
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .graphicsLayer { rotationZ = iconRotation }
+                )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -317,7 +246,7 @@ fun DailyGoalSelectionBottomSheet(
     val isDark = isSystemInDarkTheme()
     val accentColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
@@ -389,7 +318,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
     val isDark = isSystemInDarkTheme()
     val accentColor = if (isDark) IosColors.GreenDark else IosColors.Green
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
@@ -505,7 +434,7 @@ fun LearningDayResetHourBottomSheet(
     val isDark = isSystemInDarkTheme()
     val accentColor = if (isDark) IosColors.MintDark else IosColors.Mint
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 
@@ -641,7 +570,7 @@ fun VoiceSelectionBottomSheet(
     val isDark = isSystemInDarkTheme()
     val accentColor = if (isDark) IosColors.PinkDark else IosColors.Pink
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current

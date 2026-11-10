@@ -116,7 +116,7 @@ import kotlin.math.tanh
 /**
  * 通用液态玻璃按钮基础组件 (Core Liquid Glass Button)
  *
- * 移植并升级自 AndroidLiquidGlass 核心渲染引擎：
+ * 原生液态玻璃核心渲染引擎：
  * 1. 物理透镜折射 [lens] + 色彩活力 [vibrancy] + 柔化高斯模糊 [blur]；
  * 2. 触摸跟随弹簧形变与拖拽拉伸物理效果；
  * 3. 动态 [tint] 色相注入 (BlendMode.Hue) 与 [surfaceColor] 半透底色混合。

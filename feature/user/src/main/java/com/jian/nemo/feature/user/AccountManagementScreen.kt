@@ -431,7 +431,7 @@ fun PremiumSettingsItem(
     onClick: () -> Unit
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) iconTint.copy(alpha = 0.15f) else iconTint
     val actualTint = if (isSoftTranslucent) iconTint else Color.White
 

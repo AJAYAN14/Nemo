@@ -527,7 +527,7 @@ data class AuthUiState(
     val successMessage: String? = null,
     val avatarPath: String = "",
     val isAuthChecked: Boolean = false,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.SOFT_TRANSLUCENT,
 
     // Form States
     val email: String = "",

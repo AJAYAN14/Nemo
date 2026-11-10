@@ -64,8 +64,6 @@ import com.jian.nemo.core.ui.R
  * A premium Discovery Bar composable that uses robust morphing containers to switch
  * between search and discovery states without layout overflows.
  *
- * Corresponds to the Flutter [DiscoveryBar] widget from portal_labs.
- *
  * @param options The list of discovery options to display.
  * @param selectedOptionIndex The currently active selected option index.
  * @param onOptionSelected Callback when a discovery option is selected.

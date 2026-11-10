@@ -45,7 +45,7 @@ data class ForgettingCurveUiState(
     val isLoading: Boolean = false,
     val selectedRange: CurveTimeRange = CurveTimeRange.MEDIUM,
     val selectedStage: CurveStage = CurveStage.COMPOSITE,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.SOFT_TRANSLUCENT
 )
 
 /**

@@ -64,7 +64,7 @@ data class AIWorkshopUiState(
     val aiModel: String = "",
     val playingAudioId: String? = null,           // 当前正在播放的音频 ID
     val switchedConfigName: String? = null,       // 切换配置时短暂显示的别名
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.PLUMP_DUO
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.VIBRANT_SOLID
 )
 
 

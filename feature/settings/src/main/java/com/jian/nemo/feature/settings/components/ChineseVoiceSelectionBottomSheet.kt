@@ -66,7 +66,7 @@ fun ChineseVoiceSelectionBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val iconStyle = LocalSettingIconStyle.current
-                val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                 val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
                 val iconTint = if (isSoftTranslucent) accentColor else Color.White
 

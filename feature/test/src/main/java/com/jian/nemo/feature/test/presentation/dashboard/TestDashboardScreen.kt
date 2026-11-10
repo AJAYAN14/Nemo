@@ -331,7 +331,7 @@ private fun StatsPager(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             val iconStyle = LocalSettingIconStyle.current
-                            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                             val headerContainerBg = if (isSoftTranslucent) pageData.accent.copy(alpha = 0.15f) else pageData.accent
                             val headerIconTint = if (isSoftTranslucent) pageData.accent else Color.White
 
@@ -523,7 +523,7 @@ private fun DashboardTile(
     onClick: () -> Unit
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
     val iconTint = if (isSoftTranslucent) color else Color.White
 

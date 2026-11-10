@@ -26,7 +26,7 @@ data class LeechManagementUiState(
     val selectedTab: LeechTab = LeechTab.Word,
     val error: String? = null,
     val successMessage: String? = null,
-    val settingIconStyle: SettingIconStyle = SettingIconStyle.MD3
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.SOFT_TRANSLUCENT
 )
 
 enum class LeechTab { Word, Grammar }

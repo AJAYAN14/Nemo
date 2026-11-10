@@ -375,7 +375,7 @@ fun DailyAchievementShareDialog(
                     }
                 }
 
-                // 分享海报图片按钮（使用热力图同款 ic_share_ios，浮空主题色胶囊按钮）
+                // 分享海报图片按钮（浮空主题色胶囊按钮）
                 Button(
                     onClick = {
                         if (isSharing || isSaving) return@Button

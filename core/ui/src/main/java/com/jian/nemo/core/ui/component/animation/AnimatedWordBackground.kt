@@ -88,8 +88,6 @@ private fun WordFish(
 
     // --- 1. 静态配置区 (使用 remember 锁定，不参与重组) ---
 
-    // val onPrimaryColor = MaterialTheme.colorScheme.onPrimary // Removed local derivation
-
     // 垂直位置：基于容器高度动态计算，上下各留出 10% 安全区
     val randomYPosition = remember(word) {
         (padding.toInt()..(padding.toInt() + range)).random().toFloat()

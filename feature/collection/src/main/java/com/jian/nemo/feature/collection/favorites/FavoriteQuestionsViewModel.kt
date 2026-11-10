@@ -34,13 +34,13 @@ class FavoriteQuestionsViewModel @Inject constructor(
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     /**
-     * 图标风格（MD3 / Plump Duo），供界面双风格自适应
+     * 图标风格（柔和微透 / 活力纯色），供界面双风格自适应
      */
     val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.MD3
+            initialValue = SettingIconStyle.SOFT_TRANSLUCENT
         )
 
     init {

@@ -161,7 +161,7 @@ fun VisualStatItem(
 }
 
 /**
- * ListItem with "Squircle" Icon (Apple Settings Style)
+ * 采用 G2 平滑圆角（Squircle）底框的标准列表项组件
  */
 @Composable
 fun SquircleListItem(
@@ -173,7 +173,7 @@ fun SquircleListItem(
     showDivider: Boolean = true
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) color.copy(alpha = 0.15f) else color
     val iconTint = if (isSoftTranslucent) color else Color.White
 

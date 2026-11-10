@@ -564,7 +564,6 @@ class TestSettingsViewModel @Inject constructor(
 
     /**
      * 强制等级一致性：确保选中的等级在可用等级范围内
-     * (逻辑迁移自 TestSettingsScreen)
      */
     private fun enforceLevelConsistency() {
         // 只修改本地 UI 状态，不写 DataStore（避免反馈环路）

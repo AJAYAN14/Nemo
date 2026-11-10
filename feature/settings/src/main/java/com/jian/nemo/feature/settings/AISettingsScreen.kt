@@ -134,7 +134,7 @@ fun AISettingsScreen(
                 ) {
                         item {
                             val iconStyle = LocalSettingIconStyle.current
-                            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                             val baseColor = IosColors.Blue
                             val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
                             val iconTint = if (isSoftTranslucent) baseColor else Color.White
@@ -307,7 +307,7 @@ fun AISettingsScreen(
 }
 
 /**
- * 借鉴 portal_labs SwipeableActionTile 理念的物理弹性侧滑卡片：
+ * 具有物理阻尼弹性反馈的侧滑操作卡片：
  * 1. 支持水平阻尼拖拽与弹簧弹性吸附；
  * 2. 向左滑动平滑露出高质感珊瑚红删除胶囊按键；
  * 3. 滑动过阈值触发震动感知；

@@ -23,7 +23,7 @@ import com.jian.nemo.feature.learning.R
 private const val AURORA_SHADER_URL = "file:///android_asset/shaders/ai_aurora.html"
 
 /**
- * React Bits 官方 Aurora 原型预设色彩库
+ * 极光背景预设色彩库
  */
 data class AuroraPreset(
     val id: String,

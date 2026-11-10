@@ -461,7 +461,7 @@ fun DetailMiniMetricCard(
     }
 
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) item.color.copy(alpha = if (isDark) 0.2f else 0.12f) else item.color
     val iconTint = if (isSoftTranslucent) item.color else Color.White
 

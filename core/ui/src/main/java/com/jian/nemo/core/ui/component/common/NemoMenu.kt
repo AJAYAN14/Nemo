@@ -87,7 +87,7 @@ fun NemoDropdownMenu(
  * @param iconColor 显式指定强调色 (可选，默认取 MaterialTheme.colorScheme.primary)
  * @param trailingIcon 尾部辅助中性指示图标 (如对勾、箭头等，可选)
  * @param enabled 是否启用
- * @param isDestructive 是否是破坏性操作 (统一使用调色盘 IosColors.Red)
+ * @param isDestructive 是否是破坏性操作（呈现警示强调红）
  */
 @Composable
 fun NemoMenuItem(

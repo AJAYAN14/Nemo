@@ -828,7 +828,7 @@ private fun ReadyView(
                                             )
                                         } else {
                                             if (isCompositionInCell && compositionText.isNotEmpty()) {
-                                                // 极其惊艳！在激活格子中实时渲染日语输入法正在打字的未确认英文草稿（如 he）
+                                                // 在激活格子中实时渲染输入法未上屏的组合拼写草稿（如 he）
                                                 Text(
                                                     text = compositionText,
                                                     style = TextStyle(

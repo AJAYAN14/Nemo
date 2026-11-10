@@ -142,7 +142,7 @@ fun TestResultComponent(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // 感性光晕背景层 (方案二：Apple Aurora 玻璃极光渐变)
+        // 感性光晕背景层 (极光玻璃柔光渐变)
         // 使用两个不同位置带透明度的 RadialGradient 模拟超大范围和高性能的散光模糊，适配所有版本系统
         Canvas(modifier = Modifier.fillMaxSize()) {
             // 左上角主光晕 (颜色随用户的测试正确率成绩好坏变化)

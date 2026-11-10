@@ -291,7 +291,7 @@ private fun EmptyState(
     icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val accentColor = IosColors.Blue
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.12f) else accentColor.copy(alpha = 0.2f)
 

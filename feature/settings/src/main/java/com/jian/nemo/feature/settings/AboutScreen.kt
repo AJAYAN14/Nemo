@@ -318,7 +318,7 @@ fun AboutScreen(
                 // ==========================================
                 item {
                     val iconStyle = LocalSettingIconStyle.current
-                    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+                    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
                     val changelogBg = if (isSoftTranslucent) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue
                     val changelogTint = if (isSoftTranslucent) IosColors.Blue else Color.White
 

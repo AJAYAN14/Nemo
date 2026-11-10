@@ -202,7 +202,7 @@ private fun WordDetailContent(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
-    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
     val accentColor = if (isDark) IosColors.BlueDark else IosColors.Blue
 
     // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
@@ -491,7 +491,7 @@ private fun DetailTag(
     horizontalPadding: androidx.compose.ui.unit.Dp = 12.dp,
     textStyle: androidx.compose.ui.text.TextStyle? = null
 ) {
-    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.MD3
+    val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
     val containerBg = if (isSoftTranslucent) tagColor.copy(alpha = 0.15f) else tagColor
     val contentColor = if (isSoftTranslucent) tagColor else Color.White
 

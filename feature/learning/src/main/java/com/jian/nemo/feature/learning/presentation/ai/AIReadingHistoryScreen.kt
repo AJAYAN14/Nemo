@@ -173,7 +173,7 @@ private fun HistoryItemCard(
     onDelete: () -> Unit
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val colorScheme = MaterialTheme.colorScheme
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
@@ -325,7 +325,7 @@ private fun EmptyState(
     modifier: Modifier = Modifier
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 

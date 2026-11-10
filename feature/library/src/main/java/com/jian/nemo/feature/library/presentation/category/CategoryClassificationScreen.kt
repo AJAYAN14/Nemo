@@ -335,7 +335,7 @@ private fun CategoryCard(
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) item.iconColor.copy(alpha = 0.15f) else item.iconColor
     val iconTint = if (isSoftTranslucent) item.iconColor else Color.White
 

@@ -280,7 +280,7 @@ fun AIWorkshopScreen(
             }
         }
 
-        // 加载层 - 采用 code_artifact.html WebGL2 全屏极光引擎 + 浮动 AI 动态思维链硬解码卡片
+        // 加载层 - 采用原生 WebGL2 全屏极光引擎 + 浮动 AI 动态思维链解码卡片
         if (uiState.isLoading) {
             val context = LocalContext.current
             val visibleSteps = remember { mutableStateListOf<WorkshopThinkingStepItem>() }
@@ -472,7 +472,7 @@ private fun WorkshopContent(
     onEvent: (AIWorkshopEvent) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        // 1. 模式切换面板（Apple Style 胶囊）
+        // 1. 模式切换面板（双态流体胶囊）
         ModeSection(
             currentMode = uiState.workshopMode,
             onModeChange = { onEvent(AIWorkshopEvent.UpdateWorkshopMode(it)) },
@@ -620,7 +620,7 @@ private fun ModeSection(
 private fun GrammarDataEmptyView() {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
 
     val emptyIconColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f) else NemoNeutrals.Gray500
     val emptyContainerBg = if (isSoftTranslucent) {
@@ -784,7 +784,7 @@ private fun HeroStartView(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val iconStyle = LocalSettingIconStyle.current
-        val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+        val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
         val heroBaseColor = if (isGrammarMode) {
             if (isDark) IosColors.GreenDark else IosColors.Green
         } else {
@@ -1264,7 +1264,7 @@ private fun FeedbackSection(
 private fun ConfigRequiredView(onNavigateToSettings: () -> Unit) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
 
     val configIconColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(0.7f) else NemoNeutrals.Gray500
     val configContainerBg = if (isSoftTranslucent) {

@@ -42,7 +42,7 @@ class AboutViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.PLUMP_DUO
+            initialValue = SettingIconStyle.VIBRANT_SOLID
         )
 
     private val _uiState = MutableStateFlow(AboutUiState())

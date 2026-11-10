@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.StatisticsPalette
-import com.jian.nemo.core.designsystem.icon.IsoluminantPalette
 import kotlin.math.roundToInt
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoTheme
@@ -90,8 +89,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 fun ForgettingCurveChart(
     data: ForgettingCurveData,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop? = null,
-    isPlumpDuo: Boolean = false
+    backdrop: Backdrop? = null
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val textMeasurer = rememberTextMeasurer()
@@ -106,20 +104,10 @@ fun ForgettingCurveChart(
     // 颜色方案
     val gridColor = if (isDark) NemoNeutrals.Gray700.copy(alpha = 0.4f) else NemoNeutrals.Gray200
     val axisLabelColor = if (isDark) NemoNeutrals.Gray400 else NemoNeutrals.Gray500
-    val standardLineColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen
+    val standardLineColor = StatisticsPalette.MatureGreen
     
     // 动态色彩联动：折线与面积阴影跟随当前选中的分层阶段主题色平滑补间过渡
-    val activeThemeColor = if (isPlumpDuo) {
-        when (data.activeStage) {
-            CurveStage.COMPOSITE -> IsoluminantPalette.LilacViolet
-            CurveStage.YOUNG_EARLY -> IsoluminantPalette.CoralFlame
-            CurveStage.YOUNG_DEVELOPING -> IsoluminantPalette.SkyIndigo
-            CurveStage.MATURE -> IsoluminantPalette.EmeraldGreen
-            CurveStage.EXPERT -> IsoluminantPalette.WarmAmber
-        }
-    } else {
-        data.activeStage.themeColor
-    }
+    val activeThemeColor = data.activeStage.themeColor
     val userLineColor by animateColorAsState(
         targetValue = activeThemeColor,
         animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing),
@@ -292,7 +280,7 @@ fun ForgettingCurveChart(
             // ========== 绘制三元自适应记忆警戒线 ==========
             val yThresholdRatio = animatedThreshold.coerceIn(0f, 1f)
             val yThreshold = chartBottom - yThresholdRatio * chartHeight
-            val alertLineColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
+            val alertLineColor = StatisticsPalette.AlertGold
             drawLine(
                 color = alertLineColor.copy(alpha = 0.75f),
                 start = Offset(chartLeft, yThreshold),
@@ -304,11 +292,7 @@ fun ForgettingCurveChart(
             val thresholdPercent = (animatedThreshold * 100).roundToInt()
             val thresholdText = String.format(thresholdLineFormat, thresholdPercent)
             val thresholdStyle = TextStyle(
-                color = if (isPlumpDuo) {
-                    if (isDark) alertLineColor else NemoNeutrals.Gray800
-                } else {
-                    StatisticsPalette.AlertGold.copy(alpha = 0.9f)
-                },
+                color = StatisticsPalette.AlertGold.copy(alpha = 0.9f),
                 fontSize = 9.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -386,8 +370,7 @@ fun ForgettingCurveChart(
                 backdrop = chartBackdrop,
                 isDark = isDark,
                 userColor = userLineColor,
-                stageLabel = data.activeStage.label,
-                isPlumpDuo = isPlumpDuo
+                stageLabel = data.activeStage.label
             )
         }
     }
@@ -486,8 +469,7 @@ private fun CurveLiquidTooltip(
     backdrop: Backdrop?,
     isDark: Boolean,
     userColor: Color,
-    stageLabel: String,
-    isPlumpDuo: Boolean = false
+    stageLabel: String
 ) {
     var tooltipSize by remember { mutableStateOf(IntSize.Zero) }
     val density = LocalDensity.current
@@ -507,8 +489,8 @@ private fun CurveLiquidTooltip(
         boxTop = info.chartTop + with(density) { 12.dp.toPx() }
     }
 
-    val stdPointColor = if (isPlumpDuo) IsoluminantPalette.EmeraldGreen else StatisticsPalette.MatureGreen
-    val alertPointColor = if (isPlumpDuo) IsoluminantPalette.WarmAmber else StatisticsPalette.AlertGold
+    val stdPointColor = StatisticsPalette.MatureGreen
+    val alertPointColor = StatisticsPalette.AlertGold
 
     Box(
         modifier = Modifier

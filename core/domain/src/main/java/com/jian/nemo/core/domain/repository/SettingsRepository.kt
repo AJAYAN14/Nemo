@@ -744,8 +744,8 @@ enum class ToggleStyle {
  * 设置项图标视觉风格
  */
 enum class SettingIconStyle {
-    MD3,       // Material Design 3 风格（带圆角彩色卡片底框）
-    PLUMP_DUO  // Plump Duo 风格（无背景框双色线面与等亮度调色板）
+    SOFT_TRANSLUCENT, // 柔和微透风格（带 15% 半透明圆角底框）
+    VIBRANT_SOLID     // 活力纯色风格（100% 实心底框与纯白反白图标）
 }
 
 /**

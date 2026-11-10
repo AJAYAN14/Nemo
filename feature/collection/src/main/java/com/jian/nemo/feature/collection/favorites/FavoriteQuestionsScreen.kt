@@ -68,7 +68,7 @@ fun FavoriteQuestionsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val iconStyle by viewModel.iconStyle.collectAsState()
 
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val heartColor = IosColors.Pink
     val accentGreen = IosColors.Green
     val accentBlue = IosColors.Blue

@@ -68,7 +68,7 @@ fun FavoriteGrammarsScreen(
     val iconStyle by viewModel.iconStyle.collectAsState()
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val heartColor = IosColors.Pink
     val accentColor = IosColors.Orange
@@ -310,7 +310,7 @@ fun FavoriteGrammarsScreen(
 }
 
 /**
- * 获取 JLPT 等级对应颜色（统一收拢至标准设计色彩手册 IosColors）
+ * 获取 JLPT 等级对应语义颜色
  */
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {

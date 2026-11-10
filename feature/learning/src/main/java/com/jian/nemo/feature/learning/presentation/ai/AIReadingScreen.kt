@@ -320,13 +320,13 @@ private fun ConfigScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
     val levels = remember { listOf("N5", "N4", "N3", "N2", "N1") }
 
-    // 精选的 6 个核心阅读主题 (Apple 风格：极度克制、纯粹意象副标、大留白)
+    // 精选的 6 个核心阅读主题（极简克制、纯粹意象副标、充裕留白）
     val themes = listOf(
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_daily_life_title),
@@ -449,7 +449,7 @@ private fun ConfigScreen(
 
                 Spacer(Modifier.height(18.dp))
 
-                // 物理流体胶囊滑块 (portal_labs Discrete Tabs 动效)
+                // 物理流体胶囊滑块动效
                 FluidLevelSegmentedPicker(
                     levels = levels,
                     selectedLevel = uiState.difficulty,
@@ -566,7 +566,7 @@ private fun ConfigScreen(
 }
 
 /**
- * 物理流体胶囊指示器 (借鉴 portal_labs Discrete Tabs)
+ * 物理流体胶囊指示器，支持滑动吸附与平滑阻尼动效
  */
 @Composable
 private fun FluidLevelSegmentedPicker(
@@ -770,7 +770,7 @@ private data class ThemeCardInfo(
 )
 
 /**
- * Apple 风格主题卡片组件 (遵循 Apple Design 极度克制、充裕留白与信息降噪)
+ * 极简高质感主题卡片组件，注重留白与信息降噪
  */
 @Composable
 private fun ThemeBentoItem(
@@ -784,7 +784,7 @@ private fun ThemeBentoItem(
     val isDark = colorScheme.background.luminance() < 0.5f
     val effectiveAccent = info.accent
 
-    // 交互态按压弹性动画 (Apple 经典按压微缩放)
+    // 交互态按压弹性动画（轻量按压微缩放）
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -882,7 +882,7 @@ private fun ThemeBentoItem(
         ) {
             // 顶部：图标基座 (遵循 2:3 黄金比例与双轨单容器架构)
             val iconStyle = LocalSettingIconStyle.current
-            val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+            val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
             val iconBg = if (isSoftTranslucent) info.accent.copy(alpha = 0.15f) else info.accent
             val iconTint = if (isSoftTranslucent) info.accent else Color.White
 
@@ -903,7 +903,7 @@ private fun ThemeBentoItem(
 
             Spacer(Modifier.height(18.dp))
 
-            // 主标题：大字重、纯净醒目、紧凑字距 (SF Pro 风格)
+            // 主标题：大字重、纯净醒目、紧凑微字距排版
             Text(
                 text = info.name,
                 style = MaterialTheme.typography.titleMedium.copy(
@@ -933,7 +933,7 @@ private fun ThemeBentoItem(
 }
 
 /**
- * 底部高光流体主按钮 (react-bits SpecularButton)
+ * 底部高光流体主按钮
  */
 @Composable
 private fun SpecularCtaButton(
@@ -943,7 +943,6 @@ private fun SpecularCtaButton(
     accentColor: Color = BentoColors.Primary
 ) {
     val haptic = LocalHapticFeedback.current
-    val isPlumpDuo = LocalSettingIconStyle.current == SettingIconStyle.PLUMP_DUO
 
     // 扫光位移动画 (Specular Light Sweep)
     val infiniteTransition = rememberInfiniteTransition(label = "specularTransition")
@@ -968,19 +967,11 @@ private fun SpecularCtaButton(
         label = "arrowOffset"
     )
 
-    val gradientColors = if (isPlumpDuo) {
-        listOf(
-            accentColor.copy(alpha = 0.88f),
-            accentColor,
-            accentColor.copy(alpha = 0.96f)
-        )
-    } else {
-        listOf(
-            LearningPalette.AiCoralOrange,
-            BentoColors.Primary,
-            LearningPalette.AiDeepOrange
-        )
-    }
+    val gradientColors = listOf(
+        LearningPalette.AiCoralOrange,
+        BentoColors.Primary,
+        LearningPalette.AiDeepOrange
+    )
 
     Box(
         modifier = modifier
@@ -1141,7 +1132,7 @@ private fun HardDecodedText(
 
 /**
  * 2. 智能阅读训练加载页面：
- * 采用 code_artifact.html 原生 WebGL2 全屏极光引擎 + 浮动 AI 动态思维链硬解码卡片
+ * 采用原生 WebGL2 全屏极光引擎 + 浮动 AI 动态思维链解码卡片
  * 固定 4 条容量滑动窗口淘汰，绿色对勾图标，深浅色自适应
  */
 @Composable
@@ -1327,7 +1318,7 @@ private fun ArticleContentScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -1729,7 +1720,7 @@ private fun VocabularyItem(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -1820,7 +1811,7 @@ private fun QuestionCard(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 
@@ -2024,7 +2015,7 @@ private fun ErrorScreen(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val borderColor = if (isDark) colorScheme.outlineVariant.copy(alpha = 0.15f) else NemoNeutrals.Gray100
 

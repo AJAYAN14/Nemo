@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.UiPalette
 
 /**
- * 极简高质感弥散阴影修饰符，效果完全等同于 Flutter/Figma 中的 BoxShadow。
+ * 弥散阴影修饰符，提供高质感多重采样环境光与漫反射柔和投影。
  *
  * @param color 阴影颜色与透明度（默认: 5% 纯黑 0x0D000000）
  * @param borderRadius 卡片圆角半径（默认: 22.dp）

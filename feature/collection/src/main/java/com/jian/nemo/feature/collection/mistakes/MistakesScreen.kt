@@ -76,7 +76,7 @@ fun MistakesScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    // 图标风格双自适应（MD3 / Plump Duo）下发给整页子组件
+    // 图标风格双自适应（柔和微透 / 活力纯色）下发给整页子组件
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         Box(
             modifier = Modifier
@@ -305,7 +305,7 @@ fun WrongAnswerCategoryCard(
     onClick: () -> Unit
 ) {
     val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.MD3)
+    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) iconColor.copy(alpha = 0.15f) else iconColor
     val iconTint = if (isSoftTranslucent) iconColor else Color.White
 

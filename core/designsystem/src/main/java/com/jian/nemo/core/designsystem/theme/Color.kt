@@ -21,12 +21,6 @@ val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
 val NemoPink = Color(0xFFFF2D55)             // 规范粉红
 val NemoNeutralGray = Color(0xFF8E8E93)      // 中性灰基准 (Dynamic Color Spec 规范)
 
-// Streamline Plump Duo 官方原版双色标准
-val PlumpDuoStroke = Color(0xFF2859C5)
-val PlumpDuoStrokeDark = Color(0xFF0A84FF)
-val PlumpDuoFill = Color(0xFF8FBFFA)
-val PlumpDuoFillDark = Color(0x3D8FBFFA)
-
 // ColorScheme 容器与对应前景配色 (Light)
 val NemoPrimaryContainerLight = Color(0xFFE5F1FF)
 val NemoOnPrimaryContainerLight = Color(0xFF004CB3)
@@ -285,7 +279,7 @@ val NemoBorderColor = NemoSurfaceBorder
 @Deprecated("Use NemoPrimary", ReplaceWith("NemoPrimary"))
 val NemoBlue = NemoPrimary
 
-// Standardized Nemo Colors (Aliased to IosColors for consistency)
+// 标准化语义色彩定义
 val NemoOrange = IosColors.Orange
 val NemoTeal = IosColors.Teal
 val NemoPurple = IosColors.Purple
@@ -301,7 +295,7 @@ val LearningCardBackgroundDark = NemoSurfaceCardDark
 @Deprecated("Use NemoSecondary", ReplaceWith("NemoSecondary"))
 val NemoGreen = NemoSecondary
 
-// iOS 风格色彩别名 (重定向至 IosColors 对象)
+// 历史色彩别名兼容映射
 @Deprecated("Use IosColors.Red", ReplaceWith("IosColors.Red"))
 val iOSRed = IosColors.Red
 @Deprecated("Use IosColors.Orange", ReplaceWith("IosColors.Orange"))
@@ -456,15 +450,15 @@ object NemoCategoryTheme {
 object NemoCategoryColors {
     // 浅色模式 (Premium Pastel System)
     val CardVerbBgLight = Color(0xFFF0F7FF)     // Azure Blue (更通透)
-    val CardVerbTextLight = Color(0xFF007AFF)    // iOS Blue 风格
+    val CardVerbTextLight = Color(0xFF007AFF)    // 高对比活力蓝
     val CardAdjIBgLight = Color(0xFFF2FBF2)      // Emerald Soft
     val CardAdjITextLight = Color(0xFF34C759)     // Vibrant Green
     val CardAdjNaBgLight = Color(0xFFFFF7EB)     // Soft Peach
-    val CardAdjNaTextLight = Color(0xFFFF9500)    // iOS Orange
+    val CardAdjNaTextLight = Color(0xFFFF9500)    // 琥珀暖橙
     val CardNounBgLight = Color(0xFFF9F5FF)      // Lavender Mist
-    val CardNounTextLight = Color(0xFF5856D6)     // iOS Indigo
+    val CardNounTextLight = Color(0xFF5856D6)     // 优雅靛紫
     val CardAdvBgLight = Color(0xFFF0FAF9)       // Mint Water
-    val CardAdvTextLight = Color(0xFF00C7BE)      // iOS Mint
+    val CardAdvTextLight = Color(0xFF00C7BE)      // 清爽薄荷青
     val CardRentaiBgLight = Color(0xFFF0F9FF)    // Sky Blue Mist (更清爽的蓝)
     val CardRentaiTextLight = Color(0xFF0EA5E9)    // Sky Blue 500
     val CardConjBgLight = Color(0xFFFEFBE8)      // Lemon Chiffon
@@ -951,19 +945,6 @@ object UiPalette {
         val Tropical = listOf(Color(0xFFFF006E), Color(0xFFFB5607), Color(0xFFFFBE0B))
         val Cherry = listOf(Color(0xFFFFB3C6), Color(0xFFFF8FAB), Color(0xFFFFC2D1))
     }
-}
-
-object PlumpPalette {
-    val SkyIndigo = Color(0xFF4C82F6)    // 晴空蓝 (Hue 255°)
-    val LakesideCyan = Color(0xFF009CB2) // 湖光青 (Hue 195°)
-    val LilacViolet = Color(0xFF906EE8)  // 丁香紫 (Hue 295°)
-    val WarmAmber = Color(0xFFD67700)    // 暖金琥珀 (Hue 70°)
-    val EmeraldGreen = Color(0xFF229E65) // 翡翠竹青 (Hue 145°)
-    val RoseRuby = Color(0xFFE44F6D)     // 蔷薇绯红 (Hue 15°)
-    val SeaMarine = Color(0xFF1D8FDF)    // 蔚蓝海晶 (Hue 225°)
-    val CoralFlame = Color(0xFFDE5545)   // 赤焰珊瑚 (Hue 30°)
-    val GlazeMint = Color(0xFF009F8C)    // 青碧琉璃 (Hue 175°)
-    val OceanBlue = Color(0xFF3B86E8)    // 深海青蓝 (Hue 240°)
 }
 
 object DesignSystemPalette {
