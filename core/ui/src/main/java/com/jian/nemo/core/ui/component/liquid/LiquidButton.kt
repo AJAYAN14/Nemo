@@ -128,7 +128,7 @@ fun LiquidButton(
             .clickable(
                 interactionSource = null,
                 indication = if (isInteractive) null else LocalIndication.current,
-                role = Role.Button,
+                role = null,
                 onClick = onClick
             ),
         contentAlignment = contentAlignment,
