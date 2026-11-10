@@ -71,8 +71,8 @@ fun TrackProgressIndicator(
 
     Box(
         modifier = modifier
-            .width(124.dp)
-            .height(28.dp)
+            .width(130.dp)
+            .height(34.dp)
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
@@ -142,7 +142,7 @@ fun TrackProgressIndicator(
                     path = progressPath,
                     color = progressLineColor,
                     style = Stroke(
-                        width = 2.5.dp.toPx(),
+                        width = 2.8.dp.toPx(),
                         cap = StrokeCap.Round
                     )
                 )
@@ -159,28 +159,28 @@ fun TrackProgressIndicator(
             Text(
                 text = "$queueNewCount",
                 color = newColor.copy(alpha = if (queueNewCount > 0) 1f else 0.25f),
-                fontSize = 11.5.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold
             )
             // 在学
             Text(
                 text = "$queueLearningCount",
                 color = learningColor.copy(alpha = if (queueLearningCount > 0) 1f else 0.25f),
-                fontSize = 11.5.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold
             )
             // 复习
             Text(
                 text = "$queueReviewCount",
                 color = reviewColor.copy(alpha = if (queueReviewCount > 0) 1f else 0.25f),
-                fontSize = 11.5.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold
             )
             // 重学
             Text(
                 text = "$queueRelearnCount",
                 color = relearnColor.copy(alpha = if (queueRelearnCount > 0) 1f else 0.25f),
-                fontSize = 11.5.sp,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.Bold
             )
         }

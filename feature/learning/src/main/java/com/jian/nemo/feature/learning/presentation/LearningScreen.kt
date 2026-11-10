@@ -405,11 +405,13 @@ fun LearningScreen(
                         queueRelearnCount = uiState.queueRelearnCount,
                         backdrop = learningBackdrop,
                         menu = {
-                            LearnHeaderMoreMenuButton(
-                                isExpanded = isMenuExpanded,
-                                onClick = { isMenuExpanded = !isMenuExpanded },
-                                backdrop = learningBackdrop
-                            )
+                            if (!showRatingGuide) {
+                                LearnHeaderMoreMenuButton(
+                                    isExpanded = isMenuExpanded,
+                                    onClick = { isMenuExpanded = !isMenuExpanded },
+                                    backdrop = learningBackdrop
+                                )
+                            }
                         }
                     )
                 }
@@ -425,7 +427,10 @@ fun LearningScreen(
                 onSuspend = { viewModel.onEvent(LearningEvent.SuspendCurrent) },
                 onBury = { viewModel.onEvent(LearningEvent.BuryCurrent) },
                 onReportError = { viewModel.onEvent(LearningEvent.OpenReportErrorDialog) },
-                onShowRatingGuide = { showRatingGuide = true },
+                onShowRatingGuide = {
+                    isMenuExpanded = false
+                    showRatingGuide = true
+                },
                 isAutoAudioEnabled = uiState.isAutoAudioEnabled,
                 onToggleAutoAudio = if (uiState.learningMode == LearningMode.Word) {
                     { viewModel.onEvent(LearningEvent.ToggleAutoPlayAudio(it)) }
@@ -551,8 +556,10 @@ fun LearningScreen(
                         val ms = seconds * 1000L
                         if (uiState.learningMode == LearningMode.Word) {
                             viewModel.onEvent(LearningEvent.SetAutoRevealAnswerMs(ms))
+                            viewModel.onEvent(LearningEvent.ToggleAutoRevealAnswer(true))
                         } else {
                             viewModel.onEvent(LearningEvent.SetGrammarAutoRevealAnswerMs(ms))
+                            viewModel.onEvent(LearningEvent.ToggleGrammarAutoRevealAnswer(true))
                         }
                     }
                 )
@@ -567,6 +574,7 @@ fun LearningScreen(
                     onConfirm = { seconds ->
                         showDelayDurationDialog = false
                         viewModel.onEvent(LearningEvent.SetShowAnswerDelayMs(seconds * 1000L))
+                        viewModel.onEvent(LearningEvent.ToggleShowAnswerDelay(true))
                     }
                 )
             }
@@ -862,6 +870,11 @@ fun GrammarLearningContent(
                          if (targetGrammar != null) {
                              SRSGrammarCard(
                                  grammar = targetGrammar,
+                                 progress = if (uiState.dailyGoal > 0) uiState.completedToday.toFloat() / uiState.dailyGoal else 0f,
+                                 queueNewCount = uiState.queueNewCount,
+                                 queueLearningCount = uiState.queueLearningCount,
+                                 queueReviewCount = uiState.queueReviewCount,
+                                 queueRelearnCount = uiState.queueRelearnCount,
                                  isAnswerShown = uiState.isAnswerShown,
                                  cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
                                  modifier = Modifier.fillMaxSize(),

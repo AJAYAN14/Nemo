@@ -70,7 +70,8 @@ fun LiquidToggle(
     onSelect: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
-    accentColor: Color? = null
+    accentColor: Color? = null,
+    resetSignal: Any? = null
 ) {
     val isLightTheme = !isSystemInDarkTheme()
     val actualAccentColor = accentColor ?: MaterialTheme.colorScheme.primary
@@ -114,7 +115,7 @@ fun LiquidToggle(
             }
     }
 
-    LaunchedEffect(selected()) {
+    LaunchedEffect(selected(), resetSignal) {
         val target = if (selected()) 1f else 0f
         if (target != fraction) {
             fraction = target
@@ -291,13 +292,15 @@ fun LiquidToggle(
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
-    accentColor: Color? = null
+    accentColor: Color? = null,
+    resetSignal: Any? = null
 ) {
     LiquidToggle(
         selected = { checked },
         onSelect = onCheckedChange,
         modifier = modifier,
         backdrop = backdrop,
-        accentColor = accentColor
+        accentColor = accentColor,
+        resetSignal = resetSignal
     )
 }

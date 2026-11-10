@@ -89,6 +89,37 @@ internal object GlassIcons {
             moveTo(4.93f, 19.07f); lineTo(6.7f, 17.3f)
             moveTo(17.3f, 6.7f); lineTo(19.07f, 4.93f)
         }
+        "info" -> Path().apply {
+            addCircle(12f, 12f, 8.5f, Path.Direction.CW)
+            moveTo(12f, 11f); lineTo(12f, 16.5f)
+            moveTo(12f, 7.5f); lineTo(12f, 7.6f)
+        }
+        "report", "flag" -> Path().apply {
+            moveTo(6f, 3.5f); lineTo(6f, 20.5f)
+            moveTo(6f, 4.5f); lineTo(18f, 4.5f); lineTo(14.5f, 9f); lineTo(18f, 13.5f); lineTo(6f, 13.5f)
+        }
+        "calendar" -> Path().apply {
+            addRoundRect(RectF(4.5f, 5.5f, 19.5f, 20f), 2.5f, 2.5f, Path.Direction.CW)
+            moveTo(8.5f, 3f); lineTo(8.5f, 6.5f)
+            moveTo(15.5f, 3f); lineTo(15.5f, 6.5f)
+            moveTo(4.5f, 10f); lineTo(19.5f, 10f)
+            moveTo(9f, 14f); lineTo(9f, 14.1f)
+            moveTo(15f, 14f); lineTo(15f, 14.1f)
+            moveTo(9f, 17f); lineTo(9f, 17.1f)
+            moveTo(15f, 17f); lineTo(15f, 17.1f)
+        }
+        "flip" -> Path().apply {
+            addRoundRect(RectF(4.5f, 6.5f, 16f, 19.5f), 2f, 2f, Path.Direction.CW)
+            moveTo(8.5f, 6.5f); lineTo(8.5f, 4.5f); quadTo(8.5f, 3.5f, 9.5f, 3.5f); lineTo(18.5f, 3.5f)
+            quadTo(19.5f, 3.5f, 19.5f, 4.5f); lineTo(19.5f, 14.5f); quadTo(19.5f, 15.5f, 18.5f, 15.5f); lineTo(16f, 15.5f)
+            moveTo(7.5f, 13.5f); quadTo(10.25f, 11f, 13f, 13.5f)
+            moveTo(11f, 12f); lineTo(13f, 13.5f); lineTo(12.5f, 11.5f)
+        }
+        "volume" -> Path().apply {
+            moveTo(4.5f, 9.5f); lineTo(8f, 9.5f); lineTo(13f, 5.5f); lineTo(13f, 18.5f); lineTo(8f, 14.5f); lineTo(4.5f, 14.5f); close()
+            moveTo(16f, 9.5f); quadTo(17.8f, 12f, 16f, 14.5f)
+            moveTo(19f, 7f); quadTo(22f, 12f, 19f, 17f)
+        }
         else -> null
     }
 }

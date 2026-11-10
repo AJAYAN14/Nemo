@@ -68,6 +68,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Grammar
+import com.jian.nemo.feature.learning.presentation.components.common.TrackProgressIndicator
+import com.jian.nemo.feature.learning.presentation.components.dialogs.QueueExplanationDialog
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoText
@@ -108,8 +112,14 @@ fun SRSGrammarCard(
     playingAudioId: String? = null,
     isWhiteboardEnabled: Boolean = false,
     autoRevealProgress: Float? = null,
+    progress: Float = 0f,
+    queueNewCount: Int = 0,
+    queueLearningCount: Int = 0,
+    queueReviewCount: Int = 0,
+    queueRelearnCount: Int = 0,
     topPadding: androidx.compose.ui.unit.Dp = 0.dp
 ) {
+    var showQueueExplanationDialog by remember { mutableStateOf(false) }
     // 背面临时显示手写白板的状态
     var showBackWhiteboard by remember(grammar.id) { mutableStateOf(false) }
 
@@ -173,53 +183,12 @@ fun SRSGrammarCard(
             }
 
             Column(
-                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 24.dp, horizontal = 16.dp)
+                    .padding(top = 28.dp), // 预留空间避免与顶部三栏徽章重叠
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 标签行
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // 等级标签
-                    Box(
-                        modifier = Modifier
-                            .background(levelBg, CircleShape)
-                            .padding(horizontal = 14.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = grammar.grammarLevel,
-                            color = levelText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 1.2.sp
-                        )
-                    }
-
-                    // 顶部手写白板按钮 (仅在背面且 isAnswerShown 为 true 时显示，避免错位和重叠)
-                    if (isAnswerShown) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(whiteboardBg)
-                                .clickable { showBackWhiteboard = !showBackWhiteboard },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Edit,
-                                contentDescription = stringResource(R.string.learn_grammar_card_btn_whiteboard),
-                                tint = whiteboardTint,
-                                modifier = Modifier.size(20.dp) // 30 * 2/3 = 20dp 严格黄金比例
-                            )
-                        }
-                    }
-                }
-
                 // 语法条目（大标题）
                 Text(
                     text = grammar.grammar,
@@ -229,10 +198,13 @@ fun SRSGrammarCard(
                     fontFamily = NotoSerifJP,
                     textAlign = TextAlign.Center,
                     lineHeight = 44.sp,
-                    style = androidx.compose.ui.text.TextStyle(
+                    style = TextStyle(
+                        platformStyle = PlatformTextStyle(
+                            includeFontPadding = false
+                        ),
                         localeList = androidx.compose.ui.text.intl.LocaleList("ja")
                     ),
-                    modifier = Modifier.padding(vertical = 16.dp)
+                    modifier = Modifier.padding(vertical = 12.dp)
                 )
 
                 // 思考提示（答案隐藏时）
@@ -242,40 +214,117 @@ fun SRSGrammarCard(
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium,
                         color = secondaryTextColor.copy(alpha = 0.6f),
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
 
-            cardBadge?.let { badge ->
-                val badgeColor = when (badge) {
-                    CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-                    CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-                    CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-                    CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
-                }
-                val badgeText = when (badge) {
-                    CardBadge.NEW -> stringResource(R.string.learn_grammar_card_badge_new)
-                    CardBadge.LEARNING -> stringResource(R.string.learn_grammar_card_badge_learning)
-                    CardBadge.REVIEW -> stringResource(R.string.learn_grammar_card_badge_review)
-                    CardBadge.RELEARN -> stringResource(R.string.learn_grammar_card_badge_relearn)
-                }
-                val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 32.dp, end = 32.dp)
-                        .background(badgeBg, CircleShape)
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+            // 顶部栏：等级徽章 (左) + 跑道进度条 (居中) + 状态徽章 (右)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(top = 14.dp, start = 16.dp, end = 16.dp)
+            ) {
+                // 左侧：等级徽章 + 手写白板按钮
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = badgeText,
-                        color = badgeColor,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.2.sp
-                    )
+                    Box(
+                        modifier = Modifier
+                            .height(34.dp)
+                            .background(levelBg, CircleShape)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = grammar.grammarLevel,
+                            color = levelText,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.2.sp,
+                            style = TextStyle(
+                                platformStyle = PlatformTextStyle(
+                                    includeFontPadding = false
+                                )
+                            )
+                        )
+                    }
+
+                    // 顶部手写白板按钮 (仅在背面且 isAnswerShown 为 true 时显示)
+                    if (isAnswerShown) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(whiteboardBg)
+                                .clickable { showBackWhiteboard = !showBackWhiteboard },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = stringResource(R.string.learn_grammar_card_btn_whiteboard),
+                                tint = whiteboardTint,
+                                modifier = Modifier.size(21.dp)
+                            )
+                        }
+                    }
+                }
+
+                // 中间：400米跑道进度条 (绝对居中，高度 34dp，宽度 130dp)
+                TrackProgressIndicator(
+                    progress = progress,
+                    queueNewCount = queueNewCount,
+                    queueLearningCount = queueLearningCount,
+                    queueReviewCount = queueReviewCount,
+                    queueRelearnCount = queueRelearnCount,
+                    isDarkTheme = isDarkTheme,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                        showQueueExplanationDialog = true
+                    },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                // 右侧：状态徽章 (高度 34dp)
+                if (cardBadge != null) {
+                    val badgeColor = when (cardBadge) {
+                        CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+                        CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+                        CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
+                        CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                    }
+                    val badgeText = when (cardBadge) {
+                        CardBadge.NEW -> stringResource(R.string.learn_grammar_card_badge_new)
+                        CardBadge.LEARNING -> stringResource(R.string.learn_grammar_card_badge_learning)
+                        CardBadge.REVIEW -> stringResource(R.string.learn_grammar_card_badge_review)
+                        CardBadge.RELEARN -> stringResource(R.string.learn_grammar_card_badge_relearn)
+                    }
+                    val badgeBg = badgeColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .height(34.dp)
+                            .background(badgeBg, CircleShape)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = badgeText,
+                            color = badgeColor,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.2.sp,
+                            style = TextStyle(
+                                platformStyle = PlatformTextStyle(
+                                    includeFontPadding = false
+                                )
+                            )
+                        )
+                    }
                 }
             }
 
@@ -761,5 +810,16 @@ fun SRSGrammarCard(
             }
         }
         }
+    }
+
+    if (showQueueExplanationDialog) {
+        QueueExplanationDialog(
+            onDismissRequest = { showQueueExplanationDialog = false },
+            queueNewCount = queueNewCount,
+            queueLearningCount = queueLearningCount,
+            queueReviewCount = queueReviewCount,
+            queueRelearnCount = queueRelearnCount,
+            isDarkTheme = isDarkTheme
+        )
     }
 }

@@ -616,7 +616,7 @@ internal fun calculateLiquidMenuGeometry(
     val maximumHeightPx = maxOf(bottomBound - topBound - margin, 100f * density)
 
     val height = minOf(maxOf(menuHeight, 48f * density), maximumHeightPx)
-    val width = minOf(maxOf(menuWidth, 200f * density), windowWidth - margin * 2f)
+    val width = minOf(maxOf(menuWidth, 245f * density), windowWidth - margin * 2f).coerceAtMost(300f * density)
 
     val fromRight = (anchorLeft + anchorRight) / 2f > windowWidth / 2f
     val left = (if (fromRight) anchorRight - width else anchorLeft)

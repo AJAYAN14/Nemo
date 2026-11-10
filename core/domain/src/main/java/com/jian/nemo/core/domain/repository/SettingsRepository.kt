@@ -752,10 +752,14 @@ enum class SettingIconStyle {
  * 桌面启动图标风格
  */
 enum class AppIconStyle {
-    DEFAULT,     // 默认版
-    MONOCHROME,  // 黑白版
-    FROG_CHEER,  // 仰头小青蛙
-    FROG_NINJA   // 忍者小青蛙
+    DEFAULT,     // 默认蓝
+    BLACK,       // 黑色
+    GREEN,       // 绿色
+    ORANGE,      // 橙色
+    PINK,        // 粉色
+    PURPLE,      // 紫色
+    RED,         // 红色
+    YELLOW       // 黄色
 }
 
 /**

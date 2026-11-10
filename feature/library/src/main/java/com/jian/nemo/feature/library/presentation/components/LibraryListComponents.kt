@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.painterResource
@@ -153,7 +154,6 @@ fun LibraryLevelSelectionButton(
             modifier = modifier,
             buttonSize = buttonSize,
             colorScheme = if (isDarkTheme) "dark" else "light",
-            menuWidth = 260.dp,
             onSelect = { item, _ ->
                 ActiveNativeLibraryLevelActionHandler.value?.invoke(item.id)
             },
@@ -213,7 +213,8 @@ fun LibraryLevelSelectionOverlay(
                 id = "ALL",
                 title = allLevelsTitle,
                 icon = "grid",
-                checked = isAllSelected
+                checked = isAllSelected,
+                iconColor = IosColors.Indigo.toArgb()
             )
         )
         list.add(GlassMenuItemRecord(separator = true))
@@ -231,7 +232,8 @@ fun LibraryLevelSelectionOverlay(
                     id = level,
                     title = titleMap[level] ?: level,
                     icon = "filter",
-                    checked = isSelected
+                    checked = isSelected,
+                    iconColor = getLevelColor(level).toArgb()
                 )
             )
         }
@@ -346,7 +348,6 @@ val AvatarPalette = listOf(
     IosColors.Cyan
 )
 
-@Composable
 fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
         "N5" -> IosColors.Green

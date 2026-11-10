@@ -127,22 +127,6 @@ fun LearnHeader(
         stringResource(R.string.learn_common_title_grammar_learning)
     }
 
-    // 0.6dp 顶部拟态微光渐变描边（上亮下透，呈现晶体玻璃倒角反光切面）
-    val capsuleBorderBrush = Brush.verticalGradient(
-        colors = if (isDarkTheme) {
-            listOf(
-                Color.White.copy(alpha = 0.35f),
-                Color.White.copy(alpha = 0.12f),
-                Color.Transparent
-            )
-        } else {
-            listOf(
-                Color.White.copy(alpha = 0.85f),
-                Color.White.copy(alpha = 0.30f),
-                Color.Black.copy(alpha = 0.05f)
-            )
-        }
-    )
     val capsuleSurfaceColor = if (isDarkTheme) {
         Color.White.copy(alpha = 0.08f)
     } else {
@@ -191,7 +175,7 @@ fun LearnHeader(
                             showTodayOverviewDialog = true
                         },
                         shape = Capsule(),
-                        border = BorderStroke(0.6.dp, capsuleBorderBrush),
+                        border = null,
                         surfaceColor = capsuleSurfaceColor,
                         backdrop = backdrop,
                         hasLens = true,

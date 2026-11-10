@@ -9,33 +9,50 @@ import com.jian.nemo.core.domain.repository.AppIconStyle
 /**
  * 桌面启动图标管理工具
  *
- * 采用方案 A：紧凑原子同步替换
- * 启用新别名并立即禁用旧别名，手机桌面 Launcher 会在同一个包状态变更通知中
- * 判定为“原地就地更新”，绝不改变应用在手机桌面上的原位置与文件夹排版。
+ * 紧凑原子同步替换：启用目标别名并立即禁用其余别名，
+ * 触发系统 Launcher 就地刷新，锁定桌面排版位置。
  */
 object AppIconManager {
     private const val TAG = "AppIconManager"
     private const val PACKAGE_NAME = "com.jian.nemo"
+
     private const val ALIAS_DEFAULT = "com.jian.nemo.MainActivityDefault"
-    private const val ALIAS_MONOCHROME = "com.jian.nemo.MainActivityMonochrome"
-    private const val ALIAS_FROG_CHEER = "com.jian.nemo.MainActivityFrogCheer"
-    private const val ALIAS_FROG_NINJA = "com.jian.nemo.MainActivityFrogNinja"
+    private const val ALIAS_BLACK = "com.jian.nemo.MainActivityBlack"
+    private const val ALIAS_GREEN = "com.jian.nemo.MainActivityGreen"
+    private const val ALIAS_ORANGE = "com.jian.nemo.MainActivityOrange"
+    private const val ALIAS_PINK = "com.jian.nemo.MainActivityPink"
+    private const val ALIAS_PURPLE = "com.jian.nemo.MainActivityPurple"
+    private const val ALIAS_RED = "com.jian.nemo.MainActivityRed"
+    private const val ALIAS_YELLOW = "com.jian.nemo.MainActivityYellow"
+
+    // 历史遗留别名白名单（用于平滑迁移并自动禁用）
+    private val LEGACY_ALIASES = listOf(
+        "com.jian.nemo.MainActivityMonochrome",
+        "com.jian.nemo.MainActivityFrogCheer",
+        "com.jian.nemo.MainActivityFrogNinja"
+    )
 
     fun switchIcon(context: Context, targetStyle: AppIconStyle) {
         val packageManager = context.packageManager
         val components = mapOf(
             AppIconStyle.DEFAULT to ComponentName(PACKAGE_NAME, ALIAS_DEFAULT),
-            AppIconStyle.MONOCHROME to ComponentName(PACKAGE_NAME, ALIAS_MONOCHROME),
-            AppIconStyle.FROG_CHEER to ComponentName(PACKAGE_NAME, ALIAS_FROG_CHEER),
-            AppIconStyle.FROG_NINJA to ComponentName(PACKAGE_NAME, ALIAS_FROG_NINJA)
+            AppIconStyle.BLACK to ComponentName(PACKAGE_NAME, ALIAS_BLACK),
+            AppIconStyle.GREEN to ComponentName(PACKAGE_NAME, ALIAS_GREEN),
+            AppIconStyle.ORANGE to ComponentName(PACKAGE_NAME, ALIAS_ORANGE),
+            AppIconStyle.PINK to ComponentName(PACKAGE_NAME, ALIAS_PINK),
+            AppIconStyle.PURPLE to ComponentName(PACKAGE_NAME, ALIAS_PURPLE),
+            AppIconStyle.RED to ComponentName(PACKAGE_NAME, ALIAS_RED),
+            AppIconStyle.YELLOW to ComponentName(PACKAGE_NAME, ALIAS_YELLOW)
         )
 
         val targetComponent = components[targetStyle] ?: return
-        val disableComponents = components.filterKeys { it != targetStyle }.values
+        val disableComponents = components.filterKeys { it != targetStyle }.values.toMutableList()
+        // 同时追加历史遗留别名，确保彻底清理
+        LEGACY_ALIASES.forEach { alias ->
+            disableComponents.add(ComponentName(PACKAGE_NAME, alias))
+        }
 
         try {
-            // 同步紧凑原子操作：先启用目标组件，并立即禁用旧组件
-            // 手机桌面在单次广播处理中将其识别为“就地替换”，牢牢锁住桌面原位置
             packageManager.setComponentEnabledSetting(
                 targetComponent,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
@@ -49,7 +66,7 @@ object AppIconManager {
                     PackageManager.DONT_KILL_APP
                 )
             }
-            Log.d(TAG, "Successfully atomic-switched app icon to $targetStyle (locked in place)")
+            Log.d(TAG, "Successfully atomic-switched app icon to $targetStyle")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to atomic-switch app icon to $targetStyle", e)
         }

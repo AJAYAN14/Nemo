@@ -8,6 +8,7 @@ import android.graphics.RenderNode
 import android.os.Build
 import android.os.SystemClock
 import android.util.AttributeSet
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -29,6 +30,7 @@ class NemoGlassMenuView @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     var onItemSelect: ((item: GlassMenuItemRecord, index: Int) -> Unit)? = null
+    var onItemLongSelect: ((item: GlassMenuItemRecord, index: Int) -> Unit)? = null
     var onMenuOpenChange: ((open: Boolean) -> Unit)? = null
 
     private var overlay: GlassMenuOverlay? = null
@@ -79,7 +81,7 @@ class NemoGlassMenuView @JvmOverloads constructor(
     var menuWidth: Float? = null
     var fontFamily: String? = null
     var alignment = "auto"
-    var openOnPress = true
+    var openOnPress = false
 
     private val supportsGlass get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     internal val drawsGlass get() = glass && supportsGlass
@@ -89,6 +91,14 @@ class NemoGlassMenuView @JvmOverloads constructor(
         setWillNotDraw(false)
         isClickable = true
         isFocusable = true
+    }
+
+    override fun performClick(): Boolean {
+        super.performClick()
+        if (!menuActive) {
+            open()
+        }
+        return true
     }
 
     override fun onAttachedToWindow() {
@@ -241,6 +251,7 @@ class NemoGlassMenuView @JvmOverloads constructor(
             )
         } else null
         menuActive = true
+        performHapticFeedback(HapticFeedbackConstants.TEXT_HANDLE_MOVE)
         target.open(this, through)
         invalidate()
     }
@@ -263,6 +274,10 @@ class NemoGlassMenuView @JvmOverloads constructor(
 
     internal fun notifySelect(item: GlassMenuItemRecord, index: Int) {
         onItemSelect?.invoke(item, index)
+    }
+
+    internal fun notifyLongSelect(item: GlassMenuItemRecord, index: Int) {
+        onItemLongSelect?.invoke(item, index)
     }
 
     internal fun notifyOpenChange(open: Boolean) {

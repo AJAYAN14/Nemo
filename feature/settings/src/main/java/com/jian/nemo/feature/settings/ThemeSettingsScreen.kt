@@ -46,6 +46,8 @@ import com.jian.nemo.core.domain.repository.AppIconStyle
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.res.painterResource
 import com.jian.nemo.core.designsystem.R as DesignR
 import com.jian.nemo.feature.settings.components.IsoluminantPalette
@@ -921,39 +923,42 @@ private fun AppIconSelectionGrid(
     selectedStyle: AppIconStyle,
     onStyleSelected: (AppIconStyle) -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 4.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AppIconOption(
-            drawableRes = DesignR.drawable.ic_launcher_default_foreground,
-            isSelected = selectedStyle == AppIconStyle.DEFAULT,
-            imageScale = 1.0f,
-            onClick = { onStyleSelected(AppIconStyle.DEFAULT) }
-        )
-        AppIconOption(
-            drawableRes = DesignR.drawable.ic_launcher_monochrome_foreground,
-            isSelected = selectedStyle == AppIconStyle.MONOCHROME,
-            imageScale = 1.5f,
-            onClick = { onStyleSelected(AppIconStyle.MONOCHROME) }
-        )
-        AppIconOption(
-            drawableRes = DesignR.drawable.ic_launcher_frog_cheer_foreground,
-            isSelected = selectedStyle == AppIconStyle.FROG_CHEER,
-            imageScale = 1.55f,
-            onClick = { onStyleSelected(AppIconStyle.FROG_CHEER) }
-        )
-        AppIconOption(
-            drawableRes = DesignR.drawable.ic_launcher_frog_ninja_foreground,
-            isSelected = selectedStyle == AppIconStyle.FROG_NINJA,
-            imageScale = 1.55f,
-            onClick = { onStyleSelected(AppIconStyle.FROG_NINJA) }
+    val icons = remember {
+        listOf(
+            AppIconOptionData(AppIconStyle.DEFAULT, DesignR.drawable.ic_launcher_preview_blue),
+            AppIconOptionData(AppIconStyle.BLACK, DesignR.drawable.ic_launcher_preview_black),
+            AppIconOptionData(AppIconStyle.GREEN, DesignR.drawable.ic_launcher_preview_green),
+            AppIconOptionData(AppIconStyle.ORANGE, DesignR.drawable.ic_launcher_preview_orange),
+            AppIconOptionData(AppIconStyle.PINK, DesignR.drawable.ic_launcher_preview_pink),
+            AppIconOptionData(AppIconStyle.PURPLE, DesignR.drawable.ic_launcher_preview_purple),
+            AppIconOptionData(AppIconStyle.RED, DesignR.drawable.ic_launcher_preview_red),
+            AppIconOptionData(AppIconStyle.YELLOW, DesignR.drawable.ic_launcher_preview_yellow)
         )
     }
+
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items(icons, key = { it.style }) { item ->
+            AppIconOption(
+                drawableRes = item.drawableRes,
+                isSelected = selectedStyle == item.style,
+                imageScale = 1.0f,
+                onClick = { onStyleSelected(item.style) }
+            )
+        }
+    }
 }
+
+private data class AppIconOptionData(
+    val style: AppIconStyle,
+    @androidx.annotation.DrawableRes val drawableRes: Int
+)
 
 @Composable
 private fun AppIconOption(

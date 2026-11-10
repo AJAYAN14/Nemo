@@ -332,9 +332,9 @@
 
     <!-- LearnHeaderMoreMenu -->
     <string name="learn_menu_desc_more">更多选项</string>
-    <string name="learn_menu_item_rating_guide">评分说明（新学/复习）</string>
-    <string name="learn_menu_item_suspend">暂停此卡片 (Suspend)</string>
-    <string name="learn_menu_item_bury">今日暂缓此项 (Bury)</string>
+    <string name="learn_menu_item_rating_guide">评分说明</string>
+    <string name="learn_menu_item_suspend">暂停此卡片</string>
+    <string name="learn_menu_item_bury">今日暂缓此项</string>
     <string name="learn_menu_item_report_error">报告条目错误</string>
     <string name="learn_menu_toggle_auto_audio">翻面自动朗读</string>
     <string name="learn_menu_toggle_delay">显示答案等待</string>
@@ -347,7 +347,7 @@
     <string name="learn_menu_title_whiteboard">手写白板</string>
     <string name="learn_menu_subtitle_current_duration">当前: %1$s</string>
     <string name="learn_menu_section_display_mode">显示模式</string>
-    <string name="learn_menu_theme_system">跟随系统</string>
+    <string name="learn_menu_theme_system">自动模式</string>
     <string name="learn_menu_theme_dark">深色模式</string>
     <string name="learn_menu_theme_light">浅色模式</string>
     <string name="learn_menu_item_display_mode">显示模式: %1$s</string>

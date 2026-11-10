@@ -188,7 +188,7 @@ fun SRSLearningCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 24.dp, horizontal = 16.dp)
-                    .padding(top = 20.dp), // 预留空间避免与顶部徽章重叠
+                    .padding(top = 26.dp), // 预留空间避免与顶部徽章重叠
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Japanese
@@ -243,22 +243,29 @@ fun SRSLearningCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 等级徽章 (高度 28dp)
+                // 等级徽章 (高度 34dp)
                 Box(
                     modifier = Modifier
+                        .height(34.dp)
                         .background(levelBg, CircleShape)
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = word.level,
                         color = levelText,
-                        fontSize = 12.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
-                        letterSpacing = 1.2.sp
+                        letterSpacing = 1.2.sp,
+                        style = TextStyle(
+                            platformStyle = PlatformTextStyle(
+                                includeFontPadding = false
+                            )
+                        )
                     )
                 }
 
-                // 400米跑道进度条 (高度 28dp，宽度 124dp，沿赛道转圈推进)
+                // 400米跑道进度条 (高度 34dp，宽度 130dp，沿赛道转圈推进)
                 TrackProgressIndicator(
                     progress = progress,
                     queueNewCount = queueNewCount,
@@ -272,7 +279,7 @@ fun SRSLearningCard(
                     }
                 )
 
-                // 状态徽章 (高度 28dp)
+                // 状态徽章 (高度 34dp)
                 if (cardBadge != null) {
                     val badgeColor = when (cardBadge) {
                         CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
@@ -290,19 +297,26 @@ fun SRSLearningCard(
 
                     Box(
                         modifier = Modifier
+                            .height(34.dp)
                             .background(badgeBg, CircleShape)
-                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = badgeText,
                             color = badgeColor,
-                            fontSize = 12.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 1.2.sp
+                            letterSpacing = 1.2.sp,
+                            style = TextStyle(
+                                platformStyle = PlatformTextStyle(
+                                    includeFontPadding = false
+                                )
+                            )
                         )
                     }
                 } else {
-                    Spacer(modifier = Modifier.width(48.dp))
+                    Spacer(modifier = Modifier.width(56.dp))
                 }
             }
         }
@@ -447,15 +461,23 @@ fun SRSLearningCard(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .background(labelBgColor, CircleShape)
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                                    .offset(y = (-10).dp)
+                                    .height(34.dp)
+                                    .background(levelBg, CircleShape)
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = word.pos ?: stringResource(R.string.pos_unknown),
-                                    color = labelTextColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 1.sp
+                                    color = levelText,
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 1.sp,
+                                    style = TextStyle(
+                                        platformStyle = PlatformTextStyle(
+                                            includeFontPadding = false
+                                        )
+                                    )
                                 )
                             }
 

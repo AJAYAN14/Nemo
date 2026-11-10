@@ -76,6 +76,7 @@ fun SettingsScreen(
     // 对话框状态
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showRandomNewContentConfirmDialog by remember { mutableStateOf(false) }
+    var randomNewContentResetSignal by remember { mutableIntStateOf(0) }
 
     var isResetting by remember { mutableStateOf(false) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
@@ -390,8 +391,13 @@ fun SettingsScreen(
                             trailing = {
                                 LiquidToggle(
                                     checked = uiState.isRandomNewContentEnabled,
-                                    onCheckedChange = { showRandomNewContentConfirmDialog = true },
-                                    accentColor = MaterialTheme.colorScheme.primary
+                                    onCheckedChange = { next ->
+                                        if (next != uiState.isRandomNewContentEnabled) {
+                                            showRandomNewContentConfirmDialog = true
+                                        }
+                                    },
+                                    accentColor = MaterialTheme.colorScheme.primary,
+                                    resetSignal = randomNewContentResetSignal
                                 )
                             }
                         )
@@ -622,7 +628,10 @@ fun SettingsScreen(
     if (showRandomNewContentConfirmDialog) {
         val willEnable = !uiState.isRandomNewContentEnabled
         NemoDialog(
-            onDismissRequest = { showRandomNewContentConfirmDialog = false },
+            onDismissRequest = {
+                showRandomNewContentConfirmDialog = false
+                randomNewContentResetSignal++
+            },
             title = if (willEnable) stringResource(R.string.settings_dialog_title_random_on) else stringResource(R.string.settings_dialog_title_random_off),
             text = if (willEnable) {
                 stringResource(R.string.settings_dialog_msg_random_on)
@@ -637,6 +646,7 @@ fun SettingsScreen(
             },
             onDismiss = {
                 showRandomNewContentConfirmDialog = false
+                randomNewContentResetSignal++
             }
         )
     }

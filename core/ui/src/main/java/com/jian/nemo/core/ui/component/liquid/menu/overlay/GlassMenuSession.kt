@@ -9,7 +9,9 @@ import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.Shader
 import android.os.Build
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import com.jian.nemo.core.ui.component.liquid.menu.NemoGlassMenuView
 import com.jian.nemo.core.ui.component.liquid.menu.content.GlassMenuContent
 import com.jian.nemo.core.ui.component.liquid.menu.content.GlassRow
@@ -65,6 +67,16 @@ internal class GlassMenuSession(
     private var touchInside = false
     private var animating = true
     private var dismissOnUp = false
+    private var longPressTriggered = false
+    private val longPressRunnable = Runnable {
+        if (!touchInside || scrolling) return@Runnable
+        val row = activeRow ?: return@Runnable
+        if (!row.selectable) return@Runnable
+        longPressTriggered = true
+        overlay.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        anchor.notifyLongSelect(row.item, row.index)
+        overlay.requestClose()
+    }
     private val availableWidth: Float
     private val maximumHeight: Float
     private val opensAbove: Boolean
@@ -341,15 +353,26 @@ internal class GlassMenuSession(
                 touchStartY = y
                 touchStartScroll = scroll
                 scrolling = false
+                longPressTriggered = false
                 if (touchInside) {
                     jelly.down(x, y)
-                    highlight(rowFor(x, y), immediate = true)
+                    val r = rowFor(x, y)
+                    highlight(r, immediate = true)
+                    if (r?.selectable == true) {
+                        overlay.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout().toLong())
+                    }
                 }
             }
             MotionEvent.ACTION_MOVE -> {
                 if (!touchInside) return
+                val dx = x - touchStartX
                 val dy = y - touchStartY
+                val slop = 8f * density
+                if (abs(dx) > slop || abs(dy) > slop) {
+                    overlay.removeCallbacks(longPressRunnable)
+                }
                 if (maximumScroll > 0f && (scrolling || abs(dy) > 10f * density)) {
+                    overlay.removeCallbacks(longPressRunnable)
                     if (!scrolling) {
                         highlight(null, immediate = false)
                         jelly.releaseDrag()
@@ -361,10 +384,20 @@ internal class GlassMenuSession(
                     return
                 }
                 jelly.move(x, y)
-                highlight(rowFor(x, y), immediate = false)
+                val targetRow = rowFor(x, y)
+                if (targetRow !== activeRow) {
+                    overlay.removeCallbacks(longPressRunnable)
+                }
+                highlight(targetRow, immediate = false)
             }
             MotionEvent.ACTION_UP -> {
+                overlay.removeCallbacks(longPressRunnable)
                 jelly.release()
+                if (longPressTriggered) {
+                    longPressTriggered = false
+                    highlight(null, immediate = false)
+                    return
+                }
                 val row = content.rowAt(x - target.left, y - target.top + scroll)
                 when {
                     dismissOnUp -> overlay.requestClose()
@@ -373,6 +406,8 @@ internal class GlassMenuSession(
                 }
             }
             MotionEvent.ACTION_CANCEL -> {
+                overlay.removeCallbacks(longPressRunnable)
+                longPressTriggered = false
                 jelly.release()
                 highlight(null, immediate = false)
             }
@@ -426,6 +461,7 @@ internal class GlassMenuSession(
     }
 
     fun release() {
+        overlay.removeCallbacks(longPressRunnable)
         rowsNode?.discardDisplayList()
         plateNode?.discardDisplayList()
     }

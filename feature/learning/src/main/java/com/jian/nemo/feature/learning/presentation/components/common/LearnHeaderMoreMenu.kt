@@ -12,10 +12,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.common.AnimatedMenuCloseIcon as CoreAnimatedMenuCloseIcon
 import com.jian.nemo.core.ui.component.common.LocalLiquidMenuAnchorBounds
 import com.jian.nemo.core.ui.component.common.LocalLiquidMenuMotionState
@@ -35,6 +39,11 @@ internal val ActiveNativeLearnMenuItems = mutableStateOf<List<GlassMenuItemRecor
  * 全局共享的活跃原生学习菜单选项动作分发回调
  */
 internal val ActiveNativeLearnMenuActionHandler = mutableStateOf<((String) -> Unit)?>(null)
+
+/**
+ * 全局共享的活跃原生学习菜单选项长按动作分发回调
+ */
+internal val ActiveNativeLearnMenuLongActionHandler = mutableStateOf<((String) -> Unit)?>(null)
 
 /**
  * 全局共享的原生学习菜单展开状态
@@ -71,6 +80,7 @@ fun LearnHeaderMoreMenuButton(
     buttonSize: Dp = 48.dp,
     content: (@Composable () -> Unit)? = null
 ) {
+    val haptic = LocalHapticFeedback.current
     val items = ActiveNativeLearnMenuItems.value
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
     if (items.isNotEmpty()) {
@@ -79,12 +89,17 @@ fun LearnHeaderMoreMenuButton(
             modifier = modifier,
             buttonSize = buttonSize,
             colorScheme = if (isDarkTheme) "dark" else "light",
-            menuWidth = 295.dp,
             onSelect = { item, _ ->
                 ActiveNativeLearnMenuActionHandler.value?.invoke(item.id)
             },
+            onLongSelect = { item, _ ->
+                ActiveNativeLearnMenuLongActionHandler.value?.invoke(item.id)
+            },
             onOpenChange = { open ->
                 ActiveNativeLearnMenuOpenState.value = open
+                if (open) {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                }
                 if (open != isExpanded) {
                     onClick()
                 }
@@ -94,7 +109,10 @@ fun LearnHeaderMoreMenuButton(
     } else {
         NemoLiquidMenuButton(
             isExpanded = isExpanded,
-            onClick = onClick,
+            onClick = {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            },
             modifier = modifier,
             backdrop = backdrop,
             buttonSize = buttonSize,
@@ -113,8 +131,10 @@ internal fun buildLearnMenuNativeItems(
     hasAutoAudio: Boolean,
     isAutoAudioEnabled: Boolean,
     hasDelay: Boolean,
+    isShowAnswerDelayEnabled: Boolean,
     showAnswerDelayDurationLabel: String,
     hasAutoReveal: Boolean,
+    isAutoRevealAnswerEnabled: Boolean,
     autoRevealAnswerDurationLabel: String,
     hasWhiteboard: Boolean,
     isWhiteboardEnabled: Boolean,
@@ -127,7 +147,8 @@ internal fun buildLearnMenuNativeItems(
             GlassMenuItemRecord(
                 id = "rating_guide",
                 title = context.getString(R.string.learn_menu_item_rating_guide),
-                icon = "check"
+                icon = "info",
+                iconColor = IosColors.Green.toArgb()
             )
         )
     }
@@ -137,7 +158,8 @@ internal fun buildLearnMenuNativeItems(
             GlassMenuItemRecord(
                 id = "bury",
                 title = context.getString(R.string.learn_menu_item_bury),
-                icon = "clock"
+                icon = "calendar",
+                iconColor = IosColors.Blue.toArgb()
             )
         )
         list.add(
@@ -145,14 +167,16 @@ internal fun buildLearnMenuNativeItems(
                 id = "suspend",
                 title = context.getString(R.string.learn_menu_item_suspend),
                 icon = "trash",
-                destructive = true
+                destructive = true,
+                iconColor = IosColors.Orange.toArgb()
             )
         )
         list.add(
             GlassMenuItemRecord(
                 id = "report_error",
                 title = context.getString(R.string.learn_menu_item_report_error),
-                icon = "filter"
+                icon = "report",
+                iconColor = IosColors.Red.toArgb()
             )
         )
     }
@@ -166,33 +190,48 @@ internal fun buildLearnMenuNativeItems(
             GlassMenuItemRecord(
                 id = "auto_audio",
                 title = context.getString(R.string.learn_menu_toggle_auto_audio),
-                icon = "share",
+                icon = "volume",
                 checked = isAutoAudioEnabled,
-                keepOpen = true
+                keepOpen = true,
+                iconColor = IosColors.Teal.toArgb()
             )
         )
     }
 
     if (hasDelay) {
+        val delaySubtitle = if (isShowAnswerDelayEnabled) {
+            context.getString(R.string.learn_menu_subtitle_current_duration, showAnswerDelayDurationLabel)
+        } else {
+            context.getString(R.string.learn_menu_status_disabled)
+        }
         list.add(
             GlassMenuItemRecord(
                 id = "delay",
                 title = context.getString(R.string.learn_menu_toggle_delay),
-                subtitle = context.getString(R.string.learn_menu_subtitle_current_duration, showAnswerDelayDurationLabel),
+                subtitle = delaySubtitle,
                 icon = "clock",
-                keepOpen = true
+                checked = isShowAnswerDelayEnabled,
+                keepOpen = true,
+                iconColor = IosColors.Purple.toArgb()
             )
         )
     }
 
     if (hasAutoReveal) {
+        val autoRevealSubtitle = if (isAutoRevealAnswerEnabled) {
+            context.getString(R.string.learn_menu_subtitle_current_duration, autoRevealAnswerDurationLabel)
+        } else {
+            context.getString(R.string.learn_menu_status_disabled)
+        }
         list.add(
             GlassMenuItemRecord(
                 id = "auto_reveal",
                 title = context.getString(R.string.learn_menu_toggle_auto_reveal),
-                subtitle = context.getString(R.string.learn_menu_subtitle_current_duration, autoRevealAnswerDurationLabel),
-                icon = "clock",
-                keepOpen = true
+                subtitle = autoRevealSubtitle,
+                icon = "flip",
+                checked = isAutoRevealAnswerEnabled,
+                keepOpen = true,
+                iconColor = IosColors.Indigo.toArgb()
             )
         )
     }
@@ -204,7 +243,8 @@ internal fun buildLearnMenuNativeItems(
                 title = context.getString(R.string.learn_menu_title_whiteboard),
                 icon = "pencil",
                 checked = isWhiteboardEnabled,
-                keepOpen = true
+                keepOpen = true,
+                iconColor = IosColors.Blue.toArgb()
             )
         )
     }
@@ -227,7 +267,8 @@ internal fun buildLearnMenuNativeItems(
             id = "theme_system",
             title = context.getString(R.string.learn_menu_theme_system),
             icon = "grid",
-            checked = isDarkMode == null
+            checked = isDarkMode == null,
+            iconColor = IosColors.Gray.toArgb()
         )
     )
 
@@ -236,7 +277,8 @@ internal fun buildLearnMenuNativeItems(
             id = "theme_dark",
             title = context.getString(R.string.learn_menu_theme_dark),
             icon = "moon",
-            checked = isDarkMode == true
+            checked = isDarkMode == true,
+            iconColor = IosColors.Indigo.toArgb()
         )
     )
 
@@ -245,7 +287,8 @@ internal fun buildLearnMenuNativeItems(
             id = "theme_light",
             title = context.getString(R.string.learn_menu_theme_light),
             icon = "sun",
-            checked = isDarkMode == false
+            checked = isDarkMode == false,
+            iconColor = IosColors.Orange.toArgb()
         )
     )
 
@@ -294,7 +337,8 @@ fun LearnHeaderMoreMenuOverlay(
 
     val nativeItems = remember(
         remainingCount, onShowRatingGuide, isAutoAudioEnabled, onToggleAutoAudio,
-        hasDelay, showAnswerDelayDurationLabel, hasAutoReveal, autoRevealAnswerDurationLabel,
+        hasDelay, isShowAnswerDelayEnabled, showAnswerDelayDurationLabel,
+        hasAutoReveal, isAutoRevealAnswerEnabled, autoRevealAnswerDurationLabel,
         isWhiteboardEnabled, onToggleWhiteboard, isDarkMode
     ) {
         buildLearnMenuNativeItems(
@@ -304,8 +348,10 @@ fun LearnHeaderMoreMenuOverlay(
             hasAutoAudio = onToggleAutoAudio != null,
             isAutoAudioEnabled = isAutoAudioEnabled,
             hasDelay = hasDelay,
+            isShowAnswerDelayEnabled = isShowAnswerDelayEnabled,
             showAnswerDelayDurationLabel = showAnswerDelayDurationLabel,
             hasAutoReveal = hasAutoReveal,
+            isAutoRevealAnswerEnabled = isAutoRevealAnswerEnabled,
             autoRevealAnswerDurationLabel = autoRevealAnswerDurationLabel,
             hasWhiteboard = onToggleWhiteboard != null,
             isWhiteboardEnabled = isWhiteboardEnabled,
@@ -322,6 +368,16 @@ fun LearnHeaderMoreMenuOverlay(
                 "suspend" -> onSuspend()
                 "report_error" -> onReportError()
                 "auto_audio" -> onToggleAutoAudio?.invoke(!isAutoAudioEnabled)
+                "delay" -> onToggleShowAnswerDelay?.invoke(!isShowAnswerDelayEnabled)
+                "auto_reveal" -> onToggleAutoRevealAnswer?.invoke(!isAutoRevealAnswerEnabled)
+                "whiteboard" -> onToggleWhiteboard?.invoke(!isWhiteboardEnabled)
+                "theme_system" -> if (onSelectDarkMode != null) onSelectDarkMode(null) else onCycleDarkMode()
+                "theme_dark" -> if (onSelectDarkMode != null) onSelectDarkMode(true) else onCycleDarkMode()
+                "theme_light" -> if (onSelectDarkMode != null) onSelectDarkMode(false) else onCycleDarkMode()
+            }
+        }
+        ActiveNativeLearnMenuLongActionHandler.value = { id ->
+            when (id) {
                 "delay" -> {
                     if (onOpenShowAnswerDelayDialog != null) {
                         onOpenShowAnswerDelayDialog()
@@ -336,10 +392,6 @@ fun LearnHeaderMoreMenuOverlay(
                         onCycleAutoRevealAnswerDuration?.invoke()
                     }
                 }
-                "whiteboard" -> onToggleWhiteboard?.invoke(!isWhiteboardEnabled)
-                "theme_system" -> if (onSelectDarkMode != null) onSelectDarkMode(null) else onCycleDarkMode()
-                "theme_dark" -> if (onSelectDarkMode != null) onSelectDarkMode(true) else onCycleDarkMode()
-                "theme_light" -> if (onSelectDarkMode != null) onSelectDarkMode(false) else onCycleDarkMode()
             }
         }
     }

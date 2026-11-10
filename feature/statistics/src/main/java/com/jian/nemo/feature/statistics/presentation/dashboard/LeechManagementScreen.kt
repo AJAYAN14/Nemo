@@ -439,7 +439,7 @@ private fun LeechItemCardBase(
                 enabled = !isRecovering,
                 modifier = Modifier
                     .size(36.dp)
-                    .background(containerBg, RoundedRectangle(10.dp))
+                    .background(containerBg, CircleShape)
             ) {
                 if (isRecovering) {
                     NemoChasingDotsLoader(size = 20.dp)

@@ -162,16 +162,18 @@ fun NemoNativeLiquidMenuTrigger(
     modifier: Modifier = Modifier,
     buttonSize: Dp = 48.dp,
     colorScheme: String = "auto",
-    menuWidth: Dp = 295.dp,
+    menuWidth: Dp? = null,
     alignment: String = "auto",
     onSelect: (item: GlassMenuItemRecord, index: Int) -> Unit = { _, _ -> },
+    onLongSelect: ((item: GlassMenuItemRecord, index: Int) -> Unit)? = null,
     onOpenChange: (Boolean) -> Unit = {},
     content: (@Composable () -> Unit)? = null
 ) {
     val density = LocalDensity.current
-    val menuWidthPx = with(density) { menuWidth.toPx() }
+    val menuWidthPx = menuWidth?.let { with(density) { it.toPx() } }
     val currentItems by rememberUpdatedState(items)
     val currentOnSelect by rememberUpdatedState(onSelect)
+    val currentOnLongSelect by rememberUpdatedState(onLongSelect)
     val currentOnOpenChange by rememberUpdatedState(onOpenChange)
 
     AndroidView(
@@ -183,6 +185,7 @@ fun NemoNativeLiquidMenuTrigger(
                 this.alignment = alignment
                 this.colorScheme = colorScheme
                 this.onItemSelect = { item, index -> currentOnSelect(item, index) }
+                this.onItemLongSelect = currentOnLongSelect?.let { cb -> { item, index -> cb(item, index) } }
                 this.onMenuOpenChange = { open -> currentOnOpenChange(open) }
                 if (content != null) {
                     val composeView = ComposeView(context).apply {
@@ -200,6 +203,7 @@ fun NemoNativeLiquidMenuTrigger(
             view.alignment = alignment
             view.colorScheme = colorScheme
             view.onItemSelect = { item, index -> currentOnSelect(item, index) }
+            view.onItemLongSelect = currentOnLongSelect?.let { cb -> { item, index -> cb(item, index) } }
             view.onMenuOpenChange = { open -> currentOnOpenChange(open) }
         }
     )

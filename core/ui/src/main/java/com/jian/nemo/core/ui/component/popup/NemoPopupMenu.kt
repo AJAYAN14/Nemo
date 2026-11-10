@@ -64,6 +64,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -230,10 +232,31 @@ fun NemoPopupMenu(
         }
     }
 
-    val menuWidthPx = with(density) { 220.dp.roundToPx() }
+    val textMeasurer = rememberTextMeasurer()
+    val calculatedWidthDp = remember(state.items, density) {
+        var maxTextWidthPx = 0
+        state.items.forEach { item ->
+            val text = when (item) {
+                is NemoSelectivePopupMenuItem -> item.text
+                is NemoActionPopupMenuItem -> item.text
+                else -> ""
+            }
+            if (text.isNotEmpty()) {
+                val measured = textMeasurer.measure(
+                    text = text,
+                    style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                ).size.width
+                if (measured > maxTextWidthPx) maxTextWidthPx = measured
+            }
+        }
+        with(density) {
+            (maxTextWidthPx.toDp() + 20.dp + 10.dp + 32.dp + 16.dp).coerceIn(180.dp, 240.dp)
+        }
+    }
+    val calculatedWidthPx = with(density) { calculatedWidthDp.roundToPx() }
     val fallbackHeightPx = with(density) { 200.dp.roundToPx() }
     val effectiveMenuSize =
-        if (menuSize == IntSize.Zero) IntSize(menuWidthPx, fallbackHeightPx) else menuSize
+        if (menuSize == IntSize.Zero) IntSize(calculatedWidthPx, fallbackHeightPx) else menuSize
 
     val placement = remember(placementAnchorBounds, effectiveMenuSize, placementAvailableBounds) {
         pickPlacement(
@@ -358,7 +381,7 @@ fun NemoPopupMenu(
                     alpha = alphaAni.value
                     transformOrigin = placement.origin
                 }
-                .width(220.dp)
+                .width(calculatedWidthDp)
                 .onSizeChanged { menuSize = it }
                 .drawBehind {
                     val currentAlpha = alphaAni.value
@@ -460,12 +483,18 @@ fun NemoPopupMenu(
                                 horizontalArrangement = Arrangement.Start
                             ) {
                                 if (selected) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Check,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
+                                    Box(
+                                        modifier = Modifier.size(20.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "\u2714",
+                                            style = MaterialTheme.typography.bodyLarge.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        )
+                                    }
                                 } else {
                                     Spacer(modifier = Modifier.size(20.dp))
                                 }

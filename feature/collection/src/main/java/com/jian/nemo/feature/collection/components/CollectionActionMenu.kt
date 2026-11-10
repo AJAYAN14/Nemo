@@ -162,7 +162,6 @@ fun CollectionActionButton(
             modifier = modifier,
             buttonSize = buttonSize,
             colorScheme = if (isDarkTheme) "dark" else "light",
-            menuWidth = 260.dp,
             onSelect = { item, _ ->
                 ActiveNativeCollectionMenuActionHandler.value?.invoke(item.id)
             },

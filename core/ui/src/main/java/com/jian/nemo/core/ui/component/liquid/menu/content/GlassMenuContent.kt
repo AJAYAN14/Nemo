@@ -20,7 +20,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 private object Metrics {
-    const val MinimumWidth = 250f
+    const val MinimumWidth = 245f
+    const val MaximumWidth = 300f
     const val ContentInsetY = 10f
     const val PlateInsetX = 8f
     const val RowHeight = 42f
@@ -35,7 +36,7 @@ private object Metrics {
     const val LeadingPlain = 28f
     const val IconCenterPlain = 40f
     const val TextAfterIconPlain = 64f
-    const val TrailingInset = 24f
+    const val TrailingInset = 20f
     const val TitleSize = 17f
     const val SubtitleSize = 13f
     const val IconSize = 19.5f
@@ -48,6 +49,10 @@ internal class GlassMenuContent(
 ) {
     private val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG)
     private val subtitlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG)
+    private val checkPaint = TextPaint(Paint.ANTI_ALIAS_FLAG or Paint.SUBPIXEL_TEXT_FLAG).apply {
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
+    }
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -73,21 +78,24 @@ internal class GlassMenuContent(
         subtitlePaint.typeface = typeface
         titlePaint.textSize = Metrics.TitleSize * density * fontScale * FontFit
         subtitlePaint.textSize = Metrics.SubtitleSize * density * fontScale * FontFit
+        checkPaint.textSize = 14f * density * fontScale * FontFit
         titlePaint.letterSpacing = TitleTracking
         subtitlePaint.letterSpacing = 0f
         reservesCheck = items.any { it.checked != null }
         val built = items.mapIndexed { index, item -> GlassRow(item, index) }
 
-        var widest = Metrics.MinimumWidth * density
+        var maxNeeded = 0f
         for (row in built) {
             if (row.isSeparator) continue
-            val paint = titlePaint
-            val text = paint.measureText(row.item.title)
-            val needed = leading(row.item) * density + text + Metrics.TrailingInset * density
-            widest = max(widest, needed)
+            val titleW = titlePaint.measureText(row.item.title)
+            val subtitleW = row.item.subtitle?.let { subtitlePaint.measureText(it) } ?: 0f
+            val textW = max(titleW, subtitleW)
+            val needed = leading(row.item) * density + textW + Metrics.TrailingInset * density
+            maxNeeded = max(maxNeeded, needed)
         }
-        val safeMaxWidth = max(maximumWidth, widest)
-        width = min(requestedWidth?.times(density) ?: ceil(widest), safeMaxWidth)
+        val clampedWidest = maxNeeded.coerceIn(Metrics.MinimumWidth * density, Metrics.MaximumWidth * density)
+        val safeMaxWidth = max(maximumWidth, clampedWidest)
+        width = min(requestedWidth?.times(density) ?: ceil(clampedWidest), safeMaxWidth)
 
         var y = Metrics.ContentInsetY * density
         val rowScale = max(fontScale, 1f)
@@ -197,8 +205,13 @@ internal class GlassMenuContent(
                 continue
             }
             val centerY = row.rect.centerY()
+            val itemAccentColor = row.item.iconColor?.let { withAlpha(it, alpha) }
             if (row.item.checked == true) {
-                drawIcon(canvas, "check", null, Metrics.CheckCenter * density, centerY, 13.5f, color, 1.9f)
+                val checkColor = itemAccentColor ?: color
+                checkPaint.color = checkColor
+                val checkMetrics = checkPaint.fontMetrics
+                val checkBaseline = centerY - (checkMetrics.ascent + checkMetrics.descent) / 2f
+                canvas.drawText("\u2714", Metrics.CheckCenter * density, checkBaseline, checkPaint)
             }
             if (hasIcon(row.item)) {
                 val center = (if (reservesCheck) Metrics.IconCenterWithCheck else Metrics.IconCenterPlain) * density
@@ -206,7 +219,8 @@ internal class GlassMenuContent(
                 if (slot != null) {
                     drawIconView(canvas, slot, center, centerY, alpha)
                 } else {
-                    drawIcon(canvas, row.item.icon, row.item.iconPath, center, centerY, Metrics.IconSize, color, 1.45f)
+                    val iconTint = itemAccentColor ?: color
+                    drawIcon(canvas, row.item.icon, row.item.iconPath, center, centerY, Metrics.IconSize, iconTint, 1.45f)
                 }
             }
             titlePaint.color = color

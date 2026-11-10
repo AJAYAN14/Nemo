@@ -35,13 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.LearningPalette
+import com.jian.nemo.core.designsystem.theme.IosColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
 
 /**
- * 内容报告确认对话框 - 采用纯净中性灰质感设计，完美兼容深色与浅色模式（告别 MD3 彩色色相偏色）
+ * 内容报告确认对话框
  */
 @Composable
 fun ContentReportDialog(
@@ -53,23 +53,24 @@ fun ContentReportDialog(
     val isDark = useDarkTheme
     val haptic = LocalHapticFeedback.current
 
-    // 纯净中性灰色设计系统（双模自适应，去除 MD3 主色调侵入）
-    val chipSelectedBg = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc900
-    val chipSelectedBorder = if (isDark) LearningPalette.ReportZinc500 else LearningPalette.ReportZinc900
-    val chipSelectedText = Color.White
-    val chipUnselectedBg = if (isDark) LearningPalette.ReportZinc800 else LearningPalette.ReportZinc100
-    val chipUnselectedBorder = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc200
-    val chipUnselectedText = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc600
+    val accentRed = if (isDark) IosColors.RedDark else IosColors.Red
+
+    val chipSelectedBg = if (isDark) IosColors.RedDark.copy(alpha = 0.16f) else IosColors.Red.copy(alpha = 0.08f)
+    val chipSelectedBorder = accentRed
+    val chipSelectedText = accentRed
+    val chipUnselectedBg = if (isDark) Color.White.copy(alpha = 0.06f) else Color.Black.copy(alpha = 0.04f)
+    val chipUnselectedBorder = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
+    val chipUnselectedText = MaterialTheme.colorScheme.onSurfaceVariant
 
     val inputBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant
-    val inputBorderFocused = MaterialTheme.colorScheme.primary
+    val inputBorderFocused = accentRed
     val inputBorderUnfocused = MaterialTheme.colorScheme.outline
-    val inputCursor = MaterialTheme.colorScheme.primary
+    val inputCursor = accentRed
     val inputTextColor = MaterialTheme.colorScheme.onSurface
     val hintTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val promptTextColor = if (isDark) LearningPalette.ReportZinc400 else LearningPalette.ReportZinc500
+    val promptTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    val confirmButtonColor = if (isDark) LearningPalette.ReportZinc700 else LearningPalette.ReportZinc900
+    val confirmButtonColor = accentRed
 
     // 错误选项配置
     val errMeaning = stringResource(R.string.report_err_meaning)

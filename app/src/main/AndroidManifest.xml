@@ -24,9 +24,9 @@
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_blue"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_blue_round"
         android:supportsRtl="true"
         android:enableOnBackInvokedCallback="false"
         android:theme="@style/Theme.Nemo"
@@ -49,13 +49,13 @@
             android:theme="@style/Theme.Nemo"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- 默认桌面图标别名入口 -->
+        <!-- 默认桌面图标别名入口（蓝色） -->
         <activity-alias
             android:name="com.jian.nemo.MainActivityDefault"
             android:targetActivity=".MainActivity"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:roundIcon="@mipmap/ic_launcher_round"
+            android:icon="@mipmap/ic_launcher_blue"
+            android:roundIcon="@mipmap/ic_launcher_blue_round"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,13 +63,13 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- 黑白桌面图标别名入口 -->
+        <!-- 黑色桌面图标别名入口 -->
         <activity-alias
-            android:name="com.jian.nemo.MainActivityMonochrome"
+            android:name="com.jian.nemo.MainActivityBlack"
             android:targetActivity=".MainActivity"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_monochrome"
-            android:roundIcon="@mipmap/ic_launcher_monochrome_round"
+            android:icon="@mipmap/ic_launcher_black"
+            android:roundIcon="@mipmap/ic_launcher_black_round"
             android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -77,13 +77,13 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- 仰头小青蛙桌面图标别名入口 -->
+        <!-- 绿色桌面图标别名入口 -->
         <activity-alias
-            android:name="com.jian.nemo.MainActivityFrogCheer"
+            android:name="com.jian.nemo.MainActivityGreen"
             android:targetActivity=".MainActivity"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_frog_cheer"
-            android:roundIcon="@mipmap/ic_launcher_frog_cheer_round"
+            android:icon="@mipmap/ic_launcher_green"
+            android:roundIcon="@mipmap/ic_launcher_green_round"
             android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -91,13 +91,69 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- 忍者小青蛙桌面图标别名入口 -->
+        <!-- 橙色桌面图标别名入口 -->
         <activity-alias
-            android:name="com.jian.nemo.MainActivityFrogNinja"
+            android:name="com.jian.nemo.MainActivityOrange"
             android:targetActivity=".MainActivity"
             android:exported="true"
-            android:icon="@mipmap/ic_launcher_frog_ninja"
-            android:roundIcon="@mipmap/ic_launcher_frog_ninja_round"
+            android:icon="@mipmap/ic_launcher_orange"
+            android:roundIcon="@mipmap/ic_launcher_orange_round"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 粉色桌面图标别名入口 -->
+        <activity-alias
+            android:name="com.jian.nemo.MainActivityPink"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_pink"
+            android:roundIcon="@mipmap/ic_launcher_pink_round"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 紫色桌面图标别名入口 -->
+        <activity-alias
+            android:name="com.jian.nemo.MainActivityPurple"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_purple"
+            android:roundIcon="@mipmap/ic_launcher_purple_round"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 红色桌面图标别名入口 -->
+        <activity-alias
+            android:name="com.jian.nemo.MainActivityRed"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_red"
+            android:roundIcon="@mipmap/ic_launcher_red_round"
+            android:enabled="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <!-- 黄色桌面图标别名入口 -->
+        <activity-alias
+            android:name="com.jian.nemo.MainActivityYellow"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_yellow"
+            android:roundIcon="@mipmap/ic_launcher_yellow_round"
             android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
