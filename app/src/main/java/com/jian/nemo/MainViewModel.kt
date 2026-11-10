@@ -43,8 +43,6 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-
-
     private val _updateCheckEvents = kotlinx.coroutines.channels.Channel<UpdateCheckEvent>(kotlinx.coroutines.channels.Channel.BUFFERED)
     val updateCheckEvents = _updateCheckEvents.receiveAsFlow()
 
@@ -84,6 +82,8 @@ class MainViewModel @Inject constructor(
 
     fun startDownload(context: Context) {
         val config = _uiState.value.updateConfig ?: return
+        if (_uiState.value.isDownloading) return
+
         val targetFile = File(context.cacheDir, "nemo2_update_${config.versionCode}.apk")
 
         if (targetFile.exists() && _uiState.value.isDownloaded) {
@@ -91,54 +91,83 @@ class MainViewModel @Inject constructor(
             return
         }
 
-            val appContext = context.applicationContext
-            viewModelScope.launch {
-                try {
-                    // Show initial notification
-                    com.jian.nemo.util.NotificationHelper.showProgress(appContext, 0)
+        // 立即切换为下载中状态，消除界面响应延迟与假死感
+        _uiState.update {
+            it.copy(
+                isDownloading = true,
+                isDownloaded = false,
+                downloadProgress = 0f
+            )
+        }
 
-                    downloader.download(config.downloadUrl, targetFile).collect { state ->
-                        when (state) {
-                            is DownloadState.Downloading -> {
-                                val progress = (state.progress * 100).toInt()
+        val appContext = context.applicationContext
+        viewModelScope.launch {
+            try {
+                // Show initial notification
+                com.jian.nemo.util.NotificationHelper.showProgress(appContext, 0)
+
+                var lastNotifyTime = 0L
+                var lastNotifyProgress = 0
+
+                downloader.download(config.downloadUrl, targetFile).collect { state ->
+                    when (state) {
+                        is DownloadState.Downloading -> {
+                            val progress = (state.progress * 100).toInt()
+                            val now = System.currentTimeMillis()
+
+                            // 通知栏节流保护：避免高频跨进程 IPC 阻塞主线程引发 UI 丢帧
+                            if (progress - lastNotifyProgress >= 5 || (now - lastNotifyTime >= 500L && progress > lastNotifyProgress)) {
+                                lastNotifyProgress = progress
+                                lastNotifyTime = now
                                 com.jian.nemo.util.NotificationHelper.showProgress(appContext, progress)
-
-                                _uiState.update {
-                                    it.copy(
-                                        isDownloading = true,
-                                        downloadProgress = state.progress
-                                    )
-                                }
                             }
-                            is DownloadState.Success -> {
-                                com.jian.nemo.util.NotificationHelper.showSuccess(appContext, state.file)
 
-                                _uiState.update {
-                                    it.copy(
-                                        isDownloading = false,
-                                        isDownloaded = true,
-                                        downloadProgress = 1f,
-                                        apkFile = state.file
-                                    )
-                                }
-                                installApk(appContext, state.file)
-                            }
-                            is DownloadState.Failed -> {
-                                com.jian.nemo.util.NotificationHelper.cancel(appContext)
-                                _uiState.update { it.copy(isDownloading = false) }
-                                val errorMessage = state.error?.message ?: context.getString(R.string.app_update_error_unknown)
-                                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_failed, errorMessage)))
+                            _uiState.update {
+                                it.copy(
+                                    isDownloading = true,
+                                    downloadProgress = state.progress
+                                )
                             }
                         }
+                        is DownloadState.Success -> {
+                            com.jian.nemo.util.NotificationHelper.showSuccess(appContext, state.file)
+
+                            _uiState.update {
+                                it.copy(
+                                    isDownloading = false,
+                                    isDownloaded = true,
+                                    downloadProgress = 1f,
+                                    apkFile = state.file
+                                )
+                            }
+                            installApk(appContext, state.file)
+                        }
+                        is DownloadState.Failed -> {
+                            com.jian.nemo.util.NotificationHelper.cancel(appContext)
+                            _uiState.update {
+                                it.copy(
+                                    isDownloading = false,
+                                    downloadProgress = 0f
+                                )
+                            }
+                            val errorMessage = state.error?.message ?: context.getString(R.string.app_update_error_unknown)
+                            _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_failed, errorMessage)))
+                        }
                     }
-                } catch (e: Exception) {
-                    Log.e("MainViewModel", "下载更新异常", e)
-                    com.jian.nemo.util.NotificationHelper.cancel(appContext)
-                    _uiState.update { it.copy(isDownloading = false) }
-                    _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_exception, e.message ?: "")))
                 }
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "下载更新异常", e)
+                com.jian.nemo.util.NotificationHelper.cancel(appContext)
+                _uiState.update {
+                    it.copy(
+                        isDownloading = false,
+                        downloadProgress = 0f
+                    )
+                }
+                _updateCheckEvents.send(UpdateCheckEvent.Error(context.getString(R.string.app_update_error_download_exception, e.message ?: "")))
             }
         }
+    }
 
     fun downloadGoogleTts(context: Context) {
         val url = "http://lc-1fRZPgwY.cn-n1.lcfile.com/YEnJ98iak3w41gVUgxaiGEWXVkrVTHCa/Google%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB%E5%92%8C%E8%AF%AD%E9%9F%B3%E5%90%88%E6%88%90.apk"
