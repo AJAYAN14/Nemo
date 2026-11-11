@@ -20,7 +20,7 @@ data class LearningUiState(
     val learningMode: LearningMode = LearningMode.Word,
 
     // 当前状态
-    val status: LearningStatus = LearningStatus.Idle,
+    val status: LearningStatus = LearningStatus.Loading,
 
     // 当前单词
     val currentWord: Word? = null,

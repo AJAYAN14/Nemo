@@ -69,7 +69,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
-import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
+import com.jian.nemo.core.ui.component.ContentReportDialog
+import com.jian.nemo.core.domain.model.LearningMode
 import androidx.compose.animation.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.feature.learning.presentation.components.common.LearningFinishedContent
@@ -167,6 +168,7 @@ fun LearningScreen(
 
     val isWaiting = uiState.status == LearningStatus.Waiting
     val isFinished = uiState.status != LearningStatus.Loading &&
+            uiState.status != LearningStatus.Idle &&
             !isWaiting &&
             ((uiState.learningMode == LearningMode.Word && uiState.currentWord == null) ||
              (uiState.learningMode == LearningMode.Grammar && uiState.currentGrammar == null))
@@ -281,7 +283,7 @@ fun LearningScreen(
                         .padding(horizontal = 16.dp)
                 ) {
                     when (uiState.status) {
-                        LearningStatus.Loading -> {
+                        LearningStatus.Loading, LearningStatus.Idle -> {
                             Box(modifier = Modifier.fillMaxSize().padding(top = statusBarTop + 60.dp), contentAlignment = Alignment.Center) {
                                 NemoChasingDotsLoader()
                             }
@@ -730,7 +732,7 @@ fun WordLearningContent(
                      modifier = Modifier.align(Alignment.BottomCenter)
                  )
             }
-        } else {
+        } else if (uiState.status != LearningStatus.Loading && uiState.status != LearningStatus.Idle) {
             val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
             if (uiState.shouldShowDailyGoalMet) {
                 LearningFinishedContent(
@@ -907,7 +909,7 @@ fun GrammarLearningContent(
                       modifier = Modifier.align(Alignment.BottomCenter)
                   )
             }
-        } else {
+        } else if (uiState.status != LearningStatus.Loading && uiState.status != LearningStatus.Idle) {
             val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
             if (uiState.shouldShowDailyGoalMet) {
                 LearningFinishedContent(
