@@ -93,7 +93,7 @@ class MainViewModel @Inject constructor(
     fun checkUpdate(currentVersionCode: Int, isManual: Boolean = false) {
         viewModelScope.launch {
             try {
-                val config = configRepository.getUpdateConfig()
+                val config = configRepository.getUpdateConfig(forceRefresh = isManual)
                 if (config != null && config.versionCode > currentVersionCode) {
                     _uiState.update { it.copy(updateConfig = config) }
                 } else if (isManual) {

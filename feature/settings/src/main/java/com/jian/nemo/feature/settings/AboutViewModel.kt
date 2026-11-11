@@ -49,14 +49,31 @@ class AboutViewModel @Inject constructor(
     val uiState: StateFlow<AboutUiState> = _uiState.asStateFlow()
 
     init {
-        fetchUpdateLog()
+        loadUpdateLog()
     }
 
-    fun fetchUpdateLog() {
+    private fun loadUpdateLog() {
+        viewModelScope.launch {
+            val cached = configRepository.getCachedUpdateConfig()
+            if (cached != null) {
+                _uiState.update {
+                    it.copy(
+                        isLoadingLog = false,
+                        updateConfig = cached,
+                        errorMessage = null
+                    )
+                }
+                return@launch
+            }
+            fetchUpdateLog(forceRefresh = false)
+        }
+    }
+
+    fun fetchUpdateLog(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoadingLog = true, errorMessage = null) }
             try {
-                val config = configRepository.getUpdateConfig()
+                val config = configRepository.getUpdateConfig(forceRefresh = forceRefresh)
                 _uiState.update {
                     it.copy(
                         isLoadingLog = false,

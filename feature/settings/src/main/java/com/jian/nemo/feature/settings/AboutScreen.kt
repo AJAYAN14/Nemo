@@ -440,7 +440,7 @@ fun AboutScreen(
                                                 )
                                                 Spacer(modifier = Modifier.height(8.dp))
                                                 TextButton(
-                                                    onClick = { viewModel.fetchUpdateLog() },
+                                                    onClick = { viewModel.fetchUpdateLog(forceRefresh = true) },
                                                     contentPadding = PaddingValues(0.dp)
                                                 ) {
                                                     Icon(
