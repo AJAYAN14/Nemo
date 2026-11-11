@@ -190,7 +190,7 @@ class StatsTimerDelegate(
             // 仅在单词模式下自动朗读
             if (cur.learningMode == LearningMode.Word) {
                 cur.currentWord?.let { word ->
-                    learningTtsManager.speakWord(word.hiragana, word.chinese)
+                    learningTtsManager.speakWord(word.hiragana, word.chinese, "word_${word.id}")
                 }
             }
         }

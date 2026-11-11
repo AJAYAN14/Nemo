@@ -42,8 +42,9 @@ class KanaChartViewModel @Inject constructor(
             audioRepository.ttsEvents.collect { event ->
                 when (event) {
                     is TtsEvent.OnStart -> _playingAudioId.value = event.id
-                    is TtsEvent.OnDone -> {
-                        if (_playingAudioId.value == event.id) {
+                    is TtsEvent.OnDone, is TtsEvent.OnStop -> {
+                        if (_playingAudioId.value == (event as? TtsEvent.OnDone)?.id || 
+                            _playingAudioId.value == (event as? TtsEvent.OnStop)?.id) {
                             _playingAudioId.value = null
                         }
                     }

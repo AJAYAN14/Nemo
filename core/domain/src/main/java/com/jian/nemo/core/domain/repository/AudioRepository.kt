@@ -56,6 +56,7 @@ interface AudioRepository {
 sealed interface TtsEvent {
     data class OnStart(val id: String) : TtsEvent
     data class OnDone(val id: String) : TtsEvent
+    data class OnStop(val id: String, val isInterrupted: Boolean = true) : TtsEvent
     data class OnError(val id: String, val error: String? = null) : TtsEvent
     object GoogleTtsMissing : TtsEvent
 }

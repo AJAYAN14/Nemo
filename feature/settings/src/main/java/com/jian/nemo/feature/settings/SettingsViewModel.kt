@@ -64,6 +64,7 @@ class SettingsViewModel @Inject constructor(
                 val id = when (event) {
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> event.id
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnDone -> event.id
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnStop -> event.id
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnError -> event.id
                     com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> null
                 }
@@ -74,6 +75,7 @@ class SettingsViewModel @Inject constructor(
                             // 开始播放时，状态已由 onEvent 提前设置
                         }
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnDone,
+                        is com.jian.nemo.core.domain.repository.TtsEvent.OnStop,
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
                         com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
                             // 结束或错误时清除预览状态

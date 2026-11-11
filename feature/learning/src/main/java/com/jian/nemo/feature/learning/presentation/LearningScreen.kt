@@ -693,8 +693,16 @@ fun WordLearningContent(
                             )
                         },
                         label = "WordCardTransition"
-                     ) { (targetWord, _) ->
-                         if (targetWord != null) {
+                     ) { (targetWord, targetCount) ->
+                         var lastAnswerShown by remember(targetWord.id) { mutableStateOf(false) }
+                         if (targetCount == uiState.sessionProcessedCount) {
+                             lastAnswerShown = uiState.isAnswerShown
+                         }
+                         val isCardAnswerShown = if (targetCount == uiState.sessionProcessedCount) {
+                             uiState.isAnswerShown
+                         } else {
+                             if (uiState.slideDirection == SlideDirection.FORWARD) true else lastAnswerShown
+                         }
                          SRSLearningCard(
                              word = targetWord,
                              progress = if (uiState.dailyGoal > 0) uiState.completedToday.toFloat() / uiState.dailyGoal else 0f,
@@ -702,20 +710,19 @@ fun WordLearningContent(
                              queueLearningCount = uiState.queueLearningCount,
                              queueReviewCount = uiState.queueReviewCount,
                              queueRelearnCount = uiState.queueRelearnCount,
-                             isAnswerShown = uiState.isAnswerShown,
+                             isAnswerShown = isCardAnswerShown,
                              cardBadge = LearningItem.WordItem(targetWord).cardBadge,
                              modifier = Modifier.fillMaxSize(),
                              onPracticeClick = {
                                  showTypingDialog = true
                              },
-                             onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese)) },
+                             onSpeakWord = { onEvent(LearningEvent.SpeakWord(targetWord.hiragana, targetWord.chinese, "word_${targetWord.id}")) },
                              onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
                              playingAudioId = uiState.playingAudioId,
                              isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                             autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null,
+                             autoRevealProgress = if (uiState.isAutoRevealAnswerEnabled && !isCardAnswerShown) autoRevealAnim.value else null,
                              topPadding = topContentPadding
                          )
-                         }
                      }
                  }
 
@@ -905,25 +912,32 @@ fun GrammarLearningContent(
                             )
                         },
                         label = "GrammarCardTransition"
-                     ) { (targetGrammar, _) ->
-                         if (targetGrammar != null) {
-                             SRSGrammarCard(
-                                 grammar = targetGrammar,
-                                 progress = if (uiState.dailyGoal > 0) uiState.completedToday.toFloat() / uiState.dailyGoal else 0f,
-                                 queueNewCount = uiState.queueNewCount,
-                                 queueLearningCount = uiState.queueLearningCount,
-                                 queueReviewCount = uiState.queueReviewCount,
-                                 queueRelearnCount = uiState.queueRelearnCount,
-                                 isAnswerShown = uiState.isAnswerShown,
-                                 cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
-                                 modifier = Modifier.fillMaxSize(),
-                                 onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
-                                 playingAudioId = uiState.playingAudioId,
-                                 isWhiteboardEnabled = uiState.isWhiteboardEnabled,
-                                 autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !uiState.isAnswerShown) autoRevealAnim.value else null,
-                                 topPadding = topContentPadding
-                             )
+                     ) { (targetGrammar, targetCount) ->
+                         var lastAnswerShown by remember(targetGrammar.id) { mutableStateOf(false) }
+                         if (targetCount == uiState.sessionProcessedCount) {
+                             lastAnswerShown = uiState.isAnswerShown
                          }
+                         val isCardAnswerShown = if (targetCount == uiState.sessionProcessedCount) {
+                             uiState.isAnswerShown
+                         } else {
+                             if (uiState.slideDirection == SlideDirection.FORWARD) true else lastAnswerShown
+                         }
+                         SRSGrammarCard(
+                             grammar = targetGrammar,
+                             progress = if (uiState.dailyGoal > 0) uiState.completedToday.toFloat() / uiState.dailyGoal else 0f,
+                             queueNewCount = uiState.queueNewCount,
+                             queueLearningCount = uiState.queueLearningCount,
+                             queueReviewCount = uiState.queueReviewCount,
+                             queueRelearnCount = uiState.queueRelearnCount,
+                             isAnswerShown = isCardAnswerShown,
+                             cardBadge = LearningItem.GrammarItem(targetGrammar).cardBadge,
+                             modifier = Modifier.fillMaxSize(),
+                             onSpeakExample = { japanese, chinese, id -> onEvent(LearningEvent.SpeakExample(japanese, chinese, id)) },
+                             playingAudioId = uiState.playingAudioId,
+                             isWhiteboardEnabled = uiState.isWhiteboardEnabled,
+                             autoRevealProgress = if (uiState.isGrammarAutoRevealAnswerEnabled && !isCardAnswerShown) autoRevealAnim.value else null,
+                             topPadding = topContentPadding
+                         )
                      }
                  }
 

@@ -102,8 +102,13 @@ class GrammarDetailViewModel @Inject constructor(
             audioRepository.ttsEvents.collect { event ->
                 when (event) {
                     is TtsEvent.OnStart -> _playingAudioId.value = event.id
-                    is TtsEvent.OnDone -> {
-                        if (_playingAudioId.value == event.id) {
+                    is TtsEvent.OnDone, is TtsEvent.OnStop -> {
+                        val eventId = when (event) {
+                            is TtsEvent.OnDone -> event.id
+                            is TtsEvent.OnStop -> event.id
+                            else -> null
+                        }
+                        if (_playingAudioId.value == eventId) {
                             _playingAudioId.value = null
                         }
                     }

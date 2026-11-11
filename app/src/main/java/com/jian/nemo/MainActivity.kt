@@ -99,9 +99,10 @@ class MainActivity : ComponentActivity() {
 
 
 
-        // 在首次启动时强制初始化数据库
+        // 启动时在后台并行初始化数据库与静默预热音效播放器
         lifecycleScope.launch(Dispatchers.IO) {
             databaseInitializer.initialize()
+            com.jian.nemo.core.ui.util.SoundEffectPlayer.init(applicationContext)
         }
 
         enableEdgeToEdge()

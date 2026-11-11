@@ -112,10 +112,15 @@ class AIReadingViewModel @Inject constructor(
                     is TtsEvent.OnStart -> {
                         _uiState.update { it.copy(playingAudioId = event.id) }
                     }
-                    is TtsEvent.OnDone, is TtsEvent.OnError -> {
+                    is TtsEvent.OnDone, is TtsEvent.OnStop, is TtsEvent.OnError -> {
+                        val eventId = when (event) {
+                            is TtsEvent.OnDone -> event.id
+                            is TtsEvent.OnStop -> event.id
+                            is TtsEvent.OnError -> event.id
+                            else -> null
+                        }
                         _uiState.update { state ->
-                            if (state.playingAudioId == (event as? TtsEvent.OnDone)?.id || 
-                                state.playingAudioId == (event as? TtsEvent.OnError)?.id) {
+                            if (state.playingAudioId == eventId) {
                                 state.copy(playingAudioId = null)
                             } else state
                         }

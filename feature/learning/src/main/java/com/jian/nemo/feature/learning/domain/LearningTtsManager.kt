@@ -21,22 +21,25 @@ class LearningTtsManager @Inject constructor(
             audioRepository.ttsEvents.collect { event ->
                 when (event) {
                     is TtsEvent.OnStart -> {
-                        val normalizedId = event.id?.substringBefore("-jp")?.substringBefore("-cn")
+                        val normalizedId = event.id.substringBefore("-jp").substringBefore("-cn")
                         _playingAudioId.update { normalizedId }
                     }
                     is TtsEvent.OnDone -> {
                         // 如果是日语部分结束，暂时不清除状态，等待中文部分开始，防止动画闪烁
-                        if (event.id?.endsWith("-jp") == true) return@collect
+                        if (event.id.endsWith("-jp")) return@collect
 
-                        val normalizedId = event.id?.substringBefore("-cn")
+                        val normalizedId = event.id.substringBefore("-cn")
                         _playingAudioId.update { current ->
                             if (current == normalizedId) null else current
                         }
                     }
-                    is TtsEvent.OnError -> {
-                        _playingAudioId.update { null }
+                    is TtsEvent.OnStop -> {
+                        val normalizedId = event.id.substringBefore("-jp").substringBefore("-cn")
+                        _playingAudioId.update { current ->
+                            if (current == normalizedId || normalizedId.isEmpty()) null else current
+                        }
                     }
-                    TtsEvent.GoogleTtsMissing -> {
+                    is TtsEvent.OnError, TtsEvent.GoogleTtsMissing -> {
                         _playingAudioId.update { null }
                     }
                 }
@@ -45,26 +48,35 @@ class LearningTtsManager @Inject constructor(
     }
 
     /**
-     * 朗读单词（日语 + 中文）
+     * 朗读单词（日语 + 中文），支持 Toggle 暂停
      */
-    fun speakWord(text: String, chinese: String = "") {
-        audioRepository.stop()
+    fun speakWord(text: String, chinese: String = "", id: String = "word") {
+        if (_playingAudioId.value == id) {
+            stop()
+            return
+        }
+        stop()
         if (chinese.isNotBlank()) {
-            audioRepository.playExampleTts(text, chinese, "word")
+            audioRepository.playExampleTts(text, chinese, id)
         } else {
-            audioRepository.playTts(text, "ja-JP", "word")
+            audioRepository.playTts(text, "ja-JP", id)
         }
     }
 
     /**
-     * 朗读例句（日语 + 中文）
+     * 朗读例句（日语 + 中文），支持 Toggle 暂停
      */
     fun speakExample(japanese: String, chinese: String, id: String) {
-        audioRepository.stop()
+        if (_playingAudioId.value == id) {
+            stop()
+            return
+        }
+        stop()
         audioRepository.playExampleTts(japanese, chinese, id)
     }
 
     fun stop() {
         audioRepository.stop()
+        _playingAudioId.update { null }
     }
 }

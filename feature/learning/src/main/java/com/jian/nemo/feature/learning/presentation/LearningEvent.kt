@@ -91,8 +91,9 @@ sealed interface LearningEvent {
 
     /**
      * 播放发音
+     * @param id 唯一标识符，用于控制声纹动画
      */
-    data class SpeakWord(val text: String, val chinese: String = "") : LearningEvent
+    data class SpeakWord(val text: String, val chinese: String = "", val id: String = "word") : LearningEvent
 
     /**
      * 朗读例句（日语 + 中文翻译）

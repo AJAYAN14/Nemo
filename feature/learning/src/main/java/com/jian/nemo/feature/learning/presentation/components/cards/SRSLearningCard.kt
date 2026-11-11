@@ -489,8 +489,9 @@ fun SRSLearningCard(
                             ) {
                                 // 1. 朗读单词按钮
                                 if (onSpeakWord != null) {
+                                    val isWordAudioPlaying = playingAudioId == "word_${word.id}" || (word.id == 0 && playingAudioId == "word")
                                     SpeakerButton(
-                                        isPlaying = playingAudioId == "word",
+                                        isPlaying = isWordAudioPlaying,
                                         onClick = { onSpeakWord() },
                                         tint = audioColor,
                                         size = 48.dp,

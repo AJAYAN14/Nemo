@@ -179,6 +179,9 @@ class LearningViewModel @Inject constructor(
         context = context,
     )
 
+    private var lastSpeakWordTime = 0L
+    private var lastSpeakExampleTime = 0L
+
     /**
      * 处理所有 UI 事件
      */
@@ -199,13 +202,28 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.ShowAnswer -> statsTimerDelegate.showAnswer()
 
             // 评分 (统一处理)
-            is LearningEvent.RateWord -> ratingDelegate.rate(event.quality)
-            is LearningEvent.RateGrammar -> ratingDelegate.rate(event.quality)
+            is LearningEvent.RateWord -> {
+                learningTtsManager.stop()
+                ratingDelegate.rate(event.quality)
+            }
+            is LearningEvent.RateGrammar -> {
+                learningTtsManager.stop()
+                ratingDelegate.rate(event.quality)
+            }
 
             // 导航
-            is LearningEvent.NavigateNext -> queueNavigationDelegate.navigateNext()
-            is LearningEvent.NavigatePrev -> queueNavigationDelegate.navigatePrev()
-            is LearningEvent.GoToIndex -> queueNavigationDelegate.navigateTo(event.index)
+            is LearningEvent.NavigateNext -> {
+                learningTtsManager.stop()
+                queueNavigationDelegate.navigateNext()
+            }
+            is LearningEvent.NavigatePrev -> {
+                learningTtsManager.stop()
+                queueNavigationDelegate.navigatePrev()
+            }
+            is LearningEvent.GoToIndex -> {
+                learningTtsManager.stop()
+                queueNavigationDelegate.navigateTo(event.index)
+            }
 
             // 其他
             is LearningEvent.ShowTypingPractice -> _uiState.update { it.copy(showTypingPractice = true) }
@@ -226,8 +244,20 @@ class LearningViewModel @Inject constructor(
             is LearningEvent.MasterGrammar -> ratingDelegate.rate(5) // 掌握 = 评分5
 
             // TTS 朗读
-            is LearningEvent.SpeakWord -> learningTtsManager.speakWord(event.text, event.chinese)
-            is LearningEvent.SpeakExample -> learningTtsManager.speakExample(event.japanese, event.chinese, event.id)
+            is LearningEvent.SpeakWord -> {
+                val now = System.currentTimeMillis()
+                if (now - lastSpeakWordTime >= 300L) {
+                    lastSpeakWordTime = now
+                    learningTtsManager.speakWord(event.text, event.chinese, event.id)
+                }
+            }
+            is LearningEvent.SpeakExample -> {
+                val now = System.currentTimeMillis()
+                if (now - lastSpeakExampleTime >= 300L) {
+                    lastSpeakExampleTime = now
+                    learningTtsManager.speakExample(event.japanese, event.chinese, event.id)
+                }
+            }
             is LearningEvent.ToggleAutoPlayAudio -> settingsDelegate.toggleAutoPlayAudio(event.enabled)
             is LearningEvent.ToggleShowAnswerDelay -> settingsDelegate.toggleShowAnswerDelay(event.enabled)
             is LearningEvent.CycleShowAnswerDelayDuration -> settingsDelegate.cycleShowAnswerDelayDuration()

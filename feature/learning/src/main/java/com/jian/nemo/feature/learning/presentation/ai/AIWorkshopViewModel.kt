@@ -126,10 +126,15 @@ class AIWorkshopViewModel @Inject constructor(
                     is TtsEvent.OnStart -> {
                         _uiState.update { it.copy(playingAudioId = event.id) }
                     }
-                    is TtsEvent.OnDone, is TtsEvent.OnError -> {
+                    is TtsEvent.OnDone, is TtsEvent.OnStop, is TtsEvent.OnError -> {
+                        val eventId = when (event) {
+                            is TtsEvent.OnDone -> event.id
+                            is TtsEvent.OnStop -> event.id
+                            is TtsEvent.OnError -> event.id
+                            else -> null
+                        }
                         _uiState.update { 
-                            if (it.playingAudioId == (event as? TtsEvent.OnDone)?.id || 
-                                it.playingAudioId == (event as? TtsEvent.OnError)?.id) {
+                            if (it.playingAudioId == eventId) {
                                 it.copy(playingAudioId = null)
                             } else it
                         }

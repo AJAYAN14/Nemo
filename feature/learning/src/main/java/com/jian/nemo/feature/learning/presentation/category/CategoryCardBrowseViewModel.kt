@@ -85,6 +85,7 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
                         _uiState.value = _uiState.value.copy(isPlaying = true)
                     }
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnDone,
+                    is com.jian.nemo.core.domain.repository.TtsEvent.OnStop,
                     is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
                     com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
                         _uiState.value = _uiState.value.copy(isPlaying = false, playingText = null)

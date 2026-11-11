@@ -55,11 +55,14 @@ class AIHistoryViewModel @Inject constructor(
                     is TtsEvent.OnStart -> {
                         _playingAudioId.update { event.id }
                     }
-                    is TtsEvent.OnDone, is TtsEvent.OnError -> {
-                        _playingAudioId.update { 
-                            if (it == (event as? TtsEvent.OnDone)?.id || 
-                                it == (event as? TtsEvent.OnError)?.id) null else it
+                    is TtsEvent.OnDone, is TtsEvent.OnStop, is TtsEvent.OnError -> {
+                        val eventId = when (event) {
+                            is TtsEvent.OnDone -> event.id
+                            is TtsEvent.OnStop -> event.id
+                            is TtsEvent.OnError -> event.id
+                            else -> null
                         }
+                        _playingAudioId.update { if (it == eventId) null else it }
                     }
                     else -> {}
                 }

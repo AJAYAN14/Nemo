@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -62,7 +63,11 @@ class TtsManager @Inject constructor(
     private var savedChineseVoiceName: String? = null
 
     // TTS 状态事件流
-    private val _events = MutableSharedFlow<TtsEvent>(replay = 1, extraBufferCapacity = 1)
+    private val _events = MutableSharedFlow<TtsEvent>(
+        replay = 1,
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val events = _events.asSharedFlow()
 
     init {
@@ -211,6 +216,11 @@ class TtsManager @Inject constructor(
 
             override fun onDone(utteranceId: String?) {
                 utteranceId?.let { _events.tryEmit(TtsEvent.OnDone(it)) }
+                abandonAudioFocus()
+            }
+
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                utteranceId?.let { _events.tryEmit(TtsEvent.OnStop(it, interrupted)) }
                 abandonAudioFocus()
             }
 
