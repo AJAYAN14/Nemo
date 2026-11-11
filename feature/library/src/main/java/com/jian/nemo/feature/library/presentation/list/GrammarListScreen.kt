@@ -308,25 +308,25 @@ fun GrammarListScreen(
 }
 
 private val AvatarPalette = listOf(
-    IosColors.Blue,
-    IosColors.Orange,
-    IosColors.Green,
-    IosColors.Indigo,
-    IosColors.Teal,
-    IosColors.Purple,
-    IosColors.Pink,
-    IosColors.Cyan
+    SystemColors.Blue,
+    SystemColors.Orange,
+    SystemColors.Green,
+    SystemColors.Indigo,
+    SystemColors.Teal,
+    SystemColors.Purple,
+    SystemColors.Pink,
+    SystemColors.Cyan
 )
 
 @Composable
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Blue
+        "N5" -> SystemColors.Green
+        "N4" -> SystemColors.Cyan
+        "N3" -> SystemColors.Blue
+        "N2" -> SystemColors.Orange
+        "N1" -> SystemColors.Pink
+        else -> SystemColors.Blue
     }
 }
 
@@ -406,7 +406,7 @@ private fun EmptyState(
 ) {
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentColor = IosColors.Indigo
+    val accentColor = SystemColors.Indigo
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 

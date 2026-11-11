@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.settings.R
@@ -40,7 +40,7 @@ fun ChineseVoiceSelectionBottomSheet(
     previewingVoiceName: String? = null
 ) {
     val isDark = isSystemInDarkTheme()
-    val accentColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+    val accentColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
     val haptic = LocalHapticFeedback.current
     val cloudGroupName = stringResource(R.string.settings_tts_group_cloud_chinese)
     val localGroupName = stringResource(R.string.settings_tts_group_local_chinese)

@@ -67,7 +67,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton

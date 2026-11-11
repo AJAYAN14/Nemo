@@ -15,7 +15,7 @@ import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material3.*
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.component.NemoDialog
@@ -202,7 +202,7 @@ private fun HistoryItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 图标装饰：遵循 2:3 黄金比例与双轨单容器架构
-            val itemIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            val itemIconColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
             val itemContainerBg = if (isSoftTranslucent) itemIconColor.copy(alpha = 0.15f) else itemIconColor
             val itemIconTint = if (isSoftTranslucent) itemIconColor else Color.White
 
@@ -267,9 +267,9 @@ private fun HistoryItemCard(
             if (history.isSubmitted) {
                 val isAllCorrect = correctCount == totalQuestions
                 val badgeColor = if (isAllCorrect) {
-                    if (isDark) IosColors.GreenDark else IosColors.Green
+                    if (isDark) SystemColors.GreenDark else SystemColors.Green
                 } else {
-                    if (isDark) IosColors.RedDark else IosColors.Red
+                    if (isDark) SystemColors.RedDark else SystemColors.Red
                 }
                 val badgeBg = badgeColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
@@ -285,7 +285,7 @@ private fun HistoryItemCard(
                     )
                 }
             } else {
-                val ongoingColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                val ongoingColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                 val ongoingBg = ongoingColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
                     shape = RoundedRectangle(8.dp),
@@ -338,7 +338,7 @@ private fun EmptyState(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            val emptyIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            val emptyIconColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
             val emptyContainerBg = if (isSoftTranslucent) emptyIconColor.copy(alpha = 0.15f) else emptyIconColor
             val emptyIconTint = if (isSoftTranslucent) emptyIconColor else Color.White
 
@@ -388,7 +388,7 @@ private fun EmptyState(
                 .align(Alignment.BottomCenter),
             shape = RoundedRectangle(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                containerColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo,
                 contentColor = Color.White
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)

@@ -82,7 +82,7 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.ui.component.text.FuriganaText
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.feature.learning.presentation.CardBadge
@@ -136,17 +136,17 @@ fun SRSLearningCard(
     val labelTextColor = if (isDarkTheme) NemoNeutralGray else NemoTextLight
 
     // 标准调色盘统一色彩系统
-    val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+    val indigoColor = if (isDarkTheme) SystemColors.IndigoDark else SystemColors.Indigo
     val levelBg = indigoColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
     val levelText = indigoColor
 
-    val audioColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+    val audioColor = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
     val audioBg = audioColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
-    val practiceColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
+    val practiceColor = if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
     val practiceBg = practiceColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
-    val whiteboardColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val whiteboardColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
     val whiteboardBg = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
     val whiteboardTint = if (showBackWhiteboard) Color.White else whiteboardColor
 
@@ -176,7 +176,7 @@ fun SRSLearningCard(
                         .height(3.dp)
                         .clip(UnevenRoundedRectangle(topStart = 26.dp, topEnd = 26.dp))
                         .align(Alignment.TopCenter),
-                    color = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue,
+                    color = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue,
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -212,7 +212,7 @@ fun SRSLearningCard(
 
                 // 假名读音 (答案显示时) / 思考提示 (答案隐藏时)
                 if (isAnswerShown) {
-                    val pronunciationColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
+                    val pronunciationColor = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
                     Text(
                         text = word.hiragana,
                         color = pronunciationColor,
@@ -282,10 +282,10 @@ fun SRSLearningCard(
                 // 状态徽章 (高度 34dp)
                 if (cardBadge != null) {
                     val badgeColor = when (cardBadge) {
-                        CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-                        CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-                        CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-                        CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                        CardBadge.NEW -> if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
+                        CardBadge.LEARNING -> if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
+                        CardBadge.REVIEW -> if (isDarkTheme) SystemColors.GreenDark else SystemColors.Green
+                        CardBadge.RELEARN -> if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
                     }
                     val badgeText = when (cardBadge) {
                         CardBadge.NEW -> stringResource(R.string.card_badge_new)

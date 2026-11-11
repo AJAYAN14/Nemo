@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 
 /**
  * Nemo 风格的顶级下拉菜单 (Premium Design)
@@ -101,7 +101,7 @@ fun NemoMenuItem(
     isDestructive: Boolean = false
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val destructiveColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val destructiveColor = if (isDark) SystemColors.RedDark else SystemColors.Red
 
     val effectiveIconColor = if (isDestructive) {
         destructiveColor

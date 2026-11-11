@@ -33,7 +33,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton

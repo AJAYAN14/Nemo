@@ -80,7 +80,7 @@ import com.jian.nemo.core.designsystem.theme.NemoNeutralGray
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
 import com.jian.nemo.core.designsystem.theme.LearningPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import androidx.compose.runtime.remember
@@ -138,11 +138,11 @@ fun SRSGrammarCard(
     val secondaryTextColor = if (isDarkTheme) NemoNeutralGray else NemoTextLight
 
     // 标准调色盘统一色彩系统
-    val indigoColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+    val indigoColor = if (isDarkTheme) SystemColors.IndigoDark else SystemColors.Indigo
     val levelBg = indigoColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
     val levelText = indigoColor
 
-    val whiteboardColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val whiteboardColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
     val whiteboardBg = if (showBackWhiteboard) whiteboardColor else whiteboardColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
     val whiteboardTint = if (showBackWhiteboard) Color.White else whiteboardColor
 
@@ -174,7 +174,7 @@ fun SRSGrammarCard(
                         .height(4.dp)
                         .clip(UnevenRoundedRectangle(topStart = 24.dp, topEnd = 24.dp))
                         .align(Alignment.TopCenter),
-                    color = (if (isDarkTheme) IosColors.BlueDark else IosColors.Blue).copy(alpha = 0.6f),
+                    color = (if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue).copy(alpha = 0.6f),
                     trackColor = Color.Transparent,
                     strokeCap = androidx.compose.ui.graphics.StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -291,10 +291,10 @@ fun SRSGrammarCard(
                 // 右侧：状态徽章 (高度 34dp)
                 if (cardBadge != null) {
                     val badgeColor = when (cardBadge) {
-                        CardBadge.NEW -> if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-                        CardBadge.LEARNING -> if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-                        CardBadge.REVIEW -> if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-                        CardBadge.RELEARN -> if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                        CardBadge.NEW -> if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
+                        CardBadge.LEARNING -> if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
+                        CardBadge.REVIEW -> if (isDarkTheme) SystemColors.GreenDark else SystemColors.Green
+                        CardBadge.RELEARN -> if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
                     }
                     val badgeText = when (cardBadge) {
                         CardBadge.NEW -> stringResource(R.string.learn_grammar_card_badge_new)
@@ -516,7 +516,7 @@ fun SRSGrammarCard(
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                            val effectiveUsageColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+                            val effectiveUsageColor = if (isDarkTheme) SystemColors.IndigoDark else SystemColors.Indigo
                             val effectiveUsageBg = if (isExpanded) {
                                 effectiveUsageColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
                             } else {
@@ -646,7 +646,7 @@ fun SRSGrammarCard(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(bottom = 16.dp)
                                 ) {
-                                    val explanationColor = if (isDarkTheme) IosColors.IndigoDark else IosColors.Indigo
+                                    val explanationColor = if (isDarkTheme) SystemColors.IndigoDark else SystemColors.Indigo
                                     Icon(
                                         imageVector = Icons.Rounded.Lightbulb,
                                         contentDescription = null,
@@ -778,7 +778,7 @@ fun SRSGrammarCard(
 
                             // TIPS卡片（如果存在）
                             if (!usage.notes.isNullOrBlank()) {
-                                val tipsColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+                                val tipsColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
                                 val tipsBg = tipsColor.copy(alpha = if (isDarkTheme) 0.18f else 0.12f)
 
                                 Row(

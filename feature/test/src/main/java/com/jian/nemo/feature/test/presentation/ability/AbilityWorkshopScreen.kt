@@ -53,7 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
@@ -103,7 +103,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_listening_title),
                     description = stringResource(R.string.test_ability_workshop_listening_desc),
                     icon = Icons.Rounded.Headphones,
-                    iconColor = IosColors.Indigo,
+                    iconColor = SystemColors.Indigo,
                     onClick = { onNavigateToGame("listening_comprehension") }
                 )
             }
@@ -112,7 +112,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_cloze_title),
                     description = stringResource(R.string.test_ability_workshop_cloze_desc),
                     icon = Icons.Rounded.EditCalendar,
-                    iconColor = IosColors.Orange,
+                    iconColor = SystemColors.Orange,
                     onClick = { onNavigateToGame("word_cloze") }
                 )
             }
@@ -121,7 +121,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_verb_title),
                     description = stringResource(R.string.test_ability_workshop_verb_desc),
                     icon = Icons.Rounded.AutoFixHigh,
-                    iconColor = IosColors.Blue,
+                    iconColor = SystemColors.Blue,
                     onClick = { onNavigateToGame("verb_conjugation") }
                 )
             }
@@ -130,7 +130,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_synonym_title),
                     description = stringResource(R.string.test_ability_workshop_synonym_desc),
                     icon = Icons.Rounded.Schema,
-                    iconColor = IosColors.Cyan,
+                    iconColor = SystemColors.Cyan,
                     onClick = { onNavigateToGame("synonym_connection") }
                 )
             }
@@ -139,7 +139,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_antonym_title),
                     description = stringResource(R.string.test_ability_workshop_antonym_desc),
                     icon = Icons.Rounded.SwapHoriz,
-                    iconColor = IosColors.Teal,
+                    iconColor = SystemColors.Teal,
                     onClick = { onNavigateToGame("antonym_matching") }
                 )
             }
@@ -148,7 +148,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_collocation_title),
                     description = stringResource(R.string.test_ability_workshop_collocation_desc),
                     icon = Icons.Rounded.Hub,
-                    iconColor = IosColors.Green,
+                    iconColor = SystemColors.Green,
                     onClick = { onNavigateToGame("collocation") }
                 )
             }
@@ -157,7 +157,7 @@ fun AbilityWorkshopScreen(
                     title = stringResource(R.string.test_ability_workshop_grammar_title),
                     description = stringResource(R.string.test_ability_workshop_grammar_desc),
                     icon = Icons.Rounded.Spellcheck,
-                    iconColor = IosColors.Purple,
+                    iconColor = SystemColors.Purple,
                     onClick = { onNavigateToGame("grammar_correction") }
                 )
             }

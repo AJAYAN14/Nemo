@@ -44,7 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -151,12 +151,12 @@ fun AdvancedLearningSettingsScreen(
         showExitConfirmation = true
     }
 
-    val retentionColor = IosColors.Purple
-    val learningStepColor = IosColors.Blue
-    val relearningStepColor = IosColors.Orange
-    val leechColor = IosColors.Red
-    val temporalColor = IosColors.Cyan
-    val backlogColor = IosColors.Green
+    val retentionColor = SystemColors.Purple
+    val learningStepColor = SystemColors.Blue
+    val relearningStepColor = SystemColors.Orange
+    val leechColor = SystemColors.Red
+    val temporalColor = SystemColors.Cyan
+    val backlogColor = SystemColors.Green
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val backdrop = rememberLayerBackdrop()

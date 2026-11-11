@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.feature.statistics.LevelPredictionInfo
 import com.jian.nemo.feature.statistics.OverallPredictionSummary
@@ -219,11 +219,11 @@ fun LevelBreakdownDialog(
                 ) {
                     val levelList = listOf("N5", "N4", "N3", "N2", "N1")
                     val levelColors = mapOf(
-                        "N1" to IosColors.Red,
-                        "N2" to IosColors.Orange,
-                        "N3" to IosColors.Yellow,
-                        "N4" to IosColors.Green,
-                        "N5" to IosColors.Blue
+                        "N1" to SystemColors.Red,
+                        "N2" to SystemColors.Orange,
+                        "N3" to SystemColors.Yellow,
+                        "N4" to SystemColors.Green,
+                        "N5" to SystemColors.Blue
                     )
 
                     levelList.forEach { level ->

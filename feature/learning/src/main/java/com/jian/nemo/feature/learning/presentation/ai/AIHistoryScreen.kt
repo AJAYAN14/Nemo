@@ -180,7 +180,7 @@ private fun EmptyHistoryView(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
 
-    val historyIconColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+    val historyIconColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
     val historyContainerBg = if (isSoftTranslucent) historyIconColor.copy(alpha = 0.15f) else historyIconColor
     val historyIconTint = if (isSoftTranslucent) historyIconColor else Color.White
 
@@ -264,9 +264,9 @@ private fun HistoryItemCard(
             ) {
                 // 类型标签
                 val typeTagColor = if (history.type == "CN_TO_JP") {
-                    if (isDark) IosColors.BlueDark else IosColors.Blue
+                    if (isDark) SystemColors.BlueDark else SystemColors.Blue
                 } else {
-                    if (isDark) IosColors.PurpleDark else IosColors.Purple
+                    if (isDark) SystemColors.PurpleDark else SystemColors.Purple
                 }
                 val typeTagBg = typeTagColor.copy(alpha = if (isDark) 0.16f else 0.1f)
                 Surface(
@@ -308,9 +308,9 @@ private fun HistoryItemCard(
             ) {
                 // 分数展示
                 val scoreColor = when {
-                    history.score >= 80 -> if (isDark) IosColors.GreenDark else IosColors.Green
-                    history.score >= 60 -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-                    else -> if (isDark) IosColors.RedDark else IosColors.Red
+                    history.score >= 80 -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+                    history.score >= 60 -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+                    else -> if (isDark) SystemColors.RedDark else SystemColors.Red
                 }
                 val scoreBgAlpha = if (isDark) 0.16f else 0.1f
 

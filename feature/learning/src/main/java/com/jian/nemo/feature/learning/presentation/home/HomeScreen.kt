@@ -66,7 +66,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.Rubik
@@ -126,17 +126,17 @@ fun HomeScreen(
     val textMuted = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     val dividerColor = colorScheme.outlineVariant.copy(alpha = 0.2f)
     // 单一权威调色盘规范色 (系统动态主色，严格遵照 docs/design/color-palette 手册)
-    val wordModeColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
-    val grammarModeColor = if (isDark) IosColors.GreenDark else IosColors.Green
+    val wordModeColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+    val grammarModeColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
     val primaryModeColor = if (uiState.learningMode == LearningMode.Word) wordModeColor else grammarModeColor
 
-    val reviewColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
-    val completionColor = if (isDark) IosColors.GreenDark else IosColors.Green
-    val heatmapColor = if (isDark) IosColors.PurpleDark else IosColors.Purple
-    val kanaColor = if (isDark) IosColors.BlueDark else IosColors.Blue
-    val verbColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
-    val aiWorkshopColor = if (isDark) IosColors.PurpleDark else IosColors.Purple
-    val aiReadingColor = if (isDark) IosColors.GreenDark else IosColors.Green
+    val reviewColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+    val completionColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
+    val heatmapColor = if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+    val kanaColor = if (isDark) SystemColors.BlueDark else SystemColors.Blue
+    val verbColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
+    val aiWorkshopColor = if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+    val aiReadingColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
 
 
     val morningPhrases = stringArrayResource(R.array.home_greeting_subtitles_morning)

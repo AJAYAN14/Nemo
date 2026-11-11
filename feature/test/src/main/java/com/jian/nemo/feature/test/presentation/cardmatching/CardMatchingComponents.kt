@@ -51,7 +51,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.designsystem.theme.CardMatchingPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 
 
 @Composable
@@ -318,8 +318,8 @@ fun MatchingFeedbackPanel(
         modifier = modifier
     ) {
         val backgroundColor = when (feedbackState) {
-            FeedbackPanelState.COMPLETE -> IosColors.Green.copy(alpha = 0.95f)
-            FeedbackPanelState.INCORRECT -> IosColors.Red.copy(alpha = 0.92f)
+            FeedbackPanelState.COMPLETE -> SystemColors.Green.copy(alpha = 0.95f)
+            FeedbackPanelState.INCORRECT -> SystemColors.Red.copy(alpha = 0.92f)
             else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
         }
 

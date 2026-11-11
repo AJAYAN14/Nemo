@@ -22,7 +22,7 @@ import androidx.compose.material.icons.rounded.Inbox
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -292,7 +292,7 @@ private fun EmptyState(
 ) {
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentColor = IosColors.Blue
+    val accentColor = SystemColors.Blue
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.12f) else accentColor.copy(alpha = 0.2f)
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {

@@ -235,7 +235,7 @@ fun SettingsScreen(
                             // 未登录
                             SquircleSettingItem(
                                 icon = Icons.Rounded.Person,
-                                iconColor = IosColors.Blue,
+                                iconColor = SystemColors.Blue,
                                 title = stringResource(R.string.settings_item_title_login),
                                 subtitle = stringResource(R.string.settings_item_subtitle_login),
                                 onClick = onNavigateToLogin,
@@ -245,7 +245,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.CloudUpload,
-                            iconColor = IosColors.Cyan,
+                            iconColor = SystemColors.Cyan,
                             title = stringResource(R.string.settings_item_title_backup),
                             subtitle = stringResource(R.string.settings_item_subtitle_backup),
                             onClick = { viewModel.onEvent(SettingsEvent.BackupToCloud) },
@@ -253,7 +253,7 @@ fun SettingsScreen(
                         )
                         SquircleSettingItem(
                             icon = Icons.Rounded.History,
-                            iconColor = IosColors.Indigo,
+                            iconColor = SystemColors.Indigo,
                             title = stringResource(R.string.settings_item_title_backup_history),
                             subtitle = stringResource(R.string.settings_item_subtitle_backup_history),
                             onClick = onNavigateToCloudBackupHistory,
@@ -270,7 +270,7 @@ fun SettingsScreen(
                         // 主题外观
                         SquircleSettingItem(
                             icon = Icons.Rounded.Palette,
-                            iconColor = IosColors.Purple,
+                            iconColor = SystemColors.Purple,
                             title = stringResource(R.string.settings_theme_title_screen),
                             subtitle = when (uiState.darkMode) {
                                 DarkModeOption.LIGHT -> stringResource(R.string.settings_theme_label_light)
@@ -290,7 +290,7 @@ fun SettingsScreen(
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.TrackChanges,
-                            iconColor = IosColors.Orange,
+                            iconColor = SystemColors.Orange,
                             title = stringResource(R.string.settings_item_title_daily_word_goal),
                             subtitle = stringResource(R.string.settings_item_subtitle_daily_word_goal),
                             onClickWithBounds = { bounds ->
@@ -321,7 +321,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.AutoMirrored.Rounded.MenuBook,
-                            iconColor = IosColors.Green,
+                            iconColor = SystemColors.Green,
                             title = stringResource(R.string.settings_item_title_daily_grammar_goal),
                             subtitle = stringResource(R.string.settings_item_subtitle_daily_grammar_goal),
                             onClickWithBounds = { bounds ->
@@ -352,7 +352,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Timer,
-                            iconColor = IosColors.Mint,
+                            iconColor = SystemColors.Mint,
                             title = stringResource(R.string.settings_item_title_day_reset),
                             subtitle = stringResource(R.string.settings_item_subtitle_day_reset),
                             onClickWithBounds = { bounds ->
@@ -383,7 +383,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Shuffle,
-                            iconColor = IosColors.Teal,
+                            iconColor = SystemColors.Teal,
                             title = stringResource(R.string.settings_item_title_random_extract),
                             subtitle = if (uiState.isRandomNewContentEnabled) stringResource(R.string.settings_item_subtitle_random_extract_on) else stringResource(R.string.settings_item_subtitle_random_extract_off),
                             onClick = { showRandomNewContentConfirmDialog = true },
@@ -404,7 +404,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Memory,
-                            iconColor = IosColors.Purple,
+                            iconColor = SystemColors.Purple,
                             title = stringResource(R.string.settings_item_title_algorithm),
                             subtitle = stringResource(R.string.settings_item_subtitle_algorithm),
                             onClick = onNavigateToAdvancedLearning,
@@ -421,7 +421,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.SmartToy,
-                            iconColor = IosColors.Blue,
+                            iconColor = SystemColors.Blue,
                             title = stringResource(R.string.settings_item_title_ai_workshop),
                             subtitle = stringResource(R.string.settings_item_subtitle_ai_workshop),
                             onClick = onNavigateToAiSettings,
@@ -445,7 +445,7 @@ fun SettingsScreen(
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.AutoMirrored.Rounded.VolumeUp,
-                            iconColor = IosColors.Pink,
+                            iconColor = SystemColors.Pink,
                             title = stringResource(R.string.settings_item_title_tts),
                             subtitle = stringResource(R.string.settings_item_subtitle_tts),
                             onClick = onNavigateToTtsSettings,
@@ -461,7 +461,7 @@ fun SettingsScreen(
                     PremiumCard {
                         SquircleSettingItem(
                             icon = Icons.Rounded.FileDownload,
-                            iconColor = IosColors.Green,
+                            iconColor = SystemColors.Green,
                             title = stringResource(R.string.settings_item_title_export),
                             subtitle = stringResource(R.string.settings_item_subtitle_export),
                             onClick = {
@@ -471,7 +471,7 @@ fun SettingsScreen(
                         )
                         SquircleSettingItem(
                             icon = Icons.Rounded.FileUpload,
-                            iconColor = IosColors.Orange,
+                            iconColor = SystemColors.Orange,
                             title = stringResource(R.string.settings_item_title_import),
                             subtitle = stringResource(R.string.settings_item_subtitle_import),
                             onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
@@ -480,7 +480,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Delete,
-                            iconColor = IosColors.Red,
+                            iconColor = SystemColors.Red,
                             title = stringResource(R.string.settings_item_title_reset),
                             subtitle = stringResource(R.string.settings_item_subtitle_reset),
                             onClick = {
@@ -501,7 +501,7 @@ fun SettingsScreen(
                         PremiumCard {
                             SquircleSettingItem(
                                 icon = Icons.Rounded.Science,
-                                iconColor = IosColors.Cyan,
+                                iconColor = SystemColors.Cyan,
                                 title = stringResource(R.string.settings_item_title_liquid_lab),
                                 subtitle = stringResource(R.string.settings_item_subtitle_liquid_lab),
                                 onClick = onNavigateToLiquidLab,
@@ -509,7 +509,7 @@ fun SettingsScreen(
                             )
                             SquircleSettingItem(
                                 icon = Icons.Rounded.Category,
-                                iconColor = IosColors.Indigo,
+                                iconColor = SystemColors.Indigo,
                                 title = stringResource(R.string.settings_item_title_corner_lab),
                                 subtitle = stringResource(R.string.settings_item_subtitle_corner_lab),
                                 onClick = onNavigateToCornerLab,
@@ -529,7 +529,7 @@ fun SettingsScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Info,
-                            iconColor = IosColors.Gray,
+                            iconColor = SystemColors.Gray,
                             title = stringResource(R.string.settings_about_title_screen),
                             subtitle = stringResource(R.string.settings_format_about_subtitle, versionName),
                             onClick = onNavigateToAbout,

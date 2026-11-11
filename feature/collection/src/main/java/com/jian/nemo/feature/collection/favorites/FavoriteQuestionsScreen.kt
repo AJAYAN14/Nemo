@@ -1,7 +1,7 @@
 package com.jian.nemo.feature.collection.favorites
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -69,10 +69,10 @@ fun FavoriteQuestionsScreen(
     val iconStyle by viewModel.iconStyle.collectAsState()
 
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val heartColor = IosColors.Pink
-    val accentGreen = IosColors.Green
-    val accentBlue = IosColors.Blue
-    val deleteColor = IosColors.Red
+    val heartColor = SystemColors.Pink
+    val accentGreen = SystemColors.Green
+    val accentBlue = SystemColors.Blue
+    val deleteColor = SystemColors.Red
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态

@@ -38,7 +38,7 @@ import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
 import com.jian.nemo.core.designsystem.theme.NemoWarning
 import com.jian.nemo.core.designsystem.theme.NemoWarningDark
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import androidx.compose.ui.graphics.Brush
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -70,8 +70,8 @@ fun VerbConjugationScreen(
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val containerColor = MaterialTheme.colorScheme.background
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val qCardBg = if (isDark) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue.copy(alpha = 0.08f)
-    val qCardBorderColor = if (isDark) IosColors.Blue.copy(alpha = 0.2f) else IosColors.Blue.copy(alpha = 0.1f)
+    val qCardBg = if (isDark) SystemColors.Blue.copy(alpha = 0.15f) else SystemColors.Blue.copy(alpha = 0.08f)
+    val qCardBorderColor = if (isDark) SystemColors.Blue.copy(alpha = 0.2f) else SystemColors.Blue.copy(alpha = 0.1f)
 
     var showHistoryView by remember { mutableStateOf(false) }
     val historyRecords by viewModel.historyRecords.collectAsState(initial = emptyList())
@@ -107,7 +107,7 @@ fun VerbConjugationScreen(
                 when (state) {
                     is VerbUiState.Loading -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = IosColors.Blue)
+                            CircularProgressIndicator(color = SystemColors.Blue)
                         }
                     }
                     is VerbUiState.ApiNotConfigured -> {
@@ -249,7 +249,7 @@ fun HistoryView(
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(dateStr, style = MaterialTheme.typography.bodySmall, color = NemoNeutrals.Gray500)
                         }
-                        Text("$acc%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (acc >= 80) IosColors.Green else if (acc >= 60) IosColors.Yellow else IosColors.Red)
+                        Text("$acc%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = if (acc >= 80) SystemColors.Green else if (acc >= 60) SystemColors.Yellow else SystemColors.Red)
                     }
                     HorizontalDivider(color = if(isDark) MaterialTheme.colorScheme.outlineVariant else NemoNeutrals.Gray200.copy(alpha = 0.5f))
                 }
@@ -292,10 +292,10 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            modifier = Modifier.size(84.dp).background(IosColors.Yellow.copy(alpha = 0.12f), CircleShape),
+            modifier = Modifier.size(84.dp).background(SystemColors.Yellow.copy(alpha = 0.12f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(56.dp), tint = IosColors.Yellow)
+            Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(56.dp), tint = SystemColors.Yellow)
         }
         Spacer(modifier = Modifier.height(24.dp))
         Text(stringResource(R.string.test_verb_title_no_ai), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
@@ -309,7 +309,7 @@ private fun ApiNotConfiguredView(onBack: () -> Unit, isDark: Boolean) {
             onClick = onBack,
             modifier = Modifier.fillMaxWidth(0.7f).height(56.dp),
             shape = RoundedRectangle(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)
+            colors = ButtonDefaults.buttonColors(containerColor = SystemColors.Blue)
         ) {
             Text(stringResource(R.string.test_verb_btn_back_to_config), fontWeight = FontWeight.Bold)
         }
@@ -424,7 +424,7 @@ private fun GeneratingView(isDark: Boolean, onCancel: () -> Unit, onRetry: () ->
                 onClick = onRetry,
                 shape = RoundedRectangle(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = IosColors.Blue,
+                    containerColor = SystemColors.Blue,
                     contentColor = Color.White
                 ),
                 modifier = Modifier.weight(1f)
@@ -442,13 +442,13 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(64.dp), tint = IosColors.Red)
+        Icon(Icons.Rounded.Warning, contentDescription = null, modifier = Modifier.size(64.dp), tint = SystemColors.Red)
         Spacer(modifier = Modifier.height(16.dp))
         Text(stringResource(R.string.test_verb_title_generate_failed), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
         Text(message, textAlign = TextAlign.Center, color = NemoNeutrals.Gray500)
         Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)) {
+        Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = SystemColors.Blue)) {
             Text(stringResource(R.string.test_common_btn_retry))
         }
     }
@@ -489,7 +489,7 @@ private fun ReadyView(
             LinearProgressIndicator(
                 progress = { (state.currentIndex + 1).toFloat() / state.questions.size },
                 modifier = Modifier.weight(1f).height(6.dp).clip(CircleShape),
-                color = IosColors.Blue,
+                color = SystemColors.Blue,
                 trackColor = if (isDark) MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f) else NemoNeutrals.Gray200
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -540,9 +540,9 @@ private fun ReadyView(
                 Spacer(modifier = Modifier.width(16.dp))
                 IconButton(
                     onClick = { viewModel.playWordTts() },
-                    modifier = Modifier.size(36.dp).background(IosColors.Blue.copy(alpha = 0.12f), CircleShape)
+                    modifier = Modifier.size(36.dp).background(SystemColors.Blue.copy(alpha = 0.12f), CircleShape)
                 ) {
-                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = stringResource(R.string.test_verb_cd_play_audio), tint = IosColors.Blue, modifier = Modifier.size(24.dp))
+                    Icon(Icons.AutoMirrored.Rounded.VolumeUp, contentDescription = stringResource(R.string.test_verb_cd_play_audio), tint = SystemColors.Blue, modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -564,8 +564,8 @@ private fun ReadyView(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(20.dp).background(IosColors.Blue.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.test_verb_badge_text), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = IosColors.Blue)
+                    Box(modifier = Modifier.size(20.dp).background(SystemColors.Blue.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.test_verb_badge_text), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SystemColors.Blue)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = currentQuestion.translation, style = MaterialTheme.typography.bodySmall, color = textSub)
@@ -641,7 +641,7 @@ private fun ReadyView(
                 modifier = Modifier.weight(1f).height(56.dp),
                 shape = RoundedRectangle(16.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isLast) IosColors.Green else IosColors.Blue,
+                    containerColor = if (isLast) SystemColors.Green else SystemColors.Blue,
                     disabledContainerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant else NemoNeutrals.Gray200
                 )
             ) {
@@ -707,9 +707,9 @@ private fun ReadyView(
                     shape = RoundedRectangle(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isCorrect) {
-                            if (isDark) IosColors.GreenDark else IosColors.Green
+                            if (isDark) SystemColors.GreenDark else SystemColors.Green
                         } else {
-                            if (isDark) IosColors.RedDark else IosColors.Red
+                            if (isDark) SystemColors.RedDark else SystemColors.Red
                         }
                     )
                 ) {
@@ -732,14 +732,14 @@ private fun OptionButton(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val borderColor = when {
-        isAnswered && isCorrect -> IosColors.Green
-        isSelected && !isCorrect -> IosColors.Red
+        isAnswered && isCorrect -> SystemColors.Green
+        isSelected && !isCorrect -> SystemColors.Red
         isDark -> MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         else -> Color.Transparent
     }
     val bgColor = when {
-        isAnswered && isCorrect -> IosColors.Green.copy(alpha = 0.05f)
-        isSelected && !isCorrect -> IosColors.Red.copy(alpha = 0.05f)
+        isAnswered && isCorrect -> SystemColors.Green.copy(alpha = 0.05f)
+        isSelected && !isCorrect -> SystemColors.Red.copy(alpha = 0.05f)
         isDark -> MaterialTheme.colorScheme.surface
         else -> Color.White
     }
@@ -776,9 +776,9 @@ private fun ResultView(
     val textColor = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val accuracy = if (totalCount > 0) (correctCount.toFloat() / totalCount * 100).toInt() else 0
     val ringColor = when {
-        accuracy >= 80 -> IosColors.Green
-        accuracy >= 60 -> IosColors.Yellow
-        else -> IosColors.Red
+        accuracy >= 80 -> SystemColors.Green
+        accuracy >= 60 -> SystemColors.Yellow
+        else -> SystemColors.Red
     }
     
     Column(
@@ -812,7 +812,7 @@ private fun ResultView(
             onClick = onRegenerate,
             modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
             shape = RoundedRectangle(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = IosColors.Blue)
+            colors = ButtonDefaults.buttonColors(containerColor = SystemColors.Blue)
         ) {
             Icon(Icons.Rounded.Refresh, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(8.dp))

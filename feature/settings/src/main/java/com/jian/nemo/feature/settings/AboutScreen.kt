@@ -262,7 +262,7 @@ fun AboutScreen(
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = Icons.Rounded.RocketLaunch,
-                            iconColor = IosColors.Cyan,
+                            iconColor = SystemColors.Cyan,
                             title = stringResource(R.string.settings_about_title_auto_check),
                             subtitle = stringResource(R.string.settings_about_subtitle_auto_check),
                             onClick = {
@@ -278,14 +278,14 @@ fun AboutScreen(
                                         checkUpdateOnStartup = next
                                         prefs.edit().putBoolean(KEY_CHECK_UPDATE_ON_STARTUP, next).apply()
                                     },
-                                    accentColor = IosColors.Blue
+                                    accentColor = SystemColors.Blue
                                 )
                             }
                         )
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Cached,
-                            iconColor = IosColors.Green,
+                            iconColor = SystemColors.Green,
                             iconRotation = if (isCheckingUpdate) checkUpdateRotation else 0f,
                             title = stringResource(R.string.settings_about_title_check_update),
                             subtitle = if (isCheckingUpdate) stringResource(R.string.settings_about_subtitle_checking) else stringResource(R.string.settings_about_subtitle_current_version_format, versionName, versionCode),
@@ -319,8 +319,8 @@ fun AboutScreen(
                 item {
                     val iconStyle = LocalSettingIconStyle.current
                     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-                    val changelogBg = if (isSoftTranslucent) IosColors.Blue.copy(alpha = 0.15f) else IosColors.Blue
-                    val changelogTint = if (isSoftTranslucent) IosColors.Blue else Color.White
+                    val changelogBg = if (isSoftTranslucent) SystemColors.Blue.copy(alpha = 0.15f) else SystemColors.Blue
+                    val changelogTint = if (isSoftTranslucent) SystemColors.Blue else Color.White
 
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_changelog))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -401,7 +401,7 @@ fun AboutScreen(
                                                 CircularProgressIndicator(
                                                     modifier = Modifier.size(20.dp),
                                                     strokeWidth = 2.dp,
-                                                    color = IosColors.Blue
+                                                    color = SystemColors.Blue
                                                 )
                                                 Spacer(modifier = Modifier.width(10.dp))
                                                 Text(
@@ -469,7 +469,7 @@ fun AboutScreen(
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
                         SquircleSettingItem(
                             icon = ImageVector.vectorResource(DesignR.drawable.ic_github),
-                            iconColor = IosColors.Blue,
+                            iconColor = SystemColors.Blue,
                             title = stringResource(R.string.settings_about_title_github),
                             subtitle = stringResource(R.string.settings_about_subtitle_github),
                             onClick = {
@@ -505,7 +505,7 @@ fun AboutScreen(
 
                         SquircleSettingItem(
                             icon = Icons.Rounded.Person,
-                            iconColor = IosColors.Purple,
+                            iconColor = SystemColors.Purple,
                             title = stringResource(R.string.settings_about_title_developer),
                             subtitle = stringResource(R.string.settings_about_subtitle_developer),
                             onClick = {
@@ -629,7 +629,7 @@ private fun ChangelogLineItem(text: String) {
             modifier = Modifier
                 .padding(top = 7.dp, end = 8.dp)
                 .size(6.dp)
-                .background(IosColors.Blue, CircleShape)
+                .background(SystemColors.Blue, CircleShape)
         )
         Text(
             text = text,

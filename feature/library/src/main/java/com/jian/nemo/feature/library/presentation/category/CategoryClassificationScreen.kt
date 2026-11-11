@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoCategoryTheme
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle

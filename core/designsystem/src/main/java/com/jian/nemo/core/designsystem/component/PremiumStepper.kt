@@ -61,7 +61,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.R
 import com.jian.nemo.core.designsystem.theme.DesignSystemPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -107,7 +107,7 @@ fun PremiumStepper(
     val effectiveAccentColor = if (accentColor != Color.Unspecified) {
         accentColor
     } else {
-        if (isDark) IosColors.OrangeDark else IosColors.Orange
+        if (isDark) SystemColors.OrangeDark else SystemColors.Orange
     }
 
     // 硬件 Vibrator 初始化

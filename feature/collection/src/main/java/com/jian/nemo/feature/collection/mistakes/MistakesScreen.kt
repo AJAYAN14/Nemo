@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
@@ -207,9 +207,9 @@ fun StatsOverviewCard(
 
     // 颜色状态 (遵循设计调色盘标准系统色)
     val stateColor = when {
-        gapRate <= 5 -> IosColors.Green
-        gapRate <= 15 -> IosColors.Orange
-        else -> IosColors.Red
+        gapRate <= 5 -> SystemColors.Green
+        gapRate <= 15 -> SystemColors.Orange
+        else -> SystemColors.Red
     }
 
     PremiumCard {
@@ -280,7 +280,7 @@ fun WrongAnswersList(
             subtitle = stringResource(R.string.collection_mistakes_words_subtitle),
             count = wrongWordsCount,
             icon = Icons.Rounded.Spellcheck,
-            iconColor = IosColors.Red,
+            iconColor = SystemColors.Red,
             onClick = onWordMistakesClick
         )
 
@@ -289,7 +289,7 @@ fun WrongAnswersList(
             subtitle = stringResource(R.string.collection_mistakes_grammars_subtitle),
             count = wrongGrammarsCount,
             icon = Icons.AutoMirrored.Rounded.MenuBook,
-            iconColor = IosColors.Orange,
+            iconColor = SystemColors.Orange,
             onClick = onGrammarMistakesClick
         )
     }

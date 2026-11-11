@@ -69,7 +69,7 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorder
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBorderDark
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -96,8 +96,8 @@ fun WordClozeScreen(
     val textSub = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant else NemoNeutrals.Gray500
     val containerColor = MaterialTheme.colorScheme.background
     val wordCardBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val qCardBg = if (isDark) IosColors.Orange.copy(alpha = 0.15f) else IosColors.Orange.copy(alpha = 0.08f)
-    val qCardBorderColor = if (isDark) IosColors.Orange.copy(alpha = 0.2f) else IosColors.Orange.copy(alpha = 0.1f)
+    val qCardBg = if (isDark) SystemColors.Orange.copy(alpha = 0.15f) else SystemColors.Orange.copy(alpha = 0.08f)
+    val qCardBorderColor = if (isDark) SystemColors.Orange.copy(alpha = 0.2f) else SystemColors.Orange.copy(alpha = 0.1f)
 
     var showHistoryView by remember { mutableStateOf(false) }
     val historyRecords by viewModel.historyRecords.collectAsState(initial = emptyList())
@@ -147,7 +147,7 @@ fun WordClozeScreen(
                 when (type) {
                     0 -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(color = IosColors.Orange)
+                            CircularProgressIndicator(color = SystemColors.Orange)
                         }
                     }
                     1 -> {
@@ -279,7 +279,7 @@ fun WordClozeScreen(
         show = showExitDialog,
         title = stringResource(R.string.test_cloze_exit_dialog_title),
         message = stringResource(R.string.test_cloze_exit_dialog_message),
-        themeColor = IosColors.Orange,
+        themeColor = SystemColors.Orange,
         isDark = isDark,
         textMain = textMain,
         textSub = textSub,
@@ -669,7 +669,7 @@ private fun ReadyView(
                     style = TextStyle(
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (isDark) IosColors.GreenDark else IosColors.Green
+                        color = if (isDark) SystemColors.GreenDark else SystemColors.Green
                     )
                 )
             }
@@ -680,7 +680,7 @@ private fun ReadyView(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedRectangle(3.dp)),
-                color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                color = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
                 trackColor = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceSubcard
             )
 
@@ -770,7 +770,7 @@ private fun ReadyView(
                                         if (hasError) {
                                             if (isDark) NemoDangerDark else NemoDanger
                                         } else if (isActive && isGlobalFocused) {
-                                            if (isDark) IosColors.OrangeDark else IosColors.Orange
+                                            if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                                         } else {
                                             Color.Transparent
                                         }
@@ -834,7 +834,7 @@ private fun ReadyView(
                                                     style = TextStyle(
                                                         fontSize = 14.sp,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = IosColors.Orange.copy(alpha = 0.8f),
+                                                        color = SystemColors.Orange.copy(alpha = 0.8f),
                                                         textAlign = TextAlign.Center
                                                     )
                                                 )
@@ -860,7 +860,7 @@ private fun ReadyView(
                                                                 .width(2.dp)
                                                                 .height(22.dp)
                                                                 .graphicsLayer(alpha = cursorAlpha)
-                                                                .background(if (isDark) IosColors.OrangeDark else IosColors.Orange)
+                                                                .background(if (isDark) SystemColors.OrangeDark else SystemColors.Orange)
                                                         )
                                                     }
                                                 }
@@ -947,7 +947,7 @@ private fun ReadyView(
                     onClick = { viewModel.previousQuestion() },
                     enabled = state.currentIndex > 0,
                     colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = if (state.currentIndex > 0) IosColors.Orange else textSub.copy(alpha = 0.3f)
+                        contentColor = if (state.currentIndex > 0) SystemColors.Orange else textSub.copy(alpha = 0.3f)
                     )
                 ) {
                     Icon(
@@ -968,7 +968,7 @@ private fun ReadyView(
                     },
                     enabled = true,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isCurrentQCorrect) IosColors.Green else IosColors.Orange
+                        containerColor = if (isCurrentQCorrect) SystemColors.Green else SystemColors.Orange
                     ),
                     shape = RoundedRectangle(16.dp),
                     modifier = Modifier
@@ -991,7 +991,7 @@ private fun ReadyView(
                     onClick = { viewModel.nextQuestion() },
                     enabled = state.currentIndex < state.questions.size - 1,
                     colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = if (state.currentIndex < state.questions.size - 1) IosColors.Orange else textSub.copy(alpha = 0.3f)
+                        contentColor = if (state.currentIndex < state.questions.size - 1) SystemColors.Orange else textSub.copy(alpha = 0.3f)
                     )
                 ) {
                     Icon(
@@ -1060,7 +1060,7 @@ private fun ReadyView(
                             style = TextStyle(
                                 fontSize = 13.sp, 
                                 fontWeight = FontWeight.Bold, 
-                                color = IosColors.Orange
+                                color = SystemColors.Orange
                             )
                         )
                         
@@ -1166,7 +1166,7 @@ private fun ResultView(
             CircularProgressIndicator(
                 progress = { animAccuracy.value },
                 modifier = Modifier.fillMaxSize(),
-                color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                color = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
                 strokeWidth = 14.dp,
                 strokeCap = StrokeCap.Round
             )
@@ -1179,7 +1179,7 @@ private fun ResultView(
                     style = TextStyle(
                         fontSize = 44.sp,
                         fontWeight = FontWeight.Black,
-                        color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                        color = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
                         letterSpacing = (-1).sp
                     )
                 )
@@ -1228,7 +1228,7 @@ private fun ResultView(
         // 双排按钮
         Button(
             onClick = { onRegenerate() },
-            colors = ButtonDefaults.buttonColors(containerColor = IosColors.Orange),
+            colors = ButtonDefaults.buttonColors(containerColor = SystemColors.Orange),
             shape = RoundedRectangle(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -1248,7 +1248,7 @@ private fun ResultView(
         ) {
             OutlinedButton(
                 onClick = { onRestart() },
-                border = BorderStroke(1.dp, IosColors.Orange.copy(alpha = 0.4f)),
+                border = BorderStroke(1.dp, SystemColors.Orange.copy(alpha = 0.4f)),
                 shape = RoundedRectangle(16.dp),
                 modifier = Modifier
                     .weight(1f)
@@ -1256,7 +1256,7 @@ private fun ResultView(
             ) {
                 Text(
                     text = stringResource(R.string.test_cloze_btn_restart),
-                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = IosColors.Orange)
+                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = SystemColors.Orange)
                 )
             }
 
@@ -1367,8 +1367,8 @@ private fun ClozeHistoryView(
                                     .size(52.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (accuracy >= 80) IosColors.Green.copy(alpha = 0.1f)
-                                        else IosColors.Orange.copy(alpha = 0.1f)
+                                        if (accuracy >= 80) SystemColors.Green.copy(alpha = 0.1f)
+                                        else SystemColors.Orange.copy(alpha = 0.1f)
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1377,7 +1377,7 @@ private fun ClozeHistoryView(
                                     style = TextStyle(
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = if (accuracy >= 80) IosColors.Green else IosColors.Orange
+                                        color = if (accuracy >= 80) SystemColors.Green else SystemColors.Orange
                                     )
                                 )
                             }
@@ -1457,7 +1457,7 @@ private fun ClozeErrorView(
             Icon(
                 imageVector = Icons.Rounded.ErrorOutline,
                 contentDescription = null,
-                tint = IosColors.Red,
+                tint = SystemColors.Red,
                 modifier = Modifier.size(64.dp)
             )
             
@@ -1470,7 +1470,7 @@ private fun ClozeErrorView(
             
             Button(
                 onClick = onRetry,
-                colors = ButtonDefaults.buttonColors(containerColor = IosColors.Orange),
+                colors = ButtonDefaults.buttonColors(containerColor = SystemColors.Orange),
                 shape = RoundedRectangle(12.dp)
             ) {
                 Text(text = stringResource(R.string.test_cloze_btn_reload), color = Color.White)
@@ -1492,7 +1492,7 @@ private fun ClozeGeneratingView(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = IosColors.Orange)
+        CircularProgressIndicator(color = SystemColors.Orange)
     }
 }
 
@@ -1544,7 +1544,7 @@ private fun JapaneseInputGuideDialog(
                         modifier = Modifier
                             .size(36.dp)
                             .background(
-                                color = IosColors.Orange.copy(alpha = 0.15f),
+                                color = SystemColors.Orange.copy(alpha = 0.15f),
                                 shape = CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -1552,7 +1552,7 @@ private fun JapaneseInputGuideDialog(
                         Icon(
                             imageVector = Icons.Rounded.Info,
                             contentDescription = stringResource(R.string.test_cloze_cd_tip),
-                            tint = IosColors.Orange,
+                            tint = SystemColors.Orange,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -1755,7 +1755,7 @@ private fun JapaneseInputGuideDialog(
                         .height(48.dp)
                         .softCardShadow(borderRadius = 24.dp, isDark = isDark),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                        containerColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
                         contentColor = Color.White
                     ),
                     shape = RoundedRectangle(24.dp)
@@ -1855,7 +1855,7 @@ private fun GuideItemCard(
                         append(title.substring(0, bracketStart))
                         withStyle(
                             style = SpanStyle(
-                                color = IosColors.Orange,
+                                color = SystemColors.Orange,
                                 fontWeight = FontWeight.Bold
                             )
                         ) {

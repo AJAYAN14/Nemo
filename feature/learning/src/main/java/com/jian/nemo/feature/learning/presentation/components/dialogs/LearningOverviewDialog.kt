@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -46,10 +46,10 @@ fun LearningOverviewDialog(
     val percent = if (dailyGoal > 0) ((completedCount.toFloat() / dailyGoal) * 100).toInt() else 0
     val estMinutes = ((remainingCount * 15) / 60).coerceAtLeast(1)
 
-    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val newColor = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
+    val learningColor = if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
+    val reviewColor = if (isDarkTheme) SystemColors.GreenDark else SystemColors.Green
+    val relearnColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
 
     NemoDialog(
         onDismissRequest = onDismissRequest,

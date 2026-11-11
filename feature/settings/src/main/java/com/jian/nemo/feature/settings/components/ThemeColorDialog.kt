@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.jian.nemo.core.ui.component.NemoDialog
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.feature.settings.R
 import kotlin.math.cos
 import kotlin.math.sin
@@ -100,18 +100,18 @@ fun ThemeColorDialog(
     }
 
     val themeColors = listOf(
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_default), IosColors.Blue),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_sky_blue), IosColors.Cyan),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_teal), IosColors.Teal),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_mint_green), IosColors.Mint),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_vibrant_green), IosColors.Green),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_bright_yellow), IosColors.Yellow),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_vibrant_orange), IosColors.Orange),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_system_red), IosColors.Red),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_rose_red), IosColors.Pink),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_violet_purple), IosColors.Purple),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_lavender_purple), IosColors.Indigo),
-        ThemeColor(stringResource(R.string.settings_theme_dialog_color_elegant_brown), IosColors.Brown)
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_default), SystemColors.Blue),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_sky_blue), SystemColors.Cyan),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_teal), SystemColors.Teal),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_mint_green), SystemColors.Mint),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_vibrant_green), SystemColors.Green),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_bright_yellow), SystemColors.Yellow),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_vibrant_orange), SystemColors.Orange),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_system_red), SystemColors.Red),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_rose_red), SystemColors.Pink),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_violet_purple), SystemColors.Purple),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_lavender_purple), SystemColors.Indigo),
+        ThemeColor(stringResource(R.string.settings_theme_dialog_color_elegant_brown), SystemColors.Brown)
     )
 
     // 默认颜色与外部选中颜色初始化

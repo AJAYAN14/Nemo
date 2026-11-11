@@ -125,7 +125,7 @@ fun StatisticsScreen(
                             message = stringResource(R.string.stats_screen_empty_words_message),
                             subtitle = stringResource(R.string.stats_screen_empty_words_subtitle),
                             icon = Icons.Rounded.Translate,
-                            accentColor = IosColors.Green
+                            accentColor = SystemColors.Green
                         )
                     }
                 }
@@ -150,7 +150,7 @@ fun StatisticsScreen(
                             message = stringResource(R.string.stats_screen_empty_grammars_message),
                             subtitle = stringResource(R.string.stats_screen_empty_grammars_subtitle),
                             icon = Icons.AutoMirrored.Rounded.MenuBook,
-                            accentColor = IosColors.Green
+                            accentColor = SystemColors.Green
                         )
                     }
                 }
@@ -195,14 +195,14 @@ fun StatisticsScreen(
 // 预定义的一组高级柔和色彩，用于循环显示
 // 使用语义化颜色定义，避免硬编码
 private val AvatarColors = listOf(
-    IosColors.Blue,
-    IosColors.Orange,
-    IosColors.Green,
-    IosColors.Indigo,
-    IosColors.Teal,
-    IosColors.Purple,
-    IosColors.Pink,
-    IosColors.Cyan
+    SystemColors.Blue,
+    SystemColors.Orange,
+    SystemColors.Green,
+    SystemColors.Indigo,
+    SystemColors.Teal,
+    SystemColors.Purple,
+    SystemColors.Pink,
+    SystemColors.Cyan
 )
 
 @Composable
@@ -317,7 +317,7 @@ fun EmptyStatisticsState(
     message: String,
     subtitle: String? = null,
     icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.Rounded.Inbox,
-    accentColor: Color = IosColors.Green
+    accentColor: Color = SystemColors.Green
 ) {
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -423,7 +423,7 @@ fun StatisticsItemRow(
             val badgeInfo = remember(item.source, newLearnBadgeText, reviewBadgeText) {
                 when (item.source) {
                     StatisticSource.LEARNED -> {
-                        val color = IosColors.Blue
+                        val color = SystemColors.Blue
                         Triple(
                             newLearnBadgeText,
                             color.copy(alpha = 0.12f),
@@ -431,7 +431,7 @@ fun StatisticsItemRow(
                         )
                     }
                     StatisticSource.REVIEWED -> {
-                        val color = IosColors.Green
+                        val color = SystemColors.Green
                         Triple(
                             reviewBadgeText,
                             color.copy(alpha = 0.15f),
@@ -651,14 +651,14 @@ private fun OverallStatisticsDashboard(
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_new_words),
                 count = newWords,
-                color = IosColors.Blue,
+                color = SystemColors.Blue,
                 icon = Icons.Rounded.DoneAll,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_review_words),
                 count = reviewWords,
-                color = IosColors.Green,
+                color = SystemColors.Green,
                 icon = Icons.Rounded.Layers,
                 modifier = Modifier.weight(1f)
             )
@@ -667,14 +667,14 @@ private fun OverallStatisticsDashboard(
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_new_grammars),
                 count = newGrammars,
-                color = IosColors.Orange,
+                color = SystemColors.Orange,
                 icon = Icons.AutoMirrored.Rounded.MenuBook,
                 modifier = Modifier.weight(1f)
             )
             StatCard(
                 title = stringResource(R.string.stats_screen_stat_review_grammars),
                 count = reviewGrammars,
-                color = IosColors.Indigo,
+                color = SystemColors.Indigo,
                 icon = Icons.Rounded.History,
                 modifier = Modifier.weight(1f)
             )

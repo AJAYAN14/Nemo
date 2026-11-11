@@ -26,7 +26,7 @@ import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.StatisticsPalette
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -81,7 +81,7 @@ fun HeatmapSharePoster(
                         .size(24.dp)
                         .background(
                             brush = Brush.linearGradient(
-                                listOf(NemoPrimary, IosColors.Blue)
+                                listOf(NemoPrimary, SystemColors.Blue)
                             ),
                             shape = RoundedRectangle(7.dp)
                         ),
@@ -144,7 +144,7 @@ fun HeatmapSharePoster(
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                IosColors.Orange.copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
+                                SystemColors.Orange.copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
                                 Color.Transparent
                             )
                         ),
@@ -156,7 +156,7 @@ fun HeatmapSharePoster(
             Surface(
                 shape = RoundedRectangle(18.dp),
                 color = cardBg,
-                border = BorderStroke(1.dp, IosColors.Orange.copy(alpha = 0.25f)),
+                border = BorderStroke(1.dp, SystemColors.Orange.copy(alpha = 0.25f)),
                 modifier = Modifier
                     .size(54.dp)
                     .softCardShadow(borderRadius = 18.dp, isDark = isDarkTheme)
@@ -212,7 +212,7 @@ fun HeatmapSharePoster(
                 Icon(
                     imageVector = Icons.Rounded.Star,
                     contentDescription = null,
-                    tint = IosColors.Orange,
+                    tint = SystemColors.Orange,
                     modifier = Modifier.size(13.dp)
                 )
                 Text(
@@ -254,7 +254,7 @@ fun HeatmapSharePoster(
                         modifier = Modifier
                             .size(30.dp)
                             .background(
-                                IosColors.Orange.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
+                                SystemColors.Orange.copy(alpha = if (isDarkTheme) 0.2f else 0.12f),
                                 RoundedRectangle(9.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -262,7 +262,7 @@ fun HeatmapSharePoster(
                         Icon(
                             imageVector = Icons.Rounded.LocalFireDepartment,
                             contentDescription = null,
-                            tint = IosColors.Orange,
+                            tint = SystemColors.Orange,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -354,7 +354,7 @@ fun HeatmapSharePoster(
                 unit = stringResource(R.string.stats_poster_unit_items),
                 label = stringResource(R.string.stats_heatmap_label_best_day),
                 tag = stringResource(R.string.stats_poster_format_best_day_tag, bestDayStr),
-                color = IosColors.Green,
+                color = SystemColors.Green,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
                 textPrimary = textPrimary,
@@ -376,7 +376,7 @@ fun HeatmapSharePoster(
                 unit = stringResource(R.string.stats_poster_unit_items_per_day),
                 label = stringResource(R.string.stats_heatmap_label_daily_avg),
                 tag = stringResource(R.string.stats_poster_tag_steady_progress),
-                color = IosColors.Purple,
+                color = SystemColors.Purple,
                 cardBg = cardBg,
                 cardBorder = cardBorder,
                 textPrimary = textPrimary,

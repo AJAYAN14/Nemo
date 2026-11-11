@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.NotoSerifSC
 import com.jian.nemo.core.domain.model.Word
@@ -214,7 +214,7 @@ fun LibraryLevelSelectionOverlay(
                 title = allLevelsTitle,
                 icon = "grid",
                 checked = isAllSelected,
-                iconColor = IosColors.Indigo.toArgb()
+                iconColor = SystemColors.Indigo.toArgb()
             )
         )
         list.add(GlassMenuItemRecord(separator = true))
@@ -338,24 +338,24 @@ fun FloatingHeaderGradientContainer(
 }
 
 val AvatarPalette = listOf(
-    IosColors.Blue,
-    IosColors.Orange,
-    IosColors.Green,
-    IosColors.Indigo,
-    IosColors.Teal,
-    IosColors.Purple,
-    IosColors.Pink,
-    IosColors.Cyan
+    SystemColors.Blue,
+    SystemColors.Orange,
+    SystemColors.Green,
+    SystemColors.Indigo,
+    SystemColors.Teal,
+    SystemColors.Purple,
+    SystemColors.Pink,
+    SystemColors.Cyan
 )
 
 fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Blue
+        "N5" -> SystemColors.Green
+        "N4" -> SystemColors.Cyan
+        "N3" -> SystemColors.Blue
+        "N2" -> SystemColors.Orange
+        "N1" -> SystemColors.Pink
+        else -> SystemColors.Blue
     }
 }
 
@@ -533,17 +533,17 @@ fun LibraryDiscoveryBar(
             DiscoveryOption(
                 label = tabAllText,
                 icon = Icons.AutoMirrored.Rounded.MenuBook,
-                activeColor = IosColors.Indigo,
+                activeColor = SystemColors.Indigo,
             ),
             DiscoveryOption(
                 label = tabLearnedText,
                 icon = Icons.Rounded.CheckCircle,
-                activeColor = IosColors.Green,
+                activeColor = SystemColors.Green,
             ),
             DiscoveryOption(
                 label = tabUnlearnedText,
                 icon = Icons.Rounded.HourglassEmpty,
-                activeColor = IosColors.Orange,
+                activeColor = SystemColors.Orange,
             ),
         )
     }

@@ -27,7 +27,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 
 @Composable
@@ -38,8 +38,8 @@ fun WrongAnswerCard(
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val wrongColor = IosColors.Red
-    val correctColor = IosColors.Green
+    val wrongColor = SystemColors.Red
+    val correctColor = SystemColors.Green
 
     Card(
         modifier = modifier

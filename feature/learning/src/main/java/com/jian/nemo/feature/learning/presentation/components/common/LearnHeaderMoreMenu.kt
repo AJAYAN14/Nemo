@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.component.common.AnimatedMenuCloseIcon as CoreAnimatedMenuCloseIcon
 import com.jian.nemo.core.ui.component.common.LocalLiquidMenuAnchorBounds
 import com.jian.nemo.core.ui.component.common.LocalLiquidMenuMotionState
@@ -145,7 +145,7 @@ internal fun buildLearnMenuNativeItems(
                 id = "rating_guide",
                 title = context.getString(R.string.learn_menu_item_rating_guide),
                 icon = "info",
-                iconColor = IosColors.Green.toArgb()
+                iconColor = SystemColors.Green.toArgb()
             )
         )
     }
@@ -156,7 +156,7 @@ internal fun buildLearnMenuNativeItems(
                 id = "bury",
                 title = context.getString(R.string.learn_menu_item_bury),
                 icon = "calendar",
-                iconColor = IosColors.Blue.toArgb()
+                iconColor = SystemColors.Blue.toArgb()
             )
         )
         list.add(
@@ -165,7 +165,7 @@ internal fun buildLearnMenuNativeItems(
                 title = context.getString(R.string.learn_menu_item_suspend),
                 icon = "trash",
                 destructive = true,
-                iconColor = IosColors.Orange.toArgb()
+                iconColor = SystemColors.Orange.toArgb()
             )
         )
         list.add(
@@ -173,7 +173,7 @@ internal fun buildLearnMenuNativeItems(
                 id = "report_error",
                 title = context.getString(R.string.learn_menu_item_report_error),
                 icon = "report",
-                iconColor = IosColors.Red.toArgb()
+                iconColor = SystemColors.Red.toArgb()
             )
         )
     }
@@ -190,7 +190,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "volume",
                 checked = isAutoAudioEnabled,
                 keepOpen = true,
-                iconColor = IosColors.Teal.toArgb()
+                iconColor = SystemColors.Teal.toArgb()
             )
         )
     }
@@ -209,7 +209,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "clock",
                 checked = isShowAnswerDelayEnabled,
                 keepOpen = true,
-                iconColor = IosColors.Purple.toArgb()
+                iconColor = SystemColors.Purple.toArgb()
             )
         )
     }
@@ -228,7 +228,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "flip",
                 checked = isAutoRevealAnswerEnabled,
                 keepOpen = true,
-                iconColor = IosColors.Indigo.toArgb()
+                iconColor = SystemColors.Indigo.toArgb()
             )
         )
     }
@@ -241,7 +241,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "pencil",
                 checked = isWhiteboardEnabled,
                 keepOpen = true,
-                iconColor = IosColors.Blue.toArgb()
+                iconColor = SystemColors.Blue.toArgb()
             )
         )
     }
@@ -265,7 +265,7 @@ internal fun buildLearnMenuNativeItems(
             title = context.getString(R.string.learn_menu_theme_system),
             icon = "grid",
             checked = isDarkMode == null,
-            iconColor = IosColors.Gray.toArgb()
+            iconColor = SystemColors.Gray.toArgb()
         )
     )
 
@@ -275,7 +275,7 @@ internal fun buildLearnMenuNativeItems(
             title = context.getString(R.string.learn_menu_theme_dark),
             icon = "moon",
             checked = isDarkMode == true,
-            iconColor = IosColors.Indigo.toArgb()
+            iconColor = SystemColors.Indigo.toArgb()
         )
     )
 
@@ -285,7 +285,7 @@ internal fun buildLearnMenuNativeItems(
             title = context.getString(R.string.learn_menu_theme_light),
             icon = "sun",
             checked = isDarkMode == false,
-            iconColor = IosColors.Orange.toArgb()
+            iconColor = SystemColors.Orange.toArgb()
         )
     )
 

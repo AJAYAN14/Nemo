@@ -62,7 +62,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.runtime.derivedStateOf
@@ -115,32 +115,34 @@ private enum class KanaType {
 }
 
 private val CategoryRowColors = listOf(
-    IosColors.Indigo,  // あ行
-    IosColors.Green,   // か行
-    IosColors.Orange,  // さ行
-    IosColors.Purple,  // た行
-    IosColors.Cyan,    // な行
-    IosColors.Pink,    // は行
-    IosColors.Blue,    // ま行
-    IosColors.Yellow,  // や行
-    IosColors.Mint,    // ら行
-    IosColors.Teal     // わ行
+    SystemColors.Indigo,  // あ行
+    SystemColors.Green,   // か行
+    SystemColors.Orange,  // さ行
+    SystemColors.Purple,  // た行
+    SystemColors.Cyan,    // な行
+    SystemColors.Pink,    // は行
+    SystemColors.Blue,    // ま行
+    SystemColors.Yellow,  // や行
+    SystemColors.Mint,    // ら行
+    SystemColors.Teal,    // わ行
+    SystemColors.Red      // ん行
 )
 
 private fun getCategoryRowColor(rowIndex: Int, isDark: Boolean): Color {
     val index = rowIndex % CategoryRowColors.size
     return if (isDark) {
         when (index) {
-            0 -> IosColors.IndigoDark
-            1 -> IosColors.GreenDark
-            2 -> IosColors.OrangeDark
-            3 -> IosColors.PurpleDark
-            4 -> IosColors.CyanDark
-            5 -> IosColors.Pink
-            6 -> IosColors.BlueDark
-            7 -> IosColors.Yellow
-            8 -> IosColors.Mint
-            else -> IosColors.TealDark
+            0 -> SystemColors.IndigoDark
+            1 -> SystemColors.GreenDark
+            2 -> SystemColors.OrangeDark
+            3 -> SystemColors.PurpleDark
+            4 -> SystemColors.CyanDark
+            5 -> SystemColors.PinkDark
+            6 -> SystemColors.BlueDark
+            7 -> SystemColors.YellowDark
+            8 -> SystemColors.MintDark
+            9 -> SystemColors.TealDark
+            else -> SystemColors.RedDark
         }
     } else {
         CategoryRowColors[index]
@@ -162,7 +164,6 @@ fun KanaChartScreen(
     val view = LocalView.current
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val surfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
     val textMain = if (isDark) colorScheme.onSurface else LearningPalette.KanaSlateDark
     val textSub = if (isDark) colorScheme.onSurfaceVariant else LearningPalette.KanaSlateSub
     var currentType by remember { mutableIntStateOf(0) }
@@ -170,9 +171,9 @@ fun KanaChartScreen(
     val isKatakana = currentType == 1
 
     val accentColor = when (currentSection) {
-        "dakuon" -> if (isDark) IosColors.GreenDark else IosColors.Green
-        "yoon" -> if (isDark) IosColors.PurpleDark else IosColors.Purple
-        else -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
+        "dakuon" -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+        "yoon" -> if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+        else -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
     }
 
     val scope = rememberCoroutineScope()
@@ -230,9 +231,6 @@ fun KanaChartScreen(
                                 cells = seionData,
                                 columns = 5,
                                 isKatakana = isKatakana,
-                                surfaceColor = surfaceColor,
-                                textMain = textMain,
-                                textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
@@ -250,9 +248,6 @@ fun KanaChartScreen(
                                 cells = dakuonData,
                                 columns = 5,
                                 isKatakana = isKatakana,
-                                surfaceColor = surfaceColor,
-                                textMain = textMain,
-                                textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
@@ -270,9 +265,6 @@ fun KanaChartScreen(
                                 cells = yoonData,
                                 columns = 5,
                                 isKatakana = isKatakana,
-                                surfaceColor = surfaceColor,
-                                textMain = textMain,
-                                textSub = textSub,
                                 isDark = isDark,
                                 playingAudioId = playingAudioId,
                                 onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
@@ -309,9 +301,9 @@ fun KanaChartScreen(
                 backButtonSize = 48.dp,
                 actions = {
                     val toggleFg = if (currentType == 0) {
-                        if (isDark) IosColors.IndigoDark else IosColors.Indigo
+                        if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
                     } else {
-                        if (isDark) IosColors.Pink else IosColors.Pink
+                        if (isDark) SystemColors.Pink else SystemColors.Pink
                     }
                     FrostedLiquidGlassButton(
                         onClick = {
@@ -354,9 +346,9 @@ fun KanaChartScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val sections = listOf(
-                Triple("seion", stringResource(R.string.kana_quick_nav_seion), if (isDark) IosColors.IndigoDark else IosColors.Indigo),
-                Triple("dakuon", stringResource(R.string.kana_quick_nav_dakuon), if (isDark) IosColors.GreenDark else IosColors.Green),
-                Triple("yoon", stringResource(R.string.kana_quick_nav_yoon), if (isDark) IosColors.PurpleDark else IosColors.Purple)
+                Triple("seion", stringResource(R.string.kana_quick_nav_seion), if (isDark) SystemColors.IndigoDark else SystemColors.Indigo),
+                Triple("dakuon", stringResource(R.string.kana_quick_nav_dakuon), if (isDark) SystemColors.GreenDark else SystemColors.Green),
+                Triple("yoon", stringResource(R.string.kana_quick_nav_yoon), if (isDark) SystemColors.PurpleDark else SystemColors.Purple)
             )
             sections.forEach { (sectionKey, label, sectionColor) ->
                 val isSelected = currentSection == sectionKey
@@ -456,9 +448,6 @@ private fun KanaGrid(
     cells: List<KanaCell?>,
     columns: Int,
     isKatakana: Boolean,
-    surfaceColor: Color,
-    textMain: Color,
-    textSub: Color,
     isDark: Boolean,
     playingAudioId: String?,
     onSpeak: (String, String) -> Unit,
@@ -478,12 +467,9 @@ private fun KanaGrid(
                             .widthIn(min = 0.dp),
                         cell = cell,
                         isKatakana = isKatakana,
-                        surfaceColor = surfaceColor,
-                        textMain = textMain,
-                        textSub = textSub,
+                        rowColor = rowColor,
                         isDark = isDark,
                         playingAudioId = playingAudioId,
-                        playingBorderColor = rowColor,
                         onSpeak = onSpeak,
                         onHaptic = onHaptic
                     )
@@ -501,12 +487,9 @@ private fun KanaCard(
     modifier: Modifier = Modifier,
     cell: KanaCell?,
     isKatakana: Boolean,
-    surfaceColor: Color,
-    textMain: Color,
-    textSub: Color,
+    rowColor: Color,
     isDark: Boolean,
     playingAudioId: String?,
-    playingBorderColor: Color,
     onSpeak: (String, String) -> Unit,
     onHaptic: () -> Unit
 ) {
@@ -516,7 +499,7 @@ private fun KanaCard(
     }
 
     if (cell.isEmpty) {
-        val emptyBorderColor = if (isDark) NemoNeutrals.Gray700 else NemoNeutrals.Gray200
+        val emptyBorderColor = rowColor.copy(alpha = if (isDark) 0.35f else 0.25f)
         Box(
             modifier = modifier
                 .aspectRatio(1f)
@@ -541,24 +524,35 @@ private fun KanaCard(
     val kanaText = if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
     val cardAudioId = "kana_${kanaText.hashCode()}"
     val isPlaying = playingAudioId == cardAudioId
-    
-    val defaultBorderColor = if (cell.isPlaceholder) NemoNeutrals.Gray300 else Color.Transparent
+
+    val solidTextColor = Color.White
+    val solidSubTextColor = Color.White.copy(alpha = 0.85f)
+
+    val playingBorderColor = Color.White
+    val defaultBorderColor = if (cell.isPlaceholder) {
+        rowColor.copy(alpha = if (isDark) 0.40f else 0.25f)
+    } else {
+        rowColor.copy(alpha = if (isDark) 0.30f else 0.12f)
+    }
+
     val borderColor by animateColorAsState(
-        targetValue = if (isPlaying) playingBorderColor.copy(alpha = if (isDark) 0.95f else 0.85f) else defaultBorderColor,
+        targetValue = if (isPlaying) playingBorderColor else defaultBorderColor,
         animationSpec = tween(180),
         label = "cardPlayingBorder"
     )
 
-    val actualSurfaceColor = if (cell.isPlaceholder) Color.Transparent else surfaceColor
-    val textOpacity = if (cell.isPlaceholder) 0.35f else 1f
     val cardShape = RoundedRectangle(20.dp)
-    val cardBorder = BorderStroke(if (isPlaying || cell.isPlaceholder) 1.5.dp else 1.dp, borderColor)
+    val cardBorder = BorderStroke(if (isPlaying) 2.dp else 1.dp, borderColor)
 
     if (cell.isPlaceholder) {
+        val placeholderBg = rowColor.copy(alpha = if (isDark) 0.15f else 0.10f)
+        val placeholderTextColor = if (isDark) Color.White.copy(alpha = 0.50f) else rowColor.copy(alpha = 0.70f)
+        val placeholderSubTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else rowColor.copy(alpha = 0.50f)
+
         Surface(
             modifier = modifier.aspectRatio(1f),
             shape = cardShape,
-            color = Color.Transparent,
+            color = placeholderBg,
             border = cardBorder
         ) {
             Column(
@@ -577,7 +571,7 @@ private fun KanaCard(
                         fontWeight = FontWeight.Black,
                         fontSize = kanaSize
                     ),
-                    color = textMain.copy(alpha = textOpacity)
+                    color = placeholderTextColor
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -585,7 +579,7 @@ private fun KanaCard(
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = textSub.copy(alpha = textOpacity)
+                    color = placeholderSubTextColor
                 )
             }
         }
@@ -599,7 +593,7 @@ private fun KanaCard(
             modifier = modifier
                 .softCardShadow(borderRadius = 20.dp, isDark = isDark)
                 .aspectRatio(1f),
-            backgroundColor = actualSurfaceColor,
+            backgroundColor = rowColor,
             shape = cardShape,
             border = cardBorder,
             elevation = 0.dp,
@@ -621,7 +615,7 @@ private fun KanaCard(
                         fontWeight = FontWeight.Black,
                         fontSize = kanaSize
                     ),
-                    color = textMain.copy(alpha = textOpacity)
+                    color = solidTextColor
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -629,7 +623,7 @@ private fun KanaCard(
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = textSub.copy(alpha = textOpacity)
+                    color = solidSubTextColor
                 )
             }
         }

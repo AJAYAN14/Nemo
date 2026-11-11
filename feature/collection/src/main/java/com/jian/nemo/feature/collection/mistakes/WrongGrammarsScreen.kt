@@ -1,7 +1,7 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -56,9 +56,9 @@ fun WrongGrammarsScreen(
     val iconStyle by viewModel.iconStyle.collectAsState()
 
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentBlue = IosColors.Blue
-    val deleteColor = IosColors.Red
-    val emptyIconColor = IosColors.Green
+    val accentBlue = SystemColors.Blue
+    val deleteColor = SystemColors.Red
+    val emptyIconColor = SystemColors.Green
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     // 多选状态
@@ -279,12 +279,12 @@ fun WrongGrammarsScreen(
  */
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Indigo
+        "N5" -> SystemColors.Green
+        "N4" -> SystemColors.Cyan
+        "N3" -> SystemColors.Blue
+        "N2" -> SystemColors.Orange
+        "N1" -> SystemColors.Pink
+        else -> SystemColors.Indigo
     }
 }
 
@@ -301,9 +301,9 @@ private fun WrongGrammarCard(
     var expanded by remember { mutableStateOf(false) }
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val accentBlue = IosColors.Blue
-    val accentRed = IosColors.Red
-    val accentGreen = IosColors.Green
+    val accentBlue = SystemColors.Blue
+    val accentRed = SystemColors.Red
+    val accentGreen = SystemColors.Green
     val tagColor = getLevelColor(mistake.grammar?.grammarLevel ?: "")
 
     Card(

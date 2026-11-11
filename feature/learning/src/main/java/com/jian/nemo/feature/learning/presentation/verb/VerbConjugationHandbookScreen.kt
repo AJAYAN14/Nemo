@@ -36,7 +36,7 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.feature.learning.R
 import com.jian.nemo.core.designsystem.theme.BentoColors
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
@@ -149,10 +149,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "1. ",
                 title = vTitle1,
                 usage = "动词在字典里的原始形态。用于普通体的现在时/将来时，或连接特定语法（如「～ことができる」）。",
-                colorLight = IosColors.Blue,
-                colorDark = IosColors.BlueDark,
-                bgColorLight = IosColors.Blue.copy(alpha = 0.08f),
-                bgColorDark = IosColors.BlueDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Blue,
+                colorDark = SystemColors.BlueDark,
+                bgColorLight = SystemColors.Blue.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.BlueDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词 (五段)", "词尾必定是「う」段假名。", listOf("書く (かく / 写)", "飲む (のむ / 喝)")),
                     GrammarRule("二类动词 (一段)", "词尾必定是「る」，且倒数第二个音在「い」或「え」段。", listOf("食べる (たべる / 吃)", "見る (みる / 看)")),
@@ -164,10 +164,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "2. ",
                 title = vTitle2,
                 usage = "日语中最基础、最礼貌的表达方式（敬体）。",
-                colorLight = IosColors.Indigo,
-                colorDark = IosColors.IndigoDark,
-                bgColorLight = IosColors.Indigo.copy(alpha = 0.08f),
-                bgColorDark = IosColors.IndigoDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Indigo,
+                colorDark = SystemColors.IndigoDark,
+                bgColorLight = SystemColors.Indigo.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.IndigoDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段假名变同行「い」段假名 + ます。", listOf("書く → 書きます (かきます)", "飲む → 飲みます (のみます)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + ます。", listOf("食べる → 食べます (たべます)", "見る → 見ます (みます)")),
@@ -179,10 +179,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "3. ",
                 title = vTitle3,
                 usage = "用于表示动作的先后顺序、原因、中顿，或与「～てください」连用表示请求。一类动词有音便现象。",
-                colorLight = IosColors.Green,
-                colorDark = IosColors.GreenDark,
-                bgColorLight = IosColors.Green.copy(alpha = 0.08f),
-                bgColorDark = IosColors.GreenDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Green,
+                colorDark = SystemColors.GreenDark,
+                bgColorLight = SystemColors.Green.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.GreenDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule(
                         "一类动词",
@@ -198,10 +198,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "4. ",
                 title = vTitle4,
                 usage = "表达动作已经发生（普通体的过去式）。变形规则与「て形」完全一致，只需把て/で换成た/だ。",
-                colorLight = IosColors.Teal,
-                colorDark = IosColors.TealDark,
-                bgColorLight = IosColors.Teal.copy(alpha = 0.08f),
-                bgColorDark = IosColors.TealDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Teal,
+                colorDark = SystemColors.TealDark,
+                bgColorLight = SystemColors.Teal.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.TealDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "依照「て形」的音便规则，将尾音换成 た/だ。", listOf("買う → 買った (かった)", "飲む → 飲んだ (のんだ)", "書く → 書いた (かいた)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + た。", listOf("食べる → 食べた (たべた)", "見る → 見た (みた)")),
@@ -213,10 +213,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "5. ",
                 title = vTitle5,
                 usage = "表达否定意义（普通体），或连接「～ない对ください」（请不要做...）。",
-                colorLight = IosColors.Red,
-                colorDark = IosColors.RedDark,
-                bgColorLight = IosColors.Red.copy(alpha = 0.08f),
-                bgColorDark = IosColors.RedDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Red,
+                colorDark = SystemColors.RedDark,
+                bgColorLight = SystemColors.Red.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.RedDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「あ」段 + ない。（※注意：词尾为「う」时变「わ」，不是「あ」）", listOf("書く → 書かない (かかない)", "買う → 買わない (かわない / 特殊)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + ない。", listOf("食べる → 食べない (たべない)", "見る → 見ない (みない)")),
@@ -228,10 +228,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "6. ",
                 title = vTitle6,
                 usage = "表达说话人的决心、意愿，或提议“一起做某事吧”。",
-                colorLight = IosColors.Orange,
-                colorDark = IosColors.OrangeDark,
-                bgColorLight = IosColors.Orange.copy(alpha = 0.08f),
-                bgColorDark = IosColors.OrangeDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Orange,
+                colorDark = SystemColors.OrangeDark,
+                bgColorLight = SystemColors.Orange.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.OrangeDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「お」段 + う。", listOf("書く → 書こう (かこう)", "行く → 行こう (いこう)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + よう。", listOf("食べる → 食べよう (たべよう)", "見る → 見よう (みよう)")),
@@ -243,10 +243,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "7. ",
                 title = vTitle7,
                 usage = "强硬地命令他人做某事，常用于男性粗鲁用语、标语、紧急情况。",
-                colorLight = IosColors.RedDark,
-                colorDark = IosColors.Red,
-                bgColorLight = IosColors.RedDark.copy(alpha = 0.08f),
-                bgColorDark = IosColors.Red.copy(alpha = 0.15f),
+                colorLight = SystemColors.RedDark,
+                colorDark = SystemColors.Red,
+                bgColorLight = SystemColors.RedDark.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.Red.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「え」段。", listOf("書く → 書け (かけ)", "行く → 行け (いけ)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + ろ。", listOf("食べる → 食べろ (たべろ)", "見る → 見ろ (みろ)")),
@@ -271,10 +271,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "9. ",
                 title = vTitle9,
                 usage = "表示假定条件，即“如果……的话”。",
-                colorLight = IosColors.Cyan,
-                colorDark = IosColors.CyanDark,
-                bgColorLight = IosColors.Cyan.copy(alpha = 0.08f),
-                bgColorDark = IosColors.CyanDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Cyan,
+                colorDark = SystemColors.CyanDark,
+                bgColorLight = SystemColors.Cyan.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.CyanDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「え」段 + ば。", listOf("書く → 書けば (かけば)", "行く → 行けば (いけば)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + れば。", listOf("食べる → 食べれば (たべれば)", "見る → 見れば (みれば)")),
@@ -286,10 +286,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "10. ",
                 title = vTitle10,
                 usage = "表示能力或客观条件允许，即“能够做某事”。",
-                colorLight = IosColors.Purple,
-                colorDark = IosColors.PurpleDark,
-                bgColorLight = IosColors.Purple.copy(alpha = 0.08f),
-                bgColorDark = IosColors.PurpleDark.copy(alpha = 0.15f),
+                colorLight = SystemColors.Purple,
+                colorDark = SystemColors.PurpleDark,
+                bgColorLight = SystemColors.Purple.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.PurpleDark.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「え」段 + る。", listOf("書く → 書ける (かける)", "話す → 話せる (はなせる)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + られる。", listOf("食べる → 食べられる", "見る → 見られる")),
@@ -301,10 +301,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "11. ",
                 title = vTitle11,
                 usage = "表示动作的承受者（被做某事），也可表示受害或间接尊敬。",
-                colorLight = IosColors.Pink,
-                colorDark = IosColors.Pink,
-                bgColorLight = IosColors.Pink.copy(alpha = 0.08f),
-                bgColorDark = IosColors.Pink.copy(alpha = 0.15f),
+                colorLight = SystemColors.Pink,
+                colorDark = SystemColors.Pink,
+                bgColorLight = SystemColors.Pink.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.Pink.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「あ」段 + れる。（※尾音「う」变「わ」）", listOf("書く → 書かれる (かかれる)", "言う → 言われる (いわれる)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + られる。（形式与可能形完全一致）", listOf("食べる → 食べられる", "見る → 見られる")),
@@ -316,10 +316,10 @@ private fun VerbConjugationHandbookContent(
                 prefix = "12. ",
                 title = vTitle12,
                 usage = "表示让某人做某事，或者允许某人做某事。",
-                colorLight = IosColors.OrangeDark,
-                colorDark = IosColors.Orange,
-                bgColorLight = IosColors.OrangeDark.copy(alpha = 0.08f),
-                bgColorDark = IosColors.Orange.copy(alpha = 0.15f),
+                colorLight = SystemColors.OrangeDark,
+                colorDark = SystemColors.Orange,
+                bgColorLight = SystemColors.OrangeDark.copy(alpha = 0.08f),
+                bgColorDark = SystemColors.Orange.copy(alpha = 0.15f),
                 rules = listOf(
                     GrammarRule("一类动词", "词尾「う」段变同行「あ」段 + せる。（※尾音「う」变「わ」）", listOf("書く → 書かせる (かかせる)", "買う → 買わせる (かわせる)")),
                     GrammarRule("二类动词", "去掉词尾的「る」 + させる。", listOf("食べる → 食べさせる", "見る → 見させる")),
@@ -391,7 +391,7 @@ private fun VerbConjugationHandbookContent(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
-                        val introIconColor = if (isDark) IosColors.BlueDark else IosColors.Blue
+                        val introIconColor = if (isDark) SystemColors.BlueDark else SystemColors.Blue
                         val introContainerBg = if (isSoftTranslucent) introIconColor.copy(alpha = 0.15f) else introIconColor
                         val introIconTint = if (isSoftTranslucent) introIconColor else Color.White
 
@@ -429,9 +429,9 @@ private fun VerbConjugationHandbookContent(
                     )
 
                     // 1, 2, 3 分类卡片内容
-                    val group1Color = if (isDark) IosColors.BlueDark else IosColors.Blue
-                    val group2Color = if (isDark) IosColors.GreenDark else IosColors.Green
-                    val group3Color = if (isDark) IosColors.PurpleDark else IosColors.Purple
+                    val group1Color = if (isDark) SystemColors.BlueDark else SystemColors.Blue
+                    val group2Color = if (isDark) SystemColors.GreenDark else SystemColors.Green
+                    val group3Color = if (isDark) SystemColors.PurpleDark else SystemColors.Purple
 
                     Column(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -461,7 +461,7 @@ private fun VerbConjugationHandbookContent(
 
                     // 特殊一类避坑警告卡片
                     Spacer(modifier = Modifier.height(16.dp))
-                    val warningColor = if (isDark) IosColors.RedDark else IosColors.Red
+                    val warningColor = if (isDark) SystemColors.RedDark else SystemColors.Red
                     val warningBg = warningColor.copy(alpha = if (isDark) 0.12f else 0.06f)
                     val warningBorder = warningColor.copy(alpha = if (isDark) 0.25f else 0.18f)
                     val innerChipBg = warningColor.copy(alpha = if (isDark) 0.18f else 0.08f)

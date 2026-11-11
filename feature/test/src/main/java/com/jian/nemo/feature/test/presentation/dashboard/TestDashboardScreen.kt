@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
@@ -114,7 +114,7 @@ fun TestDashboardScreen(
                     title = stringResource(R.string.test_dashboard_item_mistakes),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.wrongWordsCount),
                     icon = Icons.Rounded.Cancel,
-                    color = if (isDark) IosColors.RedDark else IosColors.Red,
+                    color = if (isDark) SystemColors.RedDark else SystemColors.Red,
                     onClick = onNavigateToMistakes
                 )
                 DashboardTile(
@@ -127,7 +127,7 @@ fun TestDashboardScreen(
                     title = stringResource(R.string.test_dashboard_item_favorites),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.favoriteWordsCount),
                     icon = Icons.Rounded.Star,
-                    color = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+                    color = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
                     onClick = onNavigateToFavorites
                 )
             }
@@ -150,7 +150,7 @@ fun TestDashboardScreen(
                         title = stringResource(R.string.test_dashboard_type_choice_title),
                         subtitle = stringResource(R.string.test_dashboard_type_choice_subtitle),
                         icon = Icons.AutoMirrored.Rounded.Assignment,
-                        color = if (isDark) IosColors.GreenDark else IosColors.Green,
+                        color = if (isDark) SystemColors.GreenDark else SystemColors.Green,
                         onClick = { onNavigateToTestSettings("multiple_choice") }
                     )
                     DashboardTile(
@@ -163,7 +163,7 @@ fun TestDashboardScreen(
                         title = stringResource(R.string.test_dashboard_type_typing_title),
                         subtitle = stringResource(R.string.test_dashboard_type_typing_subtitle),
                         icon = Icons.Rounded.TextFields,
-                        color = if (isDark) IosColors.IndigoDark else IosColors.Indigo,
+                        color = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo,
                         onClick = { onNavigateToTestSettings("typing") }
                     )
                 }
@@ -181,7 +181,7 @@ fun TestDashboardScreen(
                         title = stringResource(R.string.test_dashboard_type_card_title),
                         subtitle = stringResource(R.string.test_dashboard_type_card_subtitle),
                         icon = Icons.Rounded.ViewModule,
-                        color = if (isDark) IosColors.TealDark else IosColors.Teal,
+                        color = if (isDark) SystemColors.TealDark else SystemColors.Teal,
                         onClick = { onNavigateToTestSettings("card_matching") }
                     )
                     DashboardTile(
@@ -194,7 +194,7 @@ fun TestDashboardScreen(
                         title = stringResource(R.string.test_dashboard_type_sorting_title),
                         subtitle = stringResource(R.string.test_dashboard_type_sorting_subtitle),
                         icon = Icons.Rounded.Extension,
-                        color = if (isDark) IosColors.PurpleDark else IosColors.Purple,
+                        color = if (isDark) SystemColors.PurpleDark else SystemColors.Purple,
                         onClick = { onNavigateToTestSettings("sorting") }
                     )
                 }
@@ -212,7 +212,7 @@ fun TestDashboardScreen(
                     title = stringResource(R.string.test_dashboard_workshop_title),
                     subtitle = stringResource(R.string.test_dashboard_workshop_subtitle),
                     icon = Icons.Rounded.AllInclusive,
-                    gradientColors = if (isDark) listOf(IosColors.BlueDark, IosColors.BlueDark.copy(alpha = 0.8f)) else listOf(IosColors.Blue, IosColors.Blue.copy(alpha = 0.8f)),
+                    gradientColors = if (isDark) listOf(SystemColors.BlueDark, SystemColors.BlueDark.copy(alpha = 0.8f)) else listOf(SystemColors.Blue, SystemColors.Blue.copy(alpha = 0.8f)),
                     onClick = onNavigateToAbilityWorkshop
                 )
             }
@@ -246,9 +246,9 @@ private fun StatsPager(
 
     fun ringColorByAccuracy(accuracyPercent: Int): Color {
         return when {
-            accuracyPercent < 60 -> if (isDark) IosColors.RedDark else IosColors.Red
-            accuracyPercent < 85 -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-            else -> if (isDark) IosColors.GreenDark else IosColors.Green
+            accuracyPercent < 60 -> if (isDark) SystemColors.RedDark else SystemColors.Red
+            accuracyPercent < 85 -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+            else -> if (isDark) SystemColors.GreenDark else SystemColors.Green
         }
     }
     val pageCount = 10000
@@ -271,7 +271,7 @@ private fun StatsPager(
         CompactStatsPage(
             title = stringResource(R.string.test_dashboard_stat_today_title),
             icon = Icons.Rounded.Bolt,
-            accent = if (isDark) IosColors.BlueDark else IosColors.Blue,
+            accent = if (isDark) SystemColors.BlueDark else SystemColors.Blue,
             primaryValue = uiState.todayTestCount.toString(),
             primaryLabel = stringResource(R.string.test_dashboard_stat_tested_questions),
             secondaryValue = uiState.consecutiveTestDays.toString(),
@@ -283,7 +283,7 @@ private fun StatsPager(
         CompactStatsPage(
             title = stringResource(R.string.test_dashboard_stat_total_title),
             icon = Icons.Rounded.EmojiEvents,
-            accent = if (isDark) IosColors.OrangeDark else IosColors.Orange,
+            accent = if (isDark) SystemColors.OrangeDark else SystemColors.Orange,
             primaryValue = uiState.totalTestCount.toString(),
             primaryLabel = stringResource(R.string.test_dashboard_stat_total_tests),
             secondaryValue = uiState.maxTestStreak.toString(),

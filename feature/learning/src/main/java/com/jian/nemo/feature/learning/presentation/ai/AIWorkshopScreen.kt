@@ -529,9 +529,9 @@ private fun ModeSection(
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val activeColor = if (currentMode == WorkshopMode.GRAMMAR) {
-        if (isDark) IosColors.GreenDark else IosColors.Green
+        if (isDark) SystemColors.GreenDark else SystemColors.Green
     } else {
-        if (isDark) IosColors.BlueDark else IosColors.Blue
+        if (isDark) SystemColors.BlueDark else SystemColors.Blue
     }
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
@@ -675,7 +675,7 @@ private fun DifficultySection(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
-    val activeColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+    val activeColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
     val trackBg = if (isDark) colorScheme.surfaceContainerHigh else LearningPalette.AiTrackBgLight
     val haptic = LocalHapticFeedback.current
     val levels = listOf("N5", "N4", "N3", "N2", "N1")
@@ -786,9 +786,9 @@ private fun HeroStartView(
         val iconStyle = LocalSettingIconStyle.current
         val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
         val heroBaseColor = if (isGrammarMode) {
-            if (isDark) IosColors.GreenDark else IosColors.Green
+            if (isDark) SystemColors.GreenDark else SystemColors.Green
         } else {
-            if (isDark) IosColors.BlueDark else IosColors.Blue
+            if (isDark) SystemColors.BlueDark else SystemColors.Blue
         }
         val heroContainerBg = if (isSoftTranslucent) heroBaseColor.copy(alpha = 0.15f) else heroBaseColor
         val heroIconTint = if (isSoftTranslucent) heroBaseColor else Color.White
@@ -862,9 +862,9 @@ private fun ExerciseContent(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val isCnToJp = exercise.type == "CN_TO_JP"
                     val labelColor = if (isCnToJp) {
-                        if (isDark) IosColors.BlueDark else IosColors.Blue
+                        if (isDark) SystemColors.BlueDark else SystemColors.Blue
                     } else {
-                        if (isDark) IosColors.PurpleDark else IosColors.Purple
+                        if (isDark) SystemColors.PurpleDark else SystemColors.Purple
                     }
                     Surface(
                         color = labelColor.copy(alpha = if (isDark) 0.16f else 0.1f),
@@ -881,7 +881,7 @@ private fun ExerciseContent(
                     // 语法专项模式标签
                     uiState.currentGrammarPoint?.let { grammarPoint ->
                         Spacer(modifier = Modifier.width(8.dp))
-                        val grammarColor = if (isDark) IosColors.GreenDark else IosColors.Green
+                        val grammarColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
                         Surface(
                             color = grammarColor.copy(alpha = if (isDark) 0.16f else 0.1f),
                             shape = RoundedRectangle(6.dp)
@@ -906,7 +906,7 @@ private fun ExerciseContent(
                     Spacer(modifier = Modifier.weight(1f))
                     if (exercise.type == "JP_TO_CN") {
                         val isPlaying = uiState.playingAudioId == "question"
-                        val audioTint = if (isDark) IosColors.BlueDark else IosColors.Blue
+                        val audioTint = if (isDark) SystemColors.BlueDark else SystemColors.Blue
                         FrostedLiquidGlassButton(
                             onClick = { onEvent(AIWorkshopEvent.SpeakText(exercise.question, "question")) },
                             shape = CircleShape,
@@ -963,7 +963,7 @@ private fun ExerciseContent(
                 
                 if (exercise.hints.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(20.dp))
-                    val hintColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                    val hintColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                     val hintBgColor = hintColor.copy(alpha = if (isDark) 0.12f else 0.08f)
                     val hintBorder = BorderStroke(0.5.dp, hintColor.copy(alpha = if (isDark) 0.3f else 0.18f))
                     Surface(
@@ -1091,9 +1091,9 @@ private fun FeedbackSection(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
     val scoreColor = when {
-        result.score >= 80 -> if (isDark) IosColors.GreenDark else IosColors.Green
-        result.score >= 60 -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-        else -> if (isDark) IosColors.RedDark else IosColors.Red
+        result.score >= 80 -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+        result.score >= 60 -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+        else -> if (isDark) SystemColors.RedDark else SystemColors.Red
     }
 
 

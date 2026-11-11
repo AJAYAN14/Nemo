@@ -34,7 +34,7 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.user.R
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.core.designsystem.theme.CaptchaPalette
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.UserPalette
 import kotlin.random.Random
 
@@ -259,7 +259,7 @@ fun RegisterCaptchaDialog(
     val focusManager = LocalFocusManager.current
 
     val primaryTint = MaterialTheme.colorScheme.primary
-    val errorColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val errorColor = if (isDark) SystemColors.RedDark else SystemColors.Red
     val descTextColor = if (isDark) Color.White.copy(alpha = 0.65f) else UserPalette.TextSlate500
     val errEmptyResult = stringResource(R.string.user_captcha_err_empty_result)
     val errWrongResult = stringResource(R.string.user_captcha_err_wrong_result)

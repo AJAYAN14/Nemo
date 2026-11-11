@@ -142,7 +142,7 @@ fun HistoricalStatisticsScreen(
                             message = stringResource(R.string.stats_history_empty_words_message),
                             subtitle = stringResource(R.string.stats_history_empty_words_subtitle),
                             icon = Icons.Rounded.Translate,
-                            accentColor = IosColors.Green
+                            accentColor = SystemColors.Green
                         )
                     }
                 }
@@ -168,7 +168,7 @@ fun HistoricalStatisticsScreen(
                             message = stringResource(R.string.stats_history_empty_grammars_message),
                             subtitle = stringResource(R.string.stats_history_empty_grammars_subtitle),
                             icon = Icons.AutoMirrored.Rounded.MenuBook,
-                            accentColor = IosColors.Green
+                            accentColor = SystemColors.Green
                         )
                     }
                 }
@@ -214,7 +214,7 @@ fun HistoricalStatisticsScreen(
             title = stringResource(R.string.stats_historical_title_word_dist),
             data = wordLevelData,
             totalData = uiState.wordTotalCountMap,
-            themeColor = IosColors.Blue,
+            themeColor = SystemColors.Blue,
             predictions = uiState.wordPredictions,
             overallPrediction = uiState.wordOverallPrediction,
             itemUnit = stringResource(R.string.stats_history_label_unit_word),
@@ -228,7 +228,7 @@ fun HistoricalStatisticsScreen(
             title = stringResource(R.string.stats_historical_title_grammar_dist),
             data = grammarLevelData,
             totalData = uiState.grammarTotalCountMap,
-            themeColor = IosColors.Green,
+            themeColor = SystemColors.Green,
             predictions = uiState.grammarPredictions,
             overallPrediction = uiState.grammarOverallPrediction,
             itemUnit = stringResource(R.string.stats_history_label_unit_item),
@@ -246,8 +246,8 @@ fun HistoricalSummaryCard(
     onWordsClick: () -> Unit,
     onGrammarsClick: () -> Unit
 ) {
-    val wordColor = IosColors.Blue
-    val grammarColor = IosColors.Green
+    val wordColor = SystemColors.Blue
+    val grammarColor = SystemColors.Green
 
     PremiumCard {
         Row(

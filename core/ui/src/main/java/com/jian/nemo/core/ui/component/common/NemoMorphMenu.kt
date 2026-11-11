@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
@@ -495,7 +495,7 @@ fun NemoMorphMenuScope.NemoMorphMenuItem(
     val totalCount = itemCount
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val destructiveColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val destructiveColor = if (isDark) SystemColors.RedDark else SystemColors.Red
 
     val effectiveIconColor = if (isDestructive) {
         destructiveColor

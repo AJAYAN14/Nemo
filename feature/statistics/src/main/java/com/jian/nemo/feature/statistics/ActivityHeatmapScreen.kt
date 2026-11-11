@@ -233,7 +233,7 @@ private fun RichStatsGrid(
                 value = streak.toString(),
                 unit = stringResource(R.string.stats_heatmap_unit_days),
                 subLabel = stringResource(R.string.stats_heatmap_format_longest_streak, longestStreak),
-                color = IosColors.Orange,
+                color = SystemColors.Orange,
                 modifier = Modifier.weight(1f)
             )
 
@@ -265,7 +265,7 @@ private fun RichStatsGrid(
                 value = bestDayCount.toString(),
                 unit = stringResource(R.string.stats_heatmap_unit_items),
                 subLabel = dateStr,
-                color = IosColors.Green,
+                color = SystemColors.Green,
                 modifier = Modifier.weight(1f)
             )
 
@@ -280,7 +280,7 @@ private fun RichStatsGrid(
                 } else {
                     stringResource(R.string.stats_heatmap_label_steady_progress)
                 },
-                color = IosColors.Purple,
+                color = SystemColors.Purple,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -445,7 +445,7 @@ private fun MemoryPanoramaCard(
                 ) {
                     val iconStyle = LocalSettingIconStyle.current
                     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-                    val baseColor = IosColors.Green
+                    val baseColor = SystemColors.Green
                     val containerBg = if (isSoftTranslucent) {
                         if (isDarkTheme) baseColor.copy(alpha = 0.20f) else StatisticsPalette.EmeraldBgLight
                     } else {

@@ -37,7 +37,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.containerTransform
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
@@ -185,7 +185,7 @@ fun FavoritesList(
             subtitle = stringResource(R.string.collection_favorites_words_subtitle),
             count = favoriteWordsCount,
             icon = Icons.Rounded.Translate,
-            iconColor = IosColors.Yellow,
+            iconColor = SystemColors.Yellow,
             onClick = onWordFavoritesClick
         )
 
@@ -194,7 +194,7 @@ fun FavoritesList(
             subtitle = stringResource(R.string.collection_favorites_questions_subtitle),
             count = favoriteGrammarsCount,
             icon = Icons.Rounded.Checklist,
-            iconColor = IosColors.Green,
+            iconColor = SystemColors.Green,
             onClick = onGrammarFavoritesClick
         )
     }

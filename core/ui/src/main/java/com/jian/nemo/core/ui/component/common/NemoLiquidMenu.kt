@@ -89,7 +89,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
@@ -824,7 +824,7 @@ fun NemoLiquidMenuItem(
     val currentMotionState = LocalLiquidMenuMotionState.current ?: ActiveLiquidMenuMotionState.value
     val containerCoords = LocalLiquidMenuContainerCoordinates.current.value
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val destructiveColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val destructiveColor = if (isDark) SystemColors.RedDark else SystemColors.Red
 
     val effectiveIconColor = when {
         !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)

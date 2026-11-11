@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcard
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceSubcardDark
 import com.jian.nemo.core.designsystem.theme.NemoText
@@ -45,10 +45,10 @@ fun QueueExplanationDialog(
     isDarkTheme: Boolean
 
 ) {
-    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val newColor = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
+    val learningColor = if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
+    val reviewColor = if (isDarkTheme) SystemColors.GreenDark else SystemColors.Green
+    val relearnColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
 
     val itemBgColor = if (isDarkTheme) NemoSurfaceSubcardDark else NemoSurfaceSubcard
     val primaryTextColor = if (isDarkTheme) Color.White else NemoText

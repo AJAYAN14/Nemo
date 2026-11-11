@@ -1,7 +1,7 @@
 package com.jian.nemo.feature.collection.mistakes
 
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 
@@ -75,9 +75,9 @@ fun WrongWordsScreen(
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentColor = IosColors.Blue
-    val deleteColor = IosColors.Red
-    val emptyIconColor = IosColors.Green
+    val accentColor = SystemColors.Blue
+    val deleteColor = SystemColors.Red
+    val emptyIconColor = SystemColors.Green
 
     // 多选状态
     var selectedWordIds by rememberSaveable { mutableStateOf(emptySet<Int>()) }
@@ -320,12 +320,12 @@ fun WrongWordsScreen(
  */
 private fun getLevelColor(level: String): Color {
     return when (level.uppercase()) {
-        "N5" -> IosColors.Green
-        "N4" -> IosColors.Cyan
-        "N3" -> IosColors.Blue
-        "N2" -> IosColors.Orange
-        "N1" -> IosColors.Pink
-        else -> IosColors.Indigo
+        "N5" -> SystemColors.Green
+        "N4" -> SystemColors.Cyan
+        "N3" -> SystemColors.Blue
+        "N2" -> SystemColors.Orange
+        "N1" -> SystemColors.Pink
+        else -> SystemColors.Indigo
     }
 }
 

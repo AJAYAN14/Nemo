@@ -189,9 +189,9 @@ private fun GrammarDetailContent(
     val density = LocalDensity.current
 
     val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
-    val accentColor = if (isDark) IosColors.GreenDark else IosColors.Green
-    val connectionColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
-    val notesColor = if (isDark) IosColors.RedDark else IosColors.Red
+    val accentColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
+    val connectionColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+    val notesColor = if (isDark) SystemColors.RedDark else SystemColors.Red
 
     // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
     val transitionDistancePx = with(density) { 90.dp.toPx() }
@@ -252,12 +252,12 @@ private fun GrammarDetailContent(
                     // Level Tag (Enhanced)
                     grammar.grammarLevel?.let { level ->
                         val levelColor = when (level.uppercase()) {
-                            "N5" -> if (isDark) IosColors.GreenDark else IosColors.Green
-                            "N4" -> if (isDark) IosColors.CyanDark else IosColors.Cyan
-                            "N3" -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
-                            "N2" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-                            "N1" -> if (isDark) IosColors.RedDark else IosColors.Red
-                            else -> if (isDark) IosColors.GreenDark else IosColors.Green
+                            "N5" -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+                            "N4" -> if (isDark) SystemColors.CyanDark else SystemColors.Cyan
+                            "N3" -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
+                            "N2" -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+                            "N1" -> if (isDark) SystemColors.RedDark else SystemColors.Red
+                            else -> if (isDark) SystemColors.GreenDark else SystemColors.Green
                         }
                         DetailTag(
                             text = level,

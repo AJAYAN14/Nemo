@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 
 @Composable
 fun WordListItem(
@@ -88,7 +88,7 @@ fun WordListItem(
                     Icon(
                         imageVector = Icons.Rounded.Favorite,
                         contentDescription = stringResource(R.string.collection_cd_unfavorite),
-                        tint = IosColors.Pink
+                        tint = SystemColors.Pink
                     )
                 }
             }

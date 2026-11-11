@@ -21,7 +21,7 @@ import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -81,12 +81,12 @@ fun SRSActionArea(
 
     // 评分按钮纯实色定义 - 严格遵循项目调色盘手册（单一纯实色，零透明度，不分模式）
     val buttonContainerColor = MaterialTheme.colorScheme.surface
-    val effectiveAgainColor = IosColors.Red
-    val effectiveHardColor = IosColors.Orange
-    val effectiveGoodColor = IosColors.Blue
-    val effectiveEasyColor = IosColors.Green
+    val effectiveAgainColor = SystemColors.Red
+    val effectiveHardColor = SystemColors.Orange
+    val effectiveGoodColor = SystemColors.Blue
+    val effectiveEasyColor = SystemColors.Green
 
-    val effectiveStarColor = if (isDarkTheme) IosColors.YellowDark else IosColors.Yellow
+    val effectiveStarColor = if (isDarkTheme) SystemColors.YellowDark else SystemColors.Yellow
 
     val isDelayActive = isShowAnswerDelayEnabled || showAnswerAvailableAt > 0L
 

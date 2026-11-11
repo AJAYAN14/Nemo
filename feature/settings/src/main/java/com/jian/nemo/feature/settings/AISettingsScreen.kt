@@ -61,7 +61,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
@@ -135,7 +135,7 @@ fun AISettingsScreen(
                         item {
                             val iconStyle = LocalSettingIconStyle.current
                             val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-                            val baseColor = IosColors.Blue
+                            val baseColor = SystemColors.Blue
                             val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
                             val iconTint = if (isSoftTranslucent) baseColor else Color.White
 

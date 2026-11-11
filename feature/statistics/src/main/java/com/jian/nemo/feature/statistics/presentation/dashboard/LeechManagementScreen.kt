@@ -62,7 +62,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
@@ -105,8 +105,8 @@ fun LeechManagementScreen(
     }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
-        val wordAccentColor = IosColors.Orange
-        val grammarAccentColor = IosColors.Green
+        val wordAccentColor = SystemColors.Orange
+        val grammarAccentColor = SystemColors.Green
 
         Box(
             modifier = Modifier

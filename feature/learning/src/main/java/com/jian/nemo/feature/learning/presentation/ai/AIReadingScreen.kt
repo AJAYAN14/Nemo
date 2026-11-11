@@ -332,37 +332,37 @@ private fun ConfigScreen(
             name = stringResource(R.string.learning_ai_reading_theme_daily_life_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_daily_life_subtitle),
             icon = Icons.Rounded.Park,
-            accent = if (isDark) IosColors.GreenDark else IosColors.Green
+            accent = if (isDark) SystemColors.GreenDark else SystemColors.Green
         ),
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_traditional_culture_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_traditional_culture_subtitle),
             icon = Icons.Rounded.Landscape,
-            accent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+            accent = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
         ),
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_folk_tales_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_folk_tales_subtitle),
             icon = Icons.Rounded.AutoAwesome,
-            accent = if (isDark) IosColors.PurpleDark else IosColors.Purple
+            accent = if (isDark) SystemColors.PurpleDark else SystemColors.Purple
         ),
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_cuisine_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_cuisine_subtitle),
             icon = Icons.Rounded.Restaurant,
-            accent = if (isDark) IosColors.CyanDark else IosColors.Cyan
+            accent = if (isDark) SystemColors.CyanDark else SystemColors.Cyan
         ),
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_scenery_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_scenery_subtitle),
             icon = Icons.Rounded.Explore,
-            accent = if (isDark) IosColors.PinkDark else IosColors.Pink
+            accent = if (isDark) SystemColors.PinkDark else SystemColors.Pink
         ),
         ThemeCardInfo(
             name = stringResource(R.string.learning_ai_reading_theme_business_title),
             subtitle = stringResource(R.string.learning_ai_reading_theme_business_subtitle),
             icon = Icons.Rounded.BusinessCenter,
-            accent = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+            accent = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
         )
     )
 
@@ -400,7 +400,7 @@ private fun ConfigScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        val levelIconColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                        val levelIconColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                         val levelContainerBg = if (isSoftTranslucent) levelIconColor.copy(alpha = 0.15f) else levelIconColor
                         val levelIconTint = if (isSoftTranslucent) levelIconColor else Color.White
 
@@ -433,7 +433,7 @@ private fun ConfigScreen(
                     }
 
                     // 当前选中的微胶囊标头
-                    val levelAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                    val levelAccent = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                     Surface(
                         shape = RoundedRectangle(20.dp),
                         color = levelAccent.copy(alpha = 0.12f)
@@ -476,7 +476,7 @@ private fun ConfigScreen(
                 .padding(horizontal = 4.dp, vertical = 2.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val themeIconColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+                val themeIconColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
                 val themeContainerBg = if (isSoftTranslucent) themeIconColor.copy(alpha = 0.15f) else themeIconColor
                 val themeIconTint = if (isSoftTranslucent) themeIconColor else Color.White
 
@@ -607,7 +607,7 @@ private fun FluidLevelSegmentedPicker(
             label = "fluidCapsuleOffset"
         )
 
-        val indicatorColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+        val indicatorColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
         val indicatorBrush = Brush.verticalGradient(
             colors = listOf(
                 indicatorColor.copy(alpha = 0.92f),
@@ -712,7 +712,7 @@ private fun LevelCapabilityCard(
         label = "levelDetailContent",
         modifier = modifier.fillMaxWidth()
     ) { item ->
-        val capabilityAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+        val capabilityAccent = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
         val cardBg = capabilityAccent.copy(alpha = if (isDark) 0.12f else 0.07f)
         val cardBorder = capabilityAccent.copy(alpha = if (isDark) 0.25f else 0.15f)
 

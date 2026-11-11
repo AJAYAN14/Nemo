@@ -42,8 +42,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
+import com.jian.nemo.navigation.rememberNemoAppState
 import com.jian.nemo.core.ui.component.NemoBottomBar
 import com.jian.nemo.core.data.util.DatabaseInitializer
 import com.jian.nemo.core.designsystem.theme.NemoTheme
@@ -221,22 +220,14 @@ fun NemoApp(
         }
     }
 
-    val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    // 启动页标识
-    val isSplashScreen = currentRoute == "splash"
-    // 使用 edge-to-edge 布局的路由列表（禁用标准 Scaffold padding）
-    val edgeToEdgeRoutes = listOf("splash", "learning", "progress", "settings", "test")
-    val useEdgeToEdge = currentRoute in edgeToEdgeRoutes
+    val appState = rememberNemoAppState()
+    val currentRoute = appState.currentRoute
+    val isSplashScreen = appState.isSplashScreen
+    val useEdgeToEdge = appState.useEdgeToEdge
+    val showBottomBar = appState.shouldShowBottomBar
 
     // 根据当前路由和主题标准化系统栏配置
     SetupSystemBars(isSplashScreen = isSplashScreen)
-
-    // 需要显示底部导航栏的路由
-    val bottomBarRoutes = listOf("learning", "progress", "test", "settings")
-    val showBottomBar = currentRoute in bottomBarRoutes && !isSplashScreen
 
     // 获取系统栏 Insets 以实现动态底部导航高度
     val bottomInsetPx = WindowInsets.navigationBars.getBottom(LocalDensity.current)
@@ -256,18 +247,7 @@ fun NemoApp(
         bottomBar = {
             NemoBottomBar(
                 currentRoute = currentRoute,
-                onNavigate = { route ->
-                    navController.navigate(route) {
-                        // 防止重复导航
-                        launchSingleTop = true
-                        // 恢复 backstack 状态
-                        restoreState = true
-                        // 清除栈直到初始导航目标（我们的根标签是 learning）
-                        popUpTo("learning") {
-                            saveState = true
-                        }
-                    }
-                },
+                onNavigate = appState::navigateToTopLevelDestination,
                 visible = showBottomBar,
                 hazeState = hazeState,
                 backdrop = backdrop,
@@ -305,7 +285,7 @@ fun NemoApp(
                     .layerBackdrop(backdrop)
             ) {
                 NemoNavHost(
-                    navController = navController,
+                    navController = appState.navController,
                     onCheckUpdate = {
                         viewModel.checkUpdate(currentVersionCode, isManual = true)
                     }
@@ -351,7 +331,7 @@ fun NemoApp(
     // 集成应用更新弹窗
     val config = uiState.updateConfig
     // 识别当前是否处于“过渡/登录”等关键路径页面
-    val isTransientScreen = isSplashScreen || currentRoute == "login"
+    val isTransientScreen = appState.isTransientScreen
     
     // 显示逻辑：强制更新无视页面，建议更新则避开登录/启动等关键页面以防中断用户心流
     if (config != null && (config.isForce || !isTransientScreen)) {

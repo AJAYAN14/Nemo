@@ -56,8 +56,8 @@ fun TtsSettingsScreen(
     val scrollState = rememberScrollState()
 
     // Flat UI 配色定义
-    val accentColor = IosColors.Purple  // 主强调色
-    val secondaryAccent = IosColors.Cyan // 次要强调色
+    val accentColor = SystemColors.Purple  // 主强调色
+    val secondaryAccent = SystemColors.Cyan // 次要强调色
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val backdrop = rememberLayerBackdrop()
@@ -100,7 +100,7 @@ fun TtsSettingsScreen(
                             title = stringResource(R.string.settings_tts_item_title_select_japanese),
                             subtitle = uiState.ttsVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
                             icon = Icons.Rounded.RecordVoiceOver,
-                            iconColor = IosColors.Red,
+                            iconColor = SystemColors.Red,
                             onClick = { viewModel.onEvent(SettingsEvent.ShowVoiceSelectionDialog(true)) },
                             showDivider = true
                         )
@@ -108,7 +108,7 @@ fun TtsSettingsScreen(
                             title = stringResource(R.string.settings_tts_item_title_select_chinese),
                             subtitle = uiState.ttsChineseVoiceName ?: stringResource(R.string.settings_tts_value_system_default),
                             icon = Icons.Rounded.Translate,
-                            iconColor = IosColors.Orange,
+                            iconColor = SystemColors.Orange,
                             onClick = { viewModel.onEvent(SettingsEvent.ShowChineseVoiceSelectionDialog(true)) },
                             showDivider = false
                         )
@@ -212,7 +212,7 @@ fun TtsSettingsScreen(
                                 text = stringResource(R.string.settings_tts_btn_preview_chinese),
                                 playingText = stringResource(R.string.settings_tts_btn_stop_chinese),
                                 isPlaying = isPlayingCn,
-                                color = IosColors.Orange,
+                                color = SystemColors.Orange,
                                 onClick = {
                                     if (isPlayingCn) {
                                         viewModel.onEvent(SettingsEvent.StopPreviewTts)

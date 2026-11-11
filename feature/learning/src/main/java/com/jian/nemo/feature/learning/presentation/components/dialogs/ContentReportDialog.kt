@@ -35,7 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
 import com.jian.nemo.feature.learning.presentation.LearningMode
@@ -53,9 +53,9 @@ fun ContentReportDialog(
     val isDark = useDarkTheme
     val haptic = LocalHapticFeedback.current
 
-    val accentRed = if (isDark) IosColors.RedDark else IosColors.Red
+    val accentRed = if (isDark) SystemColors.RedDark else SystemColors.Red
 
-    val chipSelectedBg = if (isDark) IosColors.RedDark.copy(alpha = 0.16f) else IosColors.Red.copy(alpha = 0.08f)
+    val chipSelectedBg = if (isDark) SystemColors.RedDark.copy(alpha = 0.16f) else SystemColors.Red.copy(alpha = 0.08f)
     val chipSelectedBorder = accentRed
     val chipSelectedText = accentRed
     val chipUnselectedBg = if (isDark) Color.White.copy(alpha = 0.06f) else Color.Black.copy(alpha = 0.04f)

@@ -31,7 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
@@ -138,7 +138,7 @@ fun LearningSummaryCard(
         BentoPageModel(
             title = stringResource(R.string.stats_dashboard_bento_title_daily_overview),
             icon = Icons.Rounded.Today,
-            accentColor = IosColors.Blue,
+            accentColor = SystemColors.Blue,
             main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_today_learned), todayLearned.toString(), unitItems),
             topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_due_review), dueCount.toString(), unitItems),
             bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_goal_rate), todayProgress.toString(), unitPercent),
@@ -147,7 +147,7 @@ fun LearningSummaryCard(
         BentoPageModel(
             title = stringResource(R.string.stats_dashboard_bento_title_learning_track),
             icon = Icons.Rounded.Timeline,
-            accentColor = IosColors.Green,
+            accentColor = SystemColors.Green,
             main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_streak), studyStreak.toString(), unitDays),
             topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_mastered), masteredCount.toString(), unitItems),
             bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_unmastered), unmasteredCount.toString(), unitItems),
@@ -156,7 +156,7 @@ fun LearningSummaryCard(
         BentoPageModel(
             title = stringResource(R.string.stats_dashboard_bento_title_growth_overview),
             icon = Icons.AutoMirrored.Rounded.TrendingUp,
-            accentColor = IosColors.Orange,
+            accentColor = SystemColors.Orange,
             main = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_total_progress), (progress * 100).toInt().toString(), unitPercent),
             topRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_total_days), totalStudyDays.toString(), unitDays),
             bottomRight = BentoMetric(stringResource(R.string.stats_dashboard_bento_label_week_days), weekStudyDays.toString(), unitDays),
@@ -492,7 +492,7 @@ fun DataAndResourcesSection(
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.QueryStats,
-                    color = IosColors.Red,
+                    color = SystemColors.Red,
                     title = stringResource(R.string.stats_dashboard_item_today_stats_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_today_stats_desc),
                     onClick = onStatisticsClick,
@@ -500,7 +500,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Insights,
-                    color = IosColors.Purple,
+                    color = SystemColors.Purple,
                     title = stringResource(R.string.stats_dashboard_item_history_stats_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_history_stats_desc),
                     onClick = onHistoricalStatisticsClick,
@@ -508,7 +508,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.AutoMirrored.Rounded.ShowChart,
-                    color = IosColors.Green,
+                    color = SystemColors.Green,
                     title = stringResource(R.string.stats_dashboard_item_curve_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_curve_desc),
                     onClick = onForgettingCurveClick,
@@ -516,7 +516,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.CalendarMonth,
-                    color = IosColors.Blue,
+                    color = SystemColors.Blue,
                     title = stringResource(R.string.stats_dashboard_item_calendar_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_calendar_desc),
                     onClick = onLearningCalendarClick,
@@ -533,7 +533,7 @@ fun DataAndResourcesSection(
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.SortByAlpha,
-                    color = IosColors.Orange,
+                    color = SystemColors.Orange,
                     title = stringResource(R.string.stats_dashboard_item_word_list_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_word_list_desc),
                     onClick = onWordListClick,
@@ -541,7 +541,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.AutoMirrored.Rounded.MenuBook,
-                    color = IosColors.Indigo,
+                    color = SystemColors.Indigo,
                     title = stringResource(R.string.stats_dashboard_item_grammar_list_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_grammar_list_desc),
                     onClick = onGrammarListClick,
@@ -549,7 +549,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Category,
-                    color = IosColors.Teal,
+                    color = SystemColors.Teal,
                     title = stringResource(R.string.stats_dashboard_item_category_vocab_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_category_vocab_desc),
                     onClick = onCategoryClassificationClick,
@@ -557,7 +557,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.AutoAwesome,
-                    color = IosColors.Mint,
+                    color = SystemColors.Mint,
                     title = stringResource(R.string.stats_dashboard_item_authentic_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_authentic_desc),
                     onClick = onLibraryClick,
@@ -574,7 +574,7 @@ fun DataAndResourcesSection(
             Column(modifier = Modifier.padding(8.dp)) {
                 SquircleListItem(
                     icon = Icons.Rounded.SportsEsports,
-                    color = IosColors.Cyan,
+                    color = SystemColors.Cyan,
                     title = stringResource(R.string.stats_dashboard_item_practice_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_practice_desc),
                     onClick = onCategoryPracticeClick,
@@ -582,7 +582,7 @@ fun DataAndResourcesSection(
                 )
                 SquircleListItem(
                     icon = Icons.Rounded.Whatshot,
-                    color = IosColors.Red,
+                    color = SystemColors.Red,
                     title = stringResource(R.string.stats_dashboard_item_leech_title),
                     subtitle = stringResource(R.string.stats_dashboard_item_leech_desc),
                     onClick = onLeechManagementClick,

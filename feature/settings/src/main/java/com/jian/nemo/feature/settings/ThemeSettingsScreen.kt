@@ -405,7 +405,7 @@ fun ThemeSettingsScreen(
             onDismiss = { showThemeColorDialog = false },
             onColorSelect = { color ->
                 // 默认主题蓝传 null 以恢复默认
-                val defaultBlue = IosColors.Blue.value
+                val defaultBlue = SystemColors.Blue.value
                 val colorArgb = if (color.value == defaultBlue) null else color.value.toLong()
                 viewModel.onEvent(SettingsEvent.SetThemeColor(colorArgb))
                 showThemeColorDialog = false

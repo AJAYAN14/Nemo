@@ -19,7 +19,7 @@ import com.jian.nemo.feature.user.R
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.NemoDialog
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
@@ -45,7 +45,7 @@ fun AccountResetPasswordDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
-    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errorColor = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red
     val errInvalidEmail = stringResource(R.string.user_dialog_err_invalid_email)
     val errInvalidOtp = stringResource(R.string.user_dialog_err_invalid_otp)
     val errShortPassword = stringResource(R.string.user_dialog_err_short_password)
@@ -60,7 +60,7 @@ fun AccountResetPasswordDialog(
         },
         confirmText = if (stage == 2) stringResource(R.string.user_dialog_title_reset_password) else stringResource(R.string.user_dialog_btn_next),
         dismissText = stringResource(R.string.user_dialog_btn_cancel),
-        confirmButtonColor = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
+        confirmButtonColor = if (useDarkTheme) SystemColors.OrangeDark else SystemColors.Orange,
         isLoading = isLoading,
         onConfirm = {
             errorMessage = null
@@ -208,7 +208,7 @@ fun AccountUpdateUsernameDialog(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
-    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errorColor = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red
     val errSameUsername = stringResource(R.string.user_dialog_err_same_username)
     val errUsernameLength = stringResource(R.string.user_dialog_err_username_length)
 
@@ -217,7 +217,7 @@ fun AccountUpdateUsernameDialog(
         title = stringResource(R.string.user_dialog_title_change_username),
         confirmText = stringResource(R.string.user_dialog_btn_confirm_modify),
         dismissText = stringResource(R.string.user_dialog_btn_cancel),
-        confirmButtonColor = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
+        confirmButtonColor = if (useDarkTheme) SystemColors.BlueDark else SystemColors.Blue,
         confirmEnabled = newUsername.trim().isNotEmpty() && newUsername.trim().length <= 16 && newUsername.trim() != currentUsername,
         isLoading = isLoading,
         onConfirm = {
@@ -303,7 +303,7 @@ fun AccountUpdateEmailDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
-    val errorColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val errorColor = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red
     val errSameEmail = stringResource(R.string.user_dialog_err_same_email)
     val errInvalidEmail = stringResource(R.string.user_dialog_err_invalid_email)
     val errInvalidOtp = stringResource(R.string.user_dialog_err_invalid_otp)
@@ -313,7 +313,7 @@ fun AccountUpdateEmailDialog(
         title = if (stage == 0) stringResource(R.string.user_dialog_title_change_email) else stringResource(R.string.user_dialog_title_input_otp),
         confirmText = if (stage == 0) stringResource(R.string.user_dialog_btn_next) else stringResource(R.string.user_dialog_btn_confirm_modify),
         dismissText = stringResource(R.string.user_dialog_btn_cancel),
-        confirmButtonColor = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
+        confirmButtonColor = if (useDarkTheme) SystemColors.GreenDark else SystemColors.Green,
         isLoading = isLoading,
         onConfirm = {
             errorMessage = null
@@ -424,7 +424,7 @@ fun DeleteAccountDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showFinalConfirm by remember { mutableStateOf(false) }
 
-    val primaryColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val primaryColor = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight
     val errEmptyPassword = stringResource(R.string.user_dialog_err_empty_password)
 
@@ -546,7 +546,7 @@ fun DeleteAccountDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showFinalConfirm by remember { mutableStateOf(false) }
 
-    val primaryColor = if (useDarkTheme) IosColors.RedDark else IosColors.Red
+    val primaryColor = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red
     val containerColor = if (useDarkTheme) UserPalette.DialogContainerDark else Color.White
     val titleColor = if (useDarkTheme) Color.White else Color.Black
     val bodyColor = if (useDarkTheme) UserPalette.DialogBodyDark else UserPalette.DialogBodyLight

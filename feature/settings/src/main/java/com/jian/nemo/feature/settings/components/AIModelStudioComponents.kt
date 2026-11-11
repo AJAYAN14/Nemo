@@ -60,7 +60,7 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ContentPaste
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
@@ -311,7 +311,7 @@ fun MatrixChipDock(
     Column(modifier = modifier.fillMaxWidth()) {
         val iconStyle = LocalSettingIconStyle.current
         val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-        val baseColor = IosColors.Orange
+        val baseColor = SystemColors.Orange
         val containerBg = if (isSoftTranslucent) baseColor.copy(alpha = 0.15f) else baseColor
         val iconTint = if (isSoftTranslucent) baseColor else Color.White
 

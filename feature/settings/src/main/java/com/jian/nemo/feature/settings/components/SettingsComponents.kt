@@ -244,7 +244,7 @@ fun DailyGoalSelectionBottomSheet(
 ) {
     val goals = listOf(5, 10, 20, 30, 50)
     val isDark = isSystemInDarkTheme()
-    val accentColor = if (isDark) IosColors.OrangeDark else IosColors.Orange
+    val accentColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -316,7 +316,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
 ) {
     val goals = listOf(5, 10, 15, 20, 25)
     val isDark = isSystemInDarkTheme()
-    val accentColor = if (isDark) IosColors.GreenDark else IosColors.Green
+    val accentColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -432,7 +432,7 @@ fun LearningDayResetHourBottomSheet(
 ) {
     val hours = listOf(0, 2, 4, 5, 6)
     val isDark = isSystemInDarkTheme()
-    val accentColor = if (isDark) IosColors.MintDark else IosColors.Mint
+    val accentColor = if (isDark) SystemColors.MintDark else SystemColors.Mint
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
@@ -568,7 +568,7 @@ fun VoiceSelectionBottomSheet(
     previewingVoiceName: String? = null
 ) {
     val isDark = isSystemInDarkTheme()
-    val accentColor = if (isDark) IosColors.PinkDark else IosColors.Pink
+    val accentColor = if (isDark) SystemColors.PinkDark else SystemColors.Pink
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor

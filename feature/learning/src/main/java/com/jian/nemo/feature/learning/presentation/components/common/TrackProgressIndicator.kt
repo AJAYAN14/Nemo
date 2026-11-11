@@ -31,7 +31,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 
 /**
  * 400米跑道风格胶囊进度指示器，进度沿赛道轮廓线顺时针转圈推进
@@ -60,10 +60,10 @@ fun TrackProgressIndicator(
     val trackLineColor = primaryThemeColor.copy(alpha = if (isDarkTheme) 0.22f else 0.15f)
     val progressLineColor = primaryThemeColor
 
-    val newColor = if (isDarkTheme) IosColors.BlueDark else IosColors.Blue
-    val learningColor = if (isDarkTheme) IosColors.CyanDark else IosColors.Cyan
-    val reviewColor = if (isDarkTheme) IosColors.GreenDark else IosColors.Green
-    val relearnColor = if (isDarkTheme) IosColors.OrangeDark else IosColors.Orange
+    val newColor = if (isDarkTheme) SystemColors.BlueDark else SystemColors.Blue
+    val learningColor = if (isDarkTheme) SystemColors.CyanDark else SystemColors.Cyan
+    val reviewColor = if (isDarkTheme) SystemColors.GreenDark else SystemColors.Green
+    val relearnColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
 
     val pathMeasure = remember { PathMeasure() }
     val fullPath = remember { Path() }

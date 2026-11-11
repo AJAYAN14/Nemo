@@ -316,7 +316,7 @@ private fun EmptyState(
 ) {
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentColor = IosColors.Indigo
+    val accentColor = SystemColors.Indigo
     val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
 

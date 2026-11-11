@@ -23,7 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.model.AIWordTranslation
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
@@ -311,7 +311,7 @@ private fun TranslationSuccessContent(
     onSpeakWord: ((String) -> Unit)?
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val orangeAccent = if (isDark) IosColors.OrangeDark else IosColors.Orange
+    val orangeAccent = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
 
     Column(
         modifier = Modifier.fillMaxWidth()

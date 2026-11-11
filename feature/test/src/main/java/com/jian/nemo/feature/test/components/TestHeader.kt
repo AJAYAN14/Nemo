@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.designsystem.theme.NemoDanger
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause

@@ -203,7 +203,7 @@ private fun WordDetailContent(
     val density = LocalDensity.current
 
     val isSoftTranslucent = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
-    val accentColor = if (isDark) IosColors.BlueDark else IosColors.Blue
+    val accentColor = if (isDark) SystemColors.BlueDark else SystemColors.Blue
 
     // 计算滚动过渡进度：前 90dp 范围内平滑淡入渐变遮罩并过渡
     val transitionDistancePx = with(density) { 90.dp.toPx() }
@@ -316,12 +316,12 @@ private fun WordDetailContent(
                         ) {
                             // Level Tag
                             val levelColor = when (word.level.uppercase()) {
-                                "N5" -> if (isDark) IosColors.GreenDark else IosColors.Green
-                                "N4" -> if (isDark) IosColors.CyanDark else IosColors.Cyan
-                                "N3" -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
-                                "N2" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-                                "N1" -> if (isDark) IosColors.RedDark else IosColors.Red
-                                else -> if (isDark) IosColors.BlueDark else IosColors.Blue
+                                "N5" -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+                                "N4" -> if (isDark) SystemColors.CyanDark else SystemColors.Cyan
+                                "N3" -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
+                                "N2" -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+                                "N1" -> if (isDark) SystemColors.RedDark else SystemColors.Red
+                                else -> if (isDark) SystemColors.BlueDark else SystemColors.Blue
                             }
                             DetailTag(
                                 text = word.level,
@@ -330,7 +330,7 @@ private fun WordDetailContent(
 
                             // POS Tag
                             word.pos?.let { pos ->
-                                val posColor = if (isDark) IosColors.IndigoDark else IosColors.Indigo
+                                val posColor = if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
                                 DetailTag(
                                     text = pos,
                                     tagColor = posColor
@@ -609,7 +609,7 @@ private fun RelatedWordCard(
     isDark: Boolean,
     onClick: () -> Unit
 ) {
-    val tagColor = if (isDark) IosColors.TealDark else IosColors.Teal
+    val tagColor = if (isDark) SystemColors.TealDark else SystemColors.Teal
 
     PremiumDetailCard(
         isDark = isDark,

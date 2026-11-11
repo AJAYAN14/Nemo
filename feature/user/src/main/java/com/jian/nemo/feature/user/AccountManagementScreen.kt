@@ -31,7 +31,7 @@ import android.widget.Toast
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.IosColors
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.AvatarImage
@@ -125,7 +125,7 @@ fun AccountManagementScreen(
                     ) {
                         PremiumSettingsItem(
                             icon = Icons.Rounded.Badge,
-                            iconTint = if (useDarkTheme) IosColors.BlueDark else IosColors.Blue,
+                            iconTint = if (useDarkTheme) SystemColors.BlueDark else SystemColors.Blue,
                             title = stringResource(R.string.user_account_btn_change_username),
                             onClick = { viewModel.showDialog(UserDialogType.UPDATE_USERNAME) }
                         )
@@ -137,7 +137,7 @@ fun AccountManagementScreen(
                             )
                             PremiumSettingsItem(
                                 icon = Icons.Rounded.Mail,
-                                iconTint = if (useDarkTheme) IosColors.GreenDark else IosColors.Green,
+                                iconTint = if (useDarkTheme) SystemColors.GreenDark else SystemColors.Green,
                                 title = stringResource(R.string.user_account_btn_change_email),
                                 onClick = { viewModel.showDialog(UserDialogType.UPDATE_EMAIL) }
                             )
@@ -153,7 +153,7 @@ fun AccountManagementScreen(
                     ) {
                         PremiumSettingsItem(
                             icon = Icons.Rounded.LockReset,
-                            iconTint = if (useDarkTheme) IosColors.OrangeDark else IosColors.Orange,
+                            iconTint = if (useDarkTheme) SystemColors.OrangeDark else SystemColors.Orange,
                             title = stringResource(R.string.user_account_btn_reset_password),
                             onClick = { viewModel.showDialog(UserDialogType.RESET_PASSWORD) }
                         )
@@ -168,7 +168,7 @@ fun AccountManagementScreen(
                     ) {
                         PremiumSettingsItem(
                             icon = Icons.Rounded.DeleteForever,
-                            iconTint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
+                            iconTint = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red,
                             title = stringResource(R.string.user_account_btn_delete_account),
                             titleColor = MaterialTheme.colorScheme.error,
                             onClick = { viewModel.showDialog(UserDialogType.DELETE_ACCOUNT) }
@@ -182,7 +182,7 @@ fun AccountManagementScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
-                        tint = if (useDarkTheme) IosColors.RedDark else IosColors.Red,
+                        tint = if (useDarkTheme) SystemColors.RedDark else SystemColors.Red,
                         backdrop = null,
                         shape = Capsule()
                     ) {

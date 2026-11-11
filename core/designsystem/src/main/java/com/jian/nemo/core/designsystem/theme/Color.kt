@@ -280,12 +280,12 @@ val NemoBorderColor = NemoSurfaceBorder
 val NemoBlue = NemoPrimary
 
 // 标准化语义色彩定义
-val NemoOrange = IosColors.Orange
-val NemoTeal = IosColors.Teal
-val NemoPurple = IosColors.Purple
-val NemoIndigo = IosColors.Indigo
-val NemoRed = IosColors.Red
-val NemoCyan = IosColors.Cyan
+val NemoOrange = SystemColors.Orange
+val NemoTeal = SystemColors.Teal
+val NemoPurple = SystemColors.Purple
+val NemoIndigo = SystemColors.Indigo
+val NemoRed = SystemColors.Red
+val NemoCyan = SystemColors.Cyan
 
 @Deprecated("Use NemoSurfaceBackgroundDark", ReplaceWith("NemoSurfaceBackgroundDark"))
 val LearningScreenBackgroundDark = NemoSurfaceBackgroundDark
@@ -294,46 +294,6 @@ val LearningCardBackgroundDark = NemoSurfaceCardDark
 
 @Deprecated("Use NemoSecondary", ReplaceWith("NemoSecondary"))
 val NemoGreen = NemoSecondary
-
-// 历史色彩别名兼容映射
-@Deprecated("Use IosColors.Red", ReplaceWith("IosColors.Red"))
-val iOSRed = IosColors.Red
-@Deprecated("Use IosColors.Orange", ReplaceWith("IosColors.Orange"))
-val iOSOrange = IosColors.Orange
-@Deprecated("Use IosColors.Green", ReplaceWith("IosColors.Green"))
-val iOSGreen = IosColors.Green
-@Deprecated("Use IosColors.Teal", ReplaceWith("IosColors.Teal"))
-val iOSTeal = IosColors.Teal
-@Deprecated("Use IosColors.Blue", ReplaceWith("IosColors.Blue"))
-val iOSBlue = IosColors.Blue
-@Deprecated("Use IosColors.Indigo", ReplaceWith("IosColors.Indigo"))
-val iOSIndigo = IosColors.Indigo
-@Deprecated("Use IosColors.Purple", ReplaceWith("IosColors.Purple"))
-val iOSPurple = IosColors.Purple
-@Deprecated("Use IosColors.Gray", ReplaceWith("IosColors.Gray"))
-val iOSGray = IosColors.Gray
-@Deprecated("Use IosColors.Cyan", ReplaceWith("IosColors.Cyan"))
-val iOSCyan = IosColors.Cyan
-
-// 深色模式变体
-@Deprecated("Use IosColors.RedDark", ReplaceWith("IosColors.RedDark"))
-val iOSRedDark = IosColors.RedDark
-@Deprecated("Use IosColors.OrangeDark", ReplaceWith("IosColors.OrangeDark"))
-val iOSOrangeDark = IosColors.OrangeDark
-@Deprecated("Use IosColors.GreenDark", ReplaceWith("IosColors.GreenDark"))
-val iOSGreenDark = IosColors.GreenDark
-@Deprecated("Use IosColors.TealDark", ReplaceWith("IosColors.TealDark"))
-val iOSTealDark = IosColors.TealDark
-@Deprecated("Use IosColors.BlueDark", ReplaceWith("IosColors.BlueDark"))
-val iOSBlueDark = IosColors.BlueDark
-@Deprecated("Use IosColors.IndigoDark", ReplaceWith("IosColors.IndigoDark"))
-val iOSIndigoDark = IosColors.IndigoDark
-@Deprecated("Use IosColors.PurpleDark", ReplaceWith("IosColors.PurpleDark"))
-val iOSPurpleDark = IosColors.PurpleDark
-@Deprecated("Use IosColors.GrayDark", ReplaceWith("IosColors.GrayDark"))
-val iOSGrayDark = IosColors.GrayDark
-@Deprecated("Use IosColors.CyanDark", ReplaceWith("IosColors.CyanDark"))
-val iOSCyanDark = IosColors.CyanDark
 
 // Chart 色彩别名 (重定向至 ChartColors 对象)
 @Deprecated("Use ChartColors.FreshRed", ReplaceWith("ChartColors.FreshRed"))
@@ -361,8 +321,8 @@ object ChartColors {
     val FreshOrange = Color(0xFFFFA726)
 }
 
-// 规范系统动态色彩
-object IosColors {
+// 系统动态色彩规范
+object SystemColors {
     val Red = Color(0xFFFF3B30)
     val Orange = Color(0xFFFF9500)
     val Green = Color(0xFF34C759)
@@ -403,18 +363,18 @@ object NemoCategoryTheme {
      */
     fun getCategoryColor(categoryId: String?, isDark: Boolean = false): Color {
         return when (categoryId?.lowercase()?.trim()) {
-            "verb" -> if (isDark) IosColors.GreenDark else IosColors.Green
-            "noun" -> if (isDark) IosColors.BlueDark else IosColors.Blue
-            "adj" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-            "adv" -> if (isDark) IosColors.TealDark else IosColors.Teal
-            "rentai" -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
-            "conj" -> if (isDark) IosColors.PurpleDark else IosColors.Purple
-            "particle" -> if (isDark) IosColors.CyanDark else IosColors.Cyan
-            "kata" -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-            "prefix" -> if (isDark) IosColors.RedDark else IosColors.Red
-            "suffix" -> if (isDark) IosColors.MintDark else IosColors.Mint
-            "expression" -> if (isDark) IosColors.YellowDark else IosColors.Yellow
-            "exclam" -> if (isDark) IosColors.PinkDark else IosColors.Pink
+            "verb" -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+            "noun" -> if (isDark) SystemColors.BlueDark else SystemColors.Blue
+            "adj" -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+            "adv" -> if (isDark) SystemColors.TealDark else SystemColors.Teal
+            "rentai" -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
+            "conj" -> if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+            "particle" -> if (isDark) SystemColors.CyanDark else SystemColors.Cyan
+            "kata" -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+            "prefix" -> if (isDark) SystemColors.RedDark else SystemColors.Red
+            "suffix" -> if (isDark) SystemColors.MintDark else SystemColors.Mint
+            "expression" -> if (isDark) SystemColors.YellowDark else SystemColors.Yellow
+            "exclam" -> if (isDark) SystemColors.PinkDark else SystemColors.Pink
             else -> if (isDark) NemoPrimaryDark else NemoPrimary
         }
     }
@@ -426,18 +386,18 @@ object NemoCategoryTheme {
         if (pos == null) return if (isDark) NemoPrimaryDark else NemoPrimary
         val p = pos.trim()
         return when {
-            p.contains("动词") || p.endsWith("动") -> if (isDark) IosColors.GreenDark else IosColors.Green
-            p.contains("名词") || p == "名" -> if (isDark) IosColors.BlueDark else IosColors.Blue
-            p.contains("形容词") || p.contains("形动") -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-            p.contains("副词") || p == "副" -> if (isDark) IosColors.TealDark else IosColors.Teal
-            p.contains("连体") -> if (isDark) IosColors.IndigoDark else IosColors.Indigo
-            p.contains("接续") -> if (isDark) IosColors.PurpleDark else IosColors.Purple
-            p.contains("助词") || p.contains("固定") || p.contains("句") -> if (isDark) IosColors.CyanDark else IosColors.Cyan
-            p.contains("外来") || p.contains("片假名") -> if (isDark) IosColors.OrangeDark else IosColors.Orange
-            p.contains("前缀") || p.contains("接头") -> if (isDark) IosColors.RedDark else IosColors.Red
-            p.contains("后缀") || p.contains("接尾") -> if (isDark) IosColors.MintDark else IosColors.Mint
-            p.contains("敬语") || p.contains("表达") || p.contains("熟语") || p.contains("惯用") -> if (isDark) IosColors.YellowDark else IosColors.Yellow
-            p.contains("感叹") || p.contains("叹") || p.contains("声") || p.contains("态") -> if (isDark) IosColors.PinkDark else IosColors.Pink
+            p.contains("动词") || p.endsWith("动") -> if (isDark) SystemColors.GreenDark else SystemColors.Green
+            p.contains("名词") || p == "名" -> if (isDark) SystemColors.BlueDark else SystemColors.Blue
+            p.contains("形容词") || p.contains("形动") -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+            p.contains("副词") || p == "副" -> if (isDark) SystemColors.TealDark else SystemColors.Teal
+            p.contains("连体") -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
+            p.contains("接续") -> if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+            p.contains("助词") || p.contains("固定") || p.contains("句") -> if (isDark) SystemColors.CyanDark else SystemColors.Cyan
+            p.contains("外来") || p.contains("片假名") -> if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+            p.contains("前缀") || p.contains("接头") -> if (isDark) SystemColors.RedDark else SystemColors.Red
+            p.contains("后缀") || p.contains("接尾") -> if (isDark) SystemColors.MintDark else SystemColors.Mint
+            p.contains("敬语") || p.contains("表达") || p.contains("熟语") || p.contains("惯用") -> if (isDark) SystemColors.YellowDark else SystemColors.Yellow
+            p.contains("感叹") || p.contains("叹") || p.contains("声") || p.contains("态") -> if (isDark) SystemColors.PinkDark else SystemColors.Pink
             else -> if (isDark) NemoPrimaryDark else NemoPrimary
         }
     }
