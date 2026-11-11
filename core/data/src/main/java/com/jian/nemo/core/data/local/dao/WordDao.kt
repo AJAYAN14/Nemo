@@ -361,6 +361,19 @@ interface WordDao {
     fun getAllWordsByLevel(level: String): Flow<List<WordEntity>>
 
     /**
+     * 一次性订阅 N1~N5 全部未删除且未下架的活跃单词（按 ID 升序）
+     */
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE UPPER(w.level) IN ('N1', 'N2', 'N3', 'N4', 'N5')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
+    fun observeAllActiveWords(): Flow<List<WordEntity>>
+
+    /**
      * 获取按复习日期排序的已学单词 (Adaptive Strategy Optimized Query)
      * 用于自适应测试：优先选择最该复习的单词 (nextReviewDate 越小越优先)
      */

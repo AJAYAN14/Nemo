@@ -8,6 +8,7 @@ import com.jian.nemo.core.data.mapper.GrammarMapper.toStudyStateEntity
 import com.jian.nemo.core.domain.model.ContentDelist.isDelisted
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.repository.GrammarRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -226,6 +227,7 @@ class GrammarRepositoryImpl @Inject constructor(
                 println("❌ 按等级获取语法失败: levels=$levels, error=${e.message}")
                 emit(emptyList())
             }
+            .flowOn(Dispatchers.IO)
     }
 
     override suspend fun getGrammarsByIds(ids: List<Int>): List<Grammar> {

@@ -6,9 +6,10 @@ import androidx.lifecycle.viewModelScope
 import com.jian.nemo.feature.library.R
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.repository.DictionarySyncManager
+import com.jian.nemo.core.domain.repository.LibraryPreloadCache
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.WordListSnapshot
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,8 @@ enum class StudyFilter {
 data class WordListUiState(
     val isLoading: Boolean = true,
     val wordsByLevel: Map<String, List<Word>> = emptyMap(),
+    val allWords: List<Word> = emptyList(),
+    val countsByLevel: Map<String, Int> = emptyMap(),
     val error: String? = null,
     val searchQuery: String = "",
     val filterState: StudyFilter = StudyFilter.ALL,
@@ -40,16 +43,20 @@ data class WordListUiState(
 @HiltViewModel
 class WordListViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val wordRepository: WordRepository,
+    private val libraryPreloadCache: LibraryPreloadCache,
     private val syncManager: DictionarySyncManager,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    init {
+        libraryPreloadCache.ensureStartedNow()
+    }
 
     val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.SOFT_TRANSLUCENT
+            initialValue = libraryPreloadCache.settingIconStyleState.value
         )
 
     private val _searchQuery = MutableStateFlow("")
@@ -57,65 +64,34 @@ class WordListViewModel @Inject constructor(
     private val _filterState = MutableStateFlow(StudyFilter.ALL)
     private val _syncMessage = MutableStateFlow<String?>(null)
 
-    // 所有单词聚合 Flow
-    private val allWordsFlow = combine(
-        wordRepository.getAllWordsByLevel("N1"),
-        wordRepository.getAllWordsByLevel("N2"),
-        wordRepository.getAllWordsByLevel("N3"),
-        wordRepository.getAllWordsByLevel("N4"),
-        wordRepository.getAllWordsByLevel("N5")
-    ) { n1, n2, n3, n4, n5 ->
-        n1 + n2 + n3 + n4 + n5
-    }
+    private val initialUiState = buildWordListUiState(
+        snapshot = libraryPreloadCache.wordListSnapshot.value,
+        query = "",
+        filter = StudyFilter.ALL,
+        isRefreshing = false,
+        syncMessage = null
+    )
 
     val uiState: StateFlow<WordListUiState> = combine(
-        allWordsFlow,
+        libraryPreloadCache.wordListSnapshot,
         _searchQuery,
         _filterState,
         _isRefreshing,
         _syncMessage
-    ) { allWords, query, filter, isRefreshing, syncMessage ->
-        // Perform filtering on IO thread via flowOn below
-        val filteredList = allWords.filter { w ->
-            // 1. 过滤已学/未学/全部
-            val matchesFilter = when (filter) {
-                StudyFilter.ALL -> true
-                StudyFilter.LEARNED -> w.isLearned
-                StudyFilter.UNLEARNED -> !w.isLearned
-            }
-            if (!matchesFilter) return@filter false
-
-            // 2. 过滤搜索词
-            if (query.isBlank()) {
-                true
-            } else {
-                w.japanese.contains(query, ignoreCase = true) ||
-                w.hiragana.contains(query, ignoreCase = true) ||
-                w.chinese.contains(query, ignoreCase = true)
-            }
-        }
-
-        val grouped = filteredList.groupBy { it.level }
-        // Optional: Sort keys if needed, but Map keeps insertion order if LinkedHashMap (default groupBy)
-        // Usually we want N1..N5 or N5..N1. The repository calls order suggests N1..N5 but map keys might be anything.
-        // Let's rely on sorted keys in UI or ensure sorted map here.
-        // For now, simple grouping.
-
-        WordListUiState(
-            isLoading = false,
-            wordsByLevel = grouped,
-            searchQuery = query,
-            filterState = filter,
+    ) { snapshot, query, filter, isRefreshing, syncMessage ->
+        buildWordListUiState(
+            snapshot = snapshot,
+            query = query,
+            filter = filter,
             isRefreshing = isRefreshing,
-            syncMessage = syncMessage,
-            error = null
+            syncMessage = syncMessage
         )
     }
-    .flowOn(Dispatchers.Default) // Move computation to Default dispatcher
+    .flowOn(Dispatchers.Default)
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = WordListUiState(isLoading = true)
+        initialValue = initialUiState
     )
 
     fun onSearchQueryChanged(query: String) {
@@ -155,4 +131,85 @@ class WordListViewModel @Inject constructor(
     fun clearSyncMessage() {
         _syncMessage.value = null
     }
+}
+
+internal fun buildWordListUiState(
+    snapshot: WordListSnapshot,
+    query: String,
+    filter: StudyFilter,
+    isRefreshing: Boolean,
+    syncMessage: String?
+): WordListUiState {
+    if (!snapshot.isReady) {
+        return WordListUiState(
+            isLoading = true,
+            searchQuery = query,
+            filterState = filter,
+            isRefreshing = isRefreshing,
+            syncMessage = syncMessage
+        )
+    }
+
+    val (wordsByLevel, allWords, countsByLevel) = filterGroupedItems(
+        itemsByLevel = snapshot.wordsByLevel,
+        allItems = snapshot.allWords,
+        countsByLevel = snapshot.countsByLevel,
+        filter = filter,
+        isLearnedSelector = { it.isLearned },
+        query = query,
+        queryMatcher = { word, keyword ->
+            word.japanese.contains(keyword, ignoreCase = true) ||
+                word.hiragana.contains(keyword, ignoreCase = true) ||
+                word.chinese.contains(keyword, ignoreCase = true)
+        }
+    )
+
+    return WordListUiState(
+        isLoading = false,
+        wordsByLevel = wordsByLevel,
+        allWords = allWords,
+        countsByLevel = countsByLevel,
+        searchQuery = query,
+        filterState = filter,
+        isRefreshing = isRefreshing,
+        syncMessage = syncMessage,
+        error = null
+    )
+}
+
+internal inline fun <T> filterGroupedItems(
+    itemsByLevel: Map<String, List<T>>,
+    allItems: List<T>,
+    countsByLevel: Map<String, Int>,
+    filter: StudyFilter,
+    isLearnedSelector: (T) -> Boolean,
+    query: String,
+    queryMatcher: (T, String) -> Boolean
+): Triple<Map<String, List<T>>, List<T>, Map<String, Int>> {
+    if (query.isBlank() && filter == StudyFilter.ALL) {
+        return Triple(itemsByLevel, allItems, countsByLevel)
+    }
+
+    val filteredByLevel = LinkedHashMap<String, List<T>>(itemsByLevel.size)
+    val filteredCounts = LinkedHashMap<String, Int>(itemsByLevel.size)
+    val filteredAll = ArrayList<T>(allItems.size)
+
+    itemsByLevel.forEach { (level, items) ->
+        val filtered = items.filter { item ->
+            val matchesFilter = when (filter) {
+                StudyFilter.ALL -> true
+                StudyFilter.LEARNED -> isLearnedSelector(item)
+                StudyFilter.UNLEARNED -> !isLearnedSelector(item)
+            }
+            if (!matchesFilter) return@filter false
+            query.isBlank() || queryMatcher(item, query)
+        }
+        if (filtered.isNotEmpty()) {
+            filteredByLevel[level] = filtered
+            filteredCounts[level] = filtered.size
+            filteredAll.addAll(filtered)
+        }
+    }
+
+    return Triple(filteredByLevel, filteredAll, filteredCounts)
 }

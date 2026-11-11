@@ -140,6 +140,20 @@ interface GrammarDao {
     fun getGrammarsByLevelsWithUsages(levels: List<String>): Flow<List<GrammarWithUsages>>
 
     /**
+     * 一次性订阅 N1~N5 全部未删除且未下架的活跃语法（含用法与例句，按 ID 升序）
+     */
+    @Transaction
+    @Query("""
+        SELECT g.* FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE UPPER(g.grammar_level) IN ('N1', 'N2', 'N3', 'N4', 'N5')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        ORDER BY g.id ASC
+    """)
+    fun observeAllActiveGrammarsWithUsages(): Flow<List<GrammarWithUsages>>
+
+    /**
      * 获取全局新语法（未学习且未跳过，含用法）
      * 自动遵循 N5 -> N1 的进阶顺序
      */

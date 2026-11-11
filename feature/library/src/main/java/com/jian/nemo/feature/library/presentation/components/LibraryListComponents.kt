@@ -452,28 +452,30 @@ fun WordListItemPremium(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                val secondaryAnnotatedText = buildAnnotatedString {
-                    if (word.hiragana.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifJP,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                            )
-                        ) {
-                            append(word.hiragana)
+                val secondaryAnnotatedText = remember(word.hiragana, word.chinese) {
+                    buildAnnotatedString {
+                        if (word.hiragana.isNotEmpty()) {
+                            withStyle(
+                                SpanStyle(
+                                    fontFamily = NotoSerifJP,
+                                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                                )
+                            ) {
+                                append(word.hiragana)
+                            }
                         }
-                    }
-                    if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) {
-                        append(" · ")
-                    }
-                    if (word.chinese.isNotEmpty()) {
-                        withStyle(
-                            SpanStyle(
-                                fontFamily = NotoSerifSC,
-                                localeList = androidx.compose.ui.text.intl.LocaleList("zh")
-                            )
-                        ) {
-                            append(word.chinese)
+                        if (word.hiragana.isNotEmpty() && word.chinese.isNotEmpty()) {
+                            append(" · ")
+                        }
+                        if (word.chinese.isNotEmpty()) {
+                            withStyle(
+                                SpanStyle(
+                                    fontFamily = NotoSerifSC,
+                                    localeList = androidx.compose.ui.text.intl.LocaleList("zh")
+                                )
+                            ) {
+                                append(word.chinese)
+                            }
                         }
                     }
                 }
@@ -582,4 +584,65 @@ fun LibraryDiscoveryBar(
         ),
         modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     )
+}
+
+private val SkeletonTitleFractions = listOf(0.38f, 0.52f, 0.34f, 0.46f, 0.42f, 0.50f, 0.36f, 0.44f, 0.40f, 0.48f)
+private val SkeletonSubtitleFractions = listOf(0.68f, 0.56f, 0.72f, 0.62f, 0.70f, 0.58f, 0.74f, 0.64f, 0.66f, 0.60f)
+
+/**
+ * 词库列表通用 - 静态卡片骨架占位（冷启动快照尚未就绪时兜底铺屏，零动画零重绘）
+ */
+@Composable
+fun LibraryItemSkeletonCard(
+    index: Int,
+    modifier: Modifier = Modifier
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val primarySkeletonColor = MaterialTheme.colorScheme.onSurface.copy(
+        alpha = if (isDark) 0.08f else 0.06f
+    )
+    val secondarySkeletonColor = MaterialTheme.colorScheme.onSurface.copy(
+        alpha = if (isDark) 0.055f else 0.04f
+    )
+    val titleFraction = SkeletonTitleFractions[index % SkeletonTitleFractions.size]
+    val subtitleFraction = SkeletonSubtitleFractions[index % SkeletonSubtitleFractions.size]
+
+    PremiumCard(
+        onClick = null,
+        modifier = modifier
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(primarySkeletonColor, RoundedRectangle(16.dp))
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(titleFraction)
+                        .height(18.dp)
+                        .background(primarySkeletonColor, RoundedRectangle(6.dp))
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(subtitleFraction)
+                        .height(14.dp)
+                        .background(secondarySkeletonColor, RoundedRectangle(5.dp))
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .width(34.dp)
+                    .height(22.dp)
+                    .background(secondarySkeletonColor, RoundedRectangle(8.dp))
+            )
+        }
+    }
 }

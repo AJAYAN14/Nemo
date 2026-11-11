@@ -31,7 +31,9 @@ import com.jian.nemo.core.domain.repository.ContentUpdateApplier
 import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import com.jian.nemo.core.data.repository.AIWorkshopRepositoryImpl
 import com.jian.nemo.core.data.manager.DataExportManager
+import com.jian.nemo.core.data.cache.DefaultLibraryPreloadCache
 import com.jian.nemo.core.domain.repository.DataExportRepository
+import com.jian.nemo.core.domain.repository.LibraryPreloadCache
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -206,4 +208,10 @@ abstract class RepositoryModule {
     abstract fun bindTestRecordRepository(
         impl: TestRecordRepositoryImpl
     ): TestRecordRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindLibraryPreloadCache(
+        impl: DefaultLibraryPreloadCache
+    ): LibraryPreloadCache
 }

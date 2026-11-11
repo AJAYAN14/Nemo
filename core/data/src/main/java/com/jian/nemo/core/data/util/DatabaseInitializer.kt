@@ -3,6 +3,7 @@ package com.jian.nemo.core.data.util
 import android.util.Log
 import com.jian.nemo.core.data.local.NemoDatabase
 import com.jian.nemo.core.domain.repository.DictionarySyncManager
+import com.jian.nemo.core.domain.repository.LibraryPreloadCache
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +16,8 @@ import javax.inject.Singleton
 @Singleton
 class DatabaseInitializer @Inject constructor(
     private val database: NemoDatabase,
-    private val syncManager: DictionarySyncManager
+    private val syncManager: DictionarySyncManager,
+    private val libraryPreloadCache: LibraryPreloadCache
 ) {
     suspend fun initialize() {
         try {
@@ -26,6 +28,9 @@ class DatabaseInitializer @Inject constructor(
             
             // 2. 启动时词库同步检查（检测版本并增量下载）
             syncManager.performDictionarySync()
+
+            // 3. 在启动初始化链末尾非阻塞激活词库内存快照预热
+            libraryPreloadCache.warmUp()
             
             Log.d(TAG, "Database initialization and sync check completed")
         } catch (e: Exception) {

@@ -845,16 +845,44 @@ fun NemoNavHost(
 
         // 单词列表
         composable(NavDestination.WORD_LIST) {
-            com.jian.nemo.feature.library.presentation.list.WordListScreen(
-                navController = navController
-            )
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            compositingStrategy = if (transition.currentState != transition.targetState) {
+                                CompositingStrategy.Offscreen
+                            } else {
+                                CompositingStrategy.Auto
+                            }
+                        }
+                ) {
+                    com.jian.nemo.feature.library.presentation.list.WordListScreen(
+                        navController = navController
+                    )
+                }
+            }
         }
 
         // 语法列表
         composable(NavDestination.GRAMMAR_LIST) {
-            com.jian.nemo.feature.library.presentation.list.GrammarListScreen(
-                navController = navController
-            )
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            compositingStrategy = if (transition.currentState != transition.targetState) {
+                                CompositingStrategy.Offscreen
+                            } else {
+                                CompositingStrategy.Auto
+                            }
+                        }
+                ) {
+                    com.jian.nemo.feature.library.presentation.list.GrammarListScreen(
+                        navController = navController
+                    )
+                }
+            }
         }
 
         composable(

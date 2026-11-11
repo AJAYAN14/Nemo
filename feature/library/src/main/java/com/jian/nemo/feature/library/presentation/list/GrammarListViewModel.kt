@@ -4,9 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.feature.library.R
-import com.jian.nemo.core.domain.model.Grammar
-import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.DictionarySyncManager
+import com.jian.nemo.core.domain.repository.GrammarListSnapshot
+import com.jian.nemo.core.domain.repository.GrammarPreloadItem
+import com.jian.nemo.core.domain.repository.LibraryPreloadCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,9 @@ import com.jian.nemo.core.domain.repository.SettingsRepository
  * 语法列表UI状态
  */
 data class GrammarListUiState(
-    val grammarsByLevel: Map<String, List<Grammar>> = emptyMap(),
+    val grammarsByLevel: Map<String, List<GrammarPreloadItem>> = emptyMap(),
+    val allGrammars: List<GrammarPreloadItem> = emptyList(),
+    val countsByLevel: Map<String, Int> = emptyMap(),
     val isLoading: Boolean = true,
     val error: String? = null,
     val searchQuery: String = "",
@@ -42,16 +45,20 @@ data class GrammarListUiState(
 @HiltViewModel
 class GrammarListViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val grammarRepository: GrammarRepository,
+    private val libraryPreloadCache: LibraryPreloadCache,
     private val syncManager: DictionarySyncManager,
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    init {
+        libraryPreloadCache.ensureStartedNow()
+    }
 
     val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SettingIconStyle.SOFT_TRANSLUCENT
+            initialValue = libraryPreloadCache.settingIconStyleState.value
         )
 
     private val _searchQuery = MutableStateFlow("")
@@ -59,66 +66,34 @@ class GrammarListViewModel @Inject constructor(
     private val _filterState = MutableStateFlow(StudyFilter.ALL)
     private val _syncMessage = MutableStateFlow<String?>(null)
 
+    private val initialUiState = buildGrammarListUiState(
+        snapshot = libraryPreloadCache.grammarListSnapshot.value,
+        query = "",
+        filter = StudyFilter.ALL,
+        isRefreshing = false,
+        syncMessage = null
+    )
+
     val uiState: StateFlow<GrammarListUiState> = combine(
-        grammarRepository.getGrammarsByLevels(listOf("N1", "N2", "N3", "N4", "N5")),
+        libraryPreloadCache.grammarListSnapshot,
         _searchQuery,
         _filterState,
         _isRefreshing,
         _syncMessage
-    ) { allGrammars, query, filter, isRefreshing, syncMessage ->
-        // 过滤
-        val filteredList = allGrammars.filter { g ->
-            // 1. 过滤已学/未学/全部
-            val matchesFilter = when (filter) {
-                StudyFilter.ALL -> true
-                StudyFilter.LEARNED -> g.isLearned
-                StudyFilter.UNLEARNED -> !g.isLearned
-            }
-            if (!matchesFilter) return@filter false
-
-            // 2. 过滤搜索词
-            if (query.isBlank()) {
-                true
-            } else {
-                // 1. 匹配语法标题
-                if (GrammarSearchUtils.isMatch(g.grammar, query)) {
-                    true
-                } else {
-                    // 2. 匹配用法详情 (解释、接续、笔记)
-                    g.usages.any { usage ->
-                        GrammarSearchUtils.isMatch(usage.explanation, query) ||
-                        GrammarSearchUtils.isMatch(usage.connection, query) ||
-                        (usage.notes?.let { GrammarSearchUtils.isMatch(it, query) } ?: false) ||
-                        // 3. 匹配例句 (文本、翻译)
-                        usage.examples.any { ex ->
-                            GrammarSearchUtils.isMatch(ex.sentence, query) ||
-                            ex.translation.contains(query, ignoreCase = true)
-                        }
-                    }
-                }
-            }
-        }
-
-        // 分组 (N1, N2...)
-        // 这里不需要 toSortedMap，因为Map本身顺序在UI层处理，
-        // 或者可以在这里保证顺序。Map.groupBy 可能会乱序。
-        // 为了安全起见，UI层会再排一次 Key。
-        val grouped = filteredList.groupBy { it.grammarLevel }
-
-        GrammarListUiState(
-            grammarsByLevel = grouped,
-            isLoading = false,
-            searchQuery = query,
-            filterState = filter,
+    ) { snapshot, query, filter, isRefreshing, syncMessage ->
+        buildGrammarListUiState(
+            snapshot = snapshot,
+            query = query,
+            filter = filter,
             isRefreshing = isRefreshing,
             syncMessage = syncMessage
         )
     }
-    .flowOn(Dispatchers.Default) // 后台计算
+    .flowOn(Dispatchers.Default)
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = GrammarListUiState(isLoading = true)
+        initialValue = initialUiState
     )
 
     fun onSearchQueryChanged(query: String) {
@@ -158,4 +133,55 @@ class GrammarListViewModel @Inject constructor(
     fun clearSyncMessage() {
         _syncMessage.value = null
     }
+}
+
+internal fun buildGrammarListUiState(
+    snapshot: GrammarListSnapshot,
+    query: String,
+    filter: StudyFilter,
+    isRefreshing: Boolean,
+    syncMessage: String?
+): GrammarListUiState {
+    if (!snapshot.isReady) {
+        return GrammarListUiState(
+            isLoading = true,
+            searchQuery = query,
+            filterState = filter,
+            isRefreshing = isRefreshing,
+            syncMessage = syncMessage
+        )
+    }
+
+    val (grammarsByLevel, allGrammars, countsByLevel) = filterGroupedItems(
+        itemsByLevel = snapshot.grammarsByLevel,
+        allItems = snapshot.allGrammars,
+        countsByLevel = snapshot.countsByLevel,
+        filter = filter,
+        isLearnedSelector = { it.grammar.isLearned },
+        query = query,
+        queryMatcher = { item, keyword ->
+            val g = item.grammar
+            GrammarSearchUtils.isMatch(g.grammar, keyword) ||
+                g.usages.any { usage ->
+                    GrammarSearchUtils.isMatch(usage.explanation, keyword) ||
+                        GrammarSearchUtils.isMatch(usage.connection, keyword) ||
+                        (usage.notes?.let { GrammarSearchUtils.isMatch(it, keyword) } ?: false) ||
+                        usage.examples.any { ex ->
+                            GrammarSearchUtils.isMatch(ex.sentence, keyword) ||
+                                ex.translation.contains(keyword, ignoreCase = true)
+                        }
+                }
+        }
+    )
+
+    return GrammarListUiState(
+        grammarsByLevel = grammarsByLevel,
+        allGrammars = allGrammars,
+        countsByLevel = countsByLevel,
+        isLoading = false,
+        searchQuery = query,
+        filterState = filter,
+        isRefreshing = isRefreshing,
+        syncMessage = syncMessage
+    )
 }

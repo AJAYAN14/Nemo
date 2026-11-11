@@ -30,7 +30,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.animateListItem
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,14 +54,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.jian.nemo.core.designsystem.theme.*
-import com.jian.nemo.core.domain.model.Grammar
+import com.jian.nemo.core.domain.repository.GrammarPreloadItem
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.jian.nemo.core.ui.navigation.NavDestination
-import com.jian.nemo.core.common.util.GrammarSearchUtils
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -70,6 +68,7 @@ import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
 import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
+import com.jian.nemo.feature.library.presentation.components.LibraryItemSkeletonCard
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionButton
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionOverlay
@@ -116,17 +115,18 @@ fun GrammarListScreen(
         val filteredGrammarsByLevel = uiState.grammarsByLevel
         val searchQuery = uiState.searchQuery
 
-        // 当前选中的语法扁平化列表（直接展示所有语法，无手风琴折叠阻碍）
-        val currentGrammars = remember(filteredGrammarsByLevel, selectedLevel) {
+        // 当前选中的语法扁平化列表（ALL 视图直接复用后台预平铺快照，O(1) 零主线程拼接）
+        val currentGrammars = remember(uiState.allGrammars, filteredGrammarsByLevel, selectedLevel) {
             if (selectedLevel == "ALL") {
-                val sortedKeys = filteredGrammarsByLevel.keys.sorted()
-                sortedKeys.flatMap { filteredGrammarsByLevel[it] ?: emptyList() }
+                uiState.allGrammars
             } else {
                 filteredGrammarsByLevel[selectedLevel] ?: emptyList()
             }
         }
 
         val backdrop = rememberLayerBackdrop()
+        val isTransitionSettled = rememberIsTransitionSettled()
+        val activeBackdrop = if (isTransitionSettled) backdrop else null
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -135,11 +135,11 @@ fun GrammarListScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
+        // 1. 底层全量画布（转场稳定后开启背景录制，提供真实折射源）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
         ) {
             // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
@@ -148,32 +148,27 @@ fun GrammarListScreen(
                     .background(backgroundColor)
             )
 
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    NemoChasingDotsLoader()
-                }
-            } else {
-                val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { viewModel.onRefresh() },
-                    state = pullToRefreshState,
-                    indicator = {
-                        androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = statusBarTop + 60.dp),
-                            isRefreshing = uiState.isRefreshing,
-                            state = pullToRefreshState,
-                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
+            val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.onRefresh() },
+                state = pullToRefreshState,
+                indicator = {
+                    androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = statusBarTop + 60.dp),
+                        isRefreshing = uiState.isRefreshing,
+                        state = pullToRefreshState,
+                        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
@@ -191,8 +186,15 @@ fun GrammarListScreen(
                         )
                     }
 
-                    // 2. 语法直接平铺列表
-                    if (currentGrammars.isEmpty()) {
+                    // 2. 冷启动骨架屏占位、空状态或语法平铺列表
+                    if (uiState.isLoading) {
+                        items(10, key = { index -> "grammar_skeleton_$index" }) { index ->
+                            LibraryItemSkeletonCard(
+                                index = index,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    } else if (currentGrammars.isEmpty()) {
                         item(key = "empty_state") {
                             Box(
                                 modifier = Modifier
@@ -225,21 +227,19 @@ fun GrammarListScreen(
                             }
                         }
                     } else {
-                        items(currentGrammars, key = { it.id }) { grammar ->
-                            Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
-                                GrammarListItemPremium(
-                                    grammar = grammar,
-                                    onClick = { navController.navigate(NavDestination.grammarDetail(grammar.id)) }
-                                )
-                            }
+                        items(currentGrammars, key = { it.grammar.id }) { item ->
+                            GrammarListItemPremium(
+                                item = item,
+                                onClick = { navController.navigate(NavDestination.grammarDetail(item.grammar.id)) },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
                         }
                     }
                 }
             }
         }
-    }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 activeBackdrop）
         FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
             val headerTitle = if (selectedLevel == "ALL") {
                 stringResource(R.string.lib_grammar_list_header_title)
@@ -250,13 +250,13 @@ fun GrammarListScreen(
                 title = headerTitle,
                 onBack = { navController.navigateUp() },
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = activeBackdrop,
                 backButtonSize = 48.dp,
                 actions = {
                     LibraryLevelSelectionButton(
                         isExpanded = isMenuExpanded,
                         onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = backdrop
+                        backdrop = activeBackdrop
                     )
                 }
             )
@@ -265,21 +265,19 @@ fun GrammarListScreen(
         // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏红）
         LibraryScrollToTopButton(
             lazyListState = lazyListState,
-            backdrop = backdrop,
+            backdrop = activeBackdrop,
             isMenuExpanded = isMenuExpanded,
             bottomPadding = navBarBottom + 20.dp
         )
 
-        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
+        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 activeBackdrop，彻底激活物理透镜折射)
         LibraryLevelSelectionOverlay(
             isVisible = isMenuExpanded,
             onDismiss = { isMenuExpanded = false },
             selectedLevel = selectedLevel,
             onLevelSelected = { selectedLevel = it },
-            countsByLevel = remember(filteredGrammarsByLevel) {
-                filteredGrammarsByLevel.mapValues { it.value.size }
-            },
-            backdrop = backdrop,
+            countsByLevel = uiState.countsByLevel,
+            backdrop = activeBackdrop,
             onScrollToTop = {
                 coroutineScope.launch { lazyListState.scrollToItem(0) }
             },
@@ -331,14 +329,22 @@ private fun getLevelColor(level: String): Color {
 }
 
 @Composable
-private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
+private fun GrammarListItemPremium(
+    item: GrammarPreloadItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val grammar = item.grammar
     val iconStyle = LocalSettingIconStyle.current
     val avatarColor = AvatarPalette[kotlin.math.abs(grammar.id.hashCode()) % AvatarPalette.size]
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) avatarColor.copy(alpha = 0.15f) else avatarColor
     val contentColor = if (isSoftTranslucent) avatarColor else Color.White
+    val formattedTitle = remember(item.cleanedTitle) {
+        formatMixedCnHnString(item.cleanedTitle)
+    }
 
-    PremiumCard(onClick = onClick) {
+    PremiumCard(onClick = onClick, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
@@ -359,14 +365,14 @@ private fun GrammarListItemPremium(grammar: Grammar, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = formatMixedCnHnString(GrammarSearchUtils.cleanRubi(grammar.grammar)),
+                    text = formattedTitle,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.W800,
                     maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Text(
-                    text = GrammarSearchUtils.cleanRubi(grammar.getFirstExplanation()),
+                    text = item.cleanedFirstExplanation,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -452,7 +458,11 @@ private fun EmptyState(
 }
 
 @Composable
-private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable ColumnScope.() -> Unit) {
+private fun PremiumCard(
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(if (isPressed) 0.98f else 1f, label = "scale")
@@ -462,7 +472,7 @@ private fun PremiumCard(onClick: (() -> Unit)? = null, content: @Composable Colu
         enabled = onClick != null,
         shape = RoundedRectangle(22.dp),
         color = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 22.dp, isDark = isDark)
             .graphicsLayer { scaleX = scale; scaleY = scale },

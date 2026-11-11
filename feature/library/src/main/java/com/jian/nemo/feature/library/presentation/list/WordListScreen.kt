@@ -31,7 +31,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.animateListItem
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,7 +61,6 @@ import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.jian.nemo.core.ui.navigation.NavDestination
-import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -70,6 +69,7 @@ import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
 import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
+import com.jian.nemo.feature.library.presentation.components.LibraryItemSkeletonCard
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionButton
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionOverlay
@@ -117,17 +117,18 @@ fun WordListScreen(
         val filteredWordsByLevel = uiState.wordsByLevel
         val searchQuery = uiState.searchQuery
 
-        // 当前选中的单词扁平化列表（直接展示所有单词，无手风琴折叠阻碍）
-        val currentWords = remember(filteredWordsByLevel, selectedLevel) {
+        // 当前选中的单词扁平化列表（ALL 视图直接复用后台预平铺快照，O(1) 零主线程拼接）
+        val currentWords = remember(uiState.allWords, filteredWordsByLevel, selectedLevel) {
             if (selectedLevel == "ALL") {
-                val sortedKeys = filteredWordsByLevel.keys.sorted()
-                sortedKeys.flatMap { filteredWordsByLevel[it] ?: emptyList() }
+                uiState.allWords
             } else {
                 filteredWordsByLevel[selectedLevel] ?: emptyList()
             }
         }
 
         val backdrop = rememberLayerBackdrop()
+        val isTransitionSettled = rememberIsTransitionSettled()
+        val activeBackdrop = if (isTransitionSettled) backdrop else null
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
         val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -136,11 +137,11 @@ fun WordListScreen(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
+        // 1. 底层全量画布（转场稳定后开启背景录制，提供真实折射源）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
         ) {
             // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
@@ -149,32 +150,27 @@ fun WordListScreen(
                     .background(backgroundColor)
             )
 
-            if (uiState.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    NemoChasingDotsLoader()
-                }
-            } else {
-                val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
-                PullToRefreshBox(
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = { viewModel.onRefresh() },
-                    state = pullToRefreshState,
-                    indicator = {
-                        androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .padding(top = statusBarTop + 60.dp),
-                            isRefreshing = uiState.isRefreshing,
-                            state = pullToRefreshState,
-                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    LazyColumn(
-                        state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
+            val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.onRefresh() },
+                state = pullToRefreshState,
+                indicator = {
+                    androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = statusBarTop + 60.dp),
+                        isRefreshing = uiState.isRefreshing,
+                        state = pullToRefreshState,
+                        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
                         top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
@@ -192,8 +188,15 @@ fun WordListScreen(
                         )
                     }
 
-                    // 2. 空状态或直接平铺展示单词卡片
-                    if (currentWords.isEmpty()) {
+                    // 2. 冷启动骨架屏占位、空状态或平铺单词卡片
+                    if (uiState.isLoading) {
+                        items(10, key = { index -> "word_skeleton_$index" }) { index ->
+                            LibraryItemSkeletonCard(
+                                index = index,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    } else if (currentWords.isEmpty()) {
                         item(key = "empty_state") {
                             Box(
                                 modifier = Modifier
@@ -227,20 +230,18 @@ fun WordListScreen(
                         }
                     } else {
                         items(currentWords, key = { it.id }) { word ->
-                            Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
-                                WordListItemPremium(
-                                    word = word,
-                                    onClick = { navController.navigate(NavDestination.wordDetail(word.id)) }
-                                )
-                            }
+                            WordListItemPremium(
+                                word = word,
+                                onClick = { navController.navigate(NavDestination.wordDetail(word.id)) },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
                         }
                     }
                 }
             }
         }
-    }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 activeBackdrop）
         FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
             val headerTitle = if (selectedLevel == "ALL") {
                 stringResource(R.string.lib_word_list_header_title)
@@ -251,13 +252,13 @@ fun WordListScreen(
                 title = headerTitle,
                 onBack = { navController.navigateUp() },
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = activeBackdrop,
                 backButtonSize = 48.dp,
                 actions = {
                     LibraryLevelSelectionButton(
                         isExpanded = isMenuExpanded,
                         onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = backdrop
+                        backdrop = activeBackdrop
                     )
                 }
             )
@@ -266,21 +267,19 @@ fun WordListScreen(
         // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏红）
         LibraryScrollToTopButton(
             lazyListState = lazyListState,
-            backdrop = backdrop,
+            backdrop = activeBackdrop,
             isMenuExpanded = isMenuExpanded,
             bottomPadding = navBarBottom + 20.dp
         )
 
-        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 backdrop，彻底激活物理透镜折射)
+        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 activeBackdrop，彻底激活物理透镜折射)
         LibraryLevelSelectionOverlay(
             isVisible = isMenuExpanded,
             onDismiss = { isMenuExpanded = false },
             selectedLevel = selectedLevel,
             onLevelSelected = { selectedLevel = it },
-            countsByLevel = remember(filteredWordsByLevel) {
-                filteredWordsByLevel.mapValues { it.value.size }
-            },
-            backdrop = backdrop,
+            countsByLevel = uiState.countsByLevel,
+            backdrop = activeBackdrop,
             onScrollToTop = {
                 coroutineScope.launch { lazyListState.scrollToItem(0) }
             },

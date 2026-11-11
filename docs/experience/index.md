@@ -37,6 +37,7 @@
 | 26 | [应用版本发布全流程闭环与后端配置及GitHub-Release避坑指南](file:///e:/Android/Nemo/docs/experience/26-应用版本发布全流程闭环与后端配置及GitHub-Release避坑指南.md) | `README.md`, `app_config`, `GitHub Release API`, `git tag` / 改后端、改GitHub、Release发布、UTF-8防乱码、官方CDN直链、检查清单 | **版本资产与发行元数据强绑定公理**：版本发布必须是 Tag、Release 元数据与二进制编译制品三位一体的闭环交付，杜绝仅有代码标签无发行制品的半截发布。 | 活跃 |
 | 27 | [IosColors规范化重命名与50音图纯色卡片设计落地经验](file:///e:/Android/Nemo/docs/experience/27-IosColors规范化重命名与50音图纯色卡片设计落地经验.md) | `Color.kt`, `KanaChartScreen.kt`, `SystemColors` / 消除平台字符、统一系统色系、50音图每行独占色彩、明度反色自适应 | **单一真实源中立规范与动态光学对比度公理**：设计系统命名中立脱离平台特定字符，纯色块依据背景明度动态判定前景反色，兼顾冲击力与WCAG AAA级可读性。 | 活跃 |
 | 28 | [Compose嵌套动画可见性与ViewModel跨路由时序避坑指南](file:///e:/Android/Nemo/docs/experience/28-Compose嵌套动画可见性与ViewModel跨路由时序避坑指南.md) | `ThemeSettingsScreen.kt`, `NemoNavHost.kt`, `SettingsViewModel.kt` / 嵌套动画独立触发、首帧异步时序差、ViewModel跨路由共享、复合可见性守卫 | **父子可见性全链路收敛与单一数据源热缓存公理**：嵌套子项可见性必须无条件与父状态复合绑定；连续子路由必须优先复用已就绪的内存数据流，消除冷启动帧跳动。 | 活跃 |
+| 29 | [词库列表后台预加载与首帧转场防掉帧避坑指南](file:///e:/Android/Nemo/docs/experience/29-词库列表后台预加载与首帧转场防掉帧避坑指南.md) | `DefaultLibraryPreloadCache`, `WordListViewModel`, `GrammarListViewModel`, `NemoNavHost.kt` / SQLite 999限制、后台预热保鲜、离屏合成熔断、静态骨架屏兜底 | **全量关联规避长 IN 列表与转场熔断公理**：全量合并查询改用无参状态字典映射并防抖保鲜；UI 转场启用 `Offscreen` 合成并熔断 `Backdrop` 重采样，冷启动未就绪以静态骨架卡片铺屏兜底。 | 活跃 |
 
 ---
 
