@@ -549,10 +549,15 @@ class SessionLifecycleDelegate(
             }
         }
 
-        // 异步加载今日待复习与明日到期复习卡片预测
+        // 异步加载今日待复习、明日到期复习卡片预测及复习上限
         val todayEpoch = sessionState.lockedDayOrToday()
         val tomorrowEpoch = todayEpoch + 1
         scope.launch {
+            launch {
+                settingsRepository.maxDailyReviewsFlow.collect { maxReviews ->
+                    stateUpdater.update { it.copy(maxDailyReviews = maxReviews) }
+                }
+            }
             if (mode == LearningMode.Word) {
                 launch {
                     wordRepository.getDueWordsCount(todayEpoch).collect { count ->

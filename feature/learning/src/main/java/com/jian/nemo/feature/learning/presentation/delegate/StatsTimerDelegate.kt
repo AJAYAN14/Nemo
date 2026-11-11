@@ -144,6 +144,7 @@ class StatsTimerDelegate(
                 it.copy(
                     sessionNewCount = newCount,
                     sessionReviewCount = reviewCount,
+                    todayReviewedCount = reviewCount,
                     sessionRelearnCount = sessionStatsManager.sessionRelearnCount,
                     sessionMaxCombo = sessionStatsManager.maxCombo
                 )

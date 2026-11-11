@@ -110,6 +110,8 @@ data class LearningUiState(
     val sessionRelearnCount: Int = 0,
     val tomorrowReviewForecastCount: Int = 0,
     val todayDueReviewCount: Int = 0,
+    val maxDailyReviews: Int = 0,
+    val todayReviewedCount: Int = 0,
     val dailyStreak: Int = 1,
     val settingIconStyle: com.jian.nemo.core.domain.repository.SettingIconStyle = com.jian.nemo.core.domain.repository.SettingIconStyle.SOFT_TRANSLUCENT
 ) {
@@ -118,6 +120,31 @@ data class LearningUiState(
             LearningMode.Word -> currentWord != null || wordList.isNotEmpty()
             LearningMode.Grammar -> currentGrammar != null || grammarList.isNotEmpty()
         }
+
+    /** 今日新词/语法目标是否已达成 */
+    val isDailyNewGoalMet: Boolean
+        get() = if (dailyGoal > 0) completedToday >= dailyGoal else true
+
+    /** 今日剩余可复习配额（受每日复习上限与实际到期待复习量约束） */
+    val remainingDailyReviewCount: Int
+        get() {
+            if (todayDueReviewCount <= 0) return 0
+            if (maxDailyReviews <= 0) return todayDueReviewCount
+            val remainingQuota = (maxDailyReviews - todayReviewedCount).coerceAtLeast(0)
+            return minOf(todayDueReviewCount, remainingQuota)
+        }
+
+    /** 今日是否还有未完成的常规复习任务 */
+    val hasRemainingReviewTasks: Boolean
+        get() = remainingDailyReviewCount > 0
+
+    /** 今日全部常规任务（新学与复习）是否已彻底完成 */
+    val isTodayFullyCompleted: Boolean
+        get() = isDailyNewGoalMet && !hasRemainingReviewTasks && !hasPendingItems
+
+    /** 新学目标已达成，但仍有今日复习任务待继续 */
+    val isNewGoalMetWithReviewPending: Boolean
+        get() = isDailyNewGoalMet && hasRemainingReviewTasks && !hasPendingItems
 
     val shouldShowDailyGoalMet: Boolean
         get() = completedToday >= dailyGoal && !hasPendingItems

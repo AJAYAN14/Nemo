@@ -124,4 +124,64 @@ class LearningUiStateTest {
         org.junit.Assert.assertEquals(5, allRelearnState.sessionTotalCount)
         org.junit.Assert.assertEquals(0, allRelearnState.smoothReviewCount)
     }
+
+    @Test
+    fun `new goal met with review pending should keep review tasks active`() {
+        // 用户场景：新学目标5完成，今日复习55/100，待复习词库仍有93词
+        val state = LearningUiState(
+            dailyGoal = 5,
+            completedToday = 5,
+            todayReviewedCount = 55,
+            maxDailyReviews = 100,
+            todayDueReviewCount = 93,
+            currentWord = null,
+            wordList = emptyList()
+        )
+
+        assertTrue(state.isDailyNewGoalMet)
+        org.junit.Assert.assertEquals(45, state.remainingDailyReviewCount)
+        assertTrue(state.hasRemainingReviewTasks)
+        assertTrue(state.isNewGoalMetWithReviewPending)
+        assertFalse(state.isTodayFullyCompleted)
+    }
+
+    @Test
+    fun `all tasks completed when reviews reach daily limit`() {
+        // 今日新词达标且复习已达每日100上限
+        val state = LearningUiState(
+            dailyGoal = 5,
+            completedToday = 5,
+            todayReviewedCount = 100,
+            maxDailyReviews = 100,
+            todayDueReviewCount = 48,
+            currentWord = null,
+            wordList = emptyList()
+        )
+
+        assertTrue(state.isDailyNewGoalMet)
+        org.junit.Assert.assertEquals(0, state.remainingDailyReviewCount)
+        assertFalse(state.hasRemainingReviewTasks)
+        assertFalse(state.isNewGoalMetWithReviewPending)
+        assertTrue(state.isTodayFullyCompleted)
+    }
+
+    @Test
+    fun `all tasks completed when due review pool is cleared`() {
+        // 今日新词达标且待复习池已清空为0
+        val state = LearningUiState(
+            dailyGoal = 5,
+            completedToday = 5,
+            todayReviewedCount = 40,
+            maxDailyReviews = 100,
+            todayDueReviewCount = 0,
+            currentWord = null,
+            wordList = emptyList()
+        )
+
+        assertTrue(state.isDailyNewGoalMet)
+        org.junit.Assert.assertEquals(0, state.remainingDailyReviewCount)
+        assertFalse(state.hasRemainingReviewTasks)
+        assertFalse(state.isNewGoalMetWithReviewPending)
+        assertTrue(state.isTodayFullyCompleted)
+    }
 }

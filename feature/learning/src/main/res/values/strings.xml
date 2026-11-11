@@ -301,6 +301,12 @@
     <string name="learn_screen_dialog_delay_title">显示答案等待时长</string>
     <string name="learn_screen_finish_daily_goal_title">今日任务达成！</string>
     <string name="learn_screen_finish_daily_goal_subtitle">坚持就是胜利，明天继续加油</string>
+    <string name="learn_screen_finish_all_tasks_completed_title">今日任务全部达成！🎉</string>
+    <string name="learn_screen_finish_all_tasks_completed_subtitle">太棒了！今日新词与复习计划已全部完成，继续保持！</string>
+    <string name="learn_screen_finish_new_words_met_review_pending_title">今日新词目标达成！🎉</string>
+    <string name="learn_screen_finish_new_words_met_review_pending_subtitle">新词任务已完成，今日还剩 %1$d 词待复习，继续加油！</string>
+    <string name="learn_screen_finish_new_grammars_met_review_pending_title">今日新学语法达成！🎉</string>
+    <string name="learn_screen_finish_new_grammars_met_review_pending_subtitle">新学任务已完成，今日还剩 %1$d 项待复习，继续加油！</string>
     <string name="learn_screen_finish_micro_session_title">本组微会话完成！</string>
     <string name="learn_screen_finish_micro_session_words_subtitle">已连续打卡 %1$d 天，继续完成今日目标吧（还差 %2$d 词）</string>
     <string name="learn_screen_finish_micro_session_grammars_subtitle">已连续打卡 %1$d 天，继续完成今日目标吧（还差 %2$d 项）</string>

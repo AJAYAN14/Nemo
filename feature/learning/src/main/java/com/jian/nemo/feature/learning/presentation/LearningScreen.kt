@@ -733,10 +733,10 @@ fun WordLearningContent(
             }
         } else if (uiState.status != LearningStatus.Loading && uiState.status != LearningStatus.Idle) {
             val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
-            if (uiState.shouldShowDailyGoalMet) {
+            if (uiState.isTodayFullyCompleted) {
                 LearningFinishedContent(
-                    title = stringResource(R.string.learn_screen_finish_daily_goal_title),
-                    subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
+                    title = stringResource(R.string.learn_screen_finish_all_tasks_completed_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_all_tasks_completed_subtitle),
                     completedToday = uiState.completedToday,
                     dailyGoal = uiState.dailyGoal,
                     dailyStreak = uiState.dailyStreak,
@@ -753,6 +753,38 @@ fun WordLearningContent(
                         onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
                     },
                     onBackClick = onBackClick,
+                    showBonusCard = true,
+                    showNextGroupButton = false,
+                    topContentPadding = finishTopPadding
+                )
+            } else if (uiState.isNewGoalMetWithReviewPending) {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_new_words_met_review_pending_title),
+                    subtitle = stringResource(
+                        R.string.learn_screen_finish_new_words_met_review_pending_subtitle,
+                        uiState.remainingDailyReviewCount
+                    ),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Word))
+                    },
+                    onBackClick = onBackClick,
+                    showBonusCard = false,
+                    showNextGroupButton = true,
+                    onNextGroupClick = {
+                        onEvent(LearningEvent.StartLearning(mode = LearningMode.Word))
+                    },
                     topContentPadding = finishTopPadding
                 )
             } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
@@ -910,10 +942,10 @@ fun GrammarLearningContent(
             }
         } else if (uiState.status != LearningStatus.Loading && uiState.status != LearningStatus.Idle) {
             val finishTopPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 60.dp + 16.dp
-            if (uiState.shouldShowDailyGoalMet) {
+            if (uiState.isTodayFullyCompleted) {
                 LearningFinishedContent(
-                    title = stringResource(R.string.learn_screen_finish_daily_goal_title),
-                    subtitle = stringResource(R.string.learn_screen_finish_daily_goal_subtitle),
+                    title = stringResource(R.string.learn_screen_finish_all_tasks_completed_title),
+                    subtitle = stringResource(R.string.learn_screen_finish_all_tasks_completed_subtitle),
                     completedToday = uiState.completedToday,
                     dailyGoal = uiState.dailyGoal,
                     dailyStreak = uiState.dailyStreak,
@@ -930,6 +962,38 @@ fun GrammarLearningContent(
                         onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
                     },
                     onBackClick = onBackClick,
+                    showBonusCard = true,
+                    showNextGroupButton = false,
+                    topContentPadding = finishTopPadding
+                )
+            } else if (uiState.isNewGoalMetWithReviewPending) {
+                LearningFinishedContent(
+                    title = stringResource(R.string.learn_screen_finish_new_grammars_met_review_pending_title),
+                    subtitle = stringResource(
+                        R.string.learn_screen_finish_new_grammars_met_review_pending_subtitle,
+                        uiState.remainingDailyReviewCount
+                    ),
+                    completedToday = uiState.completedToday,
+                    dailyGoal = uiState.dailyGoal,
+                    dailyStreak = uiState.dailyStreak,
+                    sessionDurationSeconds = uiState.sessionDurationSeconds,
+                    sessionMaxCombo = uiState.sessionMaxCombo,
+                    sessionNewCount = uiState.sessionNewCount,
+                    sessionReviewCount = uiState.sessionReviewCount,
+                    sessionRelearnCount = uiState.sessionRelearnCount,
+                    tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
+                    todayDueReviewCount = uiState.todayDueReviewCount,
+                    showShareDialog = showShareDialog,
+                    onDismissShareDialog = onDismissShareDialog,
+                    onConfirmBonus = { bonusCount, bonusMode ->
+                        onEvent(LearningEvent.StartBonusLearning(count = bonusCount, bonusMode = bonusMode, mode = LearningMode.Grammar))
+                    },
+                    onBackClick = onBackClick,
+                    showBonusCard = false,
+                    showNextGroupButton = true,
+                    onNextGroupClick = {
+                        onEvent(LearningEvent.StartLearning(mode = LearningMode.Grammar))
+                    },
                     topContentPadding = finishTopPadding
                 )
             } else if (uiState.sessionReviewCount + uiState.sessionNewCount + uiState.sessionRelearnCount > 0) {
