@@ -635,10 +635,22 @@ fun NemoNavHost(
         // 关于 Nemo 页面
         composable(NavDestination.ABOUT) {
             SubScreenContainer {
-                AboutScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onCheckUpdate = onCheckUpdate
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            compositingStrategy = if (transition.currentState != transition.targetState) {
+                                CompositingStrategy.Offscreen
+                            } else {
+                                CompositingStrategy.Auto
+                            }
+                        }
+                ) {
+                    AboutScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        onCheckUpdate = onCheckUpdate
+                    )
+                }
             }
         }
 

@@ -20,11 +20,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import kotlinx.coroutines.delay
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -191,6 +196,28 @@ fun SettingsScreen(
     val density = LocalDensity.current
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
+    val configuration = LocalConfiguration.current
+    val appContext = LocalContext.current.applicationContext
+    var resumeTrigger by remember { mutableIntStateOf(0) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        resumeTrigger++
+    }
+
+    // 元数据仅读取已加载的内存级配置与版本信息，进入设置页即刻异步预热，避免快速点击关于页时首帧空白
+    LaunchedEffect(appContext) {
+        AboutViewModel.preloadMetadata(appContext)
+    }
+
+    LaunchedEffect(configuration.screenWidthDp, density.density, resumeTrigger) {
+        val targetLogoPx = AboutLogoCache.calculateTargetSizePx(
+            screenWidthDp = configuration.screenWidthDp,
+            density = density.density
+        )
+        if (AboutLogoCache.getCached(targetLogoPx) != null) return@LaunchedEffect
+        delay(350L)
+        AboutLogoCache.preload(appContext, targetLogoPx)
+    }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(

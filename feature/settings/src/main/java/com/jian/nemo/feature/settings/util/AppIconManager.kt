@@ -27,9 +27,7 @@ object AppIconManager {
 
     // 历史遗留别名白名单（用于平滑迁移并自动禁用）
     private val LEGACY_ALIASES = listOf(
-        "com.jian.nemo.MainActivityMonochrome",
-        "com.jian.nemo.MainActivityFrogCheer",
-        "com.jian.nemo.MainActivityFrogNinja"
+        "com.jian.nemo.MainActivityMonochrome"
     )
 
     fun switchIcon(context: Context, targetStyle: AppIconStyle) {

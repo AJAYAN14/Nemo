@@ -69,7 +69,7 @@ import kotlinx.coroutines.launch
  * 2. 居中深海呼吸环境光晕 (Ambient Aurora Glow)，全屏自然消融弥散，绝无圆形硬边
  * 3. 6 组四周漂浮彩色小几何图形（心形、三角、圆角方框等）入场 Pop 与永续浮动
  * 4. 中央 "Welcome!" 逐字弹性弹出与下方微笑弧线顺滑绘制
- * 5. 屏幕底部品牌动效：饱满蛙 Logo 弹出 -> Push 抖动 -> 身后吐出 Nemo 英文并竖起分割线
+ * 5. 屏幕底部品牌动效：品牌 Logo 弹出 -> Push 抖动 -> 展开并呈现 Nemo 英文与分割线
  * 6. 动效完成后微缩放淡出（Scale 1.05 + FadeOut）平滑衔接跳转
  */
 @Composable
@@ -149,7 +149,7 @@ fun SplashScreen(
 
     // --- 主动画时间线序列 ---
     LaunchedEffect(key1 = true) {
-        // 1. 100ms: 蛙 Logo 弹出
+        // 1. 100ms: 品牌 Logo 弹出
         launch {
             delay(100)
             tileScale.animateTo(
@@ -158,7 +158,7 @@ fun SplashScreen(
             )
         }
 
-        // 2. 550ms: 蛙 Logo 执行 Push 抖动反馈，同时展开间隙并吐出 Nemo 英文
+        // 2. 550ms: 品牌 Logo 执行 Push 抖动反馈，同时展开间隙并呈现 Nemo 英文
         launch {
             delay(550)
             // Push 抖动动画
@@ -498,7 +498,7 @@ fun SplashScreen(
             }
         }
 
-        // ================= 底部品牌区域（饱满蛙 Logo + 分割线 + 从身后吐出 Nemo） =================
+        // ================= 底部品牌区域（品牌 Logo + 分割线 + 展开呈现 Nemo） =================
         val density = LocalDensity.current
         // 固定 Nemo 英文目标宽度为 96dp，防止被外层裁切约束挤压截断
         val nemoTargetWidth = 96.dp
@@ -511,7 +511,7 @@ fun SplashScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            // 1. 蛙 Logo（无多余留白，饱满呈现 60×60dp）
+            // 1. 品牌 Logo（无多余留白，饱满呈现 60×60dp）
             Box(
                 modifier = Modifier
                     .size(60.dp)
@@ -528,7 +528,7 @@ fun SplashScreen(
                 )
             }
 
-            // 蛙 Logo 与右侧动态展开间隙
+            // 品牌 Logo 与右侧动态展开间隙
             Spacer(modifier = Modifier.width(lockupGap.value.dp))
 
             // 2. 竖向分割线（高度 34dp，宽 2dp，圆角 1dp）
@@ -547,7 +547,7 @@ fun SplashScreen(
             // 分割线与 Nemo 动态展开间隙
             Spacer(modifier = Modifier.width(lockupGap.value.dp))
 
-            // 3. 从青蛙身后吐出的 "Nemo" 英文
+            // 3. 展开呈现的 "Nemo" 英文
             // 关键：使用 requiredWidth 锁定文本自身完整排印宽度，绝不换行，外层使用 width 遮罩展开
             Box(
                 modifier = Modifier

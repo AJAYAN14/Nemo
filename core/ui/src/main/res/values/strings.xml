@@ -178,7 +178,7 @@
     <string name="core_ui_discovery_cd_close">Close</string>
 
     <!-- 启动屏 (SplashScreen) -->
-    <string name="core_ui_splash_cd_logo">Nemo Frog Logo</string>
+    <string name="core_ui_splash_cd_logo">Nemo Logo</string>
 
     <!-- 下载进度百分比格式 -->
     <string name="core_ui_format_percent">%1$d%%</string>

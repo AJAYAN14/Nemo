@@ -4,118 +4,288 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import com.jian.nemo.feature.settings.R
-import android.os.Build
-import androidx.compose.ui.graphics.asComposeRenderEffect
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.component.liquid.LiquidToggle
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Cached
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.RocketLaunch
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Canvas
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ImageBitmapConfig
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.designsystem.R as DesignR
-import com.jian.nemo.core.designsystem.theme.*
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.NemoKonfettiColors
+import com.jian.nemo.core.designsystem.theme.SettingsPalette
+import com.jian.nemo.core.designsystem.theme.SystemColors
+import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.core.ui.component.liquid.LiquidToggle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.core.ui.modifier.tiltOnPress
-import com.jian.nemo.core.ui.util.AppUtils
 import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
-import nl.dionsegijn.konfetti.compose.KonfettiView
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Angle
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
-private const val PREF_NAME = "nemo_app_prefs"
-private const val KEY_CHECK_UPDATE_ON_STARTUP = "check_update_on_startup"
+private const val MAX_BANNER_TEXTURE_SIDE_PX = 2048
+private const val DEFAULT_NOISE_STEP_PX = 12f
+private const val MAX_NOISE_CELLS = 2_000_000L
+
+private sealed interface AboutLogoState {
+    data object Loading : AboutLogoState
+    data class Ready(val bitmap: ImageBitmap) : AboutLogoState
+    data object Fallback : AboutLogoState
+}
+
+private class ArtisticPaperTextureCache {
+    private data class Key(
+        val widthPx: Int,
+        val heightPx: Int,
+        val paperBg: Color,
+        val lightBeamHighlight: Color,
+        val noiseTint: Color
+    )
+
+    private var cachedKey: Key? = null
+    private var cachedBitmap: ImageBitmap? = null
+
+    fun getOrCreate(
+        widthPx: Int,
+        heightPx: Int,
+        paperBg: Color,
+        lightBeamHighlight: Color,
+        noiseTint: Color,
+        create: () -> ImageBitmap?
+    ): ImageBitmap? {
+        val key = Key(widthPx, heightPx, paperBg, lightBeamHighlight, noiseTint)
+        val existing = cachedBitmap
+        if (cachedKey == key && existing != null) {
+            return existing
+        }
+        val created = create() ?: return null
+        cachedKey = key
+        cachedBitmap = created
+        return created
+    }
+
+    fun clear() {
+        cachedKey = null
+        cachedBitmap = null
+    }
+}
+
+internal class ArtisticNoisePoints(
+    val smallPoints: FloatArray,
+    val largePoints: FloatArray
+)
+
+internal fun buildArtisticNoisePoints(
+    width: Float,
+    height: Float,
+    step: Float = DEFAULT_NOISE_STEP_PX
+): ArtisticNoisePoints {
+    if (
+        !width.isFinite() ||
+        !height.isFinite() ||
+        !step.isFinite() ||
+        width <= 0f ||
+        height <= 0f ||
+        step <= 0f
+    ) {
+        return ArtisticNoisePoints(FloatArray(0), FloatArray(0))
+    }
+    val cols = ceil((width / step).toDouble()).toLong().coerceAtLeast(1L)
+    val rows = ceil((height / step).toDouble()).toLong().coerceAtLeast(1L)
+    val totalCells = cols * rows
+    if (totalCells <= 0L || totalCells > MAX_NOISE_CELLS) {
+        return ArtisticNoisePoints(FloatArray(0), FloatArray(0))
+    }
+    val estimatedMax = ((cols + 2L) * (rows + 2L)).coerceIn(16L, MAX_NOISE_CELLS).toInt()
+    val smallBuffer = FloatArray(estimatedMax * 2)
+    val largeBuffer = FloatArray(estimatedMax * 2)
+    var smallCount = 0
+    var largeCount = 0
+    val jitterScale = step / DEFAULT_NOISE_STEP_PX
+
+    var y = 0f
+    var r = 0
+    while (y < height) {
+        var x = 0f
+        var c = 0
+        while (x < width) {
+            val pseudo = (r * 43 + c * 89) % 97
+            if (pseudo > 50) {
+                val px = x + ((pseudo % 7) - 3f) * jitterScale
+                val py = y + (((pseudo / 7) % 7) - 3f) * jitterScale
+                if (pseudo > 88) {
+                    if (largeCount + 2 <= largeBuffer.size) {
+                        largeBuffer[largeCount++] = px
+                        largeBuffer[largeCount++] = py
+                    }
+                } else {
+                    if (smallCount + 2 <= smallBuffer.size) {
+                        smallBuffer[smallCount++] = px
+                        smallBuffer[smallCount++] = py
+                    }
+                }
+            }
+            x += step
+            c++
+        }
+        y += step
+        r++
+    }
+
+    return ArtisticNoisePoints(
+        smallPoints = smallBuffer.copyOf(smallCount),
+        largePoints = largeBuffer.copyOf(largeCount)
+    )
+}
 
 /**
- * Cresto 同款游行礼炮彩花配置 (双向对喷高抛物线发射)
+ * 游行礼炮彩花配置 (双向对喷高抛物线发射)
  */
 private fun parade(): List<Party> {
     val party = Party(
         speed = 10f,
         maxSpeed = 30f,
         damping = 0.91f,
-        angle = Angle.RIGHT - 45, // 向右上放射喷射
+        angle = Angle.RIGHT - 45,
         spread = 270,
         colors = NemoKonfettiColors,
         timeToLive = 4000L,
         emitter = Emitter(duration = 800, TimeUnit.MILLISECONDS).perSecond(150),
-        position = Position.Relative(-0.1, 0.1) // 屏幕左侧上方偏外
+        position = Position.Relative(-0.1, 0.1)
     )
 
     return listOf(
         party,
         party.copy(
-            angle = party.angle - 90, // 镜向向左上放射喷射
-            position = Position.Relative(1.1, 0.1) // 屏幕右侧上方偏外
+            angle = party.angle - 90,
+            position = Position.Relative(1.1, 0.1)
         )
     )
 }
 
 /**
- * 关于 Nemo 界面 (AboutScreen)
+ * 关于 Nemo 界面
  *
- * 1. 顶部融合 Cresto 同款 3D 物理倾斜与明度发光边框；
- * 2. 支持连续点击 10 次与【长按 0.8s】触发 Cresto 1:1 双炮筒抛物线喷射彩花；
- * 3. 启动更新检测开关持久化控制冷启动更新；
- * 4. 更新日志对接 Supabase 后端 (ConfigRepository)，拒绝硬编码；
- * 5. 全面收拢 GitHub 开源项目、版本构建信息与检查新版本。
+ * 1. 顶部融合 3D 物理倾斜与明度发光边框；
+ * 2. 支持连续点击 10 次与长按 0.8s 触发双炮筒抛物线喷射彩花；
+ * 3. 启动更新检测开关与版本信息由 ViewModel 统一管理；
+ * 4. 更新日志对接 ConfigRepository 缓存与后端数据；
+ * 5. 收拢 GitHub 开源项目、版本构建信息与检查新版本。
  */
 @Composable
 fun AboutScreen(
@@ -128,15 +298,40 @@ fun AboutScreen(
     val scope = rememberCoroutineScope()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val aboutUiState by viewModel.uiState.collectAsState()
-    val settingIconStyle by viewModel.settingIconStyle.collectAsState()
+    val aboutUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val settingIconStyle by viewModel.settingIconStyle.collectAsStateWithLifecycle()
 
-    val prefs = remember { context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE) }
-    var checkUpdateOnStartup by remember {
-        mutableStateOf(prefs.getBoolean(KEY_CHECK_UPDATE_ON_STARTUP, true))
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+    val isInspectionMode = LocalInspectionMode.current
+    val targetLogoPx = remember(configuration.screenWidthDp, density.density) {
+        AboutLogoCache.calculateTargetSizePx(
+            screenWidthDp = configuration.screenWidthDp,
+            density = density.density
+        )
+    }
+    val initialLogo = remember(targetLogoPx, isInspectionMode) {
+        if (isInspectionMode) null else AboutLogoCache.getCached(targetLogoPx)
+    }
+    val logoState by produceState<AboutLogoState>(
+        initialValue = if (initialLogo != null) AboutLogoState.Ready(initialLogo) else AboutLogoState.Loading,
+        key1 = targetLogoPx,
+        key2 = isInspectionMode
+    ) {
+        if (isInspectionMode) {
+            value = AboutLogoState.Fallback
+            return@produceState
+        }
+        val cached = AboutLogoCache.getCached(targetLogoPx)
+        if (cached != null) {
+            value = AboutLogoState.Ready(cached)
+            return@produceState
+        }
+        val decoded = AboutLogoCache.getOrLoad(context, targetLogoPx)
+        value = if (decoded != null) AboutLogoState.Ready(decoded) else AboutLogoState.Fallback
     }
 
-    var cardTapCount by remember { mutableIntStateOf(0) }
+    val cardTapCountState = remember { mutableIntStateOf(0) }
     var confettiBurstKey by remember { mutableIntStateOf(0) }
 
     var snackbarVisible by remember { mutableStateOf(false) }
@@ -146,47 +341,85 @@ fun AboutScreen(
     var isChangelogExpanded by remember { mutableStateOf(true) }
     var isCheckingUpdate by remember { mutableStateOf(false) }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "checkUpdateTransition")
-    val checkUpdateRotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "checkUpdateRotation"
-    )
-
-    val versionName = remember { AppUtils.getVersionName(context) }
-    val versionCode = remember {
-        try {
-            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                pInfo.longVersionCode
-            } else {
-                @Suppress("DEPRECATION")
-                pInfo.versionCode.toLong()
+    val currentHaptic by rememberUpdatedState(haptic)
+    val currentScope by rememberUpdatedState(scope)
+    val triggerEasterEgg = remember {
+        {
+            confettiBurstKey++
+            currentScope.launch {
+                repeat(8) {
+                    currentHaptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    delay(Random.nextLong(45, 90).milliseconds)
+                }
             }
-        } catch (_: PackageManager.NameNotFoundException) {
-            1L
+            Unit
         }
     }
-
-    // 触发彩蛋方法 (长按或连击满 10 次调用，仅展示全屏彩花与振动触感，不弹出提示)
-    fun triggerEasterEgg() {
-        confettiBurstKey++
-        scope.launch {
-            repeat(8) {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                delay(Random.nextLong(45, 90).milliseconds)
+    val onCardClick = remember(triggerEasterEgg) {
+        {
+            val next = cardTapCountState.intValue + 1
+            if (next >= 10) {
+                cardTapCountState.intValue = 0
+                triggerEasterEgg()
+            } else {
+                cardTapCountState.intValue = next
             }
         }
     }
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val backdrop = rememberLayerBackdrop()
+    val isTransitionSettled = rememberIsTransitionSettled()
+    val activeBackdrop = if (isTransitionSettled) backdrop else null
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val paperTextureCache = remember { ArtisticPaperTextureCache() }
+    DisposableEffect(Unit) {
+        onDispose {
+            paperTextureCache.clear()
+        }
+    }
+
+    val cardShape = remember { RoundedRectangle(24.dp) }
+    val cardStrokeColor = if (isDark) Color.White.copy(alpha = 0.22f) else Color.Black.copy(alpha = 0.08f)
+    val cardOutlineDrawCache = remember<CacheDrawScope.() -> DrawResult>(cardShape, cardStrokeColor) {
+        {
+            val outline = cardShape.createOutline(
+                size = size,
+                layoutDirection = layoutDirection,
+                density = this
+            )
+            val stroke = Stroke(3.dp.toPx())
+            onDrawWithContent {
+                drawContent()
+                drawOutline(
+                    outline = outline,
+                    style = stroke,
+                    color = cardStrokeColor,
+                    blendMode = BlendMode.Luminosity
+                )
+            }
+        }
+    }
+
+    val versionSubtitle = if (aboutUiState.isMetadataReady) {
+        stringResource(
+            R.string.settings_about_subtitle_current_version_format,
+            aboutUiState.versionName,
+            aboutUiState.versionCode
+        )
+    } else {
+        ""
+    }
+
+    val rawLog = aboutUiState.updateConfig?.updateLog.orEmpty()
+    val logLines = remember(rawLog) {
+        rawLog.split("\n")
+            .asSequence()
+            .filter { it.isNotBlank() }
+            .map { it.trimStart('-', '*', '•', ' ') }
+            .toList()
+    }
 
     CompositionLocalProvider(
         LocalSettingIconStyle provides settingIconStyle
@@ -196,67 +429,48 @@ fun AboutScreen(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .layerBackdrop(backdrop),
-            contentPadding = PaddingValues(
-                top = statusBarTop + 60.dp + 8.dp,
-                bottom = navBarBottom + 40.dp
-            )
-        ) {
-                // ==========================================
-                // 1. 顶部艺术卡片（3D 物理倾斜 + 长按检测 + 明度发光描边）
-                // ==========================================
-                item {
-                    val density = LocalDensity.current
-                    val cardShape = RoundedRectangle(24.dp)
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .aspectRatio(3f / 4f)
-                            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
-                            .tiltOnPress(
-                                maxTilt = 12f,
-                                longPressTimeoutMillis = 800L,
-                                onLongClick = {
-                                    triggerEasterEgg()
-                                },
-                                onClick = {
-                                    cardTapCount++
-                                    if (cardTapCount >= 10) {
-                                        cardTapCount = 0
-                                        triggerEasterEgg()
-                                    }
-                                }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(backgroundColor)
+                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = statusBarTop + 60.dp + 8.dp,
+                        bottom = navBarBottom + 40.dp
+                    )
+                ) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .aspectRatio(3f / 4f)
+                                .softCardShadow(borderRadius = 24.dp, isDark = isDark)
+                                .tiltOnPress(
+                                    maxTilt = 12f,
+                                    longPressTimeoutMillis = 800L,
+                                    onLongClick = triggerEasterEgg,
+                                    onClick = onCardClick
+                                )
+                                .clip(cardShape)
+                                .drawWithCache(cardOutlineDrawCache)
+                        ) {
+                            NemoArtisticBanner(
+                                isDark = isDark,
+                                logoState = logoState,
+                                paperTextureCache = paperTextureCache
                             )
-                            .clip(cardShape)
-                            .drawWithContent {
-                                drawContent()
-                                val outline = cardShape.createOutline(
-                                    size = size,
-                                    layoutDirection = LayoutDirection.Ltr,
-                                    density = density
-                                )
-                                drawOutline(
-                                    outline = outline,
-                                    style = Stroke(3.dp.toPx()),
-                                    color = if (isDark) Color.White.copy(alpha = 0.22f) else Color.Black.copy(alpha = 0.08f),
-                                    blendMode = BlendMode.Luminosity
-                                )
-                            }
-                    ) {
-                        NemoArtisticBanner(isDark = isDark)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
 
-                // ==========================================
-                // 2. 更新设置与检查更新
-                // ==========================================
                 item {
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_maintenance))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -266,30 +480,24 @@ fun AboutScreen(
                             title = stringResource(R.string.settings_about_title_auto_check),
                             subtitle = stringResource(R.string.settings_about_subtitle_auto_check),
                             onClick = {
-                                val next = !checkUpdateOnStartup
-                                checkUpdateOnStartup = next
-                                prefs.edit().putBoolean(KEY_CHECK_UPDATE_ON_STARTUP, next).apply()
+                                viewModel.setCheckUpdateOnStartup(!aboutUiState.checkUpdateOnStartup)
                             },
                             showDivider = true,
                             trailing = {
                                 LiquidToggle(
-                                    checked = checkUpdateOnStartup,
+                                    checked = aboutUiState.checkUpdateOnStartup,
                                     onCheckedChange = { next ->
-                                        checkUpdateOnStartup = next
-                                        prefs.edit().putBoolean(KEY_CHECK_UPDATE_ON_STARTUP, next).apply()
+                                        viewModel.setCheckUpdateOnStartup(next)
                                     },
                                     accentColor = SystemColors.Blue
                                 )
                             }
                         )
 
-                        SquircleSettingItem(
-                            icon = Icons.Rounded.Cached,
-                            iconColor = SystemColors.Green,
-                            iconRotation = if (isCheckingUpdate) checkUpdateRotation else 0f,
-                            title = stringResource(R.string.settings_about_title_check_update),
-                            subtitle = if (isCheckingUpdate) stringResource(R.string.settings_about_subtitle_checking) else stringResource(R.string.settings_about_subtitle_current_version_format, versionName, versionCode),
-                            onClick = {
+                        CheckUpdateSettingItem(
+                            isCheckingUpdate = isCheckingUpdate,
+                            versionSubtitle = versionSubtitle,
+                            onCheckUpdateClick = {
                                 if (!isCheckingUpdate) {
                                     isCheckingUpdate = true
                                     onCheckUpdate()
@@ -298,24 +506,12 @@ fun AboutScreen(
                                         isCheckingUpdate = false
                                     }
                                 }
-                            },
-                            showDivider = false,
-                            trailing = {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(18.dp)
-                                )
                             }
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                // ==========================================
-                // 3. 更新日志（后端 Supabase 真实数据动态加载）
-                // ==========================================
                 item {
                     val iconStyle = LocalSettingIconStyle.current
                     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -413,12 +609,8 @@ fun AboutScreen(
                                         }
 
                                         aboutUiState.updateConfig != null -> {
-                                            val rawLog = aboutUiState.updateConfig?.updateLog.orEmpty()
-                                            val logLines = rawLog.split("\n").filter { it.isNotBlank() }
-
                                             if (logLines.isNotEmpty()) {
-                                                logLines.forEach { line ->
-                                                    val cleanLine = line.trimStart('-', '*', '•', ' ')
+                                                logLines.forEach { cleanLine ->
                                                     ChangelogLineItem(text = cleanLine)
                                                 }
                                             } else {
@@ -431,7 +623,6 @@ fun AboutScreen(
                                         }
 
                                         else -> {
-                                            // 加载失败或暂无数据
                                             Column(modifier = Modifier.padding(vertical = 8.dp)) {
                                                 Text(
                                                     text = aboutUiState.errorMessage ?: stringResource(R.string.settings_about_log_error_fallback),
@@ -461,9 +652,6 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                // ==========================================
-                // 4. 项目开源与开发者
-                // ==========================================
                 item {
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_opensource))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -519,9 +707,6 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(20.dp))
                 }
 
-                // ==========================================
-                // 5. 版本与构建规格
-                // ==========================================
                 item {
                     SettingsSectionTitle(stringResource(R.string.settings_about_section_build_info))
                     PremiumCard(modifier = Modifier.padding(horizontal = 16.dp)) {
@@ -537,7 +722,11 @@ fun AboutScreen(
                             )
                             VersionInfoRow(
                                 label = stringResource(R.string.settings_about_label_version),
-                                value = "v$versionName"
+                                value = if (aboutUiState.isMetadataReady) {
+                                    stringResource(R.string.settings_about_format_version_v, aboutUiState.versionName)
+                                } else {
+                                    ""
+                                }
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(start = 16.dp),
@@ -546,7 +735,7 @@ fun AboutScreen(
                             )
                             VersionInfoRow(
                                 label = stringResource(R.string.settings_about_label_build),
-                                value = "$versionCode"
+                                value = if (aboutUiState.isMetadataReady) "${aboutUiState.versionCode}" else ""
                             )
                             HorizontalDivider(
                                 modifier = Modifier.padding(start = 16.dp),
@@ -561,8 +750,8 @@ fun AboutScreen(
                     }
                 }
             }
+            }
 
-            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -582,7 +771,7 @@ fun AboutScreen(
                     title = stringResource(R.string.settings_about_title_screen),
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
-                    backdrop = backdrop,
+                    backdrop = activeBackdrop,
                     backButtonSize = 48.dp
                 )
             }
@@ -599,19 +788,62 @@ fun AboutScreen(
                     .padding(top = 56.dp)
             )
 
-            // ==========================================
-            // 6. Cresto 同款游行礼炮彩花层 (KonfettiView)
-            // ==========================================
             if (confettiBurstKey > 0) {
+                val parties = remember(confettiBurstKey) { parade() }
                 key(confettiBurstKey) {
                     KonfettiView(
                         modifier = Modifier.fillMaxSize(),
-                        parties = parade()
+                        parties = parties
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun CheckUpdateSettingItem(
+    isCheckingUpdate: Boolean,
+    versionSubtitle: String,
+    onCheckUpdateClick: () -> Unit
+) {
+    // 仅在主动检测更新时挂载无限旋转过渡，静止浏览页面时不产生任何帧回调
+    val rotation = if (isCheckingUpdate) {
+        val infiniteTransition = rememberInfiniteTransition(label = "checkUpdateTransition")
+        infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 360f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 1000, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart
+            ),
+            label = "checkUpdateRotation"
+        ).value
+    } else {
+        0f
+    }
+
+    SquircleSettingItem(
+        icon = Icons.Rounded.Cached,
+        iconColor = SystemColors.Green,
+        iconRotation = rotation,
+        title = stringResource(R.string.settings_about_title_check_update),
+        subtitle = if (isCheckingUpdate) {
+            stringResource(R.string.settings_about_subtitle_checking)
+        } else {
+            versionSubtitle
+        },
+        onClick = onCheckUpdateClick,
+        showDivider = false,
+        trailing = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    )
 }
 
 /**
@@ -679,70 +911,160 @@ private fun VersionInfoRow(
 }
 
 /**
- * Nemo 专属高阶纯代码艺术卡片 Banner
+ * Nemo 专属纯代码艺术卡片 Banner
  *
- * 1. 采用对角线 135° 环境微光与艺术纸张底色；
- * 2. 居中渲染透明青蛙 Logo 背景图；
- * 3. 完美融合 3D 物理倾斜微动与明度发光边框。
+ * 将纸张底色、135°对角线环境光束与微米纸质颗粒离屏烘焙为按尺寸和主题缓存的纹理位图，
+ * 避免每次重绘或 3D 倾斜时重复提交数千条矢量指令。
  */
 @Composable
-private fun NemoArtisticBanner(isDark: Boolean) {
-    Box(
-        modifier = Modifier.fillMaxSize()
+private fun NemoArtisticBanner(
+    isDark: Boolean,
+    logoState: AboutLogoState,
+    paperTextureCache: ArtisticPaperTextureCache
+) {
+    val paperBg = if (isDark) SettingsPalette.AboutPaperBgDark else SettingsPalette.AboutPaperBgLight
+    val lightBeamHighlight = if (isDark) {
+        SettingsPalette.AboutLightBeamDark.copy(alpha = 0.08f)
+    } else {
+        Color.White.copy(alpha = 0.65f)
+    }
+    val noiseTint = if (isDark) {
+        Color.White.copy(alpha = 0.045f)
+    } else {
+        SettingsPalette.AboutNoiseLight.copy(alpha = 0.04f)
+    }
+
+    val backgroundDrawCache = remember<CacheDrawScope.() -> DrawResult>(
+        paperBg,
+        lightBeamHighlight,
+        noiseTint,
+        paperTextureCache
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val w = size.width
-            val h = size.height
-
-            // 1. 底层艺术纸张背景色
-            val paperBg = if (isDark) SettingsPalette.AboutPaperBgDark else SettingsPalette.AboutPaperBgLight
-            drawRect(color = paperBg)
-
-            // 2. 135° 对角线环境光束漫反射（贯穿卡片高光氛围）
-            val lightBeamBrush = Brush.linearGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    if (isDark) SettingsPalette.AboutLightBeamDark.copy(alpha = 0.08f) else Color.White.copy(alpha = 0.65f),
-                    Color.Transparent
-                ),
-                start = Offset(0f, h * 0.95f),
-                end = Offset(w * 0.95f, 0f)
-            )
-            drawRect(brush = lightBeamBrush)
-
-            // 3. 微米纸质颗粒漫射层
-            val noiseTint = if (isDark) Color.White.copy(alpha = 0.045f) else SettingsPalette.AboutNoiseLight.copy(alpha = 0.04f)
-            val step = 12f
-            var y = 0f
-            var r = 0
-            while (y < h) {
-                var x = 0f
-                var c = 0
-                while (x < w) {
-                    val pseudo = (r * 43 + c * 89) % 97
-                    if (pseudo > 50) {
-                        drawCircle(
-                            color = noiseTint,
-                            radius = if (pseudo > 88) 1.5f else 0.8f,
-                            center = Offset(x + (pseudo % 7) - 3f, y + ((pseudo / 7) % 7) - 3f)
-                        )
-                    }
-                    x += step
-                    c++
+        {
+            val targetWidthPx = size.width.roundToInt()
+            val targetHeightPx = size.height.roundToInt()
+            val cachedTexture = paperTextureCache.getOrCreate(
+                widthPx = targetWidthPx,
+                heightPx = targetHeightPx,
+                paperBg = paperBg,
+                lightBeamHighlight = lightBeamHighlight,
+                noiseTint = noiseTint
+            ) {
+                createArtisticPaperTexture(
+                    targetWidthPx = targetWidthPx,
+                    targetHeightPx = targetHeightPx,
+                    paperBg = paperBg,
+                    lightBeamHighlight = lightBeamHighlight,
+                    noiseTint = noiseTint
+                )
+            }
+            onDrawBehind {
+                if (cachedTexture != null) {
+                    drawImage(
+                        image = cachedTexture,
+                        dstSize = IntSize(targetWidthPx, targetHeightPx)
+                    )
+                } else {
+                    drawRect(color = paperBg)
                 }
-                y += step
-                r++
             }
         }
-
-        // 4. 透明青蛙 Logo 放置在卡片中（居中留白，呈现高级艺术呼吸感）
-        Image(
-            painter = painterResource(id = DesignR.drawable.img_about_frog_logo),
-            contentDescription = stringResource(R.string.settings_about_cd_logo),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 28.dp, vertical = 20.dp),
-            contentScale = ContentScale.Fit
-        )
     }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .drawWithCache(backgroundDrawCache)
+    ) {
+        when (logoState) {
+            is AboutLogoState.Ready -> {
+                Image(
+                    bitmap = logoState.bitmap,
+                    contentDescription = stringResource(R.string.settings_about_cd_logo),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 28.dp, vertical = 20.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+            AboutLogoState.Fallback -> {
+                Image(
+                    painter = painterResource(id = DesignR.drawable.img_about_butterfly_logo),
+                    contentDescription = stringResource(R.string.settings_about_cd_logo),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 28.dp, vertical = 20.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
+            AboutLogoState.Loading -> Unit
+        }
+    }
+}
+
+private fun CacheDrawScope.createArtisticPaperTexture(
+    targetWidthPx: Int,
+    targetHeightPx: Int,
+    paperBg: Color,
+    lightBeamHighlight: Color,
+    noiseTint: Color
+): ImageBitmap? {
+    if (targetWidthPx <= 0 || targetHeightPx <= 0) return null
+    val maxSide = maxOf(targetWidthPx, targetHeightPx)
+    val scale = if (maxSide > MAX_BANNER_TEXTURE_SIDE_PX) {
+        MAX_BANNER_TEXTURE_SIDE_PX.toFloat() / maxSide.toFloat()
+    } else {
+        1f
+    }
+    val texWidth = (targetWidthPx * scale).roundToInt().coerceAtLeast(1)
+    val texHeight = (targetHeightPx * scale).roundToInt().coerceAtLeast(1)
+
+    val imageBitmap = try {
+        ImageBitmap(texWidth, texHeight, ImageBitmapConfig.Argb8888)
+    } catch (_: OutOfMemoryError) {
+        return null
+    }
+    val composeCanvas = Canvas(imageBitmap)
+    val w = texWidth.toFloat()
+    val h = texHeight.toFloat()
+    val drawScope = CanvasDrawScope()
+
+    drawScope.draw(
+        density = this,
+        layoutDirection = layoutDirection,
+        canvas = composeCanvas,
+        size = Size(w, h)
+    ) {
+        drawRect(color = paperBg)
+
+        val lightBeamBrush = Brush.linearGradient(
+            colors = listOf(
+                Color.Transparent,
+                lightBeamHighlight,
+                Color.Transparent
+            ),
+            start = Offset(0f, h * 0.95f),
+            end = Offset(w * 0.95f, 0f)
+        )
+        drawRect(brush = lightBeamBrush)
+
+        val noisePoints = buildArtisticNoisePoints(width = w, height = h, step = 12f * scale)
+        val nativeCanvas = drawContext.canvas.nativeCanvas
+        val paint = android.graphics.Paint().apply {
+            isAntiAlias = true
+            style = android.graphics.Paint.Style.STROKE
+            strokeCap = android.graphics.Paint.Cap.ROUND
+            color = noiseTint.toArgb()
+        }
+        if (noisePoints.smallPoints.isNotEmpty()) {
+            paint.strokeWidth = 1.6f * scale
+            nativeCanvas.drawPoints(noisePoints.smallPoints, paint)
+        }
+        if (noisePoints.largePoints.isNotEmpty()) {
+            paint.strokeWidth = 3.0f * scale
+            nativeCanvas.drawPoints(noisePoints.largePoints, paint)
+        }
+    }
+    imageBitmap.prepareToDraw()
+    return imageBitmap
 }
