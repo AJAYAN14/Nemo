@@ -7,6 +7,8 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -142,26 +144,31 @@ fun LearnHeader(
             backButtonSize = 48.dp,
             chromaticAberration = false,
             actions = {
-                // 撤销上一次评分按钮 (动态平滑展开/收起)
-                androidx.compose.animation.AnimatedVisibility(
-                    visible = onUndo != null && canUndo,
-                    enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.expandHorizontally(),
-                    exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.shrinkHorizontally()
-                ) {
+                // 撤销上一次评分按钮 (常驻展示，通过可用/禁用状态与透明度平滑过渡，杜绝直角阴影与位移抖动)
+                if (onUndo != null) {
+                    val isUndoEnabled = canUndo
+                    val undoAlpha by animateFloatAsState(
+                        targetValue = if (isUndoEnabled) 1f else 0.35f,
+                        label = "UndoAlpha"
+                    )
                     FrostedLiquidGlassButton(
-                        onClick = { onUndo?.invoke() },
+                        onClick = {
+                            if (isUndoEnabled) {
+                                onUndo.invoke()
+                            }
+                        },
                         shape = CircleShape,
                         backdrop = backdrop,
                         hasLens = true,
                         chromaticAberration = false,
                         contentPadding = PaddingValues(0.dp),
-                        isInteractive = true,
+                        isInteractive = isUndoEnabled,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.Undo,
                             contentDescription = stringResource(R.string.learn_common_desc_undo),
-                            tint = contentColor,
+                            tint = contentColor.copy(alpha = undoAlpha),
                             modifier = Modifier.size(30.dp)
                         )
                     }
