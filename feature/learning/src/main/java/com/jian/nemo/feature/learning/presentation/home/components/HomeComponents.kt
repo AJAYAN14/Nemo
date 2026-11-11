@@ -37,7 +37,7 @@ import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.learning.R
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 
 private const val ANIMATION_DURATION = 200
 private const val PRESS_SCALE = 0.98f

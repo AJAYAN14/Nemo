@@ -89,9 +89,9 @@ object DebounceConstants {
  * RatingDelegate / SettingsDelegate / UndoDelegate / CardOpsDelegate 共用）
  */
 fun LearningUiState.currentLearningItem(): LearningItem? = when (learningMode) {
-    is com.jian.nemo.feature.learning.presentation.LearningMode.Word ->
+    is com.jian.nemo.core.domain.model.LearningMode.Word ->
         currentWord?.let { LearningItem.WordItem(it) }
-    is com.jian.nemo.feature.learning.presentation.LearningMode.Grammar ->
+    is com.jian.nemo.core.domain.model.LearningMode.Grammar ->
         currentGrammar?.let { LearningItem.GrammarItem(it) }
 }
 

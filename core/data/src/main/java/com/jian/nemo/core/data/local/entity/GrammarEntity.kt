@@ -34,7 +34,7 @@ data class GrammarEntity(
      * 后端唯一标识符 (例如: N1_001)
      */
     @ColumnInfo(name = "raw_id")
-    val rawId: String,
+    val rawId: String = "",
 
     // ========== 核心内容字段 ==========
     /**

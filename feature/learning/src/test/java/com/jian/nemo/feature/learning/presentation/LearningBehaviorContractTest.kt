@@ -3,6 +3,7 @@ package com.jian.nemo.feature.learning.presentation
 import android.content.Context
 import android.content.SharedPreferences
 import com.jian.nemo.core.common.Result
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.ReviewLogRepository

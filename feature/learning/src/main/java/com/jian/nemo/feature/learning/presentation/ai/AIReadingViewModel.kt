@@ -13,6 +13,7 @@ import com.jian.nemo.core.domain.repository.AIWorkshopRepository
 import com.jian.nemo.feature.learning.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -97,7 +98,7 @@ class AIReadingViewModel @Inject constructor(
     }
 
     private fun observeReadingHistory() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             aiWorkshopRepository.getReadingHistory().collect { history ->
                 _uiState.update { it.copy(readingHistory = history) }
             }
@@ -127,7 +128,7 @@ class AIReadingViewModel @Inject constructor(
 
     private fun observeSettings() {
         // 协程1：监听配置中心的配置列表和当前激活配置
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             combine(
                 settingsRepository.aiConfigListFlow,
                 settingsRepository.aiActiveConfigIdFlow
@@ -155,7 +156,7 @@ class AIReadingViewModel @Inject constructor(
         }
 
         // 协程2：监听阅读专属的默认难度设置
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             settingsRepository.aiReadingDifficultyFlow.collect { difficulty ->
                 _uiState.update { state ->
                     state.copy(
@@ -166,7 +167,7 @@ class AIReadingViewModel @Inject constructor(
         }
 
         // 协程3：监听阅读专属的主题设置
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             settingsRepository.aiReadingThemeFlow.collect { theme ->
                 _uiState.update { state ->
                     state.copy(
@@ -177,7 +178,7 @@ class AIReadingViewModel @Inject constructor(
         }
 
         // 协程4：监听图标风格设置
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             settingsRepository.settingIconStyleFlow.collect { style ->
                 _uiState.update { it.copy(settingIconStyle = style) }
             }

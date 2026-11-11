@@ -16,12 +16,17 @@ import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.AuthRepository
 import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.TtsEvent
+import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -33,6 +38,7 @@ class MainViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val downloader: Downloader,
     private val audioRepository: AudioRepository,
+    private val settingsRepository: SettingsRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -42,6 +48,28 @@ class MainViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    val themeState: StateFlow<ThemeState> = combine(
+        settingsRepository.isDarkModeFlow,
+        settingsRepository.darkModeStrategyFlow,
+        settingsRepository.darkModeStartTimeFlow,
+        settingsRepository.darkModeEndTimeFlow,
+        settingsRepository.themeColorFlow,
+        settingsRepository.settingIconStyleFlow
+    ) { args: Array<Any?> ->
+        ThemeState(
+            isDarkMode = args[0] as? Boolean,
+            strategy = (args[1] as? String) ?: "system",
+            startTime = (args[2] as? String) ?: "22:00",
+            endTime = (args[3] as? String) ?: "07:00",
+            themeColor = args[4] as? Long,
+            settingIconStyle = (args[5] as? SettingIconStyle) ?: SettingIconStyle.SOFT_TRANSLUCENT
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ThemeState()
+    )
 
     private val _updateCheckEvents = kotlinx.coroutines.channels.Channel<UpdateCheckEvent>(kotlinx.coroutines.channels.Channel.BUFFERED)
     val updateCheckEvents = _updateCheckEvents.receiveAsFlow()
@@ -263,6 +291,15 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(showGoogleTtsDialog = false) }
     }
 }
+
+data class ThemeState(
+    val isDarkMode: Boolean? = null,
+    val strategy: String = "system",
+    val startTime: String = "22:00",
+    val endTime: String = "07:00",
+    val themeColor: Long? = null,
+    val settingIconStyle: SettingIconStyle = SettingIconStyle.SOFT_TRANSLUCENT
+)
 
 data class MainUiState(
     val updateConfig: AppUpdateConfig? = null,

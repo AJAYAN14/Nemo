@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.learning.R
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 
 /**
  * 今日学习概览面板弹窗（点击顶部剩余胶囊触发）

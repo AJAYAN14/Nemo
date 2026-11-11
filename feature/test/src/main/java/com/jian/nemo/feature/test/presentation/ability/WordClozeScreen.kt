@@ -52,7 +52,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.test.R
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
@@ -1290,7 +1290,7 @@ private fun ResultView(
  */
 @Composable
 private fun ClozeHistoryView(
-    historyRecords: List<TestRecordEntity>,
+    historyRecords: List<TestRecord>,
     onBack: () -> Unit,
     isDark: Boolean
 ) {

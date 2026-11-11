@@ -5,7 +5,7 @@ import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.usecase.grammar.UpdateGrammarUseCase
 import com.jian.nemo.core.domain.usecase.word.UpdateWordUseCase
 import com.jian.nemo.feature.learning.presentation.LearningItem
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.LearningStatus
 import com.jian.nemo.feature.learning.presentation.LearningUiState
 import io.mockk.coEvery

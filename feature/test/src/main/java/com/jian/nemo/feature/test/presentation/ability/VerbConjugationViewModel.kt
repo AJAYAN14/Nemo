@@ -6,8 +6,8 @@ import com.jian.nemo.core.data.audio.TtsManager
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.model.PartOfSpeech
-import com.jian.nemo.core.data.local.dao.TestRecordDao
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
+import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.data.util.AIClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,7 +78,7 @@ class VerbConjugationViewModel @Inject constructor(
     private val ttsManager: TtsManager,
     private val wordRepository: WordRepository,
     private val settingsRepository: SettingsRepository,
-    private val testRecordDao: TestRecordDao,
+    private val testRecordRepository: TestRecordRepository,
     private val aiClient: AIClient,
     @ApplicationScope private val externalScope: CoroutineScope
 ) : ViewModel() {
@@ -90,18 +90,16 @@ class VerbConjugationViewModel @Inject constructor(
         data class Error(val message: String) : GlobalGenStatus
     }
 
-    companion object {
-        private val _globalGenStatus = MutableStateFlow<GlobalGenStatus>(GlobalGenStatus.Idle)
-        val globalGenStatus: StateFlow<GlobalGenStatus> = _globalGenStatus.asStateFlow()
+    private val _globalGenStatus = MutableStateFlow<GlobalGenStatus>(GlobalGenStatus.Idle)
+    val globalGenStatus: StateFlow<GlobalGenStatus> = _globalGenStatus.asStateFlow()
 
-        // 追踪正在进行的生成协程 Job，以便于在卡死时手动中断/取消
-        private var activeGenerationJob: kotlinx.coroutines.Job? = null
-    }
+    // 追踪正在进行的生成协程 Job，以便于在卡死时手动中断/取消
+    private var activeGenerationJob: kotlinx.coroutines.Job? = null
 
     private val _uiState = MutableStateFlow<VerbUiState>(VerbUiState.Loading)
     val uiState: StateFlow<VerbUiState> = _uiState.asStateFlow()
 
-    val historyRecords: Flow<List<TestRecordEntity>> = testRecordDao.getRecordsByMode("verb_conjugation_ai", 50)
+    val historyRecords: Flow<List<TestRecord>> = testRecordRepository.getRecordsByMode("verb_conjugation_ai", 50)
 
     // 缓存机制与本地会话 (提升至顶部以防初始化顺序问题)
     private val questionsCache = mutableMapOf<String, List<VerbConjugationQuestion>>()
@@ -623,13 +621,13 @@ class VerbConjugationViewModel @Inject constructor(
     private fun saveRecord(correct: Int, total: Int) {
         viewModelScope.launch {
             try {
-                val entity = TestRecordEntity(
+                val record = TestRecord(
                     testMode = "verb_conjugation_ai",
                     totalQuestions = total,
                     correctAnswers = correct,
                     date = System.currentTimeMillis()
                 )
-                testRecordDao.insert(entity)
+                testRecordRepository.insertRecord(record)
             } catch (e: Exception) {
                 // 仅打日志，不阻塞 UI
             }
@@ -684,6 +682,8 @@ class VerbConjugationViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         ttsManager.stop()
+        activeGenerationJob?.cancel()
+        activeGenerationJob = null
     }
 
     private fun generateCacheKey(level: String, wordIds: List<String>): String {

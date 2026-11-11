@@ -74,7 +74,7 @@ import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.core.ui.modifier.softShadow
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.home.components.*
 import com.jian.nemo.feature.learning.R
 

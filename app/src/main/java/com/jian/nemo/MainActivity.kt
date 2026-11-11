@@ -46,15 +46,15 @@ import com.jian.nemo.navigation.rememberNemoAppState
 import com.jian.nemo.core.ui.component.NemoBottomBar
 import com.jian.nemo.core.data.util.DatabaseInitializer
 import com.jian.nemo.core.designsystem.theme.NemoTheme
+import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.navigation.NemoNavHost
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.ui.component.update.UpdateDialog
 import kotlinx.coroutines.launch
@@ -77,17 +77,14 @@ class MainActivity : ComponentActivity() {
     lateinit var databaseInitializer: DatabaseInitializer
 
     @Inject
-    lateinit var settingsRepository: SettingsRepository
-
-    @Inject
     lateinit var cloudBackupManager: com.jian.nemo.core.data.manager.CloudBackupManager
 
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val mainViewModel: MainViewModel by viewModels()
 
     override fun onStart() {
         super.onStart()
         // 进入前台时检查是否达到 2 小时保底备份时间
-        applicationScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             cloudBackupManager.tryAutoBackup()
         }
     }
@@ -103,7 +100,7 @@ class MainActivity : ComponentActivity() {
 
 
         // 在首次启动时强制初始化数据库
-        applicationScope.launch {
+        lifecycleScope.launch(Dispatchers.IO) {
             databaseInitializer.initialize()
         }
 
@@ -130,19 +127,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // 2. 获取主题配置
-            val darkMode by settingsRepository.isDarkModeFlow.collectAsState(initial = null)
-            val strategy by settingsRepository.darkModeStrategyFlow.collectAsState(initial = "system")
-            val startTime by settingsRepository.darkModeStartTimeFlow.collectAsState(initial = "22:00")
-            val endTime by settingsRepository.darkModeEndTimeFlow.collectAsState(initial = "07:00")
+            // 2. 从 MainViewModel 获取生命周期感知的统一主题状态
+            val themeState by mainViewModel.themeState.collectAsStateWithLifecycle()
 
             val isSystemDark = isSystemInDarkTheme()
 
             // 3. 核心主题判定逻辑
-            val isDarkTheme = remember(darkMode, strategy, startTime, endTime, isSystemDark, currentTime) {
-                val result = when {
+            val isDarkTheme = remember(themeState, isSystemDark, currentTime) {
+                val darkMode = themeState.isDarkMode
+                val strategy = themeState.strategy
+                val startTime = themeState.startTime
+                val endTime = themeState.endTime
+                when {
                     // 手动强制模式优先
-                    darkMode != null -> darkMode!!
+                    darkMode != null -> darkMode
                     // 自动切换：跟随系统
                     strategy == "system" -> isSystemDark
                     // 自动切换：定时深色模式
@@ -167,21 +165,16 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                result
             }
-
-            // 4. 获取用户自定义主题色与图标风格
-            val themeColorLong by settingsRepository.themeColorFlow.collectAsState(initial = null)
-            val settingIconStyle by settingsRepository.settingIconStyleFlow.collectAsState(initial = SettingIconStyle.SOFT_TRANSLUCENT)
 
             NemoTheme(
                 darkTheme = isDarkTheme,
-                themeColor = themeColorLong?.let { Color(it.toULong()) }
+                themeColor = themeState.themeColor?.let { Color(it.toULong()) }
             ) {
                 androidx.compose.runtime.CompositionLocalProvider(
-                    LocalSettingIconStyle provides settingIconStyle
+                    LocalSettingIconStyle provides themeState.settingIconStyle
                 ) {
-                    NemoApp()
+                    NemoApp(viewModel = mainViewModel)
                 }
             }
         }
@@ -229,17 +222,6 @@ fun NemoApp(
     // 根据当前路由和主题标准化系统栏配置
     SetupSystemBars(isSplashScreen = isSplashScreen)
 
-    // 获取系统栏 Insets 以实现动态底部导航高度
-    val bottomInsetPx = WindowInsets.navigationBars.getBottom(LocalDensity.current)
-    val bottomInsetDp = with(LocalDensity.current) { bottomInsetPx.toDp() }
-
-    // 使用 animateDpAsState 实现底部 padding 的平滑过渡
-    val animatedBottomPadding by animateDpAsState(
-        targetValue = if (showBottomBar) bottomInsetDp else 0.dp,
-        animationSpec = tween(300, easing = LinearOutSlowInEasing),
-        label = "BottomBarPadding"
-    )
-
     val hazeState = remember { HazeState() }
     val backdrop = rememberLayerBackdrop()
 
@@ -254,30 +236,13 @@ fun NemoApp(
                 user = uiState.currentUser
             )
         },
-        // Edge-to-Edge：各页面自行处理系统栏 Insets，禁用 Scaffold 默认 Insets
-        contentWindowInsets = if (useEdgeToEdge) WindowInsets(0.dp) else WindowInsets(0.dp)
-    ) { innerPadding ->
-        // Edge-to-Edge：禁用特定页面的 padding 以允许背景延伸至全屏
+        contentWindowInsets = WindowInsets(0.dp)
+    ) { _ ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .then(
-                    if (useEdgeToEdge) {
-                        // Edge-to-Edge：背景全屏延伸，不使用 padding
-                        Modifier.haze(hazeState)
-                    } else {
-                        // 默认页面：应用标准 Scaffold 内部 padding
-                        Modifier.padding(
-                            top = innerPadding.calculateTopPadding(),
-                            bottom = animatedBottomPadding,
-                            start = innerPadding.calculateLeftPadding(LocalLayoutDirection.current),
-                            end = innerPadding.calculateRightPadding(LocalLayoutDirection.current)
-                        ).haze(hazeState)
-                    }
-                ),
-            // Edge-to-Edge：使用透明背景以允许页面自行渲染背景
-            // 标准：使用 MaterialTheme 背景色
-            color = if (useEdgeToEdge) Color.Transparent else MaterialTheme.colorScheme.background
+                .haze(hazeState),
+            color = Color.Transparent
         ) {
             Box(
                 modifier = Modifier

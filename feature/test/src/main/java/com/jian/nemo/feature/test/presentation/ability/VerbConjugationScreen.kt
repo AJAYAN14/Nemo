@@ -53,7 +53,7 @@ import androidx.compose.foundation.BorderStroke
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
 import com.airbnb.lottie.compose.*
 import androidx.compose.ui.text.withStyle
 
@@ -199,7 +199,7 @@ fun VerbConjugationScreen(
 
 @Composable
 fun HistoryView(
-    historyRecords: List<TestRecordEntity>,
+    historyRecords: List<TestRecord>,
     onBack: () -> Unit,
     isDark: Boolean
 ) {

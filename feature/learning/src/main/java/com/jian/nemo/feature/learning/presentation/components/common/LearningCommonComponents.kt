@@ -73,7 +73,7 @@ import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.InteractiveHighlight
 
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.components.dialogs.LearningOverviewDialog
 import com.jian.nemo.feature.learning.presentation.components.dialogs.QueueExplanationDialog
 import com.kyant.backdrop.Backdrop

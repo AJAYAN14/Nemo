@@ -25,8 +25,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
-import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.ui.component.ContentReportDialog
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import androidx.compose.material.icons.Icons

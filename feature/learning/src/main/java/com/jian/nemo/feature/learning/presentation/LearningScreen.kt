@@ -518,13 +518,12 @@ fun LearningScreen(
                 }
             }
 
-            // 顶部垂直堆叠通知容器 (消除位置重叠与硬编码 72.dp)
+            // 顶部垂直堆叠通知容器（避让顶栏悬浮呈现）
             com.jian.nemo.core.ui.component.common.NemoNotificationStackHost(
                 notifications = notificationList,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 8.dp)
+                    .padding(top = statusBarTop + 60.dp + 8.dp)
             )
 
             // 评分说明覆盖层 (Edge-to-Edge with Animation)

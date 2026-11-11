@@ -8,6 +8,11 @@ package com.jian.nemo.core.domain.model
  */
 data class GrammarUsage(
     /**
+     * 用法 ID
+     */
+    val id: Int = 0,
+
+    /**
      * 用法子类型（可选）
      * 例如："完成"、"向上"、"强调"
      */

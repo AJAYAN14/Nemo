@@ -210,8 +210,12 @@ fun NemoBottomBar(
 
     AnimatedVisibility(
         visible = visible,
-        enter = slideInVertically { it } + fadeIn(animationSpec = tween(durationMillis = 300)),
-        exit = slideOutVertically { it } + fadeOut(animationSpec = tween(durationMillis = 300))
+        enter = slideInVertically(
+            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+        ) { it } + fadeIn(animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)),
+        exit = slideOutVertically(
+            animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+        ) { it } + fadeOut(animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing))
     ) {
         if (backdrop != null) {
             Box(

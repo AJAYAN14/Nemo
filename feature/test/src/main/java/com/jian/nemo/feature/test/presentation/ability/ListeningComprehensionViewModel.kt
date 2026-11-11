@@ -5,9 +5,9 @@ import com.jian.nemo.feature.test.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.audio.TtsManager
-import com.jian.nemo.core.data.local.dao.TestRecordDao
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -65,13 +65,13 @@ class ListeningComprehensionViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val ttsManager: TtsManager,
     private val wordRepository: WordRepository,
-    private val testRecordDao: TestRecordDao
+    private val testRecordRepository: TestRecordRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ListeningUiState>(ListeningUiState.Loading)
     val uiState: StateFlow<ListeningUiState> = _uiState.asStateFlow()
 
-    val historyRecords: Flow<List<TestRecordEntity>> = testRecordDao.getRecordsByMode("listening_comprehension_local", 50)
+    val historyRecords: Flow<List<TestRecord>> = testRecordRepository.getRecordsByMode("listening_comprehension_local", 50)
 
     private val prefs = context.getSharedPreferences("listening_local_session", Context.MODE_PRIVATE)
 
@@ -246,13 +246,13 @@ class ListeningComprehensionViewModel @Inject constructor(
     private fun saveRecord(correct: Int, total: Int) {
         viewModelScope.launch {
             try {
-                val entity = TestRecordEntity(
+                val record = TestRecord(
                     testMode = "listening_comprehension_local",
                     totalQuestions = total,
                     correctAnswers = correct,
                     date = System.currentTimeMillis()
                 )
-                testRecordDao.insert(entity)
+                testRecordRepository.insertRecord(record)
             } catch (e: Exception) {
                 // 忽略异常
             }

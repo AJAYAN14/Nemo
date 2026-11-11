@@ -231,7 +231,7 @@ fun ThemeSettingsScreen(
                         }
 
                         AnimatedVisibility(
-                            visible = uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
+                            visible = isAuto && uiState.darkModeStrategy == DarkModeStrategy.SCHEDULED,
                             enter = fadeIn() + expandVertically(),
                             exit = fadeOut() + shrinkVertically()
                         ) {

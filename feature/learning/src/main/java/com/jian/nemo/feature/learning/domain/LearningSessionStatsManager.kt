@@ -1,8 +1,8 @@
 package com.jian.nemo.feature.learning.domain
 
 import android.content.Context
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.CardBadge
-import com.jian.nemo.feature.learning.presentation.LearningMode
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 

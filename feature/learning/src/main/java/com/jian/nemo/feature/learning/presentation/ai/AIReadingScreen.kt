@@ -97,6 +97,8 @@ fun AIReadingScreen(
     val backdrop = rememberLayerBackdrop()
     val containerBg = colorScheme.background
 
+    val effectiveBackdrop = backdrop
+
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
             modifier = Modifier
@@ -168,12 +170,12 @@ fun AIReadingScreen(
                     }
                 },
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = effectiveBackdrop,
                 actions = {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FrostedLiquidGlassButton(
                             onClick = onNavigateToHistory,
-                            backdrop = backdrop,
+                            backdrop = effectiveBackdrop,
                             shape = CircleShape,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
@@ -188,7 +190,7 @@ fun AIReadingScreen(
                         }
                         FrostedLiquidGlassButton(
                             onClick = { viewModel.onEvent(AIReadingEvent.QuickSwitchPlatform) },
-                            backdrop = backdrop,
+                            backdrop = effectiveBackdrop,
                             shape = CircleShape,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,
@@ -207,7 +209,7 @@ fun AIReadingScreen(
                         }
                         FrostedLiquidGlassButton(
                             onClick = onNavigateToSettings,
-                            backdrop = backdrop,
+                            backdrop = effectiveBackdrop,
                             shape = CircleShape,
                             contentPadding = PaddingValues(0.dp),
                             isInteractive = true,

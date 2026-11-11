@@ -3,8 +3,8 @@ package com.jian.nemo.feature.test.presentation.ability
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jian.nemo.core.data.local.dao.TestRecordDao
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
+import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -71,13 +71,13 @@ sealed interface ClozeUiState {
 class WordClozeViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val wordRepository: WordRepository,
-    private val testRecordDao: TestRecordDao
+    private val testRecordRepository: TestRecordRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<ClozeUiState>(ClozeUiState.Loading)
     val uiState: StateFlow<ClozeUiState> = _uiState.asStateFlow()
 
-    val historyRecords = testRecordDao.getRecordsByMode("word_cloze_local", 50)
+    val historyRecords = testRecordRepository.getRecordsByMode("word_cloze_local", 50)
 
     private val prefs = context.getSharedPreferences("word_cloze_session", Context.MODE_PRIVATE)
 
@@ -428,14 +428,14 @@ class WordClozeViewModel @Inject constructor(
     private fun saveRecord(correct: Int, total: Int) {
         viewModelScope.launch {
             try {
-                val record = TestRecordEntity(
+                val record = TestRecord(
                     testMode = "word_cloze_local",
                     totalQuestions = total,
                     correctAnswers = correct,
                     date = java.time.LocalDate.now().toEpochDay(),
                     timestamp = System.currentTimeMillis()
                 )
-                testRecordDao.insert(record)
+                testRecordRepository.insertRecord(record)
             } catch (e: Exception) {
                 android.util.Log.e("WordClozeViewModel", "保存测试历史记录失败", e)
             }

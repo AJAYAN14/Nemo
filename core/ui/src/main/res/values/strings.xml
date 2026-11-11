@@ -186,4 +186,23 @@
     <!-- SRS 记忆状态 -->
     <string name="core_ui_srs_status_unlearned">未学习</string>
     <string name="core_ui_srs_status_due_today">今日待复习</string>
+
+    <!-- ContentReportDialog (内容报告错误弹窗) -->
+    <string name="title_content_report">报告内容错误</string>
+    <string name="btn_confirm_feedback">确认反馈</string>
+    <string name="btn_think_again">我再想想</string>
+    <string name="desc_select_error_type">请选择当前%s内容的错误类型：</string>
+    <string name="mode_word">单词</string>
+    <string name="mode_grammar">语法</string>
+    <string name="report_err_meaning">释义错误</string>
+    <string name="report_err_explanation">解释错误</string>
+    <string name="report_err_connection">接续错误</string>
+    <string name="report_err_furigana">注音错误</string>
+    <string name="report_err_example">例句错误</string>
+    <string name="report_err_spelling">拼写错误</string>
+    <string name="report_err_pos">词性错误</string>
+    <string name="report_err_level">级别错误</string>
+    <string name="report_err_other">其他问题</string>
+    <string name="report_other_desc_required">请详细描述错误内容（必填，100字以内）</string>
+    <string name="report_other_desc_placeholder">补充具体错误细节（选填，100字以内）</string>
 </resources>

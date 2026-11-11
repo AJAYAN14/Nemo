@@ -53,7 +53,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
-import com.jian.nemo.core.data.local.entity.TestRecordEntity
+import com.jian.nemo.core.domain.model.TestRecord
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -224,7 +224,7 @@ fun ListeningComprehensionScreen(
 
 @Composable
 private fun ListeningHistoryView(
-    historyRecords: List<TestRecordEntity>,
+    historyRecords: List<TestRecord>,
     onBack: () -> Unit,
     isDark: Boolean
 ) {

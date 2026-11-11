@@ -55,6 +55,7 @@ object GrammarMapper {
      */
     fun UsageWithExamples.toDomainModel(): GrammarUsage {
         return GrammarUsage(
+            id = usage.id,
             subtype = usage.subtype,
             connection = usage.connection,
             explanation = usage.explanation,

@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.learning.presentation
 
+import com.jian.nemo.core.domain.model.LearningMode
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test

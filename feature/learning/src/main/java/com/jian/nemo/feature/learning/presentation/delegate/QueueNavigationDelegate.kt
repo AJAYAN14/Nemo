@@ -7,7 +7,7 @@ import com.jian.nemo.feature.learning.domain.SrsIntervalPreview
 import com.jian.nemo.feature.learning.presentation.CardBadge
 import com.jian.nemo.feature.learning.presentation.LearningItem
 import com.jian.nemo.feature.learning.presentation.cardBadge
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.LearningStatus
 import com.jian.nemo.feature.learning.presentation.SlideDirection
 import com.jian.nemo.core.domain.model.Grammar

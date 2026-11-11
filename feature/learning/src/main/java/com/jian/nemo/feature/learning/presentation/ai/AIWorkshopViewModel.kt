@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.data.util.AIClient
-import com.jian.nemo.core.data.local.dao.GrammarDao
+import com.jian.nemo.core.domain.repository.GrammarRepository
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -87,7 +87,7 @@ class AIWorkshopViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val aiWorkshopRepository: AIWorkshopRepository,
     private val aiClient: AIClient,
-    private val grammarDao: GrammarDao,
+    private val grammarRepository: GrammarRepository,
     private val audioRepository: AudioRepository
 ) : ViewModel() {
 
@@ -346,7 +346,7 @@ class AIWorkshopViewModel @Inject constructor(
      * 检查当前等级是否有可用的语法数据
      */
     private suspend fun checkGrammarDataAvailability(level: String) {
-        val count = grammarDao.getGrammarCountByLevel(level)
+        val count = grammarRepository.getGrammarCountByLevel(level)
         _uiState.update { it.copy(hasGrammarData = count > 0) }
     }
 
@@ -392,12 +392,12 @@ class AIWorkshopViewModel @Inject constructor(
 
                 // 2. 优先进行去重抽取
                 var grammarWithUsages = if (recentIds.isNotEmpty()) {
-                    grammarDao.getRandomGrammarWithUsagesByLevelExcept(difficulty, recentIds)
+                    grammarRepository.getRandomGrammarByLevelExcept(difficulty, recentIds)
                 } else null
 
                 // 3. 降级兜底：若去重抽取返回空，退回普通抽取
                 if (grammarWithUsages == null) {
-                    grammarWithUsages = grammarDao.getRandomGrammarWithUsagesByLevel(difficulty)
+                    grammarWithUsages = grammarRepository.getRandomGrammarByLevel(difficulty)
                 }
 
                 if (grammarWithUsages == null || grammarWithUsages.usages.isEmpty()) {
@@ -415,7 +415,7 @@ class AIWorkshopViewModel @Inject constructor(
                 }
 
                 // 4. 更新已使用 ID 队列（限定最多保留最近 10 个 ID）
-                val currentId = grammarWithUsages.grammar.id
+                val currentId = grammarWithUsages.id
                 val updatedRecentIds = (listOf(currentId) + recentIds.filter { it != currentId }).take(10)
                 viewModelScope.launch {
                     settingsRepository.setAiRecentGrammarIds(Json.encodeToString(updatedRecentIds))
@@ -424,29 +424,29 @@ class AIWorkshopViewModel @Inject constructor(
                 // 从用法列表中随机抽取一个分支
                 val randomUsage = grammarWithUsages.usages.random()
                 grammarInfo = AIClient.GrammarInfo(
-                    name = grammarWithUsages.grammar.grammar,
-                    connection = randomUsage.usage.connection,
-                    explanation = randomUsage.usage.explanation,
-                    subtype = randomUsage.usage.subtype,
-                    notes = randomUsage.usage.notes
+                    name = grammarWithUsages.grammar,
+                    connection = randomUsage.connection,
+                    explanation = randomUsage.explanation,
+                    subtype = randomUsage.subtype,
+                    notes = randomUsage.notes
                 )
                 currentGrammarInfo = grammarInfo
-                currentUsageId = randomUsage.usage.id
+                currentUsageId = randomUsage.id
 
                 _uiState.update {
                     it.copy(
-                        currentGrammarPoint = grammarWithUsages.grammar.grammar,
-                        currentGrammarSubtype = randomUsage.usage.subtype
+                        currentGrammarPoint = grammarWithUsages.grammar,
+                        currentGrammarSubtype = randomUsage.subtype
                     )
                 }
                 // 保存语法状态到 DataStore
                 val grammarState = AIPersistedGrammarState(
-                    name = grammarWithUsages.grammar.grammar,
-                    connection = randomUsage.usage.connection,
-                    explanation = randomUsage.usage.explanation,
-                    subtype = randomUsage.usage.subtype,
-                    notes = randomUsage.usage.notes,
-                    usageId = randomUsage.usage.id
+                    name = grammarWithUsages.grammar,
+                    connection = randomUsage.connection,
+                    explanation = randomUsage.explanation,
+                    subtype = randomUsage.subtype,
+                    notes = randomUsage.notes,
+                    usageId = randomUsage.id
                 )
                 viewModelScope.launch {
                     settingsRepository.setAiCurrentGrammarState(Json.encodeToString(grammarState))

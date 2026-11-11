@@ -10,7 +10,7 @@ import com.jian.nemo.core.domain.usecase.word.GetTodayLearnedWordsCountUseCase
 import com.jian.nemo.feature.learning.domain.LearningSessionStatsManager
 import com.jian.nemo.feature.learning.domain.LearningTtsManager
 import com.jian.nemo.feature.learning.presentation.CardBadge
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.LearningStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

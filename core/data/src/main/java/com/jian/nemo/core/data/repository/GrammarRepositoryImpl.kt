@@ -321,4 +321,16 @@ class GrammarRepositoryImpl @Inject constructor(
             Result.Error(e)
         }
     }
+
+    override suspend fun getGrammarCountByLevel(level: String): Int {
+        return grammarDao.getGrammarCountByLevel(level)
+    }
+
+    override suspend fun getRandomGrammarByLevelExcept(level: String, exceptIds: List<Int>): Grammar? {
+        return grammarDao.getRandomGrammarWithUsagesByLevelExcept(level, exceptIds)?.toDomainModel()
+    }
+
+    override suspend fun getRandomGrammarByLevel(level: String): Grammar? {
+        return grammarDao.getRandomGrammarWithUsagesByLevel(level)?.toDomainModel()
+    }
 }

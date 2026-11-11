@@ -1,4 +1,4 @@
-package com.jian.nemo.feature.learning.presentation.components.dialogs
+package com.jian.nemo.core.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -36,9 +36,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.theme.SystemColors
-import com.jian.nemo.core.ui.component.NemoDialog
-import com.jian.nemo.feature.learning.R
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
+import com.jian.nemo.core.ui.R
 
 /**
  * 内容报告确认对话框
@@ -235,4 +234,3 @@ fun ContentReportDialog(
         }
     )
 }
-

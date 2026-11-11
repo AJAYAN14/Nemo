@@ -8,7 +8,7 @@ import com.jian.nemo.core.domain.model.User
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.usecase.auth.GetUserFlowUseCase
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

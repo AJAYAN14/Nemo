@@ -51,6 +51,7 @@ import com.jian.nemo.feature.test.presentation.ability.AbilityWorkshopScreen
 
 
 import com.jian.nemo.feature.settings.SettingsScreen
+import com.jian.nemo.feature.settings.SettingsViewModel
 import com.jian.nemo.feature.settings.TtsSettingsScreen
 import com.jian.nemo.feature.settings.ThemeSettingsScreen
 import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
@@ -60,7 +61,7 @@ import com.jian.nemo.feature.settings.CornerLabScreen
 import com.jian.nemo.feature.settings.AboutScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.kana.KanaChartScreen
 import com.jian.nemo.feature.collection.navigation.favoritesScreen
 import com.jian.nemo.feature.collection.navigation.mistakesScreen
@@ -686,10 +687,23 @@ fun NemoNavHost(
         }
 
         // 主题设置
-        composable(NavDestination.THEME_SETTINGS) {
+        composable(NavDestination.THEME_SETTINGS) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                try {
+                    navController.getBackStackEntry(NavDestination.SETTINGS)
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            val viewModel: SettingsViewModel = if (parentEntry != null) {
+                hiltViewModel(parentEntry)
+            } else {
+                hiltViewModel()
+            }
             SubScreenContainer {
                 ThemeSettingsScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    viewModel = viewModel
                 )
             }
         }
@@ -808,9 +822,11 @@ fun NemoNavHost(
 
         // 五十音图
         composable(NavDestination.KANA_CHART) {
-            KanaChartScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            SubScreenContainer {
+                KanaChartScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
 
         // 单词列表

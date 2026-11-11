@@ -44,8 +44,8 @@ import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 import com.jian.nemo.core.ui.component.srs.SrsStatusChip
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
-import com.jian.nemo.feature.learning.presentation.LearningMode
-import com.jian.nemo.feature.learning.presentation.components.dialogs.ContentReportDialog
+import com.jian.nemo.core.domain.model.LearningMode
+import com.jian.nemo.core.ui.component.ContentReportDialog
 import com.jian.nemo.feature.library.R
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop

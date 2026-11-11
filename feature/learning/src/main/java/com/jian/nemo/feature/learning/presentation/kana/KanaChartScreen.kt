@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -184,6 +185,8 @@ fun KanaChartScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
+    val effectiveBackdrop = backdrop
+
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         Box(
             modifier = Modifier
@@ -210,69 +213,69 @@ fun KanaChartScreen(
                 },
                 label = "kanaPagination"
             ) { section ->
-                Column(
+                val (data, titleRes, descRes) = when (section) {
+                    "dakuon" -> Triple(dakuonData, R.string.kana_section_dakuon, R.string.kana_desc_dakuon)
+                    "yoon" -> Triple(yoonData, R.string.kana_section_yoon, R.string.kana_desc_yoon)
+                    else -> Triple(seionData, R.string.kana_section_seion, null)
+                }
+                val rows = remember(data) { data.chunked(5) }
+
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // 顶部弹性占位：未滑动时避开顶栏，滑动时无阻碍滑入顶栏遮罩
-                    Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
+                    item(key = "top_spacer") {
+                        Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
+                    }
 
-                    when (section) {
-                        "seion" -> {
-                            SectionTitle(
-                                text = stringResource(R.string.kana_section_seion),
-                                accentColor = accentColor,
-                                textMain = textMain
-                            )
-                            KanaGrid(
-                                cells = seionData,
-                                columns = 5,
-                                isKatakana = isKatakana,
-                                isDark = isDark,
-                                playingAudioId = playingAudioId,
-                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                            )
-                        }
-                        "dakuon" -> {
-                            SectionTitle(
-                                text = stringResource(R.string.kana_section_dakuon),
-                                accentColor = accentColor,
-                                textMain = textMain
-                            )
-                            SectionSubtitle(text = stringResource(R.string.kana_desc_dakuon), textSub = textSub)
-                            KanaGrid(
-                                cells = dakuonData,
-                                columns = 5,
-                                isKatakana = isKatakana,
-                                isDark = isDark,
-                                playingAudioId = playingAudioId,
-                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                            )
-                        }
-                        "yoon" -> {
-                            SectionTitle(
-                                text = stringResource(R.string.kana_section_yoon),
-                                accentColor = accentColor,
-                                textMain = textMain
-                            )
-                            SectionSubtitle(text = stringResource(R.string.kana_desc_yoon), textSub = textSub)
-                            KanaGrid(
-                                cells = yoonData,
-                                columns = 5,
-                                isKatakana = isKatakana,
-                                isDark = isDark,
-                                playingAudioId = playingAudioId,
-                                onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                                onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
-                            )
+                    item(key = "title") {
+                        SectionTitle(
+                            text = stringResource(titleRes),
+                            accentColor = accentColor,
+                            textMain = textMain
+                        )
+                    }
+
+                    if (descRes != null) {
+                        item(key = "desc") {
+                            SectionSubtitle(text = stringResource(descRes), textSub = textSub)
                         }
                     }
-                    Spacer(modifier = Modifier.height(88.dp))
+
+                    itemsIndexed(
+                        items = rows,
+                        key = { index, _ -> "${section}_row_$index" }
+                    ) { rowIndex, row ->
+                        val rowColor = getCategoryRowColor(rowIndex, isDark)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            row.forEach { cell ->
+                                KanaCard(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .widthIn(min = 0.dp),
+                                    cell = cell,
+                                    isKatakana = isKatakana,
+                                    rowColor = rowColor,
+                                    isDark = isDark,
+                                    playingAudioId = playingAudioId,
+                                    onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
+                                    onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+                                )
+                            }
+                            repeat(5 - row.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+
+                    item(key = "bottom_spacer") {
+                        Spacer(modifier = Modifier.height(88.dp))
+                    }
                 }
             }
         }
@@ -297,7 +300,7 @@ fun KanaChartScreen(
                 title = stringResource(R.string.kana_chart_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = effectiveBackdrop,
                 backButtonSize = 48.dp,
                 actions = {
                     val toggleFg = if (currentType == 0) {
@@ -311,7 +314,7 @@ fun KanaChartScreen(
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             currentType = if (currentType == 0) 1 else 0
                         },
-                        backdrop = backdrop,
+                        backdrop = effectiveBackdrop,
                         contentPadding = PaddingValues(horizontal = 14.dp),
                         isInteractive = true,
                         modifier = Modifier.height(48.dp)
@@ -372,7 +375,7 @@ fun KanaChartScreen(
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         currentSection = sectionKey
                     },
-                    backdrop = backdrop,
+                    backdrop = effectiveBackdrop,
                     surfaceColor = if (isSelected) selectedSurface else unselectedSurface,
                     contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
                     isInteractive = true,
@@ -443,44 +446,6 @@ private fun SectionSubtitle(text: String, textSub: Color) {
     )
 }
 
-@Composable
-private fun KanaGrid(
-    cells: List<KanaCell?>,
-    columns: Int,
-    isKatakana: Boolean,
-    isDark: Boolean,
-    playingAudioId: String?,
-    onSpeak: (String, String) -> Unit,
-    onHaptic: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        cells.chunked(columns).forEachIndexed { rowIndex, row ->
-            val rowColor = getCategoryRowColor(rowIndex, isDark)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                row.forEach { cell ->
-                    KanaCard(
-                        modifier = Modifier
-                            .weight(1f)
-                            .widthIn(min = 0.dp),
-                        cell = cell,
-                        isKatakana = isKatakana,
-                        rowColor = rowColor,
-                        isDark = isDark,
-                        playingAudioId = playingAudioId,
-                        onSpeak = onSpeak,
-                        onHaptic = onHaptic
-                    )
-                }
-                repeat(columns - row.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun KanaCard(
@@ -590,13 +555,12 @@ private fun KanaCard(
                 val speakText = cell.speakText(isKatakana)
                 onSpeak(speakText, cardAudioId)
             },
-            modifier = modifier
-                .softCardShadow(borderRadius = 20.dp, isDark = isDark)
-                .aspectRatio(1f),
+            modifier = modifier.aspectRatio(1f),
             backgroundColor = rowColor,
             shape = cardShape,
             border = cardBorder,
             elevation = 0.dp,
+            useSoftShadow = false,
             isInteractive = true
         ) {
             Column(

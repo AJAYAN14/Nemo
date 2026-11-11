@@ -1,5 +1,6 @@
 package com.jian.nemo.feature.learning.presentation
 
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.core.ui.component.dialog.BonusMode
 
 /**

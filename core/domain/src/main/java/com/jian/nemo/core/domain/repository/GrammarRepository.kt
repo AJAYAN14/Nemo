@@ -152,4 +152,19 @@ interface GrammarRepository {
      * 清空所有收藏
      */
     suspend fun clearAllFavorites(): Result<Unit>
+
+    /**
+     * 获取指定等级的语法数量
+     */
+    suspend fun getGrammarCountByLevel(level: String): Int
+
+    /**
+     * 随机获取指定等级的一个语法（排除指定 ID）
+     */
+    suspend fun getRandomGrammarByLevelExcept(level: String, exceptIds: List<Int>): Grammar?
+
+    /**
+     * 随机获取指定等级的一个语法
+     */
+    suspend fun getRandomGrammarByLevel(level: String): Grammar?
 }

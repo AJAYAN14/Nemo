@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import com.jian.nemo.core.common.Result
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.model.Grammar
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository

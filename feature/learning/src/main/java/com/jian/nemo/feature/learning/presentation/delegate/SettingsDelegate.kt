@@ -4,7 +4,7 @@ import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase
 import com.jian.nemo.feature.learning.domain.LearningTtsManager
-import com.jian.nemo.feature.learning.presentation.LearningMode
+import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.feature.learning.presentation.LearningStatus
 import com.jian.nemo.feature.learning.presentation.parseSteps
 import kotlinx.coroutines.CoroutineScope

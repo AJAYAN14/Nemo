@@ -39,6 +39,8 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import com.jian.nemo.core.domain.repository.WordRelationRepository
 import com.jian.nemo.core.data.repository.WordRelationRepositoryImpl
+import com.jian.nemo.core.domain.repository.TestRecordRepository
+import com.jian.nemo.core.data.repository.TestRecordRepositoryImpl
 
 /**
  * Repository 依赖注入模块
@@ -198,4 +200,10 @@ abstract class RepositoryModule {
     abstract fun bindWordRelationRepository(
         impl: WordRelationRepositoryImpl
     ): WordRelationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTestRecordRepository(
+        impl: TestRecordRepositoryImpl
+    ): TestRecordRepository
 }
