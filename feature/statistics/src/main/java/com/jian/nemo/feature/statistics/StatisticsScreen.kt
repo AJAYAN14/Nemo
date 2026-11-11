@@ -36,11 +36,14 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +55,8 @@ import com.jian.nemo.core.ui.navigation.DetailContextHolder
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
 import com.jian.nemo.feature.statistics.model.StatisticSource
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -77,9 +82,22 @@ fun StatisticsScreen(
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val listState = rememberLazyListState()
-    val backdrop = rememberLayerBackdrop()
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    var isTransitionSettled by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(320L)
+        isTransitionSettled = true
+    }
 
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
@@ -87,12 +105,15 @@ fun StatisticsScreen(
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-        // 1. 底层滚动内容（被 backdrop 采样源录制）
+        // 1. 底层滚动内容（转场就位后再激活背景离屏录制）
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop),
+                .layerBackdrop(
+                    backdrop = backdrop,
+                    enabled = isTransitionSettled
+                ),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -120,6 +141,8 @@ fun StatisticsScreen(
                             },
                             isWord = true
                         )
+                    } else if (uiState.isListsLoading) {
+                        StatisticsListSkeletonCard()
                     } else {
                         EmptyStatisticsState(
                             message = stringResource(R.string.stats_screen_empty_words_message),
@@ -145,6 +168,8 @@ fun StatisticsScreen(
                             },
                             isWord = false
                         )
+                    } else if (uiState.isListsLoading) {
+                        StatisticsListSkeletonCard()
                     } else {
                         EmptyStatisticsState(
                             message = stringResource(R.string.stats_screen_empty_grammars_message),
@@ -160,7 +185,7 @@ fun StatisticsScreen(
         // 2. 悬浮回顶按钮（单词列表同款液态玻璃回顶）
         LiquidScrollToTopButton(
             listState = listState,
-            backdrop = backdrop,
+            backdrop = if (isTransitionSettled) backdrop else null,
             bottomPadding = navBarBottom + 20.dp
         )
 
@@ -184,7 +209,7 @@ fun StatisticsScreen(
                 title = stringResource(R.string.stats_screen_title_screen),
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = if (isTransitionSettled) backdrop else null,
                 backButtonSize = 48.dp
             )
         }
@@ -243,7 +268,6 @@ fun StatisticsListCard(
 
     PremiumCard {
         Column(
-            modifier = Modifier.animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             showItems.forEachIndexed { index, item ->
@@ -312,6 +336,153 @@ fun StatisticsListCard(
     }
 }
 
+private data class CollapsedListMetrics(
+    val titleHeight: Dp,
+    val bodyHeight: Dp,
+    val labelHeight: Dp,
+    val collapsedContentMinHeight: Dp
+)
+
+@Composable
+private fun rememberCollapsedListMetrics(): CollapsedListMetrics {
+    val density = LocalDensity.current
+    val textMeasurer = rememberTextMeasurer()
+    val titleStyle = MaterialTheme.typography.titleMedium
+    val bodyStyle = MaterialTheme.typography.bodyMedium
+    val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+
+    return remember(density, titleStyle, bodyStyle, labelStyle) {
+        val titleHeightPx = textMeasurer.measure(
+            text = "あA",
+            style = titleStyle,
+            maxLines = 1
+        ).size.height
+        val bodyHeightPx = textMeasurer.measure(
+            text = "あA",
+            style = bodyStyle,
+            maxLines = 1
+        ).size.height
+        val labelHeightPx = textMeasurer.measure(
+            text = "あA",
+            style = labelStyle,
+            maxLines = 1
+        ).size.height
+
+        with(density) {
+            val titleDp = titleHeightPx.toDp()
+            val bodyDp = bodyHeightPx.toDp()
+            val labelDp = labelHeightPx.toDp()
+            val singleRowHeight = 12.dp + maxOf(48.dp, titleDp + 2.dp + bodyDp) + 12.dp
+            val expandButtonHeight = 12.dp + maxOf(16.dp, labelDp) + 4.dp
+            // 5 行 + 4 条行间分割区(4 * (4dp + 0.5dp + 4dp)) + 展开区间隔与分割线(3 * 4dp + 8dp + 0.5dp) + 展开按钮区
+            val totalContentMinHeight = singleRowHeight * 5 + 34.dp + 20.5.dp + expandButtonHeight
+            CollapsedListMetrics(
+                titleHeight = titleDp,
+                bodyHeight = bodyDp,
+                labelHeight = labelDp,
+                collapsedContentMinHeight = totalContentMinHeight
+            )
+        }
+    }
+}
+
+/**
+ * 统计列表默认折叠态静态骨架屏
+ */
+@Composable
+fun StatisticsListSkeletonCard() {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val skeletonColor = MaterialTheme.colorScheme.onSurface.copy(
+        alpha = if (isDark) 0.08f else 0.06f
+    )
+    val subtitleSkeletonColor = MaterialTheme.colorScheme.onSurface.copy(
+        alpha = if (isDark) 0.055f else 0.04f
+    )
+    val dividerColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f)
+    val metrics = rememberCollapsedListMetrics()
+    val titleFractions = remember { listOf(0.42f, 0.52f, 0.36f, 0.48f, 0.40f) }
+    val subtitleFractions = remember { listOf(0.68f, 0.58f, 0.74f, 0.62f, 0.70f) }
+
+    PremiumCard {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            repeat(5) { index ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(skeletonColor, RoundedRectangle(14.dp))
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Box(
+                            modifier = Modifier.height(metrics.titleHeight),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(titleFractions[index])
+                                    .height(15.dp)
+                                    .background(skeletonColor, RoundedRectangle(6.dp))
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Box(
+                            modifier = Modifier.height(metrics.bodyHeight),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(subtitleFractions[index])
+                                    .height(12.dp)
+                                    .background(subtitleSkeletonColor, RoundedRectangle(5.dp))
+                            )
+                        }
+                    }
+                }
+
+                if (index < 4) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 64.dp),
+                        color = dividerColor,
+                        thickness = 0.5.dp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(
+                color = dividerColor,
+                thickness = 0.5.dp
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, bottom = 4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier.height(maxOf(16.dp, metrics.labelHeight)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(96.dp)
+                            .height(14.dp)
+                            .background(skeletonColor, RoundedRectangle(7.dp))
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun EmptyStatisticsState(
     message: String,
@@ -323,11 +494,13 @@ fun EmptyStatisticsState(
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
     val iconTint = if (isSoftTranslucent) accentColor else Color.White
+    val metrics = rememberCollapsedListMetrics()
 
     PremiumCard {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .defaultMinSize(minHeight = metrics.collapsedContentMinHeight)
                 .padding(vertical = 28.dp, horizontal = 16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -580,9 +753,6 @@ private fun PremiumCard(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = MaterialTheme.colorScheme.surface
-
-
-
 
     Surface(
         onClick = onClick ?: {},

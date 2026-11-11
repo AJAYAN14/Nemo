@@ -182,6 +182,16 @@ class WordRepositoryImpl @Inject constructor(
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }
 
+    override fun getWordTotalCountsByLevel(): Flow<Map<String, Int>> {
+        return wordDao.getWordTotalCountsByLevel()
+            .map { tuples ->
+                tuples.associate { it.level.uppercase() to it.count }
+            }
+            .catch {
+                emit(emptyMap())
+            }.flowOn(kotlinx.coroutines.Dispatchers.IO)
+    }
+
     override fun getReviewForecast(startDate: Long, endDate: Long): Flow<List<ReviewForecast>> {
         return wordDao.getReviewForecast(startDate, endDate)
             .map { tuples ->

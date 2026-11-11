@@ -86,6 +86,11 @@ interface GrammarRepository {
     fun getLearnedGrammarCount(): Flow<Int>
 
     /**
+     * 按等级统计可用语法总数
+     */
+    fun getGrammarTotalCountsByLevel(): Flow<Map<String, Int>>
+
+    /**
      * 获取复习预测（未来7天）
      */
     fun getReviewForecast(startDate: Long, endDate: Long): Flow<List<ReviewForecast>>

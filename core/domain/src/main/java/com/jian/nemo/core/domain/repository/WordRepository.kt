@@ -89,6 +89,11 @@ interface WordRepository {
     fun getLearnedWordCount(): Flow<Int>
 
     /**
+     * 按等级统计可用单词总数
+     */
+    fun getWordTotalCountsByLevel(): Flow<Map<String, Int>>
+
+    /**
      * 获取复习预测（未来7天）
      */
     fun getReviewForecast(startDate: Long, endDate: Long): Flow<List<ReviewForecast>>

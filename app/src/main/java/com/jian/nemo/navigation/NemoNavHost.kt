@@ -29,6 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -366,39 +368,51 @@ fun NemoNavHost(
             popEnterTransition = mainPopEnterTransition,
             popExitTransition = mainPopExitTransition
         ) {
-            com.jian.nemo.feature.statistics.presentation.dashboard.ProgressDashboardScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToCategoryPractice = {
-                    navController.navigate(NavDestination.categoryClassification("practice"))
-                },
-                onNavigateToLearningCalendar = {
-                    navController.navigate(NavDestination.LEARNING_CALENDAR)
-                },
-                onNavigateToStatistics = {
-                    navController.navigate(NavDestination.STATISTICS)
-                },
-                onNavigateToHistoricalStatistics = {
-                    navController.navigate(NavDestination.HISTORICAL_STATISTICS)
-                },
-                onNavigateToWordList = {
-                    navController.navigate(NavDestination.WORD_LIST)
-                },
-                onNavigateToGrammarList = {
-                    navController.navigate(NavDestination.GRAMMAR_LIST)
-                },
-                onNavigateToLibrary = {
-                    navController.navigate(NavDestination.LIBRARY)
-                },
-                onNavigateToCategoryVocabulary = {
-                    navController.navigate(NavDestination.categoryClassification("vocabulary"))
-                },
-                onNavigateToLeechManagement = {
-                    navController.navigate(NavDestination.LEECH_MANAGEMENT)
-                },
-                onNavigateToForgettingCurve = {
-                    navController.navigate(NavDestination.FORGETTING_CURVE)
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        compositingStrategy = if (transition.currentState != transition.targetState) {
+                            CompositingStrategy.Offscreen
+                        } else {
+                            CompositingStrategy.Auto
+                        }
+                    }
+            ) {
+                com.jian.nemo.feature.statistics.presentation.dashboard.ProgressDashboardScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToCategoryPractice = {
+                        navController.navigate(NavDestination.categoryClassification("practice"))
+                    },
+                    onNavigateToLearningCalendar = {
+                        navController.navigate(NavDestination.LEARNING_CALENDAR)
+                    },
+                    onNavigateToStatistics = {
+                        navController.navigate(NavDestination.STATISTICS)
+                    },
+                    onNavigateToHistoricalStatistics = {
+                        navController.navigate(NavDestination.HISTORICAL_STATISTICS)
+                    },
+                    onNavigateToWordList = {
+                        navController.navigate(NavDestination.WORD_LIST)
+                    },
+                    onNavigateToGrammarList = {
+                        navController.navigate(NavDestination.GRAMMAR_LIST)
+                    },
+                    onNavigateToLibrary = {
+                        navController.navigate(NavDestination.LIBRARY)
+                    },
+                    onNavigateToCategoryVocabulary = {
+                        navController.navigate(NavDestination.categoryClassification("vocabulary"))
+                    },
+                    onNavigateToLeechManagement = {
+                        navController.navigate(NavDestination.LEECH_MANAGEMENT)
+                    },
+                    onNavigateToForgettingCurve = {
+                        navController.navigate(NavDestination.FORGETTING_CURVE)
+                    }
+                )
+            }
         }
 
         // 测试页 - 主界面

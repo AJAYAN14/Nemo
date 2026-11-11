@@ -634,6 +634,19 @@ interface WordDao {
     @Query("SELECT COUNT(*) FROM words")
     suspend fun getWordCount(): Int
 
+    /**
+     * 按等级统计可用单词总数
+     */
+    @Query("""
+        SELECT UPPER(w.level) AS level, COUNT(*) AS count
+        FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        GROUP BY UPPER(w.level)
+    """)
+    fun getWordTotalCountsByLevel(): Flow<List<WordLevelCountTuple>>
+
     // ========== 数据修复 ==========
 
     /**
@@ -662,5 +675,10 @@ interface WordDao {
 
 data class ReviewForecastTuple(
     val date: Long,
+    val count: Int
+)
+
+data class WordLevelCountTuple(
+    val level: String,
     val count: Int
 )

@@ -152,6 +152,16 @@ class GrammarRepositoryImpl @Inject constructor(
             }.flowOn(kotlinx.coroutines.Dispatchers.IO)
     }
 
+    override fun getGrammarTotalCountsByLevel(): Flow<Map<String, Int>> {
+        return grammarDao.getGrammarTotalCountsByLevel()
+            .map { tuples ->
+                tuples.associate { it.level.uppercase() to it.count }
+            }
+            .catch {
+                emit(emptyMap())
+            }.flowOn(kotlinx.coroutines.Dispatchers.IO)
+    }
+
     override fun getReviewForecast(startDate: Long, endDate: Long): Flow<List<com.jian.nemo.core.domain.model.ReviewForecast>> {
         return grammarDao.getReviewForecast(startDate, endDate)
             .map { tuples ->

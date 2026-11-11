@@ -1,30 +1,21 @@
 package com.jian.nemo.feature.statistics
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.model.StudyRecord
-import com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase
-import com.jian.nemo.core.domain.usecase.statistics.GetRecentRecordsUseCase
-import com.jian.nemo.core.domain.usecase.statistics.GetLearnedGrammarsForDateUseCase
-import com.jian.nemo.core.domain.usecase.statistics.GetLearnedWordsForDateUseCase
-import com.jian.nemo.core.domain.usecase.statistics.GetReviewedGrammarsForDateUseCase
-import com.jian.nemo.core.domain.usecase.statistics.GetReviewedWordsForDateUseCase
-import com.jian.nemo.core.domain.model.ReviewForecast
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.domain.usecase.statistics.GetReviewForecastUseCase
+import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.feature.statistics.model.StatisticDisplayItem
-import com.jian.nemo.feature.statistics.model.StatisticSource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -39,22 +30,46 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
-    private val getLearningStatsUseCase: GetLearningStatsUseCase,
-    private val getRecentRecordsUseCase: GetRecentRecordsUseCase,
-    private val getLearnedWordsForDateUseCase: GetLearnedWordsForDateUseCase,
-    private val getLearnedGrammarsForDateUseCase: GetLearnedGrammarsForDateUseCase,
-    private val getReviewedWordsForDateUseCase: GetReviewedWordsForDateUseCase,
-    private val getReviewedGrammarsForDateUseCase: GetReviewedGrammarsForDateUseCase,
-    private val getReviewForecastUseCase: GetReviewForecastUseCase,
-    private val settingsRepository: com.jian.nemo.core.domain.repository.SettingsRepository,
-    @ApplicationContext private val context: Context
+    private val preloadCache: StatisticsPreloadCache,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(StatisticsUiState())
+    private val initialToday = preloadCache.todayListsState.value
+    private val initialStats = preloadCache.learningStatsState.value
+
+    private val _uiState = MutableStateFlow(
+        if (initialToday != null) {
+            StatisticsUiState(
+                settingIconStyle = preloadCache.settingIconStyleState.value,
+                isLoading = initialStats == null,
+                isListsLoading = false,
+                stats = initialStats,
+                recentRecords = preloadCache.recent30DaysState.value,
+                weekRecords = preloadCache.recent7DaysState.value,
+                selectedDate = initialToday.date,
+                reviewForecast = preloadCache.reviewForecastState.value,
+                selectedDateReviewCount = initialStats?.let { it.dueWords + it.dueGrammars } ?: 0,
+                todaysWords = initialToday.words,
+                todaysGrammars = initialToday.grammars
+            )
+        } else {
+            StatisticsUiState(
+                settingIconStyle = preloadCache.settingIconStyleState.value,
+                isLoading = initialStats == null,
+                isListsLoading = true,
+                stats = initialStats,
+                recentRecords = preloadCache.recent30DaysState.value,
+                weekRecords = preloadCache.recent7DaysState.value,
+                selectedDate = -1L,
+                reviewForecast = preloadCache.reviewForecastState.value
+            )
+        }
+    )
     val uiState: StateFlow<StatisticsUiState> = _uiState.asStateFlow()
 
     init {
-        loadStatistics()
+        preloadCache.ensureStartedNow()
+        observePreloadedSummary()
         observeSelectedDate()
         syncTodayDate()
         observeSettingIconStyle()
@@ -75,62 +90,53 @@ class StatisticsViewModel @Inject constructor(
         viewModelScope.launch {
             val resetHour = settingsRepository.learningDayResetHourFlow.first()
             val today = DateTimeUtils.getLearningDay(resetHour)
-            _uiState.update { it.copy(selectedDate = today) }
+            preloadCache.refreshTodayIfDateChanged(today)
+            if (_uiState.value.selectedDate != today) {
+                _uiState.update {
+                    it.copy(
+                        selectedDate = today,
+                        isListsLoading = preloadCache.todayListsState.value?.date != today
+                    )
+                }
+            }
         }
     }
 
     /**
-     * 加载统计数据
+     * 同步预加载与实时统计概览数据
      */
-    private fun loadStatistics() {
+    private fun observePreloadedSummary() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            try {
-                // 加载学习统计 (现在是一个 Flow)
-                launch {
-                    getLearningStatsUseCase().collect { stats ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                stats = stats,
-                                error = null
-                            )
-                        }
-                    }
-                }
-
-                // 加载最近30天记录（用于趋势图）
-                val recent30Days = getRecentRecordsUseCase(30)
-
-                // 加载最近7天记录（用于周视图）
-                val recent7Days = getRecentRecordsUseCase(7)
-
-                 _uiState.update {
-                    it.copy(
-                        recentRecords = recent30Days,
-                        weekRecords = recent7Days
-                    )
-                }
-
-                // 加载复习预测
-                launch {
-                    getReviewForecastUseCase().collect { forecast ->
-                        _uiState.update { it.copy(reviewForecast = forecast) }
-                        // 更新选中日期的复习数量（如果选中了未来日期）
-                        updateSelectedDateReviewCount(_uiState.value.selectedDate, forecast)
-                    }
-                }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = context.getString(
-                            R.string.stats_screen_format_load_failed,
-                            e.message ?: ""
+            preloadCache.learningStatsState
+                .filterNotNull()
+                .collect { stats ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            stats = stats,
+                            error = null
                         )
-                    )
+                    }
+                    updateSelectedDateReviewCount(_uiState.value.selectedDate, _uiState.value.reviewForecast)
                 }
+        }
+
+        viewModelScope.launch {
+            preloadCache.recent30DaysState.collect { records ->
+                _uiState.update { it.copy(recentRecords = records) }
+            }
+        }
+
+        viewModelScope.launch {
+            preloadCache.recent7DaysState.collect { records ->
+                _uiState.update { it.copy(weekRecords = records) }
+            }
+        }
+
+        viewModelScope.launch {
+            preloadCache.reviewForecastState.collect { forecast ->
+                _uiState.update { it.copy(reviewForecast = forecast) }
+                updateSelectedDateReviewCount(_uiState.value.selectedDate, forecast)
             }
         }
     }
@@ -139,77 +145,28 @@ class StatisticsViewModel @Inject constructor(
     private fun observeSelectedDate() {
         viewModelScope.launch {
             _uiState.map { it.selectedDate }
+                .filter { it >= 0L }
                 .distinctUntilChanged()
                 .flatMapLatest { date ->
-                    combine(
-                        getLearnedWordsForDateUseCase(date),
-                        getLearnedGrammarsForDateUseCase(date),
-                        getReviewedWordsForDateUseCase(date),
-                        getReviewedGrammarsForDateUseCase(date)
-                    ) { learnedWords, learnedGrammars, reviewedWords, reviewedGrammars ->
-                        val learnedWordItems = learnedWords.map { word ->
-                            StatisticDisplayItem(
-                                id = word.id,
-                                japanese = word.japanese,
-                                hiragana = word.hiragana,
-                                chinese = word.chinese,
-                                level = word.level.uppercase(),
-                                source = StatisticSource.LEARNED
-                            )
-                        }
-
-                        val reviewedWordItems = reviewedWords
-                            .filterNot { reviewed -> learnedWords.any { it.id == reviewed.id } }
-                            .map { word ->
-                                StatisticDisplayItem(
-                                    id = word.id,
-                                    japanese = word.japanese,
-                                    hiragana = word.hiragana,
-                                    chinese = word.chinese,
-                                    level = word.level.uppercase(),
-                                    source = StatisticSource.REVIEWED
-                                )
-                            }
-
-                        val learnedGrammarItems = learnedGrammars.map { grammar ->
-                            StatisticDisplayItem(
-                                id = grammar.id,
-                                japanese = grammar.grammar,
-                                hiragana = grammar.getFirstConjunction() ?: "",
-                                chinese = grammar.getFirstExplanation(),
-                                level = grammar.grammarLevel.uppercase(),
-                                source = StatisticSource.LEARNED
-                            )
-                        }
-
-                        val reviewedGrammarItems = reviewedGrammars
-                            .filterNot { reviewed -> learnedGrammars.any { it.id == reviewed.id } }
-                            .map { grammar ->
-                                StatisticDisplayItem(
-                                    id = grammar.id,
-                                    japanese = grammar.grammar,
-                                    hiragana = grammar.getFirstConjunction() ?: "",
-                                    chinese = grammar.getFirstExplanation(),
-                                    level = grammar.grammarLevel.uppercase(),
-                                    source = StatisticSource.REVIEWED
-                                )
-                            }
-
-                        Triple(
-                            date,
-                            learnedWordItems + reviewedWordItems,
-                            learnedGrammarItems + reviewedGrammarItems
-                        )
+                    val cachedToday = preloadCache.todayListsState.value
+                    if (cachedToday != null && cachedToday.date == date) {
+                        preloadCache.todayListsState
+                            .filterNotNull()
+                            .filter { it.date == date }
+                            .map { Triple(date, it.words, it.grammars) }
+                    } else {
+                        preloadCache.observeListsForDate(date)
+                            .map { (words, grammars) -> Triple(date, words, grammars) }
                     }
                 }
                 .collect { (date, wordItems, grammarItems) ->
-                    val forecast = _uiState.value.reviewForecast
-                    updateSelectedDateReviewCount(date, forecast)
+                    updateSelectedDateReviewCount(date, _uiState.value.reviewForecast)
 
                     _uiState.update {
                         it.copy(
                             todaysWords = wordItems,
-                            todaysGrammars = grammarItems
+                            todaysGrammars = grammarItems,
+                            isListsLoading = false
                         )
                     }
                 }
@@ -217,18 +174,16 @@ class StatisticsViewModel @Inject constructor(
     }
 
     private fun updateSelectedDateReviewCount(date: Long, forecast: List<com.jian.nemo.core.domain.model.ReviewForecast>) {
+        if (date < 0L) return
         viewModelScope.launch {
             val resetHour = settingsRepository.learningDayResetHourFlow.first()
             val today = DateTimeUtils.getLearningDay(resetHour)
             val reviewCount = if (date == today) {
-                // 今天: 使用实时待复习数量 (从 stats 中获取)
                 val stats = _uiState.value.stats
                 (stats?.dueWords ?: 0) + (stats?.dueGrammars ?: 0)
             } else if (date > today) {
-                // 未来: 使用预测数据
                 forecast.find { it.date == date }?.totalCount ?: 0
             } else {
-                // 过去: 0
                 0
             }
 
@@ -240,19 +195,22 @@ class StatisticsViewModel @Inject constructor(
      * 选择日期
      */
     fun selectDate(date: Long) {
-        _uiState.update { it.copy(selectedDate = date) }
+        if (date != _uiState.value.selectedDate) {
+            val hasCachedToday = preloadCache.todayListsState.value?.date == date
+            _uiState.update {
+                it.copy(
+                    selectedDate = date,
+                    isListsLoading = !hasCachedToday
+                )
+            }
+        }
     }
 
     /**
      * 刷新统计数据
      */
     fun refresh() {
-        loadStatistics()
-        // 重新触发日期观察
-        val currentDate = _uiState.value.selectedDate
-        // 简单触发方式：设置相同日期不会触发 distinctUntilChanged，但我们主要刷新的是数据源
-        // 由于 loadStatistics 重新加载了 forecast 和 stats，
-        // 而 words/grammars 是通过 Flow 监听的，数据库变动会自动推送，所以不需要手动刷新
+        preloadCache.ensureStartedNow()
     }
 
     /**
@@ -276,6 +234,11 @@ data class StatisticsUiState(
      * 是否正在加载
      */
     val isLoading: Boolean = false,
+
+    /**
+     * 当日单词/语法明细列表是否尚处于首次查询中
+     */
+    val isListsLoading: Boolean = false,
 
     /**
      * 学习统计数据

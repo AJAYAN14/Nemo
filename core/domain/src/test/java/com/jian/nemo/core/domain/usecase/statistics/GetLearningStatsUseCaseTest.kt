@@ -84,12 +84,8 @@ class GetLearningStatsUseCaseTest {
         every { grammarRepository.getTodayReviewedGrammars(100L) } returns flowOf(todayReviewedGrammars)
         every { wordRepository.getAllLearnedWords() } returns flowOf(allLearnedWords)
         every { grammarRepository.getAllLearnedGrammars() } returns flowOf(allLearnedGrammars)
-        every { wordRepository.getAllWordsByLevel("N1") } returns flowOf(emptyList())
-        every { wordRepository.getAllWordsByLevel("N2") } returns flowOf(emptyList())
-        every { wordRepository.getAllWordsByLevel("N3") } returns flowOf(emptyList())
-        every { wordRepository.getAllWordsByLevel("N4") } returns flowOf(emptyList())
-        every { wordRepository.getAllWordsByLevel("N5") } returns flowOf(emptyList())
-        every { grammarRepository.getAllGrammars() } returns flowOf(emptyList())
+        every { wordRepository.getWordTotalCountsByLevel() } returns flowOf(emptyMap())
+        every { grammarRepository.getGrammarTotalCountsByLevel() } returns flowOf(emptyMap())
     }
 
     @Test

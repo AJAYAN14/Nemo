@@ -46,6 +46,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import com.jian.nemo.core.ui.navigation.DetailContextHolder
 
 import com.jian.nemo.feature.statistics.components.LevelBreakdownDialog
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -69,7 +71,14 @@ fun HistoricalStatisticsScreen(
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     val listState = rememberLazyListState()
-    val backdrop = rememberLayerBackdrop()
+    val backdrop = rememberLayerBackdrop {
+        drawRect(
+            color = backgroundColor,
+            size = Size(this.size.width * 3, this.size.height * 3),
+            topLeft = Offset(-this.size.width, -this.size.height)
+        )
+        drawContent()
+    }
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -137,6 +146,8 @@ fun HistoricalStatisticsScreen(
                             isWord = true,
                             showSourceBadge = false
                         )
+                    } else if (uiState.isLoading) {
+                        StatisticsListSkeletonCard()
                     } else {
                         EmptyStatisticsState(
                             message = stringResource(R.string.stats_history_empty_words_message),
@@ -163,6 +174,8 @@ fun HistoricalStatisticsScreen(
                             isWord = false,
                             showSourceBadge = false
                         )
+                    } else if (uiState.isLoading) {
+                        StatisticsListSkeletonCard()
                     } else {
                         EmptyStatisticsState(
                             message = stringResource(R.string.stats_history_empty_grammars_message),
@@ -252,7 +265,7 @@ fun HistoricalSummaryCard(
     PremiumCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Words
             StatItem(
@@ -301,7 +314,7 @@ fun StatItem(
                 scaleX = scale
                 scaleY = scale
             }
-            .clip(RoundedRectangle(20.dp))
+            .clip(RoundedRectangle(14.dp))
             .background(color.copy(alpha = bgAlpha))
             .clickable(
                 interactionSource = interactionSource,
@@ -365,6 +378,6 @@ private fun PremiumCard(
                 scaleY = scale
             },
         interactionSource = interactionSource,
-        content = { Column(modifier = Modifier.padding(20.dp), content = content) }
+        content = { Column(modifier = Modifier.padding(12.dp), content = content) }
     )
 }

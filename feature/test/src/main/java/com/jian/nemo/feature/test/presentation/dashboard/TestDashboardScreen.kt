@@ -88,7 +88,7 @@ fun TestDashboardScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = statusBarHeight + 16.dp,
-                    bottom = navigationBarHeight + 100.dp
+                    bottom = navigationBarHeight + 104.dp
                 )
         ) {
             ImmersiveTestHeader(title = stringResource(R.string.test_dashboard_title_screen))
@@ -216,8 +216,6 @@ fun TestDashboardScreen(
                     onClick = onNavigateToAbilityWorkshop
                 )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }

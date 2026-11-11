@@ -61,8 +61,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
 import androidx.compose.runtime.remember
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.haze
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import kotlin.time.Duration.Companion.minutes
@@ -223,7 +221,6 @@ fun NemoApp(
     // 根据当前路由和主题标准化系统栏配置
     SetupSystemBars(isSplashScreen = isSplashScreen)
 
-    val hazeState = remember { HazeState() }
     val backdrop = rememberLayerBackdrop()
 
     Scaffold(
@@ -232,7 +229,6 @@ fun NemoApp(
                 currentRoute = currentRoute,
                 onNavigate = appState::navigateToTopLevelDestination,
                 visible = showBottomBar,
-                hazeState = hazeState,
                 backdrop = backdrop,
                 user = uiState.currentUser
             )
@@ -240,15 +236,16 @@ fun NemoApp(
         contentWindowInsets = WindowInsets(0.dp)
     ) { _ ->
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .haze(hazeState),
+            modifier = Modifier.fillMaxSize(),
             color = Color.Transparent
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .layerBackdrop(backdrop)
+                    .layerBackdrop(
+                        backdrop = backdrop,
+                        enabled = showBottomBar
+                    )
             ) {
                 NemoNavHost(
                     navController = appState.navController,

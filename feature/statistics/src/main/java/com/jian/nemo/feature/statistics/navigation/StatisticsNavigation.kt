@@ -1,31 +1,44 @@
 package com.jian.nemo.feature.statistics.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import com.jian.nemo.core.ui.navigation.NavDestination
 import com.jian.nemo.feature.statistics.StatisticsScreen
 import com.jian.nemo.feature.statistics.HistoricalStatisticsScreen
 import com.jian.nemo.feature.statistics.presentation.dashboard.LeechManagementScreen
-
-/**
- * 统计功能导航路由
- */
-import com.jian.nemo.core.ui.navigation.NavDestination
 
 /**
  * 注册今日统计界面到导航图
  */
 fun NavGraphBuilder.statisticsScreen(navController: NavHostController) {
     composable(route = NavDestination.STATISTICS) {
-        StatisticsScreen(
-            onBack = { navController.popBackStack() },
-            onNavigateToWordDetail = { wordId ->
-                navController.navigate(NavDestination.wordDetail(wordId))
-            },
-            onNavigateToGrammarDetail = { grammarId ->
-                navController.navigate(NavDestination.grammarDetail(grammarId))
-            }
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    compositingStrategy = if (transition.currentState != transition.targetState) {
+                        CompositingStrategy.Offscreen
+                    } else {
+                        CompositingStrategy.Auto
+                    }
+                }
+        ) {
+            StatisticsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToWordDetail = { wordId ->
+                    navController.navigate(NavDestination.wordDetail(wordId))
+                },
+                onNavigateToGrammarDetail = { grammarId ->
+                    navController.navigate(NavDestination.grammarDetail(grammarId))
+                }
+            )
+        }
     }
 }
 

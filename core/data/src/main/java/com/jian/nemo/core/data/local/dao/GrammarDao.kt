@@ -642,9 +642,27 @@ interface GrammarDao {
         AND g.is_delisted = 0
     """)
     suspend fun getGrammarCountByLevel(level: String): Int
+
+    /**
+     * 按等级统计可用语法总数
+     */
+    @Query("""
+        SELECT UPPER(g.grammar_level) AS level, COUNT(*) AS count
+        FROM grammars g
+        LEFT JOIN grammar_study_states s ON g.id = s.grammar_id
+        WHERE (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND g.is_delisted = 0
+        GROUP BY UPPER(g.grammar_level)
+    """)
+    fun getGrammarTotalCountsByLevel(): Flow<List<GrammarLevelCountTuple>>
 }
 
 data class GrammarReviewForecastTuple(
     val date: Long,
+    val count: Int
+)
+
+data class GrammarLevelCountTuple(
+    val level: String,
     val count: Int
 )

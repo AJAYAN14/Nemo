@@ -6,6 +6,7 @@ import com.jian.nemo.core.domain.model.LearningStats
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.usecase.statistics.GetLearningStatsUseCase
+import com.jian.nemo.feature.statistics.StatisticsPreloadCache
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -28,7 +29,8 @@ data class ProgressDashboardUiState(
 @HiltViewModel
 class ProgressDashboardViewModel @Inject constructor(
     private val getLearningStatsUseCase: GetLearningStatsUseCase,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val statisticsPreloadCache: StatisticsPreloadCache
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProgressDashboardUiState())
@@ -37,6 +39,7 @@ class ProgressDashboardViewModel @Inject constructor(
     init {
         loadStats()
         observeSettings()
+        statisticsPreloadCache.warmUpAfterDelay(380L)
     }
 
     private fun loadStats() {
