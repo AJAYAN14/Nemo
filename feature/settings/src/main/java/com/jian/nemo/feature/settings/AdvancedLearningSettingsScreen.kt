@@ -200,7 +200,7 @@ fun AdvancedLearningSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // 顶部弹性占位：未滑动时避开顶栏，向上滚动时平滑穿入顶栏遮罩与液态玻璃下方
-            Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 12.dp))
+            Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
 
             // 1. 流体记忆视界 HUD 仿真卡片 (动态衰减曲面 + SloshGauge 负荷蓄水池)
             LiquidMemoryHud(
@@ -264,19 +264,21 @@ fun AdvancedLearningSettingsScreen(
             Spacer(modifier = Modifier.height(navBarBottom + 84.dp))
         }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和多阶垂直渐变保护遮罩，读取 backdrop 物理透镜折射）
+        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        0.0f to backgroundColor,
-                        0.70f to backgroundColor.copy(alpha = 0.98f),
-                        0.88f to backgroundColor.copy(alpha = 0.60f),
-                        1.0f to Color.Transparent
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0.95f),
+                            backgroundColor.copy(alpha = 0.75f),
+                            backgroundColor.copy(alpha = 0.35f),
+                            Color.Transparent
+                        )
                     )
                 )
-                .padding(bottom = 20.dp)
+                .padding(bottom = 8.dp)
         ) {
             CommonHeader(
                 title = stringResource(R.string.settings_algorithm_title_header),
@@ -289,6 +291,7 @@ fun AdvancedLearningSettingsScreen(
                 },
                 backgroundColor = Color.Transparent,
                 backdrop = backdrop,
+                backButtonSize = 48.dp,
                 actions = {
                     // 右侧一键「恢复默认」流体玻璃按钮：仅当非默认配置时显示，严格采用 30/48 比例与环形 Replay 图标
                     AnimatedVisibility(

@@ -51,6 +51,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.jian.nemo.core.designsystem.theme.SystemColors
@@ -127,6 +128,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.learning.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -137,7 +139,8 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.tanh
 
-private val KanaCardShape = RoundedRectangle(20.dp)
+private val KanaCardCornerRadius = 14.dp
+private val KanaCardShape = RoundedRectangle(KanaCardCornerRadius)
 
 private data class KanaCell(
     val hiragana: String,
@@ -226,14 +229,14 @@ fun KanaChartScreen(
         typography.titleLarge.copy(
             fontFamily = NotoSerifJP,
             fontWeight = FontWeight.Black,
-            fontSize = 24.sp
+            fontSize = 21.sp
         )
     }
     val kanaStyleLong = remember(typography) {
         typography.titleLarge.copy(
             fontFamily = NotoSerifJP,
             fontWeight = FontWeight.Black,
-            fontSize = 18.sp
+            fontSize = 16.sp
         )
     }
     val romajiStyle = remember(typography) {
@@ -280,63 +283,89 @@ fun KanaChartScreen(
                 val rows = remember(data) { data.chunked(5) }
                 val scrollState = rememberScrollState()
 
+                val cardSurfaceColor = if (isDark) colorScheme.surfaceContainer else Color.White
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(scrollState)
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
 
                     SectionTitle(
                         text = stringResource(titleRes),
                         accentColor = accentColor,
-                        textMain = textMain
+                        textMain = textMain,
+                        modifier = Modifier.padding(
+                            top = 8.dp,
+                            bottom = if (descRes != null) 4.dp else 8.dp
+                        )
                     )
 
                     if (descRes != null) {
-                        SectionSubtitle(text = stringResource(descRes), textSub = textSub)
+                        SectionSubtitle(
+                            text = stringResource(descRes),
+                            textSub = textSub,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
                     }
 
-                    rows.forEachIndexed { rowIndex, row ->
-                        val rowColor = getCategoryRowColor(rowIndex, isDark)
-                        val rowBorder = remember(rowColor, isDark) {
-                            BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.30f else 0.12f))
-                        }
-                        val placeholderBorder = remember(rowColor, isDark) {
-                            BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.40f else 0.25f))
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    Surface(
+                        shape = RoundedRectangle(24.dp),
+                        color = cardSurfaceColor,
+                        tonalElevation = 0.dp,
+                        shadowElevation = 0.dp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            row.forEach { cell ->
-                                val kanaText = if (cell == null) "" else if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
-                                val cardAudioId = if (cell == null || cell.isEmpty || cell.isPlaceholder) "" else "kana_${kanaText.hashCode()}"
-                                val isPlaying = playingAudioId != null && cardAudioId.isNotEmpty() && playingAudioId == cardAudioId
-                                KanaCard(
-                                    modifier = Modifier.weight(1f),
-                                    cell = cell,
-                                    isKatakana = isKatakana,
-                                    rowColor = rowColor,
-                                    isDark = isDark,
-                                    isPlaying = isPlaying,
-                                    cardAudioId = cardAudioId,
-                                    defaultBorder = if (cell?.isPlaceholder == true) placeholderBorder else rowBorder,
-                                    playingBorder = playingCardBorder,
-                                    kanaStyleNormal = kanaStyleNormal,
-                                    kanaStyleLong = kanaStyleLong,
-                                    romajiStyle = romajiStyle,
-                                    textMeasurer = textMeasurer,
-                                    density = density,
-                                    layoutDirection = layoutDirection,
-                                    onSpeak = onSpeakAction,
-                                    onHaptic = onHapticAction
-                                )
-                            }
-                            repeat(5 - row.size) {
-                                Spacer(modifier = Modifier.weight(1f))
+                            rows.forEachIndexed { rowIndex, row ->
+                                val rowColor = getCategoryRowColor(rowIndex, isDark)
+                                val rowBorder = remember(rowColor, isDark) {
+                                    BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.30f else 0.12f))
+                                }
+                                val placeholderBorder = remember(rowColor, isDark) {
+                                    BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.40f else 0.25f))
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    row.forEach { cell ->
+                                        val kanaText = if (cell == null) "" else if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
+                                        val cardAudioId = if (cell == null || cell.isEmpty || cell.isPlaceholder) "" else "kana_${kanaText.hashCode()}"
+                                        val isPlaying = playingAudioId != null && cardAudioId.isNotEmpty() && playingAudioId == cardAudioId
+                                        KanaCard(
+                                            modifier = Modifier.weight(1f),
+                                            cell = cell,
+                                            isKatakana = isKatakana,
+                                            rowColor = rowColor,
+                                            isDark = isDark,
+                                            isPlaying = isPlaying,
+                                            cardAudioId = cardAudioId,
+                                            defaultBorder = if (cell?.isPlaceholder == true) placeholderBorder else rowBorder,
+                                            playingBorder = playingCardBorder,
+                                            kanaStyleNormal = kanaStyleNormal,
+                                            kanaStyleLong = kanaStyleLong,
+                                            romajiStyle = romajiStyle,
+                                            textMeasurer = textMeasurer,
+                                            density = density,
+                                            layoutDirection = layoutDirection,
+                                            onSpeak = onSpeakAction,
+                                            onHaptic = onHapticAction
+                                        )
+                                    }
+                                    repeat(5 - row.size) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
                             }
                         }
                     }
@@ -501,12 +530,16 @@ private fun SectionTitle(
 }
 
 @Composable
-private fun SectionSubtitle(text: String, textSub: Color) {
+private fun SectionSubtitle(
+    text: String,
+    textSub: Color,
+    modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 2.dp)
+) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = textSub,
-        modifier = Modifier.padding(horizontal = 0.dp, vertical = 2.dp)
+        modifier = modifier
     )
 }
 
@@ -593,7 +626,7 @@ private fun KanaCard(
                         drawRoundRect(
                             color = emptyBorderColor,
                             style = stroke,
-                            cornerRadius = CornerRadius(20.dp.toPx())
+                            cornerRadius = CornerRadius(KanaCardCornerRadius.toPx())
                         )
                     }
                 }

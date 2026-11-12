@@ -234,6 +234,13 @@ fun LiquidMemoryHud(
                         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
                     )
             ) {
+                val wavePath = remember { Path() }
+                val curvePath = remember { Path() }
+                val glowPath = remember { Path() }
+                var lastCalculatedRetention by remember { mutableFloatStateOf(-1f) }
+                var lastWidth by remember { mutableFloatStateOf(-1f) }
+                var lastHeight by remember { mutableFloatStateOf(-1f) }
+
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val width = size.width
                     val height = size.height
@@ -241,19 +248,18 @@ fun LiquidMemoryHud(
 
                     // 1. 绘制底部 SloshGauge 负荷蓄水池波浪 (水面高度随留存率上升)
                     val waterLevel = height * (0.85f - retentionRatio * 0.45f)
-                    val wavePath = Path().apply {
-                        moveTo(0f, height)
-                        lineTo(0f, waterLevel)
-                        val stepX = 10f
-                        var x = 0f
-                        while (x <= width) {
-                            val waveY = waterLevel + sin((x / width * 3 * PI.toFloat()) + wavePhase) * 6f
-                            lineTo(x, waveY)
-                            x += stepX
-                        }
-                        lineTo(width, height)
-                        close()
+                    wavePath.rewind()
+                    wavePath.moveTo(0f, height)
+                    wavePath.lineTo(0f, waterLevel)
+                    val stepX = 14f
+                    var x = 0f
+                    while (x <= width) {
+                        val waveY = waterLevel + sin((x / width * 3 * PI.toFloat()) + wavePhase) * 6f
+                        wavePath.lineTo(x, waveY)
+                        x += stepX
                     }
+                    wavePath.lineTo(width, height)
+                    wavePath.close()
 
                     drawPath(
                         path = wavePath,
@@ -265,26 +271,31 @@ fun LiquidMemoryHud(
                         )
                     )
 
-                    // 2. 绘制 FSRS 遗忘衰减主曲线
-                    val curvePath = Path().apply {
+                    // 2. 绘制 FSRS 遗忘衰减主曲线 (仅在留存率或尺寸变更时重新计算，避免每帧分配临时 Path 与密集浮点开销)
+                    if (targetRetention != lastCalculatedRetention || width != lastWidth || height != lastHeight) {
+                        lastCalculatedRetention = targetRetention
+                        lastWidth = width
+                        lastHeight = height
+
+                        curvePath.rewind()
                         val decayFactor = (1.05f - targetRetention).coerceIn(0.06f, 0.40f)
-                        moveTo(0f, height * 0.15f)
+                        curvePath.moveTo(0f, height * 0.15f)
                         val pointsCount = 40
                         for (i in 1..pointsCount) {
                             val px = (i.toFloat() / pointsCount) * width
                             val t = (i.toFloat() / pointsCount) * 4f
                             val py = (height * 0.15f) + (height * 0.75f) * (1f - exp(-t * decayFactor))
-                            lineTo(px, py)
+                            curvePath.lineTo(px, py)
                         }
+
+                        glowPath.rewind()
+                        glowPath.addPath(curvePath)
+                        glowPath.lineTo(width, height)
+                        glowPath.lineTo(0f, height)
+                        glowPath.close()
                     }
 
                     // 曲线背景渐变发光
-                    val glowPath = Path().apply {
-                        addPath(curvePath)
-                        lineTo(width, height)
-                        lineTo(0f, height)
-                        close()
-                    }
                     drawPath(
                         path = glowPath,
                         brush = Brush.verticalGradient(

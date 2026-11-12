@@ -740,12 +740,23 @@ fun NemoNavHost(
         }
  
         // 记忆算法设置
-        composable(NavDestination.ADVANCED_LEARNING) {
-            SubScreenContainer {
-                com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
-                )
+        composable(NavDestination.ADVANCED_LEARNING) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                try {
+                    navController.getBackStackEntry(NavDestination.SETTINGS)
+                } catch (_: Exception) {
+                    null
+                }
             }
+            val viewModel: SettingsViewModel = if (parentEntry != null) {
+                hiltViewModel(parentEntry)
+            } else {
+                hiltViewModel()
+            }
+            com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                viewModel = viewModel
+            )
         }
 
         // 词性分类
