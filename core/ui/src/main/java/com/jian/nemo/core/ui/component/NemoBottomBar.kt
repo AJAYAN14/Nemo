@@ -83,6 +83,8 @@ fun NemoBottomBar(
     visible: Boolean = true,
     hazeState: HazeState? = null,
     backdrop: Backdrop? = null,
+    enableBackdrop: Boolean = true,
+    onInteractionChanged: ((Boolean) -> Unit)? = null,
     user: User? = null
 ) {
     // 根据主题判断深色/浅色模式
@@ -235,8 +237,10 @@ fun NemoBottomBar(
                     },
                     backdrop = backdrop,
                     tabsCount = tabsCount,
+                    enableBackdrop = enableBackdrop,
                     accentColor = themePrimary,
-                    isDarkTheme = isDarkTheme
+                    isDarkTheme = isDarkTheme,
+                    onInteractionChanged = onInteractionChanged
                 ) {
                     BottomNavItem.entries.forEachIndexed { index, item ->
                         val isSelected = activeTabIndex == index

@@ -2,11 +2,16 @@ package com.jian.nemo.core.ui.modifier
 
 import android.graphics.BlurMaskFilter
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.UiPalette
@@ -28,32 +33,125 @@ fun Modifier.softShadow(
     offsetY: Dp = 2.dp,
     offsetX: Dp = 0.dp,
     spread: Dp = 0.dp
-): Modifier = this.drawBehind {
-    drawIntoCanvas { canvas ->
-        val paint = Paint()
-        val frameworkPaint = paint.asFrameworkPaint()
+): Modifier = this then SoftShadowElement(
+    color = color,
+    borderRadius = borderRadius,
+    blurRadius = blurRadius,
+    offsetY = offsetY,
+    offsetX = offsetX,
+    spread = spread
+)
 
-        val blurPx = blurRadius.toPx()
-        if (blurPx > 0f) {
-            frameworkPaint.maskFilter = BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL)
+private data class SoftShadowElement(
+    val color: Color,
+    val borderRadius: Dp,
+    val blurRadius: Dp,
+    val offsetY: Dp,
+    val offsetX: Dp,
+    val spread: Dp
+) : ModifierNodeElement<SoftShadowNode>() {
+    override fun create(): SoftShadowNode = SoftShadowNode(
+        color = color,
+        borderRadius = borderRadius,
+        blurRadius = blurRadius,
+        offsetY = offsetY,
+        offsetX = offsetX,
+        spread = spread
+    )
+
+    override fun update(node: SoftShadowNode) {
+        val changed = node.color != color ||
+            node.borderRadius != borderRadius ||
+            node.blurRadius != blurRadius ||
+            node.offsetY != offsetY ||
+            node.offsetX != offsetX ||
+            node.spread != spread
+        if (changed) {
+            node.color = color
+            node.borderRadius = borderRadius
+            node.blurRadius = blurRadius
+            node.offsetY = offsetY
+            node.offsetX = offsetX
+            node.spread = spread
+            node.invalidateCache()
+            node.invalidateDraw()
         }
-        frameworkPaint.color = color.toArgb()
+    }
 
-        val left = offsetX.toPx() - spread.toPx()
-        val top = offsetY.toPx() - spread.toPx()
-        val right = size.width + offsetX.toPx() + spread.toPx()
-        val bottom = size.height + offsetY.toPx() + spread.toPx()
-        val cornerRadiusPx = borderRadius.toPx()
+    override fun InspectorInfo.inspectableProperties() {
+        name = "softShadow"
+        properties["color"] = color
+        properties["borderRadius"] = borderRadius
+        properties["blurRadius"] = blurRadius
+        properties["offsetY"] = offsetY
+        properties["offsetX"] = offsetX
+        properties["spread"] = spread
+    }
+}
 
-        canvas.drawRoundRect(
-            left = left,
-            top = top,
-            right = right,
-            bottom = bottom,
-            radiusX = cornerRadiusPx,
-            radiusY = cornerRadiusPx,
-            paint = paint
-        )
+private class SoftShadowNode(
+    var color: Color,
+    var borderRadius: Dp,
+    var blurRadius: Dp,
+    var offsetY: Dp,
+    var offsetX: Dp,
+    var spread: Dp
+) : DrawModifierNode, Modifier.Node() {
+
+    override val shouldAutoInvalidate: Boolean = false
+
+    private val paint = Paint()
+    private var cachedSize = Size.Unspecified
+    private var cachedDensity = Float.NaN
+    private var paramsDirty = true
+
+    private var left = 0f
+    private var top = 0f
+    private var right = 0f
+    private var bottom = 0f
+    private var cornerRadiusPx = 0f
+
+    fun invalidateCache() {
+        paramsDirty = true
+    }
+
+    override fun ContentDrawScope.draw() {
+        if (paramsDirty || size != cachedSize || density != cachedDensity) {
+            val frameworkPaint = paint.asFrameworkPaint()
+            val blurPx = blurRadius.toPx()
+            frameworkPaint.maskFilter = if (blurPx > 0f) {
+                BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL)
+            } else {
+                null
+            }
+            frameworkPaint.color = color.toArgb()
+
+            val offsetXPx = offsetX.toPx()
+            val offsetYPx = offsetY.toPx()
+            val spreadPx = spread.toPx()
+            left = offsetXPx - spreadPx
+            top = offsetYPx - spreadPx
+            right = size.width + offsetXPx + spreadPx
+            bottom = size.height + offsetYPx + spreadPx
+            cornerRadiusPx = borderRadius.toPx()
+
+            cachedSize = size
+            cachedDensity = density
+            paramsDirty = false
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.drawRoundRect(
+                left = left,
+                top = top,
+                right = right,
+                bottom = bottom,
+                radiusX = cornerRadiusPx,
+                radiusY = cornerRadiusPx,
+                paint = paint
+            )
+        }
+        drawContent()
     }
 }
 

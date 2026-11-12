@@ -60,7 +60,10 @@ import com.jian.nemo.core.ui.component.update.UpdateDialog
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.jian.nemo.core.ui.component.dialog.GoogleTtsInstallDialog
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.jian.nemo.core.ui.animation.LocalDecorativeAnimationsPaused
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import kotlin.time.Duration.Companion.minutes
@@ -222,6 +225,7 @@ fun NemoApp(
     SetupSystemBars(isSplashScreen = isSplashScreen)
 
     val backdrop = rememberLayerBackdrop()
+    val isBottomBarInteracting = remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -230,6 +234,8 @@ fun NemoApp(
                 onNavigate = appState::navigateToTopLevelDestination,
                 visible = showBottomBar,
                 backdrop = backdrop,
+                enableBackdrop = true,
+                onInteractionChanged = { isBottomBarInteracting.value = it },
                 user = uiState.currentUser
             )
         },
@@ -247,12 +253,16 @@ fun NemoApp(
                         enabled = showBottomBar
                     )
             ) {
-                NemoNavHost(
-                    navController = appState.navController,
-                    onCheckUpdate = {
-                        viewModel.checkUpdate(currentVersionCode, isManual = true)
-                    }
-                )
+                CompositionLocalProvider(
+                    LocalDecorativeAnimationsPaused provides isBottomBarInteracting
+                ) {
+                    NemoNavHost(
+                        navController = appState.navController,
+                        onCheckUpdate = {
+                            viewModel.checkUpdate(currentVersionCode, isManual = true)
+                        }
+                    )
+                }
 
                 val statusBarHeight = with(LocalDensity.current) {
                     WindowInsets.statusBars.getTop(this).toDp()

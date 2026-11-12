@@ -1,12 +1,13 @@
 package com.jian.nemo.feature.learning.presentation.kana
 
-import android.view.HapticFeedbackConstants
+import android.os.Build
+import android.util.LruCache
 import com.jian.nemo.core.designsystem.theme.LearningPalette
-import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.screenBackground
-import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.component.liquid.createInteractiveHighlightRuntimeShader
+import com.jian.nemo.core.ui.component.liquid.resolveShapeBorderMask
+import com.jian.nemo.core.ui.component.liquid.resolveShapeFillMask
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.ui.graphics.Brush
@@ -16,91 +17,127 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.asPaddingValues
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.AnimationVector2D
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import com.jian.nemo.core.designsystem.theme.SystemColors
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.PointerInputModifierNode
+import androidx.compose.ui.node.SemanticsModifierNode
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.node.invalidateSemantics
+import androidx.compose.ui.platform.InspectorInfo
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp.Companion.Hairline
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastCoerceAtMost
+import androidx.compose.ui.util.fastCoerceIn
+import androidx.compose.ui.util.lerp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.collectAsState
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.learning.R
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.roundToInt
+import kotlin.math.sin
+import kotlin.math.tanh
+
+private val KanaCardShape = RoundedRectangle(20.dp)
 
 private data class KanaCell(
     val hiragana: String,
@@ -157,12 +194,9 @@ fun KanaChartScreen(
     onNavigateBack: () -> Unit,
     viewModel: KanaChartViewModel = hiltViewModel()
 ) {
-    val iconStyle by viewModel.iconStyle.collectAsState()
-
     val colorScheme = MaterialTheme.colorScheme
     val isDark = colorScheme.background.luminance() < 0.5f
     val haptic = LocalHapticFeedback.current
-    val view = LocalView.current
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     val textMain = if (isDark) colorScheme.onSurface else LearningPalette.KanaSlateDark
@@ -177,23 +211,48 @@ fun KanaChartScreen(
         else -> if (isDark) SystemColors.IndigoDark else SystemColors.Indigo
     }
 
-    val scope = rememberCoroutineScope()
     val playingAudioId by viewModel.playingAudioId.collectAsState()
 
     val sectionOrder = remember { mapOf("seion" to 0, "dakuon" to 1, "yoon" to 2) }
     val backdrop = rememberLayerBackdrop()
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val textMeasurer = rememberTextMeasurer(cacheSize = 256)
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
 
-    val effectiveBackdrop = backdrop
+    val typography = MaterialTheme.typography
+    val kanaStyleNormal = remember(typography) {
+        typography.titleLarge.copy(
+            fontFamily = NotoSerifJP,
+            fontWeight = FontWeight.Black,
+            fontSize = 24.sp
+        )
+    }
+    val kanaStyleLong = remember(typography) {
+        typography.titleLarge.copy(
+            fontFamily = NotoSerifJP,
+            fontWeight = FontWeight.Black,
+            fontSize = 18.sp
+        )
+    }
+    val romajiStyle = remember(typography) {
+        typography.labelSmall.copy(
+            fontWeight = FontWeight.Medium
+        )
+    }
+    val playingCardBorder = remember { BorderStroke(2.dp, Color.White) }
 
-    CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-        ) {
-        // 1. 底层页面内容（被 backdrop 采样源录制，全屏贯穿至状态栏）
+    val onSpeakAction = remember(viewModel) {
+        { speakText: String, id: String -> viewModel.speakKana(speakText, id) }
+    }
+    val onHapticAction = remember(haptic) {
+        { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -219,52 +278,61 @@ fun KanaChartScreen(
                     else -> Triple(seionData, R.string.kana_section_seion, null)
                 }
                 val rows = remember(data) { data.chunked(5) }
+                val scrollState = rememberScrollState()
 
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .verticalScroll(scrollState)
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    item(key = "top_spacer") {
-                        Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
-                    }
+                    Spacer(modifier = Modifier.height(statusBarTop + 60.dp + 16.dp))
 
-                    item(key = "title") {
-                        SectionTitle(
-                            text = stringResource(titleRes),
-                            accentColor = accentColor,
-                            textMain = textMain
-                        )
-                    }
+                    SectionTitle(
+                        text = stringResource(titleRes),
+                        accentColor = accentColor,
+                        textMain = textMain
+                    )
 
                     if (descRes != null) {
-                        item(key = "desc") {
-                            SectionSubtitle(text = stringResource(descRes), textSub = textSub)
-                        }
+                        SectionSubtitle(text = stringResource(descRes), textSub = textSub)
                     }
 
-                    itemsIndexed(
-                        items = rows,
-                        key = { index, _ -> "${section}_row_$index" }
-                    ) { rowIndex, row ->
+                    rows.forEachIndexed { rowIndex, row ->
                         val rowColor = getCategoryRowColor(rowIndex, isDark)
+                        val rowBorder = remember(rowColor, isDark) {
+                            BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.30f else 0.12f))
+                        }
+                        val placeholderBorder = remember(rowColor, isDark) {
+                            BorderStroke(1.dp, rowColor.copy(alpha = if (isDark) 0.40f else 0.25f))
+                        }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             row.forEach { cell ->
+                                val kanaText = if (cell == null) "" else if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
+                                val cardAudioId = if (cell == null || cell.isEmpty || cell.isPlaceholder) "" else "kana_${kanaText.hashCode()}"
+                                val isPlaying = playingAudioId != null && cardAudioId.isNotEmpty() && playingAudioId == cardAudioId
                                 KanaCard(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .widthIn(min = 0.dp),
+                                    modifier = Modifier.weight(1f),
                                     cell = cell,
                                     isKatakana = isKatakana,
                                     rowColor = rowColor,
                                     isDark = isDark,
-                                    playingAudioId = playingAudioId,
-                                    onSpeak = { speakText, id -> viewModel.speakKana(speakText, id) },
-                                    onHaptic = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove) }
+                                    isPlaying = isPlaying,
+                                    cardAudioId = cardAudioId,
+                                    defaultBorder = if (cell?.isPlaceholder == true) placeholderBorder else rowBorder,
+                                    playingBorder = playingCardBorder,
+                                    kanaStyleNormal = kanaStyleNormal,
+                                    kanaStyleLong = kanaStyleLong,
+                                    romajiStyle = romajiStyle,
+                                    textMeasurer = textMeasurer,
+                                    density = density,
+                                    layoutDirection = layoutDirection,
+                                    onSpeak = onSpeakAction,
+                                    onHaptic = onHapticAction
                                 )
                             }
                             repeat(5 - row.size) {
@@ -273,9 +341,7 @@ fun KanaChartScreen(
                         }
                     }
 
-                    item(key = "bottom_spacer") {
-                        Spacer(modifier = Modifier.height(88.dp))
-                    }
+                    Spacer(modifier = Modifier.height(88.dp))
                 }
             }
         }
@@ -300,7 +366,7 @@ fun KanaChartScreen(
                 title = stringResource(R.string.kana_chart_title),
                 onBack = onNavigateBack,
                 backgroundColor = Color.Transparent,
-                backdrop = effectiveBackdrop,
+                backdrop = backdrop,
                 backButtonSize = 48.dp,
                 actions = {
                     val toggleFg = if (currentType == 0) {
@@ -310,11 +376,10 @@ fun KanaChartScreen(
                     }
                     FrostedLiquidGlassButton(
                         onClick = {
-                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             currentType = if (currentType == 0) 1 else 0
                         },
-                        backdrop = effectiveBackdrop,
+                        backdrop = backdrop,
                         contentPadding = PaddingValues(horizontal = 14.dp),
                         isInteractive = true,
                         modifier = Modifier.height(48.dp)
@@ -375,7 +440,7 @@ fun KanaChartScreen(
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         currentSection = sectionKey
                     },
-                    backdrop = effectiveBackdrop,
+                    backdrop = backdrop,
                     surfaceColor = if (isSelected) selectedSurface else unselectedSurface,
                     contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp),
                     isInteractive = true,
@@ -405,7 +470,6 @@ fun KanaChartScreen(
             }
         }
     }
-}
 }
 
 
@@ -447,6 +511,49 @@ private fun SectionSubtitle(text: String, textSub: Color) {
 }
 
 
+private val KanaPressSpec = spring(0.5f, 300f, 0.001f)
+private val KanaPositionSpec = spring(0.5f, 300f, Offset.VisibilityThreshold)
+
+private data class KanaTextCacheKey(
+    val text: String,
+    val fontSizeBits: Int,
+    val fontWeight: Int,
+    val density: Float,
+    val fontScale: Float,
+    val layoutDirection: LayoutDirection
+)
+
+private object KanaTextLayoutCache {
+    private val cache = LruCache<KanaTextCacheKey, TextLayoutResult>(384)
+
+    fun getOrMeasure(
+        text: String,
+        style: TextStyle,
+        textMeasurer: TextMeasurer,
+        density: Density,
+        layoutDirection: LayoutDirection
+    ): TextLayoutResult {
+        val key = KanaTextCacheKey(
+            text = text,
+            fontSizeBits = style.fontSize.value.toRawBits(),
+            fontWeight = style.fontWeight?.weight ?: 0,
+            density = density.density,
+            fontScale = density.fontScale,
+            layoutDirection = layoutDirection
+        )
+        cache.get(key)?.let { return it }
+        val measured = textMeasurer.measure(
+            text = text,
+            style = style,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip
+        )
+        cache.put(key, measured)
+        return measured
+    }
+}
+
 @Composable
 private fun KanaCard(
     modifier: Modifier = Modifier,
@@ -454,7 +561,16 @@ private fun KanaCard(
     isKatakana: Boolean,
     rowColor: Color,
     isDark: Boolean,
-    playingAudioId: String?,
+    isPlaying: Boolean,
+    cardAudioId: String,
+    defaultBorder: BorderStroke,
+    playingBorder: BorderStroke,
+    kanaStyleNormal: TextStyle,
+    kanaStyleLong: TextStyle,
+    romajiStyle: TextStyle,
+    textMeasurer: TextMeasurer,
+    density: Density,
+    layoutDirection: LayoutDirection,
     onSpeak: (String, String) -> Unit,
     onHaptic: () -> Unit
 ) {
@@ -468,7 +584,6 @@ private fun KanaCard(
         Box(
             modifier = modifier
                 .aspectRatio(1f)
-                .background(Color.Transparent)
                 .drawWithCache {
                     val stroke = Stroke(
                         width = 2.dp.toPx(),
@@ -487,110 +602,580 @@ private fun KanaCard(
     }
 
     val kanaText = if (isKatakana) cell.katakana.orEmpty() else cell.hiragana
-    val cardAudioId = "kana_${kanaText.hashCode()}"
-    val isPlaying = playingAudioId == cardAudioId
-
-    val solidTextColor = Color.White
-    val solidSubTextColor = Color.White.copy(alpha = 0.85f)
-
-    val playingBorderColor = Color.White
-    val defaultBorderColor = if (cell.isPlaceholder) {
-        rowColor.copy(alpha = if (isDark) 0.40f else 0.25f)
-    } else {
-        rowColor.copy(alpha = if (isDark) 0.30f else 0.12f)
+    val kanaStyle = if (kanaText.length > 2) kanaStyleLong else kanaStyleNormal
+    val kanaLayout = remember(kanaText, kanaStyle, textMeasurer, density, layoutDirection) {
+        KanaTextLayoutCache.getOrMeasure(kanaText, kanaStyle, textMeasurer, density, layoutDirection)
+    }
+    val romajiLayout = remember(cell.romaji, romajiStyle, textMeasurer, density, layoutDirection) {
+        KanaTextLayoutCache.getOrMeasure(cell.romaji, romajiStyle, textMeasurer, density, layoutDirection)
     }
 
-    val borderColor by animateColorAsState(
-        targetValue = if (isPlaying) playingBorderColor else defaultBorderColor,
-        animationSpec = tween(180),
-        label = "cardPlayingBorder"
+    val bgColor: Color
+    val textColor: Color
+    val subTextColor: Color
+    val activeBorder: BorderStroke
+    val interactive: Boolean
+    val speakText: String
+    if (cell.isPlaceholder) {
+        bgColor = rowColor.copy(alpha = if (isDark) 0.15f else 0.10f)
+        textColor = if (isDark) Color.White.copy(alpha = 0.50f) else rowColor.copy(alpha = 0.70f)
+        subTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else rowColor.copy(alpha = 0.50f)
+        activeBorder = defaultBorder
+        interactive = false
+        speakText = ""
+    } else {
+        bgColor = rowColor
+        textColor = Color.White
+        subTextColor = Color.White.copy(alpha = 0.85f)
+        activeBorder = if (isPlaying) playingBorder else defaultBorder
+        interactive = true
+        speakText = remember(cell, isKatakana) { cell.speakText(isKatakana) }
+    }
+
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .kanaCardSurface(
+                backgroundColor = bgColor,
+                border = activeBorder,
+                shape = KanaCardShape,
+                kanaLayout = kanaLayout,
+                romajiLayout = romajiLayout,
+                kanaColor = textColor,
+                romajiColor = subTextColor,
+                interactive = interactive,
+                accessibilityLabel = "$kanaText ${cell.romaji}",
+                speakText = speakText,
+                cardAudioId = cardAudioId,
+                onSpeak = onSpeak,
+                onHaptic = onHaptic
+            )
+    )
+}
+
+private fun Modifier.kanaCardSurface(
+    backgroundColor: Color,
+    border: BorderStroke,
+    shape: Shape,
+    kanaLayout: TextLayoutResult,
+    romajiLayout: TextLayoutResult,
+    kanaColor: Color,
+    romajiColor: Color,
+    interactive: Boolean,
+    accessibilityLabel: String,
+    speakText: String,
+    cardAudioId: String,
+    onSpeak: (String, String) -> Unit,
+    onHaptic: () -> Unit
+): Modifier = this then KanaCardSurfaceElement(
+    backgroundColor = backgroundColor,
+    border = border,
+    shape = shape,
+    kanaLayout = kanaLayout,
+    romajiLayout = romajiLayout,
+    kanaColor = kanaColor,
+    romajiColor = romajiColor,
+    interactive = interactive,
+    accessibilityLabel = accessibilityLabel,
+    speakText = speakText,
+    cardAudioId = cardAudioId,
+    onSpeak = onSpeak,
+    onHaptic = onHaptic
+)
+
+private data class KanaCardSurfaceElement(
+    val backgroundColor: Color,
+    val border: BorderStroke,
+    val shape: Shape,
+    val kanaLayout: TextLayoutResult,
+    val romajiLayout: TextLayoutResult,
+    val kanaColor: Color,
+    val romajiColor: Color,
+    val interactive: Boolean,
+    val accessibilityLabel: String,
+    val speakText: String,
+    val cardAudioId: String,
+    val onSpeak: (String, String) -> Unit,
+    val onHaptic: () -> Unit
+) : ModifierNodeElement<KanaCardSurfaceNode>() {
+    override fun create(): KanaCardSurfaceNode = KanaCardSurfaceNode(
+        backgroundColor = backgroundColor,
+        border = border,
+        shape = shape,
+        kanaLayout = kanaLayout,
+        romajiLayout = romajiLayout,
+        kanaColor = kanaColor,
+        romajiColor = romajiColor,
+        interactive = interactive,
+        accessibilityLabel = accessibilityLabel,
+        speakText = speakText,
+        cardAudioId = cardAudioId,
+        onSpeak = onSpeak,
+        onHaptic = onHaptic
     )
 
-    val cardShape = RoundedRectangle(20.dp)
-    val cardBorder = BorderStroke(if (isPlaying) 2.dp else 1.dp, borderColor)
+    override fun update(node: KanaCardSurfaceNode) {
+        val geometryChanged = node.shape != shape ||
+            node.border.width != border.width ||
+            (node.border.brush is SolidColor) != (border.brush is SolidColor)
+        val drawChanged = geometryChanged ||
+            node.backgroundColor != backgroundColor ||
+            node.border != border ||
+            node.kanaLayout !== kanaLayout ||
+            node.romajiLayout !== romajiLayout ||
+            node.kanaColor != kanaColor ||
+            node.romajiColor != romajiColor
+        val semanticsChanged = node.accessibilityLabel != accessibilityLabel ||
+            node.interactive != interactive ||
+            node.speakText != speakText ||
+            node.cardAudioId != cardAudioId
 
-    if (cell.isPlaceholder) {
-        val placeholderBg = rowColor.copy(alpha = if (isDark) 0.15f else 0.10f)
-        val placeholderTextColor = if (isDark) Color.White.copy(alpha = 0.50f) else rowColor.copy(alpha = 0.70f)
-        val placeholderSubTextColor = if (isDark) Color.White.copy(alpha = 0.35f) else rowColor.copy(alpha = 0.50f)
+        node.backgroundColor = backgroundColor
+        node.border = border
+        node.shape = shape
+        node.kanaLayout = kanaLayout
+        node.romajiLayout = romajiLayout
+        node.kanaColor = kanaColor
+        node.romajiColor = romajiColor
+        node.interactive = interactive
+        node.accessibilityLabel = accessibilityLabel
+        node.speakText = speakText
+        node.cardAudioId = cardAudioId
+        node.onSpeak = onSpeak
+        node.onHaptic = onHaptic
 
-        Surface(
-            modifier = modifier.aspectRatio(1f),
-            shape = cardShape,
-            color = placeholderBg,
-            border = cardBorder
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
+        if (!interactive) {
+            node.resetInteractionImmediate()
+        }
+        if (geometryChanged) {
+            node.invalidateCaches()
+        }
+        if (drawChanged) {
+            node.invalidateDraw()
+        }
+        if (semanticsChanged) {
+            node.invalidateSemantics()
+        }
+    }
 
-                Text(
-                    text = kanaText,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = NotoSerifJP,
-                        fontWeight = FontWeight.Black,
-                        fontSize = kanaSize
-                    ),
-                    color = placeholderTextColor
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = cell.romaji,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    color = placeholderSubTextColor
-                )
+    override fun InspectorInfo.inspectableProperties() {
+        name = "kanaCardSurface"
+        properties["accessibilityLabel"] = accessibilityLabel
+        properties["interactive"] = interactive
+    }
+}
+
+private class KanaCardSurfaceNode(
+    var backgroundColor: Color,
+    var border: BorderStroke,
+    var shape: Shape,
+    var kanaLayout: TextLayoutResult,
+    var romajiLayout: TextLayoutResult,
+    var kanaColor: Color,
+    var romajiColor: Color,
+    var interactive: Boolean,
+    var accessibilityLabel: String,
+    var speakText: String,
+    var cardAudioId: String,
+    var onSpeak: (String, String) -> Unit,
+    var onHaptic: () -> Unit
+) : DrawModifierNode, PointerInputModifierNode, SemanticsModifierNode, Modifier.Node() {
+
+    override val shouldAutoInvalidate: Boolean = false
+
+    private var cachedWidth = -1
+    private var cachedHeight = -1
+    private var cachedStrokeBits = 0
+    private var cachedLayoutDirection: LayoutDirection? = null
+    private var cachedDensity = Float.NaN
+    private var cachedShape: Shape? = null
+    private var cachedHasSolidBorder = false
+
+    private var fillMask: ImageBitmap? = null
+    private var borderMask: ImageBitmap? = null
+    private var fallbackFillOutline: Outline? = null
+    private var fallbackStrokeOutline: Outline? = null
+    private var fallbackStroke: Stroke? = null
+    private var fallbackHalfStroke = 0f
+    private var cachedBgColor = Color.Unspecified
+    private var fillColorFilter: ColorFilter? = null
+    private var cachedBorderColor = Color.Unspecified
+    private var borderColorFilter: ColorFilter? = null
+    private var clipPath: Path? = null
+
+    private var pressProgressAnim: Animatable<Float, AnimationVector1D>? = null
+    private var positionAnim: Animatable<Offset, AnimationVector2D>? = null
+    private var startPosition = Offset.Zero
+    private var activePointerId: PointerId? = null
+    private var pressCancelled = false
+    private var pressAnimJob: Job? = null
+    private var positionAnimJob: Job? = null
+    private var highlightShaderInitialized = false
+    private var highlightRuntimeShader: android.graphics.RuntimeShader? = null
+    private var highlightShaderBrush: ShaderBrush? = null
+
+    fun invalidateCaches() {
+        cachedWidth = -1
+        cachedHeight = -1
+    }
+
+    fun resetInteractionImmediate() {
+        val hadActiveAnim = activePointerId != null || pressProgressAnim != null
+        activePointerId = null
+        pressCancelled = false
+        pressAnimJob?.cancel()
+        positionAnimJob?.cancel()
+        pressAnimJob = null
+        positionAnimJob = null
+        highlightShaderInitialized = false
+        highlightRuntimeShader = null
+        highlightShaderBrush = null
+        if (hadActiveAnim) {
+            pressProgressAnim = null
+            positionAnim = null
+            if (isAttached) {
+                invalidateDraw()
             }
         }
-    } else {
-        LiquidButton(
-            onClick = {
+    }
+
+    override fun onDetach() {
+        resetInteractionImmediate()
+        pressAnimJob = null
+        positionAnimJob = null
+    }
+
+    override fun SemanticsPropertyReceiver.applySemantics() {
+        contentDescription = accessibilityLabel
+        if (interactive) {
+            role = Role.Button
+            onClick {
                 onHaptic()
-                val speakText = cell.speakText(isKatakana)
                 onSpeak(speakText, cardAudioId)
-            },
-            modifier = modifier.aspectRatio(1f),
-            backgroundColor = rowColor,
-            shape = cardShape,
-            border = cardBorder,
-            elevation = 0.dp,
-            useSoftShadow = false,
-            isInteractive = true
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                val kanaSize = if (kanaText.length > 2) 18.sp else 24.sp
-
-                Text(
-                    text = kanaText,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = NotoSerifJP,
-                        fontWeight = FontWeight.Black,
-                        fontSize = kanaSize
-                    ),
-                    color = solidTextColor
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = cell.romaji,
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Medium
-                    ),
-                    color = solidSubTextColor
-                )
+                true
             }
         }
+    }
+
+    override fun onPointerEvent(
+        pointerEvent: PointerEvent,
+        pass: PointerEventPass,
+        bounds: IntSize
+    ) {
+        if (!interactive) return
+
+        if (pass == PointerEventPass.Main) {
+            when (pointerEvent.type) {
+                PointerEventType.Press -> {
+                    if (activePointerId == null) {
+                        val down = pointerEvent.changes.firstOrNull { !it.isConsumed && it.pressed } ?: return
+                        activePointerId = down.id
+                        pressCancelled = false
+                        startPosition = down.position
+                        val progressAnim = pressProgressAnim
+                            ?: Animatable(0f, 0.001f).also { pressProgressAnim = it }
+                        val posAnim = positionAnim
+                            ?: Animatable(startPosition, Offset.VectorConverter, Offset.VisibilityThreshold)
+                                .also { positionAnim = it }
+                        pressAnimJob?.cancel()
+                        positionAnimJob?.cancel()
+                        pressAnimJob = coroutineScope.launch {
+                            progressAnim.animateTo(1f, KanaPressSpec) {
+                                invalidateDraw()
+                            }
+                        }
+                        positionAnimJob = coroutineScope.launch {
+                            posAnim.snapTo(startPosition)
+                            invalidateDraw()
+                        }
+                        invalidateDraw()
+                    }
+                }
+                PointerEventType.Move -> {
+                    val pointerId = activePointerId ?: return
+                    val change = pointerEvent.changes.firstOrNull { it.id == pointerId }
+                    if (change == null || !change.pressed || change.isConsumed || !isInsideBounds(change.position, bounds)) {
+                        cancelActivePress()
+                    } else if (!pressCancelled) {
+                        val pos = change.position
+                        positionAnimJob?.cancel()
+                        positionAnimJob = coroutineScope.launch {
+                            positionAnim?.snapTo(pos)
+                            invalidateDraw()
+                        }
+                    }
+                }
+                PointerEventType.Release -> {
+                    val pointerId = activePointerId ?: return
+                    val change = pointerEvent.changes.firstOrNull { it.id == pointerId }
+                    if (change == null) {
+                        releaseActivePress()
+                    } else if (!change.pressed) {
+                        val shouldClick = !pressCancelled &&
+                            !change.isConsumed &&
+                            isInsideBounds(change.position, bounds)
+                        if (shouldClick) {
+                            change.consume()
+                            onHaptic()
+                            onSpeak(speakText, cardAudioId)
+                        }
+                        releaseActivePress()
+                    }
+                }
+                PointerEventType.Exit -> {
+                    if (activePointerId != null) {
+                        cancelActivePress()
+                    }
+                }
+            }
+        } else if (pass == PointerEventPass.Final && activePointerId != null) {
+            val pointerId = activePointerId
+            val change = pointerEvent.changes.firstOrNull { it.id == pointerId }
+            if (change != null && change.isConsumed && !pressCancelled && pointerEvent.type == PointerEventType.Move) {
+                cancelActivePress()
+            }
+        }
+    }
+
+    override fun onCancelPointerInput() {
+        if (activePointerId != null) {
+            cancelActivePress()
+        }
+    }
+
+    private fun isInsideBounds(pos: Offset, bounds: IntSize): Boolean {
+        return pos.x >= 0f && pos.y >= 0f && pos.x <= bounds.width.toFloat() && pos.y <= bounds.height.toFloat()
+    }
+
+    private fun cancelActivePress() {
+        pressCancelled = true
+        releaseActivePress()
+    }
+
+    private fun releaseActivePress() {
+        activePointerId = null
+        val progressAnim = pressProgressAnim
+        val posAnim = positionAnim
+        if (progressAnim != null) {
+            pressAnimJob?.cancel()
+            pressAnimJob = coroutineScope.launch {
+                progressAnim.animateTo(0f, KanaPressSpec) {
+                    invalidateDraw()
+                }
+            }
+        }
+        if (posAnim != null) {
+            positionAnimJob?.cancel()
+            positionAnimJob = coroutineScope.launch {
+                posAnim.animateTo(startPosition, KanaPositionSpec) {
+                    invalidateDraw()
+                }
+            }
+        }
+    }
+
+    override fun ContentDrawScope.draw() {
+        val widthPx = size.width.roundToInt()
+        val heightPx = size.height.roundToInt()
+        if (widthPx <= 0 || heightPx <= 0) return
+
+        val strokeWidthPx = if (border.width == Hairline) 1f else border.width.toPx()
+        val strokeBits = strokeWidthPx.toRawBits()
+        val solidBorderBrush = border.brush as? SolidColor
+        val hasSolidBorder = solidBorderBrush != null
+        val borderColor = solidBorderBrush?.value ?: Color.Transparent
+
+        if (
+            cachedWidth != widthPx ||
+            cachedHeight != heightPx ||
+            cachedStrokeBits != strokeBits ||
+            cachedLayoutDirection != layoutDirection ||
+            cachedDensity != density ||
+            cachedShape != shape ||
+            cachedHasSolidBorder != hasSolidBorder
+        ) {
+            cachedWidth = widthPx
+            cachedHeight = heightPx
+            cachedStrokeBits = strokeBits
+            cachedLayoutDirection = layoutDirection
+            cachedDensity = density
+            cachedShape = shape
+            cachedHasSolidBorder = hasSolidBorder
+
+            val canUseMask = widthPx in 1..480 && heightPx in 1..480
+            fillMask = if (canUseMask) {
+                resolveShapeFillMask(shape, widthPx, heightPx, layoutDirection, this)
+            } else {
+                null
+            }
+            borderMask = if (canUseMask && strokeWidthPx > 0f && hasSolidBorder) {
+                resolveShapeBorderMask(shape, widthPx, heightPx, strokeWidthPx, layoutDirection, this)
+            } else {
+                null
+            }
+            val fillOutline = shape.createOutline(size, layoutDirection, this@draw)
+            fallbackFillOutline = if (fillMask == null) fillOutline else null
+            if (borderMask == null && strokeWidthPx > 0f) {
+                val halfStroke = strokeWidthPx / 2f
+                val insetSize = Size(
+                    width = (size.width - strokeWidthPx).coerceAtLeast(0f),
+                    height = (size.height - strokeWidthPx).coerceAtLeast(0f)
+                )
+                fallbackHalfStroke = halfStroke
+                fallbackStrokeOutline = if (insetSize.width > 0f && insetSize.height > 0f) {
+                    shape.createOutline(insetSize, layoutDirection, this@draw)
+                } else {
+                    null
+                }
+                fallbackStroke = Stroke(width = strokeWidthPx)
+            } else {
+                fallbackHalfStroke = 0f
+                fallbackStrokeOutline = null
+                fallbackStroke = null
+            }
+            clipPath = Path().apply {
+                addOutline(fillOutline)
+            }
+        }
+
+        if (cachedBgColor != backgroundColor) {
+            cachedBgColor = backgroundColor
+            fillColorFilter = if (backgroundColor != Color.Transparent && backgroundColor.alpha > 0f) {
+                ColorFilter.tint(backgroundColor)
+            } else {
+                null
+            }
+        }
+        if (cachedBorderColor != borderColor) {
+            cachedBorderColor = borderColor
+            borderColorFilter = if (borderColor != Color.Transparent && borderColor.alpha > 0f) {
+                ColorFilter.tint(borderColor)
+            } else {
+                null
+            }
+        }
+
+        val progress = pressProgressAnim?.value ?: 0f
+        if (progress > 0f) {
+            val width = size.width
+            val height = size.height
+            val scale = lerp(1f, 1f + 4f.dp.toPx() / height, progress)
+            val maxOffset = size.minDimension
+            val currentPos = positionAnim?.value ?: startPosition
+            val delta = currentPos - startPosition
+            val tx = maxOffset * tanh(0.05f * delta.x / maxOffset)
+            val ty = maxOffset * tanh(0.05f * delta.y / maxOffset)
+            val maxDragScale = 4f.dp.toPx() / height
+            val offsetAngle = atan2(delta.y, delta.x)
+            val sx = scale + maxDragScale * abs(cos(offsetAngle) * delta.x / size.maxDimension) * (width / height).fastCoerceAtMost(1f)
+            val sy = scale + maxDragScale * abs(sin(offsetAngle) * delta.y / size.maxDimension) * (height / width).fastCoerceAtMost(1f)
+
+            withTransform({
+                translate(left = tx, top = ty)
+                scale(scaleX = sx, scaleY = sy, pivot = center)
+            }) {
+                drawCardVisuals(widthPx, heightPx)
+                val highlightPath = clipPath
+                if (highlightPath != null) {
+                    clipPath(highlightPath) {
+                        drawPressedHighlight(progress, currentPos)
+                    }
+                } else {
+                    drawPressedHighlight(progress, currentPos)
+                }
+            }
+        } else {
+            drawCardVisuals(widthPx, heightPx)
+        }
+    }
+
+    private fun DrawScope.drawCardVisuals(widthPx: Int, heightPx: Int) {
+        val dstSize = IntSize(widthPx, heightPx)
+        val fMask = fillMask
+        val fFilter = fillColorFilter
+        if (fMask != null && fFilter != null) {
+            drawImage(image = fMask, dstSize = dstSize, colorFilter = fFilter)
+        } else if (backgroundColor != Color.Transparent && backgroundColor.alpha > 0f) {
+            fallbackFillOutline?.let { outline ->
+                drawOutline(outline = outline, color = backgroundColor)
+            }
+        }
+        val bMask = borderMask
+        val bFilter = borderColorFilter
+        if (bMask != null && bFilter != null) {
+            drawImage(image = bMask, dstSize = dstSize, colorFilter = bFilter)
+        } else {
+            val strokeOutline = fallbackStrokeOutline
+            val stroke = fallbackStroke
+            val solidBrush = border.brush as? SolidColor
+            val hasVisibleBorder = solidBrush == null ||
+                (solidBrush.value != Color.Transparent && solidBrush.value.alpha > 0f)
+            if (strokeOutline != null && stroke != null && hasVisibleBorder) {
+                translate(left = fallbackHalfStroke, top = fallbackHalfStroke) {
+                    drawOutline(
+                        outline = strokeOutline,
+                        brush = border.brush,
+                        style = stroke
+                    )
+                }
+            }
+        }
+
+        val gapPx = 2.dp.toPx()
+        val totalHeight = kanaLayout.size.height + gapPx + romajiLayout.size.height
+        val topY = (size.height - totalHeight) * 0.5f
+        val kanaX = (size.width - kanaLayout.size.width) * 0.5f
+        val romajiX = (size.width - romajiLayout.size.width) * 0.5f
+
+        drawText(
+            textLayoutResult = kanaLayout,
+            color = kanaColor,
+            topLeft = Offset(kanaX, topY)
+        )
+        drawText(
+            textLayoutResult = romajiLayout,
+            color = romajiColor,
+            topLeft = Offset(romajiX, topY + kanaLayout.size.height + gapPx)
+        )
+    }
+
+    private fun DrawScope.drawPressedHighlight(progress: Float, position: Offset) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!highlightShaderInitialized) {
+                highlightShaderInitialized = true
+                val shader = createInteractiveHighlightRuntimeShader()
+                highlightRuntimeShader = shader
+                highlightShaderBrush = shader?.let { ShaderBrush(it) }
+            }
+            val shader = highlightRuntimeShader
+            val brush = highlightShaderBrush
+            if (shader != null && brush != null) {
+                drawRect(
+                    color = Color.White.copy(alpha = 0.02f * progress),
+                    blendMode = BlendMode.Plus
+                )
+                shader.setFloatUniform("size", size.width, size.height)
+                shader.setColorUniform(
+                    "color",
+                    android.graphics.Color.valueOf(1f, 1f, 1f, 0.05f * progress).toArgb()
+                )
+                shader.setFloatUniform("radius", size.minDimension * 1.5f)
+                shader.setFloatUniform(
+                    "position",
+                    position.x.fastCoerceIn(0f, size.width),
+                    position.y.fastCoerceIn(0f, size.height)
+                )
+                drawRect(
+                    brush = brush,
+                    blendMode = BlendMode.Plus
+                )
+                return
+            }
+        }
+        drawRect(
+            color = Color.White.copy(alpha = 0.03f * progress),
+            blendMode = BlendMode.Plus
+        )
     }
 }
 

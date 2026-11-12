@@ -24,7 +24,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.shape.CircleShape
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
@@ -40,13 +41,23 @@ import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
@@ -71,6 +82,7 @@ import com.jian.nemo.core.designsystem.theme.NemoPrimary
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.component.AvatarImage
+import com.jian.nemo.core.ui.animation.LocalDecorativeAnimationsPaused
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.core.ui.modifier.softShadow
@@ -170,40 +182,29 @@ fun HomeScreen(
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(density).toDp() }
     val navigationBarHeight = with(density) { WindowInsets.navigationBars.getBottom(density).toDp() }
 
-    // --- 主按钮呼吸闪烁动效 ---
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "pulseAlpha"
-    )
-    // -------------------------
-
     CompositionLocalProvider(LocalSettingIconStyle provides uiState.settingIconStyle) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = statusBarHeight + 16.dp,
-                bottom = navigationBarHeight + 104.dp
-            ),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = statusBarHeight + 16.dp,
+                    bottom = navigationBarHeight + 104.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+            Row(
+                modifier = Modifier
+                    .graphicsLayer {}
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -251,11 +252,13 @@ fun HomeScreen(
                         )
                     )
                 }
-            }
 
             // 2. Bento Grid 核心布局区
-            item {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 Column(
+                    modifier = Modifier.graphicsLayer {},
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     // Bento 1: 控制卡片 (全宽跨越)
@@ -497,102 +500,26 @@ fun HomeScreen(
                             }
                         }
                     }
-
-                    // Bento 5: 底部主按钮 (全宽)
-                    val btnColor = primaryModeColor
-
-                    // 2.4s 45° 斜切流光扫过 (Shimmer Sweep) 动效
-                    val shimmerTransition = rememberInfiniteTransition(label = "Bento5Shimmer")
-                    val shimmerProgress by shimmerTransition.animateFloat(
-                        initialValue = -1.5f,
-                        targetValue = 2.5f,
-                        animationSpec = infiniteRepeatable(
-                            animation = tween(durationMillis = 2400, easing = LinearEasing),
-                            repeatMode = RepeatMode.Restart
-                        ),
-                        label = "ShimmerProgress"
-                    )
-
-                    LiquidButton(
-                        onClick = {
-                            val now = System.currentTimeMillis()
-                            if (now - lastClickTime > 2000L) {
-                                lastClickTime = now
-                                onNavigateToLearning(uiState.learningMode)
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(64.dp),
-                        backgroundColor = btnColor,
-                        shape = RoundedRectangle(24.dp),
-                        elevation = 6.dp
-                    ) {
-                        // 按钮内容
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                text = if (uiState.currentProgress > 0) stringResource(R.string.btn_continue_home) else stringResource(R.string.btn_start_home),
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                                color = Color.White
-                            )
-                            // 基于学习进度切换图标及应用闪烁动效
-                            val isLearned = uiState.currentProgress > 0
-                            Icon(
-                                imageVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .padding(start = 4.dp)
-                                    .size(24.dp)
-                                    .graphicsLayer {
-                                        alpha = pulseAlpha
-                                    },
-                                tint = Color.White
-                            )
-                        }
-                        // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)，放在 content 内部以跟随按钮拖拽位移
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .drawWithContent {
-                                    drawContent()
-                                    val width = size.width
-                                    val height = size.height
-                                    val xOffset = shimmerProgress * width
-                                    val shimmerBrush = Brush.linearGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.White.copy(alpha = if (isDark) 0.15f else 0.25f),
-                                            Color.Transparent
-                                        ),
-                                        start = androidx.compose.ui.geometry.Offset(xOffset, 0f),
-                                        end = androidx.compose.ui.geometry.Offset(xOffset + width * 0.4f, height * 1.2f)
-                                    )
-                                    val cornerRadiusPx = 24.dp.toPx()
-                                    val clipPathObj = androidx.compose.ui.graphics.Path().apply {
-                                        addRoundRect(
-                                            androidx.compose.ui.geometry.RoundRect(
-                                                rect = androidx.compose.ui.geometry.Rect(androidx.compose.ui.geometry.Offset.Zero, size),
-                                                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadiusPx, cornerRadiusPx)
-                                            )
-                                        )
-                                    }
-                                    clipPath(clipPathObj) {
-                                        drawRect(brush = shimmerBrush)
-                                    }
-                                }
-                        )
-                    }
                 }
+
+                // Bento 5: 底部主按钮 (全宽)
+                BentoStartButton(
+                    btnColor = primaryModeColor,
+                    currentProgress = uiState.currentProgress,
+                    isDark = isDark,
+                    onClick = {
+                        val now = System.currentTimeMillis()
+                        if (now - lastClickTime > 2000L) {
+                            lastClickTime = now
+                            onNavigateToLearning(uiState.learningMode)
+                        }
+                    }
+                )
             }
 
             // 3. 学习资源区块 (分组处理以确保间距逻辑对齐进度页)
-            item {
-                Column {
-                    HomeSectionTitle(
+            Column(modifier = Modifier.graphicsLayer {}) {
+                HomeSectionTitle(
                         text = stringResource(R.string.title_learning_resources)
                     )
 
@@ -895,7 +822,6 @@ fun HomeScreen(
                             }
                         }
                     }
-                }
             }
         }
 
@@ -983,6 +909,142 @@ private fun BentoAnimatedSegmentedControl(
                     }
                 }
             }
+        }
+    }
+}
+
+private val BentoStartShape = RoundedRectangle(24.dp)
+
+@Composable
+private fun BentoStartButton(
+    btnColor: Color,
+    currentProgress: Int,
+    isDark: Boolean,
+    onClick: () -> Unit
+) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+    val isTransitionSettled = rememberIsTransitionSettled()
+    val isDecorativePaused = LocalDecorativeAnimationsPaused.current?.value == true
+    val shouldRun = lifecycleState.isAtLeast(Lifecycle.State.RESUMED) && isTransitionSettled && !isDecorativePaused
+    val shouldRunState = rememberUpdatedState(shouldRun)
+
+    val pulseAlpha = remember { Animatable(1f) }
+    val shimmerProgress = remember { Animatable(-1.5f) }
+
+    LaunchedEffect(shouldRun) {
+        if (shouldRun) {
+            launch {
+                pulseAlpha.snapTo(1f)
+                pulseAlpha.animateTo(
+                    targetValue = 0.4f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(1200, easing = LinearEasing),
+                        repeatMode = RepeatMode.Reverse
+                    )
+                )
+            }
+            launch {
+                shimmerProgress.snapTo(-1.5f)
+                shimmerProgress.animateTo(
+                    targetValue = 2.5f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(durationMillis = 2400, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+        } else {
+            pulseAlpha.snapTo(1f)
+            shimmerProgress.snapTo(-1.5f)
+        }
+    }
+
+    val isLearned = currentProgress > 0
+    val iconVector = if (isLearned) Icons.Rounded.KeyboardDoubleArrowRight else Icons.Rounded.PlayArrow
+    val iconPainter = rememberVectorPainter(iconVector)
+    val whiteColorFilter = remember { ColorFilter.tint(Color.White) }
+    val shimmerAlpha = if (isDark) 0.15f else 0.25f
+
+    LiquidButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
+        backgroundColor = btnColor,
+        shape = BentoStartShape,
+        elevation = 0.dp,
+        clipToShape = false
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                text = if (isLearned) stringResource(R.string.btn_continue_home) else stringResource(R.string.btn_start_home),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                color = Color.White
+            )
+            Box(
+                modifier = Modifier
+                    .padding(start = 4.dp)
+                    .size(24.dp)
+                    .graphicsLayer {
+                        alpha = if (shouldRunState.value) pulseAlpha.value else 1f
+                    }
+                    .drawBehind {
+                        with(iconPainter) {
+                            draw(
+                                size = size,
+                                colorFilter = whiteColorFilter
+                            )
+                        }
+                    }
+            )
+        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .graphicsLayer {
+                    clip = true
+                    shape = BentoStartShape
+                }
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        val active = shouldRunState.value
+                        alpha = if (active) 1f else 0f
+                        translationX = if (active) shimmerProgress.value * size.width else 0f
+                    }
+                    .drawWithCache {
+                        val dx = size.width * 0.4f
+                        val dy = size.height * 1.2f
+                        val safeDx = dx.coerceAtLeast(1f)
+                        val leftPad = (size.height * dy / safeDx) + 2f
+                        val rightPad = (dy * dy / safeDx) + 2f
+                        val rectWidth = maxOf(size.width, leftPad + dx + rightPad)
+                        val shimmerBrush = Brush.linearGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = shimmerAlpha),
+                                Color.Transparent
+                            ),
+                            start = Offset(leftPad, 0f),
+                            end = Offset(leftPad + dx, dy)
+                        )
+                        onDrawBehind {
+                            drawRect(
+                                brush = shimmerBrush,
+                                topLeft = Offset.Zero,
+                                size = Size(rectWidth, size.height)
+                            )
+                        }
+                    }
+            )
         }
     }
 }

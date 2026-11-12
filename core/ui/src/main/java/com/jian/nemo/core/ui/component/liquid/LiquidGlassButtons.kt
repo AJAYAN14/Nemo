@@ -2,6 +2,7 @@ package com.jian.nemo.core.ui.component.liquid
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,10 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
@@ -27,7 +30,6 @@ import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.kyant.backdrop.Backdrop
-import com.kyant.backdrop.backdrops.emptyBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
@@ -149,33 +151,74 @@ fun LiquidGlassButton(
     content: @Composable RowScope.() -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
-    val interactiveHighlight = remember(animationScope) {
-        InteractiveHighlight(animationScope = animationScope)
+    val interactiveHighlight = remember(isInteractive, animationScope) {
+        if (isInteractive) InteractiveHighlight(animationScope = animationScope) else null
     }
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    val effectiveBackdrop = backdrop ?: remember { emptyBackdrop() }
+    val glassRenderModifier = if (backdrop != null) {
+        Modifier.drawBackdrop(
+            backdrop = backdrop,
+            shape = { shape },
+            effects = {
+                vibrancy()
+                blur(2f.dp.toPx())
+                if (hasLens) {
+                    lens(
+                        12f.dp.toPx(),
+                        24f.dp.toPx(),
+                        chromaticAberration = chromaticAberration
+                    )
+                }
+            },
+            layerBlock = if (interactiveHighlight != null) {
+                {
+                    val width = size.width
+                    val height = size.height
 
-    Row(
-        modifier = modifier
+                    val progress = interactiveHighlight.pressProgress
+                    val scale = lerp(1f, 1f + 4f.dp.toPx() / size.height, progress)
+
+                    val maxOffset = size.minDimension
+                    val initialDerivative = 0.05f
+                    val offset = interactiveHighlight.offset
+                    translationX = maxOffset * tanh(initialDerivative * offset.x / maxOffset)
+                    translationY = maxOffset * tanh(initialDerivative * offset.y / maxOffset)
+
+                    val maxDragScale = 4f.dp.toPx() / size.height
+                    val offsetAngle = atan2(offset.y, offset.x)
+                    scaleX =
+                        scale +
+                                maxDragScale * abs(cos(offsetAngle) * offset.x / size.maxDimension) *
+                                (width / height).fastCoerceAtMost(1f)
+                    scaleY =
+                        scale +
+                                maxDragScale * abs(sin(offsetAngle) * offset.y / size.maxDimension) *
+                                (height / width).fastCoerceAtMost(1f)
+                }
+            } else {
+                null
+            },
+            onDrawSurface = {
+                if (tint.isSpecified) {
+                    drawRect(tint, blendMode = BlendMode.Hue)
+                    drawRect(tint.copy(alpha = tintAlpha))
+                }
+                if (surfaceColor.isSpecified) {
+                    drawRect(surfaceColor)
+                }
+            }
+        )
+    } else {
+        val fallbackBg = when {
+            tint.isSpecified -> tint.copy(alpha = tintAlpha)
+            surfaceColor.isSpecified -> surfaceColor
+            else -> Color.White.copy(alpha = if (isDark) 0.12f else 0.35f)
+        }
+        Modifier
             .then(
-                if (border != null) Modifier.border(border, shape) else Modifier
-            )
-            .drawBackdrop(
-                backdrop = effectiveBackdrop,
-                shape = { shape },
-                effects = {
-                    vibrancy()
-                    blur(2f.dp.toPx())
-                    if (hasLens) {
-                        lens(
-                            12f.dp.toPx(),
-                            24f.dp.toPx(),
-                            chromaticAberration = chromaticAberration
-                        )
-                    }
-                },
-                layerBlock = if (isInteractive) {
-                    {
+                if (interactiveHighlight != null) {
+                    Modifier.graphicsLayer {
                         val width = size.width
                         val height = size.height
 
@@ -200,18 +243,19 @@ fun LiquidGlassButton(
                                     (height / width).fastCoerceAtMost(1f)
                     }
                 } else {
-                    null
-                },
-                onDrawSurface = {
-                    if (tint.isSpecified) {
-                        drawRect(tint, blendMode = BlendMode.Hue)
-                        drawRect(tint.copy(alpha = tintAlpha))
-                    }
-                    if (surfaceColor.isSpecified) {
-                        drawRect(surfaceColor)
-                    }
+                    Modifier
                 }
             )
+            .clip(shape)
+            .background(fallbackBg, shape)
+    }
+
+    Row(
+        modifier = modifier
+            .then(
+                if (border != null) Modifier.border(border, shape) else Modifier
+            )
+            .then(glassRenderModifier)
             .clickable(
                 interactionSource = null,
                 indication = if (isInteractive) null else LocalIndication.current,
@@ -219,7 +263,7 @@ fun LiquidGlassButton(
                 onClick = onClick
             )
             .then(
-                if (isInteractive) {
+                if (interactiveHighlight != null) {
                     Modifier
                         .then(interactiveHighlight.modifier)
                         .then(interactiveHighlight.gestureModifier)

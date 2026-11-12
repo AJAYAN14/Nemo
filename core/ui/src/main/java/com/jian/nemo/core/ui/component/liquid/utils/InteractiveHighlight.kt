@@ -4,6 +4,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -19,26 +22,28 @@ import com.kyant.backdrop.isRuntimeShaderSupported
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+private val UtilsPressProgressSpec = spring(0.5f, 300f, 0.001f)
+private val UtilsPositionSpec = spring(0.5f, 300f, Offset.VisibilityThreshold)
+
 class InteractiveHighlight(
     val animationScope: CoroutineScope,
     val position: (size: Size, offset: Offset) -> Offset = { _, offset -> offset }
 ) {
 
-    private val pressProgressAnimationSpec =
-        spring(0.5f, 300f, 0.001f)
-    private val positionAnimationSpec =
-        spring(0.5f, 300f, Offset.VisibilityThreshold)
+    private var hasInteracted by mutableStateOf(false)
 
-    private val pressProgressAnimation =
+    private val pressProgressAnimation by lazy(LazyThreadSafetyMode.NONE) {
         Animatable(0f, 0.001f)
-    private val positionAnimation =
+    }
+    private val positionAnimation by lazy(LazyThreadSafetyMode.NONE) {
         Animatable(Offset.Zero, Offset.VectorConverter, Offset.VisibilityThreshold)
+    }
 
     private var startPosition = Offset.Zero
-    val pressProgress: Float get() = pressProgressAnimation.value
-    val offset: Offset get() = positionAnimation.value - startPosition
+    val pressProgress: Float get() = if (hasInteracted) pressProgressAnimation.value else 0f
+    val offset: Offset get() = if (hasInteracted) positionAnimation.value - startPosition else Offset.Zero
 
-    private val shader =
+    private val shader by lazy(LazyThreadSafetyMode.NONE) {
         if (isRuntimeShaderSupported()) {
             RuntimeShader(
                 """
@@ -56,17 +61,24 @@ half4 main(float2 coord) {
         } else {
             null
         }
+    }
+
+    private val cachedShaderBrush: ShaderBrush? by lazy(LazyThreadSafetyMode.NONE) {
+        shader?.let { ShaderBrush(it.asComposeShader()) }
+    }
 
     val modifier: Modifier =
         Modifier.drawWithContent {
-            val progress = pressProgressAnimation.value
+            val progress = pressProgress
             if (progress > 0f) {
-                if (shader != null) {
+                val activeShader = if (isRuntimeShaderSupported()) shader else null
+                val brush = if (isRuntimeShaderSupported()) cachedShaderBrush else null
+                if (activeShader != null && brush != null) {
                     drawRect(
                         Color.White.copy(0.08f * progress),
                         blendMode = BlendMode.Plus
                     )
-                    shader.apply {
+                    activeShader.apply {
                         val position = position(size, positionAnimation.value)
                         setFloatUniform("size", size.width, size.height)
                         setColorUniform("color", Color.White.copy(0.15f * progress))
@@ -78,7 +90,7 @@ half4 main(float2 coord) {
                         )
                     }
                     drawRect(
-                        ShaderBrush(shader.asComposeShader()),
+                        brush,
                         blendMode = BlendMode.Plus
                     )
                 } else {
@@ -96,22 +108,23 @@ half4 main(float2 coord) {
         Modifier.pointerInput(animationScope) {
             inspectDragGestures(
                 onDragStart = { down ->
+                    hasInteracted = true
                     startPosition = down.position
                     animationScope.launch {
-                        launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
+                        launch { pressProgressAnimation.animateTo(1f, UtilsPressProgressSpec) }
                         launch { positionAnimation.snapTo(startPosition) }
                     }
                 },
                 onDragEnd = {
                     animationScope.launch {
-                        launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
-                        launch { positionAnimation.animateTo(startPosition, positionAnimationSpec) }
+                        launch { pressProgressAnimation.animateTo(0f, UtilsPressProgressSpec) }
+                        launch { positionAnimation.animateTo(startPosition, UtilsPositionSpec) }
                     }
                 },
                 onDragCancel = {
                     animationScope.launch {
-                        launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
-                        launch { positionAnimation.animateTo(startPosition, positionAnimationSpec) }
+                        launch { pressProgressAnimation.animateTo(0f, UtilsPressProgressSpec) }
+                        launch { positionAnimation.animateTo(startPosition, UtilsPositionSpec) }
                     }
                 }
             ) { change, _ ->

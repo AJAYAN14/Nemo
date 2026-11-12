@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
@@ -279,7 +280,9 @@ fun NemoNavHost(
             popEnterTransition = mainPopEnterTransition,
             popExitTransition = mainPopExitTransition
         ) {
-            HomeScreen(
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    HomeScreen(
                 onNavigateToLearning = { mode ->
                     when (mode) {
                         LearningMode.Word -> navController.navigate(NavDestination.wordLearning("GLOBAL"))
@@ -308,6 +311,8 @@ fun NemoNavHost(
                     navController.navigate(NavDestination.VERB_CONJUGATION_HANDBOOK)
                 }
             )
+                }
+            }
         }
 
         composable(NavDestination.AI_WORKSHOP) {
@@ -848,7 +853,7 @@ fun NemoNavHost(
 
         // 五十音图
         composable(NavDestination.KANA_CHART) {
-            SubScreenContainer {
+            SubScreenContainer(backgroundColor = Color.Transparent) {
                 KanaChartScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )

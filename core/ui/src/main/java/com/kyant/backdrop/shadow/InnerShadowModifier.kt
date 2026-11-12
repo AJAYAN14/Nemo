@@ -1,11 +1,13 @@
 package com.kyant.backdrop.shadow
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
@@ -19,6 +21,7 @@ import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.requireGraphicsContext
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import com.kyant.backdrop.internal.ShapeProvider
 import com.kyant.backdrop.internal.clipOutline
 import com.kyant.backdrop.isRenderEffectSupported
@@ -74,6 +77,13 @@ internal class InnerShadowNode(
     private var clipPath: Path? = null
 
     private var prevRadius = Float.NaN
+    private var cachedSize = Size.Unspecified
+    private var cachedDensity = Float.NaN
+    private var cachedFontScale = Float.NaN
+    private var cachedLayoutDirection: LayoutDirection? = null
+    private var cachedShape: Shape? = null
+    private var cachedShadow: InnerShadow? = null
+    private var cachedOutline: Outline? = null
 
     override fun ContentDrawScope.draw() {
         drawContent()
@@ -81,52 +91,72 @@ internal class InnerShadowNode(
         if (!isRenderEffectSupported()) return
 
         val shadow = shadow() ?: return
+        if (shadow.alpha <= 0f || shadow.color.alpha <= 0f) return
 
         val shadowLayer = shadowLayer
         if (shadowLayer != null) {
             val size = size
-            val density: Density = this
-            val layoutDirection = layoutDirection
+            val shape = shapeProvider.shape
+            val layoutDir = layoutDirection
+            if (size != cachedSize ||
+                density != cachedDensity ||
+                fontScale != cachedFontScale ||
+                layoutDir != cachedLayoutDirection ||
+                shape != cachedShape ||
+                shadow != cachedShadow ||
+                cachedOutline == null
+            ) {
+                val densityObj: Density = this
+                val radius = shadow.radius.toPx()
+                val offsetX = shadow.offset.x.toPx()
+                val offsetY = shadow.offset.y.toPx()
 
-            val radius = shadow.radius.toPx()
-            val offsetX = shadow.offset.x.toPx()
-            val offsetY = shadow.offset.y.toPx()
-
-            val outline = shapeProvider.shape.createOutline(size, layoutDirection, density)
-            val clipPath =
-                if (outline is Outline.Rounded) {
-                    clipPath ?: Path().also { clipPath = it }
-                } else {
-                    null
-                }
-
-            configurePaint(shadow)
-
-            shadowLayer.alpha = shadow.alpha
-            shadowLayer.blendMode = shadow.blendMode
-            if (prevRadius != radius) {
-                shadowLayer.renderEffect =
-                    if (radius > 0f) {
-                        BlurEffect(radius, radius, TileMode.Decal)
+                val outline = shape.createOutline(size, layoutDir, densityObj)
+                val targetClipPath =
+                    if (outline is Outline.Rounded) {
+                        clipPath ?: Path().also { clipPath = it }
                     } else {
                         null
                     }
-                prevRadius = radius
-            }
-            shadowLayer.record {
-                val canvas = drawContext.canvas
-                canvas.save()
-                canvas.clipOutline(outline, clipPath)
-                canvas.drawOutline(outline, paint)
-                canvas.translate(offsetX, offsetY)
-                canvas.drawOutline(outline, ShadowMaskPaint)
-                canvas.translate(-offsetX, -offsetY)
-                canvas.restore()
+
+                configurePaint(shadow)
+
+                shadowLayer.alpha = shadow.alpha
+                shadowLayer.blendMode = shadow.blendMode
+                if (prevRadius != radius) {
+                    shadowLayer.renderEffect =
+                        if (radius > 0f) {
+                            BlurEffect(radius, radius, TileMode.Decal)
+                        } else {
+                            null
+                        }
+                    prevRadius = radius
+                }
+                shadowLayer.record {
+                    val canvas = drawContext.canvas
+                    canvas.save()
+                    canvas.clipOutline(outline, targetClipPath)
+                    canvas.drawOutline(outline, paint)
+                    canvas.translate(offsetX, offsetY)
+                    canvas.drawOutline(outline, ShadowMaskPaint)
+                    canvas.translate(-offsetX, -offsetY)
+                    canvas.restore()
+                }
+
+                cachedSize = size
+                cachedDensity = density
+                cachedFontScale = fontScale
+                cachedLayoutDirection = layoutDir
+                cachedShape = shape
+                cachedShadow = shadow
+                cachedOutline = outline
             }
 
+            val outline = cachedOutline ?: return
+            val targetClipPath = if (outline is Outline.Rounded) clipPath else null
             val canvas = drawContext.canvas
             canvas.save()
-            canvas.clipOutline(outline, clipPath)
+            canvas.clipOutline(outline, targetClipPath)
             drawLayer(shadowLayer)
             canvas.restore()
         }
@@ -146,6 +176,14 @@ internal class InnerShadowNode(
             graphicsContext.releaseGraphicsLayer(layer)
             shadowLayer = null
         }
+        prevRadius = Float.NaN
+        cachedSize = Size.Unspecified
+        cachedDensity = Float.NaN
+        cachedFontScale = Float.NaN
+        cachedLayoutDirection = null
+        cachedShape = null
+        cachedShadow = null
+        cachedOutline = null
     }
 
     private fun DrawScope.configurePaint(shadow: InnerShadow) {

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
@@ -175,7 +177,10 @@ private class DrawBackdropElement(
     }
 
     override fun update(node: DrawBackdropNode) {
-        node.backdrop = backdrop
+        if (node.backdrop != backdrop) {
+            node.resetCoordinatesCache()
+            node.backdrop = backdrop
+        }
         node.shapeProvider = shapeProvider
         node.effects = effects
         node.layerBlock = layerBlock
@@ -262,6 +267,17 @@ private class DrawBackdropNode(
     }
 
     private var layoutCoordinates: LayoutCoordinates? by mutableStateOf(null, neverEqualPolicy())
+    private var lastLayerCoords: LayoutCoordinates? = null
+    private var lastLayerSize: IntSize = IntSize.Zero
+    private var lastCoordinatesSize: IntSize = IntSize.Zero
+    private var lastRelativeOffset: Offset = Offset.Unspecified
+
+    fun resetCoordinatesCache() {
+        lastLayerCoords = null
+        lastLayerSize = IntSize.Zero
+        lastCoordinatesSize = IntSize.Zero
+        lastRelativeOffset = Offset.Unspecified
+    }
 
     private var padding by mutableFloatStateOf(0f)
 
@@ -342,9 +358,35 @@ private class DrawBackdropNode(
     override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
         if (coordinates.isAttached) {
             if (backdrop.isCoordinatesDependent) {
-                layoutCoordinates = coordinates
+                val layerCoords = (backdrop as? LayerBackdrop)?.layerCoordinates
+                if (layerCoords != null && layerCoords.isAttached) {
+                    val relativeOffset = try {
+                        layerCoords.localPositionOf(coordinates)
+                    } catch (_: Exception) {
+                        coordinates.positionInWindow() - layerCoords.positionInWindow()
+                    }
+                    val size = coordinates.size
+                    val layerSize = layerCoords.size
+                    val unchanged =
+                        layoutCoordinates != null &&
+                            lastLayerCoords === layerCoords &&
+                            lastLayerSize == layerSize &&
+                            lastCoordinatesSize == size &&
+                            lastRelativeOffset == relativeOffset
+                    if (!unchanged) {
+                        lastLayerCoords = layerCoords
+                        lastLayerSize = layerSize
+                        lastCoordinatesSize = size
+                        lastRelativeOffset = relativeOffset
+                        layoutCoordinates = coordinates
+                    }
+                } else {
+                    resetCoordinatesCache()
+                    layoutCoordinates = coordinates
+                }
             } else {
                 if (layoutCoordinates != null) {
+                    resetCoordinatesCache()
                     layoutCoordinates = null
                 }
             }
@@ -389,6 +431,7 @@ private class DrawBackdropNode(
         }
 
         effectScope.reset()
+        resetCoordinatesCache()
         layoutCoordinates = null
         exportedBackdrop?.layerCoordinates = null
     }
