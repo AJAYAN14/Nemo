@@ -24,7 +24,6 @@ import androidx.compose.ui.text.PlatformTextStyle
 import android.content.Context
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.theme.SystemColors
-import com.jian.nemo.core.designsystem.theme.SettingsPalette
 import com.jian.nemo.core.ui.component.liquid.ClearLiquidGlassButton
 import com.jian.nemo.feature.settings.R
 import com.kyant.backdrop.Backdrop
@@ -157,11 +156,11 @@ fun LiquidMemoryHud(
     val burdenLight = stringResource(R.string.settings_algorithm_label_burden_light)
     val burdenBalanced = stringResource(R.string.settings_algorithm_label_burden_balanced)
     val burdenHeavy = stringResource(R.string.settings_algorithm_label_burden_heavy)
-    val burdenLevel = remember(targetRetention, burdenLight, burdenBalanced, burdenHeavy) {
+    val burdenLevel = remember(targetRetention, isDark, burdenLight, burdenBalanced, burdenHeavy) {
         when {
-            targetRetention < 0.82f -> burdenLight to SystemColors.Cyan
-            targetRetention <= 0.91f -> burdenBalanced to SystemColors.Purple
-            else -> burdenHeavy to SystemColors.Orange
+            targetRetention < 0.82f -> burdenLight to (if (isDark) SystemColors.CyanDark else SystemColors.Cyan)
+            targetRetention <= 0.91f -> burdenBalanced to (if (isDark) SystemColors.PurpleDark else SystemColors.Purple)
+            else -> burdenHeavy to (if (isDark) SystemColors.OrangeDark else SystemColors.Orange)
         }
     }
 
@@ -910,7 +909,7 @@ fun LeechSentinelCard(
                             .padding(horizontal = 2.dp)
                             .clip(RoundedRectangle(8.dp))
                             .background(
-                                if (isDark) SettingsPalette.AlgorithmCardBgDark
+                                if (isDark) MaterialTheme.colorScheme.surfaceVariant
                                 else Color.White
                             )
                             .border(

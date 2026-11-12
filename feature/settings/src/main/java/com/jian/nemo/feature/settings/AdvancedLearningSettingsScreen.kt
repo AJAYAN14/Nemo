@@ -48,6 +48,7 @@ import com.jian.nemo.core.designsystem.theme.SystemColors
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -151,12 +152,13 @@ fun AdvancedLearningSettingsScreen(
         showExitConfirmation = true
     }
 
-    val retentionColor = SystemColors.Purple
-    val learningStepColor = SystemColors.Blue
-    val relearningStepColor = SystemColors.Orange
-    val leechColor = SystemColors.Red
-    val temporalColor = SystemColors.Cyan
-    val backlogColor = SystemColors.Green
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val retentionColor = if (isDark) SystemColors.PurpleDark else SystemColors.Purple
+    val learningStepColor = if (isDark) SystemColors.BlueDark else SystemColors.Blue
+    val relearningStepColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
+    val leechColor = if (isDark) SystemColors.RedDark else SystemColors.Red
+    val temporalColor = if (isDark) SystemColors.CyanDark else SystemColors.Cyan
+    val backlogColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
 
     val backgroundColor = MaterialTheme.colorScheme.background
     val backdrop = rememberLayerBackdrop()
