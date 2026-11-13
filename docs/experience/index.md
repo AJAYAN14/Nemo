@@ -39,6 +39,7 @@
 | 28 | [Compose嵌套动画可见性与ViewModel跨路由时序避坑指南](file:///e:/Android/Nemo/docs/experience/28-Compose嵌套动画可见性与ViewModel跨路由时序避坑指南.md) | `ThemeSettingsScreen.kt`, `NemoNavHost.kt`, `SettingsViewModel.kt` / 嵌套动画独立触发、首帧异步时序差、ViewModel跨路由共享、复合可见性守卫 | **父子可见性全链路收敛与单一数据源热缓存公理**：嵌套子项可见性必须无条件与父状态复合绑定；连续子路由必须优先复用已就绪的内存数据流，消除冷启动帧跳动。 | 活跃 |
 | 29 | [词库列表后台预加载与首帧转场防掉帧避坑指南](file:///e:/Android/Nemo/docs/experience/29-词库列表后台预加载与首帧转场防掉帧避坑指南.md) | `DefaultLibraryPreloadCache`, `WordListViewModel`, `GrammarListViewModel`, `NemoNavHost.kt` / SQLite 999限制、后台预热保鲜、离屏合成熔断、静态骨架屏兜底 | **全量关联规避长 IN 列表与转场熔断公理**：全量合并查询改用无参状态字典映射并防抖保鲜；UI 转场启用 `Offscreen` 合成并熔断 `Backdrop` 重采样，冷启动未就绪以静态骨架卡片铺屏兜底。 | 活跃 |
 | 30 | [容器变化过渡动画重构与NavHost物理冲突避坑指南](file:///e:/Android/Nemo/docs/experience/30-容器变化过渡动画重构与NavHost物理冲突避坑指南.md) | `SharedTransitionContext.kt`, `NemoNavHost.kt`, `TestDashboardScreen.kt`, `FavoritesScreen.kt` / 双向物理阻尼弹簧、动态曲率插值、OverlayClip、NavHost协同转场、物理坐标系冲突消除 | **协同转场与动态曲率插值公理**：存在共享容器展开时 NavHost 必须让渡页面位移控制权，杜绝多重运动矢量撕裂；圆角形变必须通过 OverlayClip 与状态机毫秒级动态平滑插值。 | 活跃 |
+| 31 | [顶栏液态菜单原生光学配方对齐与流体拓扑完整性避坑指南](file:///e:/Android/Nemo/docs/experience/31-顶栏液态菜单原生光学配方对齐与流体拓扑完整性避坑指南.md) | `GlassRecipe.kt`, `GlassRenderer.kt`, `NemoGlassMenuView.kt` / ControlDark/Light、fillAlpha、流体拓扑完整性、水平精致三点、面充填混合 | **流体几何拓扑不可分割与光学配方精准对齐公理**：原生液态菜单常态按钮与展开面板为统一流体计算域，严禁以外部独立静态节点割裂拓扑；视觉质感对齐应在 Shader 底层光学参数（fillAlpha）层精准收敛。 | 活跃 |
 
 ---
 
