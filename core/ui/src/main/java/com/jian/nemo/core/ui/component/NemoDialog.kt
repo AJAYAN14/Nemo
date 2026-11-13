@@ -1,7 +1,5 @@
 package com.jian.nemo.core.ui.component
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import com.jian.nemo.core.ui.R
@@ -37,8 +33,8 @@ import androidx.compose.ui.window.DialogProperties
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.UiPalette
-import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.dialog.NemoWindowBlurBehind
 
 /**
  * Nemo 通用高质感弹窗组件
@@ -108,31 +104,9 @@ fun NemoDialog(
             dismissOnClickOutside = !isLoading
         )
     ) {
-        val view = LocalView.current
         val haptic = LocalHapticFeedback.current
 
-        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
-        DisposableEffect(view) {
-            val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                window.attributes = window.attributes.apply {
-                    blurBehindRadius = 48 // 48px 原生 GPU 硬件级细腻毛玻璃
-                    dimAmount = 0.20f    // 20% 通透柔光暗化
-                }
-            }
-            onDispose {
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-        }
+        NemoWindowBlurBehind()
 
         Box(
             modifier = Modifier

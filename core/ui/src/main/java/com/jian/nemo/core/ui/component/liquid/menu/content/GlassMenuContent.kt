@@ -95,7 +95,8 @@ internal class GlassMenuContent(
         }
         val clampedWidest = maxNeeded.coerceIn(Metrics.MinimumWidth * density, Metrics.MaximumWidth * density)
         val safeMaxWidth = max(maximumWidth, clampedWidest)
-        width = min(requestedWidth?.times(density) ?: ceil(clampedWidest), safeMaxWidth)
+        // 调用方传入的 requestedWidth 与 maximumWidth 同为像素值，此处直接使用，避免二次乘 density 导致菜单被放大至铺满全屏
+        width = min(requestedWidth ?: ceil(clampedWidest), safeMaxWidth)
 
         var y = Metrics.ContentInsetY * density
         val rowScale = max(fontScale, 1f)

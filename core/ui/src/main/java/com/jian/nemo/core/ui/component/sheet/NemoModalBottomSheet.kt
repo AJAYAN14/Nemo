@@ -1,7 +1,5 @@
 package com.jian.nemo.core.ui.component.sheet
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import com.jian.nemo.core.designsystem.shape.UnevenRoundedRectangle
@@ -18,12 +16,13 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
+import com.jian.nemo.core.ui.component.dialog.NemoWindowBlurBehind
 
 /**
  * Nemo 通用高质感毛玻璃抽屉组件 (NemoModalBottomSheet)
  *
  * 核心特性：
- * 1. 官方原生 Blur Behind 窗口级高斯毛玻璃：在 Android 12 (API 31+) 上自动开启 GPU 硬件级背景毛玻璃（blurBehindRadius = 48px, dimAmount = 0.20f）。
+ * 1. 官方原生 Blur Behind 窗口级高斯毛玻璃：在 Android 12 (API 31+) 上自动开启 GPU 硬件级背景毛玻璃（blurBehindRadius = 48px, dimAmount = 0f，抽屉自带 scrim 遮罩故不叠加暗化）。
  * 2. 现代视觉设计：28dp 顶部圆角、精致拖拽手柄、深浅自适应容器背景色。
  * 3. 展开触觉反馈：抽屉升起时伴随轻快触感。
  * 4. 低版本自动安全降级为标准半透明暗化遮罩。
@@ -75,35 +74,15 @@ fun NemoModalBottomSheet(
     ) {
         val view = LocalView.current
 
-        // 绑定窗口级高斯毛玻璃与窗口动画优化
+        // 禁用底层 Window 系统退出动画，消除 300ms 销毁滞后
         DisposableEffect(view) {
             val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null) {
-                // 1. 禁用底层 Window 的系统级退出动画，消除多余的 300ms 窗口销毁滞后
-                window.setWindowAnimations(0)
-
-                // 2. 开启 Android 12+ 硬件级高斯毛玻璃
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                    window.attributes = window.attributes.apply {
-                        blurBehindRadius = 48
-                        dimAmount = 0f
-                    }
-                }
-            }
-
-            onDispose {
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
+            window?.setWindowAnimations(0)
+            onDispose { }
         }
+
+        // 抽屉自带 Scrim 遮罩，无需额外暗化
+        NemoWindowBlurBehind(dimAmount = 0f)
 
         content()
     }

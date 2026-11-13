@@ -551,6 +551,8 @@ fun TestSettingsScreen(
                          }
                      },
                      tint = MaterialTheme.colorScheme.primary,
+                     tintAlpha = 0.95f,
+                     backdrop = backdrop,
                      isInteractive = !isGenerating,
                      shape = RoundedRectangle(28.dp),
                      modifier = Modifier

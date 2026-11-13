@@ -45,6 +45,7 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
 import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.graphics.toArgb
 
 /**
  * 测试题目菜单状态数据
@@ -97,7 +98,12 @@ fun TestMenuOverlay(
     }
     val pauseTitle = stringResource(R.string.test_header_menu_pause)
 
-    val nativeItems = remember(itemId, isFavorite, favoriteTitle, pauseTitle) {
+    // 菜单项强调色语义：收藏对应喜爱语义（粉色），暂停对应进行中状态语义（橙色）
+    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val favoriteIconColor = (if (isDarkTheme) SystemColors.PinkDark else SystemColors.Pink).toArgb()
+    val pauseIconColor = (if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange).toArgb()
+
+    val nativeItems = remember(itemId, isFavorite, favoriteTitle, pauseTitle, favoriteIconColor, pauseIconColor) {
         val list = mutableListOf<GlassMenuItemRecord>()
         if (itemId != 0) {
             list.add(
@@ -105,7 +111,8 @@ fun TestMenuOverlay(
                     id = "favorite",
                     title = favoriteTitle,
                     icon = "heart",
-                    checked = isFavorite
+                    checked = isFavorite,
+                    iconColor = favoriteIconColor
                 )
             )
             list.add(GlassMenuItemRecord(separator = true))
@@ -114,7 +121,8 @@ fun TestMenuOverlay(
             GlassMenuItemRecord(
                 id = "pause",
                 title = pauseTitle,
-                icon = "pause"
+                icon = "pause",
+                iconColor = pauseIconColor
             )
         )
         list

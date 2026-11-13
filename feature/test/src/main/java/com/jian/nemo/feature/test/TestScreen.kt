@@ -102,9 +102,14 @@ fun TestScreen(
         )
     }
 
-    // 暂停对话框
+    // 暂停测试确认弹窗
     if (uiState.showPauseDialog) {
-        com.jian.nemo.feature.test.components.PauseTestDialog(
+        com.jian.nemo.core.ui.component.NemoDialog(
+            onDismissRequest = { viewModel.resumeTest() },
+            title = stringResource(R.string.test_pause_dialog_title),
+            text = stringResource(R.string.test_pause_dialog_desc),
+            confirmText = stringResource(R.string.test_common_btn_continue_test),
+            dismissText = null,
             onConfirm = { viewModel.resumeTest() }
         )
     }

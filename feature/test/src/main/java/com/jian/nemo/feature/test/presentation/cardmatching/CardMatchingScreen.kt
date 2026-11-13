@@ -14,6 +14,7 @@ import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.test.components.TestHeaderCenterContent
 import com.jian.nemo.feature.test.components.TestHeaderActions
+import com.jian.nemo.feature.test.components.TestMenuOverlay
 import com.jian.nemo.feature.test.components.SimpleProgressIndicator
 
 /**
@@ -99,6 +100,17 @@ fun CardMatchingScreen(
                 )
             }
         }
+
+        // 卡片题界面独立于统一测试容器，需显式挂载测试菜单浮层以支持暂停操作；卡片题无单一词条上下文，故仅保留暂停入口
+        val cardMenuExpandedState = remember { mutableStateOf(false) }
+        TestMenuOverlay(
+            isVisible = cardMenuExpandedState.value,
+            onDismiss = { cardMenuExpandedState.value = false },
+            isFavorite = false,
+            itemId = 0,
+            onToggleFavorite = { _, _ -> },
+            onPause = { viewModel.pauseTest() }
+        )
 
         // 底部反馈面板 (固定)
         MatchingFeedbackPanel(

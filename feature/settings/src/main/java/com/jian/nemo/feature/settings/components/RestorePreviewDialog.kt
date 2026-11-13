@@ -1,20 +1,16 @@
 package com.jian.nemo.feature.settings.components
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.settings.R
@@ -22,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.data.manager.ImportPreview
+import com.jian.nemo.core.ui.component.dialog.NemoWindowBlurBehind
 import com.jian.nemo.core.data.manager.ImportStrategy
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
 
@@ -45,30 +41,7 @@ fun RestorePreviewDialog(
             decorFitsSystemWindows = true
         )
     ) {
-        val view = LocalView.current
-
-        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
-        DisposableEffect(view) {
-            val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                window.attributes = window.attributes.apply {
-                    blurBehindRadius = 48
-                    dimAmount = 0.20f
-                }
-            }
-            onDispose {
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-        }
+        NemoWindowBlurBehind()
 
         Surface(
             modifier = Modifier

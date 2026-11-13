@@ -1,7 +1,5 @@
 package com.jian.nemo.feature.learning.presentation.home.components
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -30,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.domain.model.AppNotification
+import com.jian.nemo.core.ui.component.dialog.NemoWindowBlurBehind
 
 /**
  * 强制推送通知弹窗
@@ -57,30 +54,7 @@ fun ForcedNotificationPopup(
                 decorFitsSystemWindows = false
             )
         ) {
-            val view = LocalView.current
-
-            // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
-            DisposableEffect(view) {
-                val window = (view.parent as? DialogWindowProvider)?.window
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                    window.attributes = window.attributes.apply {
-                        blurBehindRadius = 48
-                        dimAmount = 0.20f
-                    }
-                }
-                onDispose {
-                    if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        try {
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                            window.attributes = window.attributes.apply {
-                                blurBehindRadius = 0
-                                dimAmount = 0f
-                            }
-                        } catch (_: Exception) {}
-                    }
-                }
-            }
+            NemoWindowBlurBehind()
 
             Box(
                 modifier = Modifier

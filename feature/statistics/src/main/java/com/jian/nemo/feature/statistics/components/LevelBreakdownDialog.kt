@@ -1,7 +1,5 @@
 package com.jian.nemo.feature.statistics.components
 
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -12,11 +10,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.shape.CircleShape
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.statistics.R
@@ -33,8 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.window.DialogWindowProvider
 import com.jian.nemo.core.designsystem.theme.SystemColors
+import com.jian.nemo.core.ui.component.dialog.NemoWindowBlurBehind
 import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.feature.statistics.LevelPredictionInfo
 import com.jian.nemo.feature.statistics.OverallPredictionSummary
@@ -69,6 +72,13 @@ fun LevelBreakdownDialog(
 
     var expandedLevel by remember { mutableStateOf<String?>(null) }
     var isPinned by remember { mutableStateOf(false) }
+    val haptic = LocalHapticFeedback.current
+    var isAnimated by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(50L)
+        isAnimated = true
+    }
 
     // 仅在非固定（单击触发）时，3 秒后自动收起
     LaunchedEffect(expandedLevel, isPinned) {
@@ -84,30 +94,7 @@ fun LevelBreakdownDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        val view = LocalView.current
-
-        // 开启 Android 12+ 官方窗口级高斯毛玻璃 (Blur Behind)
-        DisposableEffect(view) {
-            val window = (view.parent as? DialogWindowProvider)?.window
-            if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                window.attributes = window.attributes.apply {
-                    blurBehindRadius = 48
-                    dimAmount = 0.20f
-                }
-            }
-            onDispose {
-                if (window != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    try {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
-                        window.attributes = window.attributes.apply {
-                            blurBehindRadius = 0
-                            dimAmount = 0f
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-        }
+        NemoWindowBlurBehind()
 
         Surface(
             modifier = Modifier
@@ -138,11 +125,28 @@ fun LevelBreakdownDialog(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     
+                    val closeInteractionSource = remember { MutableInteractionSource() }
+                    val isClosePressed by closeInteractionSource.collectIsPressedAsState()
+                    val closeScale by animateFloatAsState(
+                        targetValue = if (isClosePressed) 0.90f else 1f,
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioLowBouncy),
+                        label = "closeScale"
+                    )
+
                     IconButton(
-                        onClick = onDismiss,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                            onDismiss()
+                        },
+                        interactionSource = closeInteractionSource,
                         modifier = Modifier
                             .size(32.dp)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), RoundedRectangle(8.dp))
+                            .graphicsLayer {
+                                scaleX = closeScale
+                                scaleY = closeScale
+                            }
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.Close,
@@ -184,9 +188,10 @@ fun LevelBreakdownDialog(
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
+                    val grandTarget = if (isAnimated && grandTotalCount > 0) totalCount.toFloat() / grandTotalCount else 0f
                     val animateGrandProgress by animateFloatAsState(
-                        targetValue = if (grandTotalCount > 0) totalCount.toFloat() / grandTotalCount else 0f,
-                        animationSpec = spring(stiffness = Spring.StiffnessVeryLow, dampingRatio = Spring.DampingRatioLowBouncy),
+                        targetValue = grandTarget,
+                        animationSpec = spring(stiffness = Spring.StiffnessLow, dampingRatio = Spring.DampingRatioLowBouncy),
                         label = "grandProgress"
                     )
                     
@@ -233,11 +238,26 @@ fun LevelBreakdownDialog(
                         val prediction = predictions[level]
                         val isExpanded = expandedLevel == level
 
-                        val progress = if (total > 0) count.toFloat() / total else 0f
+                        val actualProgress = if (total > 0) count.toFloat() / total else 0f
+                        val targetLevelProgress = if (isAnimated) actualProgress else 0f
                         val animateProgress by animateFloatAsState(
-                            targetValue = progress,
-                            animationSpec = spring(stiffness = Spring.StiffnessVeryLow, dampingRatio = Spring.DampingRatioLowBouncy),
+                            targetValue = targetLevelProgress,
+                            animationSpec = spring(stiffness = Spring.StiffnessLow, dampingRatio = Spring.DampingRatioLowBouncy),
                             label = "levelProgress_$level"
+                        )
+
+                        val cardInteractionSource = remember { MutableInteractionSource() }
+                        val isCardPressed by cardInteractionSource.collectIsPressedAsState()
+                        val cardScale by animateFloatAsState(
+                            targetValue = if (isCardPressed) 0.98f else 1f,
+                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioLowBouncy),
+                            label = "cardScale_$level"
+                        )
+
+                        val arrowRotation by animateFloatAsState(
+                            targetValue = if (isExpanded) 180f else 0f,
+                            animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                            label = "arrowRotation_$level"
                         )
 
                         Surface(
@@ -249,9 +269,16 @@ fun LevelBreakdownDialog(
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = cardScale
+                                    scaleY = cardScale
+                                }
                                 .clip(RoundedRectangle(14.dp))
                                 .combinedClickable(
+                                    interactionSource = cardInteractionSource,
+                                    indication = ripple(),
                                     onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                         if (isExpanded) {
                                             expandedLevel = null
                                             isPinned = false
@@ -261,6 +288,7 @@ fun LevelBreakdownDialog(
                                         }
                                     },
                                     onLongClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         if (isExpanded && isPinned) {
                                             expandedLevel = null
                                             isPinned = false
@@ -329,14 +357,26 @@ fun LevelBreakdownDialog(
                                             modifier = Modifier.weight(1f)
                                         )
 
-                                        // 百分比大字靠右
-                                        val percent = (progress * 100).toInt()
-                                        Text(
-                                            text = "$percent%",
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (percent > 0) color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                                        )
+                                        val percent = (actualProgress * 100).toInt()
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "$percent%",
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (percent > 0) color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Rounded.KeyboardArrowDown,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (isExpanded) 0.8f else 0.4f),
+                                                modifier = Modifier
+                                                    .padding(start = 2.dp)
+                                                    .size(16.dp)
+                                                    .graphicsLayer { rotationZ = arrowRotation }
+                                            )
+                                        }
                                     }
                                 }
 
