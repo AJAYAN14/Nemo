@@ -191,11 +191,31 @@ fun NemoNavHost(
         )
     }
 
+    // 采用容器形变（Container Transform）的子界面路由集合
+    val containerTransformRoutes = remember {
+        setOf(
+            NavDestination.MISTAKES,
+            NavDestination.FAVORITES,
+            NavDestination.TEST_SETTINGS,
+            NavDestination.ABILITY_WORKSHOP,
+            "mistakes",
+            "favorites"
+        )
+    }
+
+    fun isContainerTransformTarget(route: String?): Boolean {
+        if (route == null) return false
+        val baseRoute = route.substringBefore('?').substringBefore('/')
+        return containerTransformRoutes.contains(baseRoute)
+    }
+
     val mainEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
         val initialRoute = initialState.destination.route
         val targetRoute = targetState.destination.route
         if (initialRoute == "splash") {
             fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))
+        } else if (isContainerTransformTarget(initialRoute)) {
+            fadeIn(animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing))
         } else {
             HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
             if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()
@@ -207,8 +227,14 @@ fun NemoNavHost(
         val initialRoute = initialState.destination.route
         val targetRoute = targetState.destination.route
         HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
-        if (targetRoute !in mainScreenRoutes) NemoNavigationAnimations.exitTransition()
-        else BottomNavTransition.exitTransition()
+        if (isContainerTransformTarget(targetRoute)) {
+            // 当目标页面是容器形变页面时，主界面原地静止，完全交由共享卡片在顶层膨胀展开
+            fadeOut(animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing))
+        } else if (targetRoute !in mainScreenRoutes) {
+            NemoNavigationAnimations.exitTransition()
+        } else {
+            BottomNavTransition.exitTransition()
+        }
     }
 
     val mainPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
@@ -216,6 +242,9 @@ fun NemoNavHost(
         val targetRoute = targetState.destination.route
         if (initialRoute == "splash") {
             fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing))
+        } else if (isContainerTransformTarget(initialRoute)) {
+            // 从容器形变页面返回时，主界面原地不动无缝承接卡片原路收缩飞回
+            fadeIn(animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing))
         } else {
             HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
             if (initialRoute !in mainScreenRoutes) NemoNavigationAnimations.popEnterTransition()

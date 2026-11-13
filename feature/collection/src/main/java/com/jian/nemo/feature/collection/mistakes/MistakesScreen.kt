@@ -47,7 +47,13 @@ import com.jian.nemo.feature.collection.components.CollectionActionButton
 import com.jian.nemo.feature.collection.components.CollectionActionOverlay
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
-import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.animation.nemoScreenContainer
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
+import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 
 /**
  * 我的错题界面 - UI/UX Pro Max 风格
@@ -58,7 +64,7 @@ import com.jian.nemo.core.ui.animation.containerTransform
  * - Icon: Squircle (Rounded 14dp)
  */
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun MistakesScreen(
     viewModel: MistakesViewModel = hiltViewModel(),
@@ -72,9 +78,30 @@ fun MistakesScreen(
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
     var isMenuExpanded by remember { mutableStateOf(false) }
 
+    val isTransitionSettled = rememberIsTransitionSettled()
     val backdrop = rememberLayerBackdrop()
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    val navScope = LocalNavAnimatedVisibilityScope.current
+    val sharedScope = LocalSharedTransitionScope.current
+
+    val headerAnimModifier = if (navScope != null) {
+        with(navScope) {
+            Modifier.animateEnterExit(
+                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
+                exit = fadeOut(tween(durationMillis = 40))
+            )
+        }
+    } else {
+        Modifier
+    }
+
+    val contentAnimModifier = if (sharedScope != null) {
+        with(sharedScope) { Modifier.skipToLookaheadSize() }
+    } else {
+        Modifier
+    }
 
     // 图标风格双自适应（柔和微透 / 活力纯色）下发给整页子组件
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
@@ -82,16 +109,17 @@ fun MistakesScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
-                .containerTransform(
+                .nemoScreenContainer(
                     key = "container_mistakes",
-                    shape = RoundedRectangle(0.dp)
+                    cardCornerRadius = 24.dp
                 )
         ) {
         // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .layerBackdrop(backdrop, enabled = isTransitionSettled)
+                .then(contentAnimModifier)
         ) {
             // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
@@ -134,6 +162,7 @@ fun MistakesScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(headerAnimModifier)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(

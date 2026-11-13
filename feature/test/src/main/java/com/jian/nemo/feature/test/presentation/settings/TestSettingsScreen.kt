@@ -20,7 +20,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.animation.nemoScreenContainer
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
+import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
@@ -46,7 +53,7 @@ import com.jian.nemo.core.ui.component.popup.NemoSelectivePopupMenuItem
 /**
  * 测试设置界面 - UI/UX Pro Max 扁平化分组风格
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun TestSettingsScreen(
     testModeId: String? = null,
@@ -123,6 +130,7 @@ fun TestSettingsScreen(
     var lastClickTime by remember { mutableLongStateOf(0L) }
 
     // UI Host
+    val isTransitionSettled = rememberIsTransitionSettled()
     val backdrop = rememberLayerBackdrop()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -426,12 +434,32 @@ fun TestSettingsScreen(
         updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) }
     }
 
+    val navScope = LocalNavAnimatedVisibilityScope.current
+    val sharedScope = LocalSharedTransitionScope.current
+
+    val headerAnimModifier = if (navScope != null) {
+        with(navScope) {
+            Modifier.animateEnterExit(
+                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
+                exit = fadeOut(tween(durationMillis = 40))
+            )
+        }
+    } else {
+        Modifier
+    }
+
+    val contentAnimModifier = if (sharedScope != null) {
+        with(sharedScope) { Modifier.skipToLookaheadSize() }
+    } else {
+        Modifier
+    }
+
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .containerTransform(
+            .nemoScreenContainer(
                 key = "container_test_${testModeId ?: "default"}",
-                shape = RoundedRectangle(0.dp)
+                cardCornerRadius = 24.dp
             ),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = backgroundColor
@@ -445,7 +473,8 @@ fun TestSettingsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .layerBackdrop(backdrop)
+                    .layerBackdrop(backdrop, enabled = isTransitionSettled)
+                    .then(contentAnimModifier)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
@@ -486,6 +515,7 @@ fun TestSettingsScreen(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
+                    .then(headerAnimModifier)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
@@ -512,6 +542,7 @@ fun TestSettingsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
+                    .then(headerAnimModifier)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(

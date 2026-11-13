@@ -40,7 +40,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.Rubik
-import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.animation.nemoCardContainer
 import com.jian.nemo.core.ui.component.progress.NemoCircularProgress
 import com.jian.nemo.core.ui.component.SlidingDotIndicator
 import kotlinx.coroutines.delay
@@ -107,9 +107,9 @@ fun TestDashboardScreen(
                 DashboardTile(
                     modifier = Modifier
                         .weight(1f)
-                        .containerTransform(
+                        .nemoCardContainer(
                             key = "container_mistakes",
-                            shape = RoundedRectangle(24.dp)
+                            cornerRadius = 24.dp
                         ),
                     title = stringResource(R.string.test_dashboard_item_mistakes),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.wrongWordsCount),
@@ -120,9 +120,9 @@ fun TestDashboardScreen(
                 DashboardTile(
                     modifier = Modifier
                         .weight(1f)
-                        .containerTransform(
+                        .nemoCardContainer(
                             key = "container_favorites",
-                            shape = RoundedRectangle(24.dp)
+                            cornerRadius = 24.dp
                         ),
                     title = stringResource(R.string.test_dashboard_item_favorites),
                     subtitle = stringResource(R.string.test_dashboard_format_count_items, uiState.favoriteWordsCount),
@@ -143,9 +143,9 @@ fun TestDashboardScreen(
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
-                            .containerTransform(
+                            .nemoCardContainer(
                                 key = "container_test_multiple_choice",
-                                shape = RoundedRectangle(24.dp)
+                                cornerRadius = 24.dp
                             ),
                         title = stringResource(R.string.test_dashboard_type_choice_title),
                         subtitle = stringResource(R.string.test_dashboard_type_choice_subtitle),
@@ -156,9 +156,9 @@ fun TestDashboardScreen(
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
-                            .containerTransform(
+                            .nemoCardContainer(
                                 key = "container_test_typing",
-                                shape = RoundedRectangle(24.dp)
+                                cornerRadius = 24.dp
                             ),
                         title = stringResource(R.string.test_dashboard_type_typing_title),
                         subtitle = stringResource(R.string.test_dashboard_type_typing_subtitle),
@@ -174,9 +174,9 @@ fun TestDashboardScreen(
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
-                            .containerTransform(
+                            .nemoCardContainer(
                                 key = "container_test_card_matching",
-                                shape = RoundedRectangle(24.dp)
+                                cornerRadius = 24.dp
                             ),
                         title = stringResource(R.string.test_dashboard_type_card_title),
                         subtitle = stringResource(R.string.test_dashboard_type_card_subtitle),
@@ -187,9 +187,9 @@ fun TestDashboardScreen(
                     DashboardTile(
                         modifier = Modifier
                             .weight(1f)
-                            .containerTransform(
+                            .nemoCardContainer(
                                 key = "container_test_sorting",
-                                shape = RoundedRectangle(24.dp)
+                                cornerRadius = 24.dp
                             ),
                         title = stringResource(R.string.test_dashboard_type_sorting_title),
                         subtitle = stringResource(R.string.test_dashboard_type_sorting_subtitle),
@@ -205,9 +205,9 @@ fun TestDashboardScreen(
 
                 SectionTitle(stringResource(R.string.test_dashboard_section_other))
                 DashboardBanner(
-                    modifier = Modifier.containerTransform(
+                    modifier = Modifier.nemoCardContainer(
                         key = "container_ability_workshop",
-                        shape = RoundedRectangle(24.dp)
+                        cornerRadius = 24.dp
                     ),
                     title = stringResource(R.string.test_dashboard_workshop_title),
                     subtitle = stringResource(R.string.test_dashboard_workshop_subtitle),
@@ -532,7 +532,6 @@ private fun DashboardTile(
 
     Card(
         modifier = modifier
-            .clip(RoundedRectangle(24.dp))
             .clickable(onClick = onClick),
         shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(containerColor = surfaceColor),

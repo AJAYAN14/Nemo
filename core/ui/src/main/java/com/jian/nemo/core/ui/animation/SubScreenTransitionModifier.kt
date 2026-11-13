@@ -77,6 +77,5 @@ val LocalDecorativeAnimationsPaused = staticCompositionLocalOf<State<Boolean>?> 
 @Composable
 fun rememberIsTransitionSettled(): Boolean {
     val navScope = LocalNavAnimatedVisibilityScope.current ?: return true
-    return navScope.transition.currentState == EnterExitState.Visible &&
-            navScope.transition.targetState == EnterExitState.Visible
+    return navScope.transition.currentState == navScope.transition.targetState
 }

@@ -45,3 +45,7 @@
     public void printStackTrace(java.io.PrintStream);
     public void printStackTrace(java.io.PrintWriter);
 }
+
+# Keep Compose SharedTransition
+-keep class androidx.compose.animation.** { *; }
+-dontwarn androidx.compose.animation.**

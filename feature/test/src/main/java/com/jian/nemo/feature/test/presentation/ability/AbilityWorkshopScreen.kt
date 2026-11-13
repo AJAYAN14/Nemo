@@ -56,7 +56,14 @@ import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.containerTransform
+import com.jian.nemo.core.ui.animation.nemoScreenContainer
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
+import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
+import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.test.R
@@ -66,30 +73,53 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 /**
  * 能力工坊界面 - 提供多种专项能力训练游戏
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AbilityWorkshopScreen(
     onBack: () -> Unit,
     onNavigateToGame: (String) -> Unit = {}
 ) {
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
+    val isTransitionSettled = rememberIsTransitionSettled()
     val backdrop = rememberLayerBackdrop()
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    val navScope = LocalNavAnimatedVisibilityScope.current
+    val sharedScope = LocalSharedTransitionScope.current
+
+    val headerAnimModifier = if (navScope != null) {
+        with(navScope) {
+            Modifier.animateEnterExit(
+                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
+                exit = fadeOut(tween(durationMillis = 40))
+            )
+        }
+    } else {
+        Modifier
+    }
+
+    val contentAnimModifier = if (sharedScope != null) {
+        with(sharedScope) { Modifier.skipToLookaheadSize() }
+    } else {
+        Modifier
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
-            .containerTransform(
+            .nemoScreenContainer(
                 key = "container_ability_workshop",
-                shape = RoundedRectangle(0.dp)
+                cardCornerRadius = 24.dp
             )
     ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop),
+                .layerBackdrop(backdrop, enabled = isTransitionSettled)
+                .then(contentAnimModifier),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -167,6 +197,7 @@ fun AbilityWorkshopScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(headerAnimModifier)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
