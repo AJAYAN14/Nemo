@@ -8,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import com.jian.nemo.core.designsystem.shape.Capsule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.BarChart
@@ -260,7 +260,7 @@ fun NemoBottomBar(
                                     avatarPath = user.avatarUrl,
                                     size = 24.dp,
                                     borderWidth = if (isSelected) 1.5.dp else 0.dp,
-                                    borderColor = Color.White.copy(alpha = if (isSelected) 0.8f else 0f)
+                                    borderColor = if (isSelected) themePrimary else Color.Transparent
                                 )
                             } else {
                                 Icon(
@@ -294,7 +294,7 @@ fun NemoBottomBar(
                 modifier = Modifier
                     .shadow(
                         elevation = 16.dp,
-                        shape = CircleShape,
+                        shape = Capsule(),
                         clip = false,
                         spotColor = Color.Black.copy(alpha = 0.12f),
                         ambientColor = Color.Black.copy(alpha = 0.08f)
@@ -318,13 +318,13 @@ fun NemoBottomBar(
                             renderEffect = vibrancyEffect
                         }
                         .then(
-                            if (hazeState != null) Modifier.hazeChild(state = hazeState, shape = CircleShape) else Modifier
+                            if (hazeState != null) Modifier.hazeChild(state = hazeState, shape = Capsule()) else Modifier
                         )
-                        .background(containerColor, CircleShape)
+                        .background(containerColor, Capsule())
                         .border(
                             width = 1.dp,
                             color = borderColor,
-                            shape = CircleShape
+                            shape = Capsule()
                         )
                 )
 
@@ -365,7 +365,7 @@ fun NemoBottomBar(
                                     scaleY *= 1f - (velocity * 0.25f).coerceIn(-0.2f, 0.2f)
                                     transformOrigin = androidx.compose.ui.graphics.TransformOrigin.Center
                                 }
-                                .clip(CircleShape)
+                                .clip(Capsule())
                                 .drawBehind {
                                     // 纯主题色背景
                                     drawRect(themePrimary)

@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,13 +28,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import com.jian.nemo.core.designsystem.theme.UiPalette
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -44,12 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.util.lerp
+import com.jian.nemo.core.designsystem.shape.Capsule
+import com.jian.nemo.core.designsystem.theme.UiPalette
+import com.jian.nemo.core.ui.component.liquid.utils.DampedDragAnimation
+import com.jian.nemo.core.ui.component.liquid.utils.InteractiveHighlight
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.jian.nemo.core.ui.component.liquid.utils.DampedDragAnimation
-import com.jian.nemo.core.ui.component.liquid.utils.InteractiveHighlight
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
@@ -57,13 +55,11 @@ import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
-import androidx.compose.foundation.shape.CircleShape
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import kotlin.math.sign
 
 @Composable
@@ -74,8 +70,8 @@ fun LiquidBottomTabs(
     tabsCount: Int,
     modifier: Modifier = Modifier,
     enableBackdrop: Boolean = true,
-    accentColor: Color = UiPalette.LiquidCyanMint,
     isDarkTheme: Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f,
+    accentColor: Color = if (isDarkTheme) UiPalette.LiquidLightAccent else UiPalette.LiquidBrandBlue,
     onInteractionChanged: ((Boolean) -> Unit)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
@@ -85,7 +81,6 @@ fun LiquidBottomTabs(
         else UiPalette.LiquidTabsBgDark.copy(0.4f)
 
     val tabsBackdrop = rememberLayerBackdrop()
-    val panelBgBackdrop = rememberLayerBackdrop()
 
     BoxWithConstraints(
         modifier,
@@ -121,7 +116,7 @@ fun LiquidBottomTabs(
                 pressedScale = 78f / 56f,
                 onDragStarted = {},
                 onDragStopped = {
-                    val targetIndex = targetValue.roundToInt().coerceIn(0, tabsCount - 1)
+                    val targetIndex = targetValue.fastRoundToInt().coerceIn(0, tabsCount - 1)
                     currentIndex = targetIndex
                     animateToValue(targetIndex.toFloat())
                     animationScope.launch {
@@ -180,7 +175,6 @@ fun LiquidBottomTabs(
             )
         }
 
-        val isIndicatorInteractive = enableBackdrop && dampedDragAnimation.isActive
         val fallbackPanelColor =
             if (isLightTheme) UiPalette.LiquidTabsBgLight.copy(0.88f)
             else UiPalette.LiquidTabsBgDark.copy(0.88f)
@@ -193,13 +187,12 @@ fun LiquidBottomTabs(
                 if (enableBackdrop) {
                     mod.drawBackdrop(
                         backdrop = backdrop,
-                        shape = { CircleShape },
+                        shape = { Capsule() },
                         effects = {
                             vibrancy()
                             blur(8f.dp.toPx())
                             lens(24f.dp.toPx(), 24f.dp.toPx())
                         },
-                        exportedBackdrop = panelBgBackdrop,
                         layerBlock = {
                             val progress = dampedDragAnimation.pressProgress
                             val scale = lerp(1f, 1f + 16f.dp.toPx() / size.width, progress)
@@ -210,7 +203,7 @@ fun LiquidBottomTabs(
                     )
                 } else {
                     mod
-                        .clip(CircleShape)
+                        .clip(Capsule())
                         .background(fallbackPanelColor)
                 }
             }
@@ -219,18 +212,22 @@ fun LiquidBottomTabs(
             .fillMaxWidth()
             .padding(4f.dp)
 
-        Row(
-            panelModifier,
-            verticalAlignment = Alignment.CenterVertically,
-            content = content
-        )
+        CompositionLocalProvider(
+            LocalContentColor provides (if (isDarkTheme) Color.White else Color.Black)
+        ) {
+            Row(
+                panelModifier,
+                verticalAlignment = Alignment.CenterVertically,
+                content = content
+            )
+        }
 
-        if (isIndicatorInteractive) {
+        if (enableBackdrop) {
             CompositionLocalProvider(
                 LocalLiquidBottomTabScale provides {
                     lerp(1f, 1.2f, dampedDragAnimation.pressProgress)
                 },
-                androidx.compose.material3.LocalContentColor provides accentColor
+                LocalContentColor provides accentColor
             ) {
                 Row(
                     Modifier
@@ -240,11 +237,24 @@ fun LiquidBottomTabs(
                         .graphicsLayer {
                             translationX = panelOffset
                         }
-                        .drawBehind {
-                            translate(top = -4f.dp.toPx()) {
-                                drawLayer(panelBgBackdrop.graphicsLayer)
-                            }
-                        }
+                        .drawBackdrop(
+                            backdrop = backdrop,
+                            shape = { Capsule() },
+                            effects = {
+                                val progress = dampedDragAnimation.pressProgress
+                                vibrancy()
+                                blur(8f.dp.toPx())
+                                lens(
+                                    24f.dp.toPx() * progress,
+                                    24f.dp.toPx() * progress
+                                )
+                            },
+                            highlight = {
+                                val progress = dampedDragAnimation.pressProgress
+                                Highlight.Default.copy(alpha = progress)
+                            },
+                            onDrawSurface = { drawRect(containerColor) }
+                        )
                         .then(interactiveHighlight.modifier)
                         .height(56f.dp)
                         .fillMaxWidth()
@@ -265,16 +275,11 @@ fun LiquidBottomTabs(
                 }
                 .then(interactiveHighlight.gestureModifier)
                 .then(dampedDragAnimation.modifier)
-                .height(56f.dp)
-                .fillMaxWidth(1f / tabsCount)
-        ) {
-            if (isIndicatorInteractive) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .drawBackdrop(
+                .let { mod ->
+                    if (enableBackdrop) {
+                        mod.drawBackdrop(
                             backdrop = rememberCombinedBackdrop(backdrop, tabsBackdrop),
-                            shape = { CircleShape },
+                            shape = { Capsule() },
                             effects = {
                                 val progress = dampedDragAnimation.pressProgress
                                 lens(
@@ -289,11 +294,11 @@ fun LiquidBottomTabs(
                             },
                             shadow = {
                                 val progress = dampedDragAnimation.pressProgress
-                                if (progress <= 0.001f) null else Shadow(alpha = progress)
+                                Shadow(alpha = progress)
                             },
                             innerShadow = {
                                 val progress = dampedDragAnimation.pressProgress
-                                if (progress <= 0.001f) null else InnerShadow(
+                                InnerShadow(
                                     radius = 8f.dp * progress,
                                     alpha = progress
                                 )
@@ -315,18 +320,17 @@ fun LiquidBottomTabs(
                                 drawRect(Color.Black.copy(alpha = 0.03f * progress))
                             }
                         )
-                )
-            } else {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(
-                            if (isLightTheme) Color.Black.copy(0.1f)
-                            else Color.White.copy(0.1f)
-                        )
-                )
-            }
-        }
+                    } else {
+                        mod
+                            .clip(Capsule())
+                            .background(
+                                if (isLightTheme) Color.Black.copy(0.1f)
+                                else Color.White.copy(0.1f)
+                            )
+                    }
+                }
+                .height(56f.dp)
+                .fillMaxWidth(1f / tabsCount)
+        )
     }
 }

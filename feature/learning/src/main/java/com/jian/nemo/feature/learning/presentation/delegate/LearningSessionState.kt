@@ -67,6 +67,9 @@ class LearningSessionState {
     /** 会话加载 Job (SessionLifecycleDelegate 持有) */
     var loadingJob: Job? = null
 
+    /** 异步持久化 Job (串行化追踪，RatingDelegate / UndoDelegate 共享) */
+    var persistJob: Job? = null
+
     /** 当前会话锁定的学习日（兜底实时计算），零点跨天保护统一入口 */
     fun lockedDayOrToday(): Long =
         sessionLockedDay ?: DateTimeUtils.getLearningDay(resetHour)

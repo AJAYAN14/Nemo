@@ -421,7 +421,9 @@ class RatingDelegate(
         isLapse: Boolean,
         quality: Int
     ) {
-        scope.launch(Dispatchers.IO) {
+        val previousJob = sessionState.persistJob
+        sessionState.persistJob = scope.launch(Dispatchers.IO) {
+            previousJob?.join()
             val today = sessionState.lockedDayOrToday()
             try {
                 when (updatedItem) {
@@ -518,6 +520,7 @@ class RatingDelegate(
                     }
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 println("后台持久化评分失败: ${e.message}")
             }
         }

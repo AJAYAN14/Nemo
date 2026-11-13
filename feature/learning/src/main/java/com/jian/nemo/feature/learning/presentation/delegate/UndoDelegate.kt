@@ -15,6 +15,7 @@ import com.jian.nemo.feature.learning.presentation.LearningItem
 import com.jian.nemo.feature.learning.presentation.LearningStatus
 import com.jian.nemo.feature.learning.presentation.SlideDirection
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
@@ -97,12 +98,44 @@ class UndoDelegate(
             syncUndoAvailability()
             return
         }
-        // 快照已被消费，立即刷新可撤销状态，避免快速重复点击。
+
+        // 1. 同步恢复 delegate 内部状态
+        sessionState.learningSteps.clear()
+        sessionState.learningSteps.putAll(snapshot.learningSteps)
+        sessionState.lapseCounts.value = snapshot.lapseCounts
+        sessionState.requeuedItems.clear()
+        sessionState.requeuedItems.addAll(snapshot.requeuedItems)
+        sessionState.learningDueTimes.clear()
+        sessionState.learningDueTimes.putAll(snapshot.learningDueTimes)
+
+        // 2. 立即乐观更新 UI 状态，主线程 0ms 瞬间触发切卡动效，立即重置 canUndo 避免重复点击
+        stateUpdater.update {
+            it.copy(
+                status = LearningStatus.Learning,
+                wordList = snapshot.wordList,
+                grammarList = snapshot.grammarList,
+                currentIndex = snapshot.currentIndex,
+                currentGrammarIndex = snapshot.currentGrammarIndex,
+                currentWord = snapshot.originalWord,
+                currentGrammar = snapshot.originalGrammar,
+                completedToday = snapshot.completedToday,
+                completedThisSession = snapshot.completedThisSession,
+                sessionProcessedCount = snapshot.sessionProcessedCount,
+                isAnswerShown = true,  // 撤销后显示答案面
+                isCardFlipped = true,
+                ratingIntervals = calculateRatingIntervals(snapshot.item, srsIntervalPreview, sessionState),
+                slideDirection = SlideDirection.BACKWARD,
+                canUndo = false
+            )
+        }
+        queueNavigationDelegate.updateQueueBadgeCounts()
         syncUndoAvailability()
 
-        scope.launch {
+        // 3. 后台异步协程执行写库，与前置写库严格串行排队
+        val previousPersistJob = sessionState.persistJob
+        sessionState.persistJob = scope.launch(Dispatchers.IO) {
             try {
-                stateUpdater.update { it.copy(status = LearningStatus.Processing) }
+                previousPersistJob?.join()
 
                 // 恢复数据库状态
                 when (snapshot.item) {
@@ -124,53 +157,18 @@ class UndoDelegate(
                     }
                 }
 
-                // 恢复 delegate 内部状态
-                sessionState.learningSteps.clear()
-                sessionState.learningSteps.putAll(snapshot.learningSteps)
-                sessionState.lapseCounts.value = snapshot.lapseCounts
-                sessionState.requeuedItems.clear()
-                sessionState.requeuedItems.addAll(snapshot.requeuedItems)
-                sessionState.learningDueTimes.clear()
-                sessionState.learningDueTimes.putAll(snapshot.learningDueTimes)
-
-                // 恢复 UI 状态
-                @Suppress("UNUSED_VARIABLE")
-                val mode = stateUpdater.currentState.learningMode
-                stateUpdater.update {
-                    it.copy(
-                        status = LearningStatus.Learning,
-                        wordList = snapshot.wordList,
-                        grammarList = snapshot.grammarList,
-                        currentIndex = snapshot.currentIndex,
-                        currentGrammarIndex = snapshot.currentGrammarIndex,
-                        currentWord = snapshot.originalWord,
-                        currentGrammar = snapshot.originalGrammar,
-                        completedToday = snapshot.completedToday,
-                        completedThisSession = snapshot.completedThisSession,
-                        sessionProcessedCount = snapshot.sessionProcessedCount,
-                        isAnswerShown = true,  // 撤销后显示答案面
-                        isCardFlipped = true,
-                        ratingIntervals = calculateRatingIntervals(snapshot.item, srsIntervalPreview, sessionState),
-                        slideDirection = SlideDirection.BACKWARD
-                    )
-                }
-                queueNavigationDelegate.updateQueueBadgeCounts()
-                syncUndoAvailability()
-
                 // 保存会话状态
                 queueNavigationDelegate.saveCurrentSessionState()
 
                 println("撤销成功: ${snapshot.item.displayName}")
-
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 println("撤销失败: ${e.message}")
                 stateUpdater.update {
                     it.copy(
-                        status = LearningStatus.Learning,
                         error = getString(R.string.learning_undo_err_format, e.message ?: "")
                     )
                 }
-                syncUndoAvailability()
             }
         }
     }

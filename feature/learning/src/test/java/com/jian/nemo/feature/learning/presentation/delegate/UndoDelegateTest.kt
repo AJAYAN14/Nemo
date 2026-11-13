@@ -1,6 +1,7 @@
 package com.jian.nemo.feature.learning.presentation.delegate
 
 import com.jian.nemo.core.common.Result
+import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
@@ -20,8 +21,10 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -84,6 +87,19 @@ class UndoDelegateTest {
         )
     }
 
+    private fun createTestGrammar(id: Int, isNew: Boolean = false): Grammar {
+        return Grammar(
+            id = id,
+            rawId = "grammar_$id",
+            grammar = "文法$id",
+            grammarLevel = "N2",
+            usages = emptyList(),
+            repetitionCount = if (isNew) 0 else 1,
+            interval = if (isNew) 0 else 1,
+            type = if (isNew) 0 else 2
+        )
+    }
+
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
@@ -91,6 +107,8 @@ class UndoDelegateTest {
         coEvery { updateGrammarUseCase(any()) } returns Result.Success(Unit)
         coEvery { studyRecordRepository.incrementLearnedWords(any()) } returns Result.Success(Unit)
         coEvery { studyRecordRepository.incrementReviewedWords(any()) } returns Result.Success(Unit)
+        coEvery { studyRecordRepository.incrementLearnedGrammars(any()) } returns Result.Success(Unit)
+        coEvery { studyRecordRepository.incrementReviewedGrammars(any()) } returns Result.Success(Unit)
 
         undoDelegate = UndoDelegate(
             learningUndoHelper = learningUndoHelper,
@@ -167,23 +185,119 @@ class UndoDelegateTest {
 
         // 3. 执行撤销
         undoDelegate.undo()
+
+        // 验证 UI 与内存乐观更新（主线程 0ms 瞬时响应，无需等待后台写库）
+        val immediateState = testStateUpdater.currentState
+        assertEquals(originalWord.id, immediateState.currentWord?.id)
+        assertEquals(5, immediateState.completedToday)
+        assertEquals(2, immediateState.completedThisSession)
+        assertTrue(immediateState.isAnswerShown)
+        assertTrue(immediateState.isCardFlipped)
+        assertEquals(SlideDirection.BACKWARD, immediateState.slideDirection)
+        assertFalse(immediateState.canUndo)
+        assertEquals(1, sessionState.learningSteps[originalWord.id])
+
+        // 等待后台持久化完成
+        sessionState.persistJob?.join()
         advanceUntilIdle()
 
         // 验证数据库回滚 (还原 originalWord，递减新学计数)
         coVerify(exactly = 1) { updateWordUseCase(originalWord) }
         coVerify(exactly = 1) { studyRecordRepository.incrementLearnedWords(-1) }
 
-        // 验证内存 Map 恢复
-        assertEquals(1, sessionState.learningSteps[originalWord.id])
+        verify(exactly = 1) { queueNavigationDelegate.updateQueueBadgeCounts() }
+        verify(exactly = 1) { queueNavigationDelegate.saveCurrentSessionState() }
+    }
 
-        // 验证 UI 状态恢复
-        val state = testStateUpdater.currentState
-        assertEquals(originalWord.id, state.currentWord?.id)
-        assertEquals(5, state.completedToday)
-        assertEquals(2, state.completedThisSession)
-        assertTrue(state.isAnswerShown)
-        assertTrue(state.isCardFlipped)
-        assertEquals(SlideDirection.BACKWARD, state.slideDirection)
+    @Test
+    fun `undo - serializes with previous persist job`() = testScope.runTest {
+        val originalWord = createTestWord(20, isNew = false)
+        testStateUpdater.update {
+            it.copy(
+                learningMode = LearningMode.Word,
+                wordList = listOf(originalWord),
+                currentIndex = 0,
+                currentWord = originalWord,
+                status = LearningStatus.Learning
+            )
+        }
+        undoDelegate.saveUndoSnapshot()
+
+        // 模拟一个前置的未完成 persistJob
+        var previousFinished = false
+        val previousJob = testScope.launch(Dispatchers.IO) {
+            kotlinx.coroutines.delay(50)
+            previousFinished = true
+        }
+        sessionState.persistJob = previousJob
+
+        // 执行撤销
+        undoDelegate.undo()
+
+        // 等待撤销的 persistJob 完成
+        sessionState.persistJob?.join()
+
+        // 验证前置 job 已经先完成
+        assertTrue(previousFinished)
+        coVerify(exactly = 1) { updateWordUseCase(originalWord) }
+    }
+
+    @Test
+    fun `undo - restores grammar from snapshot including database, memory and UI`() = testScope.runTest {
+        val originalGrammar = createTestGrammar(30, isNew = true)
+        testStateUpdater.update {
+            it.copy(
+                learningMode = LearningMode.Grammar,
+                grammarList = listOf(originalGrammar),
+                currentGrammarIndex = 0,
+                currentGrammar = originalGrammar,
+                completedToday = 8,
+                completedThisSession = 4,
+                status = LearningStatus.Learning
+            )
+        }
+        sessionState.learningSteps[originalGrammar.id] = 1
+
+        // 1. 保存快照
+        undoDelegate.saveUndoSnapshot()
+
+        // 2. 模拟评分后状态改变
+        val nextGrammar = createTestGrammar(31)
+        testStateUpdater.update {
+            it.copy(
+                grammarList = listOf(nextGrammar),
+                currentGrammarIndex = 0,
+                currentGrammar = nextGrammar,
+                completedToday = 9,
+                completedThisSession = 5,
+                isAnswerShown = false,
+                isCardFlipped = false
+            )
+        }
+        sessionState.learningSteps.remove(originalGrammar.id)
+
+        // 3. 执行撤销
+        undoDelegate.undo()
+
+        // 验证 UI 与内存乐观更新（主线程 0ms 瞬时响应，无需等待后台写库）
+        val immediateState = testStateUpdater.currentState
+        assertEquals(originalGrammar.id, immediateState.currentGrammar?.id)
+        assertEquals(8, immediateState.completedToday)
+        assertEquals(4, immediateState.completedThisSession)
+        assertTrue(immediateState.isAnswerShown)
+        assertTrue(immediateState.isCardFlipped)
+        assertEquals(SlideDirection.BACKWARD, immediateState.slideDirection)
+        assertFalse(immediateState.canUndo)
+        assertEquals(1, sessionState.learningSteps[originalGrammar.id])
+
+        // 等待后台持久化完成
+        sessionState.persistJob?.join()
+        advanceUntilIdle()
+
+        // 验证数据库回滚 (还原 originalGrammar，递减文法新学计数)
+        coVerify(exactly = 1) { updateGrammarUseCase(originalGrammar) }
+        coVerify(exactly = 1) { studyRecordRepository.incrementLearnedGrammars(-1) }
+
         verify(exactly = 1) { queueNavigationDelegate.updateQueueBadgeCounts() }
         verify(exactly = 1) { queueNavigationDelegate.saveCurrentSessionState() }
     }

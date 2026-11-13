@@ -154,6 +154,7 @@ fun LearnHeader(
                     FrostedLiquidGlassButton(
                         onClick = {
                             if (isUndoEnabled) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 onUndo.invoke()
                             }
                         },
