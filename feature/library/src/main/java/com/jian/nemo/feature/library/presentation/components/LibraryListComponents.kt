@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -24,23 +25,31 @@ import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.roundToInt
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.jian.nemo.feature.library.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.SystemColors
@@ -513,6 +522,192 @@ fun WordListItemPremium(
 }
 
 /**
+ * 词库列表通用 - 仿 Apple Music 液体弹性折叠顶栏组件
+ */
+@Composable
+fun CollapsibleLibraryHeader(
+    title: String,
+    onBack: () -> Unit,
+    lazyListState: LazyListState,
+    selectedLevel: String,
+    isMenuExpanded: Boolean,
+    onMenuExpandedChange: (Boolean) -> Unit,
+    backdrop: Backdrop?,
+    selectedFilter: StudyFilter,
+    onFilterSelected: (StudyFilter) -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    searchPlaceholder: String,
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.background
+) {
+    val density = LocalDensity.current
+    val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val collapseThresholdPx = with(density) { 50.dp.toPx() }
+
+    val isListScrolled by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > collapseThresholdPx
+        }
+    }
+
+    var wasCollapsedBeforeSearch by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(isListScrolled, searchQuery.isEmpty()) {
+        if (searchQuery.isEmpty()) {
+            wasCollapsedBeforeSearch = isListScrolled
+        }
+    }
+
+    val isCollapsed = if (searchQuery.isNotEmpty()) {
+        wasCollapsedBeforeSearch || isListScrolled
+    } else {
+        isListScrolled
+    }
+
+    val collapseProgressState = animateFloatAsState(
+        targetValue = if (isCollapsed) 1f else 0f,
+        animationSpec = spring(
+            dampingRatio = 0.88f,
+            stiffness = 420f
+        ),
+        label = "headerCollapseProgress"
+    )
+
+    val gradientStops = remember(backgroundColor) {
+        arrayOf(
+            0.00f to backgroundColor.copy(alpha = 0.98f),
+            0.42f to backgroundColor.copy(alpha = 0.95f),
+            0.72f to backgroundColor.copy(alpha = 0.75f),
+            0.88f to backgroundColor.copy(alpha = 0.35f),
+            1.00f to Color.Transparent
+        )
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .drawBehind {
+                val p = collapseProgressState.value
+                val bgHeight = (statusBarTop + lerp(128.dp, 72.dp, p)).toPx()
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colorStops = gradientStops,
+                        startY = 0f,
+                        endY = bgHeight
+                    ),
+                    size = Size(size.width, bgHeight)
+                )
+            }
+    ) {
+        // 1. 左侧 48dp 返回按钮 (固定位置，动画期间 0 次重组)
+        Box(
+            modifier = Modifier
+                .padding(start = 20.dp, top = statusBarTop + 6.dp)
+                .align(Alignment.TopStart)
+        ) {
+            FrostedLiquidGlassButton(
+                onClick = onBack,
+                backdrop = backdrop,
+                shape = CircleShape,
+                hasLens = backdrop != null,
+                chromaticAberration = false,
+                contentPadding = PaddingValues(0.dp),
+                isInteractive = true,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                    contentDescription = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_back),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+        }
+
+        // 2. 右侧 48dp 等级筛选按钮 (固定位置，动画期间 0 次重组)
+        Box(
+            modifier = Modifier
+                .padding(end = 20.dp, top = statusBarTop + 6.dp)
+                .align(Alignment.TopEnd)
+        ) {
+            LibraryLevelSelectionButton(
+                isExpanded = isMenuExpanded,
+                onClick = { onMenuExpandedChange(!isMenuExpanded) },
+                backdrop = backdrop,
+                buttonSize = 48.dp
+            )
+        }
+
+        // 3. 页面大标题 (紧跟在左侧返回按钮后，纯 graphicsLayer 淡出隐藏，0 次重组)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = statusBarTop + 6.dp, start = 76.dp, end = 76.dp)
+                .height(48.dp)
+                .graphicsLayer {
+                    val p = collapseProgressState.value
+                    alpha = (1f - p * 2.5f).coerceIn(0f, 1f)
+                    val s = 1f - 0.12f * p
+                    scaleX = s
+                    scaleY = s
+                },
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        // 4. GPU 合成级平移与 48/56 黄金等比缩放 DiscoveryBar (0 次字体重排、0 次重组)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = statusBarTop)
+                .layout { measurable, constraints ->
+                    val p = collapseProgressState.value
+                    val scale = androidx.compose.ui.util.lerp(1f, 48f / 56f, p)
+                    val fullWidthPx = constraints.maxWidth
+                    val expandedPadPx = 16.dp.roundToPx()
+                    val collapsedVisualPadPx = 74.dp.roundToPx()
+                    val targetVisualWidthPx = androidx.compose.ui.util.lerp(
+                        (fullWidthPx - expandedPadPx * 2).toFloat(),
+                        (fullWidthPx - collapsedVisualPadPx * 2).toFloat(),
+                        p
+                    )
+                    val logicalWidthPx = (targetVisualWidthPx / scale).roundToInt().coerceIn(0, fullWidthPx)
+                    val placeable = measurable.measure(
+                        constraints.copy(minWidth = logicalWidthPx, maxWidth = logicalWidthPx)
+                    )
+                    val offsetYPx = androidx.compose.ui.util.lerp(60.dp.toPx(), 2.dp.toPx(), p).roundToInt()
+                    val offsetXPx = (fullWidthPx - placeable.width) / 2
+                    layout(fullWidthPx, (60.dp.toPx() + 56.dp.toPx()).roundToInt()) {
+                        placeable.placeRelativeWithLayer(offsetXPx, offsetYPx) {
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                    }
+                }
+        ) {
+            LibraryDiscoveryBar(
+                selectedFilter = selectedFilter,
+                onFilterSelected = onFilterSelected,
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange,
+                searchPlaceholder = searchPlaceholder,
+                collapseProgressProvider = { collapseProgressState.value },
+                backdrop = backdrop,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+/**
  * 词库列表通用 - 搜索与分类（全部/已学/未学）胶囊栏
  */
 @Composable
@@ -522,7 +717,10 @@ fun LibraryDiscoveryBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     searchPlaceholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    collapseProgress: Float = 0f,
+    collapseProgressProvider: (() -> Float)? = null,
+    backdrop: Backdrop? = null
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
@@ -571,18 +769,28 @@ fun LibraryDiscoveryBar(
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         searchPlaceholder = searchPlaceholder,
+        backdrop = backdrop,
+        collapseProgress = collapseProgress,
+        collapseProgressProvider = collapseProgressProvider,
         style = DiscoveryBarStyle(
-            backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
-            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
+            height = 56.dp,
+            iconSize = 20.dp,
+            itemSpacing = 8.dp,
+            indicatorPadding = 4.dp,
+            searchIconSize = 35.dp,
+            textStyle = MaterialTheme.typography.bodySmall.copy(
+                fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ),
-            activeTextStyle = MaterialTheme.typography.bodyMedium.copy(
+            activeTextStyle = MaterialTheme.typography.bodySmall.copy(
+                fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold
-            )
+            ),
+            backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
+            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        modifier = modifier
     )
 }
 

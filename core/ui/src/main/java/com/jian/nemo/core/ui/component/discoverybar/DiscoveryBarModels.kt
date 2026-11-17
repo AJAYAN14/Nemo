@@ -74,6 +74,10 @@ data class DiscoveryBarStyle(
     ),
     /** The size of the icons in the discovery list. */
     val iconSize: Dp = 20.dp,
+    /** The spacing between the icon and label within an option. */
+    val itemSpacing: Dp = 8.dp,
+    /** Inner padding of the sliding indicator. */
+    val indicatorPadding: Dp = 4.dp,
     /** The size of the search/close icon. */
     val searchIconSize: Dp = 24.dp,
     /** Whether haptic feedback is enabled. */

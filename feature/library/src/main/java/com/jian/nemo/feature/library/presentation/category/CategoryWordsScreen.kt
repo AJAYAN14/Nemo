@@ -54,6 +54,7 @@ import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.library.presentation.components.CollapsibleLibraryHeader
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
 import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
 import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionButton
@@ -184,81 +185,69 @@ fun CategoryWordsScreen(
                     state = lazyListState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        top = statusBarTop + 60.dp + 16.dp,
+                        top = statusBarTop + 128.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
-                item(key = "discovery_bar") {
-                    LibraryDiscoveryBar(
-                        selectedFilter = filterState,
-                        onFilterSelected = { filterState = it },
-                        searchQuery = searchQuery,
-                        onSearchQueryChange = { searchQuery = it },
-                        searchPlaceholder = stringResource(R.string.lib_category_words_search_placeholder)
-                    )
-                }
-
-                // 2. 单词平铺列表
-                if (currentWords.isEmpty()) {
-                    item(key = "empty_state") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 80.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val emptyIcon: androidx.compose.ui.graphics.vector.ImageVector =
-                                if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Inbox
-                            val emptyMessage = when {
-                                searchQuery.isNotEmpty() -> stringResource(R.string.lib_category_words_empty_search)
-                                selectedLevel != "ALL" -> stringResource(R.string.lib_category_words_empty_level)
-                                else -> stringResource(R.string.lib_category_words_empty_category)
+                    // 1. 单词平铺列表
+                    if (currentWords.isEmpty()) {
+                        item(key = "empty_state") {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 40.dp, bottom = 40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val emptyIcon: androidx.compose.ui.graphics.vector.ImageVector =
+                                    if (searchQuery.isNotEmpty()) Icons.Rounded.Search else Icons.Rounded.Inbox
+                                val emptyMessage = when {
+                                    searchQuery.isNotEmpty() -> stringResource(R.string.lib_category_words_empty_search)
+                                    selectedLevel != "ALL" -> stringResource(R.string.lib_category_words_empty_level)
+                                    else -> stringResource(R.string.lib_category_words_empty_category)
+                                }
+                                EmptyState(
+                                    message = emptyMessage,
+                                    icon = emptyIcon
+                                )
                             }
-                            EmptyState(
-                                message = emptyMessage,
-                                icon = emptyIcon
-                            )
                         }
-                    }
-                } else {
-                    items(currentWords, key = { "category_word_${it.id}" }) { word ->
-                        Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
-                            WordListItemPremium(
-                                word = word,
-                                onClick = { onNavigateToWordDetail(word.id) }
-                            )
+                    } else {
+                        items(currentWords, key = { "category_word_${it.id}" }) { word ->
+                            Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
+                                WordListItemPremium(
+                                    word = word,
+                                    onClick = { onNavigateToWordDetail(word.id) }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
-        FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
-            val titleText = if (selectedLevel == "ALL") {
-                if (uiState.isLoading) categoryTitle else stringResource(R.string.lib_category_words_title_with_count, categoryTitle, currentWords.size)
-            } else {
-                stringResource(R.string.lib_category_words_title_with_level_count, categoryTitle, selectedLevel, currentWords.size)
-            }
-
-            CommonHeader(
-                title = titleText,
-                onBack = onNavigateBack,
-                backgroundColor = Color.Transparent,
-                backdrop = backdrop,
-                backButtonSize = 48.dp,
-                actions = {
-                    LibraryLevelSelectionButton(
-                        isExpanded = isMenuExpanded,
-                        onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = backdrop
-                    )
-                }
-            )
+        // 2. 悬浮弹性折叠顶栏（仿 Apple Music 折叠形变动效，内置渐变遮罩与透镜折射）
+        val titleText = if (selectedLevel == "ALL") {
+            if (uiState.isLoading) categoryTitle else stringResource(R.string.lib_category_words_title_with_count, categoryTitle, currentWords.size)
+        } else {
+            stringResource(R.string.lib_category_words_title_with_level_count, categoryTitle, selectedLevel, currentWords.size)
         }
+
+        CollapsibleLibraryHeader(
+            title = titleText,
+            onBack = onNavigateBack,
+            lazyListState = lazyListState,
+            selectedLevel = selectedLevel,
+            isMenuExpanded = isMenuExpanded,
+            onMenuExpandedChange = { isMenuExpanded = it },
+            backdrop = backdrop,
+            selectedFilter = filterState,
+            onFilterSelected = { filterState = it },
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it },
+            searchPlaceholder = stringResource(R.string.lib_category_words_search_placeholder),
+            backgroundColor = backgroundColor
+        )
 
         // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色）
         LibraryScrollToTopButton(

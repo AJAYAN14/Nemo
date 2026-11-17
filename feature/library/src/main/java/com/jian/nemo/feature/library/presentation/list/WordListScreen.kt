@@ -31,6 +31,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.animation.animateListItem
 import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -67,6 +68,7 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.common.NemoMorphMenu
 import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.feature.library.presentation.components.CollapsibleLibraryHeader
 import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
 import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
 import com.jian.nemo.feature.library.presentation.components.LibraryItemSkeletonCard
@@ -159,7 +161,7 @@ fun WordListScreen(
                     androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
-                            .padding(top = statusBarTop + 60.dp),
+                            .padding(top = statusBarTop + 132.dp),
                         isRefreshing = uiState.isRefreshing,
                         state = pullToRefreshState,
                         containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
@@ -172,23 +174,12 @@ fun WordListScreen(
                     state = lazyListState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        top = statusBarTop + 60.dp + 16.dp,
+                        top = statusBarTop + 128.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 1. 搜索与筛选栏（移入列表作为第一项，随列表顺畅滚动）
-                    item(key = "discovery_bar") {
-                        LibraryDiscoveryBar(
-                            selectedFilter = uiState.filterState,
-                            onFilterSelected = { viewModel.onFilterStateChanged(it) },
-                            searchQuery = searchQuery,
-                            onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-                            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder)
-                        )
-                    }
-
-                    // 2. 冷启动骨架屏占位、空状态或平铺单词卡片
+                    // 1. 冷启动骨架屏占位、空状态或平铺单词卡片
                     if (uiState.isLoading) {
                         items(10, key = { index -> "word_skeleton_$index" }) { index ->
                             LibraryItemSkeletonCard(
@@ -201,7 +192,7 @@ fun WordListScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 56.dp, bottom = 40.dp),
+                                    .padding(top = 40.dp, bottom = 40.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 val (emptyTitle, emptySubtitle) = when {
@@ -230,39 +221,39 @@ fun WordListScreen(
                         }
                     } else {
                         items(currentWords, key = { it.id }) { word ->
-                            WordListItemPremium(
-                                word = word,
-                                onClick = { navController.navigate(NavDestination.wordDetail(word.id)) },
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
+                            Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
+                                WordListItemPremium(
+                                    word = word,
+                                    onClick = { navController.navigate(NavDestination.wordDetail(word.id)) }
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 activeBackdrop）
-        FloatingHeaderGradientContainer(backgroundColor = backgroundColor) {
-            val headerTitle = if (selectedLevel == "ALL") {
-                stringResource(R.string.lib_word_list_header_title)
-            } else {
-                stringResource(R.string.lib_word_list_header_title_with_level, selectedLevel)
-            }
-            CommonHeader(
-                title = headerTitle,
-                onBack = { navController.navigateUp() },
-                backgroundColor = Color.Transparent,
-                backdrop = activeBackdrop,
-                backButtonSize = 48.dp,
-                actions = {
-                    LibraryLevelSelectionButton(
-                        isExpanded = isMenuExpanded,
-                        onClick = { isMenuExpanded = !isMenuExpanded },
-                        backdrop = activeBackdrop
-                    )
-                }
-            )
+        // 2. 悬浮弹性折叠顶栏（仿 Apple Music 折叠形变动效，内置渐变遮罩与透镜折射）
+        val headerTitle = if (selectedLevel == "ALL") {
+            stringResource(R.string.lib_word_list_header_title)
+        } else {
+            stringResource(R.string.lib_word_list_header_title_with_level, selectedLevel)
         }
+        CollapsibleLibraryHeader(
+            title = headerTitle,
+            onBack = { navController.navigateUp() },
+            lazyListState = lazyListState,
+            selectedLevel = selectedLevel,
+            isMenuExpanded = isMenuExpanded,
+            onMenuExpandedChange = { isMenuExpanded = it },
+            backdrop = activeBackdrop,
+            selectedFilter = uiState.filterState,
+            onFilterSelected = { viewModel.onFilterStateChanged(it) },
+            searchQuery = searchQuery,
+            onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
+            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder),
+            backgroundColor = backgroundColor
+        )
 
         // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏红）
         LibraryScrollToTopButton(

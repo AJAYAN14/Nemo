@@ -58,6 +58,12 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 import com.jian.nemo.core.ui.R
 
 /**
@@ -82,6 +88,9 @@ fun DiscoveryBar(
     onSearchQueryChange: ((String) -> Unit)? = null,
     searchPlaceholder: String = "Search",
     style: DiscoveryBarStyle = DiscoveryBarStyle(),
+    backdrop: Backdrop? = null,
+    collapseProgress: Float = 0f,
+    collapseProgressProvider: (() -> Float)? = null,
     modifier: Modifier = Modifier,
 ) {
     // If there is initially a search query, start in searching mode.
@@ -141,31 +150,27 @@ fun DiscoveryBar(
     ) {
         val totalWidth = maxWidth
         val circleSize = style.height
-        val pillWidth = totalWidth - circleSize - spacing
+        val pillWidth = (totalWidth - circleSize - spacing).coerceAtLeast(circleSize)
+        val progressProvider = collapseProgressProvider ?: { collapseProgress }
 
-        // Animated widths for the two morphing containers
-        val searchWidth by animateDpAsState(
-            targetValue = if (isSearching) pillWidth else circleSize,
+        val searchProgress by animateFloatAsState(
+            targetValue = if (isSearching) 1f else 0f,
             animationSpec = spring(
                 dampingRatio = style.mainSpringDampingRatio,
                 stiffness = style.mainSpringStiffness,
             ),
-            label = "searchWidth",
+            label = "searchProgress",
         )
-        val discoveryWidth by animateDpAsState(
-            targetValue = if (isSearching) circleSize else pillWidth,
-            animationSpec = spring(
-                dampingRatio = style.mainSpringDampingRatio,
-                stiffness = style.mainSpringStiffness,
-            ),
-            label = "discoveryWidth",
-        )
+        val searchWidth = androidx.compose.ui.unit.lerp(circleSize, pillWidth, searchProgress)
+        val discoveryWidth = androidx.compose.ui.unit.lerp(pillWidth, circleSize, searchProgress)
 
         // Left: Morphing Search Unit (Anchored Left)
         MorphingContainer(
             width = searchWidth,
             height = style.height,
             backgroundColor = effectiveBgColor,
+            backdrop = backdrop,
+            collapseProgressProvider = progressProvider,
             modifier = Modifier.align(Alignment.CenterStart),
         ) {
             TapPulseWrapper(
@@ -180,14 +185,8 @@ fun DiscoveryBar(
                 active = !isSearching,
                 fullArea = true,
             ) {
-                val searchStartPadding by animateDpAsState(
-                    targetValue = if (isSearching) 16.dp else ((circleSize - style.searchIconSize) / 2).coerceAtLeast(0.dp),
-                    animationSpec = spring(
-                        dampingRatio = style.mainSpringDampingRatio,
-                        stiffness = style.mainSpringStiffness,
-                    ),
-                    label = "searchStartPadding",
-                )
+                val idleStartPadding = ((circleSize - style.searchIconSize) / 2).coerceAtLeast(0.dp)
+                val searchStartPadding = androidx.compose.ui.unit.lerp(idleStartPadding, 16.dp, searchProgress)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -250,6 +249,8 @@ fun DiscoveryBar(
             width = discoveryWidth,
             height = style.height,
             backgroundColor = effectiveBgColor,
+            backdrop = backdrop,
+            collapseProgressProvider = progressProvider,
             modifier = Modifier.align(Alignment.CenterEnd),
         ) {
             AnimatedContent(
@@ -319,18 +320,49 @@ private fun MorphingContainer(
     width: Dp,
     height: Dp,
     backgroundColor: Color,
+    backdrop: Backdrop? = null,
+    collapseProgressProvider: () -> Float = { 0f },
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     val shape = Capsule()
     val isDark = backgroundColor.luminance() < 0.5f
+
+    val glassModifier = if (backdrop != null) {
+        Modifier.drawBackdrop(
+            backdrop = backdrop,
+            shape = { shape },
+            effects = {
+                vibrancy()
+                blur(2f.dp.toPx())
+                lens(
+                    12f.dp.toPx(),
+                    24f.dp.toPx(),
+                    chromaticAberration = false
+                )
+            },
+            onDrawSurface = {
+                val p = collapseProgressProvider().coerceIn(0f, 1f)
+                val effectiveSurfaceColor = if (isDark) {
+                    backgroundColor.copy(alpha = lerp(0.85f, 0.15f, p))
+                } else {
+                    Color.White.copy(alpha = lerp(0.90f, 0.32f, p))
+                }
+                drawRect(effectiveSurfaceColor)
+            }
+        )
+    } else {
+        Modifier
+            .softCardShadow(borderRadius = height / 2, isDark = isDark)
+            .clip(shape)
+            .background(backgroundColor, shape)
+    }
+
     Box(
         modifier = modifier
             .width(width)
             .height(height)
-            .softCardShadow(borderRadius = height / 2, isDark = isDark)
-            .clip(shape)
-            .background(backgroundColor),
+            .then(glassModifier),
         contentAlignment = Alignment.Center,
     ) {
         content()
@@ -353,17 +385,17 @@ private fun OptionsSelector(
     ) {
         val containerWidth = maxWidth
         val optionWidth = containerWidth / options.size
-        val indicatorPadding = 4.dp
+        val indicatorPadding = style.indicatorPadding
 
-        // Sliding indicator background
-        val indicatorOffset by animateDpAsState(
-            targetValue = optionWidth * selectedIndex + indicatorPadding,
+        val animatedIndex by animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
             animationSpec = spring(
                 dampingRatio = style.selectorSpringDampingRatio,
                 stiffness = style.selectorSpringStiffness,
             ),
-            label = "indicatorOffset",
+            label = "animatedIndex",
         )
+        val indicatorOffset = optionWidth * animatedIndex + indicatorPadding
 
         // Animated indicator background color
         val currentActiveColor = options[selectedIndex.coerceIn(options.indices)].activeColor
@@ -419,6 +451,7 @@ private fun OptionsSelector(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 2.dp),
                         ) {
                             if (option.icon != null) {
                                 Icon(
@@ -427,10 +460,14 @@ private fun OptionsSelector(
                                     tint = iconColor,
                                     modifier = Modifier.size(style.iconSize),
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(style.itemSpacing))
                             }
                             Text(
                                 text = option.label,
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false),
                                 style = TextStyle(
                                     fontSize = style.textStyle.fontSize,
                                     fontWeight = if (isSelected) FontWeight.W700
