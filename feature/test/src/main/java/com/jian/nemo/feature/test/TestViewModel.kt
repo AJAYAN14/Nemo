@@ -7,6 +7,7 @@ import com.jian.nemo.core.domain.model.TestMode
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.domain.model.TestResult
 import com.jian.nemo.core.domain.model.TestRecord
+import com.jian.nemo.core.domain.repository.AudioEffectType
 import com.jian.nemo.core.domain.usecase.test.GenerateTestQuestionsUseCase
 import com.jian.nemo.core.domain.usecase.test.SubmitTestResultUseCase
 import com.jian.nemo.core.domain.usecase.test.QueryLevelsUseCase
@@ -501,11 +502,11 @@ class TestViewModel @Inject constructor(
         }
 
         // 6. 播放音效与震动（仅错误震动）
-        viewModelScope.launch {
-            if (updatedQuestion.isCorrect) {
-                _effect.emit(TestEffect.PlaySound(isCorrect = true))
-            } else {
-                _effect.emit(TestEffect.PlaySound(isCorrect = false))
+        audioRepository.playSoundEffect(
+            if (updatedQuestion.isCorrect) AudioEffectType.CORRECT else AudioEffectType.ERROR
+        )
+        if (!updatedQuestion.isCorrect) {
+            viewModelScope.launch {
                 _effect.emit(TestEffect.Vibrate)
             }
         }
@@ -1056,6 +1057,5 @@ data class TestUiState(
  * UI Side Effects
  */
 sealed class TestEffect {
-    data class PlaySound(val isCorrect: Boolean) : TestEffect()
     data object Vibrate : TestEffect()
 }

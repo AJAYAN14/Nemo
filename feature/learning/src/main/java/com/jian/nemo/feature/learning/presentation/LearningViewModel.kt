@@ -11,11 +11,13 @@ import com.jian.nemo.core.common.util.DateTimeUtils
 import com.jian.nemo.core.domain.model.Grammar
 import com.jian.nemo.core.domain.model.LearningMode
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.repository.AudioEffectType
 import com.jian.nemo.core.domain.repository.GrammarRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.StudyRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.service.SrsCalculator
+import com.jian.nemo.core.domain.usecase.audio.PlaySoundEffectUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetDueGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetLearningGrammarsUseCase
 import com.jian.nemo.core.domain.usecase.grammar.GetNewGrammarsUseCase
@@ -103,6 +105,7 @@ class LearningViewModel @Inject constructor(
     private val learningScheduler: LearningScheduler,
     private val learningUndoHelper: LearningUndoHelper,
     private val learningTtsManager: LearningTtsManager,
+    private val playSoundEffectUseCase: PlaySoundEffectUseCase,
     private val contentReportRepository: ContentReportRepository,
     private val cloudBackupManager: CloudBackupManager,
     private val reviewLogRepository: com.jian.nemo.core.domain.repository.ReviewLogRepository,
@@ -203,10 +206,16 @@ class LearningViewModel @Inject constructor(
 
             // 评分 (统一处理)
             is LearningEvent.RateWord -> {
+                if (canPlayRatingSound(_uiState.value)) {
+                    playRatingSound(event.quality)
+                }
                 learningTtsManager.stop()
                 ratingDelegate.rate(event.quality)
             }
             is LearningEvent.RateGrammar -> {
+                if (canPlayRatingSound(_uiState.value)) {
+                    playRatingSound(event.quality)
+                }
                 learningTtsManager.stop()
                 ratingDelegate.rate(event.quality)
             }
@@ -312,6 +321,25 @@ class LearningViewModel @Inject constructor(
                 _uiState.update { it.copy(error = friendlyError) }
             }
         }
+    }
+
+    private fun canPlayRatingSound(state: LearningUiState): Boolean {
+        if (state.status != LearningStatus.Learning) return false
+        return when (state.learningMode) {
+            LearningMode.Word -> state.wordList.isNotEmpty()
+            LearningMode.Grammar -> state.grammarList.isNotEmpty()
+        }
+    }
+
+    private fun playRatingSound(quality: Int) {
+        val effectType = when (quality) {
+            1 -> AudioEffectType.OTHER
+            3 -> AudioEffectType.HARD
+            4 -> AudioEffectType.GOOD
+            5 -> AudioEffectType.EASY
+            else -> return
+        }
+        playSoundEffectUseCase(effectType)
     }
 
     override fun onCleared() {

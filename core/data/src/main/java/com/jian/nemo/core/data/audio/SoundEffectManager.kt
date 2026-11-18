@@ -1,9 +1,6 @@
 package com.jian.nemo.core.data.audio
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.media.SoundPool
-import android.util.Log
 import com.jian.nemo.core.common.network.Dispatcher
 import com.jian.nemo.core.common.network.NemoDispatchers
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -11,122 +8,200 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 enum class SoundEffectType {
     CORRECT,
-    WRONG,
-    COMPLETE
+    ERROR,
+    GOOD,
+    HARD,
+    EASY,
+    OTHER
 }
 
 @Singleton
-class SoundEffectManager @Inject constructor(
-    @ApplicationContext private val context: Context,
-    @Dispatcher(NemoDispatchers.IO) ioDispatcher: CoroutineDispatcher
+class SoundEffectManager private constructor(
+    ioDispatcher: CoroutineDispatcher,
+    private val engineFactory: SoundPoolEngineFactory,
+    private val logger: SoundEffectLogger,
+    private val clock: () -> Long,
+    private val pendingPlayTimeoutMs: Long
 ) {
+
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+        @Dispatcher(NemoDispatchers.IO) ioDispatcher: CoroutineDispatcher
+    ) : this(
+        ioDispatcher = ioDispatcher,
+        engineFactory = AndroidSoundPoolEngineFactory(context),
+        logger = AndroidSoundEffectLogger,
+        clock = { System.nanoTime() / 1_000_000L },
+        pendingPlayTimeoutMs = DEFAULT_PENDING_PLAY_TIMEOUT_MS
+    )
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val soundDispatcher: CoroutineDispatcher = ioDispatcher.limitedParallelism(1)
     private val scope = CoroutineScope(SupervisorJob() + soundDispatcher)
 
-    private var soundPool: SoundPool? = null
+    private var engine: SoundPoolEngine? = null
     private val soundMap = mutableMapOf<SoundEffectType, Int>()
     private val loadedSoundIds = mutableSetOf<Int>()
     private var pendingSoundId: Int? = null
-    private var isInitializedAttempted = false
+    private var pendingSoundRequestedAtMs: Long = 0L
 
-    private val soundFiles = mapOf(
-        SoundEffectType.CORRECT to "correct.mp3",
-        SoundEffectType.WRONG to "wrong.mp3",
-        SoundEffectType.COMPLETE to "complete.mp3"
+    private val soundFiles = linkedMapOf(
+        SoundEffectType.CORRECT to "$AUDIO_ASSET_DIR/correct.mp3",
+        SoundEffectType.ERROR to "$AUDIO_ASSET_DIR/error.mp3",
+        SoundEffectType.GOOD to "$AUDIO_ASSET_DIR/sound_good.mp3",
+        SoundEffectType.HARD to "$AUDIO_ASSET_DIR/sound_hard.mp3",
+        SoundEffectType.EASY to "$AUDIO_ASSET_DIR/sound_easy.mp3",
+        SoundEffectType.OTHER to "$AUDIO_ASSET_DIR/sound_other.mp3"
     )
 
-    fun play(type: SoundEffectType) {
+    fun preload() {
         scope.launch {
             ensureInitializedInternal()
-            val pool = soundPool ?: return@launch
+        }
+    }
+
+    fun play(type: SoundEffectType) {
+        val requestedAtMs = clock()
+        scope.launch {
+            ensureInitializedInternal()
+            val activeEngine = engine ?: return@launch
             val soundId = soundMap[type] ?: return@launch
             if (soundId == 0) return@launch
 
+            val elapsedMs = clock() - requestedAtMs
+            if (elapsedMs !in 0L..pendingPlayTimeoutMs) {
+                return@launch
+            }
+
             if (loadedSoundIds.contains(soundId)) {
-                pool.play(soundId, 1f, 1f, 1, 0, 1f)
+                pendingSoundId = null
+                pendingSoundRequestedAtMs = 0L
+                try {
+                    activeEngine.play(soundId)
+                } catch (e: Throwable) {
+                    logger.w(TAG, "Failed to play sound effect: $type", e)
+                }
             } else {
                 pendingSoundId = soundId
+                pendingSoundRequestedAtMs = requestedAtMs
             }
         }
     }
 
     fun release() {
         scope.launch {
-            soundPool?.release()
-            soundPool = null
+            val activeEngine = engine
+            engine = null
             soundMap.clear()
             loadedSoundIds.clear()
             pendingSoundId = null
-            isInitializedAttempted = false
+            pendingSoundRequestedAtMs = 0L
+            try {
+                activeEngine?.release()
+            } catch (e: Throwable) {
+                logger.w(TAG, "Failed to release SoundPool", e)
+            }
         }
     }
 
     private fun ensureInitializedInternal() {
-        if (isInitializedAttempted) return
-        isInitializedAttempted = true
+        if (engine != null) return
 
-        val availableAssets = try {
-            context.assets.list(AUDIO_ASSET_DIR)?.toSet().orEmpty()
-        } catch (e: IOException) {
-            Log.w(TAG, "Failed to list audio assets", e)
-            emptySet()
-        }
-
-        val existingEntries = soundFiles.filterValues { it in availableAssets }
-        if (existingEntries.isEmpty()) {
+        val createdEngine = try {
+            engineFactory.create()
+        } catch (e: Throwable) {
+            logger.w(TAG, "Failed to create SoundPool", e)
             return
         }
 
-        val audioAttributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build()
-
-        val pool = SoundPool.Builder()
-            .setMaxStreams(3)
-            .setAudioAttributes(audioAttributes)
-            .build()
-
-        pool.setOnLoadCompleteListener { _, sampleId, status ->
-            if (status == 0) {
-                scope.launch {
-                    if (soundPool !== pool) return@launch
+        createdEngine.setOnLoadCompleteListener { sampleId, status ->
+            scope.launch {
+                if (engine !== createdEngine) return@launch
+                if (status == 0) {
                     loadedSoundIds.add(sampleId)
                     if (pendingSoundId == sampleId) {
+                        val elapsedMs = clock() - pendingSoundRequestedAtMs
                         pendingSoundId = null
-                        pool.play(sampleId, 1f, 1f, 1, 0, 1f)
+                        pendingSoundRequestedAtMs = 0L
+                        if (elapsedMs in 0L..pendingPlayTimeoutMs) {
+                            try {
+                                createdEngine.play(sampleId)
+                            } catch (e: Throwable) {
+                                logger.w(TAG, "Failed to play pending sound effect: $sampleId", e)
+                            }
+                        }
+                    }
+                } else {
+                    logger.w(TAG, "Failed to decode sound effect: sampleId=$sampleId, status=$status")
+                    soundMap.entries.removeAll { it.value == sampleId }
+                    if (pendingSoundId == sampleId) {
+                        pendingSoundId = null
+                        pendingSoundRequestedAtMs = 0L
                     }
                 }
             }
         }
 
-        soundPool = pool
+        engine = createdEngine
 
-        existingEntries.forEach { (type, filename) ->
+        soundFiles.forEach { (type, assetPath) ->
             try {
-                context.assets.openFd("$AUDIO_ASSET_DIR/$filename").use { afd ->
-                    val soundId = pool.load(afd, 1)
-                    if (soundId != 0) {
-                        soundMap[type] = soundId
-                    }
+                val soundId = createdEngine.loadAsset(assetPath)
+                if (soundId != 0) {
+                    soundMap[type] = soundId
                 }
-            } catch (e: IOException) {
-                Log.w(TAG, "Failed to load sound effect: $filename", e)
+            } catch (e: Throwable) {
+                logger.w(TAG, "Failed to load sound effect: $assetPath", e)
+            }
+        }
+
+        if (soundMap.isEmpty()) {
+            logger.w(TAG, "No sound effects loaded; releasing empty SoundPool for retry")
+            engine = null
+            loadedSoundIds.clear()
+            pendingSoundId = null
+            pendingSoundRequestedAtMs = 0L
+            try {
+                createdEngine.release()
+            } catch (e: Throwable) {
+                logger.w(TAG, "Failed to release empty SoundPool", e)
             }
         }
     }
 
-    private companion object {
+    internal fun closeForTest() {
+        scope.cancel()
+    }
+
+    internal companion object {
         private const val TAG = "SoundEffectManager"
         private const val AUDIO_ASSET_DIR = "audio"
+        const val DEFAULT_PENDING_PLAY_TIMEOUT_MS = 400L
+
+        internal fun createForTest(
+            ioDispatcher: CoroutineDispatcher,
+            engineFactory: SoundPoolEngineFactory,
+            logger: SoundEffectLogger = NoOpSoundEffectLogger,
+            clock: () -> Long = { System.nanoTime() / 1_000_000L },
+            pendingPlayTimeoutMs: Long = DEFAULT_PENDING_PLAY_TIMEOUT_MS
+        ): SoundEffectManager = SoundEffectManager(
+            ioDispatcher = ioDispatcher,
+            engineFactory = engineFactory,
+            logger = logger,
+            clock = clock,
+            pendingPlayTimeoutMs = pendingPlayTimeoutMs
+        )
+
+        private object NoOpSoundEffectLogger : SoundEffectLogger {
+            override fun w(tag: String, message: String, throwable: Throwable?) = Unit
+        }
     }
 }

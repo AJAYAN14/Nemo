@@ -47,18 +47,11 @@ fun TestScreen(
         viewModel.startTest(level, mode, questionType = questionType, contentType = contentType, source = source)
     }
 
-    // 监听副作用 (音效与震动)
+    // 监听副作用 (震动)
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is TestEffect.PlaySound -> {
-                    if (effect.isCorrect) {
-                        com.jian.nemo.core.ui.util.SoundEffectPlayer.playCorrect(context)
-                    } else {
-                        com.jian.nemo.core.ui.util.SoundEffectPlayer.playError(context)
-                    }
-                }
                 is TestEffect.Vibrate -> {
                     // 答错时震动80ms
                     // Suppress Permission Check: Manifest declared in app module

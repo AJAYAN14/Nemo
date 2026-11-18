@@ -7,6 +7,7 @@ import com.jian.nemo.core.domain.model.FeedbackPanelState
 import com.jian.nemo.core.domain.model.MatchableCard
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.domain.model.WrongAnswer
+import com.jian.nemo.core.domain.repository.AudioEffectType
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WrongAnswerRepository
 import com.jian.nemo.feature.test.TestEffect
@@ -154,7 +155,7 @@ class CardMatchingOrchestrator @Inject constructor(
         val totalPairs = currentQuestion?.pairs?.size ?: 0
 
         if (validation.isCorrect) {
-            handleCorrectPairing(firstCard, secondCard, stateProvider, stateUpdater, effectEmitter, navigation, currentQuestion, totalPairs)
+            handleCorrectPairing(firstCard, secondCard, stateProvider, stateUpdater, navigation, currentQuestion, totalPairs)
         } else {
             handleIncorrectPairing(firstCard, secondCard, stateProvider, stateUpdater, effectEmitter, navigation, currentQuestion)
         }
@@ -165,7 +166,6 @@ class CardMatchingOrchestrator @Inject constructor(
         secondCard: MatchableCard,
         stateProvider: () -> TestUiState,
         stateUpdater: ((TestUiState) -> TestUiState) -> Unit,
-        effectEmitter: suspend (TestEffect) -> Unit,
         navigation: CardMatchingNavigation,
         currentQuestion: TestQuestion.CardMatching?,
         totalPairs: Int
@@ -177,7 +177,7 @@ class CardMatchingOrchestrator @Inject constructor(
             s.copy(matchedPairsCount = state.matchedPairsCount + 1)
         }
 
-        effectEmitter(TestEffect.PlaySound(isCorrect = true))
+        audioRepository.playSoundEffect(AudioEffectType.CORRECT)
 
         // 自动朗读配对成功的单词假名
         val pairedWord = currentQuestion?.pairs?.find { it.id == firstCard.id }
@@ -240,7 +240,7 @@ class CardMatchingOrchestrator @Inject constructor(
             s.copy(cardMatchingWrongCount = state.cardMatchingWrongCount + 1)
         }
 
-        effectEmitter(TestEffect.PlaySound(isCorrect = false))
+        audioRepository.playSoundEffect(AudioEffectType.ERROR)
         effectEmitter(TestEffect.Vibrate)
 
         delay(600)

@@ -29,6 +29,11 @@ interface AudioRepository {
     fun playExampleTts(japanese: String, chinese: String, id: String? = null)
 
     /**
+     * 预热音效资源
+     */
+    fun preloadSoundEffects()
+
+    /**
      * 播放音效
      */
     fun playSoundEffect(type: AudioEffectType)
@@ -74,6 +79,9 @@ sealed interface TtsEvent {
 
 enum class AudioEffectType {
     CORRECT,
-    WRONG,
-    COMPLETE
+    ERROR,
+    GOOD,
+    HARD,
+    EASY,
+    OTHER
 }

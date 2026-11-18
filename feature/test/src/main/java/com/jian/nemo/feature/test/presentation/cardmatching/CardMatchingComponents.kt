@@ -1,12 +1,6 @@
 package com.jian.nemo.feature.test.presentation.cardmatching
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-
-import android.annotation.SuppressLint
-import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.ui.res.stringResource
@@ -37,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,7 +38,6 @@ import com.jian.nemo.core.domain.model.CardState
 import com.jian.nemo.core.domain.model.FeedbackPanelState
 import com.jian.nemo.core.domain.model.MatchableCard
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
-import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.graphics.Color
@@ -66,7 +58,6 @@ private fun getPairColor(pairIndex: Int): Color {
  * Refactored to Flat UI
  */
 @OptIn(ExperimentalFoundationApi::class)
-@SuppressLint("MissingPermission")
 @Composable
 fun FlippableCard(
     card: MatchableCard,
@@ -75,8 +66,6 @@ fun FlippableCard(
     pairIndex: Int = 0
 ) {
     val cardState = card.state
-    val context = LocalContext.current
-    val vibrator = remember { context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator }
     val pairColor = getPairColor(pairIndex)
 
     // Flat UI Colors - Using Material Theme Semantics
@@ -129,25 +118,6 @@ fun FlippableCard(
         label = "scale",
         animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f)
     )
-
-    // 错误时触发震动 + 播放提示音；正确时播放提示音
-    LaunchedEffect(cardState) {
-        when (cardState) {
-            CardState.CORRECT -> {
-                SoundEffectPlayer.playCorrect(context)
-            }
-            CardState.INCORRECT -> {
-                SoundEffectPlayer.playError(context)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(80, VibrationEffect.DEFAULT_AMPLITUDE))
-                } else {
-                    @Suppress("DEPRECATION")
-                    vibrator.vibrate(80)
-                }
-            }
-            else -> {}
-        }
-    }
 
     // Haptic feedback
     val hapticFeedback = LocalHapticFeedback.current

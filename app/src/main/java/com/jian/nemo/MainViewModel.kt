@@ -75,6 +75,8 @@ class MainViewModel @Inject constructor(
     val updateCheckEvents = _updateCheckEvents.receiveAsFlow()
 
     init {
+        audioRepository.preloadSoundEffects()
+
         viewModelScope.launch {
             authRepository.getUserFlow().collect { user ->
                 _uiState.update { it.copy(currentUser = user) }

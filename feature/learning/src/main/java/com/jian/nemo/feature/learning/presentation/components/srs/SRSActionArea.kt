@@ -44,7 +44,6 @@ import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.jian.nemo.core.ui.util.SoundEffectPlayer
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import kotlinx.coroutines.delay
 
@@ -73,7 +72,6 @@ fun SRSActionArea(
     modifier: Modifier = Modifier
 ) {
     val graceMs = 150L
-    val context = androidx.compose.ui.platform.LocalContext.current
     val haptic = LocalHapticFeedback.current
     val view = LocalView.current
     // 检测深色模式
@@ -208,7 +206,6 @@ fun SRSActionArea(
                             onClick = { 
                                 safeRate(1) {
                                     view.performHapticFeedback(HapticFeedbackConstants.REJECT)
-                                    SoundEffectPlayer.playOtherSound(context)
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -223,7 +220,6 @@ fun SRSActionArea(
                             onClick = { 
                                 safeRate(3) {
                                     view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
-                                    SoundEffectPlayer.playHardSound(context)
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -238,7 +234,6 @@ fun SRSActionArea(
                             onClick = { 
                                 safeRate(4) {
                                     view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
-                                    SoundEffectPlayer.playGoodSound(context)
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -253,7 +248,6 @@ fun SRSActionArea(
                             onClick = { 
                                 safeRate(5) {
                                     view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                                    SoundEffectPlayer.playEasySound(context)
                                 }
                             },
                             modifier = Modifier.weight(1f)

@@ -75,11 +75,18 @@ class AudioRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun preloadSoundEffects() {
+        soundEffectManager.preload()
+    }
+
     override fun playSoundEffect(type: AudioEffectType) {
         val effectType = when (type) {
             AudioEffectType.CORRECT -> SoundEffectType.CORRECT
-            AudioEffectType.WRONG -> SoundEffectType.WRONG
-            AudioEffectType.COMPLETE -> SoundEffectType.COMPLETE
+            AudioEffectType.ERROR -> SoundEffectType.ERROR
+            AudioEffectType.GOOD -> SoundEffectType.GOOD
+            AudioEffectType.HARD -> SoundEffectType.HARD
+            AudioEffectType.EASY -> SoundEffectType.EASY
+            AudioEffectType.OTHER -> SoundEffectType.OTHER
         }
         soundEffectManager.play(effectType)
     }

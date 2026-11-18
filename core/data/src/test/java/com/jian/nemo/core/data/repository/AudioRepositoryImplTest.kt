@@ -5,11 +5,14 @@ import android.speech.tts.Voice
 import com.jian.nemo.core.data.audio.FakeAudioFocusController
 import com.jian.nemo.core.data.audio.FakeTtsEngineFactory
 import com.jian.nemo.core.data.audio.SoundEffectManager
+import com.jian.nemo.core.data.audio.SoundEffectType
 import com.jian.nemo.core.data.audio.TtsManager
 import com.jian.nemo.core.data.audio.TtsVoiceDescriptor
+import com.jian.nemo.core.domain.repository.AudioEffectType
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
@@ -236,6 +239,41 @@ class AudioRepositoryImplTest {
             assertTrue(calls[1].utteranceId.startsWith("preview-"))
             assertTrue(calls[2].utteranceId.startsWith("preview-"))
             assertTrue(calls[1].utteranceId != calls[2].utteranceId)
+        } finally {
+            externalScope.cancel()
+            ttsManager.closeForTest()
+        }
+    }
+
+    @Test
+    fun `preloadSoundEffects and playSoundEffect delegate all six types to soundEffectManager`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val externalScope = CoroutineScope(SupervisorJob() + dispatcher)
+        val factory = FakeTtsEngineFactory(voices = voices, autoCompleteInit = true)
+        val ttsManager = createManager(dispatcher, factory)
+        val soundEffectManager = mockk<SoundEffectManager>(relaxed = true)
+        val repository = AudioRepositoryImpl(
+            ttsManager = ttsManager,
+            soundEffectManager = soundEffectManager,
+            externalScope = externalScope
+        )
+
+        try {
+            repository.preloadSoundEffects()
+            repository.playSoundEffect(AudioEffectType.CORRECT)
+            repository.playSoundEffect(AudioEffectType.ERROR)
+            repository.playSoundEffect(AudioEffectType.GOOD)
+            repository.playSoundEffect(AudioEffectType.HARD)
+            repository.playSoundEffect(AudioEffectType.EASY)
+            repository.playSoundEffect(AudioEffectType.OTHER)
+
+            verify(exactly = 1) { soundEffectManager.preload() }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.CORRECT) }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.ERROR) }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.GOOD) }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.HARD) }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.EASY) }
+            verify(exactly = 1) { soundEffectManager.play(SoundEffectType.OTHER) }
         } finally {
             externalScope.cancel()
             ttsManager.closeForTest()
