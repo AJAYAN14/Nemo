@@ -11,6 +11,7 @@ data class GlassMenuItemRecord(
     val destructive: Boolean = false,
     val disabled: Boolean = false,
     val keepOpen: Boolean = false,
+    val supportsLongPress: Boolean = false,
     val separator: Boolean = false,
     val heading: Boolean = false,
     val iconColor: Int? = null

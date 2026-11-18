@@ -128,9 +128,11 @@ internal fun buildLearnMenuNativeItems(
     hasAutoAudio: Boolean,
     isAutoAudioEnabled: Boolean,
     hasDelay: Boolean,
+    hasDelayLongPress: Boolean,
     isShowAnswerDelayEnabled: Boolean,
     showAnswerDelayDurationLabel: String,
     hasAutoReveal: Boolean,
+    hasAutoRevealLongPress: Boolean,
     isAutoRevealAnswerEnabled: Boolean,
     autoRevealAnswerDurationLabel: String,
     hasWhiteboard: Boolean,
@@ -209,6 +211,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "clock",
                 checked = isShowAnswerDelayEnabled,
                 keepOpen = true,
+                supportsLongPress = hasDelayLongPress,
                 iconColor = SystemColors.Purple.toArgb()
             )
         )
@@ -228,6 +231,7 @@ internal fun buildLearnMenuNativeItems(
                 icon = "flip",
                 checked = isAutoRevealAnswerEnabled,
                 keepOpen = true,
+                supportsLongPress = hasAutoRevealLongPress,
                 iconColor = SystemColors.Indigo.toArgb()
             )
         )
@@ -329,13 +333,15 @@ fun LearnHeaderMoreMenuOverlay(
     onSelectDarkMode: ((Boolean?) -> Unit)? = null
 ) {
     val context = LocalContext.current
-    val hasDelay = onToggleShowAnswerDelay != null || onCycleShowAnswerDelayDuration != null || onOpenShowAnswerDelayDialog != null
-    val hasAutoReveal = onToggleAutoRevealAnswer != null || onCycleAutoRevealAnswerDuration != null || onOpenAutoRevealAnswerDialog != null
+    val hasDelayLongPress = onOpenShowAnswerDelayDialog != null || onCycleShowAnswerDelayDuration != null
+    val hasDelay = onToggleShowAnswerDelay != null || hasDelayLongPress
+    val hasAutoRevealLongPress = onOpenAutoRevealAnswerDialog != null || onCycleAutoRevealAnswerDuration != null
+    val hasAutoReveal = onToggleAutoRevealAnswer != null || hasAutoRevealLongPress
 
     val nativeItems = remember(
         remainingCount, onShowRatingGuide, isAutoAudioEnabled, onToggleAutoAudio,
-        hasDelay, isShowAnswerDelayEnabled, showAnswerDelayDurationLabel,
-        hasAutoReveal, isAutoRevealAnswerEnabled, autoRevealAnswerDurationLabel,
+        hasDelay, hasDelayLongPress, isShowAnswerDelayEnabled, showAnswerDelayDurationLabel,
+        hasAutoReveal, hasAutoRevealLongPress, isAutoRevealAnswerEnabled, autoRevealAnswerDurationLabel,
         isWhiteboardEnabled, onToggleWhiteboard, isDarkMode
     ) {
         buildLearnMenuNativeItems(
@@ -345,9 +351,11 @@ fun LearnHeaderMoreMenuOverlay(
             hasAutoAudio = onToggleAutoAudio != null,
             isAutoAudioEnabled = isAutoAudioEnabled,
             hasDelay = hasDelay,
+            hasDelayLongPress = hasDelayLongPress,
             isShowAnswerDelayEnabled = isShowAnswerDelayEnabled,
             showAnswerDelayDurationLabel = showAnswerDelayDurationLabel,
             hasAutoReveal = hasAutoReveal,
+            hasAutoRevealLongPress = hasAutoRevealLongPress,
             isAutoRevealAnswerEnabled = isAutoRevealAnswerEnabled,
             autoRevealAnswerDurationLabel = autoRevealAnswerDurationLabel,
             hasWhiteboard = onToggleWhiteboard != null,

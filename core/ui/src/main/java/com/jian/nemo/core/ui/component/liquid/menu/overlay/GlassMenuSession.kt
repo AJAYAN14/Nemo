@@ -71,7 +71,7 @@ internal class GlassMenuSession(
     private val longPressRunnable = Runnable {
         if (!touchInside || scrolling) return@Runnable
         val row = activeRow ?: return@Runnable
-        if (!row.selectable) return@Runnable
+        if (!row.selectable || !row.item.supportsLongPress || anchor.onItemLongSelect == null) return@Runnable
         longPressTriggered = true
         overlay.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         anchor.notifyLongSelect(row.item, row.index)
@@ -358,7 +358,7 @@ internal class GlassMenuSession(
                     jelly.down(x, y)
                     val r = rowFor(x, y)
                     highlight(r, immediate = true)
-                    if (r?.selectable == true) {
+                    if (r?.selectable == true && r.item.supportsLongPress && anchor.onItemLongSelect != null) {
                         overlay.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout().toLong())
                     }
                 }

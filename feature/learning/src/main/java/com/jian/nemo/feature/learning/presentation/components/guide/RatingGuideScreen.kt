@@ -5,6 +5,7 @@ import com.jian.nemo.core.designsystem.theme.screenBackground
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,8 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -67,6 +66,8 @@ import androidx.compose.ui.graphics.Brush
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 
 @Composable
 fun RatingGuideScreen(
@@ -102,12 +103,14 @@ fun RatingGuideScreen(
                     start = 16.dp,
                     end = 16.dp,
                     top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
+                    bottom = navBarBottom + 104.dp
                 ),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .softCardShadow(borderRadius = 16.dp, isDark = isDark),
                     shape = RoundedRectangle(16.dp),
                     color = if (isDark) colorScheme.surfaceContainerLow else Color.White,
                     shadowElevation = 0.dp
@@ -159,9 +162,12 @@ fun RatingGuideScreen(
                 )
 
                 Surface(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .softCardShadow(borderRadius = 16.dp, isDark = isDark),
                     shape = RoundedRectangle(16.dp),
-                    color = adviceBg
+                    color = adviceBg,
+                    shadowElevation = 0.dp
                 ) {
                     Text(
                         text = stringResource(R.string.rating_guide_practical_tip),
@@ -173,34 +179,43 @@ fun RatingGuideScreen(
                         color = adviceText
                     )
                 }
+        }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = buttonColor,
-                            contentColor = Color.White
-                        ),
-                        shape = Capsule(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.rating_guide_btn_understood),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.SemiBold
-                            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            backgroundColor.copy(alpha = 0f),
+                            backgroundColor.copy(alpha = 0.6f),
+                            backgroundColor.copy(alpha = 0.95f)
                         )
-                    }
-                }
-
-            Spacer(modifier = Modifier.height(12.dp))
+                    )
+                )
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+        ) {
+            ColoredLiquidGlassButton(
+                onClick = onDismiss,
+                tint = buttonColor,
+                backdrop = backdrop,
+                shape = Capsule(),
+                chromaticAberration = false,
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.rating_guide_btn_understood),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = Color.White
+                )
+            }
         }
 
         Box(
@@ -243,7 +258,9 @@ private fun RatingGuideSection(
     easyText: String
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedRectangle(24.dp),
         color = cardColor,
         tonalElevation = 0.dp,
