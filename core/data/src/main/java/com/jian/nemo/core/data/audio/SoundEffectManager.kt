@@ -85,7 +85,10 @@ class SoundEffectManager private constructor(
                 pendingSoundId = null
                 pendingSoundRequestedAtMs = 0L
                 try {
-                    activeEngine.play(soundId)
+                    val streamId = activeEngine.play(soundId)
+                    if (streamId == 0) {
+                        logger.w(TAG, "SoundPool returned streamId=0 for sound effect: $type")
+                    }
                 } catch (e: Throwable) {
                     logger.w(TAG, "Failed to play sound effect: $type", e)
                 }
@@ -122,32 +125,52 @@ class SoundEffectManager private constructor(
             return
         }
 
-        createdEngine.setOnLoadCompleteListener { sampleId, status ->
-            scope.launch {
-                if (engine !== createdEngine) return@launch
-                if (status == 0) {
-                    loadedSoundIds.add(sampleId)
-                    if (pendingSoundId == sampleId) {
-                        val elapsedMs = clock() - pendingSoundRequestedAtMs
-                        pendingSoundId = null
-                        pendingSoundRequestedAtMs = 0L
-                        if (elapsedMs in 0L..pendingPlayTimeoutMs) {
-                            try {
-                                createdEngine.play(sampleId)
-                            } catch (e: Throwable) {
-                                logger.w(TAG, "Failed to play pending sound effect: $sampleId", e)
+        try {
+            createdEngine.setOnLoadCompleteListener { sampleId, status ->
+                scope.launch {
+                    if (engine !== createdEngine) return@launch
+                    if (status == 0) {
+                        loadedSoundIds.add(sampleId)
+                        if (pendingSoundId == sampleId) {
+                            val elapsedMs = clock() - pendingSoundRequestedAtMs
+                            pendingSoundId = null
+                            pendingSoundRequestedAtMs = 0L
+                            if (elapsedMs in 0L..pendingPlayTimeoutMs) {
+                                try {
+                                    val streamId = createdEngine.play(sampleId)
+                                    if (streamId == 0) {
+                                        logger.w(TAG, "SoundPool returned streamId=0 for pending sound effect: $sampleId")
+                                    }
+                                } catch (e: Throwable) {
+                                    logger.w(TAG, "Failed to play pending sound effect: $sampleId", e)
+                                }
                             }
                         }
-                    }
-                } else {
-                    logger.w(TAG, "Failed to decode sound effect: sampleId=$sampleId, status=$status")
-                    soundMap.entries.removeAll { it.value == sampleId }
-                    if (pendingSoundId == sampleId) {
-                        pendingSoundId = null
-                        pendingSoundRequestedAtMs = 0L
+                    } else {
+                        logger.w(TAG, "Failed to decode sound effect: sampleId=$sampleId, status=$status")
+                        loadedSoundIds.remove(sampleId)
+                        soundMap.entries.removeAll { it.value == sampleId }
+                        if (pendingSoundId == sampleId) {
+                            pendingSoundId = null
+                            pendingSoundRequestedAtMs = 0L
+                        }
+                        if (soundMap.isEmpty()) {
+                            releaseEmptyEngine(
+                                targetEngine = createdEngine,
+                                reason = "All sound effects failed to decode; releasing empty SoundPool for retry"
+                            )
+                        }
                     }
                 }
             }
+        } catch (e: Throwable) {
+            logger.w(TAG, "Failed to attach OnLoadCompleteListener; releasing SoundPool", e)
+            try {
+                createdEngine.release()
+            } catch (releaseError: Throwable) {
+                logger.w(TAG, "Failed to release SoundPool after listener setup error", releaseError)
+            }
+            return
         }
 
         engine = createdEngine
@@ -157,6 +180,8 @@ class SoundEffectManager private constructor(
                 val soundId = createdEngine.loadAsset(assetPath)
                 if (soundId != 0) {
                     soundMap[type] = soundId
+                } else {
+                    logger.w(TAG, "Failed to load sound effect (soundId=0): $assetPath")
                 }
             } catch (e: Throwable) {
                 logger.w(TAG, "Failed to load sound effect: $assetPath", e)
@@ -164,16 +189,26 @@ class SoundEffectManager private constructor(
         }
 
         if (soundMap.isEmpty()) {
-            logger.w(TAG, "No sound effects loaded; releasing empty SoundPool for retry")
+            releaseEmptyEngine(
+                targetEngine = createdEngine,
+                reason = "No sound effects loaded; releasing empty SoundPool for retry"
+            )
+        }
+    }
+
+    private fun releaseEmptyEngine(targetEngine: SoundPoolEngine, reason: String) {
+        logger.w(TAG, reason)
+        if (engine === targetEngine) {
             engine = null
-            loadedSoundIds.clear()
-            pendingSoundId = null
-            pendingSoundRequestedAtMs = 0L
-            try {
-                createdEngine.release()
-            } catch (e: Throwable) {
-                logger.w(TAG, "Failed to release empty SoundPool", e)
-            }
+        }
+        soundMap.clear()
+        loadedSoundIds.clear()
+        pendingSoundId = null
+        pendingSoundRequestedAtMs = 0L
+        try {
+            targetEngine.release()
+        } catch (e: Throwable) {
+            logger.w(TAG, "Failed to release empty SoundPool", e)
         }
     }
 

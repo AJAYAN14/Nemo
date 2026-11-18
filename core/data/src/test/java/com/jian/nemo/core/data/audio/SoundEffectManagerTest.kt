@@ -418,11 +418,194 @@ class SoundEffectManagerTest {
             manager.closeForTest()
         }
     }
+
+    @Test
+    fun `all async decode failures release empty engine and allow retry on next call`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        var nowMs = 40_000L
+        val warnings = mutableListOf<String>()
+        val logger = object : SoundEffectLogger {
+            override fun w(tag: String, message: String, throwable: Throwable?) {
+                warnings.add(message)
+            }
+        }
+        val factory = FakeSoundPoolEngineFactory(
+            autoCompleteLoadProvider = { attempt -> attempt >= 2 }
+        )
+        val manager = SoundEffectManager.createForTest(
+            ioDispatcher = dispatcher,
+            engineFactory = factory,
+            logger = logger,
+            clock = { nowMs },
+            pendingPlayTimeoutMs = 400L
+        )
+
+        try {
+            manager.preload()
+            advanceUntilIdle()
+
+            assertEquals(1, factory.createCount)
+            val firstEngine = factory.engines.single()
+            assertEquals(6, firstEngine.assetToSoundId.size)
+            assertEquals(0, firstEngine.releaseCount)
+
+            val allIds = firstEngine.assetToSoundId.values.toList()
+            allIds.dropLast(1).forEach { id ->
+                firstEngine.completeLoad(id, status = -1)
+            }
+            advanceUntilIdle()
+            assertEquals("尚有未完成解码的音效时不应提前释放引擎", 0, firstEngine.releaseCount)
+
+            firstEngine.completeLoad(allIds.last(), status = -1)
+            advanceUntilIdle()
+            assertEquals("全部音效异步解码失败后应释放空引擎", 1, firstEngine.releaseCount)
+            assertTrue(warnings.any { it.contains("All sound effects failed to decode") })
+
+            manager.play(SoundEffectType.CORRECT)
+            advanceUntilIdle()
+
+            assertEquals("释放空引擎后下一次调用应自动重建并恢复播放", 2, factory.createCount)
+            val recoveredEngine = factory.engines[1]
+            assertEquals(
+                listOf(recoveredEngine.assetToSoundId["audio/correct.mp3"]),
+                recoveredEngine.playedSoundIds
+            )
+        } finally {
+            manager.closeForTest()
+        }
+    }
+
+    @Test
+    fun `mixed sync load and async decode failures release empty engine when no assets remain`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val fiveFailingAssets = setOf(
+            "audio/correct.mp3",
+            "audio/error.mp3",
+            "audio/sound_hard.mp3",
+            "audio/sound_easy.mp3",
+            "audio/sound_other.mp3"
+        )
+        val factory = FakeSoundPoolEngineFactory(
+            autoCompleteLoadProvider = { attempt -> attempt >= 2 },
+            failingAssetsProvider = { attempt -> if (attempt == 1) fiveFailingAssets else emptySet() }
+        )
+        val manager = SoundEffectManager.createForTest(
+            ioDispatcher = dispatcher,
+            engineFactory = factory
+        )
+
+        try {
+            manager.preload()
+            advanceUntilIdle()
+
+            val firstEngine = factory.engines.single()
+            assertEquals(1, firstEngine.assetToSoundId.size)
+            val onlyId = firstEngine.assetToSoundId.getValue("audio/sound_good.mp3")
+            assertEquals(0, firstEngine.releaseCount)
+
+            firstEngine.completeLoad(onlyId, status = -1)
+            advanceUntilIdle()
+            assertEquals(1, firstEngine.releaseCount)
+
+            manager.play(SoundEffectType.GOOD)
+            advanceUntilIdle()
+
+            assertEquals(2, factory.createCount)
+            val recoveredEngine = factory.engines[1]
+            assertEquals(
+                listOf(recoveredEngine.assetToSoundId["audio/sound_good.mp3"]),
+                recoveredEngine.playedSoundIds
+            )
+        } finally {
+            manager.closeForTest()
+        }
+    }
+
+    @Test
+    fun `listener registration failure releases created engine and allows retry`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val factory = FakeSoundPoolEngineFactory(
+            autoCompleteLoad = true,
+            failListenerSetupAttempts = setOf(1)
+        )
+        val manager = SoundEffectManager.createForTest(
+            ioDispatcher = dispatcher,
+            engineFactory = factory
+        )
+
+        try {
+            manager.preload()
+            advanceUntilIdle()
+
+            assertEquals(1, factory.createCount)
+            val failedEngine = factory.engines.single()
+            assertEquals(1, failedEngine.releaseCount)
+
+            manager.play(SoundEffectType.EASY)
+            advanceUntilIdle()
+
+            assertEquals(2, factory.createCount)
+            val recoveredEngine = factory.engines[1]
+            assertEquals(
+                listOf(recoveredEngine.assetToSoundId["audio/sound_easy.mp3"]),
+                recoveredEngine.playedSoundIds
+            )
+        } finally {
+            manager.closeForTest()
+        }
+    }
+
+    @Test
+    fun `zero soundId and zero streamId log warnings and release empty engine when all return zero`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val warnings = mutableListOf<String>()
+        val logger = object : SoundEffectLogger {
+            override fun w(tag: String, message: String, throwable: Throwable?) {
+                warnings.add(message)
+            }
+        }
+        val factory = FakeSoundPoolEngineFactory(
+            autoCompleteLoad = true,
+            returnZeroSoundIdAttempts = setOf(1),
+            returnZeroStreamId = true
+        )
+        val manager = SoundEffectManager.createForTest(
+            ioDispatcher = dispatcher,
+            engineFactory = factory,
+            logger = logger
+        )
+
+        try {
+            manager.preload()
+            advanceUntilIdle()
+
+            assertEquals(1, factory.createCount)
+            assertEquals(1, factory.engines.single().releaseCount)
+            assertTrue(warnings.any { it.contains("soundId=0") })
+
+            manager.play(SoundEffectType.OTHER)
+            advanceUntilIdle()
+
+            assertEquals(2, factory.createCount)
+            val recoveredEngine = factory.engines[1]
+            assertEquals(
+                listOf(recoveredEngine.assetToSoundId["audio/sound_other.mp3"]),
+                recoveredEngine.playedSoundIds
+            )
+            assertTrue(warnings.any { it.contains("streamId=0") })
+        } finally {
+            manager.closeForTest()
+        }
+    }
 }
 
 internal class FakeSoundPoolEngineFactory(
     private val autoCompleteLoad: Boolean = true,
+    private val autoCompleteLoadProvider: ((attempt: Int) -> Boolean)? = null,
     private val failFirstCreateAttempts: Int = 0,
+    private val failListenerSetupAttempts: Set<Int> = emptySet(),
+    private val returnZeroSoundIdAttempts: Set<Int> = emptySet(),
+    private val returnZeroStreamId: Boolean = false,
     private val failingAssets: Set<String> = emptySet(),
     private val failingAssetsProvider: ((attempt: Int) -> Set<String>)? = null,
     private val onCreateHook: (() -> Unit)? = null,
@@ -442,7 +625,10 @@ internal class FakeSoundPoolEngineFactory(
             throw IllegalStateException("Simulated SoundPool creation failure #$attempt")
         }
         val engine = FakeSoundPoolEngine(
-            autoCompleteLoad = autoCompleteLoad,
+            autoCompleteLoad = autoCompleteLoadProvider?.invoke(attempt) ?: autoCompleteLoad,
+            failListenerSetup = attempt in failListenerSetupAttempts,
+            returnZeroSoundId = attempt in returnZeroSoundIdAttempts,
+            returnZeroStreamId = returnZeroStreamId,
             failingAssets = failingAssetsProvider?.invoke(attempt) ?: failingAssets,
             recordedThreadIds = recordedThreadIds,
             onPlayHook = onPlayHook
@@ -454,6 +640,9 @@ internal class FakeSoundPoolEngineFactory(
 
 internal class FakeSoundPoolEngine(
     private val autoCompleteLoad: Boolean,
+    private val failListenerSetup: Boolean,
+    private val returnZeroSoundId: Boolean,
+    private val returnZeroStreamId: Boolean,
     private val failingAssets: Set<String>,
     private val recordedThreadIds: CopyOnWriteArrayList<Long>,
     private val onPlayHook: ((Int) -> Unit)?
@@ -469,6 +658,9 @@ internal class FakeSoundPoolEngine(
         private set
 
     override fun setOnLoadCompleteListener(listener: (sampleId: Int, status: Int) -> Unit) {
+        if (failListenerSetup) {
+            throw IllegalStateException("Simulated listener registration failure")
+        }
         loadCompleteListener = listener
     }
 
@@ -476,6 +668,9 @@ internal class FakeSoundPoolEngine(
         recordedThreadIds.add(Thread.currentThread().id)
         if (assetPath in failingAssets) {
             throw IOException("Simulated missing asset: $assetPath")
+        }
+        if (returnZeroSoundId) {
+            return 0
         }
         val soundId = nextSoundId.incrementAndGet()
         loadedAssetPaths.add(assetPath)
@@ -490,7 +685,7 @@ internal class FakeSoundPoolEngine(
         recordedThreadIds.add(Thread.currentThread().id)
         playedSoundIds.add(soundId)
         onPlayHook?.invoke(soundId)
-        return playedSoundIds.size
+        return if (returnZeroStreamId) 0 else playedSoundIds.size
     }
 
     override fun release() {
