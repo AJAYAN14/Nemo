@@ -9,11 +9,12 @@ import com.jian.nemo.core.domain.repository.AudioEffectType
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,15 +25,24 @@ class AudioRepositoryImpl @Inject constructor(
     @ApplicationScope private val externalScope: CoroutineScope
 ) : AudioRepository {
 
+    private val jobLock = Any()
+    private val playbackGeneration = AtomicLong(0L)
     private var currentPlayJob: Job? = null
 
     override val ttsEvents: Flow<TtsEvent>
         get() = ttsManager.events
 
-    override fun playTts(text: String, language: String, id: String?) {
-        currentPlayJob?.cancel()
-        currentPlayJob = externalScope.launch(Dispatchers.Main.immediate) {
-            ttsManager.initialize()
+    override fun playTts(
+        text: String,
+        language: String,
+        id: String?,
+        speechRate: Float?
+    ) {
+        launchPlaybackTask { generation ->
+            val initialized = ttsManager.initialize()
+            if (!initialized || !isActive || playbackGeneration.get() != generation) {
+                return@launchPlaybackTask
+            }
 
             val locale = when (language) {
                 "ja-JP" -> Locale.JAPAN
@@ -40,15 +50,28 @@ class AudioRepositoryImpl @Inject constructor(
                 "zh-CN" -> Locale.CHINA
                 else -> Locale.JAPAN
             }
-            ttsManager.speak(text, locale, id = id)
+            ttsManager.speakSuspend(
+                text = text,
+                language = locale,
+                id = id,
+                overrideSpeechRate = speechRate,
+                shouldProceed = { playbackGeneration.get() == generation }
+            )
         }
     }
 
     override fun playExampleTts(japanese: String, chinese: String, id: String?) {
-        currentPlayJob?.cancel()
-        currentPlayJob = externalScope.launch(Dispatchers.Main.immediate) {
-            ttsManager.initialize()
-            ttsManager.speakExample(japanese, chinese, id)
+        launchPlaybackTask { generation ->
+            val initialized = ttsManager.initialize()
+            if (!initialized || !isActive || playbackGeneration.get() != generation) {
+                return@launchPlaybackTask
+            }
+            ttsManager.speakExampleSuspend(
+                japanese = japanese,
+                chinese = chinese,
+                id = id,
+                shouldProceed = { playbackGeneration.get() == generation }
+            )
         }
     }
 
@@ -62,29 +85,60 @@ class AudioRepositoryImpl @Inject constructor(
     }
 
     override fun stop() {
-        currentPlayJob?.cancel()
-        currentPlayJob = null
+        invalidatePlaybackTasks()
         ttsManager.stop()
     }
 
     override fun release() {
-        currentPlayJob?.cancel()
-        currentPlayJob = null
+        invalidatePlaybackTasks()
         ttsManager.shutdown()
+        soundEffectManager.release()
     }
 
-    override fun getAvailableVoices(): List<TtsVoice> {
+    override suspend fun getAvailableVoices(): List<TtsVoice> {
         return ttsManager.getVoices()
     }
 
-    override fun getAvailableChineseVoices(): List<TtsVoice> {
+    override suspend fun getAvailableChineseVoices(): List<TtsVoice> {
         return ttsManager.getChineseVoices()
     }
 
-    override suspend fun previewVoice(voiceName: String, text: String, language: Locale) {
-        ttsManager.initialize()
-        // Temporarily set voice and speak (does not persist to settings)
-        ttsManager.setVoice(voiceName)
-        ttsManager.speak(text, language, id = "preview-${System.currentTimeMillis()}")
+    override suspend fun previewVoice(
+        voiceName: String,
+        text: String,
+        language: Locale,
+        id: String?
+    ) {
+        val generation = invalidatePlaybackTasks()
+        val initialized = ttsManager.initialize()
+        if (!initialized || playbackGeneration.get() != generation) {
+            return
+        }
+        ttsManager.speakSuspend(
+            text = text,
+            language = language,
+            id = id ?: "preview-$generation",
+            overrideVoiceName = voiceName,
+            shouldProceed = { playbackGeneration.get() == generation }
+        )
+    }
+
+    private fun launchPlaybackTask(block: suspend CoroutineScope.(generation: Long) -> Unit) {
+        synchronized(jobLock) {
+            val generation = playbackGeneration.incrementAndGet()
+            currentPlayJob?.cancel()
+            currentPlayJob = externalScope.launch {
+                block(generation)
+            }
+        }
+    }
+
+    private fun invalidatePlaybackTasks(): Long {
+        synchronized(jobLock) {
+            val generation = playbackGeneration.incrementAndGet()
+            currentPlayJob?.cancel()
+            currentPlayJob = null
+            return generation
+        }
     }
 }

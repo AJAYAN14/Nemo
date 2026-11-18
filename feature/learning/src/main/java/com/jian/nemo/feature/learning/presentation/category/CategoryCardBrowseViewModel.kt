@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.jian.nemo.feature.learning.data.preferences.CategoryLearningPreferences
-import com.jian.nemo.core.data.audio.TtsManager
+import com.jian.nemo.core.domain.repository.AudioRepository
+import com.jian.nemo.core.domain.repository.TtsEvent
 
 enum class SlideDirection {
     FORWARD,  // 向前（下一个）
@@ -53,12 +54,15 @@ data class CategoryCardBrowseUiState(
 class CategoryCardBrowseViewModel @AssistedInject constructor(
     private val repository: WordRepository,
     private val preferences: CategoryLearningPreferences,
-    private val ttsManager: TtsManager,
+    private val audioRepository: AudioRepository,
     @Assisted private val categoryId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CategoryCardBrowseUiState())
     val uiState: StateFlow<CategoryCardBrowseUiState> = _uiState.asStateFlow()
+
+    private var activeUtteranceId: String? = null
+    private var utteranceSeq = 0L
 
     @AssistedFactory
     interface Factory {
@@ -67,30 +71,36 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
 
     init {
         loadCategoryWords()
-        initializeTts()
         observeTtsEvents()
-    }
-
-    private fun initializeTts() {
-        viewModelScope.launch {
-            ttsManager.initialize()
-        }
     }
 
     private fun observeTtsEvents() {
         viewModelScope.launch {
-            ttsManager.events.collect { event ->
+            audioRepository.ttsEvents.collect { event ->
                 when (event) {
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> {
-                        _uiState.value = _uiState.value.copy(isPlaying = true)
+                    is TtsEvent.OnStart -> {
+                        if (event.id == activeUtteranceId) {
+                            _uiState.value = _uiState.value.copy(isPlaying = true)
+                        }
                     }
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnDone,
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnStop,
-                    is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
-                    com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
+                    is TtsEvent.OnDone,
+                    is TtsEvent.OnStop,
+                    is TtsEvent.OnError -> {
+                        val eventId = when (event) {
+                            is TtsEvent.OnDone -> event.id
+                            is TtsEvent.OnStop -> event.id
+                            is TtsEvent.OnError -> event.id
+                            else -> null
+                        }
+                        if (eventId == activeUtteranceId) {
+                            activeUtteranceId = null
+                            _uiState.value = _uiState.value.copy(isPlaying = false, playingText = null)
+                        }
+                    }
+                    TtsEvent.GoogleTtsMissing -> {
+                        activeUtteranceId = null
                         _uiState.value = _uiState.value.copy(isPlaying = false, playingText = null)
                     }
-                    else -> Unit
                 }
             }
         }
@@ -171,8 +181,10 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
      */
     fun speakCurrentWord() {
         uiState.value.currentWord?.let { word ->
+            val id = "category_${++utteranceSeq}"
+            activeUtteranceId = id
             _uiState.value = _uiState.value.copy(playingText = word.japanese)
-            ttsManager.speak(word.japanese)
+            audioRepository.playTts(text = word.japanese, id = id)
         }
     }
 
@@ -180,8 +192,10 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
      * 朗读指定文本
      */
     fun speakText(text: String) {
+        val id = "category_${++utteranceSeq}"
+        activeUtteranceId = id
         _uiState.value = _uiState.value.copy(playingText = text)
-        ttsManager.speak(text)
+        audioRepository.playTts(text = text, id = id)
     }
 
     /**
@@ -324,5 +338,10 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
 
     fun refresh() {
         loadCategoryWords()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        audioRepository.stop()
     }
 }

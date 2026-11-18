@@ -4,9 +4,9 @@ import android.content.Context
 import com.jian.nemo.feature.test.R
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jian.nemo.core.data.audio.TtsManager
 import com.jian.nemo.core.domain.model.TestRecord
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -63,7 +63,7 @@ sealed interface ListeningUiState {
 @HiltViewModel
 class ListeningComprehensionViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val ttsManager: TtsManager,
+    private val audioRepository: AudioRepository,
     private val wordRepository: WordRepository,
     private val testRecordRepository: TestRecordRepository
 ) : ViewModel() {
@@ -229,18 +229,10 @@ class ListeningComprehensionViewModel @Inject constructor(
     fun playTts(speed: Float = 1.0f) {
         val currentState = _uiState.value as? ListeningUiState.Ready ?: return
         val currentQuestion = currentState.questions[currentState.currentIndex]
-        viewModelScope.launch {
-            try {
-                // 初始化 TTS 发音引擎
-                ttsManager.initialize()
-                // 设置语速
-                ttsManager.setSpeechRate(speed)
-                // 朗读单词
-                ttsManager.speak(currentQuestion.word)
-            } catch (e: Exception) {
-                android.util.Log.e("ListeningComprehensionVM", "TTS 播放失败", e)
-            }
-        }
+        audioRepository.playTts(
+            text = currentQuestion.word,
+            speechRate = speed
+        )
     }
 
     private fun saveRecord(correct: Int, total: Int) {
@@ -296,12 +288,6 @@ class ListeningComprehensionViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        // 恢复语速并停止
-        try {
-            ttsManager.setSpeechRate(1.0f)
-            ttsManager.stop()
-        } catch (e: Exception) {
-            // 忽略
-        }
+        audioRepository.stop()
     }
 }

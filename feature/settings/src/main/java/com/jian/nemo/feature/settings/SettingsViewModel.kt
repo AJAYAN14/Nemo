@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import android.util.Log
@@ -38,11 +40,17 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    private var loadVoicesJob: Job? = null
+    private var previewJob: Job? = null
+    private var activePreviewUtteranceId: String? = null
+    private var previewSeq = 0L
+
     init {
         loadSettings()
         observeUser()
         observeTtsEvents()
         observeDictionarySync()
+        loadAvailableVoices()
     }
 
     private fun observeDictionarySync() {
@@ -69,7 +77,8 @@ class SettingsViewModel @Inject constructor(
                     com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> null
                 }
 
-                if (id?.startsWith("preview-") == true || event is com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing) {
+                val isActivePreview = id != null && id == activePreviewUtteranceId
+                if (isActivePreview || event is com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing) {
                     when (event) {
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnStart -> {
                             // 开始播放时，状态已由 onEvent 提前设置
@@ -78,6 +87,7 @@ class SettingsViewModel @Inject constructor(
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnStop,
                         is com.jian.nemo.core.domain.repository.TtsEvent.OnError,
                         com.jian.nemo.core.domain.repository.TtsEvent.GoogleTtsMissing -> {
+                            activePreviewUtteranceId = null
                             // 结束或错误时清除预览状态
                             _uiState.update {
                                 it.copy(
@@ -131,12 +141,37 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { it.copy(appIconStyle = style) }
             }
         }
+    }
 
-        // 加载可用语音列表
-        viewModelScope.launch {
-            val voices = audioRepository.getAvailableVoices()
-            val chineseVoices = audioRepository.getAvailableChineseVoices()
-            _uiState.update { it.copy(availableVoices = voices, availableChineseVoices = chineseVoices) }
+    private fun loadAvailableVoices(forceRefresh: Boolean = false) {
+        val currentState = _uiState.value
+        if (!forceRefresh &&
+            currentState.availableVoices.isNotEmpty() &&
+            currentState.availableChineseVoices.isNotEmpty()
+        ) {
+            return
+        }
+        if (loadVoicesJob?.isActive == true) {
+            return
+        }
+        loadVoicesJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingVoices = true) }
+            try {
+                val voices = audioRepository.getAvailableVoices()
+                val chineseVoices = audioRepository.getAvailableChineseVoices()
+                _uiState.update {
+                    it.copy(
+                        availableVoices = voices,
+                        availableChineseVoices = chineseVoices
+                    )
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("SettingsViewModel", "Failed to load available voices", e)
+            } finally {
+                _uiState.update { it.copy(isLoadingVoices = false) }
+            }
         }
     }
 
@@ -286,9 +321,27 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.SetTtsSpeechRate -> setTtsSpeechRate(event.rate)
             is SettingsEvent.SetTtsPitch -> setTtsPitch(event.pitch)
             is SettingsEvent.SetTtsVoiceName -> setTtsVoiceName(event.voiceName)
-            is SettingsEvent.ShowVoiceSelectionDialog -> _uiState.update { it.copy(showVoiceSelectionDialog = event.show) }
+            is SettingsEvent.ShowVoiceSelectionDialog -> {
+                _uiState.update { it.copy(showVoiceSelectionDialog = event.show) }
+                if (event.show) {
+                    if (_uiState.value.availableVoices.isEmpty()) {
+                        loadAvailableVoices(forceRefresh = true)
+                    }
+                } else {
+                    stopPreviewTts()
+                }
+            }
             is SettingsEvent.SetTtsChineseVoiceName -> setTtsChineseVoiceName(event.voiceName)
-            is SettingsEvent.ShowChineseVoiceSelectionDialog -> _uiState.update { it.copy(showChineseVoiceSelectionDialog = event.show) }
+            is SettingsEvent.ShowChineseVoiceSelectionDialog -> {
+                _uiState.update { it.copy(showChineseVoiceSelectionDialog = event.show) }
+                if (event.show) {
+                    if (_uiState.value.availableChineseVoices.isEmpty()) {
+                        loadAvailableVoices(forceRefresh = true)
+                    }
+                } else {
+                    stopPreviewTts()
+                }
+            }
             is SettingsEvent.PreviewTts -> previewTts(event.text)
             is SettingsEvent.PreviewVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.JAPAN)
             is SettingsEvent.PreviewChineseVoice -> previewVoiceWithName(event.voiceName, event.text, java.util.Locale.CHINA)
@@ -691,22 +744,34 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun setTtsVoiceName(voiceName: String) {
+        _uiState.update {
+            it.copy(
+                ttsVoiceName = voiceName,
+                showVoiceSelectionDialog = false
+            )
+        }
         viewModelScope.launch {
             settingsRepository.setTtsVoiceName(voiceName)
-            _uiState.update { it.copy(showVoiceSelectionDialog = false) }
         }
     }
 
     private fun setTtsChineseVoiceName(voiceName: String) {
+        _uiState.update {
+            it.copy(
+                ttsChineseVoiceName = voiceName,
+                showChineseVoiceSelectionDialog = false
+            )
+        }
         viewModelScope.launch {
             settingsRepository.setTtsChineseVoiceName(voiceName)
-            _uiState.update { it.copy(showChineseVoiceSelectionDialog = false) }
         }
     }
 
     private fun previewTts(text: String) {
+        previewJob?.cancel()
+        val id = "preview-tts-jp-${++previewSeq}"
+        activePreviewUtteranceId = id
         audioRepository.stop()
-        val id = "preview-tts-jp-${System.currentTimeMillis()}"
         _uiState.update {
             it.copy(
                 previewAudioType = PreviewAudioType.JAPANESE,
@@ -714,19 +779,31 @@ class SettingsViewModel @Inject constructor(
                 previewingChineseVoiceName = null
             )
         }
-        playTtsUseCase(text, "ja-JP", id)
+        val selectedVoice = _uiState.value.ttsVoiceName
+        if (!selectedVoice.isNullOrBlank()) {
+            previewJob = viewModelScope.launch {
+                audioRepository.previewVoice(selectedVoice, text, java.util.Locale.JAPAN, id = id)
+            }
+        } else {
+            previewJob = null
+            playTtsUseCase(text, "ja-JP", id)
+        }
     }
 
     /**
      * 预览指定语音（不保存设置）
      */
     private fun previewVoiceWithName(voiceName: String, text: String, language: java.util.Locale = java.util.Locale.JAPAN) {
+        previewJob?.cancel()
+        val id = "preview-voice-${++previewSeq}"
+        activePreviewUtteranceId = id
         audioRepository.stop()
-        viewModelScope.launch {
+        previewJob = viewModelScope.launch {
             if (language == java.util.Locale.CHINA) {
                 _uiState.update {
                     it.copy(
                         previewingChineseVoiceName = voiceName,
+                        previewingVoiceName = null,
                         previewAudioType = PreviewAudioType.CHINESE
                     )
                 }
@@ -734,11 +811,12 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         previewingVoiceName = voiceName,
+                        previewingChineseVoiceName = null,
                         previewAudioType = PreviewAudioType.JAPANESE
                     )
                 }
             }
-            audioRepository.previewVoice(voiceName, text, language)
+            audioRepository.previewVoice(voiceName, text, language, id = id)
         }
     }
 
@@ -746,6 +824,9 @@ class SettingsViewModel @Inject constructor(
      * 停止试听 TTS 播放
      */
     private fun stopPreviewTts() {
+        previewJob?.cancel()
+        previewJob = null
+        activePreviewUtteranceId = null
         audioRepository.stop()
         _uiState.update {
             it.copy(
@@ -753,6 +834,15 @@ class SettingsViewModel @Inject constructor(
                 previewingChineseVoiceName = null,
                 previewAudioType = PreviewAudioType.NONE
             )
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (previewJob?.isActive == true || _uiState.value.previewAudioType != PreviewAudioType.NONE) {
+            previewJob?.cancel()
+            previewJob = null
+            audioRepository.stop()
         }
     }
 

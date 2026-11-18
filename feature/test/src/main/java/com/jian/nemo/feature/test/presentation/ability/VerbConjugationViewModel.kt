@@ -2,7 +2,7 @@ package com.jian.nemo.feature.test.presentation.ability
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jian.nemo.core.data.audio.TtsManager
+import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.WordRepository
 import com.jian.nemo.core.domain.model.PartOfSpeech
@@ -75,7 +75,7 @@ sealed interface VerbUiState {
 @HiltViewModel
 class VerbConjugationViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val ttsManager: TtsManager,
+    private val audioRepository: AudioRepository,
     private val wordRepository: WordRepository,
     private val settingsRepository: SettingsRepository,
     private val testRecordRepository: TestRecordRepository,
@@ -637,15 +637,7 @@ class VerbConjugationViewModel @Inject constructor(
     fun playWordTts() {
         val currentState = _uiState.value as? VerbUiState.Ready ?: return
         val currentQuestion = currentState.questions[currentState.currentIndex]
-        viewModelScope.launch {
-            try {
-                // 核心修复：现场懒加载初始化 TTS 引擎，确保即便用户直接点入本界面，朗读依然 100% 成功
-                ttsManager.initialize()
-                ttsManager.speak(currentQuestion.word)
-            } catch (e: Exception) {
-                android.util.Log.e("VerbConjugationVM", "TTS 初始化或播放失败", e)
-            }
-        }
+        audioRepository.playTts(text = currentQuestion.word)
     }
 
     fun cancelGeneration() {
@@ -681,7 +673,7 @@ class VerbConjugationViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        ttsManager.stop()
+        audioRepository.stop()
         activeGenerationJob?.cancel()
         activeGenerationJob = null
     }

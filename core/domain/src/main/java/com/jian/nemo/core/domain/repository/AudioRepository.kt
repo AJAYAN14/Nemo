@@ -11,8 +11,14 @@ interface AudioRepository {
      * @param text 要朗读的文本
      * @param language 语言代码 (默认为日语)
      * @param id 唯一标识符 (可选)
+     * @param speechRate 单次朗读临时语速覆盖，为空时使用全局设置语速
      */
-    fun playTts(text: String, language: String = "ja-JP", id: String? = null)
+    fun playTts(
+        text: String,
+        language: String = "ja-JP",
+        id: String? = null,
+        speechRate: Float? = null
+    )
 
     /**
      * 播放例句 TTS (日语 + 中文连读)
@@ -40,17 +46,22 @@ interface AudioRepository {
     /**
      * 获取可用语音列表 (日语)
      */
-    fun getAvailableVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
+    suspend fun getAvailableVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
 
     /**
      * 获取可用语音列表 (中文)
      */
-    fun getAvailableChineseVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
+    suspend fun getAvailableChineseVoices(): List<com.jian.nemo.core.domain.model.TtsVoice>
 
     /**
      * 预览指定语音（不保存设置，仅临时切换并播放）
      */
-    suspend fun previewVoice(voiceName: String, text: String, language: java.util.Locale = java.util.Locale.JAPAN)
+    suspend fun previewVoice(
+        voiceName: String,
+        text: String,
+        language: java.util.Locale = java.util.Locale.JAPAN,
+        id: String? = null
+    )
 }
 
 sealed interface TtsEvent {
