@@ -67,6 +67,7 @@ fun SettingsScreen(
     onNavigateToCloudBackupHistory: () -> Unit,
     onNavigateToLiquidLab: () -> Unit,
     onNavigateToCornerLab: () -> Unit,
+    onNavigateToStorageManagement: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onCheckUpdate: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
@@ -502,6 +503,14 @@ fun SettingsScreen(
                             title = stringResource(R.string.settings_item_title_import),
                             subtitle = stringResource(R.string.settings_item_subtitle_import),
                             onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
+                            showDivider = true
+                        )
+                        SquircleSettingItem(
+                            icon = Icons.Rounded.Storage,
+                            iconColor = SystemColors.Cyan,
+                            title = stringResource(R.string.settings_item_title_storage),
+                            subtitle = stringResource(R.string.settings_item_subtitle_storage),
+                            onClick = onNavigateToStorageManagement,
                             showDivider = true
                         )
 

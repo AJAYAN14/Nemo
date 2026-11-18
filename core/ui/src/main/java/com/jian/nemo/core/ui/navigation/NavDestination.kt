@@ -30,6 +30,7 @@ object NavDestination {
     const val WORD_CLOZE = "word_cloze" // 单词挖空测试
     const val LIQUID_GLASS_LAB = "liquid_glass_lab" // 液态玻璃实验室
     const val CORNER_LAB = "corner_lab" // 圆角实验室 (标准圆弧 vs G2 连续平滑曲率圆角)
+    const val STORAGE_MANAGEMENT = "storage_management" // 存储与内存管理页
     const val ABOUT = "about" // 关于 Nemo 页面
 
 

@@ -61,6 +61,7 @@ import com.jian.nemo.feature.settings.AdvancedLearningSettingsScreen
 import com.jian.nemo.feature.settings.AISettingsScreen
 import com.jian.nemo.feature.settings.LiquidGlassLabScreen
 import com.jian.nemo.feature.settings.CornerLabScreen
+import com.jian.nemo.feature.settings.StorageManagementScreen
 import com.jian.nemo.feature.settings.AboutScreen
 
 import com.jian.nemo.feature.learning.presentation.LearningScreen
@@ -659,6 +660,9 @@ fun NemoNavHost(
                 onNavigateToCornerLab = {
                     navController.navigate(NavDestination.CORNER_LAB)
                 },
+                onNavigateToStorageManagement = {
+                    navController.navigate(NavDestination.STORAGE_MANAGEMENT)
+                },
                 onNavigateToAbout = {
                     navController.navigate(NavDestination.ABOUT)
                 },
@@ -701,6 +705,15 @@ fun NemoNavHost(
         composable(NavDestination.CORNER_LAB) {
             SubScreenContainer {
                 CornerLabScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+
+        // 存储与内存管理页
+        composable(NavDestination.STORAGE_MANAGEMENT) {
+            SubScreenContainer {
+                StorageManagementScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
