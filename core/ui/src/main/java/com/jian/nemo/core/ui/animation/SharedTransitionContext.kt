@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { null }
@@ -23,21 +24,21 @@ val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope?> { nu
 val LocalNavAnimatedVisibilityScope = compositionLocalOf<AnimatedVisibilityScope?> { null }
 
 /**
- * 展开弹簧：展开自然舒展，适度微弹性
- * 阻尼比 0.85f，刚度 500f
+ * 空间展开弹簧：微过冲物理粘弹性
+ * 阻尼比 0.76f，刚度 450f
  */
 fun <T> spatialExpandSpring() = spring<T>(
-    dampingRatio = 0.85f,
-    stiffness = 500f
+    dampingRatio = 0.76f,
+    stiffness = 450f
 )
 
 /**
- * 收缩返回弹簧：极度跟手干脆，高刚度快速响应，彻底消除拖沓与漂移
- * 阻尼比 0.90f（高吸能无晃动），刚度 900f（响应周期约 180~220ms）
+ * 空间收缩返回弹簧：跟手干脆，高响应快速复位
+ * 阻尼比 0.88f，刚度 850f
  */
 fun <T> spatialCollapseSpring() = spring<T>(
-    dampingRatio = 0.90f,
-    stiffness = 900f
+    dampingRatio = 0.88f,
+    stiffness = 850f
 )
 
 /**
@@ -84,7 +85,7 @@ fun Modifier.nemoCardContainer(
         return this
     }
 
-    val overlayShape = remember(cornerRadius) { RoundedCornerShape(cornerRadius) }
+    val overlayShape = remember(cornerRadius) { RoundedRectangle(cornerRadius) }
 
     return with(sharedTransitionScope) {
         this@nemoCardContainer.sharedBounds(
@@ -121,7 +122,7 @@ fun Modifier.nemoScreenContainer(
         return this
     }
 
-    val overlayShape = remember(cardCornerRadius) { RoundedCornerShape(cardCornerRadius) }
+    val overlayShape = remember(cardCornerRadius) { RoundedRectangle(cardCornerRadius) }
 
     return with(sharedTransitionScope) {
         this@nemoScreenContainer.sharedBounds(

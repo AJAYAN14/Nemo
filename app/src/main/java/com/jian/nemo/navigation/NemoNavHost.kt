@@ -192,16 +192,9 @@ fun NemoNavHost(
         )
     }
 
-    // 采用容器形变（Container Transform）的子界面路由集合
+    // 采用容器形变（Container Transform）的子界面路由集合（已按规范统一为标准推拉视差转场）
     val containerTransformRoutes = remember {
-        setOf(
-            NavDestination.MISTAKES,
-            NavDestination.FAVORITES,
-            NavDestination.TEST_SETTINGS,
-            NavDestination.ABILITY_WORKSHOP,
-            "mistakes",
-            "favorites"
-        )
+        emptySet<String>()
     }
 
     fun isContainerTransformTarget(route: String?): Boolean {
@@ -477,13 +470,7 @@ fun NemoNavHost(
             }
         }
 
-        composable(
-            route = NavDestination.ABILITY_WORKSHOP,
-            enterTransition = { fadeIn(animationSpec = tween(300)) },
-            exitTransition = { fadeOut(animationSpec = tween(300)) },
-            popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-            popExitTransition = { fadeOut(animationSpec = tween(300)) }
-        ) {
+        composable(route = NavDestination.ABILITY_WORKSHOP) {
             CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                 AbilityWorkshopScreen(
                     onBack = { navController.popBackStack() },

@@ -33,7 +33,7 @@ object WordMapper {
 
         return trimmed.all { ch ->
             ch in 'A'..'Z' || ch in 'a'..'z' || ch in '0'..'9' ||
-            ch in " -/._()&'\"·・"
+            ch in " -/._()&'\"·・~～〜（）‘’“”"
         }
     }
 

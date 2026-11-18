@@ -9,11 +9,13 @@ import com.jian.nemo.feature.test.R
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.kyant.backdrop.Backdrop
 
 /**
@@ -35,6 +37,7 @@ fun TestFooter(
 ) {
     val shape = RoundedRectangle(24.dp)
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Row(
         modifier = Modifier
@@ -48,7 +51,8 @@ fun TestFooter(
             onClick = { if (canGoPrev) onPrev() },
             modifier = Modifier
                 .weight(0.4f)
-                .height(56.dp),
+                .height(56.dp)
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
             backdrop = backdrop,
             shape = shape,
             isInteractive = canGoPrev,
@@ -83,7 +87,8 @@ fun TestFooter(
             },
             modifier = Modifier
                 .weight(0.6f)
-                .height(56.dp),
+                .height(56.dp)
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
             backdrop = backdrop,
             tint = if (isMainEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
             shape = shape,

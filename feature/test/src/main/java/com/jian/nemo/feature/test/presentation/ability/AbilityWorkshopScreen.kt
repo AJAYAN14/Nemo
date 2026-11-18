@@ -56,7 +56,6 @@ import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.nemoScreenContainer
 import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
@@ -85,41 +84,16 @@ fun AbilityWorkshopScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    val navScope = LocalNavAnimatedVisibilityScope.current
-    val sharedScope = LocalSharedTransitionScope.current
-
-    val headerAnimModifier = if (navScope != null) {
-        with(navScope) {
-            Modifier.animateEnterExit(
-                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
-                exit = fadeOut(tween(durationMillis = 40))
-            )
-        }
-    } else {
-        Modifier
-    }
-
-    val contentAnimModifier = if (sharedScope != null) {
-        with(sharedScope) { Modifier.skipToLookaheadSize() }
-    } else {
-        Modifier
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
-            .nemoScreenContainer(
-                key = "container_ability_workshop",
-                cardCornerRadius = 24.dp
-            )
     ) {
         // 1. 底层滚动内容（被 backdrop 采样源录制）
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop, enabled = isTransitionSettled)
-                .then(contentAnimModifier),
+                .layerBackdrop(backdrop, enabled = isTransitionSettled),
             contentPadding = PaddingValues(
                 start = 16.dp,
                 end = 16.dp,
@@ -197,7 +171,6 @@ fun AbilityWorkshopScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(headerAnimModifier)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(

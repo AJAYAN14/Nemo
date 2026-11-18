@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.animation.nemoScreenContainer
 import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
@@ -83,43 +82,18 @@ fun FavoritesScreen(
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
-    val navScope = LocalNavAnimatedVisibilityScope.current
-    val sharedScope = LocalSharedTransitionScope.current
-
-    val headerAnimModifier = if (navScope != null) {
-        with(navScope) {
-            Modifier.animateEnterExit(
-                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
-                exit = fadeOut(tween(durationMillis = 40))
-            )
-        }
-    } else {
-        Modifier
-    }
-
-    val contentAnimModifier = if (sharedScope != null) {
-        with(sharedScope) { Modifier.skipToLookaheadSize() }
-    } else {
-        Modifier
-    }
-
     // 图标风格双自适应（柔和微透 / 活力纯色）下发给整页子组件
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(backgroundColor)
-                .nemoScreenContainer(
-                    key = "container_favorites",
-                    cardCornerRadius = 24.dp
-                )
         ) {
         // 1. 底层全量画布（滚动内容整体录入 backdrop，提供真实折射源）
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop, enabled = isTransitionSettled)
-                .then(contentAnimModifier)
         ) {
             // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
@@ -155,7 +129,6 @@ fun FavoritesScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(headerAnimModifier)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(

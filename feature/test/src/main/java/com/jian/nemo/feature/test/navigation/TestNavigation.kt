@@ -32,11 +32,7 @@ fun NavGraphBuilder.testScreen(navController: NavHostController) {
                 nullable = true
                 defaultValue = null
             }
-        ),
-        enterTransition = { fadeIn(animationSpec = tween(300)) },
-        exitTransition = { fadeOut(animationSpec = tween(300)) },
-        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-        popExitTransition = { fadeOut(animationSpec = tween(300)) }
+        )
     ) { backStackEntry ->
         val testModeId = backStackEntry.arguments?.getString("testModeId")
 

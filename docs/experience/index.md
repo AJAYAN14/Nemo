@@ -40,6 +40,8 @@
 | 29 | [词库列表后台预加载与首帧转场防掉帧避坑指南](file:///e:/Android/Nemo/docs/experience/29-词库列表后台预加载与首帧转场防掉帧避坑指南.md) | `DefaultLibraryPreloadCache`, `WordListViewModel`, `GrammarListViewModel`, `NemoNavHost.kt` / SQLite 999限制、后台预热保鲜、离屏合成熔断、静态骨架屏兜底 | **全量关联规避长 IN 列表与转场熔断公理**：全量合并查询改用无参状态字典映射并防抖保鲜；UI 转场启用 `Offscreen` 合成并熔断 `Backdrop` 重采样，冷启动未就绪以静态骨架卡片铺屏兜底。 | 活跃 |
 | 30 | [容器变化过渡动画重构与NavHost物理冲突避坑指南](file:///e:/Android/Nemo/docs/experience/30-容器变化过渡动画重构与NavHost物理冲突避坑指南.md) | `SharedTransitionContext.kt`, `NemoNavHost.kt`, `TestDashboardScreen.kt`, `FavoritesScreen.kt` / 双向物理阻尼弹簧、动态曲率插值、OverlayClip、NavHost协同转场、物理坐标系冲突消除 | **协同转场与动态曲率插值公理**：存在共享容器展开时 NavHost 必须让渡页面位移控制权，杜绝多重运动矢量撕裂；圆角形变必须通过 OverlayClip 与状态机毫秒级动态平滑插值。 | 活跃 |
 | 31 | [顶栏液态菜单原生光学配方对齐与流体拓扑完整性避坑指南](file:///e:/Android/Nemo/docs/experience/31-顶栏液态菜单原生光学配方对齐与流体拓扑完整性避坑指南.md) | `GlassRecipe.kt`, `GlassRenderer.kt`, `NemoGlassMenuView.kt` / ControlDark/Light、fillAlpha、流体拓扑完整性、水平精致三点、面充填混合 | **流体几何拓扑不可分割与光学配方精准对齐公理**：原生液态菜单常态按钮与展开面板为统一流体计算域，严禁以外部独立静态节点割裂拓扑；视觉质感对齐应在 Shader 底层光学参数（fillAlpha）层精准收敛。 | 活跃 |
+| 32 | [排序题调色盘收拢与假名入槽自发光及题干卡片重构避坑指南](file:///e:/Android/Nemo/docs/experience/32-排序题调色盘收拢与假名入槽自发光及题干卡片重构避坑指南.md) | `SortingScreen.kt`, `Color.kt`, `strings.xml`, `TestQuestionFactory.kt` / 拔除发灰渐变、入槽点亮系统纯色、100%保留假名微倾斜、题干微卡片、清理幽灵语法分支 | **规范单一来源与动效灵魂保留公理**：彻底根除孤岛调色盘与脏灰背景，收拢至系统级调色盘；保留核心物理微倾斜与弹簧手感；清理恒假历史死分支。 | 活跃 |
+| 33 | [原生液态菜单静止态本地化与转场防穿透避坑指南](file:///e:/Android/Nemo/docs/experience/33-原生液态菜单静止态本地化与转场防穿透避坑指南.md) | `NemoGlassMenuView.kt`, `GlassMenuOverlay.kt`, `NemoLiquidMenu.kt` / 静止态本地化、展开态顶层化、转场防穿透、消除全局Overlay离屏录制 | **渲染宿主层级与生命周期严格对齐公理**：控件在静止状态下的渲染层级必须严格依附于其逻辑所属的页面容器，严禁常驻挂载于全局 Window 顶层，杜绝任何跨图层穿透与转场悬浮残影。 | 活跃 |
 
 ---
 

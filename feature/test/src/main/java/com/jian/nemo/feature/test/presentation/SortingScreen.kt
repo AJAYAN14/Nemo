@@ -9,6 +9,7 @@ import android.content.Context
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
@@ -34,20 +35,42 @@ import androidx.compose.foundation.BorderStroke
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
+import com.jian.nemo.core.designsystem.theme.NemoPrimary
+import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
 import com.jian.nemo.core.designsystem.theme.NemoSecondary
 import com.jian.nemo.core.designsystem.theme.NemoSecondaryDark
-import com.jian.nemo.core.designsystem.theme.SortingPalette
+import com.jian.nemo.core.designsystem.theme.NotoSerifSC
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.model.ExplanationPayload
 import com.jian.nemo.core.domain.model.SortableChar
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
+import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.test.components.QuestionExplanationCard
 import com.jian.nemo.feature.test.TestViewModel
 import kotlin.math.abs
 
-private fun getMacaronColor(index: Int, charId: String): Color {
+private fun getSystemAccentColor(charId: String, isDark: Boolean): Color {
     val idHash = charId.hashCode()
-    val palette = SortingPalette.MacaronColors
+    val palette = if (isDark) {
+        listOf(
+            SystemColors.OrangeDark,
+            SystemColors.PinkDark,
+            SystemColors.MintDark,
+            SystemColors.PurpleDark,
+            SystemColors.RedDark,
+            SystemColors.BlueDark
+        )
+    } else {
+        listOf(
+            SystemColors.Orange,
+            SystemColors.Pink,
+            SystemColors.Mint,
+            SystemColors.Purple,
+            SystemColors.Red,
+            SystemColors.Blue
+        )
+    }
     return palette[abs(idHash) % palette.size]
 }
 
@@ -64,28 +87,19 @@ fun SortingScreen(
 
     val currentQuestion = questions.getOrNull(uiState.currentIndex) as? TestQuestion.Sorting ?: return
 
-    val gradientTopColor = if (isDark) MaterialTheme.colorScheme.surface else SortingPalette.BackgroundGradientLight
-    val gradientBottomColor = if (isDark) MaterialTheme.colorScheme.background else Color.White
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        gradientTopColor,
-                        gradientBottomColor
-                    ),
-                    startY = 0f,
-                    endY = 1200f
-                )
-            )
+            .background(MaterialTheme.colorScheme.background)
     ) {
         com.jian.nemo.feature.test.components.UnifiedTestScreen(
-            headerContent = {
+            headerContentWithBackdrop = { backdrop ->
                 com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "",
                     onBack = { viewModel.confirmExitTest() },
+                    backgroundColor = Color.Transparent,
+                    backdrop = backdrop,
+                    backButtonSize = 48.dp,
                     centerContent = {
                         com.jian.nemo.feature.test.components.TestHeaderCenterContent(
                             timeLimitSeconds = uiState.timeLimitSeconds,
@@ -96,7 +110,8 @@ fun SortingScreen(
                         com.jian.nemo.feature.test.components.TestHeaderActions(
                             word = currentQuestion.word,
                             onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                            onPause = { viewModel.pauseTest() }
+                            onPause = { viewModel.pauseTest() },
+                            backdrop = backdrop
                         )
                     }
                 )
@@ -125,29 +140,63 @@ fun SortingScreen(
                     val shakeOffset = remember { androidx.compose.animation.core.Animatable(0f) }
 
                     Column(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        val isGrammarQuestion = questionAtTarget.word.level.startsWith("Grammar:")
-
-                        Text(
-                            text = questionAtTarget.word.chinese,
-                            style = MaterialTheme.typography.displayMedium.copy(
-                                fontSize = 44.sp,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = (-1).sp
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 20.dp)
+                                .softCardShadow(borderRadius = 20.dp, isDark = isDark),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f) else Color.White
                             ),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.padding(top = 16.dp)
-                        )
-                        Text(
-                            text = if (isGrammarQuestion) stringResource(R.string.test_sorting_instruction_grammar) else stringResource(R.string.test_sorting_instruction_word),
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            ),
-                            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
-                        )
+                            shape = RoundedRectangle(20.dp),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 20.dp, vertical = 26.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Surface(
+                                    shape = RoundedRectangle(8.dp),
+                                    color = if (isDark) SystemColors.BlueDark.copy(alpha = 0.15f) else SystemColors.Blue.copy(alpha = 0.10f)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.test_sorting_tag_word),
+                                        color = if (isDark) SystemColors.BlueDark else SystemColors.Blue,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Text(
+                                    text = questionAtTarget.word.chinese,
+                                    style = MaterialTheme.typography.headlineLarge.copy(
+                                        fontFamily = NotoSerifSC,
+                                        fontSize = 32.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 0.5.sp,
+                                        lineHeight = 42.sp
+                                    ),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Text(
+                                    text = stringResource(R.string.test_sorting_instruction_word),
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                                    ),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
 
                         AnswerContainer(
                             question = questionAtTarget,
@@ -163,7 +212,7 @@ fun SortingScreen(
                             shakeOffset = shakeOffset
                         )
 
-                        if (questionAtTarget.isAnswered && !isGrammarQuestion) {
+                        if (questionAtTarget.isAnswered) {
                             Spacer(modifier = Modifier.height(16.dp))
                             QuestionExplanationCard(
                                 payload = ExplanationPayload.WordSummary(
@@ -221,9 +270,9 @@ private fun AnswerContainer(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor by animateColorAsState(
         targetValue = when {
-            question.isAnswered && question.isCorrect -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
-            question.isAnswered && !question.isCorrect -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
-            else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) else SortingPalette.ContainerBgLight
+            question.isAnswered && question.isCorrect -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+            question.isAnswered && !question.isCorrect -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+            else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f) else Color.White
         },
         label = "answerContainerColor"
     )
@@ -232,7 +281,13 @@ private fun AnswerContainer(
         modifier = Modifier
             .fillMaxWidth()
             .offset(x = shakeOffset.dp)
-            .background(containerColor, RoundedRectangle(32.dp))
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
+            .background(containerColor, RoundedRectangle(24.dp))
+            .border(
+                1.dp,
+                if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                RoundedRectangle(24.dp)
+            )
             .padding(20.dp)
             .heightIn(min = 100.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
@@ -242,7 +297,7 @@ private fun AnswerContainer(
             Box(modifier = Modifier.fillMaxWidth().height(60.dp), contentAlignment = Alignment.Center) {
                 Text(
                     text = stringResource(R.string.test_sorting_placeholder_build_answer),
-                    color = if (isDark) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f) else SortingPalette.PlaceholderText.copy(alpha = 0.3f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -264,7 +319,7 @@ private fun AnswerContainer(
                     SortableChip(
                         char = char,
                         isSelected = true,
-                        backgroundColor = if (question.isAnswered) null else getMacaronColor(index, char.id),
+                        backgroundColor = if (question.isAnswered) null else getSystemAccentColor(char.id, isDark),
                         modifier = Modifier.graphicsLayer {
                             alpha = animProgress.value
                             scaleX = 0.5f + animProgress.value * 0.5f
@@ -295,12 +350,18 @@ private fun OptionsContainer(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .softCardShadow(borderRadius = 24.dp, isDark = isDark)
             .background(
-                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
-                else SortingPalette.OptionsTrayBgLight,
-                RoundedRectangle(32.dp)
+                if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                else Color.White,
+                RoundedRectangle(24.dp)
             )
-            .padding(vertical = 24.dp, horizontal = 12.dp)
+            .border(
+                1.dp,
+                if (isDark) Color.White.copy(alpha = 0.08f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                RoundedRectangle(24.dp)
+            )
+            .padding(vertical = 20.dp, horizontal = 16.dp)
     ) {
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
@@ -321,7 +382,7 @@ private fun OptionsContainer(
                     SortableChip(
                         char = char,
                         isSelected = false,
-                        backgroundColor = getMacaronColor(index, char.id),
+                        backgroundColor = null,
                         enabled = !char.isSelected,
                         modifier = Modifier.graphicsLayer {
                             alpha = animProgress
@@ -352,7 +413,7 @@ private fun SortableChip(
     val targetBackgroundColor = when {
         status == ChipStatus.CORRECT -> if (isDark) NemoSecondaryDark else NemoSecondary
         status == ChipStatus.WRONG -> if (isDark) NemoDangerDark else NemoDanger
-        isSelected -> backgroundColor ?: MaterialTheme.colorScheme.primary
+        isSelected -> backgroundColor ?: (if (isDark) NemoPrimaryDark else NemoPrimary)
         else -> if (isDark) MaterialTheme.colorScheme.surfaceVariant else Color.White
     }
 
@@ -366,12 +427,12 @@ private fun SortableChip(
     val borderColor = if (isSelected || status != ChipStatus.NORMAL) {
         Color.Transparent
     } else if (isDark) {
-        Color.White.copy(alpha = 0.1f)
+        Color.White.copy(alpha = 0.12f)
     } else {
-        NemoNeutrals.Gray100
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
     }
 
-    val chipShape = RoundedRectangle(18.dp)
+    val chipShape = RoundedRectangle(16.dp)
     val borderStroke = if (status == ChipStatus.NORMAL && !isSelected) {
         BorderStroke(1.dp, borderColor)
     } else null
@@ -436,8 +497,11 @@ private fun SortingFeedback(
         enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(),
         exit = slideOutVertically(targetOffsetY = { it / 2 }) + fadeOut()
     ) {
+        val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
             colors = CardDefaults.cardColors(
                 containerColor = if (question.isCorrect) MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)

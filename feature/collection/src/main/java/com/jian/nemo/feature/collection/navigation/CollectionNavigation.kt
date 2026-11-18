@@ -86,13 +86,7 @@ fun NavGraphBuilder.favoritesScreen(
     onWordClick: (Int) -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    composable(
-        route = FAVORITES_ROUTE,
-        enterTransition = { fadeIn(animationSpec = tween(300)) },
-        exitTransition = { fadeOut(animationSpec = tween(300)) },
-        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-        popExitTransition = { fadeOut(animationSpec = tween(300)) }
-    ) {
+    composable(route = FAVORITES_ROUTE) {
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
             FavoritesScreen(
                 onNavigateToWordFavorites = onNavigateToWordFavorites,
@@ -155,13 +149,7 @@ fun NavGraphBuilder.mistakesScreen(
     onNavigateToGrammarMistakes: () -> Unit,
     onNavigateBack: () -> Unit
 ) {
-    composable(
-        route = MISTAKES_ROUTE,
-        enterTransition = { fadeIn(animationSpec = tween(300)) },
-        exitTransition = { fadeOut(animationSpec = tween(300)) },
-        popEnterTransition = { fadeIn(animationSpec = tween(300)) },
-        popExitTransition = { fadeOut(animationSpec = tween(300)) }
-    ) {
+    composable(route = MISTAKES_ROUTE) {
         CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
             MistakesScreen(
                 onNavigateToWordMistakes = onNavigateToWordMistakes,

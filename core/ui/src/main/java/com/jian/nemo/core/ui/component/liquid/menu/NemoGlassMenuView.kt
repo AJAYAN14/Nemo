@@ -85,7 +85,7 @@ class NemoGlassMenuView @JvmOverloads constructor(
 
     private val supportsGlass get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     internal val drawsGlass get() = glass && supportsGlass
-    private val overlayDrawsChildren get() = supportsGlass && overlay != null && (glass || menuActive)
+    private val overlayDrawsChildren get() = supportsGlass && overlay != null && (menuActive || (overlay?.menuSession?.anchor === this))
 
     init {
         setWillNotDraw(false)
@@ -182,6 +182,41 @@ class NemoGlassMenuView @JvmOverloads constructor(
         canvas.drawCircle(cx - spacing, cy, dotRadius, dotPaint)
         canvas.drawCircle(cx, cy, dotRadius, dotPaint)
         canvas.drawCircle(cx + spacing, cy, dotRadius, dotPaint)
+    }
+
+    private val restingBackgroundPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        style = android.graphics.Paint.Style.FILL
+    }
+    private val restingStrokePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+        style = android.graphics.Paint.Style.STROKE
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        if (overlayDrawsChildren) return
+
+        val w = width.toFloat()
+        val h = height.toFloat()
+        if (w <= 0f || h <= 0f) return
+
+        val radius = cornerRadiusPx(placement.apply { set(0f, 0f, w, h) })
+        val isDark = isDark()
+
+        restingBackgroundPaint.color = if (isDark) {
+            android.graphics.Color.argb((255 * 0.12f).toInt(), 255, 255, 255)
+        } else {
+            android.graphics.Color.argb((255 * 0.24f).toInt(), 255, 255, 255)
+        }
+        canvas.drawRoundRect(0f, 0f, w, h, radius, radius, restingBackgroundPaint)
+
+        restingStrokePaint.strokeWidth = 0.75f * density
+        restingStrokePaint.color = if (isDark) {
+            android.graphics.Color.argb((255 * 0.15f).toInt(), 255, 255, 255)
+        } else {
+            android.graphics.Color.argb((255 * 0.20f).toInt(), 255, 255, 255)
+        }
+        val inset = restingStrokePaint.strokeWidth / 2f
+        canvas.drawRoundRect(inset, inset, w - inset, h - inset, radius - inset, radius - inset, restingStrokePaint)
     }
 
     override fun dispatchDraw(canvas: Canvas) {

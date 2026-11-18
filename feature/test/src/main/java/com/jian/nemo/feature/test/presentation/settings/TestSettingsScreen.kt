@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jian.nemo.core.ui.animation.nemoScreenContainer
 import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.animation.LocalNavAnimatedVisibilityScope
 import com.jian.nemo.core.ui.animation.LocalSharedTransitionScope
@@ -434,33 +433,8 @@ fun TestSettingsScreen(
         updateConfig { cfg -> cfg.copy(timeLimitMinutes = it) }
     }
 
-    val navScope = LocalNavAnimatedVisibilityScope.current
-    val sharedScope = LocalSharedTransitionScope.current
-
-    val headerAnimModifier = if (navScope != null) {
-        with(navScope) {
-            Modifier.animateEnterExit(
-                enter = fadeIn(tween(durationMillis = 180, delayMillis = 80)),
-                exit = fadeOut(tween(durationMillis = 40))
-            )
-        }
-    } else {
-        Modifier
-    }
-
-    val contentAnimModifier = if (sharedScope != null) {
-        with(sharedScope) { Modifier.skipToLookaheadSize() }
-    } else {
-        Modifier
-    }
-
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nemoScreenContainer(
-                key = "container_test_${testModeId ?: "default"}",
-                cardCornerRadius = 24.dp
-            ),
+        modifier = Modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = backgroundColor
     ) { _ ->
@@ -474,7 +448,6 @@ fun TestSettingsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(backdrop, enabled = isTransitionSettled)
-                    .then(contentAnimModifier)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
             ) {
@@ -515,7 +488,6 @@ fun TestSettingsScreen(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .then(headerAnimModifier)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
@@ -542,7 +514,6 @@ fun TestSettingsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .then(headerAnimModifier)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(

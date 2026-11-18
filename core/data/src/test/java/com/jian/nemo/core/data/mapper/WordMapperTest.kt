@@ -97,6 +97,42 @@ class WordMapperTest {
     }
 
     @Test
+    fun `loanword with special punctuation replaces japanese with hiragana`() {
+        val tildeWord = WordEntity(
+            id = 14,
+            rawId = "N1_0877",
+            japanese = "～tower",
+            hiragana = "～タワー",
+            chinese = "塔",
+            level = "n1",
+            isDelisted = false
+        ).toDomainModel()
+        assertEquals("～タワー", tildeWord.japanese)
+
+        val fullwidthParenWord = WordEntity(
+            id = 15,
+            rawId = "N1_2805",
+            japanese = "PR（public relations）",
+            hiragana = "ピーアール",
+            chinese = "宣传广告活动，公关活动",
+            level = "n1",
+            isDelisted = false
+        ).toDomainModel()
+        assertEquals("ピーアール", fullwidthParenWord.japanese)
+
+        val curlyApostropheWord = WordEntity(
+            id = 16,
+            rawId = "N3_1673",
+            japanese = "St. Valentine’s Day",
+            hiragana = "バレンタインデー",
+            chinese = "（每年2月14号）情人节",
+            level = "n3",
+            isDelisted = false
+        ).toDomainModel()
+        assertEquals("バレンタインデー", curlyApostropheWord.japanese)
+    }
+
+    @Test
     fun `regular kanji and kana words keep original japanese`() {
         val kanjiEntity = WordEntity(
             id = 12,

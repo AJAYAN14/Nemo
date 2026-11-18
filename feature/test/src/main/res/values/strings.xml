@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 排序测验 (SortingScreen) -->
-    <string name="test_sorting_instruction_grammar">选择字符，按正确顺序排列</string>
+    <string name="test_sorting_tag_word">假名排序</string>
     <string name="test_sorting_instruction_word">选择假名，按正确顺序排列</string>
     <string name="test_sorting_btn_check">检查</string>
     <string name="test_sorting_placeholder_build_answer">在此处构建答案</string>
