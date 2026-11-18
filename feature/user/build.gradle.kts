@@ -80,6 +80,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.1.1")
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

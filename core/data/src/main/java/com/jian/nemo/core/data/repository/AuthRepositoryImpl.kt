@@ -219,6 +219,8 @@ class AuthRepositoryImpl @Inject constructor(
             val url = supabase.storage.from(AVATARS_BUCKET).publicUrl(path)
             updateUserAvatarUrl(url)
             Result.Success(url)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
         }

@@ -43,6 +43,8 @@ import com.jian.nemo.core.domain.repository.WordRelationRepository
 import com.jian.nemo.core.data.repository.WordRelationRepositoryImpl
 import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.data.repository.TestRecordRepositoryImpl
+import com.jian.nemo.core.domain.repository.AvatarStorageRepository
+import com.jian.nemo.core.data.repository.DefaultAvatarStorageRepository
 
 /**
  * Repository 依赖注入模块
@@ -214,4 +216,10 @@ abstract class RepositoryModule {
     abstract fun bindLibraryPreloadCache(
         impl: DefaultLibraryPreloadCache
     ): LibraryPreloadCache
+
+    @Binds
+    @Singleton
+    abstract fun bindAvatarStorageRepository(
+        impl: DefaultAvatarStorageRepository
+    ): AvatarStorageRepository
 }

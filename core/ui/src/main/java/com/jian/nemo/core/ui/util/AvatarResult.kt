@@ -1,11 +1,14 @@
 package com.jian.nemo.core.ui.util
 
 import android.content.Context
+import com.jian.nemo.core.domain.model.AvatarStorageFailure
 import com.jian.nemo.core.ui.R
+import java.util.Locale
+import kotlin.math.ceil
 
 /**
  * 头像操作结果
- * 使用sealed class提供详细的错误信息
+ * 使用 sealed class 提供详细的错误信息
  */
 sealed class AvatarResult {
     /**
@@ -118,7 +121,10 @@ sealed class AvatarResult {
             is Error.StorageFull -> context.getString(
                 R.string.core_ui_avatar_result_format_with_details,
                 context.getString(R.string.core_ui_avatar_result_storage_full),
-                context.getString(R.string.core_ui_avatar_result_storage_full_details, requiredSpace / 1024 / 1024)
+                context.getString(
+                    R.string.core_ui_avatar_result_storage_full_details,
+                    formatMegabytesCeil(requiredSpace)
+                )
             )
             is Error.InvalidImage -> context.getString(
                 R.string.core_ui_avatar_result_format_with_details,
@@ -130,8 +136,8 @@ sealed class AvatarResult {
                 context.getString(R.string.core_ui_avatar_result_image_too_large),
                 context.getString(
                     R.string.core_ui_avatar_result_image_too_large_details,
-                    actualSize / 1024 / 1024,
-                    maxSize / 1024 / 1024
+                    formatMegabytesCeil(actualSize),
+                    formatMegabytesCeil(maxSize)
                 )
             )
             is Error.CompressionFailed -> context.getString(
@@ -179,6 +185,83 @@ sealed class AvatarResult {
         return when (this) {
             is Success -> path
             is Error -> null
+        }
+    }
+}
+
+/**
+ * 将字节数向上取整至 0.1MB 粒度并格式化（整数不附带小数位）
+ */
+fun formatMegabytesCeil(bytes: Long): String {
+    if (bytes <= 0L) return "0"
+    val tenths = ceil(bytes.toDouble() * 10.0 / (1024.0 * 1024.0)).toLong()
+    val whole = tenths / 10L
+    val fraction = tenths % 10L
+    return if (fraction == 0L) {
+        whole.toString()
+    } else {
+        String.format(Locale.US, "%d.%d", whole, fraction)
+    }
+}
+
+/**
+ * 将领域层头像处理失败原因映射为本地化用户提示文案
+ */
+fun AvatarStorageFailure.toUserMessage(context: Context): String {
+    return when (this) {
+        AvatarStorageFailure.PermissionDenied -> context.getString(
+            R.string.core_ui_avatar_result_format_with_details,
+            context.getString(R.string.core_ui_avatar_result_permission_denied),
+            context.getString(R.string.core_ui_avatar_result_permission_denied_details)
+        )
+        is AvatarStorageFailure.FileNotFound -> context.getString(
+            R.string.core_ui_avatar_result_format_with_details,
+            context.getString(R.string.core_ui_avatar_result_file_not_found),
+            context.getString(R.string.core_ui_avatar_result_file_not_found_details)
+        )
+        is AvatarStorageFailure.StorageFull -> context.getString(
+            R.string.core_ui_avatar_result_format_with_details,
+            context.getString(R.string.core_ui_avatar_result_storage_full),
+            context.getString(
+                R.string.core_ui_avatar_result_storage_full_details,
+                formatMegabytesCeil(requiredBytes)
+            )
+        )
+        is AvatarStorageFailure.ImageTooLarge -> context.getString(
+            R.string.core_ui_avatar_result_format_with_details,
+            context.getString(R.string.core_ui_avatar_result_image_too_large),
+            context.getString(
+                R.string.core_ui_avatar_result_image_too_large_details,
+                formatMegabytesCeil(actualBytes),
+                formatMegabytesCeil(maxBytes)
+            )
+        )
+        AvatarStorageFailure.InvalidImage -> context.getString(
+            R.string.core_ui_avatar_result_format_with_details,
+            context.getString(R.string.core_ui_avatar_result_invalid_image),
+            context.getString(R.string.core_ui_avatar_result_invalid_image_details)
+        )
+        AvatarStorageFailure.PickerUnavailable -> context.getString(
+            R.string.core_ui_avatar_result_picker_unavailable
+        )
+        AvatarStorageFailure.CameraUnavailable -> context.getString(
+            R.string.core_ui_avatar_result_camera_unavailable
+        )
+        is AvatarStorageFailure.SaveFailed -> {
+            val base = context.getString(R.string.core_ui_avatar_result_save_failed)
+            if (detail.isNullOrBlank()) {
+                base
+            } else {
+                context.getString(R.string.core_ui_avatar_result_format_with_details, base, detail)
+            }
+        }
+        is AvatarStorageFailure.Unknown -> {
+            val base = context.getString(R.string.core_ui_avatar_result_unknown)
+            if (detail.isNullOrBlank()) {
+                base
+            } else {
+                context.getString(R.string.core_ui_avatar_result_format_with_details, base, detail)
+            }
         }
     }
 }

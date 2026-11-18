@@ -1,95 +1,100 @@
 package com.jian.nemo.core.ui.component.avatar
 
-import android.content.Context
+import android.content.ActivityNotFoundException
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CameraAlt
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PhotoLibrary
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import com.jian.nemo.core.designsystem.theme.UiPalette
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.theme.UiPalette
 import com.jian.nemo.core.ui.R
 import com.jian.nemo.core.ui.component.AvatarImage
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.modifier.softShadow
-import com.jian.nemo.core.ui.util.AvatarResult
 import com.jian.nemo.core.ui.util.PresetAvatars
-import java.io.File
-import java.io.FileOutputStream
-import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.*
 
 /**
- * 头像编辑对话框 - 采用项目通用标准 NemoDialog
- * 支持选择图片、拍照、选择预设、删除头像
+ * 头像编辑对话框
+ *
+ * 采用纯受控状态设计，仅负责分发相册、拍照、预设与移除意图，所有 I/O 与持久化由上层状态机完成。
  */
 @Composable
 fun AvatarEditDialog(
     currentAvatarPath: String?,
     username: String,
+    isProcessing: Boolean,
+    pendingCameraLaunchUri: String?,
     onDismiss: () -> Unit,
-    onAvatarChanged: (String?) -> Unit,
+    onGalleryImageSelected: (String) -> Unit,
+    onGalleryPickerUnavailable: () -> Unit,
+    onCameraCaptureClick: () -> Unit,
+    onCameraLaunchConsumed: () -> Unit,
+    onCameraLaunchFailed: () -> Unit,
+    onCameraCaptureResult: (Boolean) -> Unit,
+    onPresetSelected: (String) -> Unit,
+    onRemoveAvatar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     var showPresetSelector by remember { mutableStateOf(false) }
-    var tempImageFile by remember { mutableStateOf<File?>(null) }
 
-    // 相册选择启动器（带错误提示）
     val galleryLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            val result = saveImageToInternalStorage(context, selectedUri)
-            when (result) {
-                is AvatarResult.Success -> {
-                    onAvatarChanged(result.path)
-                    android.widget.Toast.makeText(context, result.getUserMessage(context), android.widget.Toast.LENGTH_SHORT).show()
-                    onDismiss()
-                }
-                is AvatarResult.Error -> {
-                    android.widget.Toast.makeText(context, result.getUserMessage(context), android.widget.Toast.LENGTH_LONG).show()
-                }
-            }
+        if (!isProcessing && uri != null) {
+            onGalleryImageSelected(uri.toString())
         }
     }
 
-    // 相机拍照启动器
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (success) {
-            tempImageFile?.let { file ->
-                if (file.exists()) {
-                    onAvatarChanged(file.absolutePath)
-                    onDismiss()
-                }
-            }
-        }
+        onCameraCaptureResult(success)
     }
 
-    // 创建临时文件用于相机拍照
-    LaunchedEffect(Unit) {
-        tempImageFile = createTempImageFile(context)
+    LaunchedEffect(pendingCameraLaunchUri) {
+        val launchUri = pendingCameraLaunchUri ?: return@LaunchedEffect
+        onCameraLaunchConsumed()
+        try {
+            cameraLauncher.launch(Uri.parse(launchUri))
+        } catch (_: ActivityNotFoundException) {
+            onCameraLaunchFailed()
+        }
     }
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -102,24 +107,31 @@ fun AvatarEditDialog(
     val redColor = if (isDark) UiPalette.AvatarSystemRedDark else UiPalette.AvatarSystemRedLight
 
     NemoDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (!isProcessing) {
+                onDismiss()
+            }
+        },
         title = stringResource(R.string.core_ui_avatar_edit_dialog_title),
         dismissText = stringResource(R.string.core_ui_dialog_btn_cancel),
         confirmText = null,
-        onDismiss = onDismiss,
+        onDismiss = {
+            if (!isProcessing) {
+                onDismiss()
+            }
+        },
+        isLoading = isProcessing,
         content = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 头像预览区域
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(124.dp)
                 ) {
-                    // 扁平外环
                     Surface(
                         shape = CircleShape,
                         color = Color.Transparent,
@@ -127,28 +139,45 @@ fun AvatarEditDialog(
                         modifier = Modifier.fillMaxSize()
                     ) {}
 
-                    // 头像图
                     Surface(
                         shape = CircleShape,
                         border = BorderStroke(2.dp, avatarInnerBorder),
                         shadowElevation = 0.dp,
                         modifier = Modifier.size(112.dp)
                     ) {
-                        AvatarImage(
-                            username = username,
-                            avatarPath = currentAvatarPath,
-                            size = 112.dp
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AvatarImage(
+                                username = username,
+                                avatarPath = currentAvatarPath,
+                                size = 112.dp
+                            )
+                            if (isProcessing) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Black.copy(alpha = 0.45f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    NemoChasingDotsLoader(
+                                        size = 24.dp,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = if (currentAvatarPath.isNullOrEmpty()) {
-                        stringResource(R.string.core_ui_avatar_edit_hint_empty)
-                    } else {
-                        stringResource(R.string.core_ui_avatar_edit_hint_current)
+                    text = when {
+                        isProcessing -> stringResource(R.string.core_ui_avatar_edit_hint_processing)
+                        currentAvatarPath.isNullOrEmpty() -> stringResource(R.string.core_ui_avatar_edit_hint_empty)
+                        else -> stringResource(R.string.core_ui_avatar_edit_hint_current)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -156,7 +185,6 @@ fun AvatarEditDialog(
 
                 Spacer(modifier = Modifier.height(28.dp))
 
-                // 操作按钮网格
                 val itemModifier = Modifier.weight(1f)
 
                 Row(
@@ -167,24 +195,29 @@ fun AvatarEditDialog(
                         icon = Icons.Rounded.PhotoLibrary,
                         label = stringResource(R.string.core_ui_avatar_edit_action_gallery),
                         containerColor = blueColor,
-                        contentColor = blueColor,
+                        enabled = !isProcessing,
                         modifier = itemModifier,
-                        onClick = { galleryLauncher.launch("image/*") }
+                        onClick = {
+                            if (!isProcessing) {
+                                try {
+                                    galleryLauncher.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                } catch (_: ActivityNotFoundException) {
+                                    onGalleryPickerUnavailable()
+                                }
+                            }
+                        }
                     )
                     AvatarActionCard(
                         icon = Icons.Rounded.CameraAlt,
                         label = stringResource(R.string.core_ui_avatar_edit_action_camera),
                         containerColor = greenColor,
-                        contentColor = greenColor,
+                        enabled = !isProcessing,
                         modifier = itemModifier,
                         onClick = {
-                            tempImageFile?.let { file ->
-                                val uri = FileProvider.getUriForFile(
-                                    context,
-                                    "${context.packageName}.fileprovider",
-                                    file
-                                )
-                                cameraLauncher.launch(uri)
+                            if (!isProcessing) {
+                                onCameraCaptureClick()
                             }
                         }
                     )
@@ -200,9 +233,13 @@ fun AvatarEditDialog(
                         icon = Icons.Rounded.Palette,
                         label = stringResource(R.string.core_ui_avatar_edit_action_preset),
                         containerColor = purpleColor,
-                        contentColor = purpleColor,
+                        enabled = !isProcessing,
                         modifier = itemModifier,
-                        onClick = { showPresetSelector = true }
+                        onClick = {
+                            if (!isProcessing) {
+                                showPresetSelector = true
+                            }
+                        }
                     )
 
                     if (!currentAvatarPath.isNullOrEmpty()) {
@@ -210,15 +247,15 @@ fun AvatarEditDialog(
                             icon = Icons.Rounded.Delete,
                             label = stringResource(R.string.core_ui_avatar_edit_action_remove),
                             containerColor = redColor,
-                            contentColor = redColor,
+                            enabled = !isProcessing,
                             modifier = itemModifier,
                             onClick = {
-                                onAvatarChanged(null)
-                                onDismiss()
+                                if (!isProcessing) {
+                                    onRemoveAvatar()
+                                }
                             }
                         )
                     } else {
-                        // 占位保持布局对称
                         Box(modifier = itemModifier)
                     }
                 }
@@ -228,14 +265,13 @@ fun AvatarEditDialog(
         }
     )
 
-    // 预设头像选择对话框
-    if (showPresetSelector) {
+    if (showPresetSelector && !isProcessing) {
         PresetAvatarSelectorDialog(
             onDismiss = { showPresetSelector = false },
             onPresetSelected = { preset ->
+                showPresetSelector = false
                 val presetProtocol = PresetAvatars.createPresetPath(preset.id)
-                onAvatarChanged(presetProtocol)
-                onDismiss()
+                onPresetSelected(presetProtocol)
             }
         )
     }
@@ -246,26 +282,30 @@ private fun AvatarActionCard(
     icon: ImageVector,
     label: String,
     containerColor: Color,
-    contentColor: Color = Color.White,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val resolvedContainerColor = if (enabled) containerColor else containerColor.copy(alpha = 0.45f)
+    val resolvedContentColor = if (enabled) Color.White else Color.White.copy(alpha = 0.7f)
+
     Surface(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .softShadow(
-                color = containerColor.copy(alpha = 0.28f),
+                color = containerColor.copy(alpha = if (enabled) 0.28f else 0.12f),
                 borderRadius = 16.dp,
                 blurRadius = 14.dp,
                 offsetY = 6.dp
             )
             .height(72.dp),
         shape = RoundedRectangle(16.dp),
-        color = containerColor,
+        color = resolvedContainerColor,
         tonalElevation = 0.dp,
         shadowElevation = 0.dp,
         border = null,
-        contentColor = Color.White,
+        contentColor = resolvedContentColor,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -276,7 +316,7 @@ private fun AvatarActionCard(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(24.dp),
-                tint = Color.White
+                tint = resolvedContentColor
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
@@ -284,88 +324,8 @@ private fun AvatarActionCard(
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = Color.White
+                color = resolvedContentColor
             )
         }
-    }
-}
-
-/**
- * 将选择的图片保存到应用内部存储（带详细错误处理）
- */
-private fun saveImageToInternalStorage(context: Context, uri: Uri): AvatarResult {
-    return try {
-        // 1. 检查存储空间
-        val availableSpace = context.filesDir.freeSpace
-        val requiredSpace = 5 * 1024 * 1024L // 5MB
-        if (availableSpace < requiredSpace) {
-            return AvatarResult.Error.StorageFull(
-                availableSpace = availableSpace,
-                requiredSpace = requiredSpace
-            )
-        }
-
-        // 2. 打开输入流
-        val inputStream: InputStream = context.contentResolver.openInputStream(uri)
-            ?: return AvatarResult.Error.FileNotFound(
-                path = uri.toString()
-            )
-
-        // 3. 检查文件大小
-        val fileSize = inputStream.available().toLong()
-        val maxSize = 20 * 1024 * 1024L // 20MB
-        if (fileSize > maxSize) {
-            inputStream.close()
-            return AvatarResult.Error.ImageTooLarge(
-                actualSize = fileSize,
-                maxSize = maxSize
-            )
-        }
-
-        // 4. 保存文件
-        val fileName = "avatar_${System.currentTimeMillis()}.jpg"
-        val file = File(context.filesDir, fileName)
-
-        inputStream.use { input ->
-            FileOutputStream(file).use { output ->
-                input.copyTo(output)
-            }
-        }
-
-        // 5. 验证文件已保存
-        if (!file.exists()) {
-            return AvatarResult.Error.SaveFailed(
-                exception = Exception(context.getString(R.string.core_ui_avatar_dialog_file_not_exist))
-            )
-        }
-
-        AvatarResult.Success(
-            path = file.absolutePath
-        )
-    } catch (e: SecurityException) {
-        AvatarResult.Error.PermissionDenied()
-    } catch (e: java.io.FileNotFoundException) {
-        AvatarResult.Error.FileNotFound(
-            path = uri.toString()
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-        AvatarResult.Error.Unknown(
-            exception = e
-        )
-    }
-}
-
-/**
- * 创建临时图片文件用于相机拍照
- */
-private fun createTempImageFile(context: Context): File? {
-    return try {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "temp_avatar_$timeStamp.jpg"
-        File(context.cacheDir, fileName)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
     }
 }

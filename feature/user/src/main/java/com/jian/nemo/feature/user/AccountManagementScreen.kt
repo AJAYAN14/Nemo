@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.designsystem.shape.Capsule
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.SystemColors
@@ -40,6 +41,7 @@ import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.util.toUserMessage
 import com.jian.nemo.feature.user.component.*
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -56,7 +58,7 @@ fun AccountManagementScreen(
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     val useDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -67,6 +69,12 @@ fun AccountManagementScreen(
         uiState.error?.let { error ->
             Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
             viewModel.clearError()
+        }
+    }
+    LaunchedEffect(uiState.avatarError) {
+        uiState.avatarError?.let { failure ->
+            Toast.makeText(context, failure.toUserMessage(context), Toast.LENGTH_LONG).show()
+            viewModel.clearAvatarError()
         }
     }
     LaunchedEffect(uiState.successMessage) {
@@ -259,9 +267,32 @@ fun AccountManagementScreen(
             AvatarEditDialog(
                 currentAvatarPath = avatarPath.takeIf { it.isNotEmpty() },
                 username = uiState.user?.username ?: stringResource(R.string.user_account_default_username),
+                isProcessing = uiState.isAvatarProcessing,
+                pendingCameraLaunchUri = uiState.pendingCameraLaunchUri,
                 onDismiss = { viewModel.dismissDialog() },
-                onAvatarChanged = { newAvatarPath ->
-                    viewModel.onAvatarChanged(newAvatarPath)
+                onGalleryImageSelected = { uriString ->
+                    viewModel.onGalleryAvatarSelected(uriString)
+                },
+                onGalleryPickerUnavailable = {
+                    viewModel.onGalleryPickerUnavailable()
+                },
+                onCameraCaptureClick = {
+                    viewModel.onCameraCaptureRequested()
+                },
+                onCameraLaunchConsumed = {
+                    viewModel.onCameraLaunchConsumed()
+                },
+                onCameraLaunchFailed = {
+                    viewModel.onCameraLaunchFailed()
+                },
+                onCameraCaptureResult = { success ->
+                    viewModel.onCameraCaptureResult(success)
+                },
+                onPresetSelected = { presetPath ->
+                    viewModel.onPresetAvatarSelected(presetPath)
+                },
+                onRemoveAvatar = {
+                    viewModel.onRemoveAvatarRequested()
                 }
             )
         }

@@ -3,7 +3,10 @@ package com.jian.nemo.feature.user
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.Result
+import com.jian.nemo.core.domain.model.AvatarStorageFailure
+import com.jian.nemo.core.domain.model.AvatarStorageResult
 import com.jian.nemo.core.domain.model.User
+import com.jian.nemo.core.domain.repository.AvatarStorageRepository
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.AuthRepository
@@ -31,12 +34,14 @@ class AuthViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val getUserAvatarPathUseCase: GetUserAvatarPathUseCase,
     private val authRepository: AuthRepository,
+    private val avatarStorageRepository: AvatarStorageRepository,
     val supabaseClient: io.github.jan.supabase.SupabaseClient,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
     
     // 用于隔离登录/注册期间产生的全局状态扰动，防止过早跳转
     private var isAuthActionInProgress = false
+    private var pendingCameraFilePath: String? = null
 
     private val _uiState = MutableStateFlow(AuthUiState(isLoading = true))
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -130,7 +135,13 @@ class AuthViewModel @Inject constructor(
     }
 
     fun dismissDialog() {
-        _uiState.update { it.copy(activeDialog = UserDialogType.NONE) }
+        if (_uiState.value.isAvatarProcessing) return
+        _uiState.update {
+            it.copy(
+                activeDialog = UserDialogType.NONE,
+                pendingCameraLaunchUri = null
+            )
+        }
     }
 
     fun onLoginClicked() {
@@ -153,17 +164,260 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun onAvatarChanged(newAvatarPath: String?) {
-        if (newAvatarPath != null) {
-            if (com.jian.nemo.core.ui.util.PresetAvatars.isPreset(newAvatarPath)) {
-                updateAvatarUrl(newAvatarPath)
-            } else {
-                uploadAvatar(java.io.File(newAvatarPath))
+    fun onGalleryAvatarSelected(uriString: String) {
+        if (_uiState.value.isAvatarProcessing) return
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isAvatarProcessing = true,
+                    avatarError = null,
+                    error = null,
+                    successMessage = null
+                )
             }
-        } else {
-            clearAvatar()
+            try {
+                when (val storageResult = avatarStorageRepository.saveAvatarFromUri(uriString)) {
+                    is AvatarStorageResult.Success -> {
+                        uploadPersistedAvatar(File(storageResult.filePath))
+                    }
+                    is AvatarStorageResult.Failure -> {
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                avatarError = storageResult.reason
+                            )
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { it.copy(isAvatarProcessing = false) }
+            }
         }
-        dismissDialog()
+    }
+
+    fun onGalleryPickerUnavailable() {
+        _uiState.update { it.copy(avatarError = AvatarStorageFailure.PickerUnavailable) }
+    }
+
+    fun onCameraCaptureRequested() {
+        if (_uiState.value.isAvatarProcessing) return
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isAvatarProcessing = true,
+                    avatarError = null,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            try {
+                pendingCameraFilePath?.let { stalePath ->
+                    pendingCameraFilePath = null
+                    avatarStorageRepository.cleanupTempCapture(stalePath)
+                }
+                when (val prepared = avatarStorageRepository.prepareCameraCaptureTarget()) {
+                    is Result.Success -> {
+                        pendingCameraFilePath = prepared.data.filePath
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                pendingCameraLaunchUri = prepared.data.contentUri
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                avatarError = AvatarStorageFailure.SaveFailed(prepared.exception.message)
+                            )
+                        }
+                    }
+                    else -> {
+                        _uiState.update { it.copy(isAvatarProcessing = false) }
+                    }
+                }
+            } finally {
+                _uiState.update { it.copy(isAvatarProcessing = false) }
+            }
+        }
+    }
+
+    fun onCameraLaunchConsumed() {
+        _uiState.update { it.copy(pendingCameraLaunchUri = null) }
+    }
+
+    fun onCameraLaunchFailed() {
+        val stalePath = pendingCameraFilePath
+        pendingCameraFilePath = null
+        _uiState.update {
+            it.copy(
+                isAvatarProcessing = false,
+                pendingCameraLaunchUri = null,
+                avatarError = AvatarStorageFailure.CameraUnavailable
+            )
+        }
+        if (stalePath != null) {
+            viewModelScope.launch {
+                avatarStorageRepository.cleanupTempCapture(stalePath)
+            }
+        }
+    }
+
+    fun onCameraCaptureResult(success: Boolean) {
+        val tempPath = pendingCameraFilePath ?: return
+        pendingCameraFilePath = null
+        if (!success) {
+            viewModelScope.launch {
+                avatarStorageRepository.cleanupTempCapture(tempPath)
+            }
+            return
+        }
+        if (_uiState.value.isAvatarProcessing) {
+            viewModelScope.launch {
+                avatarStorageRepository.cleanupTempCapture(tempPath)
+            }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isAvatarProcessing = true,
+                    avatarError = null,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            try {
+                when (val storageResult = avatarStorageRepository.finalizeCameraCapture(tempPath)) {
+                    is AvatarStorageResult.Success -> {
+                        uploadPersistedAvatar(File(storageResult.filePath))
+                    }
+                    is AvatarStorageResult.Failure -> {
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                avatarError = storageResult.reason
+                            )
+                        }
+                    }
+                }
+            } finally {
+                _uiState.update { it.copy(isAvatarProcessing = false) }
+            }
+        }
+    }
+
+    fun onPresetAvatarSelected(presetPath: String) {
+        if (_uiState.value.isAvatarProcessing) return
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isAvatarProcessing = true,
+                    avatarError = null,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            try {
+                when (val result = updateUserProfileUseCase.updateUserAvatarUrl(presetPath)) {
+                    is Result.Success -> {
+                        val updatedUser = _uiState.value.user?.copy(avatarUrl = presetPath)
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                activeDialog = UserDialogType.NONE,
+                                user = updatedUser,
+                                successMessage = context.getString(R.string.user_auth_msg_avatar_update_success),
+                                avatarPath = presetPath
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_update_failed)
+                            )
+                        }
+                    }
+                    else -> {}
+                }
+            } finally {
+                _uiState.update { it.copy(isAvatarProcessing = false) }
+            }
+        }
+    }
+
+    fun onRemoveAvatarRequested() {
+        if (_uiState.value.isAvatarProcessing) return
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isAvatarProcessing = true,
+                    avatarError = null,
+                    error = null,
+                    successMessage = null
+                )
+            }
+            try {
+                when (val result = updateUserProfileUseCase.clearAvatar()) {
+                    is Result.Success -> {
+                        val updatedUser = _uiState.value.user?.copy(avatarUrl = null)
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                activeDialog = UserDialogType.NONE,
+                                user = updatedUser,
+                                avatarPath = "",
+                                successMessage = context.getString(R.string.user_auth_msg_avatar_update_success)
+                            )
+                        }
+                    }
+                    is Result.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isAvatarProcessing = false,
+                                error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_update_failed)
+                            )
+                        }
+                    }
+                    else -> {}
+                }
+            } finally {
+                _uiState.update { it.copy(isAvatarProcessing = false) }
+            }
+        }
+    }
+
+    fun clearAvatarError() {
+        _uiState.update { it.copy(avatarError = null) }
+    }
+
+    private suspend fun uploadPersistedAvatar(file: File) {
+        when (val result = updateUserProfileUseCase.uploadAvatar(file)) {
+            is Result.Success -> {
+                val updatedUser = _uiState.value.user?.copy(avatarUrl = result.data)
+                _uiState.update {
+                    it.copy(
+                        isAvatarProcessing = false,
+                        activeDialog = UserDialogType.NONE,
+                        user = updatedUser,
+                        successMessage = context.getString(R.string.user_auth_msg_avatar_upload_success),
+                        avatarPath = file.absolutePath
+                    )
+                }
+            }
+            is Result.Error -> {
+                _uiState.update {
+                    it.copy(
+                        isAvatarProcessing = false,
+                        error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_upload_failed)
+                    )
+                }
+            }
+            else -> {}
+        }
     }
 
 
@@ -246,55 +500,6 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
-    fun uploadAvatar(file: File) {
-        viewModelScope.launch {
-             _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
-             when(val result = updateUserProfileUseCase.uploadAvatar(file)) {
-                 is Result.Success -> {
-                     val updatedUser = _uiState.value.user?.copy(avatarUrl = result.data)
-                     _uiState.update {
-                         it.copy(
-                             isLoading = false,
-                             user = updatedUser,
-                             successMessage = context.getString(R.string.user_auth_msg_avatar_upload_success),
-                             avatarPath = file.absolutePath
-                         )
-                     }
-
-                 }
-                 is Result.Error -> {
-                     _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_upload_failed)) }
-                 }
-                 else -> {}
-             }
-        }
-    }
-
-    fun updateAvatarUrl(url: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null, successMessage = null) }
-            when (val result = updateUserProfileUseCase.updateUserAvatarUrl(url)) {
-                is Result.Success -> {
-                    val updatedUser = _uiState.value.user?.copy(avatarUrl = url)
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            user = updatedUser,
-                            successMessage = context.getString(R.string.user_auth_msg_avatar_update_success),
-                            avatarPath = url // 预设头像直接用协议串作为 path
-                        )
-                    }
-
-                }
-                is Result.Error -> {
-                    _uiState.update { it.copy(isLoading = false, error = result.exception.message ?: context.getString(R.string.user_auth_err_avatar_update_failed)) }
-                }
-                else -> {}
-            }
-        }
-    }
-
 
     // New OTP-based password reset flows
     fun sendPasswordResetOtp(email: String, onSuccess: () -> Unit = {}, onError: (String) -> Unit = {}) {
@@ -489,16 +694,6 @@ class AuthViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
-
-    fun clearAvatar() {
-        viewModelScope.launch {
-            updateUserProfileUseCase.clearAvatar()
-            _uiState.update { it.copy(avatarPath = "") }
-        }
-    }
-
-
-
     private fun handleAuthError(exception: Throwable, defaultMessage: String) {
         val message = if (exception is com.jian.nemo.core.common.error.AuthException) {
             context.getString(R.string.user_auth_err_code_format, exception.code, exception.message ?: defaultMessage)
@@ -540,7 +735,12 @@ data class AuthUiState(
     val isFormAttempted: Boolean = false,
 
     // Dialog State
-    val activeDialog: UserDialogType = UserDialogType.NONE
+    val activeDialog: UserDialogType = UserDialogType.NONE,
+
+    // Avatar Processing State
+    val isAvatarProcessing: Boolean = false,
+    val pendingCameraLaunchUri: String? = null,
+    val avatarError: AvatarStorageFailure? = null
 ) {
     val emailError: Boolean get() = isFormAttempted && (email.isBlank() || !email.contains("@"))
     val passwordError: Boolean get() = isFormAttempted && (if (isLoginMode) password.isBlank() else password.length < 8)
