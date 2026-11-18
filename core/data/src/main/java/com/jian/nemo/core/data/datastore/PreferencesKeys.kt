@@ -17,6 +17,9 @@ object PreferencesKeys {
 
     // ========== 用户设置 ==========
 
+    /** 是否在启动时检测更新 默认: true */
+    val CHECK_UPDATE_ON_STARTUP = booleanPreferencesKey("check_update_on_startup")
+
     /** 用户头像路径 */
     val USER_AVATAR_PATH = stringPreferencesKey("user_avatar_path")
 

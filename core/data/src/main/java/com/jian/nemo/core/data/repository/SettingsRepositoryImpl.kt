@@ -48,6 +48,20 @@ class SettingsRepositoryImpl @Inject constructor(
 ) : SettingsRepository {
     // ========== 用户设置 ==========
 
+    /** 是否在启动时检测更新 Flow */
+    override val checkUpdateOnStartupFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.CHECK_UPDATE_ON_STARTUP] ?: true
+    }
+
+    /**
+     * 设置是否在启动时检测更新
+     */
+    override suspend fun setCheckUpdateOnStartup(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CHECK_UPDATE_ON_STARTUP] = enabled
+        }
+    }
+
     /** 用户头像路径 Flow */
     override val userAvatarPathFlow: Flow<String> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.USER_AVATAR_PATH] ?: ""

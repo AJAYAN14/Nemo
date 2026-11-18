@@ -1,10 +1,24 @@
 package com.jian.nemo.feature.learning.domain
 
 import android.content.Context
+import com.jian.nemo.core.common.di.ApplicationScope
+import com.jian.nemo.core.common.network.Dispatcher
+import com.jian.nemo.core.common.network.NemoDispatchers
 import com.jian.nemo.core.domain.model.LearningMode
+import com.jian.nemo.feature.learning.data.preferences.LearningSessionStatsStorage
+import com.jian.nemo.feature.learning.data.preferences.SharedPreferencesLearningSessionStatsStorage
 import com.jian.nemo.feature.learning.presentation.CardBadge
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * 战报统计快照数据结构
@@ -20,101 +34,154 @@ data class SessionStats(
 /**
  * 学习会话统计与本地持久化逻辑管理器
  */
+@Singleton
 class LearningSessionStatsManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    private val storage: LearningSessionStatsStorage,
+    @ApplicationScope private val appScope: CoroutineScope,
+    @Dispatcher(NemoDispatchers.IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
 
-    private val sharedPrefs = context.getSharedPreferences("nemo_learning_time_prefs", Context.MODE_PRIVATE)
+    constructor(context: Context) : this(
+        storage = SharedPreferencesLearningSessionStatsStorage(context),
+        appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        ioDispatcher = Dispatchers.IO
+    )
+
+    private val stateLock = Any()
+
+    @Volatile
+    var isHydrated: Boolean = false
+        private set
+
+    @Volatile
+    private var lastSavedDay: Long = 0L
 
     private val relearnWordIds = mutableSetOf<Int>()
     private val relearnGrammarIds = mutableSetOf<Int>()
 
+    @Volatile
     var sessionStartTime: Long = 0L
         private set
 
+    @Volatile
     var wordElapsedTime: Long = 0L
         private set
 
+    @Volatile
     var grammarElapsedTime: Long = 0L
         private set
 
-    var currentCombo: Int = 0
+    @Volatile
+    var wordCurrentCombo: Int = 0
         private set
 
-    var maxCombo: Int = 0
+    @Volatile
+    var wordMaxCombo: Int = 0
         private set
 
-    var sessionNewCount: Int = 0
+    @Volatile
+    var wordSessionNewCount: Int = 0
         private set
 
-    var sessionReviewCount: Int = 0
+    @Volatile
+    var wordSessionReviewCount: Int = 0
         private set
 
-    var sessionRelearnCount: Int = 0
+    @Volatile
+    var grammarCurrentCombo: Int = 0
         private set
+
+    @Volatile
+    var grammarMaxCombo: Int = 0
+        private set
+
+    @Volatile
+    var grammarSessionNewCount: Int = 0
+        private set
+
+    @Volatile
+    var grammarSessionReviewCount: Int = 0
+        private set
+
+    @Volatile
+    var activeMode: LearningMode = LearningMode.Word
+        private set
+
+    val currentCombo: Int
+        get() = if (activeMode == LearningMode.Word) wordCurrentCombo else grammarCurrentCombo
+
+    val maxCombo: Int
+        get() = if (activeMode == LearningMode.Word) wordMaxCombo else grammarMaxCombo
+
+    val sessionNewCount: Int
+        get() = if (activeMode == LearningMode.Word) wordSessionNewCount else grammarSessionNewCount
+
+    val sessionReviewCount: Int
+        get() = if (activeMode == LearningMode.Word) wordSessionReviewCount else grammarSessionReviewCount
+
+    val sessionRelearnCount: Int
+        get() = if (activeMode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
+
+    private var debounceSaveJob: Job? = null
 
     /**
      * 检查今日日期，恢复本地持久化的今日战报或执行跨天重置
      */
-    fun checkAndRestoreOrReset(mode: LearningMode, today: Long) {
-        val lastSavedDay = sharedPrefs.getLong("last_reset_day", 0L)
-        val prefix = if (mode == LearningMode.Word) "word_" else "grammar_"
+    suspend fun checkAndRestoreOrReset(mode: LearningMode, today: Long) {
+        val raw = storage.loadStats()
 
-        if (lastSavedDay != today) {
-            // 跨天：执行全局清零
-            wordElapsedTime = 0L
-            grammarElapsedTime = 0L
-            currentCombo = 0
-            maxCombo = 0
-            sessionNewCount = 0
-            sessionReviewCount = 0
-            sessionRelearnCount = 0
-            relearnWordIds.clear()
-            relearnGrammarIds.clear()
+        synchronized(stateLock) {
+            activeMode = mode
+            lastSavedDay = raw.lastResetDay
 
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("word_elapsed_time", 0L)
-                .putLong("grammar_elapsed_time", 0L)
-                .putInt("word_current_combo", 0)
-                .putInt("word_max_combo", 0)
-                .putInt("word_session_new_count", 0)
-                .putInt("word_session_review_count", 0)
-                .putInt("word_session_relearn_count", 0)
-                .putString("word_relearn_ids", "")
-                .putInt("grammar_current_combo", 0)
-                .putInt("grammar_max_combo", 0)
-                .putInt("grammar_session_new_count", 0)
-                .putInt("grammar_session_review_count", 0)
-                .putInt("grammar_session_relearn_count", 0)
-                .putString("grammar_relearn_ids", "")
-                .apply()
-            println("StatsManager: 跨越重置学习日，清零全部累计战报数据")
-        } else {
-            // 同一天：安全恢复数据
-            wordElapsedTime = sharedPrefs.getLong("word_elapsed_time", 0L)
-            grammarElapsedTime = sharedPrefs.getLong("grammar_elapsed_time", 0L)
+            if (raw.lastResetDay != today) {
+                wordElapsedTime = 0L
+                grammarElapsedTime = 0L
+                wordCurrentCombo = 0
+                wordMaxCombo = 0
+                wordSessionNewCount = 0
+                wordSessionReviewCount = 0
+                grammarCurrentCombo = 0
+                grammarMaxCombo = 0
+                grammarSessionNewCount = 0
+                grammarSessionReviewCount = 0
+                relearnWordIds.clear()
+                relearnGrammarIds.clear()
+                isHydrated = true
+            } else {
+                wordElapsedTime = raw.wordElapsedTime
+                grammarElapsedTime = raw.grammarElapsedTime
 
-            currentCombo = sharedPrefs.getInt("${prefix}current_combo", 0)
-            maxCombo = sharedPrefs.getInt("${prefix}max_combo", 0)
-            sessionNewCount = sharedPrefs.getInt("${prefix}session_new_count", 0)
-            sessionReviewCount = sharedPrefs.getInt("${prefix}session_review_count", 0)
+                wordCurrentCombo = raw.wordCurrentCombo
+                wordMaxCombo = raw.wordMaxCombo
+                wordSessionNewCount = raw.wordSessionNewCount
+                wordSessionReviewCount = raw.wordSessionReviewCount
 
-            val wordIdsStr = sharedPrefs.getString("word_relearn_ids", "") ?: ""
-            relearnWordIds.clear()
-            if (wordIdsStr.isNotEmpty()) {
-                wordIdsStr.split(",").mapNotNull { it.toIntOrNull() }.forEach { relearnWordIds.add(it) }
+                grammarCurrentCombo = raw.grammarCurrentCombo
+                grammarMaxCombo = raw.grammarMaxCombo
+                grammarSessionNewCount = raw.grammarSessionNewCount
+                grammarSessionReviewCount = raw.grammarSessionReviewCount
+
+                relearnWordIds.clear()
+                if (raw.wordRelearnIds.isNotEmpty()) {
+                    raw.wordRelearnIds.split(",")
+                        .mapNotNull { it.toIntOrNull() }
+                        .forEach { relearnWordIds.add(it) }
+                }
+
+                relearnGrammarIds.clear()
+                if (raw.grammarRelearnIds.isNotEmpty()) {
+                    raw.grammarRelearnIds.split(",")
+                        .mapNotNull { it.toIntOrNull() }
+                        .forEach { relearnGrammarIds.add(it) }
+                }
+
+                isHydrated = true
             }
+        }
 
-            val grammarIdsStr = sharedPrefs.getString("grammar_relearn_ids", "") ?: ""
-            relearnGrammarIds.clear()
-            if (grammarIdsStr.isNotEmpty()) {
-                grammarIdsStr.split(",").mapNotNull { it.toIntOrNull() }.forEach { relearnGrammarIds.add(it) }
-            }
-
-            sessionRelearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
-
-            println("StatsManager: 恢复同学习日数据 [模式: $mode, 已学时间(词/法): $wordElapsedTime/$grammarElapsedTime, 新:$sessionNewCount, 复:$sessionReviewCount, 重:$sessionRelearnCount, Combo:$maxCombo]")
+        if (raw.lastResetDay != today) {
+            storage.resetAllStats(today)
         }
     }
 
@@ -122,126 +189,253 @@ class LearningSessionStatsManager @Inject constructor(
      * 开始/恢复计时
      */
     fun resumeTimer() {
-        if (sessionStartTime == 0L) {
-            sessionStartTime = System.currentTimeMillis()
+        synchronized(stateLock) {
+            if (sessionStartTime == 0L) {
+                sessionStartTime = System.currentTimeMillis()
+            }
         }
     }
 
     /**
-     * 暂停计时并将用时写入本地
+     * 暂停计时并将用时与当前全部战报原子冲刷持久化（防抖取消时立即保存，杜绝丢统计）
      */
     fun pauseTimer(mode: LearningMode, today: Long) {
-        if (sessionStartTime > 0) {
-            val elapsed = (System.currentTimeMillis() - sessionStartTime) / 1000
-            if (mode == LearningMode.Word) {
-                wordElapsedTime += elapsed
-                sharedPrefs.edit()
-                    .putLong("last_reset_day", today)
-                    .putLong("word_elapsed_time", wordElapsedTime)
-                    .apply()
-            } else {
-                grammarElapsedTime += elapsed
-                sharedPrefs.edit()
-                    .putLong("last_reset_day", today)
-                    .putLong("grammar_elapsed_time", grammarElapsedTime)
-                    .apply()
+        val totalElapsed: Long
+        val currentComboSnapshot: Int
+        val maxComboSnapshot: Int
+        val sessionNewCountSnapshot: Int
+        val sessionReviewCountSnapshot: Int
+        val sessionRelearnCountSnapshot: Int
+        val relearnIdsSnapshot: String
+
+        synchronized(stateLock) {
+            activeMode = mode
+            debounceSaveJob?.cancel()
+            debounceSaveJob = null
+
+            if (sessionStartTime > 0L) {
+                val elapsed = (System.currentTimeMillis() - sessionStartTime) / 1000
+                if (mode == LearningMode.Word) {
+                    wordElapsedTime += elapsed
+                } else {
+                    grammarElapsedTime += elapsed
+                }
+                sessionStartTime = 0L
             }
-            sessionStartTime = 0L
+            totalElapsed = if (mode == LearningMode.Word) wordElapsedTime else grammarElapsedTime
+
+            if (mode == LearningMode.Word) {
+                currentComboSnapshot = wordCurrentCombo
+                maxComboSnapshot = wordMaxCombo
+                sessionNewCountSnapshot = wordSessionNewCount
+                sessionReviewCountSnapshot = wordSessionReviewCount
+                sessionRelearnCountSnapshot = relearnWordIds.size
+                relearnIdsSnapshot = relearnWordIds.joinToString(",")
+            } else {
+                currentComboSnapshot = grammarCurrentCombo
+                maxComboSnapshot = grammarMaxCombo
+                sessionNewCountSnapshot = grammarSessionNewCount
+                sessionReviewCountSnapshot = grammarSessionReviewCount
+                sessionRelearnCountSnapshot = relearnGrammarIds.size
+                relearnIdsSnapshot = relearnGrammarIds.joinToString(",")
+            }
+        }
+
+        if (isHydrated) {
+            appScope.launch(NonCancellable + ioDispatcher) {
+                storage.saveAllStats(
+                    mode = mode,
+                    today = today,
+                    elapsedTime = totalElapsed,
+                    currentCombo = currentComboSnapshot,
+                    maxCombo = maxComboSnapshot,
+                    newCount = sessionNewCountSnapshot,
+                    reviewCount = sessionReviewCountSnapshot,
+                    relearnCount = sessionRelearnCountSnapshot,
+                    relearnIds = relearnIdsSnapshot
+                )
+            }
         }
     }
 
     /**
-     * 每次评分卡片时，更新战报统计并实时持久化
+     * 每次评分卡片时，更新战报统计并实时持久化（400ms 防抖）
      */
     fun onItemRated(mode: LearningMode, quality: Int, badge: CardBadge, itemId: Int = 0, today: Long) {
-        // 1. 统计学习数量分类
-        when (badge) {
-            CardBadge.NEW -> sessionNewCount++
-            CardBadge.REVIEW -> sessionReviewCount++
-            CardBadge.LEARNING, CardBadge.RELEARN -> { /* 由数据库去重逻辑处理 */ }
-        }
+        val currentComboSnapshot: Int
+        val maxComboSnapshot: Int
+        val sessionNewCountSnapshot: Int
+        val sessionReviewCountSnapshot: Int
+        val sessionRelearnCountSnapshot: Int
+        val relearnIdsSnapshot: String
 
-        // 仅当原本是复习卡片(REVIEW)且评分<3(重来/忘记)时记录重学 ID
-        if (badge == CardBadge.REVIEW && quality < 3 && itemId != 0) {
+        synchronized(stateLock) {
+            activeMode = mode
             if (mode == LearningMode.Word) {
-                relearnWordIds.add(itemId)
+                when (badge) {
+                    CardBadge.NEW -> wordSessionNewCount++
+                    CardBadge.REVIEW -> wordSessionReviewCount++
+                    CardBadge.LEARNING, CardBadge.RELEARN -> { /* 由数据库去重逻辑处理 */ }
+                }
+
+                if (badge == CardBadge.REVIEW && quality < 3 && itemId != 0) {
+                    relearnWordIds.add(itemId)
+                }
+
+                if (quality >= 3) {
+                    wordCurrentCombo++
+                    wordMaxCombo = maxOf(wordMaxCombo, wordCurrentCombo)
+                } else {
+                    wordCurrentCombo = 0
+                }
+
+                currentComboSnapshot = wordCurrentCombo
+                maxComboSnapshot = wordMaxCombo
+                sessionNewCountSnapshot = wordSessionNewCount
+                sessionReviewCountSnapshot = wordSessionReviewCount
+                sessionRelearnCountSnapshot = relearnWordIds.size
+                relearnIdsSnapshot = relearnWordIds.joinToString(",")
             } else {
-                relearnGrammarIds.add(itemId)
+                when (badge) {
+                    CardBadge.NEW -> grammarSessionNewCount++
+                    CardBadge.REVIEW -> grammarSessionReviewCount++
+                    CardBadge.LEARNING, CardBadge.RELEARN -> { /* 由数据库去重逻辑处理 */ }
+                }
+
+                if (badge == CardBadge.REVIEW && quality < 3 && itemId != 0) {
+                    relearnGrammarIds.add(itemId)
+                }
+
+                if (quality >= 3) {
+                    grammarCurrentCombo++
+                    grammarMaxCombo = maxOf(grammarMaxCombo, grammarCurrentCombo)
+                } else {
+                    grammarCurrentCombo = 0
+                }
+
+                currentComboSnapshot = grammarCurrentCombo
+                maxComboSnapshot = grammarMaxCombo
+                sessionNewCountSnapshot = grammarSessionNewCount
+                sessionReviewCountSnapshot = grammarSessionReviewCount
+                sessionRelearnCountSnapshot = relearnGrammarIds.size
+                relearnIdsSnapshot = relearnGrammarIds.joinToString(",")
+            }
+
+            debounceSaveJob?.cancel()
+            debounceSaveJob = appScope.launch(ioDispatcher) {
+                delay(400)
+                if (isHydrated) {
+                    storage.saveModeStats(
+                        mode = mode,
+                        today = today,
+                        currentCombo = currentComboSnapshot,
+                        maxCombo = maxComboSnapshot,
+                        newCount = sessionNewCountSnapshot,
+                        reviewCount = sessionReviewCountSnapshot,
+                        relearnCount = sessionRelearnCountSnapshot,
+                        relearnIds = relearnIdsSnapshot
+                    )
+                }
             }
         }
-        sessionRelearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
-
-        // 2. 统计连击数
-        if (quality >= 3) {
-            currentCombo++
-            maxCombo = maxOf(maxCombo, currentCombo)
-        } else {
-            currentCombo = 0
-        }
-
-        // 3. 实时写入 SharedPreferences
-        val prefix = if (mode == LearningMode.Word) "word_" else "grammar_"
-        val relearnIdsStr = if (mode == LearningMode.Word) relearnWordIds.joinToString(",") else relearnGrammarIds.joinToString(",")
-        sharedPrefs.edit()
-            .putLong("last_reset_day", today)
-            .putInt("${prefix}current_combo", currentCombo)
-            .putInt("${prefix}max_combo", maxCombo)
-            .putInt("${prefix}session_new_count", sessionNewCount)
-            .putInt("${prefix}session_review_count", sessionReviewCount)
-            .putInt("${prefix}session_relearn_count", sessionRelearnCount)
-            .putString("${prefix}relearn_ids", relearnIdsStr)
-            .apply()
-
-        println("StatsManager: 用户评分(quality=$quality, badge=$badge, itemId=$itemId) -> 战报更新: 新学=$sessionNewCount, 复习=$sessionReviewCount, 重学=$sessionRelearnCount, 连击=$currentCombo/$maxCombo")
     }
 
     /**
-     * 完成会话结算，归档本次总已学时间并清空开始计时器，返回今日总时间秒数
+     * 完成会话结算，归档本次总已学时间并清空开始计时器，返回今日总时间秒数（原子落盘全部指标）
      */
     fun completeSession(mode: LearningMode, today: Long): Long {
-        val currentSessionDuration = if (sessionStartTime > 0) (System.currentTimeMillis() - sessionStartTime) / 1000 else 0L
-        val totalDuration = if (mode == LearningMode.Word) {
-            wordElapsedTime += currentSessionDuration
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("word_elapsed_time", wordElapsedTime)
-                .apply()
-            wordElapsedTime
-        } else {
-            grammarElapsedTime += currentSessionDuration
-            sharedPrefs.edit()
-                .putLong("last_reset_day", today)
-                .putLong("grammar_elapsed_time", grammarElapsedTime)
-                .apply()
-            grammarElapsedTime
+        val totalDuration: Long
+        val currentComboSnapshot: Int
+        val maxComboSnapshot: Int
+        val sessionNewCountSnapshot: Int
+        val sessionReviewCountSnapshot: Int
+        val sessionRelearnCountSnapshot: Int
+        val relearnIdsSnapshot: String
+
+        synchronized(stateLock) {
+            activeMode = mode
+            debounceSaveJob?.cancel()
+            debounceSaveJob = null
+
+            if (sessionStartTime > 0L) {
+                val currentSessionDuration = (System.currentTimeMillis() - sessionStartTime) / 1000
+                if (mode == LearningMode.Word) {
+                    wordElapsedTime += currentSessionDuration
+                } else {
+                    grammarElapsedTime += currentSessionDuration
+                }
+                sessionStartTime = 0L
+            }
+            totalDuration = if (mode == LearningMode.Word) wordElapsedTime else grammarElapsedTime
+
+            if (mode == LearningMode.Word) {
+                currentComboSnapshot = wordCurrentCombo
+                maxComboSnapshot = wordMaxCombo
+                sessionNewCountSnapshot = wordSessionNewCount
+                sessionReviewCountSnapshot = wordSessionReviewCount
+                sessionRelearnCountSnapshot = relearnWordIds.size
+                relearnIdsSnapshot = relearnWordIds.joinToString(",")
+            } else {
+                currentComboSnapshot = grammarCurrentCombo
+                maxComboSnapshot = grammarMaxCombo
+                sessionNewCountSnapshot = grammarSessionNewCount
+                sessionReviewCountSnapshot = grammarSessionReviewCount
+                sessionRelearnCountSnapshot = relearnGrammarIds.size
+                relearnIdsSnapshot = relearnGrammarIds.joinToString(",")
+            }
         }
-        sessionStartTime = 0L
+
+        if (isHydrated) {
+            appScope.launch(NonCancellable + ioDispatcher) {
+                storage.saveAllStats(
+                    mode = mode,
+                    today = today,
+                    elapsedTime = totalDuration,
+                    currentCombo = currentComboSnapshot,
+                    maxCombo = maxComboSnapshot,
+                    newCount = sessionNewCountSnapshot,
+                    reviewCount = sessionReviewCountSnapshot,
+                    relearnCount = sessionRelearnCountSnapshot,
+                    relearnIds = relearnIdsSnapshot
+                )
+            }
+        }
         return totalDuration
     }
 
     /**
-     * 获取当前战报的快照
+     * 获取当前战报的快照（严格按指定模式隔离返回，防止跨模式污染）
      */
     fun getCurrentStats(mode: LearningMode): SessionStats {
-        val currentSessionDuration = if (sessionStartTime > 0) (System.currentTimeMillis() - sessionStartTime) / 1000 else 0L
-        val elapsed = if (mode == LearningMode.Word) {
-            wordElapsedTime + currentSessionDuration
-        } else {
-            grammarElapsedTime + currentSessionDuration
+        synchronized(stateLock) {
+            val currentSessionDuration = if (sessionStartTime > 0L && activeMode == mode) {
+                (System.currentTimeMillis() - sessionStartTime) / 1000
+            } else 0L
+            val elapsed = if (mode == LearningMode.Word) {
+                wordElapsedTime + currentSessionDuration
+            } else {
+                grammarElapsedTime + currentSessionDuration
+            }
+            val combo = if (mode == LearningMode.Word) wordMaxCombo else grammarMaxCombo
+            val newCount = if (mode == LearningMode.Word) wordSessionNewCount else grammarSessionNewCount
+            val reviewCount = if (mode == LearningMode.Word) wordSessionReviewCount else grammarSessionReviewCount
+            val relearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
+            return SessionStats(
+                elapsedTime = elapsed,
+                maxCombo = combo,
+                newCount = newCount,
+                reviewCount = reviewCount,
+                relearnCount = relearnCount
+            )
         }
-        return SessionStats(
-            elapsedTime = elapsed,
-            maxCombo = maxCombo,
-            newCount = sessionNewCount,
-            reviewCount = sessionReviewCount,
-            relearnCount = if (mode == LearningMode.Word) relearnWordIds.size else relearnGrammarIds.size
-        )
     }
 
     /**
      * 重置计时变量（用于退出时仅置空本次计时，不抹掉持久化总计）
      */
     fun clearSessionTimer() {
-        sessionStartTime = 0L
+        synchronized(stateLock) {
+            sessionStartTime = 0L
+        }
     }
 }

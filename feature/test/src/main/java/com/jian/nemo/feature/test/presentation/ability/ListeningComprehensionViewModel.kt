@@ -9,13 +9,16 @@ import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.domain.repository.WordRepository
+import com.jian.nemo.feature.test.data.storage.ListeningSessionStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -63,6 +66,7 @@ sealed interface ListeningUiState {
 @HiltViewModel
 class ListeningComprehensionViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val storage: ListeningSessionStorage,
     private val audioRepository: AudioRepository,
     private val wordRepository: WordRepository,
     private val testRecordRepository: TestRecordRepository
@@ -73,8 +77,6 @@ class ListeningComprehensionViewModel @Inject constructor(
 
     val historyRecords: Flow<List<TestRecord>> = testRecordRepository.getRecordsByMode("listening_comprehension_local", 50)
 
-    private val prefs = context.getSharedPreferences("listening_local_session", Context.MODE_PRIVATE)
-
     var currentLevel: String = ""
         private set
 
@@ -83,17 +85,19 @@ class ListeningComprehensionViewModel @Inject constructor(
     }
 
     private fun restoreOrStart() {
-        val session = restoreSession()
-        if (session != null) {
-            currentLevel = session.level
-            _uiState.value = ListeningUiState.Ready(
-                questions = session.questions,
-                currentIndex = session.currentIndex,
-                correctCount = session.correctCount,
-                userAnswers = session.userAnswers.ifEmpty { List(session.questions.size) { null } }
-            )
-        } else {
-            _uiState.value = ListeningUiState.LevelSelecting
+        viewModelScope.launch {
+            val session = restoreSession()
+            if (session != null) {
+                currentLevel = session.level
+                _uiState.value = ListeningUiState.Ready(
+                    questions = session.questions,
+                    currentIndex = session.currentIndex,
+                    correctCount = session.correctCount,
+                    userAnswers = session.userAnswers.ifEmpty { List(session.questions.size) { null } }
+                )
+            } else {
+                _uiState.value = ListeningUiState.LevelSelecting
+            }
         }
     }
 
@@ -115,57 +119,59 @@ class ListeningComprehensionViewModel @Inject constructor(
                 val targetCount = minOf(10, allLevelWords.size)
                 val testWords = allLevelWords.shuffled().take(targetCount)
                 
-                val questions = testWords.mapIndexed { index, targetWord ->
-                    // 随机确定本题考察：“听音辨词” 或是 “听音辨义”
-                    val qType = if (index % 2 == 0) "IDENTIFY_WORD" else "IDENTIFY_MEANING"
-                    
-                    // 找出同等级的其他单词做干扰项
-                    val distractors = allLevelWords.filter { it.id != targetWord.id }
-                        .shuffled()
-                        .take(3)
-                    
-                    val options = mutableListOf<String>()
-                    val correctIndex: Int
-                    
-                    if (qType == "IDENTIFY_WORD") {
-                        // 选项为日语拼写原文（若显示了汉字就不要在后面用括号来显示假名了）
-                        val correctOption = targetWord.japanese
-                        val wrongOptions = distractors.map { it.japanese }
+                val questions = withContext(Dispatchers.Default) {
+                    testWords.mapIndexed { index, targetWord ->
+                        // 随机确定本题考察：“听音辨词” 或是 “听音辨义”
+                        val qType = if (index % 2 == 0) "IDENTIFY_WORD" else "IDENTIFY_MEANING"
                         
-                        options.addAll(wrongOptions)
-                        correctIndex = (0..3).random()
-                        options.add(correctIndex, correctOption)
-                    } else {
-                        // 选项为中文释义
-                        val correctOption = targetWord.chinese
-                        val wrongOptions = distractors.map { it.chinese }
+                        // 找出同等级的其他单词做干扰项
+                        val distractors = allLevelWords.filter { it.id != targetWord.id }
+                            .shuffled()
+                            .take(3)
                         
-                        options.addAll(wrongOptions)
-                        correctIndex = (0..3).random()
-                        options.add(correctIndex, correctOption)
-                    }
-                    
-                    val qTypeDesc = if (qType == "IDENTIFY_WORD") "日语单词" else "中文释义"
-                    
-                    val explanation = buildString {
-                        append("【发音单词】「${targetWord.japanese}」\n")
-                        append("【假名读音】「${targetWord.hiragana}」\n")
-                        append("【中文解释】「${targetWord.chinese}」\n\n")
-                        if (targetWord.pos != null) {
-                            append("【词性分类】${targetWord.pos}\n")
+                        val options = mutableListOf<String>()
+                        val correctIndex: Int
+                        
+                        if (qType == "IDENTIFY_WORD") {
+                            // 选项为日语拼写原文（若显示了汉字就不要在后面用括号来显示假名了）
+                            val correctOption = targetWord.japanese
+                            val wrongOptions = distractors.map { it.japanese }
+                            
+                            options.addAll(wrongOptions)
+                            correctIndex = (0..3).random()
+                            options.add(correctIndex, correctOption)
+                        } else {
+                            // 选项为中文释义
+                            val correctOption = targetWord.chinese
+                            val wrongOptions = distractors.map { it.chinese }
+                            
+                            options.addAll(wrongOptions)
+                            correctIndex = (0..3).random()
+                            options.add(correctIndex, correctOption)
                         }
-                        append(context.getString(R.string.test_listening_analysis_template, options[correctIndex], qTypeDesc))
-                    }
+                        
+                        val qTypeDesc = if (qType == "IDENTIFY_WORD") "日语单词" else "中文释义"
+                        
+                        val explanation = buildString {
+                            append("【发音单词】「${targetWord.japanese}」\n")
+                            append("【假名读音】「${targetWord.hiragana}」\n")
+                            append("【中文解释】「${targetWord.chinese}」\n\n")
+                            if (targetWord.pos != null) {
+                                append("【词性分类】${targetWord.pos}\n")
+                            }
+                            append(context.getString(R.string.test_listening_analysis_template, options[correctIndex], qTypeDesc))
+                        }
 
-                    ListeningQuestion(
-                        word = targetWord.japanese,
-                        hiragana = targetWord.hiragana,
-                        meaning = targetWord.chinese,
-                        questionType = qType,
-                        options = options,
-                        correctIndex = correctIndex,
-                        explanation = explanation
-                    )
+                        ListeningQuestion(
+                            word = targetWord.japanese,
+                            hiragana = targetWord.hiragana,
+                            meaning = targetWord.chinese,
+                            questionType = qType,
+                            options = options,
+                            correctIndex = correctIndex,
+                            explanation = explanation
+                        )
+                    }
                 }
 
                 val readyState = ListeningUiState.Ready(questions = questions)
@@ -259,22 +265,15 @@ class ListeningComprehensionViewModel @Inject constructor(
             correctCount = state.correctCount,
             userAnswers = state.userAnswers
         )
-        prefs.edit().putString("current_session", Json.encodeToString(session)).apply()
+        storage.saveSession(session)
     }
 
     fun clearSession() {
-        prefs.edit().remove("current_session").apply()
+        storage.clearSession()
     }
 
-    private fun restoreSession(): ListeningSession? {
-        val jsonStr = prefs.getString("current_session", null) ?: return null
-        return try {
-            Json.decodeFromString<ListeningSession>(jsonStr)
-        } catch (e: Exception) {
-            clearSession()
-            null
-        }
-    }
+    private suspend fun restoreSession(): ListeningSession? =
+        storage.restoreSession()
 
     fun forceRegenerate() {
         clearSession()

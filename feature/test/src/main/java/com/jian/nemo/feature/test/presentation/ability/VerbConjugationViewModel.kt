@@ -21,6 +21,8 @@ import javax.inject.Inject
 
 import android.content.Context
 import com.jian.nemo.core.common.di.ApplicationScope
+import com.jian.nemo.feature.test.data.storage.VerbConjugationStorage
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.serialization.Serializable
@@ -74,7 +76,7 @@ sealed interface VerbUiState {
 
 @HiltViewModel
 class VerbConjugationViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val storage: VerbConjugationStorage,
     private val audioRepository: AudioRepository,
     private val wordRepository: WordRepository,
     private val settingsRepository: SettingsRepository,
@@ -101,12 +103,11 @@ class VerbConjugationViewModel @Inject constructor(
 
     val historyRecords: Flow<List<TestRecord>> = testRecordRepository.getRecordsByMode("verb_conjugation_ai", 50)
 
-    // 缓存机制与本地会话 (提升至顶部以防初始化顺序问题)
-    private val questionsCache = mutableMapOf<String, List<VerbConjugationQuestion>>()
-    private val prefs = context.getSharedPreferences("verb_ai_session", Context.MODE_PRIVATE)
+    // 缓存机制与本地会话
+    private val questionsCache = ConcurrentHashMap<String, List<VerbConjugationQuestion>>()
 
     // AI 预加载缓存偏好控制开关 (默认关闭)
-    private val _isPregenEnabled = MutableStateFlow(prefs.getBoolean("pref_verb_pregen_enabled", false))
+    private val _isPregenEnabled = MutableStateFlow(false)
     val isPregenEnabled: StateFlow<Boolean> = _isPregenEnabled.asStateFlow()
 
     // 能力工坊 5 大题型 AI 预出题缓存题量动态统计流 (最高展示 20)
@@ -122,79 +123,31 @@ class VerbConjugationViewModel @Inject constructor(
     val gameCacheCounts: StateFlow<Map<String, Int>> = _gameCacheCounts.asStateFlow()
 
     fun updateGameCacheCounts() {
-        val levels = listOf("N5", "N4", "N3", "N2", "N1")
-        val totalQuestions = levels.sumOf { level ->
-            getCachePool(level).size * 5
+        viewModelScope.launch {
+            _gameCacheCounts.value = storage.getGameCacheCounts()
         }
-        // 五个等级最高累加 100 题，除以 5 折算出大厅的平均缓存题量（最大 20 题）
-        // 采用 Math.round 进行灵敏的线性四舍五入，使得每一组（5题）的改变都能立刻反映在大厅的进度上
-        val verbCount = Math.round(totalQuestions / 5.0).toInt().coerceAtMost(20)
-
-        _gameCacheCounts.value = mapOf(
-            "verb_conjugation" to verbCount,
-            "synonym_connection" to 0,
-            "antonym_matching" to 0,
-            "collocation" to 0,
-            "grammar_correction" to 0
-        )
     }
 
     fun togglePregenEnabled(enabled: Boolean) {
         _isPregenEnabled.value = enabled
-        prefs.edit().putBoolean("pref_verb_pregen_enabled", enabled).apply()
+        storage.setPregenEnabled(enabled)
         updateGameCacheCounts()
         if (enabled) {
             preloadCachePoolQuietly()
         }
     }
 
-    // 缓存队列的读取与写入 (SharedPreferences JSON 序列化)
-    fun getCachePool(level: String): List<List<VerbConjugationQuestion>> {
-        val jsonStr = prefs.getString("cache_pool_${level.uppercase()}", null) ?: return emptyList()
-        return try {
-            Json.decodeFromString<List<List<VerbConjugationQuestion>>>(jsonStr)
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
+    // 缓存队列的读取与写入
+    suspend fun getCachePool(level: String): List<List<VerbConjugationQuestion>> =
+        storage.getCachePool(level)
 
     private fun checkAndClearExpiredCaches() {
-        try {
-            val levels = listOf("N5", "N4", "N3", "N2", "N1")
-            val thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000 // 30天
-            val now = System.currentTimeMillis()
-            val editor = prefs.edit()
-            var hasCleared = false
-            for (level in levels) {
-                val lastSavedTime = prefs.getLong("cache_pool_timestamp_${level.uppercase()}", 0L)
-                if (lastSavedTime > 0L && (now - lastSavedTime) > thirtyDaysInMillis) {
-                    editor.remove("cache_pool_${level.uppercase()}")
-                    editor.remove("cache_pool_timestamp_${level.uppercase()}")
-                    hasCleared = true
-                }
-            }
-            if (hasCleared) {
-                editor.apply()
-            }
-        } catch (e: Exception) {
-            // 忽略错误
-        }
+        storage.clearExpiredCaches()
     }
 
     private fun saveCachePool(level: String, pool: List<List<VerbConjugationQuestion>>) {
-        try {
-            val jsonStr = Json.encodeToString(pool)
-            val editor = prefs.edit().putString("cache_pool_${level.uppercase()}", jsonStr)
-            if (pool.isEmpty()) {
-                editor.remove("cache_pool_timestamp_${level.uppercase()}")
-            } else {
-                editor.putLong("cache_pool_timestamp_${level.uppercase()}", System.currentTimeMillis())
-            }
-            editor.apply()
-            updateGameCacheCounts() // 每次保存池子，实时更新广播
-        } catch (e: Exception) {
-            // 忽略错误
-        }
+        storage.saveCachePool(level, pool)
+        updateGameCacheCounts()
     }
 
     // 后台智能串行自动补水函数
@@ -281,9 +234,12 @@ class VerbConjugationViewModel @Inject constructor(
 
     init {
         checkAndClearExpiredCaches() // 冷启动率先检查并清除30天前的过期缓存
+        viewModelScope.launch {
+            _isPregenEnabled.value = storage.isPregenEnabled()
+            updateGameCacheCounts()
+        }
         observeApiSettings() // 全局 Flow 动态监听 AI 平台配置与协程生命周期斩断
         observeGlobalGeneration()
-        updateGameCacheCounts() // 初始化动态缓存统计
     }
 
     private fun observeGlobalGeneration() {
@@ -327,7 +283,7 @@ class VerbConjugationViewModel @Inject constructor(
                 } else {
                     // API 配置正常！
                     // 1. 核心安全机制：侦测平台切换，断流旧任务并清空旧缓存！
-                    val lastPlatform = prefs.getString("pref_last_used_platform", "") ?: ""
+                    val lastPlatform = storage.getLastUsedPlatform()
                     if (lastPlatform.isNotBlank() && lastPlatform != platform) {
                         // 1.1 手起刀落：瞬间斩断任何正在后台跑的旧模型出题/补货协程！
                         activeGenerationJob?.cancel()
@@ -336,12 +292,10 @@ class VerbConjugationViewModel @Inject constructor(
                         
                         // 1.3 物理彻底擦除 5 大级别的旧缓存与时间戳
                         val levels = listOf("N5", "N4", "N3", "N2", "N1")
-                        val editor = prefs.edit()
                         for (lvl in levels) {
-                            editor.remove("cache_pool_${lvl.uppercase()}")
-                            editor.remove("cache_pool_timestamp_${lvl.uppercase()}")
+                            storage.saveCachePool(lvl, emptyList())
                         }
-                        editor.putString("pref_last_used_platform", platform).apply()
+                        storage.setLastUsedPlatform(platform)
 
                         // 1.4 瞬间更新大厅标徽（数据归零）
                         updateGameCacheCounts()
@@ -352,7 +306,7 @@ class VerbConjugationViewModel @Inject constructor(
                         }
                     } else if (lastPlatform.isBlank()) {
                         // 首次记录生效平台
-                        prefs.edit().putString("pref_last_used_platform", platform).apply()
+                        storage.setLastUsedPlatform(platform)
                     }
 
                     // 2. 恢复历史会话或置为可选关卡大厅
@@ -388,22 +342,19 @@ class VerbConjugationViewModel @Inject constructor(
             correctCount = state.correctCount,
             userAnswers = state.userAnswers
         )
-        prefs.edit().putString("current_session", Json.encodeToString(session)).apply()
+        storage.saveSession(session)
+    }
+
+    private fun saveSession(session: VerbConjugationSession) {
+        storage.saveSession(session)
     }
 
     private fun clearSession() {
-        prefs.edit().remove("current_session").apply()
+        storage.clearSession()
     }
 
-    private fun restoreSession(): VerbConjugationSession? {
-        val json = prefs.getString("current_session", null) ?: return null
-        return try {
-            Json.decodeFromString<VerbConjugationSession>(json)
-        } catch (e: Exception) {
-            clearSession()
-            null
-        }
-    }
+    private suspend fun restoreSession(): VerbConjugationSession? =
+        storage.restoreSession()
 
     fun forceRegenerate() {
         clearSession()
@@ -412,161 +363,144 @@ class VerbConjugationViewModel @Inject constructor(
 
     fun onLevelSelected(level: String, forceRegenerate: Boolean = false) {
         currentLevel = level
-        
-        // 1. 优先消费离线预生成的缓存池题目 (即使是重新生成，存粮够也优先从缓存池秒速提货)
-        if (_isPregenEnabled.value) {
-            val pool = getCachePool(level)
-            if (pool.isNotEmpty()) {
-                val questions = pool.first()
-                saveCachePool(level, pool.drop(1))
-                
-                // 究极一致性校验防线：确保缓存中的单词依然活跃存在于核心词库中
-                viewModelScope.launch {
-                    try {
-                        val activeVerbs = wordRepository.getWordsByPartOfSpeech(PartOfSpeech.VERB)
-                        val activeVerbStrings = activeVerbs.filter { !it.isDelisted }.map { it.japanese }.toSet()
-                        
-                        val isAllActive = questions.all { it.word in activeVerbStrings }
-                        if (isAllActive) {
-                            // 100% 安全活性单词！正常交付
-                            val readyState = VerbUiState.Ready(questions = questions)
-                            _uiState.value = readyState
-                            saveSession(readyState)
-                            
-                            // 异步在后台偷偷给当前等级的水池注水补充
-                            preloadCachePoolQuietly()
-                        } else {
-                            // 发现包含已下架的“僵尸词”！果断将当前 5 道题作废，递归提取下一套！
-                            onLevelSelected(level, forceRegenerate = false)
-                        }
-                    } catch (e: Exception) {
-                        // 遇到异常退化走安全交付，保障可用性
-                        val readyState = VerbUiState.Ready(questions = questions)
+
+        viewModelScope.launch {
+            // 1. 优先消费离线预生成的缓存池题目 (即使是重新生成，存粮够也优先从缓存池秒速提货)
+            if (_isPregenEnabled.value && !forceRegenerate) {
+                val activeVerbs = try {
+                    wordRepository.getWordsByPartOfSpeech(PartOfSpeech.VERB)
+                } catch (_: Exception) { emptyList() }
+                val activeVerbStrings = activeVerbs.filter { !it.isDelisted }.map { it.japanese }.toSet()
+
+                var pool = storage.getCachePool(level)
+                while (pool.isNotEmpty()) {
+                    val candidate = pool.first()
+                    pool = pool.drop(1)
+                    storage.saveCachePool(level, pool)
+
+                    val isAllActive = candidate.all { it.word in activeVerbStrings }
+                    if (isAllActive || activeVerbStrings.isEmpty()) {
+                        val readyState = VerbUiState.Ready(questions = candidate)
                         _uiState.value = readyState
                         saveSession(readyState)
                         preloadCachePoolQuietly()
+                        return@launch
                     }
                 }
-                return
             }
-        }
 
-        // --- 2. 降级逻辑/强行重刷/缓存未准备好 ---
-        if (_globalGenStatus.value is GlobalGenStatus.Generating) {
+            // --- 2. 降级逻辑/强行重刷/缓存未准备好 ---
+            if (_globalGenStatus.value is GlobalGenStatus.Generating) {
+                _uiState.value = VerbUiState.Generating
+                return@launch
+            }
+
             _uiState.value = VerbUiState.Generating
-            return
-        }
+            _globalGenStatus.value = GlobalGenStatus.Generating
 
-        _uiState.value = VerbUiState.Generating
-        _globalGenStatus.value = GlobalGenStatus.Generating
-
-        activeGenerationJob?.cancel()
-        val job = externalScope.launch {
-            try {
-                // 从本地词库抽取 5 个该等级的动词
-                val allVerbs = wordRepository.getWordsByPartOfSpeech(PartOfSpeech.VERB)
-                val targetVerbs = allVerbs.filter { it.level.equals(level, ignoreCase = true) && !it.isDelisted }
-                
-                val selectedWords = if (targetVerbs.size >= 5) {
-                    targetVerbs.shuffled().take(5)
-                } else {
-                    val fallback = allVerbs.filter { !it.isDelisted }
-                    (targetVerbs + fallback).distinctBy { it.id }.shuffled().take(5)
-                }
-
-                if (selectedWords.isEmpty()) {
-                    _globalGenStatus.value = GlobalGenStatus.Error("词库中没有动词数据")
-                    return@launch
-                }
-
-                val wordInfos = selectedWords.map { 
-                    AIClient.VerbWordInfo(it.japanese, it.hiragana, it.chinese) 
-                }
-
-                // 检查缓存
-                val cacheKey = generateCacheKey(level, selectedWords.map { it.id.toString() })
-                val cached = questionsCache[cacheKey]
-                if (!forceRegenerate && cached != null && cached.size == 5) {
-                    // 全局广播缓存数据
-                    _globalGenStatus.value = GlobalGenStatus.Success(cached, level)
-                    // 同时持久化存入SharedPreferences
-                    val session = VerbConjugationSession(
-                        level = level,
-                        questions = cached,
-                        currentIndex = 0,
-                        correctCount = 0,
-                        userAnswers = List(cached.size) { null }
-                    )
-                    context.getSharedPreferences("verb_ai_session", Context.MODE_PRIVATE)
-                        .edit()
-                        .putString("current_session", Json.encodeToString(session))
-                        .apply()
-                    return@launch
-                }
-
-                // 请求 AI
-                val platform = settingsRepository.aiPlatformFlow.first()
-                val apiKey = settingsRepository.getAiApiKeyFlow(platform).first()
-                val baseUrl = settingsRepository.getAiBaseUrlFlow(platform).first()
-                val model = settingsRepository.getAiModelFlow(platform).first()
-                
-                val result = aiClient.generateVerbConjugationQuestions(
-                    platform = platform,
-                    apiKey = apiKey,
-                    baseUrl = baseUrl,
-                    model = model,
-                    difficulty = level.uppercase(),
-                    words = wordInfos,
-                    targetCount = 5,
-                    oversampleCount = 8
-                )
-
-                result.onSuccess { aiQuestions ->
-                    val questions = aiQuestions.map {
-                        VerbConjugationQuestion(
-                            word = it.word,
-                            furigana = it.furigana,
-                            meaning = it.meaning,
-                            qText = it.qText,
-                            translation = it.translation,
-                            options = it.options,
-                            correctIndex = it.correctIndex,
-                            explanation = it.explanation
-                        )
-                    }
-                    questionsCache[cacheKey] = questions
+            activeGenerationJob?.cancel()
+            val job = externalScope.launch {
+                try {
+                    // 从本地词库抽取 5 个该等级的动词
+                    val allVerbs = wordRepository.getWordsByPartOfSpeech(PartOfSpeech.VERB)
+                    val targetVerbs = allVerbs.filter { it.level.equals(level, ignoreCase = true) && !it.isDelisted }
                     
-                    // 1. 全局广播
-                    _globalGenStatus.value = GlobalGenStatus.Success(questions, level)
-                    // 2. 静默会话持久化
-                    val session = VerbConjugationSession(
-                        level = level,
-                        questions = questions,
-                        currentIndex = 0,
-                        correctCount = 0,
-                        userAnswers = List(questions.size) { null }
+                    val selectedWords = if (targetVerbs.size >= 5) {
+                        targetVerbs.shuffled().take(5)
+                    } else {
+                        val fallback = allVerbs.filter { !it.isDelisted }
+                        (targetVerbs + fallback).distinctBy { it.id }.shuffled().take(5)
+                    }
+
+                    if (selectedWords.isEmpty()) {
+                        _globalGenStatus.value = GlobalGenStatus.Error("词库中没有动词数据")
+                        return@launch
+                    }
+
+                    val wordInfos = selectedWords.map { 
+                        AIClient.VerbWordInfo(it.japanese, it.hiragana, it.chinese) 
+                    }
+
+                    // 检查缓存
+                    val cacheKey = generateCacheKey(level, selectedWords.map { it.id.toString() })
+                    val cached = questionsCache[cacheKey]
+                    if (!forceRegenerate && cached != null && cached.size == 5) {
+                        // 全局广播缓存数据
+                        _globalGenStatus.value = GlobalGenStatus.Success(cached, level)
+                        // 同时持久化存入 Storage
+                        val session = VerbConjugationSession(
+                            level = level,
+                            questions = cached,
+                            currentIndex = 0,
+                            correctCount = 0,
+                            userAnswers = List(cached.size) { null }
+                        )
+                        saveSession(session)
+                        return@launch
+                    }
+
+                    // 请求 AI
+                    val platform = settingsRepository.aiPlatformFlow.first()
+                    val apiKey = settingsRepository.getAiApiKeyFlow(platform).first()
+                    val baseUrl = settingsRepository.getAiBaseUrlFlow(platform).first()
+                    val model = settingsRepository.getAiModelFlow(platform).first()
+                    
+                    val result = aiClient.generateVerbConjugationQuestions(
+                        platform = platform,
+                        apiKey = apiKey,
+                        baseUrl = baseUrl,
+                        model = model,
+                        difficulty = level.uppercase(),
+                        words = wordInfos,
+                        targetCount = 5,
+                        oversampleCount = 8
                     )
-                    context.getSharedPreferences("verb_ai_session", Context.MODE_PRIVATE)
-                        .edit()
-                        .putString("current_session", Json.encodeToString(session))
-                        .apply()
 
-                    // 出题成功后，顺便在后台补充该级别的缓存池
-                    preloadCachePoolQuietly()
-                }.onFailure { e ->
-                    _globalGenStatus.value = GlobalGenStatus.Error(e.message ?: "生成失败")
-                }
+                    result.onSuccess { aiQuestions ->
+                        val questions = aiQuestions.map {
+                            VerbConjugationQuestion(
+                                word = it.word,
+                                furigana = it.furigana,
+                                meaning = it.meaning,
+                                qText = it.qText,
+                                translation = it.translation,
+                                options = it.options,
+                                correctIndex = it.correctIndex,
+                                explanation = it.explanation
+                            )
+                        }
+                        questionsCache[cacheKey] = questions
+                        
+                        // 1. 全局广播
+                        _globalGenStatus.value = GlobalGenStatus.Success(questions, level)
+                        // 2. 静默会话持久化
+                        val session = VerbConjugationSession(
+                            level = level,
+                            questions = questions,
+                            currentIndex = 0,
+                            correctCount = 0,
+                            userAnswers = List(questions.size) { null }
+                        )
+                        saveSession(session)
 
-            } catch (e: Exception) {
-                _globalGenStatus.value = GlobalGenStatus.Error("系统错误: ${e.message}")
-            } finally {
-                // 如果是当前 Job 完成，重置 Job 引用
-                if (activeGenerationJob == coroutineContext[kotlinx.coroutines.Job]) {
-                    activeGenerationJob = null
+                        // 出题成功后，顺便在后台补充该级别的缓存池
+                        preloadCachePoolQuietly()
+                    }.onFailure { e ->
+                        _globalGenStatus.value = GlobalGenStatus.Error(e.message ?: "生成失败")
+                    }
+
+                } catch (e: Exception) {
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    _globalGenStatus.value = GlobalGenStatus.Error("系统错误: ${e.message}")
+                } finally {
+                    // 如果是当前 Job 完成，重置 Job 引用
+                    if (activeGenerationJob == coroutineContext[kotlinx.coroutines.Job]) {
+                        activeGenerationJob = null
+                    }
                 }
             }
+            activeGenerationJob = job
         }
-        activeGenerationJob = job
     }
 
     fun selectOption(index: Int) {

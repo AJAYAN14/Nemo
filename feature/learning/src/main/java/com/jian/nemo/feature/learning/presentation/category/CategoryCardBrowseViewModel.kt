@@ -9,11 +9,13 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.jian.nemo.feature.learning.data.preferences.CategoryLearningPreferences
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.TtsEvent
@@ -139,7 +141,9 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
                 }
 
 
-                val sortedWords = words.sortedBy { it.id } // 按ID从小到大排序
+                val sortedWords = withContext(Dispatchers.Default) {
+                    words.sortedBy { it.id }
+                }
 
                 // Restore last index
                 val lastIndex = preferences.getLastIndex(categoryId)
@@ -343,5 +347,6 @@ class CategoryCardBrowseViewModel @AssistedInject constructor(
     override fun onCleared() {
         super.onCleared()
         audioRepository.stop()
+        preferences.flushPending()
     }
 }

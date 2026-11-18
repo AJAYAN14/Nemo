@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.common.util.DownloadState
 import com.jian.nemo.core.common.util.Downloader
 import com.jian.nemo.core.domain.model.AppUpdateConfig
+import com.jian.nemo.core.domain.model.AppVersionInfo
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.AudioRepository
 import com.jian.nemo.core.domain.repository.AuthRepository
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -39,6 +41,7 @@ class MainViewModel @Inject constructor(
     private val downloader: Downloader,
     private val audioRepository: AudioRepository,
     private val settingsRepository: SettingsRepository,
+    private val appVersionInfo: AppVersionInfo,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -90,9 +93,20 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            try {
+                val checkOnStartup = settingsRepository.checkUpdateOnStartupFlow.first()
+                if (checkOnStartup) {
+                    checkUpdate(appVersionInfo.versionCode, isManual = false)
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to read startup update check setting", e)
+            }
+        }
     }
 
-    fun checkUpdate(currentVersionCode: Int, isManual: Boolean = false) {
+    fun checkUpdate(currentVersionCode: Int = appVersionInfo.versionCode, isManual: Boolean = false) {
         viewModelScope.launch {
             try {
                 val config = configRepository.getUpdateConfig(forceRefresh = isManual)

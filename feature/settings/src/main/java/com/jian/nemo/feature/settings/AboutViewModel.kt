@@ -6,10 +6,12 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.AppUpdateConfig
+import com.jian.nemo.core.domain.model.AppVersionInfo
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -117,11 +120,23 @@ internal class AboutMetadataCacheStore {
 
 internal class AndroidAboutMetadataSource internal constructor(
     private val loadVersionInfo: () -> Pair<String, Long>,
-    private val readStartupCheck: () -> Boolean,
-    private val writeStartupCheck: (Boolean) -> Unit,
+    private val readStartupCheck: suspend () -> Boolean,
+    private val writeStartupCheck: suspend (Boolean) -> Unit,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val cacheStore: AboutMetadataCacheStore = processCacheStore
 ) : AboutMetadataSource {
+
+    constructor(
+        appVersionInfo: AppVersionInfo,
+        settingsRepository: SettingsRepository,
+        ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    ) : this(
+        loadVersionInfo = { appVersionInfo.versionName to appVersionInfo.versionCode.toLong() },
+        readStartupCheck = { settingsRepository.checkUpdateOnStartupFlow.first() },
+        writeStartupCheck = { enabled -> settingsRepository.setCheckUpdateOnStartup(enabled) },
+        ioDispatcher = ioDispatcher,
+        cacheStore = processCacheStore
+    )
 
     constructor(
         context: Context,
@@ -231,11 +246,12 @@ class AboutViewModel internal constructor(
     constructor(
         configRepository: ConfigRepository,
         settingsRepository: SettingsRepository,
-        application: android.app.Application
+        appVersionInfo: AppVersionInfo,
+        @ApplicationContext application: Context
     ) : this(
         configRepository = configRepository,
         settingsRepository = settingsRepository,
-        metadataSource = AndroidAboutMetadataSource(application, Dispatchers.IO),
+        metadataSource = AndroidAboutMetadataSource(appVersionInfo, settingsRepository, Dispatchers.IO),
         ioDispatcher = Dispatchers.IO,
         stringProvider = { resId -> application.getString(resId) }
     )

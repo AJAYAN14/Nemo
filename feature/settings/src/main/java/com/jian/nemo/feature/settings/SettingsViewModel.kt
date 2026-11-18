@@ -2,12 +2,15 @@ package com.jian.nemo.feature.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jian.nemo.core.domain.model.AppVersionInfo
 import com.jian.nemo.core.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import android.util.Log
 import javax.inject.Inject
 import com.jian.nemo.feature.settings.R
@@ -33,15 +36,17 @@ class SettingsViewModel @Inject constructor(
     private val audioRepository: com.jian.nemo.core.domain.repository.AudioRepository,
     private val cloudBackupManager: CloudBackupManager,
     private val dictionarySyncManager: com.jian.nemo.core.domain.repository.DictionarySyncManager,
+    private val appVersionInfo: AppVersionInfo,
     private val application: android.app.Application
 ) : ViewModel() {
 
     // UI状态
-    private val _uiState = MutableStateFlow(SettingsUiState())
+    private val _uiState = MutableStateFlow(SettingsUiState(appVersion = appVersionInfo.versionName))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private var loadVoicesJob: Job? = null
     private var previewJob: Job? = null
+    private var switchIconJob: Job? = null
     private var activePreviewUtteranceId: String? = null
     private var previewSeq = 0L
 
@@ -645,9 +650,12 @@ class SettingsViewModel @Inject constructor(
      * 设置桌面启动图标风格
      */
     private fun setAppIconStyle(style: com.jian.nemo.core.domain.repository.AppIconStyle) {
-        viewModelScope.launch {
+        switchIconJob?.cancel()
+        switchIconJob = viewModelScope.launch {
             settingsRepository.setAppIconStyle(style)
-            com.jian.nemo.feature.settings.util.AppIconManager.switchIcon(application, style)
+            withContext(Dispatchers.IO) {
+                com.jian.nemo.feature.settings.util.AppIconManager.switchIcon(application, style)
+            }
         }
     }
 

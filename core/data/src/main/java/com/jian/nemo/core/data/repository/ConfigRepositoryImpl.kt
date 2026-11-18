@@ -2,6 +2,7 @@ package com.jian.nemo.core.data.repository
 
 import android.content.Context
 import com.jian.nemo.core.domain.model.AppUpdateConfig
+import com.jian.nemo.core.domain.model.AppVersionInfo
 import com.jian.nemo.core.domain.repository.ConfigRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.SupabaseClient
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class ConfigRepositoryImpl @Inject constructor(
     private val supabaseClient: SupabaseClient,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val appVersionInfo: AppVersionInfo
 ) : ConfigRepository {
 
     companion object {
@@ -105,20 +107,6 @@ class ConfigRepositoryImpl @Inject constructor(
     }
 
     override fun getCurrentVersionCode(): Int {
-        return try {
-            val packageInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                context.packageManager.getPackageInfo(context.packageName, android.content.pm.PackageManager.PackageInfoFlags.of(0))
-            } else {
-                context.packageManager.getPackageInfo(context.packageName, 0)
-            }
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                packageInfo.longVersionCode.toInt()
-            } else {
-                @Suppress("DEPRECATION")
-                packageInfo.versionCode
-            }
-        } catch (e: Exception) {
-            1 // 默认降级版本号
-        }
+        return appVersionInfo.versionCode
     }
 }

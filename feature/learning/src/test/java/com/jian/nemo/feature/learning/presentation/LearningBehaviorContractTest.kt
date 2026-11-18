@@ -221,7 +221,7 @@ class LearningBehaviorContractTest {
     // 场景 3：跨天重置（QS-03：跨越午夜清零统计并重置天数）
     // =========================================================================
     @Test
-    fun `cross-day reset - stats reset when learning day crosses midnight`() {
+    fun `cross-day reset - stats reset when learning day crosses midnight`() = testScope.runTest {
         val mockContext = mockk<Context>(relaxed = true)
         val mockPrefs = mockk<SharedPreferences>(relaxed = true)
         val mockEditor = mockk<SharedPreferences.Editor>(relaxed = true)

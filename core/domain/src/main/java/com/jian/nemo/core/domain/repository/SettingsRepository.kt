@@ -22,6 +22,17 @@ interface SettingsRepository {
     // ========== 用户设置 ==========
 
     /**
+     * 是否在启动时检测更新Flow
+     * 默认值: true
+     */
+    val checkUpdateOnStartupFlow: Flow<Boolean>
+
+    /**
+     * 设置是否在启动时检测更新
+     */
+    suspend fun setCheckUpdateOnStartup(enabled: Boolean)
+
+    /**
      * 用户头像路径Flow
      */
     val userAvatarPathFlow: Flow<String>

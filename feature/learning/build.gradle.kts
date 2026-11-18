@@ -74,6 +74,7 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.datastore.preferences)
 
     // Coil for SVG stickers
     implementation("io.coil-kt:coil-compose:2.5.0")

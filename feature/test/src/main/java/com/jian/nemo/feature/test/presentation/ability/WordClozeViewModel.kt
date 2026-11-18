@@ -1,21 +1,23 @@
 package com.jian.nemo.feature.test.presentation.ability
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jian.nemo.core.domain.model.TestRecord
 import com.jian.nemo.core.domain.repository.TestRecordRepository
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.WordRepository
+import com.jian.nemo.feature.test.data.storage.WordClozeStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -69,7 +71,7 @@ sealed interface ClozeUiState {
 
 @HiltViewModel
 class WordClozeViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val storage: WordClozeStorage,
     private val wordRepository: WordRepository,
     private val testRecordRepository: TestRecordRepository
 ) : ViewModel() {
@@ -79,12 +81,8 @@ class WordClozeViewModel @Inject constructor(
 
     val historyRecords = testRecordRepository.getRecordsByMode("word_cloze_local", 50)
 
-    private val prefs = context.getSharedPreferences("word_cloze_session", Context.MODE_PRIVATE)
-
     var currentLevel: String = ""
         private set
-
-
 
     init {
         restoreOrStartSession()
@@ -94,18 +92,20 @@ class WordClozeViewModel @Inject constructor(
      * 初始化：尝试恢复本地保存的会话，如无则进入等级选择
      */
     private fun restoreOrStartSession() {
-        val session = restoreSession()
-        if (session != null) {
-            currentLevel = session.level
-            _uiState.value = ClozeUiState.Ready(
-                questions = session.questions,
-                currentIndex = session.currentIndex,
-                userInputs = session.userInputs,
-                correctCount = session.correctCount,
-                questionCorrectStates = session.questionCorrectStates
-            )
-        } else {
-            _uiState.value = ClozeUiState.LevelSelecting
+        viewModelScope.launch {
+            val session = restoreSession()
+            if (session != null) {
+                currentLevel = session.level
+                _uiState.value = ClozeUiState.Ready(
+                    questions = session.questions,
+                    currentIndex = session.currentIndex,
+                    userInputs = session.userInputs,
+                    correctCount = session.correctCount,
+                    questionCorrectStates = session.questionCorrectStates
+                )
+            } else {
+                _uiState.value = ClozeUiState.LevelSelecting
+            }
         }
     }
 
@@ -136,22 +136,26 @@ class WordClozeViewModel @Inject constructor(
                 }
 
                 // 3. 对抽出的单词生成掩码挖空
-                val questions = selectedWords.map { word ->
-                    val maskIndices = generateMaskIndices(word.hiragana)
-                    
-                    ClozeQuestion(
-                        wordId = word.id,
-                        japanese = word.japanese,
-                        hiragana = word.hiragana,
-                        chinese = word.chinese,
-                        maskIndices = maskIndices,
-                        explanation = word.chinese
-                    )
+                val questions = withContext(Dispatchers.Default) {
+                    selectedWords.map { word ->
+                        val maskIndices = generateMaskIndices(word.hiragana)
+                        
+                        ClozeQuestion(
+                            wordId = word.id,
+                            japanese = word.japanese,
+                            hiragana = word.hiragana,
+                            chinese = word.chinese,
+                            maskIndices = maskIndices,
+                            explanation = word.chinese
+                        )
+                    }
                 }
 
                 // 4. 创建初始化的输入空数组：每道题有其对应 maskIndices 长度的输入值
-                val userInputs = questions.map { q ->
-                    List(q.maskIndices.size) { "" }
+                val userInputs = withContext(Dispatchers.Default) {
+                    questions.map { q ->
+                        List(q.maskIndices.size) { "" }
+                    }
                 }
 
                 val readyState = ClozeUiState.Ready(
@@ -239,7 +243,7 @@ class WordClozeViewModel @Inject constructor(
         }
         val newState = currentState.copy(userInputs = updatedInputs)
         _uiState.value = newState
-        saveSession(newState)
+        saveSession(newState, debounceMs = 350L)
     }
 
     /**
@@ -357,7 +361,7 @@ class WordClozeViewModel @Inject constructor(
         }
         val newState = currentState.copy(userInputs = updatedInputs)
         _uiState.value = newState
-        saveSession(newState)
+        saveSession(newState, debounceMs = 350L)
     }
 
     /**
@@ -444,32 +448,27 @@ class WordClozeViewModel @Inject constructor(
 
     // ========== 会话保存与恢复 ===========
 
-    private fun saveSession(state: ClozeUiState.Ready) {
-        try {
-            val session = ClozeSession(
-                level = currentLevel,
-                questions = state.questions,
-                currentIndex = state.currentIndex,
-                correctCount = state.correctCount,
-                userInputs = state.userInputs
-            )
-            prefs.edit().putString("current_cloze_session", Json.encodeToString(session)).apply()
-        } catch (e: Exception) {
-            // 忽略序列化异常
-        }
+    private fun saveSession(state: ClozeUiState.Ready, debounceMs: Long = 0L) {
+        val session = ClozeSession(
+            level = currentLevel,
+            questions = state.questions,
+            currentIndex = state.currentIndex,
+            correctCount = state.correctCount,
+            userInputs = state.userInputs,
+            questionCorrectStates = state.questionCorrectStates
+        )
+        storage.saveSession(session, debounceMs)
     }
 
     fun clearSession() {
-        prefs.edit().remove("current_cloze_session").apply()
+        storage.clearSession()
     }
 
-    private fun restoreSession(): ClozeSession? {
-        val json = prefs.getString("current_cloze_session", null) ?: return null
-        return try {
-            Json.decodeFromString<ClozeSession>(json)
-        } catch (e: Exception) {
-            clearSession()
-            null
-        }
+    private suspend fun restoreSession(): ClozeSession? =
+        storage.restoreSession()
+
+    override fun onCleared() {
+        super.onCleared()
+        storage.flushPending()
     }
 }

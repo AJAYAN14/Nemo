@@ -7,12 +7,14 @@
 -dontwarn androidx.room.paging.**
 
 # Keep Supabase & Ktor model classes (for Serialization)
--keepattributes *Annotation*, Signature, Exception
+-keepattributes *Annotation*, Signature, Exception, InnerClasses, EnclosingMethod
 -keep class kotlinx.serialization.** { *; }
 -keepclassmembers class * {
     @kotlinx.serialization.Serializable *;
 }
+-keep class * implements kotlinx.serialization.KSerializer { *; }
 -keep class com.jian.nemo.core.data.** { *; }
+-keep class com.jian.nemo.feature.test.presentation.ability.** { *; }
 
 # WorkManager
 -keep class androidx.work.Worker { *; }

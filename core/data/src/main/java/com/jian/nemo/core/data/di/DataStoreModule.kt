@@ -2,7 +2,10 @@ package com.jian.nemo.core.data.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
+import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.jian.nemo.core.common.Constants
 import dagger.Module
@@ -13,7 +16,17 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = Constants.PREFERENCES_NAME
+    name = Constants.PREFERENCES_NAME,
+    corruptionHandler = ReplaceFileCorruptionHandler { emptyPreferences() },
+    produceMigrations = { context ->
+        listOf(
+            SharedPreferencesMigration(
+                context = context,
+                sharedPreferencesName = "nemo_app_prefs",
+                keysToMigrate = setOf("check_update_on_startup")
+            )
+        )
+    }
 )
 
 /**

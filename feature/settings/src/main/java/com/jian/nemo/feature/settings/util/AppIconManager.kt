@@ -30,6 +30,7 @@ object AppIconManager {
         "com.jian.nemo.MainActivityMonochrome"
     )
 
+    @Synchronized
     fun switchIcon(context: Context, targetStyle: AppIconStyle) {
         val packageManager = context.packageManager
         val components = mapOf(

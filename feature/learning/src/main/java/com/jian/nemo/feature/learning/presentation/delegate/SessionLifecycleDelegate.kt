@@ -419,7 +419,7 @@ class SessionLifecycleDelegate(
         }
     )
 
-    private fun <T> handleSessionLoadResult(
+    private suspend fun <T> handleSessionLoadResult(
         result: SessionLoadResult<T>,
         dailyGoal: Int,
         completedToday: Int

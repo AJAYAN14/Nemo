@@ -43,6 +43,8 @@ class StatsTimerDelegate(
     private val sessionStatsManager: LearningSessionStatsManager,
 ) {
 
+    private var resumeJob: kotlinx.coroutines.Job? = null
+
     // ===== 暴露给其他 delegate 的只读访问器 =====
     val sessionStartTime: Long get() = sessionStatsManager.sessionStartTime
     val maxCombo: Int get() = sessionStatsManager.maxCombo
@@ -56,8 +58,11 @@ class StatsTimerDelegate(
     }
 
     /** 会话完成统计（仅返回时长，供 SessionLifecycleDelegate.Completed 分支调用） */
-    fun completeSessionStats(mode: LearningMode, today: Long): Long =
-        sessionStatsManager.completeSession(mode, today)
+    fun completeSessionStats(mode: LearningMode, today: Long): Long {
+        resumeJob?.cancel()
+        resumeJob = null
+        return sessionStatsManager.completeSession(mode, today)
+    }
 
     /** 触发即时云端备份（供 SessionLifecycleDelegate.Completed 分支调用） */
     fun triggerCloudBackup() {
@@ -73,6 +78,8 @@ class StatsTimerDelegate(
 
     /** 清空会话计时（退出学习时调用） */
     fun clearSessionTimer() {
+        resumeJob?.cancel()
+        resumeJob = null
         sessionStatsManager.clearSessionTimer()
     }
 
@@ -80,6 +87,8 @@ class StatsTimerDelegate(
 
     /** 完成会话（原 VM.completeSession） */
     fun completeSession() {
+        resumeJob?.cancel()
+        resumeJob = null
         val today = sessionState.lockedDayOrToday()
         val totalDuration = sessionStatsManager.completeSession(stateUpdater.currentState.learningMode, today)
 
@@ -154,6 +163,8 @@ class StatsTimerDelegate(
 
     /** 暂停学习计时器（原 VM.pauseTimer） */
     fun pauseTimer() {
+        resumeJob?.cancel()
+        resumeJob = null
         val today = sessionState.lockedDayOrToday()
         sessionStatsManager.pauseTimer(stateUpdater.currentState.learningMode, today)
     }
@@ -162,13 +173,16 @@ class StatsTimerDelegate(
     fun resumeTimer() {
         // 仅在被暂停了，且当前页面处于学习状态时才恢复
         if (sessionStatsManager.sessionStartTime == 0L && stateUpdater.currentState.status == LearningStatus.Learning) {
-            checkAndRestoreOrReset()
-            sessionStatsManager.resumeTimer()
+            resumeJob?.cancel()
+            resumeJob = scope.launch(Dispatchers.IO) {
+                checkAndRestoreOrReset()
+                sessionStatsManager.resumeTimer()
+            }
         }
     }
 
     /** 检查当前学习日天数，执行今日学习时间持久化恢复或跨天重置清零（原 VM.checkAndRestoreOrReset） */
-    fun checkAndRestoreOrReset() {
+    suspend fun checkAndRestoreOrReset() {
         val today = sessionState.lockedDayOrToday()
         sessionStatsManager.checkAndRestoreOrReset(stateUpdater.currentState.learningMode, today)
     }

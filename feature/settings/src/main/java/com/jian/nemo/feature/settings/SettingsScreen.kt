@@ -560,14 +560,11 @@ fun SettingsScreen(
                 item {
                     SettingsSectionTitle(stringResource(R.string.settings_section_title_about), modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp))
                     PremiumCard {
-                        val context = androidx.compose.ui.platform.LocalContext.current
-                        val versionName = remember { com.jian.nemo.core.ui.util.AppUtils.getVersionName(context) }
-
                         SquircleSettingItem(
                             icon = Icons.Rounded.Info,
                             iconColor = SystemColors.Gray,
                             title = stringResource(R.string.settings_about_title_screen),
-                            subtitle = stringResource(R.string.settings_format_about_subtitle, versionName),
+                            subtitle = stringResource(R.string.settings_format_about_subtitle, uiState.appVersion),
                             onClick = onNavigateToAbout,
                             showDivider = false,
                             trailing = {
