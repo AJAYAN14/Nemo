@@ -1,8 +1,4 @@
 <resources>
-    <!-- 兼容历史项 -->
-    <string name="library_pos_title_screen">词性分类</string>
-    <string name="library_expression_placeholder_search">搜索表达、假名、释义...</string>
-
     <!-- 单词列表 (WordListScreen) -->
     <string name="lib_word_list_tab_all">全部</string>
     <string name="lib_word_list_tab_learned">已学</string>
@@ -102,11 +98,6 @@
     <string name="lib_category_words_title_with_count">%1$s (%2$d)</string>
     <string name="lib_category_words_title_with_level_count">%1$s · %2$s (%3$d)</string>
 
-    <!-- 词性单词列表 (PosWordsScreen) -->
-    <string name="lib_pos_words_count_format">%1$d 个单词</string>
-    <string name="lib_pos_words_nav_back">返回</string>
-    <string name="lib_pos_words_empty_format">暂无%1$s单词</string>
-
     <!-- 词法库 (ExpressionScreen) -->
     <string name="lib_expression_error_load_failed">数据加载出错了: %1$s</string>
     <string name="lib_expression_title">灵动词法库</string>
@@ -118,10 +109,6 @@
     <string name="lib_expression_tip_format">💡 提示: %1$s</string>
     <string name="lib_expression_examples_expand_format">查看双语例句 (%1$d)</string>
     <string name="lib_expression_expand_arrow_cd">展收箭头</string>
-
-    <!-- 词性分类主界面 (PartOfSpeechScreen) -->
-    <string name="lib_pos_title_screen">词性分类</string>
-    <string name="lib_pos_count_format">%1$d 个</string>
 
     <!-- 词库通用组件 (LibraryListComponents) -->
     <string name="lib_components_scroll_to_top_cd">回到顶部</string>

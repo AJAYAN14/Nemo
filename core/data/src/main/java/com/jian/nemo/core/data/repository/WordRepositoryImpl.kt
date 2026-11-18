@@ -41,9 +41,14 @@ class WordRepositoryImpl @Inject constructor(
     private suspend fun mapWithStudyState(entities: List<WordEntity>): List<Word> {
         if (entities.isEmpty()) return emptyList()
 
-        val statesById = wordStudyStateDao
-            .getStatesByIds(entities.map { it.id })
-            .associateBy { it.wordId }
+        // 规避 SQLite 单条 SQL 999 绑定变量上限
+        val statesById = if (entities.size > SQLITE_IN_CLAUSE_THRESHOLD) {
+            wordStudyStateDao.getAllSync().associateBy { it.wordId }
+        } else {
+            wordStudyStateDao
+                .getStatesByIds(entities.map { it.id })
+                .associateBy { it.wordId }
+        }
 
         return entities.map { entity ->
             WordMapper.toDomainModel(entity, statesById[entity.id])
@@ -313,25 +318,19 @@ class WordRepositoryImpl @Inject constructor(
             allWords.filter { word ->
                 val japanese = word.japanese
                 val hiragana = word.hiragana
-                
-                // 1. expression (japanese) 包含英文字母
-                val hasEnglish = japanese.contains(Regex("[a-zA-Z]"))
-                
-                // 用于去除干扰符号的正则
-                val symbolRegex = Regex("[・〜ー\\s\\-()（）/]")
-                
-                // 2. expression (japanese) 去除符号后全为片假名
-                val jCleaned = japanese.replace(symbolRegex, "")
+
+                val hasEnglish = ENGLISH_LETTER_REGEX.containsMatchIn(japanese)
+
+                val jCleaned = japanese.replace(LOAN_WORD_SYMBOL_REGEX, "")
                 val isKatakanaJapanese = jCleaned.isNotEmpty() && jCleaned.all { ch ->
                     Character.UnicodeBlock.of(ch) == Character.UnicodeBlock.KATAKANA
                 }
-                
-                // 3. kana (hiragana) 去除符号后全为片假名
-                val hCleaned = hiragana.replace(symbolRegex, "")
+
+                val hCleaned = hiragana.replace(LOAN_WORD_SYMBOL_REGEX, "")
                 val isKatakanaKana = hCleaned.isNotEmpty() && hCleaned.all { ch ->
                     Character.UnicodeBlock.of(ch) == Character.UnicodeBlock.KATAKANA
                 }
-                
+
                 hasEnglish || isKatakanaJapanese || isKatakanaKana
             }
         } catch (e: Exception) {
@@ -480,5 +479,11 @@ class WordRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Result.Error(e)
         }
+    }
+
+    private companion object {
+        const val SQLITE_IN_CLAUSE_THRESHOLD = 500
+        val ENGLISH_LETTER_REGEX = Regex("[a-zA-Z]")
+        val LOAN_WORD_SYMBOL_REGEX = Regex("[・〜ー\\s\\-()（）/]")
     }
 }

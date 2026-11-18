@@ -48,8 +48,6 @@ object NavDestination {
     const val PROFILE = "profile"
     const val FAVORITES = "favorites"
     const val MISTAKES = "mistakes"
-    const val PART_OF_SPEECH = "part_of_speech"
-    const val POS_WORDS = "pos_words/{pos}"
 
     // 复习与训练路由
     const val CATEGORY_CLASSIFICATION = "category_classification/{source}"
@@ -83,7 +81,6 @@ object NavDestination {
     // 路由构建器
     fun wordLearning(level: String) = "word_learning/$level"
     fun grammarLearning(level: String) = "grammar_learning/$level"
-    fun posWords(pos: String) = "pos_words/$pos"
     fun categoryClassification(source: String = "practice") = "category_classification/$source"
     fun categoryCardBrowse(category: String, categoryTitle: String) = "category_card_browse/$category/$categoryTitle"
     fun categoryWords(category: String, categoryTitle: String) = "category_words/$category/$categoryTitle"

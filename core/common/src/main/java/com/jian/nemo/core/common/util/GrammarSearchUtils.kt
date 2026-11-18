@@ -40,18 +40,17 @@ object GrammarSearchUtils {
      */
     fun isMatch(text: String, query: String): Boolean {
         if (query.isBlank()) return true
-        
-        // 1. 检查纯化后的文本（最常用，如搜索 "去年"）
+
+        if (!text.contains('[')) {
+            return text.contains(query, ignoreCase = true)
+        }
+
         val cleaned = cleanRubi(text)
         if (cleaned.contains(query, ignoreCase = true)) return true
-        
-        // 2. 检查提取假名后的文本（搜索 "きょねん"）
+
         val kana = extractKana(text)
         if (kana.contains(query, ignoreCase = true)) return true
-        
-        // 3. 检查原始文本（备选，万一用户输入了带括号的内容）
-        if (text.contains(query, ignoreCase = true)) return true
-        
-        return false
+
+        return text.contains(query, ignoreCase = true)
     }
 }

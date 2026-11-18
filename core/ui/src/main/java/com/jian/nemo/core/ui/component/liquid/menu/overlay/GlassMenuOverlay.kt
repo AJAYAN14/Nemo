@@ -1,6 +1,7 @@
 package com.jian.nemo.core.ui.component.liquid.menu.overlay
 
 import android.content.Context
+import android.database.ContentObserver
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Rect
@@ -8,6 +9,8 @@ import android.graphics.RectF
 import android.graphics.RenderNode
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.Choreographer
 import android.view.HapticFeedbackConstants
@@ -25,6 +28,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.jian.nemo.core.ui.component.liquid.menu.NemoGlassMenuView
 import java.util.WeakHashMap
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.min
 
 internal class GlassMenuOverlay private constructor(
@@ -37,6 +43,8 @@ internal class GlassMenuOverlay private constructor(
     private val location = IntArray(2)
     private val restRect = RectF()
     private val probe = RectF()
+    private val restClipUnion = RectF()
+    private val restClipRect = Rect()
     private val supportsGlass = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     private val backdrop: RenderNode? = if (supportsGlass) RenderNode("GlassMenu.backdrop") else null
     private var session: GlassMenuSession? = null
@@ -50,6 +58,7 @@ internal class GlassMenuOverlay private constructor(
     }
     private var backCallback: Any? = null
     private var animationScale = 1f
+    private var animatorScaleObserver: ContentObserver? = null
     private var startupFrames = 0
 
     init {
@@ -64,6 +73,7 @@ internal class GlassMenuOverlay private constructor(
     fun register(anchor: NemoGlassMenuView) {
         if (anchor !in anchors) anchors.add(anchor)
         invalidate()
+        anchor.post { invalidate() }
     }
 
     fun unregister(anchor: NemoGlassMenuView) {
@@ -83,19 +93,67 @@ internal class GlassMenuOverlay private constructor(
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        refreshAnimationScale()
+        registerAnimatorScaleObserver()
         viewTreeObserver.addOnPreDrawListener(this)
+        post { invalidate() }
     }
 
     override fun onDetachedFromWindow() {
         viewTreeObserver.removeOnPreDrawListener(this)
+        unregisterAnimatorScaleObserver()
         Choreographer.getInstance().removeFrameCallback(this)
         framePending = false
         super.onDetachedFromWindow()
     }
 
+    private fun refreshAnimationScale() {
+        animationScale = try {
+            Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        } catch (_: Throwable) {
+            1f
+        }
+    }
+
+    private fun registerAnimatorScaleObserver() {
+        if (animatorScaleObserver != null) return
+        val uri = Settings.Global.getUriFor(Settings.Global.ANIMATOR_DURATION_SCALE) ?: return
+        val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                refreshAnimationScale()
+            }
+        }
+        try {
+            context.contentResolver.registerContentObserver(uri, false, observer)
+            animatorScaleObserver = observer
+        } catch (_: Throwable) {
+            animatorScaleObserver = null
+        }
+    }
+
+    private fun unregisterAnimatorScaleObserver() {
+        val observer = animatorScaleObserver ?: return
+        animatorScaleObserver = null
+        try {
+            context.contentResolver.unregisterContentObserver(observer)
+        } catch (_: Throwable) {
+            // Ignore observer teardown failure
+        }
+    }
+
     override fun onPreDraw(): Boolean {
+        if (session == null && !hasVisibleGlassAnchor()) return true
         if (backdropChanged() or anchorsMoved()) invalidate()
         return true
+    }
+
+    private fun hasVisibleGlassAnchor(): Boolean {
+        for (anchor in anchors) {
+            if (anchor.drawsGlass && anchor.isShown && anchor.width > 0 && anchor.height > 0 && anchor.effectiveAlpha() > 0f) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun backdropChanged(): Boolean {
@@ -134,9 +192,18 @@ internal class GlassMenuOverlay private constructor(
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun drawGlass(canvas: Canvas, active: GlassMenuSession?) {
         val node = backdrop ?: return
+        val clipToRestingAnchors = active == null
+        if (clipToRestingAnchors && !computeRestingClipRect(restClipRect)) {
+            return
+        }
+
         node.setPosition(limits)
         val recording = node.beginRecording(width, height)
-        recording.drawColor(if (anchors.firstOrNull()?.isDark() != false) Color.BLACK else Color.WHITE)
+        if (clipToRestingAnchors) {
+            recording.clipRect(restClipRect)
+        }
+        val themeAnchor = active?.anchor ?: anchors.lastOrNull { it.isShown } ?: anchors.firstOrNull()
+        recording.drawColor(if (themeAnchor?.isDark() != false) Color.BLACK else Color.WHITE)
         root.background?.draw(recording)
         for (index in 0 until root.childCount) {
             val child = root.getChildAt(index)
@@ -152,6 +219,33 @@ internal class GlassMenuOverlay private constructor(
             if (anchor !== active?.anchor && anchor.drawsGlass) drawRestingAnchor(canvas, node, anchor)
         }
         active?.draw(canvas, node, limits)
+    }
+
+    private fun computeRestingClipRect(out: Rect): Boolean {
+        var hasVisible = false
+        restClipUnion.setEmpty()
+        for (anchor in anchors) {
+            if (!anchor.drawsGlass || !anchor.isShown || anchor.width == 0 || anchor.height == 0) continue
+            if (anchor.effectiveAlpha() <= 0f) continue
+            anchorRect(anchor, restRect)
+            val blurGuard = max(anchor.config.blur, anchor.triggerConfig.blur) * density * RestBlurGuardFactor
+            val pad = RestCaptureMargin * density + blurGuard + RestClipSafetyPadding * density
+            restRect.inset(-pad, -pad)
+            if (!hasVisible) {
+                restClipUnion.set(restRect)
+                hasVisible = true
+            } else {
+                restClipUnion.union(restRect)
+            }
+        }
+        if (!hasVisible) return false
+        out.set(
+            max(floor(restClipUnion.left).toInt(), limits.left),
+            max(floor(restClipUnion.top).toInt(), limits.top),
+            min(ceil(restClipUnion.right).toInt(), limits.right),
+            min(ceil(restClipUnion.bottom).toInt(), limits.bottom)
+        )
+        return !out.isEmpty
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -258,7 +352,6 @@ internal class GlassMenuOverlay private constructor(
         if (framePending || !isAttachedToWindow) return
         framePending = true
         lastFrameNanos = 0L
-        animationScale = Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
         Choreographer.getInstance().postFrameCallback(this)
     }
 
@@ -291,6 +384,7 @@ internal class GlassMenuOverlay private constructor(
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         if (oldw != 0 && oldh != 0) finishSession(notify = true)
+        if (w > 0 && h > 0) invalidate()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -335,6 +429,8 @@ internal class GlassMenuOverlay private constructor(
 
     companion object {
         private const val RestCaptureMargin = 16f
+        private const val RestBlurGuardFactor = 2.5f
+        private const val RestClipSafetyPadding = 12f
         private const val DefaultRefreshRate = 60f
         private const val MinimumRefreshRate = 30f
         private const val MaxSkippedFrames = 2.5f

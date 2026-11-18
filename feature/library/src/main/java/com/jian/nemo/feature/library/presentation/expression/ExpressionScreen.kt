@@ -1,67 +1,104 @@
 package com.jian.nemo.feature.library.presentation.expression
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.graphics.luminance
-import com.jian.nemo.feature.library.R
-import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.activity.compose.BackHandler
-import com.jian.nemo.core.domain.model.Expression
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.designsystem.theme.ExpressionCategoryPalette
+import com.jian.nemo.core.domain.model.Expression
 import com.jian.nemo.core.domain.model.ExpressionCategory
 import com.jian.nemo.core.domain.model.ExpressionExample
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
+import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.library.R
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 @Composable
-private fun getCategoryColor(key: String): Color {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+private fun getCategoryColor(key: String, isDark: Boolean): Color {
     return when (key) {
         "collocation" -> if (isDark) ExpressionCategoryPalette.OrangeDark else ExpressionCategoryPalette.OrangeLight
         "sentence_pattern" -> if (isDark) ExpressionCategoryPalette.EmeraldDark else ExpressionCategoryPalette.EmeraldLight
@@ -86,26 +123,52 @@ private fun getCategoryShortNameRes(key: String): Int {
     }
 }
 
+private val ExpressionLevelOptions = listOf(
+    ExpressionUiState.LEVEL_ALL,
+    "N5",
+    "N4",
+    "N3",
+    "N2",
+    "N1"
+)
+
 @Composable
 fun ExpressionScreen(
     modifier: Modifier = Modifier,
     onNavigateBack: (() -> Unit)? = null,
     viewModel: ExpressionViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    // 物理返回键处理
-    BackHandler(enabled = uiState.selectedCategory != null || onNavigateBack != null) {
-        if (uiState.selectedCategory != null) {
-            viewModel.selectCategory(null)
-        } else {
-            onNavigateBack?.invoke()
-        }
+    ExpressionContent(
+        uiState = uiState,
+        searchQuery = searchQuery,
+        onNavigateBack = onNavigateBack,
+        onSelectCategory = viewModel::selectCategory,
+        onSearchChange = viewModel::changeSearchQuery,
+        onLevelSelect = viewModel::changeSelectedLevel,
+        modifier = modifier
+    )
+}
+
+@Composable
+internal fun ExpressionContent(
+    uiState: ExpressionUiState,
+    searchQuery: String,
+    onNavigateBack: (() -> Unit)?,
+    onSelectCategory: (ExpressionCategory?) -> Unit,
+    onSearchChange: (String) -> Unit,
+    onLevelSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BackHandler(enabled = uiState.selectedCategory != null) {
+        onSelectCategory(null)
     }
 
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background // 微色差底色 #EEF2FF 级底色
+        color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (uiState.isLoading) {
@@ -118,7 +181,7 @@ fun ExpressionScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = stringResource(R.string.lib_expression_error_load_failed, uiState.error ?: ""),
+                        text = stringResource(R.string.lib_expression_error_load_failed, uiState.error),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge
                     )
@@ -128,12 +191,10 @@ fun ExpressionScreen(
                     targetState = uiState.selectedCategory,
                     transitionSpec = {
                         if (targetState != null) {
-                            // 从第一层到第二层：新页面从右侧滑入，旧页面从左侧滑出
                             (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
                                 slideOutHorizontally { width -> -width } + fadeOut()
                             )
                         } else {
-                            // 从第二层到第一层：新页面从左侧滑入，旧页面从右侧滑出
                             (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
                                 slideOutHorizontally { width -> width } + fadeOut()
                             )
@@ -143,20 +204,19 @@ fun ExpressionScreen(
                     modifier = Modifier.fillMaxSize()
                 ) { selectedCategory ->
                     if (selectedCategory == null) {
-                        // 第一层：分类面板主导航
                         CategoryDashboard(
                             categories = uiState.categories,
-                            onCategorySelect = { viewModel.selectCategory(it) },
+                            onCategorySelect = onSelectCategory,
                             onNavigateBack = onNavigateBack
                         )
                     } else {
-                        // 第二层：词法细节浏览器
                         ExpressionBrowser(
                             category = selectedCategory,
                             uiState = uiState,
-                            onBack = { viewModel.selectCategory(null) },
-                            onSearchChange = { viewModel.changeSearchQuery(it) },
-                            onLevelSelect = { viewModel.changeSelectedLevel(it) }
+                            searchQuery = searchQuery,
+                            onBack = { onSelectCategory(null) },
+                            onSearchChange = onSearchChange,
+                            onLevelSelect = onLevelSelect
                         )
                     }
                 }
@@ -165,9 +225,6 @@ fun ExpressionScreen(
     }
 }
 
-/**
- * 第一层：分类主控制板界面
- */
 @Composable
 fun CategoryDashboard(
     categories: List<ExpressionCategory>,
@@ -175,8 +232,15 @@ fun CategoryDashboard(
     onNavigateBack: (() -> Unit)? = null
 ) {
     val backdrop = rememberLayerBackdrop()
+    val isTransitionSettled = rememberIsTransitionSettled()
+    val activeBackdrop = if (isTransitionSettled) backdrop else null
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val layoutDirection = LocalLayoutDirection.current
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val horizontalSafeInsets = WindowInsets.displayCutout.union(WindowInsets.navigationBars).asPaddingValues()
+    val safeStart = horizontalSafeInsets.calculateStartPadding(layoutDirection)
+    val safeEnd = horizontalSafeInsets.calculateEndPadding(layoutDirection)
     val backgroundColor = MaterialTheme.colorScheme.background
 
     Box(
@@ -184,37 +248,40 @@ fun CategoryDashboard(
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // 1. 底层滚动网格（录入 backdrop）
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop),
+                .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled),
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
+                start = safeStart + 16.dp,
+                end = safeEnd + 16.dp,
                 top = if (onNavigateBack != null) statusBarTop + 60.dp + 16.dp else statusBarTop + 16.dp,
                 bottom = navBarBottom + 24.dp
             )
         ) {
-            items(categories) { category ->
+            items(
+                items = categories,
+                key = { it.categoryKey },
+                contentType = { "expression_category" }
+            ) { category ->
                 CategoryFlatCard(
                     category = category,
+                    isDark = isDark,
                     onClick = { onCategorySelect(category) }
                 )
             }
         }
 
-        // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         if (onNavigateBack != null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .background(
-                        Brush.verticalGradient(
+                    .drawWithCache {
+                        val gradientBrush = Brush.verticalGradient(
                             colors = listOf(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
@@ -222,14 +289,17 @@ fun CategoryDashboard(
                                 backgroundColor.copy(alpha = 0f)
                             )
                         )
-                    )
+                        onDrawBehind {
+                            drawRect(brush = gradientBrush)
+                        }
+                    }
                     .padding(bottom = 8.dp)
             ) {
                 CommonHeader(
                     title = stringResource(R.string.lib_expression_title),
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
-                    backdrop = backdrop,
+                    backdrop = activeBackdrop,
                     backButtonSize = 48.dp
                 )
             }
@@ -237,42 +307,39 @@ fun CategoryDashboard(
     }
 }
 
-/**
- * 极具扁平扁平美感的分类卡片 (Flat UI, 0.dp Elevation, 24.dp Round, 12.dp Squircle Icon)
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryFlatCard(
     category: ExpressionCategory,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
-    val themeColor = getCategoryColor(category.categoryKey)
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val themeColor = getCategoryColor(category.categoryKey, isDark)
+    val englishSubtitle = remember(category.levelEnglish) {
+        category.levelEnglish.replace("_", " ")
+    }
 
     Card(
         onClick = onClick,
         modifier = Modifier
-            .aspectRatio(1.35f)
+            .defaultMinSize(minHeight = 148.dp)
             .softCardShadow(borderRadius = 24.dp, isDark = isDark),
         shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        // 纯扁平化描边边界定义 (NEMO_UI_SPEC: Elevation = 0.dp)
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // 12.dp 圆角 Squircle 徽章图标块
                 Box(
                     modifier = Modifier
                         .size(44.dp)
@@ -288,39 +355,40 @@ fun CategoryFlatCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                
-                // 大分类标题
-                Column {
+
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = category.levelName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = category.levelEnglish.replace("_", " "),
+                        text = englishSubtitle,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
-            
-            // 分类定义精简描述
+
             Text(
                 text = category.definition,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 lineHeight = 16.sp
             )
-            
-            // 下方记忆口诀 Badge 药丸 & 词汇总数
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 扁平进度条指示词条条数
                 Surface(
                     color = themeColor.copy(alpha = 0.12f),
                     shape = RoundedRectangle(12.dp),
@@ -334,8 +402,7 @@ fun CategoryFlatCard(
                         color = themeColor
                     )
                 }
-                
-                // 圆形进入箭头 (NEMO_UI_SPEC: 全局级圆角 Circle)
+
                 Box(
                     modifier = Modifier
                         .size(24.dp)
@@ -343,11 +410,11 @@ fun CategoryFlatCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "→",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -355,21 +422,26 @@ fun CategoryFlatCard(
     }
 }
 
-/**
- * 第二层：词法细节浏览器
- */
 @Composable
 fun ExpressionBrowser(
     category: ExpressionCategory,
     uiState: ExpressionUiState,
+    searchQuery: String,
     onBack: () -> Unit,
     onSearchChange: (String) -> Unit,
     onLevelSelect: (String) -> Unit
 ) {
-    val themeColor = getCategoryColor(category.categoryKey)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val themeColor = getCategoryColor(category.categoryKey, isDark)
     val backdrop = rememberLayerBackdrop()
+    val isTransitionSettled = rememberIsTransitionSettled()
+    val activeBackdrop = if (isTransitionSettled) backdrop else null
+    val layoutDirection = LocalLayoutDirection.current
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomInset = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues().calculateBottomPadding()
+    val horizontalSafeInsets = WindowInsets.displayCutout.union(WindowInsets.navigationBars).asPaddingValues()
+    val safeStart = horizontalSafeInsets.calculateStartPadding(layoutDirection)
+    val safeEnd = horizontalSafeInsets.calculateEndPadding(layoutDirection)
     val backgroundColor = MaterialTheme.colorScheme.background
 
     Box(
@@ -380,17 +452,17 @@ fun ExpressionBrowser(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
                 .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = statusBarTop + 60.dp + 16.dp,
-                    bottom = navBarBottom + 24.dp
+                    start = safeStart + 16.dp,
+                    end = safeEnd + 16.dp,
+                    top = statusBarTop + 60.dp + 16.dp
                 )
         ) {
-            // 记忆口诀横幅 (Banner Card) — 高质感扁平
             Card(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp),
                 shape = RoundedRectangle(12.dp),
                 colors = CardDefaults.cardColors(containerColor = themeColor.copy(alpha = 0.08f)),
                 border = BorderStroke(1.dp, themeColor.copy(alpha = 0.2f))
@@ -410,9 +482,8 @@ fun ExpressionBrowser(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 极具扁平美感的搜索框与JLPT过滤器
             FlatFilterBar(
-                searchQuery = uiState.searchQuery,
+                searchQuery = searchQuery,
                 selectedLevel = uiState.selectedLevel,
                 onSearchChange = onSearchChange,
                 onLevelSelect = onLevelSelect
@@ -420,12 +491,12 @@ fun ExpressionBrowser(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 列表区域 (NEMO_UI_SPEC: items 垂直间距 20.dp)
             if (uiState.filteredExpressions.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .weight(1f)
+                        .padding(bottom = bottomInset + 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -440,11 +511,12 @@ fun ExpressionBrowser(
                         .fillMaxWidth()
                         .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(20.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp)
+                    contentPadding = PaddingValues(bottom = bottomInset + 24.dp)
                 ) {
                     items(
                         items = uiState.filteredExpressions,
-                        key = { it.id } // 绑定永久唯一字符 ID，极其流畅！
+                        key = { it.id },
+                        contentType = { "expression_card" }
                     ) { expression ->
                         ExpressionFlatCard(
                             expression = expression,
@@ -455,13 +527,12 @@ fun ExpressionBrowser(
             }
         }
 
-        // 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
-                .background(
-                    Brush.verticalGradient(
+                .drawWithCache {
+                    val gradientBrush = Brush.verticalGradient(
                         colors = listOf(
                             backgroundColor.copy(alpha = 0.95f),
                             backgroundColor.copy(alpha = 0.75f),
@@ -469,23 +540,23 @@ fun ExpressionBrowser(
                             backgroundColor.copy(alpha = 0f)
                         )
                     )
-                )
+                    onDrawBehind {
+                        drawRect(brush = gradientBrush)
+                    }
+                }
                 .padding(bottom = 8.dp)
         ) {
             CommonHeader(
                 title = category.levelName,
                 onBack = onBack,
                 backgroundColor = Color.Transparent,
-                backdrop = backdrop,
+                backdrop = activeBackdrop,
                 backButtonSize = 48.dp
             )
         }
     }
 }
 
-/**
- * 扁平化搜索与过滤器
- */
 @Composable
 fun FlatFilterBar(
     searchQuery: String,
@@ -493,18 +564,28 @@ fun FlatFilterBar(
     onSearchChange: (String) -> Unit,
     onLevelSelect: (String) -> Unit
 ) {
+    val allLabel = stringResource(R.string.lib_word_list_tab_all)
+
     Column(modifier = Modifier.fillMaxWidth()) {
-        // 扁平极简搜索框 (0.dp 阴影，12.dp 圆角)
         OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text(stringResource(R.string.lib_expression_search_placeholder)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.lib_expression_search_placeholder),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { onSearchChange("") }) {
-                        Icon(Icons.Default.Clear, contentDescription = null)
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(com.jian.nemo.core.ui.R.string.core_ui_discovery_cd_close)
+                        )
                     }
                 }
             },
@@ -517,17 +598,16 @@ fun FlatFilterBar(
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
             )
         )
-        
+
         Spacer(modifier = Modifier.height(12.dp))
-        
-        // JLPT 药丸过滤器 (水平滑动)
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val levels = listOf("All", "N5", "N4", "N3", "N2", "N1")
-            levels.forEach { level ->
-                val isSelected = selectedLevel == level
+            ExpressionLevelOptions.forEach { level ->
+                val isSelected = selectedLevel.equals(level, ignoreCase = true)
+                val displayLabel = if (level == ExpressionUiState.LEVEL_ALL) allLabel else level
                 Surface(
                     modifier = Modifier
                         .weight(1f)
@@ -541,9 +621,11 @@ fun FlatFilterBar(
                     shape = RoundedRectangle(8.dp)
                 ) {
                     Text(
-                        text = level,
+                        text = displayLabel,
                         modifier = Modifier.padding(vertical = 8.dp),
                         textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         style = MaterialTheme.typography.labelMedium,
                         color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
@@ -554,18 +636,16 @@ fun FlatFilterBar(
     }
 }
 
-/**
- * 单个词法条目扁平卡片 (Flat Card: 24.dp圆角, 0.dp阴影, 1.dp细描边)
- */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ExpressionFlatCard(
     expression: Expression,
     themeColor: Color
 ) {
-    var isClozeRevealed by remember { mutableStateOf(false) }
-    var isExamplesExpanded by remember { mutableStateOf(false) }
-    
-    val rotationState by animateFloatAsState(
+    var isClozeRevealed by rememberSaveable(expression.id) { mutableStateOf(false) }
+    var isExamplesExpanded by rememberSaveable(expression.id) { mutableStateOf(false) }
+
+    val rotationState = animateFloatAsState(
         targetValue = if (isExamplesExpanded) 180f else 0f,
         label = stringResource(R.string.library_expression_label_arrow_rotation)
     )
@@ -573,7 +653,7 @@ fun ExpressionFlatCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .animateContentSize(), // 点击例句或隐显填空时平滑形变动效
+            .animateContentSize(),
         shape = RoundedRectangle(24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -584,7 +664,6 @@ fun ExpressionFlatCard(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            // 头部：等级药丸与自增字符串 ID
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -608,18 +687,16 @@ fun ExpressionFlatCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 核心日语原文 (大字重，字重 Black)
             Text(
                 text = expression.japanese,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Black,
                 color = themeColor
             )
-            
-            // 假名读音 (振假名方式提示)
+
             Text(
                 text = stringResource(R.string.lib_expression_furigana_format, expression.furigana),
                 style = MaterialTheme.typography.bodyMedium,
@@ -630,15 +707,13 @@ fun ExpressionFlatCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // 纯粹中文字义
             Text(
                 text = expression.chinese,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
-            // 独立淡灰色提示字眼 (解耦后的 tip 字段)
+
             if (expression.tip.isNotBlank()) {
                 Text(
                     text = stringResource(R.string.lib_expression_tip_format, expression.tip),
@@ -648,12 +723,12 @@ fun ExpressionFlatCard(
                 )
             }
 
-            // 同义表达药丸组
             if (expression.synonyms.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     expression.synonyms.forEach { syn ->
                         Surface(
@@ -674,10 +749,9 @@ fun ExpressionFlatCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ⚡ 挖空交互式卡片测试
             FlatClozeBox(
                 clozeShow = expression.clozeShow,
-                clozeAnswer = expression.clozeAnswers.firstOrNull() ?: "",
+                clozeAnswer = expression.clozeAnswers.firstOrNull().orEmpty(),
                 isRevealed = isClozeRevealed,
                 onToggleReveal = { isClozeRevealed = !isClozeRevealed },
                 themeColor = themeColor
@@ -685,10 +759,9 @@ fun ExpressionFlatCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 例句展开收起折叠面板 (NEMO_UI_SPEC: 项间距 20.dp，例句干净无 id)
             Column(modifier = Modifier.fillMaxWidth()) {
-                Divider(color = MaterialTheme.colorScheme.outlineVariant)
-                
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -704,11 +777,11 @@ fun ExpressionFlatCard(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
+                        imageVector = Icons.Rounded.KeyboardArrowDown,
                         contentDescription = stringResource(R.string.lib_expression_expand_arrow_cd),
-                        modifier = Modifier.rotate(rotationState),
+                        modifier = Modifier.graphicsLayer { rotationZ = rotationState.value },
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -734,9 +807,6 @@ fun ExpressionFlatCard(
     }
 }
 
-/**
- * 挖空填空测试卡片组件 (Flat 0.dp 阴影)
- */
 @Composable
 fun FlatClozeBox(
     clozeShow: String,
@@ -745,6 +815,8 @@ fun FlatClozeBox(
     onToggleReveal: () -> Unit,
     themeColor: Color
 ) {
+    val parts = remember(clozeShow) { clozeShow.split("{{input}}") }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -757,9 +829,6 @@ fun FlatClozeBox(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 切割 clozeShow 以将 {{input}} 渲染成交互式按钮
-            val parts = clozeShow.split("{{input}}")
-            
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
@@ -772,8 +841,7 @@ fun FlatClozeBox(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                
-                // 交互填空胶囊药丸 (0.dp阴影, 扁平高对比度)
+
                 Surface(
                     color = if (isRevealed) themeColor.copy(alpha = 0.15f) else themeColor,
                     shape = RoundedRectangle(8.dp),
@@ -788,7 +856,7 @@ fun FlatClozeBox(
                         color = if (isRevealed) themeColor else Color.White
                     )
                 }
-                
+
                 if (parts.size > 1) {
                     Text(
                         text = parts[1],
@@ -799,7 +867,6 @@ fun FlatClozeBox(
                 }
             }
 
-            // 右侧“小眼睛”扁平状态交互指示器
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -807,18 +874,17 @@ fun FlatClozeBox(
                     .background(themeColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = if (isRevealed) "👁" else "🙈",
-                    fontSize = 14.sp
+                Icon(
+                    imageVector = if (isRevealed) Icons.Rounded.Visibility else Icons.Rounded.VisibilityOff,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                    tint = themeColor
                 )
             }
         }
     }
 }
 
-/**
- * 精美双语例句组件 (降维对齐，去除了多余的数字 id)
- */
 @Composable
 fun ExampleItem(
     index: Int,
@@ -840,7 +906,6 @@ fun ExampleItem(
                 color = themeColor
             )
             Column {
-                // 日语例句 (含假名标注文本，主色高亮)
                 Text(
                     text = example.ja,
                     style = MaterialTheme.typography.bodyLarge,
@@ -848,7 +913,6 @@ fun ExampleItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                // 中文例句 (淡文字色)
                 Text(
                     text = example.zh,
                     style = MaterialTheme.typography.bodyMedium,

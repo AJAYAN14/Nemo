@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -364,30 +365,9 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
         !isDarkTheme // 深色背景 -> 浅色图标；浅色背景 -> 深色图标
     }
 
-    // 在主题、颜色或路由变化时更新系统栏
-    LaunchedEffect(surfaceColor, backgroundColor, isSplashScreen, useDarkIcons) {
-        window?.let {
-            // 使用官方 EdgeToEdge API
-            WindowCompat.setDecorFitsSystemWindows(it, false)
+    val isDark = backgroundColor.luminance() < 0.5f
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                it.isNavigationBarContrastEnforced = false
-            }
-
-            val insetsController = WindowInsetsControllerCompat(it, view)
-
-            // 沉浸式：状态栏透明，控制图标外观
-            insetsController.isAppearanceLightStatusBars = useDarkIcons
-
-            // 沉浸式：导航栏透明，控制图标外观
-            insetsController.isAppearanceLightNavigationBars = useDarkIcons
-
-            // 同步窗口原生底色 (Level 0: 浅色 #F2F2F7 / 深色 #000000)，消除滑动边缘与冷启动穿帮
-            val isDark = backgroundColor.luminance() < 0.5f
-            val windowBg = if (isDark) android.graphics.Color.BLACK else NemoSurfaceBackground.toArgb()
-            it.decorView.setBackgroundColor(windowBg)
-        }
-
+    DisposableEffect(activity, window, useDarkIcons, isDark) {
         activity?.let {
             val statusBarStyle = if (useDarkIcons) {
                 SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
@@ -404,5 +384,15 @@ fun SetupSystemBars(isSplashScreen: Boolean = false) {
                 navigationBarStyle = navigationBarStyle
             )
         }
+
+        window?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                it.isNavigationBarContrastEnforced = false
+            }
+            val windowBg = if (isDark) android.graphics.Color.BLACK else NemoSurfaceBackground.toArgb()
+            it.decorView.setBackgroundColor(windowBg)
+        }
+
+        onDispose {}
     }
 }

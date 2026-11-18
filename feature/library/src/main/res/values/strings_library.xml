@@ -3,9 +3,6 @@
     <!-- 分类单词列表 (CategoryWordsViewModel) -->
     <string name="library_category_words_format_load_failed">加载失败: %1$s</string>
 
-    <!-- 词性单词列表 (PosWordsViewModel) -->
-    <string name="library_pos_words_format_load_failed">加载失败: %1$s</string>
-
     <!-- 语法详情 (GrammarDetailViewModel) -->
     <string name="library_grammar_detail_toast_feedback_success">反馈成功，感谢您的反馈！</string>
     <string name="library_grammar_detail_toast_report_duplicate">您已经提交过对此类型问题的反馈了，请勿重复提交。</string>
@@ -32,7 +29,4 @@
     <!-- 词库列表通用 (GrammarListScreen & WordListScreen) -->
     <string name="library_list_label_sync_failed_keyword">失败</string>
     <string name="library_grammar_list_label_avatar_badge">文</string>
-
-    <!-- 词性分类主界面 (PartOfSpeechViewModel) -->
-    <string name="library_part_of_speech_format_load_failed">加载失败: %1$s</string>
 </resources>

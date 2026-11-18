@@ -1,35 +1,77 @@
 package com.jian.nemo.feature.library.presentation.category
 
+import android.content.Context
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.domain.model.PartOfSpeech
 import com.jian.nemo.core.domain.model.Word
+import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.domain.repository.SettingsRepository
+import com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase
+import com.jian.nemo.feature.library.R
+import com.jian.nemo.feature.library.presentation.list.StudyFilter
+import com.jian.nemo.feature.library.presentation.list.WordListUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import android.content.Context
-import com.jian.nemo.feature.library.R
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-/**
- * 分类单词列表 ViewModel
- *
- * 管理特定分类下的单词数据
+private data class CategoryRawDataState(
+    val isLoading: Boolean = false,
+    val hasLoaded: Boolean = false,
+    val words: List<Word> = emptyList(),
+    val error: String? = null
+)
 
- */
+data class CategoryWordsUiState(
+    val isLoading: Boolean = false,
+    val words: List<Word> = emptyList(),
+    val filteredWords: List<Word> = emptyList(),
+    val countsByLevel: Map<String, Int> = emptyMap(),
+    val searchQuery: String = "",
+    val filterState: StudyFilter = StudyFilter.ALL,
+    val selectedLevel: String = WordListUiState.LEVEL_ALL,
+    val error: String? = null
+)
+
+@OptIn(FlowPreview::class)
 @HiltViewModel
-class CategoryWordsViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val getWordsByPartOfSpeechUseCase: com.jian.nemo.core.domain.usecase.word.GetWordsByPartOfSpeechUseCase,
-    private val settingsRepository: SettingsRepository
+class CategoryWordsViewModel internal constructor(
+    private val context: Context,
+    private val savedStateHandle: SavedStateHandle,
+    private val getWordsByPartOfSpeechUseCase: GetWordsByPartOfSpeechUseCase,
+    private val settingsRepository: SettingsRepository,
+    private val filterDispatcher: CoroutineDispatcher
 ) : ViewModel() {
+
+    @Inject
+    constructor(
+        @ApplicationContext context: Context,
+        savedStateHandle: SavedStateHandle,
+        getWordsByPartOfSpeechUseCase: GetWordsByPartOfSpeechUseCase,
+        settingsRepository: SettingsRepository
+    ) : this(
+        context = context,
+        savedStateHandle = savedStateHandle,
+        getWordsByPartOfSpeechUseCase = getWordsByPartOfSpeechUseCase,
+        settingsRepository = settingsRepository,
+        filterDispatcher = Dispatchers.Default
+    )
 
     val iconStyle: StateFlow<SettingIconStyle> = settingsRepository.settingIconStyleFlow
         .stateIn(
@@ -38,121 +80,198 @@ class CategoryWordsViewModel @Inject constructor(
             initialValue = SettingIconStyle.SOFT_TRANSLUCENT
         )
 
-    private val _uiState = MutableStateFlow(CategoryWordsUiState())
-    val uiState: StateFlow<CategoryWordsUiState> = _uiState.asStateFlow()
+    private val rawDataState = MutableStateFlow(CategoryRawDataState(isLoading = true))
+
+    private val _searchQuery = MutableStateFlow(
+        savedStateHandle.get<String>(KEY_SEARCH_QUERY).orEmpty()
+    )
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val _filterState = MutableStateFlow(
+        savedStateHandle.get<String>(KEY_STUDY_FILTER)
+            ?.let { runCatching { StudyFilter.valueOf(it) }.getOrNull() }
+            ?: StudyFilter.ALL
+    )
+
+    private val _selectedLevel = MutableStateFlow(
+        savedStateHandle.get<String>(KEY_SELECTED_LEVEL) ?: WordListUiState.LEVEL_ALL
+    )
+
+    private val debouncedSearchQuery = _searchQuery
+        .debounce { query -> if (query.isBlank()) 0L else SEARCH_DEBOUNCE_MS }
+        .distinctUntilChanged()
+
+    val uiState: StateFlow<CategoryWordsUiState> = combine(
+        rawDataState,
+        debouncedSearchQuery,
+        _filterState,
+        _selectedLevel
+    ) { raw, query, filter, selectedLevel ->
+        buildCategoryWordsUiState(
+            isLoading = raw.isLoading,
+            words = raw.words,
+            error = raw.error,
+            query = query,
+            filter = filter,
+            selectedLevel = selectedLevel
+        )
+    }
+        .flowOn(filterDispatcher)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = CategoryWordsUiState(
+                isLoading = true,
+                searchQuery = _searchQuery.value,
+                filterState = _filterState.value,
+                selectedLevel = _selectedLevel.value
+            )
+        )
 
     private var currentCategory: String = ""
+    private var loadJob: Job? = null
 
-    /**
-     * 加载指定分类的单词
-     */
     fun loadWords(category: String) {
-        if (currentCategory == category && _uiState.value.words.isNotEmpty()) {
+        if (currentCategory == category && rawDataState.value.hasLoaded && rawDataState.value.error == null) {
             return
         }
 
         currentCategory = category
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            rawDataState.value = CategoryRawDataState(isLoading = true, hasLoaded = false)
             try {
-                // 1. 将字符串分类映射为 PartOfSpeech
                 val pos = mapCategoryToPos(category)
-
-                // 2. 获取单词列表
                 val words = if (pos != null) {
                     getWordsByPartOfSpeechUseCase(pos)
                 } else {
                     emptyList()
                 }
-
-                // 3. 按等级分组并排序
-                // N1 -> N2 -> N3 -> N4 -> N5 -> 其他
-                val wordsByLevel = words.groupBy { it.level.uppercase() }
-                    .toSortedMap(compareBy { level ->
-                        when (level.uppercase()) {
-                            "N1" -> 1
-                            "N2" -> 2
-                            "N3" -> 3
-                            "N4" -> 4
-                            "N5" -> 5
-                            else -> 99
-                        }
-                    })
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        words = words,
-                        wordsByLevel = wordsByLevel,
-                        error = null
-                    )
-                }
+                rawDataState.value = CategoryRawDataState(
+                    isLoading = false,
+                    hasLoaded = true,
+                    words = words,
+                    error = null
+                )
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = context.getString(R.string.library_category_words_format_load_failed, e.message ?: "")
-                    )
-                }
+                if (e is CancellationException) throw e
+                rawDataState.value = CategoryRawDataState(
+                    isLoading = false,
+                    hasLoaded = false,
+                    words = emptyList(),
+                    error = context.getString(R.string.library_category_words_format_load_failed, e.message ?: "")
+                )
             }
         }
     }
 
-    /**
-     * 刷新单词列表
-     */
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+        savedStateHandle[KEY_SEARCH_QUERY] = query
+    }
+
+    fun onFilterStateChanged(filter: StudyFilter) {
+        _filterState.value = filter
+        savedStateHandle[KEY_STUDY_FILTER] = filter.name
+    }
+
+    fun onSelectedLevelChanged(level: String) {
+        _selectedLevel.value = level
+        savedStateHandle[KEY_SELECTED_LEVEL] = level
+    }
+
     fun refresh() {
         if (currentCategory.isNotEmpty()) {
             val category = currentCategory
-            currentCategory = "" // 重置以强制重新加载
+            currentCategory = ""
             loadWords(category)
         }
     }
 
-    /**
-     * 映射分类字符串到 PartOfSpeech 枚举
-     */
-    private fun mapCategoryToPos(category: String): com.jian.nemo.core.domain.model.PartOfSpeech? {
+    private fun mapCategoryToPos(category: String): PartOfSpeech? {
         return when (category) {
-            "noun" -> com.jian.nemo.core.domain.model.PartOfSpeech.NOUN
-            "adj" -> com.jian.nemo.core.domain.model.PartOfSpeech.ADJECTIVE
-            "verb" -> com.jian.nemo.core.domain.model.PartOfSpeech.VERB
-            "adv" -> com.jian.nemo.core.domain.model.PartOfSpeech.ADVERB
-            "rentai" -> com.jian.nemo.core.domain.model.PartOfSpeech.RENTAI
-            "conj" -> com.jian.nemo.core.domain.model.PartOfSpeech.CONJUNCTION
-            "exclam" -> com.jian.nemo.core.domain.model.PartOfSpeech.INTERJECTION
-            "particle" -> com.jian.nemo.core.domain.model.PartOfSpeech.PARTICLE
-            "prefix" -> com.jian.nemo.core.domain.model.PartOfSpeech.PREFIX
-            "suffix" -> com.jian.nemo.core.domain.model.PartOfSpeech.SUFFIX
-            "expression" -> com.jian.nemo.core.domain.model.PartOfSpeech.FIXED_EXPRESSION
-            "kata" -> com.jian.nemo.core.domain.model.PartOfSpeech.LOAN_WORD
+            "noun" -> PartOfSpeech.NOUN
+            "adj" -> PartOfSpeech.ADJECTIVE
+            "verb" -> PartOfSpeech.VERB
+            "adv" -> PartOfSpeech.ADVERB
+            "rentai" -> PartOfSpeech.RENTAI
+            "conj" -> PartOfSpeech.CONJUNCTION
+            "exclam" -> PartOfSpeech.INTERJECTION
+            "particle" -> PartOfSpeech.PARTICLE
+            "prefix" -> PartOfSpeech.PREFIX
+            "suffix" -> PartOfSpeech.SUFFIX
+            "expression" -> PartOfSpeech.FIXED_EXPRESSION
+            "kata" -> PartOfSpeech.LOAN_WORD
             else -> null
         }
     }
+
+    private companion object {
+        const val SEARCH_DEBOUNCE_MS = 150L
+        const val KEY_SEARCH_QUERY = "category_words_search_query"
+        const val KEY_STUDY_FILTER = "category_words_study_filter"
+        const val KEY_SELECTED_LEVEL = "category_words_selected_level"
+    }
 }
 
-/**
- * 分类单词列表 UI 状态
- */
-data class CategoryWordsUiState(
-    /**
-     * 是否正在加载
-     */
-    val isLoading: Boolean = false,
+internal fun buildCategoryWordsUiState(
+    isLoading: Boolean,
+    words: List<Word>,
+    error: String?,
+    query: String,
+    filter: StudyFilter,
+    selectedLevel: String
+): CategoryWordsUiState {
+    if (isLoading || error != null) {
+        return CategoryWordsUiState(
+            isLoading = isLoading,
+            words = words,
+            filteredWords = emptyList(),
+            countsByLevel = emptyMap(),
+            searchQuery = query,
+            filterState = filter,
+            selectedLevel = selectedLevel,
+            error = error
+        )
+    }
 
-    /**
-     * 单词列表
-     */
-    val words: List<Word> = emptyList(),
+    val counts = LinkedHashMap<String, Int>(5)
+    val filteredWords = ArrayList<Word>(words.size)
+    val hasQuery = query.isNotBlank()
+    val isAllLevel = selectedLevel.equals(WordListUiState.LEVEL_ALL, ignoreCase = true)
 
-    /**
-     * 按等级分组的单词列表
-     */
-    val wordsByLevel: Map<String, List<Word>> = emptyMap(),
+    for (word in words) {
+        val matchesFilter = when (filter) {
+            StudyFilter.ALL -> true
+            StudyFilter.LEARNED -> word.isLearned
+            StudyFilter.UNLEARNED -> !word.isLearned
+        }
+        if (!matchesFilter) continue
 
-    /**
-     * 错误消息
-     */
-    val error: String? = null
-)
+        val matchesQuery = !hasQuery ||
+            word.japanese.contains(query, ignoreCase = true) ||
+            word.hiragana.contains(query, ignoreCase = true) ||
+            word.chinese.contains(query, ignoreCase = true)
+        if (!matchesQuery) continue
+
+        val normalizedLevel = word.level.uppercase()
+        if (normalizedLevel.isNotEmpty()) {
+            counts[normalizedLevel] = (counts[normalizedLevel] ?: 0) + 1
+        }
+
+        if (isAllLevel || normalizedLevel.equals(selectedLevel, ignoreCase = true)) {
+            filteredWords.add(word)
+        }
+    }
+
+    return CategoryWordsUiState(
+        isLoading = false,
+        words = words,
+        filteredWords = filteredWords,
+        countsByLevel = counts,
+        searchQuery = query,
+        filterState = filter,
+        selectedLevel = selectedLevel,
+        error = null
+    )
+}

@@ -1,351 +1,322 @@
 package com.jian.nemo.feature.library.presentation.list
 
-import com.jian.nemo.core.designsystem.theme.screenBackground
-
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Translate
-import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.*
-import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jian.nemo.core.designsystem.theme.SystemColors
+import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.animation.animateListItem
 import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import com.jian.nemo.core.ui.modifier.softCardShadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.jian.nemo.core.designsystem.theme.*
-import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.ui.component.common.CommonHeader
-import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
-import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
-import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
-import com.jian.nemo.core.ui.navigation.NavDestination
-import androidx.compose.ui.graphics.Brush
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.component.common.NemoMorphMenu
-import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
+import com.jian.nemo.core.ui.component.common.NemoSnackbar
+import com.jian.nemo.core.ui.component.common.NemoSnackbarType
+import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.feature.library.presentation.components.CollapsibleLibraryHeader
-import com.jian.nemo.feature.library.presentation.components.FloatingHeaderGradientContainer
-import com.jian.nemo.feature.library.presentation.components.LibraryDiscoveryBar
+import com.jian.nemo.feature.library.presentation.components.LibraryEmptyState
 import com.jian.nemo.feature.library.presentation.components.LibraryItemSkeletonCard
-import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionButton
-import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionMenu
-import com.jian.nemo.feature.library.presentation.components.LibraryLevelSelectionOverlay
-import com.jian.nemo.feature.library.presentation.components.LibraryMenuScrimOverlay
 import com.jian.nemo.feature.library.presentation.components.LibraryScrollToTopButton
 import com.jian.nemo.feature.library.presentation.components.WordListItemPremium
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import com.jian.nemo.feature.library.R
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import kotlinx.coroutines.launch
 
-
 /**
- * 单词列表界面 (UI/UX Pro Max)
+ * 单词列表界面。
+ *
+ * @param onNavigateBack 返回上一页回调。
+ * @param onNavigateToWordDetail 点击单词进入详情页回调。
+ * @param viewModel 词库单词列表状态视图模型。
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WordListScreen(
-    navController: NavController,
+    onNavigateBack: () -> Unit,
+    onNavigateToWordDetail: (Int) -> Unit,
     viewModel: WordListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val iconStyle by viewModel.iconStyle.collectAsStateWithLifecycle()
+
+    WordListContent(
+        uiState = uiState,
+        searchQuery = searchQuery,
+        iconStyle = iconStyle,
+        onNavigateBack = onNavigateBack,
+        onWordClick = onNavigateToWordDetail,
+        onSearchQueryChange = viewModel::onSearchQueryChanged,
+        onFilterSelected = viewModel::onFilterStateChanged,
+        onLevelSelected = viewModel::onSelectedLevelChanged,
+        onRefresh = viewModel::onRefresh,
+        onClearSyncMessage = viewModel::clearSyncMessage
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@Composable
+internal fun WordListContent(
+    uiState: WordListUiState,
+    searchQuery: String,
+    iconStyle: SettingIconStyle,
+    onNavigateBack: () -> Unit,
+    onWordClick: (Int) -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onFilterSelected: (StudyFilter) -> Unit,
+    onLevelSelected: (String) -> Unit,
+    onRefresh: () -> Unit,
+    onClearSyncMessage: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isSoftTranslucent = iconStyle == SettingIconStyle.SOFT_TRANSLUCENT
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     CompositionLocalProvider(LocalSettingIconStyle provides iconStyle) {
         val coroutineScope = rememberCoroutineScope()
-        val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
-        var selectedLevel by rememberSaveable { mutableStateOf("ALL") }
-        var isMenuExpanded by remember { mutableStateOf(false) }
+        val lazyListState = rememberLazyListState()
+        val selectedLevel = uiState.selectedLevel
+        var isMenuExpanded by rememberSaveable { mutableStateOf(false) }
 
-        // 回顶悬浮按钮触发状态（滑出首屏后优雅显现）
-        val showScrollToTop by remember {
-            derivedStateOf {
-                lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > 200
+        val currentScrollResetKey = "${uiState.searchQuery}|${uiState.filterState.name}"
+        var lastScrollResetKey by rememberSaveable { mutableStateOf(currentScrollResetKey) }
+        LaunchedEffect(currentScrollResetKey) {
+            if (currentScrollResetKey != lastScrollResetKey) {
+                lastScrollResetKey = currentScrollResetKey
+                lazyListState.scrollToItem(0)
             }
         }
 
-        val filteredWordsByLevel = uiState.wordsByLevel
-        val searchQuery = uiState.searchQuery
-
-        // 当前选中的单词扁平化列表（ALL 视图直接复用后台预平铺快照，O(1) 零主线程拼接）
-        val currentWords = remember(uiState.allWords, filteredWordsByLevel, selectedLevel) {
-            if (selectedLevel == "ALL") {
+        val currentWords = remember(uiState.allWords, uiState.wordsByLevel, selectedLevel) {
+            if (selectedLevel == WordListUiState.LEVEL_ALL) {
                 uiState.allWords
             } else {
-                filteredWordsByLevel[selectedLevel] ?: emptyList()
+                uiState.wordsByLevel[selectedLevel] ?: emptyList()
             }
         }
 
         val backdrop = rememberLayerBackdrop()
         val isTransitionSettled = rememberIsTransitionSettled()
         val activeBackdrop = if (isTransitionSettled) backdrop else null
+        val layoutDirection = LocalLayoutDirection.current
         val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-        val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+        val bottomInset = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues().calculateBottomPadding()
+        val horizontalSafeInsets = WindowInsets.displayCutout.union(WindowInsets.navigationBars).asPaddingValues()
+        val safeStart = horizontalSafeInsets.calculateStartPadding(layoutDirection)
+        val safeEnd = horizontalSafeInsets.calculateEndPadding(layoutDirection)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-    ) {
-        // 1. 底层全量画布（转场稳定后开启背景录制，提供真实折射源）
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
+                .background(backgroundColor)
         ) {
-            // 底层实色背景（录入 backdrop，消除空白区域透明空洞）
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(backgroundColor)
-            )
-
-            val pullToRefreshState = androidx.compose.material3.pulltorefresh.rememberPullToRefreshState()
-            PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { viewModel.onRefresh() },
-                state = pullToRefreshState,
-                indicator = {
-                    androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = statusBarTop + 132.dp),
-                        isRefreshing = uiState.isRefreshing,
-                        state = pullToRefreshState,
-                        containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                },
-                modifier = Modifier.fillMaxSize()
+                    .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
             ) {
-                LazyColumn(
-                    state = lazyListState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        top = statusBarTop + 128.dp + 16.dp,
-                        bottom = navBarBottom + 24.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(backgroundColor)
+                )
+
+                val pullToRefreshState = rememberPullToRefreshState()
+                PullToRefreshBox(
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = onRefresh,
+                    state = pullToRefreshState,
+                    indicator = {
+                        PullToRefreshDefaults.Indicator(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = statusBarTop + 132.dp),
+                            isRefreshing = uiState.isRefreshing,
+                            state = pullToRefreshState,
+                            containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    // 1. 冷启动骨架屏占位、空状态或平铺单词卡片
-                    if (uiState.isLoading) {
-                        items(10, key = { index -> "word_skeleton_$index" }) { index ->
-                            LibraryItemSkeletonCard(
-                                index = index,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
-                    } else if (currentWords.isEmpty()) {
-                        item(key = "empty_state") {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 40.dp, bottom = 40.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                val (emptyTitle, emptySubtitle) = when {
-                                    searchQuery.isNotEmpty() ->
-                                        stringResource(R.string.lib_word_list_empty_search_title) to stringResource(R.string.lib_word_list_empty_search_desc)
-                                    uiState.filterState == StudyFilter.UNLEARNED ->
-                                        (if (selectedLevel != "ALL") stringResource(R.string.lib_word_list_empty_level_unlearned_title) else stringResource(R.string.lib_word_list_empty_unlearned_title)) to stringResource(R.string.lib_word_list_empty_unlearned_desc)
-                                    uiState.filterState == StudyFilter.LEARNED ->
-                                        (if (selectedLevel != "ALL") stringResource(R.string.lib_word_list_empty_level_learned_title) else stringResource(R.string.lib_word_list_empty_learned_title)) to stringResource(R.string.lib_word_list_empty_learned_desc)
-                                    selectedLevel != "ALL" ->
-                                        stringResource(R.string.lib_word_list_empty_level_title) to stringResource(R.string.lib_word_list_empty_level_desc)
-                                    else ->
-                                        stringResource(R.string.lib_word_list_empty_default_title) to stringResource(R.string.lib_word_list_empty_default_desc)
-                                }
-                                val emptyIcon = if (searchQuery.isNotEmpty()) {
-                                    Icons.Rounded.Search
-                                } else {
-                                    Icons.Rounded.Translate
-                                }
-                                EmptyState(
-                                    title = emptyTitle,
-                                    subtitle = emptySubtitle,
-                                    icon = emptyIcon
+                    LazyColumn(
+                        state = lazyListState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            start = safeStart,
+                            end = safeEnd,
+                            top = statusBarTop + 128.dp + 16.dp,
+                            bottom = bottomInset + 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (uiState.isLoading) {
+                            items(
+                                count = 10,
+                                key = { index -> -index - 1 },
+                                contentType = { "word_skeleton" }
+                            ) { index ->
+                                LibraryItemSkeletonCard(
+                                    index = index,
+                                    isDark = isDark,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
                                 )
                             }
-                        }
-                    } else {
-                        items(currentWords, key = { it.id }) { word ->
-                            Box(modifier = Modifier.animateListItem().padding(horizontal = 16.dp)) {
+                        } else if (currentWords.isEmpty()) {
+                            item(key = "empty_state", contentType = "word_empty") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 40.dp, bottom = 40.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    val (emptyTitle, emptySubtitle) = when {
+                                        searchQuery.isNotEmpty() ->
+                                            stringResource(R.string.lib_word_list_empty_search_title) to
+                                                stringResource(R.string.lib_word_list_empty_search_desc)
+                                        uiState.filterState == StudyFilter.UNLEARNED ->
+                                            (if (selectedLevel != WordListUiState.LEVEL_ALL) {
+                                                stringResource(R.string.lib_word_list_empty_level_unlearned_title)
+                                            } else {
+                                                stringResource(R.string.lib_word_list_empty_unlearned_title)
+                                            }) to stringResource(R.string.lib_word_list_empty_unlearned_desc)
+                                        uiState.filterState == StudyFilter.LEARNED ->
+                                            (if (selectedLevel != WordListUiState.LEVEL_ALL) {
+                                                stringResource(R.string.lib_word_list_empty_level_learned_title)
+                                            } else {
+                                                stringResource(R.string.lib_word_list_empty_learned_title)
+                                            }) to stringResource(R.string.lib_word_list_empty_learned_desc)
+                                        selectedLevel != WordListUiState.LEVEL_ALL ->
+                                            stringResource(R.string.lib_word_list_empty_level_title) to
+                                                stringResource(R.string.lib_word_list_empty_level_desc)
+                                        else ->
+                                            stringResource(R.string.lib_word_list_empty_default_title) to
+                                                stringResource(R.string.lib_word_list_empty_default_desc)
+                                    }
+                                    val emptyIcon = if (searchQuery.isNotEmpty()) {
+                                        Icons.Rounded.Search
+                                    } else {
+                                        Icons.Rounded.Translate
+                                    }
+                                    LibraryEmptyState(
+                                        title = emptyTitle,
+                                        subtitle = emptySubtitle,
+                                        icon = emptyIcon,
+                                        accentColor = SystemColors.Indigo,
+                                        isSoftTranslucent = isSoftTranslucent
+                                    )
+                                }
+                            }
+                        } else {
+                            items(
+                                items = currentWords,
+                                key = { it.id },
+                                contentType = { "word_item" }
+                            ) { word ->
                                 WordListItemPremium(
                                     word = word,
-                                    onClick = { navController.navigate(NavDestination.wordDetail(word.id)) }
+                                    onClick = { onWordClick(word.id) },
+                                    isSoftTranslucent = isSoftTranslucent,
+                                    isDark = isDark,
+                                    modifier = Modifier
+                                        .animateListItem()
+                                        .padding(horizontal = 16.dp)
                                 )
                             }
                         }
                     }
                 }
             }
-        }
 
-        // 2. 悬浮弹性折叠顶栏（仿 Apple Music 折叠形变动效，内置渐变遮罩与透镜折射）
-        val headerTitle = if (selectedLevel == "ALL") {
-            stringResource(R.string.lib_word_list_header_title)
-        } else {
-            stringResource(R.string.lib_word_list_header_title_with_level, selectedLevel)
-        }
-        CollapsibleLibraryHeader(
-            title = headerTitle,
-            onBack = { navController.navigateUp() },
-            lazyListState = lazyListState,
-            selectedLevel = selectedLevel,
-            isMenuExpanded = isMenuExpanded,
-            onMenuExpandedChange = { isMenuExpanded = it },
-            backdrop = activeBackdrop,
-            selectedFilter = uiState.filterState,
-            onFilterSelected = { viewModel.onFilterStateChanged(it) },
-            searchQuery = searchQuery,
-            onSearchQueryChange = { viewModel.onSearchQueryChanged(it) },
-            searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder),
-            backgroundColor = backgroundColor
-        )
-
-        // 2.5 悬浮回顶按钮（严格锁定 30/48 黄金比例：56.dp 按钮对应 35.dp 图标，纯净磨砂底色，无偏红）
-        LibraryScrollToTopButton(
-            lazyListState = lazyListState,
-            backdrop = activeBackdrop,
-            isMenuExpanded = isMenuExpanded,
-            bottomPadding = navBarBottom + 20.dp
-        )
-
-        // 3. 页面全屏同级液态悬浮菜单浮层 (同级兄弟采样 activeBackdrop，彻底激活物理透镜折射)
-        LibraryLevelSelectionOverlay(
-            isVisible = isMenuExpanded,
-            onDismiss = { isMenuExpanded = false },
-            selectedLevel = selectedLevel,
-            onLevelSelected = { selectedLevel = it },
-            countsByLevel = uiState.countsByLevel,
-            backdrop = activeBackdrop,
-            onScrollToTop = {
-                coroutineScope.launch { lazyListState.scrollToItem(0) }
-            },
-            modifier = Modifier.zIndex(10f)
-        )
-
-        // 3. 同步通知组件
-        com.jian.nemo.core.ui.component.common.NemoSnackbar(
-            visible = uiState.syncMessage != null,
-            message = uiState.syncMessage ?: "",
-            type = if (uiState.syncMessage?.contains(stringResource(R.string.library_list_label_sync_failed_keyword)) == true)
-                com.jian.nemo.core.ui.component.common.NemoSnackbarType.ERROR
-            else
-                com.jian.nemo.core.ui.component.common.NemoSnackbarType.SUCCESS,
-            icon = if (uiState.syncMessage?.contains(stringResource(R.string.library_list_label_sync_failed_keyword)) == true)
-                Icons.Rounded.Warning
-            else
-                Icons.Rounded.CheckCircle,
-            onDismiss = { viewModel.clearSyncMessage() },
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = statusBarTop + 68.dp)
-        )
-    }
-    }
-}
-
-@Composable
-private fun EmptyState(
-    title: String,
-    subtitle: String? = null,
-    icon: androidx.compose.ui.graphics.vector.ImageVector = Icons.AutoMirrored.Rounded.MenuBook
-) {
-    val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-    val accentColor = SystemColors.Indigo
-    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
-    val iconTint = if (isSoftTranslucent) accentColor else Color.White
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(containerBg, RoundedRectangle(28.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(56.dp),
-                tint = iconTint
+            val headerTitle = if (selectedLevel == WordListUiState.LEVEL_ALL) {
+                stringResource(R.string.lib_word_list_header_title)
+            } else {
+                stringResource(R.string.lib_word_list_header_title_with_level, selectedLevel)
+            }
+            CollapsibleLibraryHeader(
+                title = headerTitle,
+                onBack = onNavigateBack,
+                lazyListState = lazyListState,
+                selectedLevel = selectedLevel,
+                countsByLevel = uiState.countsByLevel,
+                onLevelSelected = onLevelSelected,
+                onScrollToTop = {
+                    coroutineScope.launch { lazyListState.scrollToItem(0) }
+                },
+                isMenuExpanded = isMenuExpanded,
+                onMenuExpandedChange = { isMenuExpanded = it },
+                backdrop = activeBackdrop,
+                selectedFilter = uiState.filterState,
+                onFilterSelected = onFilterSelected,
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange,
+                searchPlaceholder = stringResource(R.string.lib_word_list_search_placeholder),
+                isDark = isDark,
+                backgroundColor = backgroundColor
             )
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-        if (!subtitle.isNullOrBlank()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                maxLines = 2,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+
+            LibraryScrollToTopButton(
+                lazyListState = lazyListState,
+                backdrop = activeBackdrop,
+                isMenuExpanded = isMenuExpanded,
+                bottomPadding = bottomInset + 20.dp
+            )
+
+            val failedKeyword = stringResource(R.string.library_list_label_sync_failed_keyword)
+            val isSyncError = uiState.syncMessage?.contains(failedKeyword) == true
+            NemoSnackbar(
+                visible = uiState.syncMessage != null,
+                message = uiState.syncMessage.orEmpty(),
+                type = if (isSyncError) NemoSnackbarType.ERROR else NemoSnackbarType.SUCCESS,
+                icon = if (isSyncError) Icons.Rounded.Warning else Icons.Rounded.CheckCircle,
+                onDismiss = onClearSyncMessage,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = statusBarTop + 68.dp)
             )
         }
     }

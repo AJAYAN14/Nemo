@@ -7,16 +7,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -32,47 +37,44 @@ import androidx.compose.material.icons.rounded.FormatQuote
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Link
 import androidx.compose.material.icons.rounded.Tune
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NemoCategoryTheme
 import com.jian.nemo.core.designsystem.theme.screenBackground
 import com.jian.nemo.core.domain.repository.SettingIconStyle
+import com.jian.nemo.core.ui.animation.rememberIsTransitionSettled
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.jian.nemo.feature.library.R
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-/**
- * 分类项数据模型
- */
 private data class CategoryItem(
     val id: String,
     val title: String,
@@ -82,9 +84,8 @@ private data class CategoryItem(
 )
 
 /**
- * 专项训练 / 专项词汇 - 分类选择界面
+ * 专项训练 / 专项词汇分类选择界面。
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryClassificationScreen(
     source: String = "practice",
@@ -92,7 +93,26 @@ fun CategoryClassificationScreen(
     onCategorySelected: (String, String) -> Unit = { _, _ -> },
     viewModel: CategoryClassificationViewModel = hiltViewModel()
 ) {
-    val settingIconStyle by viewModel.settingIconStyle.collectAsState()
+    val settingIconStyle by viewModel.settingIconStyle.collectAsStateWithLifecycle()
+
+    CategoryClassificationContent(
+        source = source,
+        settingIconStyle = settingIconStyle,
+        onNavigateBack = onNavigateBack,
+        onCategorySelected = onCategorySelected
+    )
+}
+
+@Composable
+internal fun CategoryClassificationContent(
+    source: String,
+    settingIconStyle: SettingIconStyle,
+    onNavigateBack: () -> Unit,
+    onCategorySelected: (String, String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val isSoftTranslucent = settingIconStyle == SettingIconStyle.SOFT_TRANSLUCENT
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
 
     val title = when (source) {
@@ -101,156 +121,131 @@ fun CategoryClassificationScreen(
         else -> stringResource(R.string.lib_category_title_default)
     }
 
+    val nounTitle = stringResource(R.string.lib_category_item_noun_title)
+    val nounSubtitle = stringResource(R.string.lib_category_item_noun_subtitle)
+    val adjTitle = stringResource(R.string.lib_category_item_adj_title)
+    val adjSubtitle = stringResource(R.string.lib_category_item_adj_subtitle)
+    val verbTitle = stringResource(R.string.lib_category_item_verb_title)
+    val verbSubtitle = stringResource(R.string.lib_category_item_verb_subtitle)
+    val advTitle = stringResource(R.string.lib_category_item_adv_title)
+    val advSubtitle = stringResource(R.string.lib_category_item_adv_subtitle)
+
+    val basicItems = remember(
+        nounTitle, nounSubtitle, adjTitle, adjSubtitle, verbTitle, verbSubtitle, advTitle, advSubtitle
+    ) {
+        listOf(
+            CategoryItem("noun", nounTitle, nounSubtitle, Icons.AutoMirrored.Rounded.MenuBook, NemoCategoryTheme.getCategoryColor("noun")),
+            CategoryItem("adj", adjTitle, adjSubtitle, Icons.Rounded.AutoAwesome, NemoCategoryTheme.getCategoryColor("adj")),
+            CategoryItem("verb", verbTitle, verbSubtitle, Icons.AutoMirrored.Rounded.DirectionsRun, NemoCategoryTheme.getCategoryColor("verb")),
+            CategoryItem("adv", advTitle, advSubtitle, Icons.Rounded.Tune, NemoCategoryTheme.getCategoryColor("adv"))
+        )
+    }
+
+    val rentaiTitle = stringResource(R.string.lib_category_item_rentai_title)
+    val rentaiSubtitle = stringResource(R.string.lib_category_item_rentai_subtitle)
+    val conjTitle = stringResource(R.string.lib_category_item_conj_title)
+    val conjSubtitle = stringResource(R.string.lib_category_item_conj_subtitle)
+    val exclamTitle = stringResource(R.string.lib_category_item_exclam_title)
+    val exclamSubtitle = stringResource(R.string.lib_category_item_exclam_subtitle)
+    val particleTitle = stringResource(R.string.lib_category_item_particle_title)
+    val particleSubtitle = stringResource(R.string.lib_category_item_particle_subtitle)
+
+    val syntaxItems = remember(
+        rentaiTitle, rentaiSubtitle, conjTitle, conjSubtitle, exclamTitle, exclamSubtitle, particleTitle, particleSubtitle
+    ) {
+        listOf(
+            CategoryItem("rentai", rentaiTitle, rentaiSubtitle, Icons.Rounded.Link, NemoCategoryTheme.getCategoryColor("rentai")),
+            CategoryItem("conj", conjTitle, conjSubtitle, Icons.AutoMirrored.Rounded.AltRoute, NemoCategoryTheme.getCategoryColor("conj")),
+            CategoryItem("exclam", exclamTitle, exclamSubtitle, Icons.Rounded.Campaign, NemoCategoryTheme.getCategoryColor("exclam")),
+            CategoryItem("particle", particleTitle, particleSubtitle, Icons.Rounded.Extension, NemoCategoryTheme.getCategoryColor("particle"))
+        )
+    }
+
+    val prefixTitle = stringResource(R.string.lib_category_item_prefix_title)
+    val prefixSubtitle = stringResource(R.string.lib_category_item_prefix_subtitle)
+    val suffixTitle = stringResource(R.string.lib_category_item_suffix_title)
+    val suffixSubtitle = stringResource(R.string.lib_category_item_suffix_subtitle)
+    val expressionTitle = stringResource(R.string.lib_category_item_expression_title)
+    val expressionSubtitle = stringResource(R.string.lib_category_item_expression_subtitle)
+    val kataTitle = stringResource(R.string.lib_category_item_kata_title)
+    val kataSubtitle = stringResource(R.string.lib_category_item_kata_subtitle)
+
+    val expressionItems = remember(
+        prefixTitle, prefixSubtitle, suffixTitle, suffixSubtitle, expressionTitle, expressionSubtitle, kataTitle, kataSubtitle
+    ) {
+        listOf(
+            CategoryItem("prefix", prefixTitle, prefixSubtitle, Icons.AutoMirrored.Rounded.ArrowForward, NemoCategoryTheme.getCategoryColor("prefix")),
+            CategoryItem("suffix", suffixTitle, suffixSubtitle, Icons.AutoMirrored.Rounded.ArrowBack, NemoCategoryTheme.getCategoryColor("suffix")),
+            CategoryItem("expression", expressionTitle, expressionSubtitle, Icons.Rounded.FormatQuote, NemoCategoryTheme.getCategoryColor("expression")),
+            CategoryItem("kata", kataTitle, kataSubtitle, Icons.Rounded.Language, NemoCategoryTheme.getCategoryColor("kata"))
+        )
+    }
+
     val backdrop = rememberLayerBackdrop()
+    val isTransitionSettled = rememberIsTransitionSettled()
+    val activeBackdrop = if (isTransitionSettled) backdrop else null
+    val layoutDirection = LocalLayoutDirection.current
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val horizontalSafeInsets = WindowInsets.displayCutout.union(WindowInsets.navigationBars).asPaddingValues()
+    val safeStart = horizontalSafeInsets.calculateStartPadding(layoutDirection)
+    val safeEnd = horizontalSafeInsets.calculateEndPadding(layoutDirection)
 
     CompositionLocalProvider(LocalSettingIconStyle provides settingIconStyle) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .background(backgroundColor)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .layerBackdrop(backdrop)
+                    .layerBackdrop(backdrop = backdrop, enabled = isTransitionSettled)
                     .verticalScroll(rememberScrollState())
                     .padding(
-                        start = 16.dp,
-                        end = 16.dp,
+                        start = safeStart + 16.dp,
+                        end = safeEnd + 16.dp,
                         top = statusBarTop + 60.dp + 16.dp,
                         bottom = navBarBottom + 24.dp
                     )
             ) {
-                // 1. 基础词性类
                 SectionHeader(title = stringResource(R.string.lib_category_section_basic), delay = 0)
                 CategoryGrid(
-                    items = listOf(
-                        CategoryItem(
-                            id = "noun",
-                            title = stringResource(R.string.lib_category_item_noun_title),
-                            subtitle = stringResource(R.string.lib_category_item_noun_subtitle),
-                            icon = Icons.AutoMirrored.Rounded.MenuBook,
-                            iconColor = NemoCategoryTheme.getCategoryColor("noun")
-                        ),
-                        CategoryItem(
-                            id = "adj",
-                            title = stringResource(R.string.lib_category_item_adj_title),
-                            subtitle = stringResource(R.string.lib_category_item_adj_subtitle),
-                            icon = Icons.Rounded.AutoAwesome,
-                            iconColor = NemoCategoryTheme.getCategoryColor("adj")
-                        ),
-                        CategoryItem(
-                            id = "verb",
-                            title = stringResource(R.string.lib_category_item_verb_title),
-                            subtitle = stringResource(R.string.lib_category_item_verb_subtitle),
-                            icon = Icons.AutoMirrored.Rounded.DirectionsRun,
-                            iconColor = NemoCategoryTheme.getCategoryColor("verb")
-                        ),
-                        CategoryItem(
-                            id = "adv",
-                            title = stringResource(R.string.lib_category_item_adv_title),
-                            subtitle = stringResource(R.string.lib_category_item_adv_subtitle),
-                            icon = Icons.Rounded.Tune,
-                            iconColor = NemoCategoryTheme.getCategoryColor("adv")
-                        )
-                    ),
-                    onItemClick = { category ->
-                        onCategorySelected(category.id, category.title)
-                    }
+                    items = basicItems,
+                    isDark = isDark,
+                    isSoftTranslucent = isSoftTranslucent,
+                    onItemClick = { category -> onCategorySelected(category.id, category.title) }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 2. 构词·句法功能类
                 SectionHeader(title = stringResource(R.string.lib_category_section_syntax), delay = 100)
                 CategoryGrid(
-                    items = listOf(
-                        CategoryItem(
-                            id = "rentai",
-                            title = stringResource(R.string.lib_category_item_rentai_title),
-                            subtitle = stringResource(R.string.lib_category_item_rentai_subtitle),
-                            icon = Icons.Rounded.Link,
-                            iconColor = NemoCategoryTheme.getCategoryColor("rentai")
-                        ),
-                        CategoryItem(
-                            id = "conj",
-                            title = stringResource(R.string.lib_category_item_conj_title),
-                            subtitle = stringResource(R.string.lib_category_item_conj_subtitle),
-                            icon = Icons.AutoMirrored.Rounded.AltRoute,
-                            iconColor = NemoCategoryTheme.getCategoryColor("conj")
-                        ),
-                        CategoryItem(
-                            id = "exclam",
-                            title = stringResource(R.string.lib_category_item_exclam_title),
-                            subtitle = stringResource(R.string.lib_category_item_exclam_subtitle),
-                            icon = Icons.Rounded.Campaign,
-                            iconColor = NemoCategoryTheme.getCategoryColor("exclam")
-                        ),
-                        CategoryItem(
-                            id = "particle",
-                            title = stringResource(R.string.lib_category_item_particle_title),
-                            subtitle = stringResource(R.string.lib_category_item_particle_subtitle),
-                            icon = Icons.Rounded.Extension,
-                            iconColor = NemoCategoryTheme.getCategoryColor("particle")
-                        )
-                    ),
-                    onItemClick = { category ->
-                        onCategorySelected(category.id, category.title)
-                    }
+                    items = syntaxItems,
+                    isDark = isDark,
+                    isSoftTranslucent = isSoftTranslucent,
+                    onItemClick = { category -> onCategorySelected(category.id, category.title) }
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 3. 构词·表达用法类
                 SectionHeader(title = stringResource(R.string.lib_category_section_expression), delay = 200)
                 CategoryGrid(
-                    items = listOf(
-                        CategoryItem(
-                            id = "prefix",
-                            title = stringResource(R.string.lib_category_item_prefix_title),
-                            subtitle = stringResource(R.string.lib_category_item_prefix_subtitle),
-                            icon = Icons.AutoMirrored.Rounded.ArrowForward,
-                            iconColor = NemoCategoryTheme.getCategoryColor("prefix")
-                        ),
-                        CategoryItem(
-                            id = "suffix",
-                            title = stringResource(R.string.lib_category_item_suffix_title),
-                            subtitle = stringResource(R.string.lib_category_item_suffix_subtitle),
-                            icon = Icons.AutoMirrored.Rounded.ArrowBack,
-                            iconColor = NemoCategoryTheme.getCategoryColor("suffix")
-                        ),
-                        CategoryItem(
-                            id = "expression",
-                            title = stringResource(R.string.lib_category_item_expression_title),
-                            subtitle = stringResource(R.string.lib_category_item_expression_subtitle),
-                            icon = Icons.Rounded.FormatQuote,
-                            iconColor = NemoCategoryTheme.getCategoryColor("expression")
-                        ),
-                        CategoryItem(
-                            id = "kata",
-                            title = stringResource(R.string.lib_category_item_kata_title),
-                            subtitle = stringResource(R.string.lib_category_item_kata_subtitle),
-                            icon = Icons.Rounded.Language,
-                            iconColor = NemoCategoryTheme.getCategoryColor("kata")
-                        )
-                    ),
-                    onItemClick = { category ->
-                        onCategorySelected(category.id, category.title)
-                    }
+                    items = expressionItems,
+                    isDark = isDark,
+                    isSoftTranslucent = isSoftTranslucent,
+                    onItemClick = { category -> onCategorySelected(category.id, category.title) }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // 2. 悬浮顶栏与液态玻璃按钮（带柔和垂直渐变保护遮罩，读取 backdrop）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.TopCenter)
-                    .background(
-                        Brush.verticalGradient(
+                    .drawWithCache {
+                        val gradientBrush = Brush.verticalGradient(
                             colors = listOf(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
@@ -258,14 +253,17 @@ fun CategoryClassificationScreen(
                                 backgroundColor.copy(alpha = 0f)
                             )
                         )
-                    )
+                        onDrawBehind {
+                            drawRect(brush = gradientBrush)
+                        }
+                    }
                     .padding(bottom = 8.dp)
             ) {
                 CommonHeader(
                     title = title,
                     onBack = onNavigateBack,
                     backgroundColor = Color.Transparent,
-                    backdrop = backdrop,
+                    backdrop = activeBackdrop,
                     backButtonSize = 48.dp
                 )
             }
@@ -279,11 +277,13 @@ private fun SectionHeader(
     delay: Int = 0,
     modifier: Modifier = Modifier.padding(horizontal = 0.dp, vertical = 8.dp)
 ) {
-    val alpha = remember { Animatable(0f) }
+    val alphaAnim = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        delay(delay.toLong())
-        launch { alpha.animateTo(1f, tween(500)) }
+        if (delay > 0) {
+            delay(delay.toLong())
+        }
+        alphaAnim.animateTo(1f, tween(500))
     }
 
     Text(
@@ -293,19 +293,22 @@ private fun SectionHeader(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
             .fillMaxWidth()
-            .alpha(alpha.value)
+            .graphicsLayer { alpha = alphaAnim.value }
     )
 }
 
 @Composable
 private fun CategoryGrid(
     items: List<CategoryItem>,
+    isDark: Boolean,
+    isSoftTranslucent: Boolean,
     onItemClick: (CategoryItem) -> Unit
 ) {
+    val rows = remember(items) { items.chunked(2) }
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items.chunked(2).forEach { rowItems ->
+        rows.forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -313,6 +316,8 @@ private fun CategoryGrid(
                 rowItems.forEach { item ->
                     CategoryCard(
                         item = item,
+                        isDark = isDark,
+                        isSoftTranslucent = isSoftTranslucent,
                         modifier = Modifier.weight(1f),
                         onClick = { onItemClick(item) }
                     )
@@ -328,14 +333,12 @@ private fun CategoryGrid(
 @Composable
 private fun CategoryCard(
     item: CategoryItem,
+    isDark: Boolean,
+    isSoftTranslucent: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
-
-    val iconStyle = LocalSettingIconStyle.current
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBgColor = if (isSoftTranslucent) item.iconColor.copy(alpha = 0.15f) else item.iconColor
     val iconTint = if (isSoftTranslucent) item.iconColor else Color.White
 
@@ -344,12 +347,12 @@ private fun CategoryCard(
         shape = RoundedRectangle(24.dp),
         color = containerColor,
         modifier = modifier
-            .height(100.dp)
+            .heightIn(min = 100.dp)
             .softCardShadow(borderRadius = 24.dp, isDark = isDark)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -379,7 +382,8 @@ private fun CategoryCard(
                         fontSize = 16.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -388,7 +392,8 @@ private fun CategoryCard(
                         fontSize = 13.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                    maxLines = 1
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

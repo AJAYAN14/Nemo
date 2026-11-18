@@ -58,4 +58,17 @@ class GrammarSearchUtilsTest {
         assertTrue(GrammarSearchUtils.isMatch(text, "apple"))
         assertTrue(GrammarSearchUtils.isMatch(text, "アップル"))
     }
+
+    @Test
+    fun `isMatch returns true for blank query`() {
+        assertTrue(GrammarSearchUtils.isMatch("〜わけではない", ""))
+        assertTrue(GrammarSearchUtils.isMatch("〜わけではない", "   "))
+    }
+
+    @Test
+    fun `isMatch matches plain text without rubi brackets`() {
+        assertTrue(GrammarSearchUtils.isMatch("〜わけではない", "わけ"))
+        assertTrue(GrammarSearchUtils.isMatch("JLPT N2 Pattern", "n2"))
+        assertFalse(GrammarSearchUtils.isMatch("〜わけではない", "かも"))
+    }
 }

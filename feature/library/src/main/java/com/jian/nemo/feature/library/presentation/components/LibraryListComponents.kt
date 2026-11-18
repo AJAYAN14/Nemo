@@ -10,60 +10,88 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
-import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.HourglassEmpty
-import androidx.compose.material.icons.rounded.School
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
-import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
-import com.jian.nemo.feature.library.R
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.designsystem.theme.NotoSerifSC
+import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.domain.model.Word
 import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuButton
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuDivider
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuItem
-import com.jian.nemo.core.ui.component.common.NemoLiquidMenuOverlay
 import com.jian.nemo.core.ui.component.common.NemoNativeLiquidMenuTrigger
-import com.jian.nemo.core.ui.component.common.NemoMorphMenu
-import com.jian.nemo.core.ui.component.common.NemoMorphMenuItem
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBar
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryBarStyle
 import com.jian.nemo.core.ui.component.discoverybar.DiscoveryOption
@@ -71,14 +99,19 @@ import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.menu.records.GlassMenuItemRecord
 import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.feature.library.R
 import com.jian.nemo.feature.library.presentation.list.StudyFilter
+import com.jian.nemo.feature.library.presentation.list.WordListUiState
 import com.kyant.backdrop.Backdrop
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+private val LibraryLevelsOrder = listOf("N5", "N4", "N3", "N2", "N1")
+private val JapaneseSpanStyle = SpanStyle(fontFamily = NotoSerifJP, localeList = LocaleList("ja"))
+private val ChineseSpanStyle = SpanStyle(fontFamily = NotoSerifSC, localeList = LocaleList("zh"))
 
 /**
- * 词库列表通用 - 56dp 纯净磨砂回顶悬浮按钮
- *
- * 严格锁定 30/48 黄金比例（56.dp 按钮对应 35.dp 图标），纯净无杂色磨砂底 + 透镜物理折射
+ * 词库列表通用 56dp 磨砂回顶悬浮按钮。
  */
 @Composable
 fun BoxScope.LibraryScrollToTopButton(
@@ -89,11 +122,15 @@ fun BoxScope.LibraryScrollToTopButton(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val showScrollToTop by remember {
+    val showScrollToTop by remember(lazyListState) {
         derivedStateOf {
             lazyListState.firstVisibleItemIndex > 6
         }
     }
+    val layoutDirection = LocalLayoutDirection.current
+    val horizontalSafePadding = WindowInsets.displayCutout.union(WindowInsets.navigationBars)
+        .asPaddingValues()
+        .calculateEndPadding(layoutDirection)
 
     AnimatedVisibility(
         visible = showScrollToTop && !isMenuExpanded,
@@ -101,7 +138,7 @@ fun BoxScope.LibraryScrollToTopButton(
         exit = fadeOut(tween(150)) + scaleOut(tween(150)),
         modifier = modifier
             .align(Alignment.BottomEnd)
-            .padding(end = 20.dp, bottom = bottomPadding)
+            .padding(end = horizontalSafePadding + 20.dp, bottom = bottomPadding)
     ) {
         FrostedLiquidGlassButton(
             onClick = {
@@ -127,106 +164,33 @@ fun BoxScope.LibraryScrollToTopButton(
 }
 
 /**
- * 全局共享的活跃原生词库等级筛选菜单项清单
+ * 统计各等级词条总数，自动排除 "ALL" 汇总键以防重复累加。
  */
-internal val ActiveNativeLibraryLevelMenuItems = mutableStateOf<List<GlassMenuItemRecord>>(emptyList())
-
-/**
- * 全局共享的活跃原生词库等级筛选菜单选项动作分发回调
- */
-internal val ActiveNativeLibraryLevelActionHandler = mutableStateOf<((String) -> Unit)?>(null)
-
-/**
- * 全局共享的原生词库等级筛选菜单展开状态
- */
-internal val ActiveNativeLibraryLevelOpenState = mutableStateOf(false)
-
-/**
- * 48dp 词库等级筛选触发按钮 (底层无缝对接原生 NemoGlassMenuView 引擎)
- */
-@Composable
-fun LibraryLevelSelectionButton(
-    isExpanded: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    backdrop: Backdrop? = null,
-    buttonSize: Dp = 48.dp,
-    chromaticAberration: Boolean = false,
-    content: (@Composable () -> Unit)? = null
-) {
-    val items = ActiveNativeLibraryLevelMenuItems.value
-    val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
-    if (items.isNotEmpty()) {
-        NemoNativeLiquidMenuTrigger(
-            items = items,
-            modifier = modifier,
-            buttonSize = buttonSize,
-            colorScheme = if (isDarkTheme) "dark" else "light",
-            onSelect = { item, _ ->
-                ActiveNativeLibraryLevelActionHandler.value?.invoke(item.id)
-            },
-            onOpenChange = { open ->
-                ActiveNativeLibraryLevelOpenState.value = open
-                if (open != isExpanded) {
-                    onClick()
-                }
-            },
-            content = content
-        )
-    } else {
-        NemoLiquidMenuButton(
-            isExpanded = isExpanded,
-            onClick = onClick,
-            modifier = modifier,
-            backdrop = backdrop,
-            buttonSize = buttonSize,
-            chromaticAberration = chromaticAberration,
-            content = content
-        )
+internal fun computeAllLevelsCount(countsByLevel: Map<String, Int>): Int {
+    var total = 0
+    for ((key, value) in countsByLevel) {
+        if (!key.equals(WordListUiState.LEVEL_ALL, ignoreCase = true)) {
+            total += value
+        }
     }
+    return total
 }
 
-/**
- * 词库等级筛选全屏悬浮组件
- */
 @Composable
-fun LibraryLevelSelectionOverlay(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
+private fun rememberLibraryLevelMenuItems(
     selectedLevel: String,
-    onLevelSelected: (String) -> Unit,
-    countsByLevel: Map<String, Int>,
-    backdrop: Backdrop?,
-    onScrollToTop: () -> Unit,
-    modifier: Modifier = Modifier,
-    blurRadius: Dp = 12.dp,
-    refractionHeightRatio: Float = 0.10f,
-    refractionAmountRatio: Float = 0.20f
-) {
-    val allCount = countsByLevel.values.sum()
-    val isAllSelected = selectedLevel == "ALL"
+    countsByLevel: Map<String, Int>
+): List<GlassMenuItemRecord> {
+    val allCount = remember(countsByLevel) { computeAllLevelsCount(countsByLevel) }
+    val isAllSelected = selectedLevel.equals(WordListUiState.LEVEL_ALL, ignoreCase = true)
     val allLevelsTitle = stringResource(R.string.lib_components_all_levels_count_format, allCount)
-
-    val levelsList = remember { listOf("N5", "N4", "N3", "N2", "N1") }
     val n5Title = stringResource(R.string.lib_components_level_count_format, "N5", countsByLevel["N5"] ?: 0)
     val n4Title = stringResource(R.string.lib_components_level_count_format, "N4", countsByLevel["N4"] ?: 0)
     val n3Title = stringResource(R.string.lib_components_level_count_format, "N3", countsByLevel["N3"] ?: 0)
     val n2Title = stringResource(R.string.lib_components_level_count_format, "N2", countsByLevel["N2"] ?: 0)
     val n1Title = stringResource(R.string.lib_components_level_count_format, "N1", countsByLevel["N1"] ?: 0)
 
-    val nativeItems = remember(selectedLevel, countsByLevel, allLevelsTitle, n5Title, n4Title, n3Title, n2Title, n1Title) {
-        val list = mutableListOf<GlassMenuItemRecord>()
-        list.add(
-            GlassMenuItemRecord(
-                id = "ALL",
-                title = allLevelsTitle,
-                icon = "grid",
-                checked = isAllSelected,
-                iconColor = SystemColors.Indigo.toArgb()
-            )
-        )
-        list.add(GlassMenuItemRecord(separator = true))
+    return remember(selectedLevel, allLevelsTitle, n5Title, n4Title, n3Title, n2Title, n1Title) {
         val titleMap = mapOf(
             "N5" to n5Title,
             "N4" to n4Title,
@@ -234,114 +198,68 @@ fun LibraryLevelSelectionOverlay(
             "N2" to n2Title,
             "N1" to n1Title
         )
-        levelsList.forEach { level ->
-            val isSelected = selectedLevel.equals(level, ignoreCase = true)
-            list.add(
+        buildList(LibraryLevelsOrder.size + 2) {
+            add(
                 GlassMenuItemRecord(
-                    id = level,
-                    title = titleMap[level] ?: level,
-                    icon = "filter",
-                    checked = isSelected,
-                    iconColor = getLevelColor(level).toArgb()
+                    id = WordListUiState.LEVEL_ALL,
+                    title = allLevelsTitle,
+                    icon = "grid",
+                    checked = isAllSelected,
+                    iconColor = SystemColors.Indigo.toArgb()
                 )
             )
-        }
-        list
-    }
-
-    SideEffect {
-        ActiveNativeLibraryLevelMenuItems.value = nativeItems
-        ActiveNativeLibraryLevelActionHandler.value = { level ->
-            onLevelSelected(level)
-            onDismiss()
-            onScrollToTop()
-        }
-    }
-}
-
-/**
- * 单词/语法等级筛选菜单 (封装版)
- */
-@Composable
-fun LibraryLevelSelectionMenu(
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
-    selectedLevel: String,
-    onLevelSelected: (String) -> Unit,
-    countsByLevel: Map<String, Int>,
-    backdrop: Backdrop?,
-    onScrollToTop: () -> Unit
-) {
-    LibraryLevelSelectionOverlay(
-        isVisible = expanded,
-        onDismiss = { onExpandedChange(false) },
-        selectedLevel = selectedLevel,
-        onLevelSelected = onLevelSelected,
-        countsByLevel = countsByLevel,
-        backdrop = backdrop,
-        onScrollToTop = onScrollToTop
-    )
-    LibraryLevelSelectionButton(
-        isExpanded = expanded,
-        onClick = { onExpandedChange(!expanded) },
-        backdrop = backdrop
-    )
-}
-
-
-/**
- * 词库列表通用 - 页面全屏手势遮罩
- *
- * 纯透明背景拦截外部点击平滑收起菜单，保持底层窗口清晰
- */
-@Composable
-fun LibraryMenuScrimOverlay(
-    visible: Boolean,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    AnimatedVisibility(
-        visible = visible,
-        enter = fadeIn(tween(200)),
-        exit = fadeOut(tween(200)),
-        modifier = modifier
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Transparent)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onDismiss
-                )
-        )
-    }
-}
-
-/**
- * 词库列表通用 - 悬浮顶栏柔和垂直渐变保护遮罩容器
- */
-@Composable
-fun FloatingHeaderGradientContainer(
-    backgroundColor: Color,
-    modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        backgroundColor.copy(alpha = 0.60f),
-                        backgroundColor.copy(alpha = 0.35f),
-                        backgroundColor.copy(alpha = 0.10f),
-                        backgroundColor.copy(alpha = 0f)
+            add(GlassMenuItemRecord(separator = true))
+            LibraryLevelsOrder.forEach { level ->
+                add(
+                    GlassMenuItemRecord(
+                        id = level,
+                        title = titleMap[level] ?: level,
+                        icon = "filter",
+                        checked = selectedLevel.equals(level, ignoreCase = true),
+                        iconColor = getLevelColor(level).toArgb()
                     )
                 )
-            )
-            .padding(bottom = 8.dp),
+            }
+        }
+    }
+}
+
+/**
+ * 48dp 词库等级筛选原生液态触发按钮。
+ */
+@Composable
+fun LibraryLevelSelectionButton(
+    selectedLevel: String,
+    countsByLevel: Map<String, Int>,
+    onLevelSelected: (String) -> Unit,
+    isExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onScrollToTop: () -> Unit,
+    modifier: Modifier = Modifier,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
+    buttonSize: Dp = 48.dp,
+    content: (@Composable () -> Unit)? = null
+) {
+    val items = rememberLibraryLevelMenuItems(
+        selectedLevel = selectedLevel,
+        countsByLevel = countsByLevel
+    )
+
+    NemoNativeLiquidMenuTrigger(
+        items = items,
+        modifier = modifier,
+        buttonSize = buttonSize,
+        colorScheme = if (isDark) "dark" else "light",
+        onSelect = { item, _ ->
+            onLevelSelected(item.id)
+            onExpandedChange(false)
+            onScrollToTop()
+        },
+        onOpenChange = { open ->
+            if (open != isExpanded) {
+                onExpandedChange(open)
+            }
+        },
         content = content
     )
 }
@@ -369,40 +287,48 @@ fun getLevelColor(level: String): Color {
 }
 
 /**
- * 词库列表通用 - 22dp G2 连续平滑圆角卡片容器
+ * 词库列表通用 22dp G2 连续平滑圆角卡片容器。
  */
 @Composable
 fun PremiumCard(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val scale by if (onClick != null) {
-        val isPressed by interactionSource.collectIsPressedAsState()
-        animateFloatAsState(
-            targetValue = if (isPressed) 0.98f else 1f,
-            label = "cardScale",
-            animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
-        )
-    } else {
-        remember { mutableFloatStateOf(1f) }
-    }
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
+    if (onClick == null) {
+        Surface(
+            shape = RoundedRectangle(22.dp),
+            color = containerColor,
+            modifier = modifier
+                .fillMaxWidth()
+                .softCardShadow(borderRadius = 22.dp, isDark = isDark),
+            content = { Column(modifier = Modifier.padding(16.dp), content = content) }
+        )
+        return
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scaleState = animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        label = "cardScale",
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+    )
+
     Surface(
-        onClick = onClick ?: {},
-        enabled = onClick != null,
+        onClick = onClick,
         shape = RoundedRectangle(22.dp),
         color = containerColor,
         modifier = modifier
             .fillMaxWidth()
             .softCardShadow(borderRadius = 22.dp, isDark = isDark)
             .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
+                val s = scaleState.value
+                scaleX = s
+                scaleY = s
             },
         interactionSource = interactionSource,
         content = { Column(modifier = Modifier.padding(16.dp), content = content) }
@@ -410,24 +336,25 @@ fun PremiumCard(
 }
 
 /**
- * 词库列表通用 - 标准双轨单容器单词卡片列表项
+ * 词库列表通用双轨单容器单词卡片列表项。
  */
 @Composable
 fun WordListItemPremium(
     word: Word,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSoftTranslucent: Boolean = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
-    val iconStyle = LocalSettingIconStyle.current
-    val colorIndex = kotlin.math.abs(word.id.hashCode()) % AvatarPalette.size
+    val colorIndex = (word.id.hashCode() and Int.MAX_VALUE) % AvatarPalette.size
     val avatarColor = AvatarPalette[colorIndex]
-    val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
     val containerBg = if (isSoftTranslucent) avatarColor.copy(alpha = 0.15f) else avatarColor
     val contentColor = if (isSoftTranslucent) avatarColor else Color.White
 
     PremiumCard(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
+        isDark = isDark
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -443,7 +370,7 @@ fun WordListItemPremium(
                     text = word.japanese.firstOrNull()?.toString() ?: "?",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                        localeList = LocaleList("ja")
                     ),
                     fontWeight = FontWeight.W900,
                     color = contentColor
@@ -455,21 +382,18 @@ fun WordListItemPremium(
                     text = word.japanese,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontFamily = NotoSerifJP,
-                        localeList = androidx.compose.ui.text.intl.LocaleList("ja")
+                        localeList = LocaleList("ja")
                     ),
                     fontWeight = FontWeight.W800,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 val secondaryAnnotatedText = remember(word.hiragana, word.chinese) {
                     buildAnnotatedString {
                         if (word.hiragana.isNotEmpty()) {
-                            withStyle(
-                                SpanStyle(
-                                    fontFamily = NotoSerifJP,
-                                    localeList = androidx.compose.ui.text.intl.LocaleList("ja")
-                                )
-                            ) {
+                            withStyle(JapaneseSpanStyle) {
                                 append(word.hiragana)
                             }
                         }
@@ -477,12 +401,7 @@ fun WordListItemPremium(
                             append(" · ")
                         }
                         if (word.chinese.isNotEmpty()) {
-                            withStyle(
-                                SpanStyle(
-                                    fontFamily = NotoSerifSC,
-                                    localeList = androidx.compose.ui.text.intl.LocaleList("zh")
-                                )
-                            ) {
+                            withStyle(ChineseSpanStyle) {
                                 append(word.chinese)
                             }
                         }
@@ -493,7 +412,7 @@ fun WordListItemPremium(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             if (word.level.isNotBlank()) {
@@ -512,7 +431,7 @@ fun WordListItemPremium(
                         text = word.level.uppercase(),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Black,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        fontStyle = FontStyle.Italic,
                         color = levelText
                     )
                 }
@@ -522,7 +441,96 @@ fun WordListItemPremium(
 }
 
 /**
- * 词库列表通用 - 仿 Apple Music 液体弹性折叠顶栏组件
+ * 词库列表通用情感化空状态视图（保持 100dp 容器与 56dp 图标尺寸）。
+ */
+@Composable
+fun LibraryEmptyState(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    icon: ImageVector = Icons.AutoMirrored.Rounded.MenuBook,
+    accentColor: Color = SystemColors.Indigo,
+    isSoftTranslucent: Boolean = LocalSettingIconStyle.current == SettingIconStyle.SOFT_TRANSLUCENT
+) {
+    val containerBg = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
+    val iconTint = if (isSoftTranslucent) accentColor else Color.White
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(containerBg, RoundedRectangle(28.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = iconTint
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center
+        )
+        if (!subtitle.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+/**
+ * 按连续假名与非假名段落合并样式构建富文本，避免逐字符分配 SpanStyle。
+ */
+fun formatMixedCnHnString(text: String): AnnotatedString {
+    if (text.isEmpty()) return AnnotatedString("")
+    return buildAnnotatedString {
+        var runStart = 0
+        var runIsKana = isKanaCodePoint(text.codePointAt(0))
+        var index = Character.charCount(text.codePointAt(0))
+        while (index < text.length) {
+            val codePoint = text.codePointAt(index)
+            val charCount = Character.charCount(codePoint)
+            val currentIsKana = isKanaCodePoint(codePoint)
+            if (currentIsKana != runIsKana) {
+                withStyle(if (runIsKana) JapaneseSpanStyle else ChineseSpanStyle) {
+                    append(text, runStart, index)
+                }
+                runStart = index
+                runIsKana = currentIsKana
+            }
+            index += charCount
+        }
+        withStyle(if (runIsKana) JapaneseSpanStyle else ChineseSpanStyle) {
+            append(text, runStart, text.length)
+        }
+    }
+}
+
+private fun isKanaCodePoint(codePoint: Int): Boolean {
+    return (codePoint in 0x3040..0x309F) || (codePoint in 0x30A0..0x30FF)
+}
+
+/**
+ * 词库列表通用液体弹性折叠顶栏组件。
  */
 @Composable
 fun CollapsibleLibraryHeader(
@@ -530,6 +538,9 @@ fun CollapsibleLibraryHeader(
     onBack: () -> Unit,
     lazyListState: LazyListState,
     selectedLevel: String,
+    countsByLevel: Map<String, Int>,
+    onLevelSelected: (String) -> Unit,
+    onScrollToTop: () -> Unit,
     isMenuExpanded: Boolean,
     onMenuExpandedChange: (Boolean) -> Unit,
     backdrop: Backdrop?,
@@ -539,22 +550,28 @@ fun CollapsibleLibraryHeader(
     onSearchQueryChange: (String) -> Unit,
     searchPlaceholder: String,
     modifier: Modifier = Modifier,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
     backgroundColor: Color = MaterialTheme.colorScheme.background
 ) {
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val horizontalInsets = WindowInsets.displayCutout.union(WindowInsets.navigationBars).asPaddingValues()
+    val safeStart = horizontalInsets.calculateStartPadding(layoutDirection)
+    val safeEnd = horizontalInsets.calculateEndPadding(layoutDirection)
     val collapseThresholdPx = with(density) { 50.dp.toPx() }
 
-    val isListScrolled by remember {
+    val isListScrolled by remember(lazyListState, collapseThresholdPx) {
         derivedStateOf {
-            lazyListState.firstVisibleItemIndex > 0 || lazyListState.firstVisibleItemScrollOffset > collapseThresholdPx
+            lazyListState.firstVisibleItemIndex > 0 ||
+                lazyListState.firstVisibleItemScrollOffset > collapseThresholdPx
         }
     }
 
     var wasCollapsedBeforeSearch by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(isListScrolled, searchQuery.isEmpty()) {
-        if (searchQuery.isEmpty()) {
+    LaunchedEffect(searchQuery.isEmpty(), isListScrolled) {
+        if (searchQuery.isEmpty() && wasCollapsedBeforeSearch != isListScrolled) {
             wasCollapsedBeforeSearch = isListScrolled
         }
     }
@@ -587,23 +604,29 @@ fun CollapsibleLibraryHeader(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .drawBehind {
-                val p = collapseProgressState.value
-                val bgHeight = (statusBarTop + lerp(128.dp, 72.dp, p)).toPx()
-                drawRect(
-                    brush = Brush.verticalGradient(
-                        colorStops = gradientStops,
-                        startY = 0f,
-                        endY = bgHeight
-                    ),
-                    size = Size(size.width, bgHeight)
+            .drawWithCache {
+                val maxBgHeight = (statusBarTop + 128.dp).toPx().coerceAtLeast(1f)
+                val cachedBrush = Brush.verticalGradient(
+                    colorStops = gradientStops,
+                    startY = 0f,
+                    endY = maxBgHeight
                 )
+                onDrawBehind {
+                    val p = collapseProgressState.value
+                    val currentBgHeight = (statusBarTop + lerp(128.dp, 72.dp, p)).toPx()
+                    val scaleY = (currentBgHeight / maxBgHeight).coerceAtLeast(0f)
+                    scale(scaleX = 1f, scaleY = scaleY, pivot = Offset.Zero) {
+                        drawRect(
+                            brush = cachedBrush,
+                            size = Size(size.width, maxBgHeight)
+                        )
+                    }
+                }
             }
     ) {
-        // 1. 左侧 48dp 返回按钮 (固定位置，动画期间 0 次重组)
         Box(
             modifier = Modifier
-                .padding(start = 20.dp, top = statusBarTop + 6.dp)
+                .padding(start = safeStart + 20.dp, top = statusBarTop + 6.dp)
                 .align(Alignment.TopStart)
         ) {
             FrostedLiquidGlassButton(
@@ -625,25 +648,27 @@ fun CollapsibleLibraryHeader(
             }
         }
 
-        // 2. 右侧 48dp 等级筛选按钮 (固定位置，动画期间 0 次重组)
         Box(
             modifier = Modifier
-                .padding(end = 20.dp, top = statusBarTop + 6.dp)
+                .padding(end = safeEnd + 20.dp, top = statusBarTop + 6.dp)
                 .align(Alignment.TopEnd)
         ) {
             LibraryLevelSelectionButton(
+                selectedLevel = selectedLevel,
+                countsByLevel = countsByLevel,
+                onLevelSelected = onLevelSelected,
                 isExpanded = isMenuExpanded,
-                onClick = { onMenuExpandedChange(!isMenuExpanded) },
-                backdrop = backdrop,
+                onExpandedChange = onMenuExpandedChange,
+                onScrollToTop = onScrollToTop,
+                isDark = isDark,
                 buttonSize = 48.dp
             )
         }
 
-        // 3. 页面大标题 (紧跟在左侧返回按钮后，纯 graphicsLayer 淡出隐藏，0 次重组)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = statusBarTop + 6.dp, start = 76.dp, end = 76.dp)
+                .padding(top = statusBarTop + 6.dp, start = safeStart + 76.dp, end = safeEnd + 76.dp)
                 .height(48.dp)
                 .graphicsLayer {
                     val p = collapseProgressState.value
@@ -663,27 +688,27 @@ fun CollapsibleLibraryHeader(
             )
         }
 
-        // 4. GPU 合成级平移与 48/56 黄金等比缩放 DiscoveryBar (0 次字体重排、0 次重组)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = statusBarTop)
                 .layout { measurable, constraints ->
                     val p = collapseProgressState.value
-                    val scale = androidx.compose.ui.util.lerp(1f, 48f / 56f, p)
+                    val scale = lerp(1f, 48f / 56f, p)
                     val fullWidthPx = constraints.maxWidth
-                    val expandedPadPx = 16.dp.roundToPx()
-                    val collapsedVisualPadPx = 74.dp.roundToPx()
-                    val targetVisualWidthPx = androidx.compose.ui.util.lerp(
+                    val safeHorizontalPx = maxOf(safeStart.roundToPx(), safeEnd.roundToPx())
+                    val expandedPadPx = safeHorizontalPx + 16.dp.roundToPx()
+                    val collapsedVisualPadPx = safeHorizontalPx + 74.dp.roundToPx()
+                    val targetVisualWidthPx = lerp(
                         (fullWidthPx - expandedPadPx * 2).toFloat(),
                         (fullWidthPx - collapsedVisualPadPx * 2).toFloat(),
                         p
-                    )
+                    ).coerceAtLeast(0f)
                     val logicalWidthPx = (targetVisualWidthPx / scale).roundToInt().coerceIn(0, fullWidthPx)
                     val placeable = measurable.measure(
                         constraints.copy(minWidth = logicalWidthPx, maxWidth = logicalWidthPx)
                     )
-                    val offsetYPx = androidx.compose.ui.util.lerp(60.dp.toPx(), 2.dp.toPx(), p).roundToInt()
+                    val offsetYPx = lerp(60.dp.toPx(), 2.dp.toPx(), p).roundToInt()
                     val offsetXPx = (fullWidthPx - placeable.width) / 2
                     layout(fullWidthPx, (60.dp.toPx() + 56.dp.toPx()).roundToInt()) {
                         placeable.placeRelativeWithLayer(offsetXPx, offsetYPx) {
@@ -701,6 +726,7 @@ fun CollapsibleLibraryHeader(
                 searchPlaceholder = searchPlaceholder,
                 collapseProgressProvider = { collapseProgressState.value },
                 backdrop = backdrop,
+                isDark = isDark,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -708,7 +734,7 @@ fun CollapsibleLibraryHeader(
 }
 
 /**
- * 词库列表通用 - 搜索与分类（全部/已学/未学）胶囊栏
+ * 词库列表通用搜索与分类胶囊栏。
  */
 @Composable
 fun LibraryDiscoveryBar(
@@ -720,10 +746,9 @@ fun LibraryDiscoveryBar(
     modifier: Modifier = Modifier,
     collapseProgress: Float = 0f,
     collapseProgressProvider: (() -> Float)? = null,
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-
     val tabAllText = stringResource(R.string.lib_word_list_tab_all)
     val tabLearnedText = stringResource(R.string.lib_word_list_tab_learned)
     val tabUnlearnedText = stringResource(R.string.lib_word_list_tab_unlearned)
@@ -798,14 +823,14 @@ private val SkeletonTitleFractions = listOf(0.38f, 0.52f, 0.34f, 0.46f, 0.42f, 0
 private val SkeletonSubtitleFractions = listOf(0.68f, 0.56f, 0.72f, 0.62f, 0.70f, 0.58f, 0.74f, 0.64f, 0.66f, 0.60f)
 
 /**
- * 词库列表通用 - 静态卡片骨架占位（冷启动快照尚未就绪时兜底铺屏，零动画零重绘）
+ * 词库列表静态卡片骨架占位。
  */
 @Composable
 fun LibraryItemSkeletonCard(
     index: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
 ) {
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val primarySkeletonColor = MaterialTheme.colorScheme.onSurface.copy(
         alpha = if (isDark) 0.08f else 0.06f
     )
@@ -817,7 +842,8 @@ fun LibraryItemSkeletonCard(
 
     PremiumCard(
         onClick = null,
-        modifier = modifier
+        modifier = modifier,
+        isDark = isDark
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

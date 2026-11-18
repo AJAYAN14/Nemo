@@ -392,101 +392,114 @@ interface WordDao {
 
     // ========== 词性分类查询（12种分类，首成分匹配）==========
 
-    /**
-     * 获取所有动词
-     * 首成分为：他動 / 自動 / 自他動
-     */
     @Query("""
-        SELECT * FROM words
-        WHERE (pos LIKE '他動%' OR pos LIKE '自動%' OR pos LIKE '自他動%')
-        AND is_delisted = 0
-        ORDER BY id ASC
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (w.pos LIKE '他動%' OR w.pos LIKE '自動%' OR w.pos LIKE '自他動%')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
     """)
     suspend fun getVerbs(): List<WordEntity>
 
-    /**
-     * 获取所有名词
-     * 首成分为：名 / 代
-     */
     @Query("""
-        SELECT * FROM words
-        WHERE (pos LIKE '名%' OR pos LIKE '代%')
-        AND is_delisted = 0
-        ORDER BY id ASC
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (w.pos LIKE '名%' OR w.pos LIKE '代%')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
     """)
     suspend fun getNouns(): List<WordEntity>
 
-    /**
-     * 获取所有形容词
-     * 首成分为：イ形 / ナ形
-     */
     @Query("""
-        SELECT * FROM words
-        WHERE (pos LIKE 'イ形%' OR pos LIKE 'ナ形%')
-        AND is_delisted = 0
-        ORDER BY id ASC
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (w.pos LIKE 'イ形%' OR w.pos LIKE 'ナ形%')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
     """)
     suspend fun getAdjectives(): List<WordEntity>
 
-    /**
-     * 获取所有副词
-     * 首成分为：副
-     */
-    @Query("SELECT * FROM words WHERE pos LIKE '副%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '副%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getAdverbs(): List<WordEntity>
 
-    /**
-     * 获取所有助词
-     * 首成分为：助
-     */
-    @Query("SELECT * FROM words WHERE pos LIKE '助%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '助%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getParticles(): List<WordEntity>
 
-    /**
-     * 获取所有接续词
-     * 首成分为：接 / 接続（排除接尾、接頭）
-     */
     @Query("""
-        SELECT * FROM words
-        WHERE pos LIKE '接%' AND pos NOT LIKE '接尾%' AND pos NOT LIKE '接頭%'
-        AND is_delisted = 0
-        ORDER BY id ASC
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '接%' AND w.pos NOT LIKE '接尾%' AND w.pos NOT LIKE '接頭%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
     """)
     suspend fun getConjunctions(): List<WordEntity>
 
-    /**
-     * 获取所有连体词
-     * 首成分为：連体
-     */
-    @Query("SELECT * FROM words WHERE pos = '連体' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos = '連体'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getRentai(): List<WordEntity>
 
-    /**
-     * 获取所有接头词（前缀）
-     * 首成分为：接頭
-     */
-    @Query("SELECT * FROM words WHERE pos LIKE '接頭%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '接頭%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getPrefixes(): List<WordEntity>
 
-    /**
-     * 获取所有接尾词（后缀）
-     * 首成分为：接尾
-     */
-    @Query("SELECT * FROM words WHERE pos LIKE '接尾%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '接尾%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getSuffixes(): List<WordEntity>
 
-    /**
-     * 获取所有感叹词
-     * 首成分为：嘆
-     */
-    @Query("SELECT * FROM words WHERE pos LIKE '嘆%' AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE w.pos LIKE '嘆%'
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getInterjections(): List<WordEntity>
 
-    /**
-     * 获取所有固定表达（惯用语/连语/固定表达）
-     * 支持：連語、惯用表达、固定表达等
-     */
-    @Query("SELECT * FROM words WHERE (pos LIKE '連語%' OR pos LIKE '%惯用%' OR pos LIKE '%固定%') AND is_delisted = 0 ORDER BY id ASC")
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (w.pos LIKE '連語%' OR w.pos LIKE '%惯用%' OR w.pos LIKE '%固定%')
+        AND (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
     suspend fun getFixedExpressions(): List<WordEntity>
 
     // ========== 批量操作 ==========
@@ -541,18 +554,14 @@ interface WordDao {
     @Query("SELECT * FROM words WHERE chinese != :correctChinese ORDER BY RANDOM() LIMIT :limit")
     suspend fun getRandomWrongOptions(correctChinese: String, limit: Int): List<WordEntity>
 
-    /**
-     * 获取所有单词
-     * 用于内存筛选（例如外来语）
-     */
-    @Query("SELECT * FROM words")
-    fun getAllWords(): List<WordEntity>
-
-    /**
-     * 获取所有单词 (同步) - 用于导出
-     * 注意：getAllWords目前定义为fun getAllWords(): List<WordEntity> (suspend implied by Room if not Flow? No, must use suspend if not Flow)
-     * To be safe and consistent with other DAOs, let's explicitly add getAllWordsSync
-     */
+    @Query("""
+        SELECT w.* FROM words w
+        LEFT JOIN word_study_states s ON w.id = s.word_id
+        WHERE (s.is_deleted = 0 OR s.is_deleted IS NULL)
+        AND w.is_delisted = 0
+        ORDER BY w.id ASC
+    """)
+    suspend fun getAllWords(): List<WordEntity>
 
 
     /**

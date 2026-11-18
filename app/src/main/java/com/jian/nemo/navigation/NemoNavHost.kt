@@ -526,9 +526,11 @@ fun NemoNavHost(
 
         // 词库/搜索 - 主界面
         composable(route = NavDestination.LIBRARY) {
-            com.jian.nemo.feature.library.presentation.expression.ExpressionScreen(
-                onNavigateBack = { navController.navigateUp() }
-            )
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                com.jian.nemo.feature.library.presentation.expression.ExpressionScreen(
+                    onNavigateBack = { navController.navigateUp() }
+                )
+            }
         }
 
         composable(
@@ -801,26 +803,6 @@ fun NemoNavHost(
             )
         }
 
-        // 词性分类
-        composable(NavDestination.PART_OF_SPEECH) {
-            com.jian.nemo.feature.library.presentation.partofspeech.PartOfSpeechScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToPosWords = { pos ->
-                    navController.navigate(NavDestination.posWords(pos.name))
-                }
-            )
-        }
-
-        // 词性单词列表
-        composable(
-            route = NavDestination.POS_WORDS,
-            arguments = listOf(navArgument("pos") { type = NavType.StringType })
-        ) {
-            com.jian.nemo.feature.library.presentation.category.PosWordsScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-
         // 专项训练/专项词汇 - 分类选择
         composable(
             route = NavDestination.CATEGORY_CLASSIFICATION,
@@ -830,22 +812,23 @@ fun NemoNavHost(
             })
         ) { backStackEntry ->
             val source = backStackEntry.arguments?.getString("source") ?: "practice"
-            com.jian.nemo.feature.library.presentation.category.CategoryClassificationScreen(
-                source = source,
-                onNavigateBack = { navController.popBackStack() },
-                onCategorySelected = { categoryId, categoryTitle ->
-                    // 根据来源判断导航：专项训练进入卡片学习，专项词汇进入列表
-                    if (source == "practice") {
-                        navController.navigate(
-                            NavDestination.categoryCardBrowse(categoryId, categoryTitle)
-                        )
-                    } else {
-                        navController.navigate(
-                            NavDestination.categoryWords(categoryId, categoryTitle)
-                        )
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                com.jian.nemo.feature.library.presentation.category.CategoryClassificationScreen(
+                    source = source,
+                    onNavigateBack = { navController.popBackStack() },
+                    onCategorySelected = { categoryId, categoryTitle ->
+                        if (source == "practice") {
+                            navController.navigate(
+                                NavDestination.categoryCardBrowse(categoryId, categoryTitle)
+                            )
+                        } else {
+                            navController.navigate(
+                                NavDestination.categoryWords(categoryId, categoryTitle)
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
         }
 
         // 专项训练 - 卡片浏览
@@ -876,14 +859,28 @@ fun NemoNavHost(
         ) { backStackEntry ->
             val category = backStackEntry.arguments?.getString("category") ?: ""
             val categoryTitle = backStackEntry.arguments?.getString("categoryTitle") ?: ""
-            com.jian.nemo.feature.library.presentation.category.CategoryWordsScreen(
-                category = category,
-                categoryTitle = categoryTitle,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToWordDetail = { wordId ->
-                    navController.navigate(NavDestination.wordDetail(wordId))
+            CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            compositingStrategy = if (transition.currentState != transition.targetState) {
+                                CompositingStrategy.Offscreen
+                            } else {
+                                CompositingStrategy.Auto
+                            }
+                        }
+                ) {
+                    com.jian.nemo.feature.library.presentation.category.CategoryWordsScreen(
+                        category = category,
+                        categoryTitle = categoryTitle,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToWordDetail = { wordId ->
+                            navController.navigate(NavDestination.wordDetail(wordId))
+                        }
+                    )
                 }
-            )
+            }
         }
 
 
@@ -928,7 +925,10 @@ fun NemoNavHost(
                         }
                 ) {
                     com.jian.nemo.feature.library.presentation.list.WordListScreen(
-                        navController = navController
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToWordDetail = { wordId ->
+                            navController.navigate(NavDestination.wordDetail(wordId))
+                        }
                     )
                 }
             }
@@ -949,7 +949,10 @@ fun NemoNavHost(
                         }
                 ) {
                     com.jian.nemo.feature.library.presentation.list.GrammarListScreen(
-                        navController = navController
+                        onNavigateBack = { navController.navigateUp() },
+                        onNavigateToGrammarDetail = { grammarId ->
+                            navController.navigate(NavDestination.grammarDetail(grammarId))
+                        }
                     )
                 }
             }
