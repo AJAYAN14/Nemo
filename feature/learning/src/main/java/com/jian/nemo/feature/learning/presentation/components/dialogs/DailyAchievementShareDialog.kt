@@ -1,14 +1,5 @@
 package com.jian.nemo.feature.learning.presentation.components.dialogs
 
-import android.content.ContentValues
-import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.media.MediaScannerConnection
-import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,9 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -42,12 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.FileProvider
 import com.jian.nemo.core.ui.R as CoreUiR
+import com.jian.nemo.core.ui.util.PosterExportHelper
 import com.jian.nemo.feature.learning.R
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -164,7 +153,7 @@ fun DailyAchievementShareDialog(
                                 graphicsLayer.record {
                                     this@drawWithContent.drawContent()
                                 }
-                                drawContent()
+                                drawLayer(graphicsLayer)
                             }
                     ) {
                         Column(
@@ -342,18 +331,26 @@ fun DailyAchievementShareDialog(
                         isSaving = true
                         scope.launch {
                             try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                val success = saveBitmapToGallery(context, bitmap)
-                                Toast.makeText(
-                                    context,
-                                    if (success) context.getString(R.string.toast_saved_to_gallery) else context.getString(R.string.toast_save_failed),
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                if (success) {
+                                val result = PosterExportHelper.saveGraphicsLayerToGallery(
+                                    context = context,
+                                    graphicsLayer = graphicsLayer
+                                )
+                                result.onSuccess {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.toast_saved_to_gallery),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                     onDismissRequest()
+                                }.onFailure {
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.toast_save_failed),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-                            } catch (e: Exception) {
-                                Toast.makeText(context, context.getString(R.string.toast_save_failed_msg, e.message ?: ""), Toast.LENGTH_SHORT).show()
+                            } catch (e: CancellationException) {
+                                throw e
                             } finally {
                                 isSaving = false
                             }
@@ -403,9 +400,15 @@ fun DailyAchievementShareDialog(
                         isSharing = true
                         scope.launch {
                             try {
-                                val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
-                                shareBitmapImage(context, bitmap)
+                                PosterExportHelper.shareGraphicsLayer(
+                                    context = context,
+                                    graphicsLayer = graphicsLayer,
+                                    chooserTitle = context.getString(R.string.learning_share_intent_chooser_title),
+                                    cacheFileName = "nemo_daily_achievement.png"
+                                )
                                 onDismissRequest()
+                            } catch (e: CancellationException) {
+                                throw e
                             } catch (e: Exception) {
                                 Toast.makeText(context, context.getString(R.string.toast_share_failed_msg, e.message ?: ""), Toast.LENGTH_SHORT).show()
                             } finally {
@@ -470,73 +473,4 @@ fun DailyAchievementShareDialog(
         }
     }
 }
-}
-
-/**
- * 将生成的超清海报 Bitmap 写入缓存并通过 FileProvider 调起原生系统图片分享
- */
-private fun shareBitmapImage(context: Context, bitmap: Bitmap) {
-    val dir = File(context.cacheDir, "share_posters")
-    if (!dir.exists()) dir.mkdirs()
-    val file = File(dir, "nemo_daily_achievement.png")
-    FileOutputStream(file).use { out ->
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-    }
-
-    val uri: Uri = FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        file
-    )
-
-    val sendIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "image/png"
-        putExtra(Intent.EXTRA_STREAM, uri)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-    context.startActivity(Intent.createChooser(sendIntent, context.getString(R.string.learning_share_intent_chooser_title)))
-}
-
-/**
- * 将超清海报 Bitmap 保存至系统相册
- */
-private fun saveBitmapToGallery(context: Context, bitmap: Bitmap): Boolean {
-    return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "Nemo_${System.currentTimeMillis()}.png")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                put(
-                    MediaStore.Images.Media.RELATIVE_PATH,
-                    "${Environment.DIRECTORY_PICTURES}/Nemo"
-                )
-            }
-            val resolver = context.contentResolver
-            val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            uri?.let {
-                resolver.openOutputStream(it)?.use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-                }
-            } ?: return false
-        } else {
-            @Suppress("DEPRECATION")
-            val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-            val albumDir = File(picturesDir, "Nemo")
-            if (!albumDir.exists()) albumDir.mkdirs()
-            val file = File(albumDir, "Nemo_${System.currentTimeMillis()}.png")
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            }
-            MediaScannerConnection.scanFile(
-                context,
-                arrayOf(file.absolutePath),
-                arrayOf("image/png"),
-                null
-            )
-        }
-        true
-    } catch (e: Exception) {
-        e.printStackTrace()
-        false
-    }
 }

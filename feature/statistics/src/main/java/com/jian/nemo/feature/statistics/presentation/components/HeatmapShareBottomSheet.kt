@@ -27,6 +27,7 @@ import com.jian.nemo.feature.statistics.R
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
 import com.jian.nemo.feature.statistics.ActivityHeatmapUiState
 import com.jian.nemo.feature.statistics.util.ShareBitmapHelper
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 /**
@@ -103,23 +104,34 @@ fun HeatmapShareBottomSheet(
                 // 保存图片
                 OutlinedButton(
                     onClick = {
-                        if (isSaving) return@OutlinedButton
+                        if (isSaving || isSharing) return@OutlinedButton
                         isSaving = true
                         scope.launch {
-                            val success = ShareBitmapHelper.saveToPictures(context, graphicsLayer)
-                            isSaving = false
-                            Toast.makeText(
-                                context,
-                                if (success) context.getString(R.string.stats_share_toast_save_success) else context.getString(R.string.stats_share_toast_save_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            try {
+                                val success = ShareBitmapHelper.saveToPictures(context, graphicsLayer)
+                                Toast.makeText(
+                                    context,
+                                    if (success) context.getString(R.string.stats_share_toast_save_success) else context.getString(R.string.stats_share_toast_save_failed),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.stats_share_toast_save_failed),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } finally {
+                                isSaving = false
+                            }
                         }
                     },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
                     shape = RoundedRectangle(14.dp),
-                    enabled = !isSaving
+                    enabled = !isSaving && !isSharing
                 ) {
                     if (isSaving) {
                         CircularProgressIndicator(
@@ -143,15 +155,18 @@ fun HeatmapShareBottomSheet(
                 // 分享给好友
                 Button(
                     onClick = {
-                        if (isSharing) return@Button
+                        if (isSharing || isSaving) return@Button
                         isSharing = true
                         scope.launch {
                             try {
                                 ShareBitmapHelper.shareImage(context, graphicsLayer)
+                            } catch (e: CancellationException) {
+                                throw e
                             } catch (e: Exception) {
                                 Toast.makeText(context, context.getString(R.string.stats_share_toast_failed), Toast.LENGTH_SHORT).show()
+                            } finally {
+                                isSharing = false
                             }
-                            isSharing = false
                         }
                     },
                     modifier = Modifier
@@ -159,7 +174,7 @@ fun HeatmapShareBottomSheet(
                         .height(48.dp),
                     shape = RoundedRectangle(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    enabled = !isSharing
+                    enabled = !isSharing && !isSaving
                 ) {
                     if (isSharing) {
                         CircularProgressIndicator(
