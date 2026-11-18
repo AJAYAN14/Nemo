@@ -1,7 +1,7 @@
 package com.jian.nemo.feature.test.components
 
 import androidx.compose.foundation.layout.*
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
+import com.jian.nemo.core.designsystem.shape.Capsule
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
-import com.jian.nemo.core.ui.modifier.softCardShadow
 import com.kyant.backdrop.Backdrop
 
 /**
@@ -35,28 +34,27 @@ fun TestFooter(
     isAutoAdvancing: Boolean = false,
     backdrop: Backdrop? = null
 ) {
-    val shape = RoundedRectangle(24.dp)
+    val shape = Capsule()
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 16.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // "上一题" 液态玻璃按钮 - 磨砂轻透质感 (Frosted Liquid Glass)
+        // "上一题" 液态玻璃按钮 - 带底色磨砂轻透质感 (Frosted Liquid Glass)
         FrostedLiquidGlassButton(
             onClick = { if (canGoPrev) onPrev() },
             modifier = Modifier
-                .weight(0.4f)
-                .height(56.dp)
-                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
+                .weight(0.38f)
+                .height(52.dp),
             backdrop = backdrop,
+            surfaceColor = Color.White.copy(alpha = if (isDark) 0.15f else 0.35f),
             shape = shape,
             isInteractive = canGoPrev,
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
         ) {
             Text(
                 text = stringResource(R.string.test_footer_btn_prev),
@@ -86,14 +84,14 @@ fun TestFooter(
                 }
             },
             modifier = Modifier
-                .weight(0.6f)
-                .height(56.dp)
-                .softCardShadow(borderRadius = 24.dp, isDark = isDark),
+                .weight(0.62f)
+                .height(52.dp),
             backdrop = backdrop,
             tint = if (isMainEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            tintAlpha = if (isMainEnabled) 0.85f else 0.4f,
             shape = shape,
             isInteractive = isMainEnabled,
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 0.dp)
         ) {
             Text(
                 text = mainButtonText,

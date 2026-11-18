@@ -142,14 +142,18 @@ internal class GlassMenuOverlay private constructor(
     }
 
     override fun onPreDraw(): Boolean {
-        if (session == null) return true
+        if (session == null && !hasVisibleGlassAnchor()) return true
         if (backdropChanged() or anchorsMoved()) invalidate()
         return true
     }
 
     private fun hasVisibleGlassAnchor(): Boolean {
-        val activeAnchor = session?.anchor ?: return false
-        return activeAnchor.drawsGlass && activeAnchor.isShown && activeAnchor.width > 0 && activeAnchor.height > 0 && activeAnchor.effectiveAlpha() > 0f
+        for (anchor in anchors) {
+            if (anchor.drawsGlass && anchor.isShown && anchor.width > 0 && anchor.height > 0 && anchor.effectiveAlpha() > 0f) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun backdropChanged(): Boolean {
@@ -161,35 +165,45 @@ internal class GlassMenuOverlay private constructor(
     }
 
     private fun anchorsMoved(): Boolean {
-        val anchor = session?.anchor ?: return false
-        anchorRect(anchor, probe)
-        val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
-        if (probe != anchor.placement || alpha != anchor.placementAlpha) {
-            anchor.placement.set(probe)
-            anchor.placementAlpha = alpha
-            return true
+        var moved = false
+        for (anchor in anchors) {
+            if (!anchor.drawsGlass && session?.anchor !== anchor) continue
+            anchorRect(anchor, probe)
+            val alpha = if (anchor.isShown) anchor.effectiveAlpha() else 0f
+            if (probe != anchor.placement || alpha != anchor.placementAlpha) {
+                anchor.placement.set(probe)
+                anchor.placementAlpha = alpha
+                moved = true
+            }
         }
-        return false
+        return moved
     }
 
     override fun onDraw(canvas: Canvas) {
-        val active = session ?: return
         limits.set(0, 0, width, height)
+        val active = session
         if (!supportsGlass || !canvas.isHardwareAccelerated) {
-            active.drawFallback(canvas)
+            active?.drawFallback(canvas)
             return
         }
         drawGlass(canvas, active)
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun drawGlass(canvas: Canvas, active: GlassMenuSession) {
+    private fun drawGlass(canvas: Canvas, active: GlassMenuSession?) {
         val node = backdrop ?: return
+        val clipToRestingAnchors = active == null
+        if (clipToRestingAnchors && !computeRestingClipRect(restClipRect)) {
+            return
+        }
 
         node.setPosition(limits)
         val recording = node.beginRecording(width, height)
-        val themeAnchor = active.anchor
-        recording.drawColor(if (themeAnchor.isDark()) Color.BLACK else Color.WHITE)
+        if (clipToRestingAnchors) {
+            recording.clipRect(restClipRect)
+        }
+        val themeAnchor = active?.anchor ?: anchors.lastOrNull { it.isShown && it.effectiveAlpha() > 0f } ?: anchors.firstOrNull()
+        recording.drawColor(if (themeAnchor?.isDark() != false) Color.BLACK else Color.WHITE)
         root.background?.draw(recording)
         for (index in 0 until root.childCount) {
             val child = root.getChildAt(index)
@@ -201,7 +215,12 @@ internal class GlassMenuOverlay private constructor(
         }
         node.endRecording()
 
-        active.draw(canvas, node, limits)
+        for (anchor in anchors) {
+            if (anchor !== active?.anchor && anchor.drawsGlass && anchor.effectiveAlpha() > 0f) {
+                drawRestingAnchor(canvas, node, anchor)
+            }
+        }
+        active?.draw(canvas, node, limits)
     }
 
     private fun computeRestingClipRect(out: Rect): Boolean {

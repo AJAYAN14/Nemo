@@ -18,6 +18,9 @@ import com.jian.nemo.feature.test.components.UnifiedTestScreen
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.feature.test.components.TestHeaderCenterContent
 import com.jian.nemo.feature.test.components.TestHeaderActions
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.kyant.backdrop.Backdrop
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.test.R
 
@@ -36,21 +39,26 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
 
     // 使用 AnimatedContent 为手打题切换添加动画效果
     UnifiedTestScreen(
-        headerContent = {
+        headerContentWithBackdrop = { backdrop: Backdrop ->
             CommonHeader(
                 title = "",
                 onBack = { viewModel.confirmExitTest() },
+                backgroundColor = Color.Transparent,
+                backdrop = backdrop,
+                backButtonSize = 48.dp,
                 centerContent = {
                     TestHeaderCenterContent(
                         timeLimitSeconds = uiState.timeLimitSeconds,
-                        timeRemainingSeconds = uiState.timeRemainingSeconds
+                        timeRemainingSeconds = uiState.timeRemainingSeconds,
+                        backdrop = backdrop
                     )
                 },
                 actions = {
                     TestHeaderActions(
                         word = question.word,
                         onToggleFavorite = { wordId, isFavorite -> viewModel.toggleFavorite(wordId, isFavorite) },
-                        onPause = { viewModel.pauseTest() }
+                        onPause = { viewModel.pauseTest() },
+                        backdrop = backdrop
                     )
                 }
             )
@@ -86,7 +94,7 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
                 )
             }
         },
-        footerContent = {
+        footerContentWithBackdrop = { backdrop: Backdrop ->
             TestFooter(
                 onPrev = { viewModel.previousQuestion() },
                 onNext = { viewModel.nextQuestion() },
@@ -97,7 +105,8 @@ fun TypingQuestionPage(viewModel: TestViewModel) {
                 isAnswered = question.isAnswered,
                 isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
                 submitText = stringResource(R.string.test_footer_btn_submit),
-                isAutoAdvancing = uiState.isAutoAdvancing
+                isAutoAdvancing = uiState.isAutoAdvancing,
+                backdrop = backdrop
             )
         }
     )

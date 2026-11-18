@@ -82,10 +82,17 @@ class NemoGlassMenuView @JvmOverloads constructor(
     var fontFamily: String? = null
     var alignment = "auto"
     var openOnPress = false
+    var isTransitionSettled: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                refreshDrawing()
+            }
+        }
 
     private val supportsGlass get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     internal val drawsGlass get() = glass && supportsGlass
-    private val overlayDrawsChildren get() = supportsGlass && overlay != null && (menuActive || (overlay?.menuSession?.anchor === this))
+    private val overlayDrawsChildren get() = supportsGlass && overlay != null && (glass || menuActive) && effectiveAlpha() > 0f
 
     init {
         setWillNotDraw(false)
@@ -265,6 +272,9 @@ class NemoGlassMenuView @JvmOverloads constructor(
     }
 
     internal fun effectiveAlpha(): Float {
+        if (!isTransitionSettled && !menuActive && overlay?.menuSession?.anchor !== this) {
+            return 0f
+        }
         var result = 1f
         var current: View? = this
         while (current != null) {

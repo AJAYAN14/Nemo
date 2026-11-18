@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.test.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kyant.backdrop.Backdrop
 import androidx.compose.foundation.BorderStroke
 import com.jian.nemo.core.designsystem.theme.NemoDanger
 import com.jian.nemo.core.designsystem.theme.NemoDangerDark
@@ -93,7 +94,7 @@ fun SortingScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         com.jian.nemo.feature.test.components.UnifiedTestScreen(
-            headerContentWithBackdrop = { backdrop ->
+            headerContentWithBackdrop = { backdrop: Backdrop ->
                 com.jian.nemo.core.ui.component.common.CommonHeader(
                     title = "",
                     onBack = { viewModel.confirmExitTest() },
@@ -103,7 +104,8 @@ fun SortingScreen(
                     centerContent = {
                         com.jian.nemo.feature.test.components.TestHeaderCenterContent(
                             timeLimitSeconds = uiState.timeLimitSeconds,
-                            timeRemainingSeconds = uiState.timeRemainingSeconds
+                            timeRemainingSeconds = uiState.timeRemainingSeconds,
+                            backdrop = backdrop
                         )
                     },
                     actions = {
@@ -241,7 +243,7 @@ fun SortingScreen(
                     }
                 }
             },
-            footerContent = {
+            footerContentWithBackdrop = { backdrop: Backdrop ->
                 com.jian.nemo.feature.test.components.TestFooter(
                     onPrev = { viewModel.previousQuestion() },
                     onNext = { viewModel.nextQuestion() },
@@ -252,7 +254,8 @@ fun SortingScreen(
                     isAnswered = currentQuestion.isAnswered,
                     isLastQuestion = uiState.currentIndex == uiState.questions.size - 1,
                     submitText = stringResource(R.string.test_sorting_btn_check),
-                    isAutoAdvancing = uiState.isAutoAdvancing
+                    isAutoAdvancing = uiState.isAutoAdvancing,
+                    backdrop = backdrop
                 )
             }
         )

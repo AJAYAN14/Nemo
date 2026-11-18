@@ -39,7 +39,7 @@ fun UnifiedTestScreen(
         headerContentWithBackdrop = { _ -> headerContent() },
         progressContent = progressContent,
         testContent = testContent,
-        footerContent = footerContent,
+        footerContentWithBackdrop = { _ -> footerContent() },
         modifier = modifier
     )
 }
@@ -50,6 +50,40 @@ fun UnifiedTestScreen(
     progressContent: @Composable () -> Unit,
     testContent: @Composable () -> Unit,
     footerContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    UnifiedTestScreen(
+        headerContentWithBackdrop = headerContentWithBackdrop,
+        progressContent = progressContent,
+        testContent = testContent,
+        footerContentWithBackdrop = { _ -> footerContent() },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun UnifiedTestScreen(
+    headerContent: @Composable () -> Unit,
+    progressContent: @Composable () -> Unit,
+    testContent: @Composable () -> Unit,
+    footerContentWithBackdrop: @Composable (Backdrop) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    UnifiedTestScreen(
+        headerContentWithBackdrop = { _ -> headerContent() },
+        progressContent = progressContent,
+        testContent = testContent,
+        footerContentWithBackdrop = footerContentWithBackdrop,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun UnifiedTestScreen(
+    headerContentWithBackdrop: @Composable (Backdrop) -> Unit,
+    progressContent: @Composable () -> Unit,
+    testContent: @Composable () -> Unit,
+    footerContentWithBackdrop: @Composable (Backdrop) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
@@ -99,36 +133,36 @@ fun UnifiedTestScreen(
                     Spacer(modifier = Modifier.height(160.dp))
                 }
 
-                // 底部渐变蒙层：从透明到纯白的平滑过渡
+                // 窗口级底部边缘平滑淡出蒙层（轻量避让与出界内容消隐，自底向上平滑微渐变）
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(64.dp)
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
                                     backgroundColor.copy(alpha = 0f),
-                                    backgroundColor.copy(alpha = if (isDark) 0.6f else 0.9f),
+                                    backgroundColor.copy(alpha = 0.15f),
+                                    backgroundColor.copy(alpha = if (isDark) 0.45f else 0.75f),
                                     backgroundColor
                                 )
                             )
                         )
                 )
-
-                // 固定底部按钮区域
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 24.dp)
-                ) {
-                    footerContent()
-                }
             }
 
-            // 2. 顶部悬浮顶栏 (带四阶防发灰遮罩 + 液态玻璃返回按钮，同级兄弟节点采样 backdrop)
+            // 2. 底部悬浮控制栏 (同级兄弟节点采样 backdrop，彻底激活物理透镜折射)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                footerContentWithBackdrop(backdrop)
+            }
+
+            // 3. 顶部悬浮顶栏 (带四阶防发灰遮罩 + 液态玻璃返回按钮，同级兄弟节点采样 backdrop)
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)

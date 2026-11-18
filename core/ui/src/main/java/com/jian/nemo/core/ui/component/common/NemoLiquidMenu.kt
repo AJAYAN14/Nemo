@@ -175,6 +175,7 @@ fun NemoNativeLiquidMenuTrigger(
     val currentOnSelect by rememberUpdatedState(onSelect)
     val currentOnLongSelect by rememberUpdatedState(onLongSelect)
     val currentOnOpenChange by rememberUpdatedState(onOpenChange)
+    val isTransitionSettled = com.jian.nemo.core.ui.animation.rememberIsTransitionSettled()
 
     AndroidView(
         modifier = modifier.size(buttonSize),
@@ -184,6 +185,7 @@ fun NemoNativeLiquidMenuTrigger(
                 this.menuWidth = menuWidthPx
                 this.alignment = alignment
                 this.colorScheme = colorScheme
+                this.isTransitionSettled = isTransitionSettled
                 this.onItemSelect = { item, index -> currentOnSelect(item, index) }
                 this.onItemLongSelect = currentOnLongSelect?.let { cb -> { item, index -> cb(item, index) } }
                 this.onMenuOpenChange = { open -> currentOnOpenChange(open) }
@@ -202,6 +204,7 @@ fun NemoNativeLiquidMenuTrigger(
             view.menuWidth = menuWidthPx
             view.alignment = alignment
             view.colorScheme = colorScheme
+            view.isTransitionSettled = isTransitionSettled
             view.onItemSelect = { item, index -> currentOnSelect(item, index) }
             view.onItemLongSelect = currentOnLongSelect?.let { cb -> { item, index -> cb(item, index) } }
             view.onMenuOpenChange = { open -> currentOnOpenChange(open) }

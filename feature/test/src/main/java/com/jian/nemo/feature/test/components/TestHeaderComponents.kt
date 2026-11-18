@@ -2,8 +2,10 @@ package com.jian.nemo.feature.test.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Favorite
@@ -183,17 +185,18 @@ fun TestHeaderCenterContent(
 
     FrostedLiquidGlassButton(
         onClick = { /* 倒计时按钮不触发操作 */ },
+        modifier = Modifier.height(48.dp),
         backdrop = backdrop,
         surfaceColor = animatedBgColor,
-        shape = CircleShape,
         border = BorderStroke(0.5.dp, borderColor),
         isInteractive = true,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 0.dp)
     ) {
         Text(
             text = "%02d:%02d".format(minutes, seconds),
             color = animatedTextColor,
-            fontWeight = FontWeight.Black,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Bold,
             fontFamily = FontFamily.Monospace
         )
     }
