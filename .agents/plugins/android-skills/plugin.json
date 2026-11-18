@@ -1,0 +1,9 @@
+{
+  "name": "android-skills",
+  "author": "Android",
+  "homepage": "https://developer.android.com/tools/agents/android-skills",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/android/skills.git"
+  }
+}
