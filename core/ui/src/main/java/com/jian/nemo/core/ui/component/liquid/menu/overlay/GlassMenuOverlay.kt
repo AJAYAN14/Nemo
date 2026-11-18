@@ -284,7 +284,7 @@ internal class GlassMenuOverlay private constructor(
         content.setScaleX(state.incoming.width() / anchor.width)
         content.setScaleY(state.incoming.height() / anchor.height)
         val save = canvas.save()
-        canvas.translate(state.incoming.left, state.incoming.top)
+        canvas.translate(state.incoming.centerX() - anchor.width / 2f, state.incoming.centerY() - anchor.height / 2f)
         canvas.drawRenderNode(content)
         canvas.restoreToCount(save)
     }

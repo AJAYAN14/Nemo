@@ -91,11 +91,24 @@ internal class GlassJelly {
         val dy = dragY.value
         val scale = swell(height, density, amount)
         val angle = atan2(dy, dx)
-        val stretch = ControlLift * density * amount / height
-        val scaleX = scale + stretch * abs(cos(angle) * dx / longest) * min(width / height, 1f)
-        val scaleY = scale + stretch * abs(sin(angle) * dy / longest) * min(height / width, 1f)
+
+        // 1. 中心位置微锚定（完全对齐返回按钮：initialDerivative = 0.05f，位置稳如泰山）
         val centerX = out.centerX() + shortest * tanh(DragLean * dx / shortest) * amount
         val centerY = out.centerY() + shortest * tanh(DragLean * dy / shortest) * amount
+
+        // 2. 轴向拉伸与缩放（完全对齐返回按钮：极坐标平方投影分解，无负向压扁）
+        val maxDragScale = ControlLift * density * amount / height
+        // 对极端大幅度拖拽施加平滑软饱和上限（常规滑动 100% 贴合，极端距离平滑收敛，防止无限拉长）
+        val dragLimit = 3.5f * longest
+        val effectiveDx = longest * 3.5f * tanh(dx / dragLimit)
+        val effectiveDy = longest * 3.5f * tanh(dy / dragLimit)
+
+        val stretchX = maxDragScale * abs(cos(angle) * effectiveDx / longest) * min(width / height, 1f)
+        val stretchY = maxDragScale * abs(sin(angle) * effectiveDy / longest) * min(height / width, 1f)
+
+        val scaleX = scale + stretchX
+        val scaleY = scale + stretchY
+
         val halfWidth = width * scaleX / 2f
         val halfHeight = height * scaleY / 2f
         out.set(centerX - halfWidth, centerY - halfHeight, centerX + halfWidth, centerY + halfHeight)
@@ -108,9 +121,9 @@ internal class GlassJelly {
 
     private companion object {
         const val MenuReach = 260f
-        const val MenuStretch = 16f
-        const val MenuSquash = 21f
-        const val MenuShift = 21f
+        const val MenuStretch = 8f
+        const val MenuSquash = 10f
+        const val MenuShift = 12f
         const val ControlLift = 4f
         const val DragLean = 0.05f
         val JellySpring = GlassSpringSpec(0.5f, 0.45f)
