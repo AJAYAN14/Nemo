@@ -129,7 +129,7 @@ fun WordCard(
                         listOf(
                             if (isFrontVisible) Color.White.copy(alpha = 0.5f)
                             else Color.White.copy(alpha = 0.2f),
-                            Color.Transparent
+                            Color.White.copy(alpha = 0f)
                         )
                     ),
                     shape = RoundedRectangle(32.dp)

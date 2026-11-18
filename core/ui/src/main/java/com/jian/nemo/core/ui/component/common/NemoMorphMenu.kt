@@ -391,7 +391,7 @@ fun NemoMorphMenu(
                         listOf(
                             Color.White.copy(alpha = 0.35f),
                             Color.White.copy(alpha = 0.12f),
-                            Color.Transparent
+                            Color.White.copy(alpha = 0f)
                         )
                     } else {
                         listOf(

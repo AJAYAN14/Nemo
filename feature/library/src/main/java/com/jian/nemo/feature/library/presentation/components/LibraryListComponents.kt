@@ -337,7 +337,7 @@ fun FloatingHeaderGradientContainer(
                         backgroundColor.copy(alpha = 0.60f),
                         backgroundColor.copy(alpha = 0.35f),
                         backgroundColor.copy(alpha = 0.10f),
-                        Color.Transparent
+                        backgroundColor.copy(alpha = 0f)
                     )
                 )
             )
@@ -580,7 +580,7 @@ fun CollapsibleLibraryHeader(
             0.42f to backgroundColor.copy(alpha = 0.95f),
             0.72f to backgroundColor.copy(alpha = 0.75f),
             0.88f to backgroundColor.copy(alpha = 0.35f),
-            1.00f to Color.Transparent
+            1.00f to backgroundColor.copy(alpha = 0f)
         )
     }
 

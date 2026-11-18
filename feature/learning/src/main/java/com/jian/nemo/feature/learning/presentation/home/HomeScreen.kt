@@ -1029,9 +1029,9 @@ private fun BentoStartButton(
                         val rectWidth = maxOf(size.width, leftPad + dx + rightPad)
                         val shimmerBrush = Brush.linearGradient(
                             colors = listOf(
-                                Color.Transparent,
+                                Color.White.copy(alpha = 0f),
                                 Color.White.copy(alpha = shimmerAlpha),
-                                Color.Transparent
+                                Color.White.copy(alpha = 0f)
                             ),
                             start = Offset(leftPad, 0f),
                             end = Offset(leftPad + dx, dy)

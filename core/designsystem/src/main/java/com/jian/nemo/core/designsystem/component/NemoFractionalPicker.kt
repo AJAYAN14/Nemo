@@ -321,7 +321,7 @@ fun NemoFractionalPicker(
                                 Brush.horizontalGradient(
                                     colors = listOf(
                                         surfaceColor.copy(alpha = 0.8f),
-                                        Color.Transparent
+                                        surfaceColor.copy(alpha = 0f)
                                     )
                                 )
                             )
@@ -335,7 +335,7 @@ fun NemoFractionalPicker(
                             .background(
                                 Brush.horizontalGradient(
                                     colors = listOf(
-                                        Color.Transparent,
+                                        surfaceColor.copy(alpha = 0f),
                                         surfaceColor.copy(alpha = 0.8f)
                                     )
                                 )

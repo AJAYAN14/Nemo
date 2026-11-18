@@ -165,7 +165,7 @@ fun ActivityHeatmapScreen(
                             backgroundColor.copy(alpha = 0.60f),
                             backgroundColor.copy(alpha = 0.35f),
                             backgroundColor.copy(alpha = 0.10f),
-                            Color.Transparent
+                            backgroundColor.copy(alpha = 0f)
                         )
                     )
                 )
@@ -497,63 +497,15 @@ private fun MemoryPanoramaCard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Stacked Progress Bar with Smooth Gradient Transition
-            val validBuckets = remember(data.buckets) { data.buckets.filter { it.ratio > 0f } }
-            val barBrush = remember(validBuckets) {
-                if (validBuckets.isEmpty()) {
-                    null
-                } else if (validBuckets.size == 1) {
-                    val color = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
-                        .getOrDefault(NemoSecondary)
-                    Brush.horizontalGradient(listOf(color, color))
-                } else {
-                    val totalRatio = validBuckets.sumOf { it.ratio.toDouble() }.toFloat().coerceAtLeast(0.001f)
-                    val rawStops = mutableListOf<Pair<Float, Color>>()
-                    var currentProgress = 0f
-
-                    for (i in validBuckets.indices) {
-                        val bucket = validBuckets[i]
-                        val bucketColor = runCatching { Color(android.graphics.Color.parseColor(bucket.color)) }
+            // 独立分段记忆稳定度比例条（保留 4 色清晰区隔，段内采用克制的同色系邻近微渐变）
+            val validBuckets = remember(data.buckets) {
+                data.buckets
+                    .filter { it.ratio > 0f }
+                    .map { bucket ->
+                        val color = runCatching { Color(android.graphics.Color.parseColor(bucket.color)) }
                             .getOrDefault(NemoPrimary)
-                        val span = (bucket.ratio / totalRatio).coerceIn(0f, 1f)
-                        val startPos = currentProgress
-                        val endPos = (currentProgress + span).coerceAtMost(1f)
-                        val blendMargin = minOf(0.04f, span * 0.25f)
-
-                        if (i == 0) {
-                            rawStops.add(0f to bucketColor)
-                        } else {
-                            rawStops.add((startPos - blendMargin).coerceAtLeast(0f) to rawStops.last().second)
-                            rawStops.add((startPos + blendMargin).coerceAtMost(1f) to bucketColor)
-                        }
-
-                        if (i == validBuckets.lastIndex) {
-                            rawStops.add(1f to bucketColor)
-                        } else {
-                            rawStops.add((endPos - blendMargin).coerceAtLeast(0f) to bucketColor)
-                        }
-
-                        currentProgress = endPos
+                        bucket.ratio.coerceAtLeast(0.02f) to CleanGradientUtils.buildAnalogousHorizontalBrush(color)
                     }
-
-                    val sanitizedStops = mutableListOf<Pair<Float, Color>>()
-                    var lastPos = -1f
-                    rawStops.sortedBy { it.first }.forEach { (pos, color) ->
-                        val safePos = pos.coerceIn(0f, 1f)
-                        if (safePos > lastPos) {
-                            sanitizedStops.add(safePos to color)
-                            lastPos = safePos
-                        }
-                    }
-
-                    if (sanitizedStops.size >= 2) {
-                        Brush.horizontalGradient(colorStops = sanitizedStops.toTypedArray())
-                    } else {
-                        val fallbackColor = runCatching { Color(android.graphics.Color.parseColor(validBuckets[0].color)) }
-                            .getOrDefault(NemoSecondary)
-                        Brush.horizontalGradient(listOf(fallbackColor, fallbackColor))
-                    }
-                }
             }
 
             Box(
@@ -563,12 +515,21 @@ private fun MemoryPanoramaCard(
                     .clip(RoundedRectangle(7.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
             ) {
-                if (barBrush != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(barBrush)
-                    )
+                if (validBuckets.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        validBuckets.forEach { (weight, brush) ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(weight)
+                                    .fillMaxHeight()
+                                    .clip(RoundedRectangle(3.dp))
+                                    .background(brush)
+                            )
+                        }
+                    }
                 }
             }
 

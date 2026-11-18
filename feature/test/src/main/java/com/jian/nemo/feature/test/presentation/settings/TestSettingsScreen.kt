@@ -522,7 +522,7 @@ fun TestSettingsScreen(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
                                 backgroundColor.copy(alpha = 0.35f),
-                                Color.Transparent
+                                backgroundColor.copy(alpha = 0f)
                             )
                         )
                     )
@@ -546,7 +546,7 @@ fun TestSettingsScreen(
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
-                                Color.Transparent,
+                                backgroundColor.copy(alpha = 0f),
                                 backgroundColor.copy(alpha = 0.6f),
                                 backgroundColor.copy(alpha = 0.95f)
                             )

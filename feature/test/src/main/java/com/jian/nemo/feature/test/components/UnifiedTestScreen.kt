@@ -90,7 +90,7 @@ fun UnifiedTestScreen(
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
-                                    Color.Transparent,
+                                    backgroundColor.copy(alpha = 0f),
                                     backgroundColor.copy(alpha = if (isDark) 0.6f else 0.9f),
                                     backgroundColor
                                 )

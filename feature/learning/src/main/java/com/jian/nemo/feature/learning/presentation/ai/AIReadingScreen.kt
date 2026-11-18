@@ -154,7 +154,7 @@ fun AIReadingScreen(
                             containerBg.copy(alpha = 0.88f),
                             containerBg.copy(alpha = 0.55f),
                             containerBg.copy(alpha = 0.20f),
-                            Color.Transparent
+                            containerBg.copy(alpha = 0f)
                         )
                     )
                 )
@@ -1008,9 +1008,9 @@ private fun SpecularCtaButton(
             val currentX = width * sweepProgress
             val brush = Brush.linearGradient(
                 colors = listOf(
-                    Color.Transparent,
+                    Color.White.copy(alpha = 0f),
                     Color.White.copy(alpha = 0.22f),
-                    Color.Transparent
+                    Color.White.copy(alpha = 0f)
                 ),
                 start = Offset(currentX - 80f, 0f),
                 end = Offset(currentX + 80f, height)

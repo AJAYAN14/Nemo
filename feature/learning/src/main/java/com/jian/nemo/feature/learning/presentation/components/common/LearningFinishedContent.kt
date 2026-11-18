@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.BentoColors
+import com.jian.nemo.core.designsystem.theme.CleanGradientUtils
 import com.jian.nemo.core.designsystem.theme.LearningPalette
 import com.jian.nemo.core.designsystem.theme.NemoKonfettiColors
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
@@ -324,8 +325,8 @@ fun LearningFinishedContent(
                         }
                     }
 
-                    // 双色/三色堆叠圆角进度条（交界处平滑柔和渐变过渡与流动动画）
-                    val progressGradientBrush = remember(
+                    // 独立分段圆角进度条（段间留 2dp 呼吸间隙，段内采用克制的同色系邻近微渐变）
+                    val progressSegments = remember(
                         smoothReviewCount,
                         sessionNewCount,
                         relearnCount,
@@ -333,40 +334,14 @@ fun LearningFinishedContent(
                         accentBlue,
                         accentGold
                     ) {
-                        val items = mutableListOf<Pair<Int, Color>>()
-                        if (smoothReviewCount > 0) items.add(smoothReviewCount to accentGreen)
-                        if (sessionNewCount > 0) items.add(sessionNewCount to accentBlue)
-                        if (relearnCount > 0) items.add(relearnCount to accentGold)
-
-                        if (items.isEmpty()) {
-                            Brush.horizontalGradient(listOf(accentGreen, accentGreen))
-                        } else if (items.size == 1) {
-                            Brush.horizontalGradient(listOf(items[0].second, items[0].second))
-                        } else {
-                            val total = items.sumOf { it.first }.toFloat()
-                            val stops = mutableListOf<Pair<Float, Color>>()
-                            var currentProgress = 0f
-                            val blendSpan = 0.035f // 3.5% 的平滑过渡带
-
-                            stops.add(0f to items[0].second)
-
-                            for (i in 0 until items.size - 1) {
-                                val segmentFraction = items[i].first / total
-                                val boundary = currentProgress + segmentFraction
-                                val colorA = items[i].second
-                                val colorB = items[i + 1].second
-
-                                val transitionStart = (boundary - blendSpan).coerceAtLeast(currentProgress)
-                                val transitionEnd = (boundary + blendSpan).coerceAtMost(1f)
-
-                                stops.add(transitionStart to colorA)
-                                stops.add(transitionEnd to colorB)
-
-                                currentProgress = boundary
-                            }
-
-                            stops.add(1f to items.last().second)
-                            Brush.horizontalGradient(colorStops = stops.toTypedArray())
+                        val raw = buildList {
+                            if (smoothReviewCount > 0) add(smoothReviewCount.toFloat() to accentGreen)
+                            if (sessionNewCount > 0) add(sessionNewCount.toFloat() to accentBlue)
+                            if (relearnCount > 0) add(relearnCount.toFloat() to accentGold)
+                        }
+                        val effective = raw.ifEmpty { listOf(1f to accentGreen) }
+                        effective.map { (weight, color) ->
+                            weight to CleanGradientUtils.buildAnalogousHorizontalBrush(color)
                         }
                     }
 
@@ -378,13 +353,23 @@ fun LearningFinishedContent(
                             .background(if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f))
                     ) {
                         if (barProgressAnim.value > 0f) {
-                            Box(
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth(barProgressAnim.value)
                                     .fillMaxHeight()
-                                    .clip(CircleShape)
-                                    .background(progressGradientBrush)
-                            )
+                                    .clip(CircleShape),
+                                horizontalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                progressSegments.forEach { (weight, brush) ->
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(weight)
+                                            .fillMaxHeight()
+                                            .clip(RoundedRectangle(3.dp))
+                                            .background(brush)
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -879,9 +864,9 @@ fun LearningFinishedContent(
 
                             val shimmerBrush = Brush.linearGradient(
                                 colors = listOf(
-                                    Color.Transparent,
+                                    Color.White.copy(alpha = 0f),
                                     Color.White.copy(alpha = if (isDark) 0.25f else 0.45f),
-                                    Color.Transparent
+                                    Color.White.copy(alpha = 0f)
                                 ),
                                 start = Offset(xOffset, 0f),
                                 end = Offset(xOffset + width * 0.4f, height * 1.2f)

@@ -221,13 +221,13 @@ fun LearningScreen(
                                     listOf(
                                         Color.White.copy(alpha = 0.08f),
                                         Color.White.copy(alpha = 0.02f),
-                                        Color.Transparent
+                                        Color.White.copy(alpha = 0f)
                                     )
                                 } else {
                                     listOf(
                                         Color.White.copy(alpha = 0.85f),
                                         Color.White.copy(alpha = 0.40f),
-                                        Color.Transparent
+                                        Color.White.copy(alpha = 0f)
                                     )
                                 }
                             )
@@ -244,7 +244,7 @@ fun LearningScreen(
                                 Brush.verticalGradient(
                                     colors = listOf(
                                         MaterialTheme.colorScheme.primary.copy(alpha = if (isDarkTheme) 0.22f else 0.14f),
-                                        Color.Transparent
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0f)
                                     )
                                 )
                             )
@@ -335,7 +335,7 @@ fun LearningScreen(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
                                 backgroundColor.copy(alpha = 0.35f),
-                                Color.Transparent
+                                backgroundColor.copy(alpha = 0f)
                             )
                         )
                     )

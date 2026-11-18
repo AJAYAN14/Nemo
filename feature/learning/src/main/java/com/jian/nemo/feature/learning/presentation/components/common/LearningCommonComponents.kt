@@ -285,7 +285,7 @@ fun WaitingBackground(
                         colors = listOf(
                             primaryColor.copy(alpha = if (isDark) 0.35f else 0.25f),
                             accentColor.copy(alpha = if (isDark) 0.18f else 0.12f),
-                            Color.Transparent
+                            accentColor.copy(alpha = 0f)
                         ),
                         radius = 1200f
                     )

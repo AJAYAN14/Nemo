@@ -216,7 +216,7 @@ fun AISettingsScreen(
                             backgroundColor.copy(alpha = 0.88f),
                             backgroundColor.copy(alpha = 0.55f),
                             backgroundColor.copy(alpha = 0.20f),
-                            Color.Transparent
+                            backgroundColor.copy(alpha = 0f)
                         )
                     )
                 )

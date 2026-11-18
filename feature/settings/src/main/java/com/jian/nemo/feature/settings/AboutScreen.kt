@@ -761,7 +761,7 @@ fun AboutScreen(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
                                 backgroundColor.copy(alpha = 0.35f),
-                                Color.Transparent
+                                backgroundColor.copy(alpha = 0f)
                             )
                         )
                     )
@@ -1039,9 +1039,9 @@ private fun CacheDrawScope.createArtisticPaperTexture(
 
         val lightBeamBrush = Brush.linearGradient(
             colors = listOf(
-                Color.Transparent,
+                lightBeamHighlight.copy(alpha = 0f),
                 lightBeamHighlight,
-                Color.Transparent
+                lightBeamHighlight.copy(alpha = 0f)
             ),
             start = Offset(0f, h * 0.95f),
             end = Offset(w * 0.95f, 0f)

@@ -301,7 +301,7 @@ fun LiquidMemoryHud(
                         brush = Brush.verticalGradient(
                             colors = listOf(
                                 accentColor.copy(alpha = 0.18f),
-                                Color.Transparent
+                                accentColor.copy(alpha = 0f)
                             )
                         )
                     )

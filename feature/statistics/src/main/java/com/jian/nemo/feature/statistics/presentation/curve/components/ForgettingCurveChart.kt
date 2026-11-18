@@ -423,7 +423,7 @@ private fun DrawScope.drawCurveLine(
         drawPath(
             path = fillPath,
             brush = Brush.verticalGradient(
-                colors = listOf(color.copy(alpha = 0.25f), Color.Transparent),
+                colors = listOf(color.copy(alpha = 0.25f), color.copy(alpha = 0f)),
                 startY = chartTop,
                 endY = chartBottom
             )

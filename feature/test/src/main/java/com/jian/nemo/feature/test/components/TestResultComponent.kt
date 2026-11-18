@@ -148,7 +148,7 @@ fun TestResultComponent(
             // 左上角主光晕 (颜色随用户的测试正确率成绩好坏变化)
             drawCircle(
                 brush = androidx.compose.ui.graphics.Brush.radialGradient(
-                    colors = listOf(accuracyColor.copy(alpha = if (isDark) 0.35f else 0.25f), Color.Transparent),
+                    colors = listOf(accuracyColor.copy(alpha = if (isDark) 0.35f else 0.25f), accuracyColor.copy(alpha = 0f)),
                     center = androidx.compose.ui.geometry.Offset(size.width * 0.1f, size.height * 0.1f),
                     radius = size.minDimension * 0.8f
                 ),
@@ -160,7 +160,7 @@ fun TestResultComponent(
             val secondaryAuraColor = if (isDark) TestResultPalette.GrammarAccentDark else TestResultPalette.WordAccentDark
             drawCircle(
                 brush = androidx.compose.ui.graphics.Brush.radialGradient(
-                    colors = listOf(secondaryAuraColor.copy(alpha = if (isDark) 0.25f else 0.15f), Color.Transparent),
+                    colors = listOf(secondaryAuraColor.copy(alpha = if (isDark) 0.25f else 0.15f), secondaryAuraColor.copy(alpha = 0f)),
                     center = androidx.compose.ui.geometry.Offset(size.width * 0.9f, size.height * 0.9f),
                     radius = size.minDimension * 0.9f
                 ),

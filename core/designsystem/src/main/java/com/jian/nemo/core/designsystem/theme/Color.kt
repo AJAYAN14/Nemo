@@ -882,28 +882,30 @@ object UiPalette {
         Color(0xFFFF8A65), Color(0xFFA1887F), Color(0xFF90A4AE), Color(0xFF78909C)
     )
 
+    // 8 色色环连续闭环光晕（相邻步距 ≤ 50°，明度平滑无灰区）
     val AvatarGlowGradient = listOf(
-        Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFFEC4899),
-        Color(0xFFF59E0B), Color(0xFF10B981), Color(0xFF6366F1)
+        Color(0xFF5856D6), Color(0xFFAF52DE), Color(0xFFFF2D55),
+        Color(0xFFFF9500), Color(0xFFFFCC00), Color(0xFF34C759),
+        Color(0xFF32ADE6), Color(0xFF007AFF), Color(0xFF5856D6)
     )
 
     object Presets {
         val Sunset = listOf(Color(0xFFFF6B6B), Color(0xFFFFAA00), Color(0xFFFFD93D))
-        val Ocean = listOf(Color(0xFF06BEE1), Color(0xFF0B4F6C), Color(0xFF01BAEF))
+        val Ocean = listOf(Color(0xFF0B4F6C), Color(0xFF06BEE1), Color(0xFF01BAEF))
         val Forest = listOf(Color(0xFF06D6A0), Color(0xFF118AB2), Color(0xFF073B4C))
-        val Lavender = listOf(Color(0xFF9D4EDD), Color(0xFF7209B7), Color(0xFFC77DFF))
+        val Lavender = listOf(Color(0xFF7209B7), Color(0xFF9D4EDD), Color(0xFFC77DFF))
         val Mint = listOf(Color(0xFF06FFA5), Color(0xFF00D9FF), Color(0xFF00B4D8))
-        val Coral = listOf(Color(0xFFFF6B9D), Color(0xFFC9184A), Color(0xFFFF8FA3))
+        val Coral = listOf(Color(0xFFC9184A), Color(0xFFFF6B9D), Color(0xFFFF8FA3))
         val Golden = listOf(Color(0xFFFFBE0B), Color(0xFFFB5607), Color(0xFFFF006E))
         val Aurora = listOf(Color(0xFF7209B7), Color(0xFF3A0CA3), Color(0xFF4361EE))
         val Peach = listOf(Color(0xFFFFB5A7), Color(0xFFFCD5CE), Color(0xFFF8EDEB))
         val Autumn = listOf(Color(0xFFD00000), Color(0xFFDC2F02), Color(0xFFE85D04))
-        val Sky = listOf(Color(0xFF48CAE4), Color(0xFF00B4D8), Color(0xFF90E0EF))
+        val Sky = listOf(Color(0xFF00B4D8), Color(0xFF48CAE4), Color(0xFF90E0EF))
         val Lemon = listOf(Color(0xFFFFFF3F), Color(0xFFFFEE32), Color(0xFFFDD835))
         val Midnight = listOf(Color(0xFF03045E), Color(0xFF023E8A), Color(0xFF0077B6))
         val Galaxy = listOf(Color(0xFF240046), Color(0xFF3C096C), Color(0xFF5A189A))
         val Tropical = listOf(Color(0xFFFF006E), Color(0xFFFB5607), Color(0xFFFFBE0B))
-        val Cherry = listOf(Color(0xFFFFB3C6), Color(0xFFFF8FAB), Color(0xFFFFC2D1))
+        val Cherry = listOf(Color(0xFFFF8FAB), Color(0xFFFFB3C6), Color(0xFFFFC2D1))
     }
 }
 

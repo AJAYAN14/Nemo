@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.learning.R
-import com.jian.nemo.core.designsystem.theme.SystemColors
+import com.jian.nemo.core.designsystem.theme.LearningPalette
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +44,7 @@ fun SRSRatingButton(
         onClick = onClick,
         backgroundColor = containerColor,
         shape = RoundedRectangle(16.dp),
-        border = BorderStroke(1.5.dp, color),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.25f)),
         elevation = 0.dp,
         modifier = modifier.height(56.dp)
     ) {
@@ -77,8 +77,8 @@ private fun SRSRatingButtonPreview() {
         SRSRatingButton(
             label = stringResource(R.string.learn_srs_rating_forgot),
             time = "< 1m",
-            color = SystemColors.Red,
-            containerColor = MaterialTheme.colorScheme.surface,
+            color = LearningPalette.SrsRoseTextLight,
+            containerColor = LearningPalette.SrsRoseBgLight,
             onClick = {}
         )
     }

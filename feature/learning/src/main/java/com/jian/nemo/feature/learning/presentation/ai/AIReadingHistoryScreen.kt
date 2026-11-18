@@ -113,7 +113,7 @@ fun AIReadingHistoryScreen(
                             colorScheme.background.copy(alpha = 0.95f),
                             colorScheme.background.copy(alpha = 0.75f),
                             colorScheme.background.copy(alpha = 0.35f),
-                            Color.Transparent
+                            colorScheme.background.copy(alpha = 0f)
                         )
                     )
                 )

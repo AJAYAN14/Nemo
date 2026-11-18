@@ -283,7 +283,7 @@ private fun LabBackgroundDecorations() {
                         listOf(
                             SettingsPalette.LiquidCyanGradStart.copy(alpha = 0.55f),
                             SettingsPalette.LiquidBlueGradEnd.copy(alpha = 0.35f),
-                            Color.Transparent
+                            SettingsPalette.LiquidBlueGradEnd.copy(alpha = 0f)
                         )
                     )
                 )
@@ -302,7 +302,7 @@ private fun LabBackgroundDecorations() {
                         listOf(
                             SettingsPalette.LiquidPinkGradStart.copy(alpha = 0.55f),
                             SettingsPalette.LiquidPurpleGradEnd.copy(alpha = 0.35f),
-                            Color.Transparent
+                            SettingsPalette.LiquidPurpleGradEnd.copy(alpha = 0f)
                         )
                     )
                 )
@@ -321,7 +321,7 @@ private fun LabBackgroundDecorations() {
                         listOf(
                             SettingsPalette.LiquidAmberGradStart.copy(alpha = 0.5f),
                             SettingsPalette.LiquidGoldGradEnd.copy(alpha = 0.3f),
-                            Color.Transparent
+                            SettingsPalette.LiquidGoldGradEnd.copy(alpha = 0f)
                         )
                     )
                 )

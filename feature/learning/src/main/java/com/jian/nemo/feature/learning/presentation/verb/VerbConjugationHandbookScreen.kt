@@ -780,7 +780,7 @@ private fun VerbConjugationHandbookContent(
                             containerColor.copy(alpha = 0.88f),
                             containerColor.copy(alpha = 0.55f),
                             containerColor.copy(alpha = 0.20f),
-                            Color.Transparent
+                            containerColor.copy(alpha = 0f)
                         )
                     )
                 )

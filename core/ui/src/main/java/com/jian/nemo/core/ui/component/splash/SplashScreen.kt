@@ -296,7 +296,7 @@ fun SplashScreen(
                                 0.45f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.28f),
                                 0.70f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.08f),
                                 0.88f to UiPalette.SplashGlowSky.copy(alpha = glowAlpha * 0.02f),
-                                1.00f to Color.Transparent
+                                1.00f to UiPalette.SplashGlowSky.copy(alpha = 0f)
                             ),
                             center = Offset(w * 0.42f, h * 0.42f),
                             radius = w * 0.38f
@@ -310,7 +310,7 @@ fun SplashScreen(
                                 0.45f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.22f),
                                 0.70f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.06f),
                                 0.88f to UiPalette.SplashGlowTeal.copy(alpha = glowAlpha * 0.015f),
-                                1.00f to Color.Transparent
+                                1.00f to UiPalette.SplashGlowTeal.copy(alpha = 0f)
                             ),
                             center = Offset(w * 0.58f, h * 0.58f),
                             radius = w * 0.38f
@@ -326,7 +326,7 @@ fun SplashScreen(
                                 0.45f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.25f),
                                 0.70f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.08f),
                                 0.88f to UiPalette.SplashGlowLightBlue.copy(alpha = glowAlpha * 0.02f),
-                                1.00f to Color.Transparent
+                                1.00f to UiPalette.SplashGlowLightBlue.copy(alpha = 0f)
                             ),
                             center = Offset(w * 0.40f, h * 0.42f),
                             radius = w * 0.38f
@@ -340,7 +340,7 @@ fun SplashScreen(
                                 0.45f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.20f),
                                 0.70f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.06f),
                                 0.88f to UiPalette.SplashGlowOrange.copy(alpha = glowAlpha * 0.015f),
-                                1.00f to Color.Transparent
+                                1.00f to UiPalette.SplashGlowOrange.copy(alpha = 0f)
                             ),
                             center = Offset(w * 0.60f, h * 0.58f),
                             radius = w * 0.38f

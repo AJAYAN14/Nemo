@@ -100,7 +100,7 @@ fun PosWordsScreen(
                             containerColor.copy(alpha = 0.95f),
                             containerColor.copy(alpha = 0.75f),
                             containerColor.copy(alpha = 0.35f),
-                            Color.Transparent
+                            containerColor.copy(alpha = 0f)
                         )
                     )
                 )

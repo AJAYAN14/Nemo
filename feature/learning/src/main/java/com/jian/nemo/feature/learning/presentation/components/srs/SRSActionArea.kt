@@ -79,12 +79,14 @@ fun SRSActionArea(
     // 检测深色模式
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
-    // 评分按钮纯实色定义 - 严格遵循项目调色盘手册（单一纯实色，零透明度，不分模式）
-    val buttonContainerColor = MaterialTheme.colorScheme.surface
-    val effectiveAgainColor = SystemColors.Red
-    val effectiveHardColor = SystemColors.Orange
-    val effectiveGoodColor = SystemColors.Blue
-    val effectiveEasyColor = SystemColors.Green
+    val effectiveAgainColor = if (isDarkTheme) LearningPalette.SrsRoseTextDark else LearningPalette.SrsRoseTextLight
+    val effectiveAgainContainer = if (isDarkTheme) LearningPalette.SrsRoseBgDark else LearningPalette.SrsRoseBgLight
+    val effectiveHardColor = if (isDarkTheme) LearningPalette.SrsOrangeTextDark else LearningPalette.SrsOrangeTextLight
+    val effectiveHardContainer = if (isDarkTheme) LearningPalette.SrsOrangeBgDark else LearningPalette.SrsOrangeBgLight
+    val effectiveGoodColor = if (isDarkTheme) LearningPalette.SrsBlueTextDark else LearningPalette.SrsBlueTextLight
+    val effectiveGoodContainer = if (isDarkTheme) LearningPalette.SrsBlueBgDark else LearningPalette.SrsBlueBgLight
+    val effectiveEasyColor = if (isDarkTheme) LearningPalette.SrsEmeraldTextDark else LearningPalette.SrsEmeraldTextLight
+    val effectiveEasyContainer = if (isDarkTheme) LearningPalette.SrsEmeraldBgDark else LearningPalette.SrsEmeraldBgLight
 
     val effectiveStarColor = if (isDarkTheme) SystemColors.YellowDark else SystemColors.Yellow
 
@@ -202,7 +204,7 @@ fun SRSActionArea(
                             label = stringResource(R.string.learn_srs_rating_again),
                             time = state.intervals[1] ?: "-",
                             color = effectiveAgainColor,
-                            containerColor = buttonContainerColor,
+                            containerColor = effectiveAgainContainer,
                             onClick = { 
                                 safeRate(1) {
                                     view.performHapticFeedback(HapticFeedbackConstants.REJECT)
@@ -217,7 +219,7 @@ fun SRSActionArea(
                             label = stringResource(R.string.learn_srs_rating_hard),
                             time = state.intervals[3] ?: "-",
                             color = effectiveHardColor,
-                            containerColor = buttonContainerColor,
+                            containerColor = effectiveHardContainer,
                             onClick = { 
                                 safeRate(3) {
                                     view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
@@ -232,7 +234,7 @@ fun SRSActionArea(
                             label = stringResource(R.string.learn_srs_rating_good),
                             time = state.intervals[4] ?: "-",
                             color = effectiveGoodColor,
-                            containerColor = buttonContainerColor,
+                            containerColor = effectiveGoodContainer,
                             onClick = { 
                                 safeRate(4) {
                                     view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -247,7 +249,7 @@ fun SRSActionArea(
                             label = stringResource(R.string.learn_srs_rating_easy),
                             time = state.intervals[5] ?: "-",
                             color = effectiveEasyColor,
-                            containerColor = buttonContainerColor,
+                            containerColor = effectiveEasyContainer,
                             onClick = { 
                                 safeRate(5) {
                                     view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)

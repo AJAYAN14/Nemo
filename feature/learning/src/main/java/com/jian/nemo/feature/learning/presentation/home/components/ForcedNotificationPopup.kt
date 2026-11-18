@@ -187,7 +187,10 @@ private fun ForcedNotificationCard(
                         .height(24.dp)
                         .background(
                             brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, MaterialTheme.colorScheme.surface)
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                                    MaterialTheme.colorScheme.surface
+                                )
                             )
                         )
                 )

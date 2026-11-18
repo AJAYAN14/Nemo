@@ -538,7 +538,7 @@ fun NemoLiquidMenuOverlay(
                     listOf(
                         Color.White.copy(alpha = 0.45f),
                         Color.White.copy(alpha = 0.15f),
-                        Color.Transparent
+                        Color.White.copy(alpha = 0f)
                     )
                 } else {
                     listOf(

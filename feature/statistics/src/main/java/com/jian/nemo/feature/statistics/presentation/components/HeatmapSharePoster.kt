@@ -81,7 +81,11 @@ fun HeatmapSharePoster(
                         .size(24.dp)
                         .background(
                             brush = Brush.linearGradient(
-                                listOf(NemoPrimary, SystemColors.Blue)
+                                if (isDarkTheme) {
+                                    listOf(SystemColors.BlueDark, SystemColors.CyanDark)
+                                } else {
+                                    listOf(SystemColors.Blue, SystemColors.Cyan)
+                                }
                             ),
                             shape = RoundedRectangle(7.dp)
                         ),
@@ -138,14 +142,15 @@ fun HeatmapSharePoster(
             contentAlignment = Alignment.Center
         ) {
             // 火焰外光晕
+            val haloColor = if (isDarkTheme) SystemColors.OrangeDark else SystemColors.Orange
             Box(
                 modifier = Modifier
                     .size(76.dp)
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                SystemColors.Orange.copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
-                                Color.Transparent
+                                haloColor.copy(alpha = if (isDarkTheme) 0.28f else 0.18f),
+                                haloColor.copy(alpha = 0f)
                             )
                         ),
                         shape = CircleShape

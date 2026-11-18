@@ -223,7 +223,7 @@ fun FavoriteQuestionsScreen(
                                 backgroundColor.copy(alpha = 0.95f),
                                 backgroundColor.copy(alpha = 0.75f),
                                 backgroundColor.copy(alpha = 0.35f),
-                                Color.Transparent
+                                backgroundColor.copy(alpha = 0f)
                             )
                         )
                     )

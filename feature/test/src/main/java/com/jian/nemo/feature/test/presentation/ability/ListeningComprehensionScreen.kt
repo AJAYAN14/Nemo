@@ -162,7 +162,7 @@ fun ListeningComprehensionScreen(
                             containerColor.copy(alpha = 0.95f),
                             containerColor.copy(alpha = 0.75f),
                             containerColor.copy(alpha = 0.35f),
-                            Color.Transparent
+                            containerColor.copy(alpha = 0f)
                         )
                     )
                 )
@@ -291,7 +291,7 @@ private fun ListeningHistoryView(
                             containerColor.copy(alpha = 0.95f),
                             containerColor.copy(alpha = 0.75f),
                             containerColor.copy(alpha = 0.35f),
-                            Color.Transparent
+                            containerColor.copy(alpha = 0f)
                         )
                     )
                 )
@@ -500,7 +500,11 @@ private fun ReadyView(
                                 .clip(RoundedRectangle(3.dp))
                                 .background(
                                     Brush.verticalGradient(
-                                        colors = listOf(SystemColors.Indigo, SystemColors.Teal)
+                                        colors = if (isDark) {
+                                            listOf(SystemColors.IndigoDark, SystemColors.BlueDark, SystemColors.TealDark)
+                                        } else {
+                                            listOf(SystemColors.Indigo, SystemColors.Blue, SystemColors.Teal)
+                                        }
                                     )
                                 )
                         )

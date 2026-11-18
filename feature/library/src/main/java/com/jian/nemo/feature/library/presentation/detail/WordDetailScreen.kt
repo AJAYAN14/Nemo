@@ -401,7 +401,7 @@ private fun WordDetailContent(
                             backgroundColor.copy(alpha = 0.95f * scrollProgress),
                             backgroundColor.copy(alpha = 0.75f * scrollProgress),
                             backgroundColor.copy(alpha = 0.35f * scrollProgress),
-                            Color.Transparent
+                            backgroundColor.copy(alpha = 0f)
                         )
                     )
                 )
