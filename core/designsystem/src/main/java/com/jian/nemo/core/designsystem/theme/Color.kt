@@ -79,36 +79,36 @@ fun Color.toHex(): String {
 }
 
 
-// 测试结算页原始配色（集中管理）
+// 测试结算页配色规范
 object TestResultPalette {
-    val CorrectCardBgDark = Color(0xFF0B5F49)
-    val CorrectCardBgLight = Color(0xFFE8F5E9)
-    val CorrectCardContentDark = Color(0xFF6EE7B7)
-    val CorrectCardContentLight = Color(0xFF2E7D32)
+    val CorrectCardBgDark = NemoSecondaryContainerDark
+    val CorrectCardBgLight = NemoSecondaryContainerLight
+    val CorrectCardContentDark = NemoOnSecondaryContainerDark
+    val CorrectCardContentLight = NemoOnSecondaryContainerLight
 
-    val WrongCardBgDark = Color(0xFF922626)
-    val WrongCardBgLight = Color(0xFFFEE2E2)
-    val WrongCardContentDark = Color(0xFFFCA5A5)
-    val WrongCardContentLight = Color(0xFFB91C1C)
+    val WrongCardBgDark = NemoErrorContainerDark
+    val WrongCardBgLight = NemoErrorContainerLight
+    val WrongCardContentDark = NemoOnErrorContainerDark
+    val WrongCardContentLight = NemoOnErrorContainerLight
 
-    val TimeCardBgDark = Color(0xFF8A4318)
-    val TimeCardBgLight = Color(0xFFFFF8E1)
-    val TimeCardContentDark = Color(0xFFFCD34D)
-    val TimeCardContentLight = Color(0xFFF57F17)
+    val TimeCardBgDark = Color(0xFF3E1E00)
+    val TimeCardBgLight = Color(0xFFFFF0D6)
+    val TimeCardContentDark = NemoWarningDark
+    val TimeCardContentLight = Color(0xFF8A4600)
 
-    val DistributionCardBgDark = Color(0xFF263548)
+    val DistributionCardBgDark = Color(0xFF1C1C1E)
     val DistributionCardBgLight = Color(0xFFFFFFFF)
-    val DistributionTitleDark = Color(0xFFF8FAFC)
-    val DistributionTitleLight = Color(0xFF1E293B)
+    val DistributionTitleDark = Color(0xFFFFFFFF)
+    val DistributionTitleLight = Color(0xFF000000)
 
-    val WordAccentDark = Color(0xFF60A5FA)
-    val WordAccentLight = Color(0xFF3B82F6)
-    val GrammarAccentDark = Color(0xFFA78BFA)
-    val GrammarAccentLight = Color(0xFF8B5CF6)
-    val SecondaryTextDark = Color(0xFFA5B4C6)
-    val SecondaryTextLight = Color(0xFF64748B)
-    val DividerDark = Color(0xFF475569)
-    val DividerLight = Color(0xFFCBD5E1)
+    val WordAccentDark = Color(0xFF0A84FF)
+    val WordAccentLight = Color(0xFF007AFF)
+    val GrammarAccentDark = Color(0xFFBF5AF2)
+    val GrammarAccentLight = Color(0xFFAF52DE)
+    val SecondaryTextDark = NemoNeutralGray
+    val SecondaryTextLight = NemoTextLight
+    val DividerDark = Color(0xFF38383A)
+    val DividerLight = Color(0xFFC6C6C8)
 }
 
 // ==============================================

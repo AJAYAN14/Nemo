@@ -754,6 +754,7 @@ fun WordLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -781,6 +782,7 @@ fun WordLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -809,6 +811,7 @@ fun WordLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -836,6 +839,7 @@ fun WordLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -970,6 +974,7 @@ fun GrammarLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -997,6 +1002,7 @@ fun GrammarLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -1025,6 +1031,7 @@ fun GrammarLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->
@@ -1052,6 +1059,7 @@ fun GrammarLearningContent(
                     sessionRelearnCount = uiState.sessionRelearnCount,
                     tomorrowReviewForecastCount = uiState.tomorrowReviewForecastCount,
                     todayDueReviewCount = uiState.todayDueReviewCount,
+                    isGrandAchievement = uiState.isTodayFullyCompleted,
                     showShareDialog = showShareDialog,
                     onDismissShareDialog = onDismissShareDialog,
                     onConfirmBonus = { bonusCount, bonusMode ->

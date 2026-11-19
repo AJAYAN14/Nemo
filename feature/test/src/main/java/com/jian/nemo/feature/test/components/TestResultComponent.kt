@@ -10,7 +10,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.background
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.EmojiEvents
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.Whatshot
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,7 +48,7 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 import android.annotation.SuppressLint
-import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import com.jian.nemo.core.domain.model.TestQuestion
 import com.jian.nemo.core.designsystem.theme.TestResultPalette
 import com.jian.nemo.core.designsystem.theme.NemoKonfettiColors
@@ -98,7 +104,7 @@ fun TestResultComponent(
     val timeFormatted = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     val accuracyColor = getAccuracyColor(accuracy)
     val isDark = colorScheme.background.luminance() < 0.5f
-    val textSub = if (isDark) TestResultPalette.SecondaryTextDark else TestResultPalette.SecondaryTextLight
+    val textSub = MaterialTheme.colorScheme.onSurfaceVariant
     val context = LocalContext.current
     var showConfetti by remember { mutableStateOf(false) }
 
@@ -199,10 +205,10 @@ fun TestResultComponent(
                             modifier = Modifier.padding(bottom = 16.dp)
                         ) {
                             val gradeIcon = when {
-                                accuracy > 85 -> Icons.Filled.EmojiEvents // 原生奖杯 SVG
-                                accuracy >= 70 -> Icons.Filled.Star // 原生星星 SVG
-                                accuracy >= 60 -> Icons.Filled.CheckCircle // 原生达标 SVG
-                                else -> Icons.AutoMirrored.Filled.MenuBook // 原生书本 SVG
+                                accuracy > 85 -> Icons.Rounded.EmojiEvents
+                                accuracy >= 70 -> Icons.Rounded.Star
+                                accuracy >= 60 -> Icons.Rounded.CheckCircle
+                                else -> Icons.AutoMirrored.Rounded.MenuBook
                             }
                             Icon(
                                 imageVector = gradeIcon,
@@ -254,7 +260,7 @@ fun TestResultComponent(
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Text(
-                                text = String.format(stringResource(R.string.test_result_accuracy_format), animatedAccuracy),
+                                text = String.format(Locale.getDefault(), stringResource(R.string.test_result_accuracy_format), animatedAccuracy),
                                 style = MaterialTheme.typography.displayLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = accuracyColor
@@ -276,27 +282,27 @@ fun TestResultComponent(
                     ) {
                         // 答对卡片 - 采用清新的亮绿色系
                         StatCard(
-                            icon = Icons.Default.Check,
+                            icon = Icons.Rounded.Check,
                             value = correctAnswers.toString(),
                             label = stringResource(R.string.test_result_stat_correct),
-                            backgroundColor = if (isDark) TestResultPalette.CorrectCardBgDark else TestResultPalette.CorrectCardBgLight,
-                            contentColor = if (isDark) TestResultPalette.CorrectCardContentDark else TestResultPalette.CorrectCardContentLight,
+                            backgroundColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.weight(1f)
                         )
 
                         // 答错卡片 - 采用更柔和的亮粉色系
                         StatCard(
-                            icon = Icons.Default.Close,
+                            icon = Icons.Rounded.Close,
                             value = wrongAnswersCount.toString(),
                             label = stringResource(R.string.test_result_stat_wrong),
-                            backgroundColor = if (isDark) TestResultPalette.WrongCardBgDark else TestResultPalette.WrongCardBgLight,
-                            contentColor = if (isDark) TestResultPalette.WrongCardContentDark else TestResultPalette.WrongCardContentLight,
+                            backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.weight(1f)
                         )
 
                         // 用时卡片 - 采用温暖的明黄色系
                         StatCard(
-                            icon = Icons.Default.AccessTime,
+                            icon = Icons.Rounded.AccessTime,
                             value = timeFormatted,
                             label = stringResource(R.string.test_result_stat_time),
                             backgroundColor = if (isDark) TestResultPalette.TimeCardBgDark else TestResultPalette.TimeCardBgLight,
@@ -626,7 +632,7 @@ fun TodaySummarySection(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Whatshot,
+                    imageVector = Icons.Rounded.Whatshot,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)

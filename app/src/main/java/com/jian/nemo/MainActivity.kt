@@ -1,5 +1,6 @@
 package com.jian.nemo
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -95,7 +96,17 @@ class MainActivity : ComponentActivity() {
         super.onStop()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (!isTaskRoot && intent?.hasCategory(Intent.CATEGORY_LAUNCHER) == true && intent?.action == Intent.ACTION_MAIN) {
+            super.onCreate(savedInstanceState)
+            finish()
+            return
+        }
         installSplashScreen()
         super.onCreate(savedInstanceState)
 

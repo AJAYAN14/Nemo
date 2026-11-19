@@ -92,6 +92,12 @@ import kotlin.math.roundToInt
  * @param showShareDialog 是否展示打卡海报弹窗
  * @param onDismissShareDialog 关闭打卡海报弹窗回调
  * @param onConfirmBonus 追加学习确认回调
+ * @param todayDueReviewCount 今日待复习词量
+ * @param dailyStreak 连续学习天数
+ * @param isGrandAchievement 是否为全天目标达成等重大里程碑（控制庆祝彩纸与仪式感）
+ * @param showShareDialog 是否展示打卡海报弹窗
+ * @param onDismissShareDialog 关闭打卡海报弹窗回调
+ * @param onConfirmBonus 追加学习确认回调
  * @param onBackClick 返回事件回调
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,6 +115,7 @@ fun LearningFinishedContent(
     tomorrowReviewForecastCount: Int = 0,
     todayDueReviewCount: Int = 0,
     dailyStreak: Int = 1,
+    isGrandAchievement: Boolean = false,
     showShareDialog: Boolean = false,
     onDismissShareDialog: () -> Unit = {},
     onConfirmBonus: (Int, BonusMode) -> Unit = { _, _ -> },
@@ -152,7 +159,7 @@ fun LearningFinishedContent(
     var showBonusDialog by remember { mutableStateOf(false) }
     var showConfetti by remember { mutableStateOf(false) }
 
-    // 2.4 秒周期的 45° 斜扫光流动着色器 (Shimmer Sweep)
+    // 2.4 秒周期的柔和流动着色器
     val shimmerTransition = rememberInfiniteTransition(label = "ShimmerTransition")
     val shimmerProgress by shimmerTransition.animateFloat(
         initialValue = -1.5f,
@@ -164,17 +171,19 @@ fun LearningFinishedContent(
         label = "ShimmerProgress"
     )
 
-    // 触发结算仪式感动画与轻微触觉反馈
+    // 触发结算仪式感阶梯动画与标点触觉反馈
     LaunchedEffect(sessionTotalCount, sessionMaxCombo) {
-        // 轻微触觉反馈
+        // 轻微标点触觉反馈（符合原生分级规范）
         try {
             val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
             vibrator?.let {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    it.vibrate(VibrationEffect.createOneShot(35, VibrationEffect.DEFAULT_AMPLITUDE))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    it.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE))
                 } else {
                     @Suppress("DEPRECATION")
-                    it.vibrate(35)
+                    it.vibrate(25)
                 }
             }
         } catch (_: Exception) {}
@@ -182,26 +191,28 @@ fun LearningFinishedContent(
         launch {
             countUpNumber.animateTo(
                 targetValue = sessionTotalCount.toFloat(),
+                animationSpec = tween(durationMillis = 650, easing = FastOutSlowInEasing)
+            )
+        }
+        launch {
+            delay(120)
+            barProgressAnim.animateTo(
+                targetValue = 1f,
                 animationSpec = tween(durationMillis = 750, easing = FastOutSlowInEasing)
             )
         }
         launch {
-            delay(150)
+            delay(200)
             comboAnim.animateTo(
                 targetValue = sessionMaxCombo.toFloat(),
                 animationSpec = spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessLow)
             )
         }
-        launch {
-            delay(200)
-            barProgressAnim.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = 850, easing = FastOutSlowInEasing)
-            )
-        }
-        launch {
-            delay(100)
-            showConfetti = true
+        if (isGrandAchievement) {
+            launch {
+                delay(300)
+                showConfetti = true
+            }
         }
     }
 
@@ -224,9 +235,9 @@ fun LearningFinishedContent(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 12.dp)
+                    .padding(top = 8.dp, bottom = 12.dp)
             ) {
-                // 居中大数字与单位（基线自然对齐，去除沉重方块背景）
+                // 居中大数字与单位（基线自然对齐，等宽排版杜绝抖动）
                 Row(
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.Center
@@ -238,7 +249,8 @@ fun LearningFinishedContent(
                         fontWeight = FontWeight.Black,
                         letterSpacing = (-2).sp,
                         color = textPrimary,
-                        lineHeight = 64.sp
+                        lineHeight = 64.sp,
+                        style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")
                     )
                     Text(
                         text = stringResource(R.string.learn_finish_unit_word),
@@ -252,26 +264,50 @@ fun LearningFinishedContent(
                 // 主标题
                 Text(
                     text = title,
-                    fontSize = 21.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = (-0.3).sp,
                     color = textPrimary
                 )
 
-                // 专注度或副标题动态激励反馈（HTML 同款极简耗时文案）
-                val feedbackText = if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
+                // 专注度或副标题动态激励反馈（精致药丸胶囊微徽章）
+                if (sessionDurationSeconds > 0 && sessionTotalCount > 0) {
                     val avgSeconds = String.format(Locale.getDefault(), "%.1f", sessionDurationSeconds.toFloat() / sessionTotalCount)
-                    stringResource(R.string.learn_finish_avg_seconds_format, avgSeconds)
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isDark) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        border = BorderStroke(1.dp, cardBorder.copy(alpha = 0.4f)),
+                        modifier = Modifier.padding(top = 4.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.AccessTime,
+                                contentDescription = null,
+                                tint = textSecondary,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = stringResource(R.string.learn_finish_avg_seconds_format, avgSeconds),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = textSecondary
+                            )
+                        }
+                    }
                 } else {
-                    subtitle
+                    Text(
+                        text = subtitle,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = textSecondary.copy(alpha = 0.85f),
+                        lineHeight = 18.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
                 }
-                Text(
-                    text = feedbackText,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = textSecondary.copy(alpha = 0.85f),
-                    lineHeight = 16.sp
-                )
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -621,7 +657,8 @@ fun LearningFinishedContent(
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = textPrimary,
-                                lineHeight = 24.sp
+                                lineHeight = 24.sp,
+                                style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")
                             )
                             Text(
                                 text = stringResource(R.string.learn_finish_unit_times),
@@ -677,7 +714,8 @@ fun LearningFinishedContent(
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Black,
                                     color = textPrimary,
-                                    lineHeight = 24.sp
+                                    lineHeight = 24.sp,
+                                    style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")
                                 )
                                 Text(
                                     text = stringResource(R.string.learn_finish_unit_minute),
@@ -692,7 +730,8 @@ fun LearningFinishedContent(
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Black,
                                 color = textPrimary,
-                                lineHeight = 24.sp
+                                lineHeight = 24.sp,
+                                style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum")
                             )
                             Text(
                                 text = if (sessionDurationSeconds > 0) stringResource(R.string.learn_finish_unit_second) else stringResource(R.string.learn_finish_unit_minute),
@@ -857,19 +896,19 @@ fun LearningFinishedContent(
                         .clip(RoundedRectangle(24.dp))
                         .drawWithContent {
                             drawContent()
-                            // 45° 斜切流光扫过绘制 (Shimmer Sweep Effect)
+                            // 克制内敛的微光流转，消除生硬反光
                             val width = size.width
                             val height = size.height
                             val xOffset = shimmerProgress * width
 
                             val shimmerBrush = Brush.linearGradient(
                                 colors = listOf(
-                                    Color.White.copy(alpha = 0f),
-                                    Color.White.copy(alpha = if (isDark) 0.25f else 0.45f),
-                                    Color.White.copy(alpha = 0f)
+                                    Color.Transparent,
+                                    bonusOrange.copy(alpha = if (isDark) 0.14f else 0.20f),
+                                    Color.Transparent
                                 ),
                                 start = Offset(xOffset, 0f),
-                                end = Offset(xOffset + width * 0.4f, height * 1.2f)
+                                end = Offset(xOffset + width * 0.35f, height * 1.1f)
                             )
                             drawRect(brush = shimmerBrush)
                         }
@@ -1020,33 +1059,35 @@ fun LearningFinishedContent(
         }
 
         // ==========================================
-        // 7. 五彩纸屑庆祝层
+        // 7. 五彩纸屑庆祝层（仅在全天重大达成时触发，普通微会话保持克制）
         // ==========================================
-        AnimatedVisibility(
-            visible = showConfetti,
-            enter = fadeIn(animationSpec = tween(400)),
-            exit = fadeOut(animationSpec = tween(1200)),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            val partyColors = remember(themePrimary) {
-                listOf(themePrimary.toArgb()) + NemoKonfettiColors
-            }
-            val party = remember(partyColors) {
-                Party(
-                    speed = 8f,
-                    maxSpeed = 26f,
-                    damping = 0.9f,
-                    spread = 360,
-                    colors = partyColors,
-                    emitter = Emitter(duration = 150, TimeUnit.MILLISECONDS).max(80),
-                    position = Position.Relative(0.5, 0.15)
+        if (isGrandAchievement) {
+            AnimatedVisibility(
+                visible = showConfetti,
+                enter = fadeIn(animationSpec = tween(400)),
+                exit = fadeOut(animationSpec = tween(1200)),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val partyColors = remember(themePrimary) {
+                    listOf(themePrimary.toArgb()) + NemoKonfettiColors
+                }
+                val party = remember(partyColors) {
+                    Party(
+                        speed = 8f,
+                        maxSpeed = 26f,
+                        damping = 0.9f,
+                        spread = 360,
+                        colors = partyColors,
+                        emitter = Emitter(duration = 150, TimeUnit.MILLISECONDS).max(80),
+                        position = Position.Relative(0.5, 0.15)
+                    )
+                }
+
+                KonfettiView(
+                    modifier = Modifier.fillMaxSize(),
+                    parties = listOf(party)
                 )
             }
-
-            KonfettiView(
-                modifier = Modifier.fillMaxSize(),
-                parties = listOf(party)
-            )
         }
 
         // 今日加餐配置弹窗（居中挑战配置对话框，传递词数与加餐模式）

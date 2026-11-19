@@ -294,7 +294,7 @@
     <string name="test_result_cd_rating_icon">评级图标</string>
     <string name="test_result_title_completed">测试完成！</string>
     <string name="test_result_label_accuracy">正确率</string>
-    <string name="test_result_accuracy_format">%.0f%%</string>
+    <string name="test_result_accuracy_format">%d%%</string>
     <string name="test_result_stat_correct">答对</string>
     <string name="test_result_stat_wrong">答错</string>
     <string name="test_result_stat_time">用时</string>

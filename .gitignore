@@ -68,3 +68,6 @@ code_artifact*.html
 
 # WorkBuddy local artifacts
 .workbuddy/
+
+# Third party skills temp repo
+appllama-skills/
