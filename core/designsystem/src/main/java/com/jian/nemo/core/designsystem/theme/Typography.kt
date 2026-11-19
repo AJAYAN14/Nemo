@@ -125,6 +125,39 @@ val Rubik = FontFamily(
         googleFont = GoogleFont("Rubik"),
         fontProvider = googleFontsProvider,
         weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Rubik"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
+    ),
+    Font(
+        googleFont = GoogleFont("Rubik"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Black
+    )
+)
+
+val PlusJakartaSans = FontFamily(
+    Font(
+        googleFont = GoogleFont("Plus Jakarta Sans"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Normal
+    ),
+    Font(
+        googleFont = GoogleFont("Plus Jakarta Sans"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Medium
+    ),
+    Font(
+        googleFont = GoogleFont("Plus Jakarta Sans"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.Bold
+    ),
+    Font(
+        googleFont = GoogleFont("Plus Jakarta Sans"),
+        fontProvider = googleFontsProvider,
+        weight = FontWeight.ExtraBold
     )
 )
 

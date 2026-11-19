@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,12 +49,12 @@ fun TypingPracticeDialog(
         onDismissRequest = onDismiss,
         title = stringResource(R.string.learn_typing_dialog_title),
         confirmText = stringResource(R.string.ai_reading_btn_confirm),
-        dismissText = stringResource(R.string.learn_typing_btn_clear),
+        dismissText = stringResource(R.string.action_close),
         confirmButtonColor = themeColor,
         onConfirm = onConfirm,
         onDismiss = {
             focusManager.clearFocus()
-            state.clear()
+            onDismiss()
         },
         content = {
             Column(
@@ -156,14 +157,25 @@ fun TypingPracticeDialog(
                             .padding(bottom = 12.dp),
                         shape = RoundedRectangle(16.dp),
                         singleLine = true,
+                        trailingIcon = {
+                            if (state.kanaInput.isNotEmpty()) {
+                                IconButton(onClick = { state.updateKanaInput("") }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = stringResource(R.string.learn_typing_btn_clear),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = themeColor,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
                             focusedLabelColor = themeColor,
                             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             cursorColor = themeColor,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedContainerColor = MaterialTheme.colorScheme.surface
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                         textStyle = LocalTextStyle.current.copy(
@@ -182,14 +194,25 @@ fun TypingPracticeDialog(
                             .padding(bottom = 8.dp),
                         shape = RoundedRectangle(16.dp),
                         singleLine = true,
+                        trailingIcon = {
+                            if (state.kanjiInput.isNotEmpty()) {
+                                IconButton(onClick = { state.updateKanjiInput("") }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = stringResource(R.string.learn_typing_btn_clear),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        },
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = themeColor,
                             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
                             focusedLabelColor = themeColor,
                             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             cursorColor = themeColor,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                            focusedContainerColor = MaterialTheme.colorScheme.surface
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { onConfirm() }),

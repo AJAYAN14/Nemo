@@ -54,6 +54,7 @@ import com.jian.nemo.feature.settings.components.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import com.jian.nemo.feature.settings.components.SquircleSettingItem
+import com.jian.nemo.feature.settings.components.ThemeTimePickerDialog
 
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -414,7 +415,8 @@ fun ThemeSettingsScreen(
     }
 
     if (showStartTimePicker) {
-        TimePickerDialog(
+        ThemeTimePickerDialog(
+            isStartTime = true,
             initialTime = uiState.darkModeStartTime,
             onDismiss = { showStartTimePicker = false },
             onTimeSelected = { time ->
@@ -425,7 +427,8 @@ fun ThemeSettingsScreen(
     }
 
     if (showEndTimePicker) {
-        TimePickerDialog(
+        ThemeTimePickerDialog(
+            isStartTime = false,
             initialTime = uiState.darkModeEndTime,
             onDismiss = { showEndTimePicker = false },
             onTimeSelected = { time ->
@@ -641,60 +644,6 @@ private fun StrategyOptionItem(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TimePickerDialog(
-    initialTime: String,
-    onDismiss: () -> Unit,
-    onTimeSelected: (String) -> Unit
-) {
-    val parts = initialTime.split(":")
-    val initialHour = parts.getOrNull(0)?.toIntOrNull() ?: 7
-    val initialMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0
-    
-    val timePickerState = rememberTimePickerState(
-        initialHour = initialHour,
-        initialMinute = initialMinute,
-        is24Hour = true
-    )
-
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val neutralCardBg = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceBackground
-    val textPrimary = if (isDark) Color.White else NemoSurfaceCardDark
-
-    NemoDialog(
-        onDismissRequest = onDismiss,
-        title = stringResource(R.string.settings_dialog_title_select_time),
-        confirmText = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_confirm),
-        dismissText = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_cancel),
-        onConfirm = {
-            val formattedTime = "${timePickerState.hour.toString().padStart(2, '0')}:${timePickerState.minute.toString().padStart(2, '0')}"
-            onTimeSelected(formattedTime)
-        },
-        content = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialColor = neutralCardBg,
-                        clockDialSelectedContentColor = Color.White,
-                        clockDialUnselectedContentColor = textPrimary,
-                        selectorColor = primaryColor,
-                        timeSelectorSelectedContainerColor = primaryColor.copy(alpha = if (isDark) 0.22f else 0.12f),
-                        timeSelectorUnselectedContainerColor = neutralCardBg,
-                        timeSelectorSelectedContentColor = primaryColor,
-                        timeSelectorUnselectedContentColor = textPrimary,
-                        containerColor = Color.Transparent
-                    )
-                )
-            }
-        }
-    )
-}
 
 @Composable
 private fun IconStyleSelectionDialog(

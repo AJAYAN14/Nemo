@@ -114,6 +114,14 @@
     <string name="settings_theme_title_color_palette">主题色彩</string>
     <string name="settings_theme_subtitle_color_palette">选择您喜欢的品牌配色</string>
     <string name="settings_dialog_title_select_time">选择时间</string>
+    <string name="settings_theme_time_preset_sunset">18:00 傍晚</string>
+    <string name="settings_theme_time_preset_night">20:00 晚间</string>
+    <string name="settings_theme_time_preset_late_night">22:00 深夜</string>
+    <string name="settings_theme_time_preset_dawn">06:00 清晨</string>
+    <string name="settings_theme_time_preset_morning">07:00 早晨</string>
+    <string name="settings_theme_time_preset_day">08:00 白昼</string>
+    <string name="settings_theme_time_picker_hours_accessibility">小时滚轮，当前为 %1$02d 点</string>
+    <string name="settings_theme_time_picker_minutes_accessibility">分钟滚轮，当前为 %1$02d 分</string>
 
     <!-- 关于页操作文案 -->
     <string name="settings_about_btn_fetch_log">重新拉取日志</string>
