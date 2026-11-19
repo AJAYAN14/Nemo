@@ -28,6 +28,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -62,6 +64,9 @@ import com.jian.nemo.core.designsystem.theme.Rubik
 import com.jian.nemo.core.ui.component.NemoDialog
 import com.jian.nemo.feature.settings.R
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.sin
 
 private data class TimePreset(
     val hour: Int,
@@ -83,6 +88,8 @@ private val EndTimePresets = listOf(
 private const val WHEEL_VIRTUAL_LOOPS = 200
 private val WHEEL_ITEM_HEIGHT = 76.dp
 private val WHEEL_VIEWPORT_HEIGHT = WHEEL_ITEM_HEIGHT * 3
+private const val MAX_ROTATION_DEG = 90f
+private val MAX_ANGLE_RAD = Math.toRadians(MAX_ROTATION_DEG.toDouble()).toFloat()
 
 @Composable
 fun ThemeTimePickerDialog(
@@ -135,13 +142,16 @@ fun ThemeTimePickerDialog(
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // 浅灰色背景底槽：对齐 docs/design/color-palette/COLORS.md
     val troughBgColor = if (isDark) NemoSurfaceSubcardDark else NemoSurfaceBackground
     val digitTensColor = if (isDark) Color.White.copy(alpha = 0.55f) else NemoTextLight
     val digitOnesColor = if (isDark) Color.White else NemoSurfaceCardDark
     val colonColor = digitOnesColor
 
-    // 小时与分钟滚轮状态：初始直接定位居中，结合上下对称 76dp contentPadding 确保当前数字绝对垂直居中
+    val density = LocalDensity.current
+    val itemHeightPx = with(density) { WHEEL_ITEM_HEIGHT.toPx() }
+    val wheelExtentPx = remember(itemHeightPx) { (2 * itemHeightPx).coerceAtLeast(1f) }
+    val radiusPx = remember(wheelExtentPx) { wheelExtentPx / MAX_ANGLE_RAD }
+
     val hourStartVirtualIndex = remember { (WHEEL_VIRTUAL_LOOPS / 2) * 24 + initialHour }
     val minuteStartVirtualIndex = remember { (WHEEL_VIRTUAL_LOOPS / 2) * 60 + initialMinute }
 
@@ -151,40 +161,63 @@ fun ThemeTimePickerDialog(
     val hourFlingBehavior = rememberSnapFlingBehavior(lazyListState = hourListState)
     val minuteFlingBehavior = rememberSnapFlingBehavior(lazyListState = minuteListState)
 
-    // 计算当前居中高亮的小时索引
     val centerHourVirtualIndex by remember {
         derivedStateOf {
-            val offset = hourListState.firstVisibleItemScrollOffset
-            val index = hourListState.firstVisibleItemIndex
-            val itemHeightPx = hourListState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-            if (offset > itemHeightPx / 2) index + 1 else index
+            val layoutInfo = hourListState.layoutInfo
+            if (layoutInfo.visibleItemsInfo.isEmpty()) return@derivedStateOf hourStartVirtualIndex
+            val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2f
+            layoutInfo.visibleItemsInfo
+                .minByOrNull { visible ->
+                    val itemCenter = visible.offset + visible.size / 2f
+                    val distance = itemCenter - viewportCenter
+                    val angle = (distance / wheelExtentPx).coerceIn(-1f, 1f) * MAX_ANGLE_RAD
+                    sin(angle).absoluteValue * radiusPx
+                }
+                ?.index ?: hourStartVirtualIndex
         }
     }
 
-    // 计算当前居中高亮的分钟索引
     val centerMinuteVirtualIndex by remember {
         derivedStateOf {
-            val offset = minuteListState.firstVisibleItemScrollOffset
-            val index = minuteListState.firstVisibleItemIndex
-            val itemHeightPx = minuteListState.layoutInfo.visibleItemsInfo.firstOrNull()?.size ?: 1
-            if (offset > itemHeightPx / 2) index + 1 else index
+            val layoutInfo = minuteListState.layoutInfo
+            if (layoutInfo.visibleItemsInfo.isEmpty()) return@derivedStateOf minuteStartVirtualIndex
+            val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2f
+            layoutInfo.visibleItemsInfo
+                .minByOrNull { visible ->
+                    val itemCenter = visible.offset + visible.size / 2f
+                    val distance = itemCenter - viewportCenter
+                    val angle = (distance / wheelExtentPx).coerceIn(-1f, 1f) * MAX_ANGLE_RAD
+                    sin(angle).absoluteValue * radiusPx
+                }
+                ?.index ?: minuteStartVirtualIndex
         }
     }
 
     val currentRealHour by remember { derivedStateOf { centerHourVirtualIndex % 24 } }
     val currentRealMinute by remember { derivedStateOf { centerMinuteVirtualIndex % 60 } }
 
+    var hasEmittedInitialHour by remember { mutableStateOf(false) }
+    var hasEmittedInitialMinute by remember { mutableStateOf(false) }
+
     LaunchedEffect(currentRealHour) {
-        if (selectedHour != currentRealHour) {
-            selectedHour = currentRealHour
-            performHapticTick()
+        if (hasEmittedInitialHour) {
+            if (selectedHour != currentRealHour) {
+                selectedHour = currentRealHour
+                performHapticTick()
+            }
+        } else {
+            hasEmittedInitialHour = true
         }
     }
 
     LaunchedEffect(currentRealMinute) {
-        if (selectedMinute != currentRealMinute) {
-            selectedMinute = currentRealMinute
-            performHapticTick()
+        if (hasEmittedInitialMinute) {
+            if (selectedMinute != currentRealMinute) {
+                selectedMinute = currentRealMinute
+                performHapticTick()
+            }
+        } else {
+            hasEmittedInitialMinute = true
         }
     }
 
@@ -206,19 +239,19 @@ fun ThemeTimePickerDialog(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // 1. 双滚轮卡片行：左右两边各独立一个浅灰色背景槽，中间为独立冒号，彻底无大包裹底板
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 左侧小时独立浅灰背景槽卡片（00 ~ 23，无边框，NemoSurfaceBackground）
                     TactileDrumCard(
                         modifier = Modifier.weight(1f),
                         listState = hourListState,
                         flingBehavior = hourFlingBehavior,
                         itemCount = 24,
                         centerVirtualIndex = centerHourVirtualIndex,
+                        wheelExtentPx = wheelExtentPx,
+                        radiusPx = radiusPx,
                         troughBgColor = troughBgColor,
                         digitTensColor = digitTensColor,
                         digitOnesColor = digitOnesColor,
@@ -231,7 +264,6 @@ fun ThemeTimePickerDialog(
                         }
                     )
 
-                    // 垂直双圆点冒号（独立位于两槽之间，正中居中，12dp 圆形，14dp 间距）
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 8.dp)
@@ -253,13 +285,14 @@ fun ThemeTimePickerDialog(
                         )
                     }
 
-                    // 右侧分钟独立浅灰背景槽卡片 (00 ~ 59，无边框，NemoSurfaceBackground)
                     TactileDrumCard(
                         modifier = Modifier.weight(1f),
                         listState = minuteListState,
                         flingBehavior = minuteFlingBehavior,
                         itemCount = 60,
                         centerVirtualIndex = centerMinuteVirtualIndex,
+                        wheelExtentPx = wheelExtentPx,
+                        radiusPx = radiusPx,
                         troughBgColor = troughBgColor,
                         digitTensColor = digitTensColor,
                         digitOnesColor = digitOnesColor,
@@ -275,7 +308,6 @@ fun ThemeTimePickerDialog(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // 2. 预设选项行：置于滚轮正下方，无边框，底槽颜色与上方滚轮完全一致，纯时间数字，零中文，横向对称居中
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterHorizontally),
@@ -341,6 +373,8 @@ private fun TactileDrumCard(
     flingBehavior: androidx.compose.foundation.gestures.FlingBehavior,
     itemCount: Int,
     centerVirtualIndex: Int,
+    wheelExtentPx: Float,
+    radiusPx: Float,
     troughBgColor: Color,
     digitTensColor: Color,
     digitOnesColor: Color,
@@ -348,6 +382,7 @@ private fun TactileDrumCard(
     onItemClick: (Int) -> Unit
 ) {
     val cardShape = RoundedRectangle(26.dp)
+    val density = LocalDensity.current
 
     Box(
         modifier = modifier
@@ -367,20 +402,39 @@ private fun TactileDrumCard(
                 key = { it }
             ) { virtualIndex ->
                 val realValue = virtualIndex % itemCount
-                val offsetFromCenter = virtualIndex - centerVirtualIndex
-                val isCenter = offsetFromCenter == 0
-
-                // 距离中心点插值：中心为 1.0f，相邻项缩放至 0.66f，透明度衰减至 0.44f
-                val (scale, alpha) = when (kotlin.math.abs(offsetFromCenter)) {
-                    0 -> 1.0f to 1.0f
-                    1 -> 0.66f to 0.44f
-                    else -> 0.45f to 0.20f
-                }
+                val isCenter = virtualIndex == centerVirtualIndex
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(WHEEL_ITEM_HEIGHT)
+                        .graphicsLayer {
+                            val layoutInfo = listState.layoutInfo
+                            val visibleInfo = layoutInfo.visibleItemsInfo.find { it.index == virtualIndex }
+
+                            if (visibleInfo != null) {
+                                val itemCenterY = visibleInfo.offset + (visibleInfo.size / 2f)
+                                val viewportCenterY =
+                                    (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2f
+                                val distanceToCenter = itemCenterY - viewportCenterY
+
+                                val normalized = (distanceToCenter / wheelExtentPx).coerceIn(-1f, 1f)
+                                val angleRad = normalized * MAX_ANGLE_RAD
+                                val wheelY = sin(angleRad) * radiusPx
+                                val falloff = (angleRad / MAX_ANGLE_RAD).absoluteValue
+
+                                translationY = wheelY - distanceToCenter
+                                rotationX = -Math.toDegrees(angleRad.toDouble()).toFloat()
+
+                                val scale = 1f - (falloff * 0.35f)
+                                scaleX = scale
+                                scaleY = scale
+                                alpha = (1f - (falloff * 0.55f)).coerceIn(0f, 1f)
+                                cameraDistance = 4f * density.density
+                            } else {
+                                alpha = 0f
+                            }
+                        }
                         .clickable(enabled = !isCenter) {
                             onItemClick(virtualIndex)
                         },
@@ -388,8 +442,6 @@ private fun TactileDrumCard(
                 ) {
                     CutoutDigitPair(
                         value = realValue,
-                        scale = scale,
-                        alpha = alpha,
                         isCenter = isCenter,
                         troughBgColor = troughBgColor,
                         digitTensColor = digitTensColor,
@@ -401,18 +453,9 @@ private fun TactileDrumCard(
     }
 }
 
-/**
- * 粗几何剪纸错层重叠数字组件（Chunky Retro Overlapping Cutout Numeral）
- * 1. 十位数在底层，采用柔和对比度色彩（digitTensColor）；
- * 2. 个位数向左负偏移重叠在十位数右缘；
- * 3. 个位数底层采用槽底色（troughBgColor）绘制 14f 宽度的外描边（Cutout Stroke），顶层填充实心主色（digitOnesColor）；
- * 形成自然的贴纸层叠与剪纸遮挡空隙效果。
- */
 @Composable
 private fun CutoutDigitPair(
     value: Int,
-    scale: Float,
-    alpha: Float,
     isCenter: Boolean,
     troughBgColor: Color,
     digitTensColor: Color,
@@ -430,32 +473,23 @@ private fun CutoutDigitPair(
         fontFeatureSettings = "tnum"
     )
 
-    // -0.14em 负间距，在 58sp 下约为 -8.5dp
     val overlapOffset = (-8).dp
 
     Row(
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-                this.alpha = alpha
-            },
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        // 1. 十位数（位于底层）
         Text(
             text = tensChar,
             style = baseStyle,
             color = digitTensColor
         )
 
-        // 2. 个位数（位于顶层，向左水平重叠）
         Box(
             modifier = Modifier.offset(x = overlapOffset),
             contentAlignment = Alignment.Center
         ) {
-            // (1) 剪纸镂空外边框层（Cutout Outline）：以槽底色粗描边遮挡十位数边缘
             Text(
                 text = onesChar,
                 style = baseStyle.copy(
@@ -468,7 +502,6 @@ private fun CutoutDigitPair(
                 )
             )
 
-            // (2) 实心主色文字层（Fill Content）
             Text(
                 text = onesChar,
                 style = baseStyle.copy(
@@ -479,3 +512,4 @@ private fun CutoutDigitPair(
         }
     }
 }
+
