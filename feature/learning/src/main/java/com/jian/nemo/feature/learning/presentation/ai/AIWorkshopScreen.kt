@@ -37,6 +37,7 @@ import com.jian.nemo.core.domain.model.AIGradeResult
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import com.jian.nemo.core.ui.component.common.NemoSnackbar
 import com.jian.nemo.core.ui.component.common.NemoSnackbarType
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
@@ -1026,7 +1027,6 @@ private fun InputSection(
     enabled: Boolean
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val surfaceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     Column {
         OutlinedTextField(
@@ -1043,16 +1043,7 @@ private fun InputSection(
                 ) 
             },
             shape = RoundedRectangle(20.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.15f else 0.4f),
-                focusedContainerColor = surfaceColor,
-                unfocusedContainerColor = surfaceColor,
-                disabledContainerColor = surfaceColor,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                cursorColor = MaterialTheme.colorScheme.primary
-            ),
+            colors = NemoTextFieldDefaults.colors(isDark = isDark),
             enabled = enabled
         )
         

@@ -44,6 +44,7 @@
 | 33 | [原生液态菜单静止态本地化与转场防穿透避坑指南](file:///e:/Android/Nemo/docs/experience/33-原生液态菜单静止态本地化与转场防穿透避坑指南.md) | `NemoGlassMenuView.kt`, `GlassMenuOverlay.kt`, `NemoLiquidMenu.kt` / 静止态本地化、展开态顶层化、转场防穿透、消除全局Overlay离屏录制 | **渲染宿主层级与生命周期严格对齐公理**：控件在静止状态下的渲染层级必须严格依附于其逻辑所属的页面容器，严禁常驻挂载于全局 Window 顶层，杜绝任何跨图层穿透与转场悬浮残影。 | 活跃 |
 | 34 | [原生液态菜单与返回按钮拉伸形变物理对齐避坑指南](file:///e:/Android/Nemo/docs/experience/34-原生液态菜单与返回按钮拉伸形变物理对齐避坑指南.md) | `GlassJelly.kt`, `GlassMenuOverlay.kt`, `NemoGlassMenuView.kt` / 物理单向拉伸、极坐标投影、中心微位移强吸附、RenderNode中心锚点绝对对齐、软饱和防拉长 | **中心绝对微锚定与渲染图层中心绝对重合公理**：按钮拉伸位移必须维持95%极高衰减以锚定原位；轴向拉伸杜绝负向压扁；内部图标RenderNode的Pivot必须与外壳几何中心绝对重合。 | 活跃 |
 | 35 | [测试结算界面调色盘收拢与Material原生图标重构避坑指南](file:///e:/Android/Nemo/docs/experience/35-测试结算界面调色盘收拢与Material原生图标重构避坑指南.md) | `TestResultComponent.kt`, `Color.kt`, `TestResultPalette` / 语义容器槽位直通、secondaryContainer、errorContainer、onSurfaceVariant、Icons.Rounded | **规范单一来源与语义槽位优先公理**：全应用色彩一律收拢至系统调色盘与 M3 动态语义槽位；全量统一 Google Fonts 官方原生实心 Rounded 图标并严守注释纯净纪律。 | 活跃 |
+| 36 | [输入框苹果微填充与无描边极简重构落地经验](file:///e:/Android/Nemo/docs/experience/36-输入框苹果微填充与无描边极简重构落地经验.md) | `NemoTextFieldDefaults.kt`, `Color.kt`, `tertiarySystemFill`, `OutlinedTextField` / 苹果微填充、彻底无描边色块、保留错误告警描边、7类特殊输入框白名单 | **无描边纯色块交互与环境自适应微凹填充公理**：全应用通用输入框统一采用苹果原生 `tertiarySystemFill` 动态微填充；常规与聚焦态彻底无描边，聚焦纯靠光标闪烁，仅保留错误态红框；白名单特殊场景严禁一刀切覆盖。 | 活跃 |
 
 ---
 

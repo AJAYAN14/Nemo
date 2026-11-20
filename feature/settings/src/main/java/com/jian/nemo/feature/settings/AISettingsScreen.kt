@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
 import androidx.compose.ui.draw.clip
 import com.jian.nemo.core.ui.modifier.softCardShadow
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import androidx.compose.ui.graphics.Color
 import com.jian.nemo.core.designsystem.theme.AIPalette
 import com.jian.nemo.core.designsystem.theme.SettingsPalette
@@ -710,7 +711,6 @@ fun PlatformDropdownSelector(
     val currentPlatform = platforms.find { it.first == selectedPlatform } ?: Triple("custom", customPlatformDesc, Icons.Rounded.Cable)
 
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -725,14 +725,7 @@ fun PlatformDropdownSelector(
                 .fillMaxWidth()
                 .menuAnchor(),
             shape = RoundedRectangle(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.25f else 0.35f),
-                focusedContainerColor = inputBgColor,
-                unfocusedContainerColor = inputBgColor,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-            ),
+            colors = NemoTextFieldDefaults.colors(),
             leadingIcon = {
                 val icon = currentPlatform.third
                 if (icon is Int) {
@@ -1017,7 +1010,6 @@ fun AISettingTextField(
     isPasswordField: Boolean = false
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val inputBgColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
     var passwordVisible by remember { mutableStateOf(false) }
     
     Column {
@@ -1040,14 +1032,7 @@ fun AISettingTextField(
                 ) 
             },
             shape = RoundedRectangle(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = if (isDark) 0.25f else 0.35f),
-                focusedContainerColor = inputBgColor,
-                unfocusedContainerColor = inputBgColor,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-            ),
+            colors = NemoTextFieldDefaults.colors(isDark = isDark),
             singleLine = true,
             visualTransformation = if (isPasswordField && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = if (isPasswordField) {

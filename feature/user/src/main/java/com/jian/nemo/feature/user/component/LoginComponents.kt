@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import com.jian.nemo.core.ui.component.liquid.ColoredLiquidGlassButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import com.jian.nemo.core.ui.modifier.softCardShadow
@@ -70,13 +71,9 @@ fun AppStyleTextField(
     isError: Boolean = false,
     enabled: Boolean = true
 ) {
-    val containerBg = if (isDark) MaterialTheme.colorScheme.surface else Color.White
-    val focusedBorder = MaterialTheme.colorScheme.primary
-    val unfocusedBorder = MaterialTheme.colorScheme.outline
     val textColor = MaterialTheme.colorScheme.onSurface
     val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
     val iconColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val cursorColor = MaterialTheme.colorScheme.primary
 
     OutlinedTextField(
         value = value,
@@ -127,17 +124,7 @@ fun AppStyleTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = containerBg,
-            unfocusedContainerColor = containerBg,
-            disabledContainerColor = containerBg,
-            errorContainerColor = containerBg,
-            focusedBorderColor = focusedBorder,
-            unfocusedBorderColor = unfocusedBorder,
-            focusedTextColor = textColor,
-            unfocusedTextColor = textColor,
-            cursorColor = cursorColor
-        )
+        colors = NemoTextFieldDefaults.colors(isDark = isDark)
     )
 }
 

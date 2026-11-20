@@ -610,7 +610,7 @@ fun TodaySummarySection(
     todayAccuracy: Float,
     isDark: Boolean
 ) {
-    val containerColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
+    val containerColor = MaterialTheme.colorScheme.surface
     
     Surface(
         modifier = Modifier

@@ -61,12 +61,6 @@ fun ContentReportDialog(
     val chipUnselectedBorder = if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.06f)
     val chipUnselectedText = MaterialTheme.colorScheme.onSurfaceVariant
 
-    val inputBg = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceVariant
-    val inputBorderFocused = accentRed
-    val inputBorderUnfocused = MaterialTheme.colorScheme.outline
-    val inputCursor = accentRed
-    val inputTextColor = MaterialTheme.colorScheme.onSurface
-    val hintTextColor = MaterialTheme.colorScheme.onSurfaceVariant
     val promptTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     val confirmButtonColor = accentRed
@@ -189,16 +183,16 @@ fun ContentReportDialog(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 // Description Input Field
-                OutlinedTextField(
+                NemoTextField(
                     value = otherDescription,
                     onValueChange = { if (it.length <= 100) otherDescription = it },
                     placeholder = {
                         Text(
                             text = if (isDescriptionRequired) stringResource(R.string.report_other_desc_required) else stringResource(R.string.report_other_desc_placeholder),
-                            style = MaterialTheme.typography.bodySmall.copy(color = hintTextColor)
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                         )
                     },
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = inputTextColor),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     maxLines = 3,
                     supportingText = {
                         Box(
@@ -219,15 +213,8 @@ fun ContentReportDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 80.dp),
-                    shape = RoundedRectangle(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = inputTextColor,
-                        unfocusedTextColor = inputTextColor,
-                        focusedBorderColor = inputBorderFocused,
-                        unfocusedBorderColor = inputBorderUnfocused,
-                        focusedContainerColor = inputBg,
-                        unfocusedContainerColor = inputBg,
-                        cursorColor = inputCursor
+                    colors = NemoTextFieldDefaults.colors(
+                        cursorColor = accentRed
                     )
                 )
             }

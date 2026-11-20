@@ -82,13 +82,13 @@ class InteractiveHighlight(
                 val brush = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) cachedShaderBrush else null
                 if (shader != null && brush != null) {
                     drawRect(
-                        Color.White.copy(0.02f * progress),
+                        Color.White.copy(0.12f * progress),
                         blendMode = BlendMode.Plus
                     )
                     shader.apply {
                         val pos = position(size, positionAnimation.value)
                         setFloatUniform("size", size.width, size.height)
-                        setColorUniform("color", android.graphics.Color.valueOf(1f, 1f, 1f, 0.05f * progress).toArgb())
+                        setColorUniform("color", android.graphics.Color.valueOf(1f, 1f, 1f, 0.08f * progress).toArgb())
                         setFloatUniform("radius", size.minDimension * 1.5f)
                         setFloatUniform(
                             "position",
@@ -102,7 +102,7 @@ class InteractiveHighlight(
                     )
                 } else {
                     drawRect(
-                        Color.White.copy(0.03f * progress),
+                        Color.White.copy(0.12f * progress),
                         blendMode = BlendMode.Plus
                     )
                 }

@@ -91,7 +91,7 @@ fun AccountManagementScreen(
     }
 
     val backgroundColor = MaterialTheme.colorScheme.screenBackground
-    val cardBg = if (useDarkTheme) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
+    val cardBg = MaterialTheme.colorScheme.surface
 
     val backdrop = rememberLayerBackdrop()
     val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()

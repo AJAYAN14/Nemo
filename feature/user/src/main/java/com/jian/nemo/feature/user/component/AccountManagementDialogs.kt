@@ -19,6 +19,7 @@ import com.jian.nemo.feature.user.R
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.UserPalette
 import androidx.compose.ui.window.Dialog
@@ -131,14 +132,15 @@ fun AccountResetPasswordDialog(
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
+                    TextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_email), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_email)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -150,14 +152,15 @@ fun AccountResetPasswordDialog(
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
+                    TextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_otp), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_otp)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -169,14 +172,15 @@ fun AccountResetPasswordDialog(
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
+                    TextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_new_password), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_new_password)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                         isError = errorMessage != null
@@ -254,10 +258,10 @@ fun AccountUpdateUsernameDialog(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedTextField(
+                TextField(
                     value = newUsername,
                     onValueChange = { if (it.length <= 16) newUsername = it },
-                    label = { Text(stringResource(R.string.user_dialog_label_new_username), fontSize = 14.sp) },
+                    label = { Text(stringResource(R.string.user_dialog_label_new_username)) },
                     supportingText = {
                         Text(
                             text = stringResource(R.string.user_dialog_format_char_count, newUsername.length),
@@ -270,7 +274,8 @@ fun AccountUpdateUsernameDialog(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
-                    shape = RoundedRectangle(20.dp),
+                    shape = RoundedRectangle(14.dp),
+                    colors = NemoTextFieldDefaults.filledColors(),
                     isError = errorMessage != null
                 )
 
@@ -367,14 +372,15 @@ fun AccountUpdateEmailDialog(
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
+                    TextField(
                         value = newEmail,
                         onValueChange = { newEmail = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_new_email), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_new_email)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                         isError = errorMessage != null
                     )
@@ -386,14 +392,15 @@ fun AccountUpdateEmailDialog(
                         lineHeight = 20.sp
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
+                    TextField(
                         value = otp,
                         onValueChange = { if (it.length <= 8) otp = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_otp), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_otp)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
                         isError = errorMessage != null
                     )
@@ -476,14 +483,15 @@ fun DeleteAccountDialog(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    OutlinedTextField(
+                    TextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text(stringResource(R.string.user_dialog_label_verify_password), fontSize = 14.sp) },
+                        label = { Text(stringResource(R.string.user_dialog_label_verify_password)) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(20.dp),
+                        shape = RoundedRectangle(14.dp),
+                        colors = NemoTextFieldDefaults.filledColors(),
                         visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
@@ -627,45 +635,29 @@ fun DeleteAccountDialog(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    OutlinedTextField(
+                    TextField(
                         value = input,
                         onValueChange = { input = it },
                         label = {
                             Text(
                                 text = if (isOnlyGoogleIdentity) stringResource(R.string.user_dialog_label_email) else stringResource(R.string.user_dialog_label_verify_password),
-                                fontSize = 14.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         singleLine = true,
-                        shape = RoundedRectangle(26.dp),
+                        shape = RoundedRectangle(14.dp),
                         visualTransformation = if (isOnlyGoogleIdentity) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = if (isOnlyGoogleIdentity) KeyboardType.Email else KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
-                        colors = OutlinedTextFieldDefaults.colors(
+                        colors = NemoTextFieldDefaults.filledColors(
                             focusedTextColor = titleColor,
                             unfocusedTextColor = titleColor,
-                            disabledTextColor = bodyColor.copy(alpha = 0.38f),
-                            errorTextColor = errorColor,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            disabledContainerColor = Color.Transparent,
-                            errorContainerColor = Color.Transparent,
                             cursorColor = primaryColor,
-                            errorCursorColor = errorColor,
-                            selectionColors = selectionColors,
-                            focusedBorderColor = focusedBorderColor,
-                            unfocusedBorderColor = unfocusedBorderColor,
-                            disabledBorderColor = unfocusedBorderColor.copy(alpha = 0.12f),
-                            errorBorderColor = errorColor,
-                            focusedLabelColor = primaryColor,
-                            unfocusedLabelColor = bodyColor,
-                            disabledLabelColor = bodyColor.copy(alpha = 0.38f),
-                            errorLabelColor = errorColor
+                            errorIndicatorColor = errorColor
                         )
                     )
                 } else {

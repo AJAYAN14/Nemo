@@ -80,6 +80,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -601,11 +602,10 @@ fun SlotModelPicker(
                                 fontWeight = FontWeight.Bold,
                                 color = StudioThemePalette.textPrimary(isDark)
                             ),
-                            colors = OutlinedTextFieldDefaults.colors(
+                            colors = NemoTextFieldDefaults.colors(
+                                isDark = isDark,
                                 focusedBorderColor = platform.brandColor,
-                                unfocusedBorderColor = StudioThemePalette.inputBorder(isDark),
-                                focusedContainerColor = StudioThemePalette.surfacePill(isDark),
-                                unfocusedContainerColor = StudioThemePalette.surfacePill(isDark)
+                                cursorColor = platform.brandColor
                             ),
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -824,11 +824,10 @@ fun CryptKeySocket(
                     color = StudioThemePalette.textPrimary(isDark)
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = NemoTextFieldDefaults.colors(
+                    isDark = isDark,
                     focusedBorderColor = platform.brandColor,
-                    unfocusedBorderColor = StudioThemePalette.inputBorder(isDark),
-                    focusedContainerColor = StudioThemePalette.surfacePill(isDark),
-                    unfocusedContainerColor = StudioThemePalette.surfacePill(isDark)
+                    cursorColor = platform.brandColor
                 )
             )
 
@@ -916,11 +915,10 @@ fun CryptKeySocket(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = NemoTextFieldDefaults.colors(
+                    isDark = isDark,
                     focusedBorderColor = platform.brandColor,
-                    unfocusedBorderColor = StudioThemePalette.inputBorder(isDark),
-                    focusedContainerColor = StudioThemePalette.surfacePill(isDark),
-                    unfocusedContainerColor = StudioThemePalette.surfacePill(isDark)
+                    cursorColor = platform.brandColor
                 )
             )
 
@@ -978,11 +976,10 @@ fun CryptKeySocket(
                     color = StudioThemePalette.textPrimary(isDark)
                 ),
                 modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = NemoTextFieldDefaults.colors(
+                    isDark = isDark,
                     focusedBorderColor = platform.brandColor,
-                    unfocusedBorderColor = StudioThemePalette.inputBorder(isDark),
-                    focusedContainerColor = StudioThemePalette.surfacePill(isDark),
-                    unfocusedContainerColor = StudioThemePalette.surfacePill(isDark)
+                    cursorColor = platform.brandColor
                 )
             )
         }

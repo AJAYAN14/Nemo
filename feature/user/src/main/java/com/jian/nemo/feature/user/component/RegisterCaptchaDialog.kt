@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.user.R
 import com.jian.nemo.core.ui.component.NemoDialog
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import com.jian.nemo.core.designsystem.theme.CaptchaPalette
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import com.jian.nemo.core.designsystem.theme.UserPalette
@@ -385,9 +386,7 @@ fun RegisterCaptchaDialog(
                         submitVerification()
                     }
                 ),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = primaryTint,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                colors = NemoTextFieldDefaults.colors(
                     cursorColor = primaryTint
                 )
             )

@@ -21,6 +21,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import com.jian.nemo.core.ui.R
+import com.jian.nemo.core.ui.component.NemoTextField
 import com.jian.nemo.core.ui.component.common.CommonHeader
 
 /**
@@ -88,7 +89,7 @@ fun <T> GenericExpandableListScreen(
     ) { paddingValues ->
         Column(modifier = modifier.padding(paddingValues)) {
             if (showSearch) {
-                OutlinedTextField(
+                NemoTextField(
                     value = query,
                     onValueChange = { query = it },
                     modifier = Modifier

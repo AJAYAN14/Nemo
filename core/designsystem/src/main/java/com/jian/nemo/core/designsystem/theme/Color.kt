@@ -20,6 +20,8 @@ val NemoGold = Color(0xFFFFD700)             // 金色/高亮色
 val NemoYellow = Color(0xFFFFCC00)           // 系统黄色
 val NemoPink = Color(0xFFFF2D55)             // 规范粉红
 val NemoNeutralGray = Color(0xFF8E8E93)      // 中性灰基准 (Dynamic Color Spec 规范)
+val NemoInputFillLight = Color(0x1F787880)   // 输入框微填充 (tertiarySystemFill: 12% 动态灰)
+val NemoInputFillDark = Color(0x3D787880)    // 输入框微填充 (tertiarySystemFill: 24% 动态灰)
 
 // ColorScheme 容器与对应前景配色 (Light)
 val NemoPrimaryContainerLight = Color(0xFFE5F1FF)

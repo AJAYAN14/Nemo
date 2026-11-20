@@ -57,8 +57,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import com.jian.nemo.core.ui.component.NemoTextField
+import com.jian.nemo.core.ui.component.NemoTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -567,7 +567,7 @@ fun FlatFilterBar(
     val allLabel = stringResource(R.string.lib_word_list_tab_all)
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
+        NemoTextField(
             value = searchQuery,
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth(),
@@ -590,13 +590,7 @@ fun FlatFilterBar(
                 }
             },
             shape = RoundedRectangle(12.dp),
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-            )
+            singleLine = true
         )
 
         Spacer(modifier = Modifier.height(12.dp))

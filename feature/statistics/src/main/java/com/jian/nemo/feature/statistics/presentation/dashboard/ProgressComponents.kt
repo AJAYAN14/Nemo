@@ -298,7 +298,7 @@ private fun BentoSubTile(
     modifier: Modifier = Modifier
 ) {
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    val subTileColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+    val subTileColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White
 
     Surface(
         modifier = modifier,

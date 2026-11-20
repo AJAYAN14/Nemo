@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,9 +19,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,8 +69,21 @@ import com.jian.nemo.core.ui.modifier.softCardShadow
 
 /**
  * 通用纯色液态按钮 (Unified Solid Color Liquid Button)
- * 完美融合物理弹簧形变、按压缩放与触摸滑动拉伸效果。
+ * 完美融合物理弹簧形变、按压缩放、触摸滑动拉伸与立体物理内高光效果。
  * 内置项目通用 softCardShadow 极简高质感弥散阴影，支持通过 [shape] 动态配置形状。
+ *
+ * @param onClick 点击事件回调。
+ * @param modifier 外部布局修饰符。
+ * @param backgroundColor 按钮容器底色。
+ * @param shape 按钮轮廓几何形状。
+ * @param border 可选外描边样式。
+ * @param elevation 阴影高度。
+ * @param useSoftShadow 是否启用项目统一的软弥散阴影。
+ * @param highlight 是否启用立体物理内高光。
+ * @param isInteractive 是否启用物理形变与手势交互。
+ * @param clipToShape 是否按形状裁切内容。
+ * @param contentAlignment 内容对齐方式。
+ * @param content 按钮内部子组件插槽。
  */
 @Composable
 fun LiquidButton(
@@ -70,6 +94,7 @@ fun LiquidButton(
     border: BorderStroke? = null,
     elevation: Dp = 6.dp,
     useSoftShadow: Boolean = true,
+    highlight: Boolean = true,
     isInteractive: Boolean = true,
     clipToShape: Boolean = true,
     contentAlignment: Alignment = Alignment.Center,
@@ -165,7 +190,16 @@ fun LiquidButton(
                 onClick = onClick
             ),
         contentAlignment = contentAlignment,
-        content = content
+        content = {
+            if (highlight) {
+                Spacer(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .liquidHighlight(shape = shape)
+                )
+            }
+            content()
+        }
     )
 }
 
@@ -179,6 +213,7 @@ fun PureLiquidButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = UiPalette.LiquidBrandBlue,
     shape: Shape = CircleShape,
+    highlight: Boolean = true,
     isInteractive: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
@@ -189,6 +224,7 @@ fun PureLiquidButton(
             .padding(horizontal = 24.dp),
         backgroundColor = backgroundColor,
         shape = shape,
+        highlight = highlight,
         isInteractive = isInteractive,
         contentAlignment = Alignment.Center
     ) {
@@ -211,6 +247,7 @@ fun PureLiquidIconButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = UiPalette.LiquidPurple,
     size: Dp = 56.dp,
+    highlight: Boolean = true,
     isInteractive: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -219,6 +256,7 @@ fun PureLiquidIconButton(
         modifier = modifier.size(size),
         backgroundColor = backgroundColor,
         shape = CircleShape,
+        highlight = highlight,
         isInteractive = isInteractive,
         contentAlignment = Alignment.Center,
         content = content
@@ -488,6 +526,106 @@ fun Modifier.vectorShapeBorder(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * 纯色液态按钮物理内高光修饰符。
+ *
+ * 基于 Modifier.Node 架构构建，通过内裁切将纤细渐变描边约束于几何轮廓内部，
+ * 采用加色混合模式（Plus）呈现清晰通透的顶部受光微弧。
+ *
+ * @param shape 轮廓几何形状。
+ * @param strokeWidth 高光边缘描边宽度。
+ * @param enabled 是否启用内高光。
+ */
+fun Modifier.liquidHighlight(
+    shape: Shape,
+    strokeWidth: Dp = 1.2.dp,
+    enabled: Boolean = true
+): Modifier = if (enabled) this then LiquidHighlightElement(shape, strokeWidth) else this
+
+private data class LiquidHighlightElement(
+    val shape: Shape,
+    val strokeWidth: Dp
+) : ModifierNodeElement<LiquidHighlightNode>() {
+
+    override fun create(): LiquidHighlightNode = LiquidHighlightNode(shape, strokeWidth)
+
+    override fun update(node: LiquidHighlightNode) {
+        node.update(shape, strokeWidth)
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "liquidHighlight"
+        properties["shape"] = shape
+        properties["strokeWidth"] = strokeWidth
+    }
+}
+
+private class LiquidHighlightNode(
+    var shape: Shape,
+    var strokeWidth: Dp
+) : Modifier.Node(), DrawModifierNode {
+
+    private val edgeGradientBrush = Brush.verticalGradient(
+        0.0f to Color.White.copy(alpha = 0.25f),
+        0.6f to Color.White.copy(alpha = 0.05f),
+        1.0f to Color.Transparent
+    )
+
+    private var cachedOutline: Outline? = null
+    private var cachedClipPath: Path? = null
+    private var lastSize: Size = Size.Unspecified
+    private var lastLayoutDirection: LayoutDirection? = null
+
+    fun update(newShape: Shape, newStrokeWidth: Dp) {
+        var needsInvalidate = false
+
+        if (shape != newShape) {
+            shape = newShape
+            cachedOutline = null
+            cachedClipPath = null
+            needsInvalidate = true
+        }
+
+        if (strokeWidth != newStrokeWidth) {
+            strokeWidth = newStrokeWidth
+            needsInvalidate = true
+        }
+
+        if (needsInvalidate) {
+            invalidateDraw()
+        }
+    }
+
+    override fun ContentDrawScope.draw() {
+        if (cachedOutline == null || size != lastSize || layoutDirection != lastLayoutDirection) {
+            cachedOutline = shape.createOutline(size, layoutDirection, this)
+
+            cachedClipPath = when (val outline = cachedOutline!!) {
+                is Outline.Generic -> outline.path
+                is Outline.Rounded -> Path().apply { addRoundRect(outline.roundRect) }
+                is Outline.Rectangle -> Path().apply { addRect(outline.rect) }
+            }
+
+            lastSize = size
+            lastLayoutDirection = layoutDirection
+        }
+
+        val outline = cachedOutline!!
+        val clipPath = cachedClipPath!!
+
+        drawContent()
+
+        clipPath(path = clipPath) {
+            drawOutline(
+                outline = outline,
+                brush = edgeGradientBrush,
+                style = Stroke(width = strokeWidth.toPx() * 2f),
+                blendMode = BlendMode.Plus
+            )
         }
     }
 }
