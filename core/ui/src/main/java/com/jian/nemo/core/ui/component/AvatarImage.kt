@@ -67,8 +67,6 @@ fun AvatarImage(
     val imageDesc = stringResource(R.string.core_ui_avatar_cd_image, username)
     val fallbackDesc = stringResource(R.string.core_ui_avatar_cd_fallback, username, initial)
 
-    var isLoading by remember { mutableStateOf(false) }
-
     // 生成基于用户名的颜色
     val backgroundColor = remember(username) {
         generateColorFromUsername(username)
@@ -122,18 +120,10 @@ fun AvatarImage(
         Box(
             modifier = Modifier
                 .size(width = safeSize, height = safeSize)
-                .clip(shape)
-                .background(backgroundColor),
+                .clip(shape),
             contentAlignment = Alignment.Center
         ) {
             when {
-                isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(width = innerSize, height = innerSize),
-                        strokeWidth = 2.dp,
-                        color = Color.White
-                    )
-                }
                 presetAvatar != null -> {
                     Box(
                         modifier = Modifier
@@ -160,20 +150,22 @@ fun AvatarImage(
                     }
                 }
                 isImageAvatar -> {
-                    val request = coil.request.ImageRequest.Builder(context)
-                        .data(avatarPath)
-                        .crossfade(true)
-                        .diskCacheKey(avatarPath?.substringBefore("?"))
-                        .memoryCacheKey(avatarPath?.substringBefore("?"))
-                        .diskCachePolicy(coil.request.CachePolicy.ENABLED)
-                        .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
-                        .build()
+                    val request = remember(avatarPath, context) {
+                        coil.request.ImageRequest.Builder(context)
+                            .data(avatarPath)
+                            .crossfade(200)
+                            .diskCachePolicy(coil.request.CachePolicy.ENABLED)
+                            .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
+                            .build()
+                    }
 
-                    var isError by remember { mutableStateOf(false) }
+                    var isError by remember(avatarPath) { mutableStateOf(false) }
 
                     if (isError) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(backgroundColor),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -205,7 +197,9 @@ fun AvatarImage(
                 }
                 else -> {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(backgroundColor),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

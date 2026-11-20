@@ -27,6 +27,15 @@ class AvatarFileWriter @Inject constructor() {
         const val DEFAULT_MAX_AVATAR_BYTES: Long = 20L * 1024L * 1024L
         const val DEFAULT_MIN_FREE_SPACE_BYTES: Long = 5L * 1024L * 1024L
         private const val COPY_BUFFER_SIZE: Int = 8 * 1024
+
+        fun generateAvatarFileName(prefix: String = "avatar"): String {
+            val suffix = UUID.randomUUID().toString().replace("-", "").take(8)
+            return "${prefix}_${System.currentTimeMillis()}_$suffix.jpg"
+        }
+
+        fun generateUserAvatarFileName(userId: String): String {
+            return "user_avatar_${userId}.jpg"
+        }
     }
 
     /**
@@ -207,7 +216,6 @@ class AvatarFileWriter @Inject constructor() {
     }
 
     private fun generateAvatarFileName(): String {
-        val suffix = UUID.randomUUID().toString().replace("-", "").take(8)
-        return "avatar_${System.currentTimeMillis()}_$suffix.jpg"
+        return Companion.generateAvatarFileName()
     }
 }

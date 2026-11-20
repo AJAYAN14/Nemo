@@ -32,7 +32,8 @@ import javax.inject.Singleton
 class DefaultAvatarStorageRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     @Dispatcher(NemoDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-    private val avatarFileWriter: AvatarFileWriter
+    private val avatarFileWriter: AvatarFileWriter,
+    private val userDao: com.jian.nemo.core.data.local.dao.UserDao
 ) : AvatarStorageRepository {
 
     companion object {
@@ -58,11 +59,19 @@ class DefaultAvatarStorageRepository @Inject constructor(
                         AvatarStorageFailure.FileNotFound(uriString)
                     )
 
+                val currentUserId = userDao.getCurrentUserSnapshot()?.id
+                val fileNameProvider: () -> String = if (!currentUserId.isNullOrBlank()) {
+                    { AvatarFileWriter.generateUserAvatarFileName(currentUserId) }
+                } else {
+                    { AvatarFileWriter.generateAvatarFileName() }
+                }
+
                 avatarFileWriter.writeFromStream(
                     targetDir = context.filesDir,
                     inputStream = inputStream,
                     sourceDescriptor = uriString,
                     knownSizeBytes = knownSize,
+                    fileNameProvider = fileNameProvider,
                     isValidImage = ::isDecodableImage
                 )
             } catch (e: CancellationException) {
@@ -106,9 +115,16 @@ class DefaultAvatarStorageRepository @Inject constructor(
     override suspend fun finalizeCameraCapture(tempFilePath: String): AvatarStorageResult =
         withContext(ioDispatcher) {
             val tempFile = File(tempFilePath)
+            val currentUserId = userDao.getCurrentUserSnapshot()?.id
+            val fileNameProvider: () -> String = if (!currentUserId.isNullOrBlank()) {
+                { AvatarFileWriter.generateUserAvatarFileName(currentUserId) }
+            } else {
+                { AvatarFileWriter.generateAvatarFileName() }
+            }
             avatarFileWriter.persistLocalFile(
                 targetDir = context.filesDir,
                 sourceFile = tempFile,
+                fileNameProvider = fileNameProvider,
                 isValidImage = ::isDecodableImage
             )
         }

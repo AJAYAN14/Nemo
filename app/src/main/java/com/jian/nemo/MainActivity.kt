@@ -107,8 +107,27 @@ class MainActivity : ComponentActivity() {
             finish()
             return
         }
-        installSplashScreen()
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition {
+            !mainViewModel.isSessionResolved.value
+        }
         super.onCreate(savedInstanceState)
+
+        // 监听并预加载用户头像至 Coil 内存缓存，实现启动首帧秒出
+        lifecycleScope.launch {
+            mainViewModel.uiState.collect { state ->
+                val avatarUrl = state.currentUser?.avatarUrl
+                if (!avatarUrl.isNullOrEmpty() && !com.jian.nemo.core.ui.util.PresetAvatars.isPreset(avatarUrl)) {
+                    val imageLoader = coil.Coil.imageLoader(this@MainActivity)
+                    val request = coil.request.ImageRequest.Builder(this@MainActivity)
+                        .data(avatarUrl)
+                        .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
+                        .diskCachePolicy(coil.request.CachePolicy.ENABLED)
+                        .build()
+                    imageLoader.enqueue(request)
+                }
+            }
+        }
 
 
 

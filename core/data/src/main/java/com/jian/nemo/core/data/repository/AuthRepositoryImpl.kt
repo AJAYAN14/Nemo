@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,77 +54,41 @@ class AuthRepositoryImpl @Inject constructor(
     @ApplicationScope private val externalScope: CoroutineScope
 ) : AuthRepository {
 
-    private val _userFlow = MutableStateFlow<User?>(null)
     private val _isSessionResolved = MutableStateFlow(false)
     override val isSessionResolved: StateFlow<Boolean> = _isSessionResolved.asStateFlow()
 
     init {
-        // 弱网防护：硬超时保护，防止 Session 刷新卡死启动屏
         externalScope.launch {
-            delay(SESSION_RESOLVE_TIMEOUT_MS)
-            if (!_isSessionResolved.value) {
-                android.util.Log.w("AuthRepository", "Session 解析超时 (${SESSION_RESOLVE_TIMEOUT_MS}ms)，从本地缓存降级恢复")
-                // 尝试从 Room 本地缓存恢复用户状态
-                try {
-                    val cachedUser = userDao.getCurrentUserSnapshot()
-                    if (cachedUser != null) {
-                        _userFlow.value = User(
-                            id = cachedUser.id,
-                            username = cachedUser.username,
-                            email = cachedUser.email,
-                            avatarUrl = cachedUser.avatar,
-                            sessionToken = cachedUser.sessionToken,
-                            hasGoogleLinked = cachedUser.hasGoogleLinked,
-                            isOnlyGoogleIdentity = cachedUser.isOnlyGoogleIdentity
-                        )
-                        android.util.Log.d("AuthRepository", "本地缓存用户恢复成功: ${cachedUser.username}")
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("AuthRepository", "本地缓存读取失败", e)
-                }
+            try {
+                userDao.getCurrentUserSnapshot()
+                _isSessionResolved.value = true
+            } catch (e: Exception) {
                 _isSessionResolved.value = true
             }
-        }
 
-        externalScope.launch {
             supabase.auth.sessionStatus.collect { status ->
                 when (status) {
                     is io.github.jan.supabase.auth.status.SessionStatus.Authenticated -> {
-                        val session = status.session
-                        // 尝试从 Session 获取用户信息，如果不行则获取 currentUser
                         val userInfo = supabase.auth.currentUserOrNull()
                         if (userInfo != null) {
-                             // 转换并更新
-                             var user = userInfo.toDomainModel()
-                             // 尝试从本地数据库补充信息（如头像缓存与nickname）
-                             // 注意：toDomainModel 已经尝试从 Metadata 读取。
-                             // 这里我们可能需要更强一致性，比如从本地 DAO 读取以获取离线更改？
-                             // 暂时保持简单：以 Supabase 状态为主，更新 Local，再更新 Flow。
-                             saveUserToLocal(userInfo)
-                             // Re-read from local or just use the model. The previous implementation
-                             // logic in login/register puts into flow directly.
-                             // Let's ensure consistent object.
-                             _userFlow.value = user
-                             _isSessionResolved.value = true
-                        } else {
-                            // Should not happen if Authenticated, but safe guard
-                             _userFlow.value = null
-                             _isSessionResolved.value = true
+                            saveUserToLocal(userInfo)
                         }
+                        _isSessionResolved.value = true
                     }
                     is io.github.jan.supabase.auth.status.SessionStatus.NotAuthenticated -> {
-                         _userFlow.value = null
-                         _isSessionResolved.value = true
+                        _isSessionResolved.value = true
                     }
                     else -> {
-                        // Loading or other states, do nothing or handle accordingly
+                        // Loading or transient states
                     }
                 }
             }
         }
     }
 
-    override fun getUserFlow(): Flow<User?> = _userFlow.asStateFlow()
+    override fun getUserFlow(): Flow<User?> = userDao.getCurrentUser()
+        .map { it?.toDomainModel() }
+        .distinctUntilChanged()
 
     override suspend fun login(email: String, password: String): Result<User> = withContext(Dispatchers.IO) {
         try {
@@ -133,7 +99,6 @@ class AuthRepositoryImpl @Inject constructor(
             val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("No user after sign in")
             saveUserToLocal(userInfo)
             val user = userInfo.toDomainModel()
-            _userFlow.value = user
             // 确保基础数据已填充（应对 clearAllTables 后重新登录的场景）
             dataSeedService.ensureDataSeeded()
             Result.Success(user)
@@ -163,7 +128,6 @@ class AuthRepositoryImpl @Inject constructor(
             val current = supabase.auth.currentUserOrNull() ?: userInfo
             saveUserToLocal(current)
             val user = current.toDomainModel().copy(username = username)
-            _userFlow.value = user
             // 确保基础数据已填充（应对 clearAllTables 后重新注册的场景）
             dataSeedService.ensureDataSeeded()
             Result.Success(user)
@@ -189,9 +153,6 @@ class AuthRepositoryImpl @Inject constructor(
             // 清除 DataStore 中的用户数据 (保留设备配置)
             settingsRepository.clearUserData()
 
-            // 3. 更新内存状态
-            _userFlow.value = null
-
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -199,12 +160,14 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getCurrentUser(): User? = withContext(Dispatchers.IO) {
+        val cached = userDao.getCurrentUserSnapshot()
+        if (cached != null) {
+            return@withContext cached.toDomainModel()
+        }
         try {
             // 等待 Supabase Auth 插件从存储中加载 Session
             supabase.auth.awaitInitialization()
         } catch (e: Exception) {
-            // 如果等待超时或失败，降级处理，不抛出异常以免崩溃，
-            // 但这样可能会导致返回 null，不过这时通常也确实没登录。
             e.printStackTrace()
         }
         supabase.auth.currentUserOrNull()?.toDomainModel()
@@ -216,9 +179,11 @@ class AuthRepositoryImpl @Inject constructor(
             val path = "${userInfo.id}.jpg"
             val bytes = file.readBytes()
             supabase.storage.from(AVATARS_BUCKET).upload(path, bytes) { upsert = true }
-            val url = supabase.storage.from(AVATARS_BUCKET).publicUrl(path)
-            updateUserAvatarUrl(url)
-            Result.Success(url)
+            val publicUrl = supabase.storage.from(AVATARS_BUCKET).publicUrl(path)
+            val timestamp = System.currentTimeMillis()
+            val versionedUrl = "$publicUrl?t=$timestamp"
+            updateUserAvatarUrl(versionedUrl)
+            Result.Success(versionedUrl)
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -235,7 +200,6 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
             userDao.updateUserAvatar(userInfo.id, url)
-            _userFlow.value = getCurrentUser()
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -265,8 +229,6 @@ class AuthRepositoryImpl @Inject constructor(
             // Verification logs the user in
              val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("No user after verification")
              saveUserToLocal(userInfo)
-             val user = userInfo.toDomainModel()
-             _userFlow.value = user
              Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -287,7 +249,6 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
             saveUserToLocal(supabase.auth.currentUserOrNull() ?: userInfo)
-            _userFlow.value = getCurrentUser()
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -317,7 +278,6 @@ class AuthRepositoryImpl @Inject constructor(
             // We should refresh local user info.
             val userInfo = supabase.auth.currentUserOrNull() ?: throw IllegalStateException("No user after verification")
             saveUserToLocal(userInfo)
-            _userFlow.value = userInfo.toDomainModel()
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -329,7 +289,6 @@ class AuthRepositoryImpl @Inject constructor(
             supabase.auth.updateUser { this.password = newPassword }
             // No need to save user local for password change usually, but good to refresh
             saveUserToLocal(supabase.auth.currentUserOrNull()!!)
-            _userFlow.value = getCurrentUser()
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -361,7 +320,6 @@ class AuthRepositoryImpl @Inject constructor(
             // clean up local state.
             supabase.auth.signOut()
             userDao.deleteAll()
-            _userFlow.value = null
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.toAuthException())
@@ -445,6 +403,18 @@ class AuthRepositoryImpl @Inject constructor(
             hasGoogleLinked = hasGoogleLinked,
             isOnlyGoogleIdentity = isOnlyGoogleIdentity,
             isNewUser = isNewUser
+        )
+    }
+
+    private fun com.jian.nemo.core.data.local.entity.UserEntity.toDomainModel(): User {
+        return User(
+            id = id,
+            username = username,
+            email = email,
+            avatarUrl = avatar,
+            sessionToken = sessionToken,
+            hasGoogleLinked = hasGoogleLinked,
+            isOnlyGoogleIdentity = isOnlyGoogleIdentity
         )
     }
 

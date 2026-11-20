@@ -52,6 +52,8 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+    val isSessionResolved: StateFlow<Boolean> = authRepository.isSessionResolved
+
     val themeState: StateFlow<ThemeState> = combine(
         settingsRepository.isDarkModeFlow,
         settingsRepository.darkModeStrategyFlow,
