@@ -40,6 +40,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.tooling.preview.Preview
+import com.jian.nemo.core.designsystem.theme.NemoTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,6 +92,7 @@ import com.kyant.backdrop.highlight.Highlight
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.designsystem.theme.LearningPalette
@@ -167,7 +170,7 @@ fun LearnHeader(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.Undo,
+                            painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_undo_wght700),
                             contentDescription = stringResource(R.string.learn_common_desc_undo),
                             tint = contentColor.copy(alpha = undoAlpha),
                             modifier = Modifier.size(30.dp)
@@ -192,28 +195,28 @@ fun LearnHeader(
                         isInteractive = true,
                         modifier = Modifier.height(48.dp)
                     ) {
-                        val annotatedText = buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(
-                                    color = contentColor.copy(alpha = 0.6f),
-                                    fontWeight = FontWeight.Medium
-                                )
-                            ) {
-                                append(stringResource(R.string.learn_common_label_remaining_prefix))
-                            }
-                            withStyle(
-                                style = SpanStyle(
-                                    color = contentColor.copy(alpha = 0.95f),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            ) {
-                                append("$remainingCount")
-                            }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.learn_common_label_remaining_prefix).trim(),
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = contentColor.copy(alpha = 0.65f),
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "$remainingCount",
+                                fontSize = 18.5.sp,
+                                fontWeight = FontWeight.Black,
+                                color = contentColor.copy(alpha = 0.95f),
+                                maxLines = 1,
+                                softWrap = false
+                            )
                         }
-                        Text(
-                            text = annotatedText,
-                            style = MaterialTheme.typography.labelMedium
-                        )
                     }
                 }
 
@@ -778,6 +781,54 @@ fun WaitingContent(
                     }
                 }
             }
+        }
+    }
+}
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "LearnHeader - 浅色模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun LearnHeaderLightPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            LearnHeader(
+                learningMode = LearningMode.Word,
+                completedCount = 5,
+                dailyGoal = 20,
+                totalCount = 15,
+                onClose = {},
+                canUndo = true,
+                onUndo = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "LearnHeader - 深色模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun LearnHeaderDarkPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            LearnHeader(
+                learningMode = LearningMode.Word,
+                completedCount = 5,
+                dailyGoal = 20,
+                totalCount = 15,
+                onClose = {},
+                canUndo = true,
+                onUndo = {}
+            )
         }
     }
 }

@@ -40,6 +40,12 @@ import java.util.Locale
 import com.jian.nemo.core.designsystem.theme.*
 import com.jian.nemo.core.domain.repository.SettingIconStyle
 import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
+import com.jian.nemo.core.ui.component.sheet.NemoPageBottomSheet
+import com.jian.nemo.core.ui.component.sheet.NemoSheetTopBar
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -243,7 +249,7 @@ fun DailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 20, 30, 50)
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -315,7 +321,7 @@ fun GrammarDailyGoalSelectionBottomSheet(
     onGoalSelected: (Int) -> Unit
 ) {
     val goals = listOf(5, 10, 15, 20, 25)
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) SystemColors.GreenDark else SystemColors.Green
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -431,7 +437,7 @@ fun LearningDayResetHourBottomSheet(
     onHourSelected: (Int) -> Unit
 ) {
     val hours = listOf(0, 2, 4, 5, 6)
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) SystemColors.MintDark else SystemColors.Mint
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -567,7 +573,7 @@ fun VoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) SystemColors.PinkDark else SystemColors.Pink
     val iconStyle = LocalSettingIconStyle.current
     val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
@@ -594,82 +600,60 @@ fun VoiceSelectionBottomSheet(
         }
     }
 
-    NemoModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
-    ) {
-        Column(modifier = Modifier.padding(bottom = 32.dp)) {
-            // Header
-            Row(
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
+    NemoPageBottomSheet(
+        onDismissed = onDismiss
+    ) { slideOut ->
+        val sheetBackdrop = rememberLayerBackdrop()
+        Box(modifier = Modifier.fillMaxSize()) {
+            androidx.compose.foundation.lazy.LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(containerBg, RoundedRectangle(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.VolumeUp,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = selectVoiceTitle,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                    .fillMaxSize()
+                    .layerBackdrop(sheetBackdrop),
+                contentPadding = PaddingValues(
+                    top = 72.dp,
+                    bottom = navBarBottom + 24.dp
                 )
-            }
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Content
-            when {
-                isLoading -> {
-                    // 加载骨架屏
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        repeat(3) {
-                            VoiceSkeletonItem()
+            ) {
+                when {
+                    isLoading -> {
+                        item {
+                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                repeat(3) {
+                                    VoiceSkeletonItem()
+                                }
+                            }
                         }
                     }
-                }
-                voices.isEmpty() -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = emptyVoiceText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                else -> {
-                    // 分组列表
-                    androidx.compose.foundation.lazy.LazyColumn(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        groupedVoices.forEach { (groupName, groupVoices) ->
-                            // Sticky Header
-                            stickyHeader {
-                                VoiceGroupHeader(title = groupName, count = groupVoices.size)
+                    voices.isEmpty() -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = emptyVoiceText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
-
-                            items(groupVoices.size) { index ->
-                                val voice = groupVoices[index]
+                        }
+                    }
+                    else -> {
+                        groupedVoices.forEach { (groupName, groupVoices) ->
+                            item(key = groupName) {
+                                SettingsSectionTitle(
+                                    text = "$groupName (${groupVoices.size})",
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                            itemsIndexed(
+                                items = groupVoices,
+                                key = { _, voice -> voice.name }
+                            ) { index, voice ->
                                 val displayInfo = formatVoiceName(
                                     voice = voice,
                                     tagNetwork = tagNetwork,
@@ -680,26 +664,43 @@ fun VoiceSelectionBottomSheet(
                                     highQualityText = highQualityText
                                 )
                                 val isPreviewing = previewingVoiceName == voice.name
+                                val isSelected = (voice.name == currentVoiceName)
+                                val itemColor = VoicePalette.getVoiceColor(voice.name, index, isDark)
 
-                                VoiceSelectionItem(
+                                VoiceSelectionCardItem(
                                     displayInfo = displayInfo,
-                                    isSelected = (voice.name == currentVoiceName),
+                                    isSelected = isSelected,
                                     isPreviewing = isPreviewing,
-                                    color = accentColor,
+                                    color = itemColor,
                                     onClick = {
-                                        // 震动反馈
                                         haptic.performHapticFeedback(
                                             androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove
                                         )
                                         onVoiceSelected(voice.name)
+                                        slideOut()
                                     },
-                                    onPreviewClick = { onPreviewVoice(voice.name) }
+                                    onPreviewClick = { onPreviewVoice(voice.name) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
                                 )
+                            }
+                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
                     }
                 }
             }
+
+            NemoSheetTopBar(
+                title = selectVoiceTitle,
+                onBack = slideOut,
+                backdrop = sheetBackdrop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
     }
 }
@@ -802,7 +803,8 @@ fun VoiceSkeletonItem() {
 data class VoiceDisplayInfo(
     val title: String,
     val subtitle: String,
-    val tag: String? = null
+    val tag: String? = null,
+    val code: String = ""
 )
 
 /**
@@ -839,7 +841,8 @@ private fun formatVoiceName(
     return VoiceDisplayInfo(
         title = friendlyName,
         subtitle = if (voice.quality == "high" || voice.quality == "very_high") highQualityText else "",
-        tag = tag
+        tag = tag,
+        code = coreId.take(4).ifEmpty { "JA" }
     )
 }
 
@@ -964,6 +967,206 @@ fun VoiceSelectionItem(
                 tint = color,
                 modifier = Modifier.size(20.dp)
             )
+        }
+    }
+}
+
+/**
+ * TTS 发音人多彩调色盘映射
+ * 严格遵循 docs/design/color-palette 规范
+ */
+object VoicePalette {
+    private val paletteColors = listOf(
+        SystemColors.Blue to SystemColors.BlueDark,
+        SystemColors.Purple to SystemColors.PurpleDark,
+        SystemColors.Teal to SystemColors.TealDark,
+        SystemColors.Indigo to SystemColors.IndigoDark,
+        SystemColors.Orange to SystemColors.OrangeDark,
+        SystemColors.Pink to SystemColors.PinkDark,
+        SystemColors.Mint to SystemColors.MintDark,
+        SystemColors.Cyan to SystemColors.CyanDark
+    )
+
+    fun getVoiceColor(voiceName: String, index: Int, isDark: Boolean): Color {
+        val hash = (voiceName.hashCode() xor (index * 31)).let { if (it < 0) -it else it }
+        val pair = paletteColors[hash % paletteColors.size]
+        return if (isDark) pair.second else pair.first
+    }
+}
+
+/**
+ * 苹果极简独立浮空微卡片发音人项
+ */
+@Composable
+fun VoiceSelectionCardItem(
+    displayInfo: VoiceDisplayInfo,
+    isSelected: Boolean,
+    isPreviewing: Boolean,
+    color: Color,
+    onClick: () -> Unit,
+    onPreviewClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val infiniteTransition = rememberInfiniteTransition(label = "card_preview_pulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "card_pulse_scale"
+    )
+
+    val cardShape = RoundedRectangle(16.dp)
+    val cardBackground = if (isSelected) {
+        color.copy(alpha = if (isDark) 0.18f else 0.08f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    val cardBorderModifier = if (isSelected) {
+        Modifier.border(
+            width = 1.2.dp,
+            color = color.copy(alpha = if (isDark) 0.7f else 0.45f),
+            shape = cardShape
+        )
+    } else {
+        if (isDark) {
+            Modifier.border(
+                width = 0.5.dp,
+                color = Color.White.copy(alpha = 0.08f),
+                shape = cardShape
+            )
+        } else {
+            Modifier.border(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+                shape = cardShape
+            )
+        }
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .softCardShadow(borderRadius = 16.dp, isDark = isDark)
+            .clip(cardShape)
+            .then(cardBorderModifier)
+            .background(cardBackground)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 声学铭牌
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    if (isSelected) color.copy(alpha = 0.22f) else color.copy(alpha = 0.12f),
+                    RoundedRectangle(12.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = displayInfo.code.ifEmpty { "VO" },
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = color
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // 发音人信息
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = displayInfo.title,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold
+                ),
+                color = if (isSelected) color else MaterialTheme.colorScheme.onSurface
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 2.dp)
+            ) {
+                if (displayInfo.tag != null) {
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                if (isSelected) color.copy(alpha = 0.16f) else MaterialTheme.colorScheme.surfaceContainerHigh,
+                                RoundedRectangle(4.dp)
+                            )
+                            .padding(horizontal = 5.dp, vertical = 1.5.dp)
+                    ) {
+                        Text(
+                            text = displayInfo.tag,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                            color = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (displayInfo.subtitle.isNotEmpty()) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+                }
+
+                if (displayInfo.subtitle.isNotEmpty()) {
+                    Text(
+                        text = displayInfo.subtitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
+                    )
+                }
+            }
+        }
+
+        // 试听播放按钮
+        IconButton(
+            onClick = onPreviewClick,
+            modifier = Modifier.size(36.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        if (isPreviewing) color.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceContainerHigh,
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isPreviewing) Icons.AutoMirrored.Rounded.VolumeUp else Icons.Rounded.PlayArrow,
+                    contentDescription = stringResource(R.string.settings_components_btn_preview_voice),
+                    tint = if (isPreviewing) color else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .graphicsLayer {
+                            if (isPreviewing) {
+                                scaleX = pulseScale
+                                scaleY = pulseScale
+                            }
+                        }
+                )
+            }
+        }
+
+        if (isSelected) {
+            Spacer(modifier = Modifier.width(6.dp))
+            Box(
+                modifier = Modifier
+                    .size(22.dp)
+                    .background(color, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
         }
     }
 }

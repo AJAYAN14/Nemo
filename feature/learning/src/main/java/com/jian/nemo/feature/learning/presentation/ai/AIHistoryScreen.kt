@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.learning.R
@@ -122,10 +123,10 @@ fun AIHistoryScreen(
                                 modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Rounded.Delete,
+                                    painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_delete_wght700),
                                     contentDescription = stringResource(R.string.learn_ai_history_cd_clear),
                                     tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(30.dp)
+                                    modifier = Modifier.size(28.dp)
                                 )
                             }
                         }

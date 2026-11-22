@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2.1-release.apk"><img src="https://img.shields.io/badge/Release-v1.2.1-FFA000?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
+  <a href="https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2.2-release.apk"><img src="https://img.shields.io/badge/Release-v1.2.2-FFA000?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"></a>
   <img src="https://img.shields.io/badge/Powered%20by-AI-blueviolet?style=for-the-badge&logo=openai" alt="AI Powered">
   <img src="https://img.shields.io/badge/Language-Japanese-red?style=for-the-badge" alt="Language">
   <img src="https://img.shields.io/badge/Kotlin-1.9+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin">
@@ -13,13 +13,11 @@
 </p>
 
 > [!IMPORTANT]
-> 🚀 **最新版本发布：v1.2.1**  
+> 🚀 **最新版本发布：v1.2.2**  
 > 现已开放官方 Release 安装包下载！核心升级与改进亮点：  
-> 1. **测试右上角菜单与暂停弹窗体验重构**：全面接入项目统一的高质感 NemoDialog，支持卡片配对题菜单交互与测试暂停。  
-> 2. **液态玻璃菜单排版修复**：修复菜单宽度密度计算导致的异常撑满全屏 Bug，呈现紧凑精致的高斯毛玻璃浮层。  
-> 3. **统计掌握度分级弹窗优化**：新增展开微指示箭头、弹性按压缩放动效与平滑入场生长进度条。  
-> 4. **全局弹窗毛玻璃架构重构**：统一收敛 Android 12+ 窗口级高斯毛玻璃与暗化遮罩，消除冗余样板代码并防止资源泄漏。  
-> 👉 **[📥 点击直接下载 Nemo v1.2.1 安装包 (nemo-v1.2.1-release.apk)](https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2.1-release.apk)**（大小约 17.2MB，已签名正式版）  
+> 1. **优化部分体验**  
+> 2. **修复部分已知问题**  
+> 👉 **[📥 点击直接下载 Nemo v1.2.2 安装包 (nemo-v1.2.2-release.apk)](https://github.com/AJAYAN14/Nemo/raw/main/release/nemo-v1.2.2-release.apk)**（大小约 17.5MB，已签名正式版）  
 > 亦可在 [GitHub Releases 页面](https://github.com/AJAYAN14/Nemo/releases) 查看所有发布历史与更新日志。
 
 ---

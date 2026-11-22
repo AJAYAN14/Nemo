@@ -1,34 +1,40 @@
 package com.jian.nemo.feature.settings.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import com.jian.nemo.core.designsystem.shape.RoundedRectangle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.RecordVoiceOver
-import androidx.compose.material.icons.rounded.Translate
-import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.SystemColors
-import com.jian.nemo.core.domain.repository.SettingIconStyle
-import com.jian.nemo.core.ui.component.sheet.NemoModalBottomSheet
+import com.jian.nemo.core.ui.component.sheet.NemoPageBottomSheet
+import com.jian.nemo.core.ui.component.sheet.NemoSheetTopBar
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
 import com.jian.nemo.feature.settings.R
 
 /**
- * 独立的中文 TTS 语音选择抽屉弹窗 (Flat UI 风格)
+ * 中文 TTS 语音选择抽屉弹窗
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ChineseVoiceSelectionBottomSheet(
     currentVoiceName: String?,
@@ -39,11 +45,15 @@ fun ChineseVoiceSelectionBottomSheet(
     isLoading: Boolean = false,
     previewingVoiceName: String? = null
 ) {
-    val isDark = isSystemInDarkTheme()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) SystemColors.OrangeDark else SystemColors.Orange
     val haptic = LocalHapticFeedback.current
     val cloudGroupName = stringResource(R.string.settings_tts_group_cloud_chinese)
     val localGroupName = stringResource(R.string.settings_tts_group_local_chinese)
+    val titleText = stringResource(R.string.settings_tts_dialog_title_select_chinese)
+    val emptyText = stringResource(R.string.settings_tts_empty_chinese_engine)
+
+    val navBarBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     // 按本地/云端分组
     val groupedVoices = remember(voices, cloudGroupName, localGroupName) {
@@ -52,110 +62,95 @@ fun ChineseVoiceSelectionBottomSheet(
         }
     }
 
-    NemoModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
-    ) {
-        Column(modifier = Modifier.padding(bottom = 32.dp)) {
-            // Header
-            Row(
+    NemoPageBottomSheet(
+        onDismissed = onDismiss
+    ) { slideOut ->
+        val sheetBackdrop = rememberLayerBackdrop()
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .layerBackdrop(sheetBackdrop),
+                contentPadding = PaddingValues(
+                    top = 72.dp,
+                    bottom = navBarBottom + 24.dp
+                )
             ) {
-                val iconStyle = LocalSettingIconStyle.current
-                val isSoftTranslucent = (iconStyle == SettingIconStyle.SOFT_TRANSLUCENT)
-                val containerBgColor = if (isSoftTranslucent) accentColor.copy(alpha = 0.15f) else accentColor
-                val iconTint = if (isSoftTranslucent) accentColor else Color.White
-
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(containerBgColor, RoundedRectangle(12.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Translate,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = stringResource(R.string.settings_tts_dialog_title_select_chinese),
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = stringResource(R.string.settings_tts_dialog_desc_select_chinese),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
-            // Content
-            when {
-                isLoading -> {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        repeat(3) {
-                            VoiceSkeletonItem()
+                when {
+                    isLoading -> {
+                        item {
+                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                repeat(3) {
+                                    VoiceSkeletonItem()
+                                }
+                            }
                         }
                     }
-                }
-                voices.isEmpty() -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.settings_tts_empty_chinese_engine),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        groupedVoices.forEach { (groupName, groupVoices) ->
-                            stickyHeader {
-                                VoiceGroupHeader(title = groupName, count = groupVoices.size)
-                            }
-
-                            items(groupVoices.size) { index ->
-                                val voice = groupVoices[index]
-                                val displayInfo = formatChineseVoiceName(voice)
-                                val isPreviewing = previewingVoiceName == voice.name
-
-                                VoiceSelectionItem(
-                                    displayInfo = displayInfo,
-                                    isSelected = (voice.name == currentVoiceName),
-                                    isPreviewing = isPreviewing,
-                                    color = accentColor,
-                                    onClick = {
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        onVoiceSelected(voice.name)
-                                    },
-                                    onPreviewClick = { onPreviewVoice(voice.name) }
+                    voices.isEmpty() -> {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = emptyText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
+                    else -> {
+                        groupedVoices.forEach { (groupName, groupVoices) ->
+                            item(key = groupName) {
+                                SettingsSectionTitle(
+                                    text = "$groupName (${groupVoices.size})",
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                            itemsIndexed(
+                                items = groupVoices,
+                                key = { _, voice -> voice.name }
+                            ) { index, voice ->
+                                val displayInfo = formatChineseVoiceName(voice)
+                                val isPreviewing = previewingVoiceName == voice.name
+                                val isSelected = (voice.name == currentVoiceName)
+                                val itemColor = VoicePalette.getVoiceColor(voice.name, index, isDark)
+
+                                VoiceSelectionCardItem(
+                                    displayInfo = displayInfo,
+                                    isSelected = isSelected,
+                                    isPreviewing = isPreviewing,
+                                    color = itemColor,
+                                    onClick = {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                        onVoiceSelected(voice.name)
+                                        slideOut()
+                                    },
+                                    onPreviewClick = { onPreviewVoice(voice.name) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                                )
+                            }
+                            item {
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                        }
+                    }
                 }
             }
+
+            NemoSheetTopBar(
+                title = titleText,
+                onBack = slideOut,
+                backdrop = sheetBackdrop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
     }
 }
@@ -187,6 +182,7 @@ private fun formatChineseVoiceName(voice: com.jian.nemo.core.domain.model.TtsVoi
     return VoiceDisplayInfo(
         title = friendlyName,
         subtitle = if (voice.quality == "high" || voice.quality == "very_high") stringResource(R.string.settings_tts_quality_high) else "",
-        tag = tag
+        tag = tag,
+        code = coreId.take(4).ifEmpty { "ZH" }
     )
 }

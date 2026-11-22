@@ -6,6 +6,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 
 /**
@@ -21,6 +23,8 @@ fun SwitchSettingRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
+    val haptic = LocalHapticFeedback.current
+
     Surface(
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedRectangle(12.dp),
@@ -40,7 +44,10 @@ fun SwitchSettingRow(
             )
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange
+                onCheckedChange = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onCheckedChange(it)
+                }
             )
         }
     }

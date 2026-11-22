@@ -21,7 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.jian.nemo.core.designsystem.shape.RoundedRectangle
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.DragIndicator
 import androidx.compose.material.icons.rounded.Palette
@@ -43,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -224,9 +225,10 @@ fun LiquidGlassLabScreen(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                            painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_arrow_back_ios_wght700),
                             contentDescription = stringResource(R.string.settings_liquid_lab_btn_back),
-                            tint = Color.Black
+                            tint = Color.Black,
+                            modifier = Modifier.size(26.dp)
                         )
                     }
                 }

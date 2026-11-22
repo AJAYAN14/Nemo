@@ -19,7 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.History
-import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -371,7 +371,7 @@ fun CloudBackupHistoryScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Refresh,
+                                painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_refresh_wght700),
                                 contentDescription = stringResource(R.string.settings_backup_btn_refresh_list),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier
@@ -403,7 +403,7 @@ fun CloudBackupHistoryScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Refresh,
+                                painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_refresh_wght700),
                                 contentDescription = stringResource(R.string.settings_backup_btn_refresh_list),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier

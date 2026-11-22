@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.AIReadingHistory
 import com.jian.nemo.core.ui.component.common.CommonHeader
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.core.designsystem.theme.BentoColors
 import com.jian.nemo.core.designsystem.theme.LearningPalette
@@ -136,10 +137,10 @@ fun AIReadingHistoryScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Delete,
+                                painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_delete_wght700),
                                 contentDescription = stringResource(R.string.ai_reading_clear_all),
                                 tint = colorScheme.onSurface,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }

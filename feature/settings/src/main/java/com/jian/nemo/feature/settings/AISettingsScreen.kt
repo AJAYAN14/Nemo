@@ -68,6 +68,7 @@ import com.jian.nemo.core.ui.compositionlocal.LocalSettingIconStyle
 import com.jian.nemo.feature.settings.components.PremiumCard
 import com.jian.nemo.feature.settings.components.SettingsSectionTitle
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.settings.R
 import dev.chrisbanes.haze.HazeState
@@ -239,7 +240,7 @@ fun AISettingsScreen(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Add,
+                            painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_add_wght700),
                             contentDescription = stringResource(R.string.settings_ai_cd_new_config),
                             tint = if (isDark) AIPalette.StudioInputContainerLight else UserPalette.TextSlate900,
                             modifier = Modifier.size(30.dp)

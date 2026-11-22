@@ -57,6 +57,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -295,7 +296,7 @@ fun StorageManagementScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Refresh,
+                                painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_refresh_wght700),
                                 contentDescription = stringResource(R.string.settings_storage_cd_refresh),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier

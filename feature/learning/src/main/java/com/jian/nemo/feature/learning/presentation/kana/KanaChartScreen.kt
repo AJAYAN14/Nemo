@@ -53,6 +53,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.tooling.preview.Preview
+import com.jian.nemo.core.designsystem.theme.NemoTheme
 import androidx.compose.runtime.Composable
 import com.jian.nemo.core.designsystem.theme.SystemColors
 import androidx.compose.runtime.remember
@@ -102,6 +104,7 @@ import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
@@ -409,24 +412,29 @@ fun KanaChartScreen(
                             currentType = if (currentType == 0) 1 else 0
                         },
                         backdrop = backdrop,
-                        contentPadding = PaddingValues(horizontal = 14.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp),
                         isInteractive = true,
                         modifier = Modifier.height(48.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.SwapHoriz,
+                                painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_swap_horiz_wght700),
                                 contentDescription = stringResource(R.string.kana_btn_toggle_type),
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(28.dp),
                                 tint = toggleFg
                             )
                             Text(
                                 text = if (currentType == 0) stringResource(R.string.kana_tab_hiragana) else stringResource(R.string.kana_tab_katakana),
-                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                color = toggleFg
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = toggleFg,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -1258,5 +1266,107 @@ private val yoonData = listOf(
     KanaCell("びゃ", "ビャ", "bya"), EP, KanaCell("びゅ", "ビュ", "byu"), EP, KanaCell("びょ", "ビョ", "byo"),
     KanaCell("ぴゃ", "ピャ", "pya"), EP, KanaCell("ぴゅ", "ピュ", "pyu"), EP, KanaCell("ぴょ", "ピョ", "pyo")
 )
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "KanaChartHeader - 平假名模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun KanaHeaderHiraganaPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "五十音",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = {},
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        isInteractive = true,
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_swap_horiz_wght700),
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp),
+                                tint = SystemColors.Indigo
+                            )
+                            Text(
+                                text = "平假名",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = SystemColors.Indigo,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Preview(name = "KanaChartHeader - 片假名模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun KanaHeaderKatakanaPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "五十音",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    FrostedLiquidGlassButton(
+                        onClick = {},
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        isInteractive = true,
+                        modifier = Modifier.height(48.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_swap_horiz_wght700),
+                                contentDescription = null,
+                                modifier = Modifier.size(28.dp),
+                                tint = SystemColors.Pink
+                            )
+                            Text(
+                                text = "片假名",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black
+                                ),
+                                color = SystemColors.Pink,
+                                maxLines = 1,
+                                softWrap = false
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
 
 

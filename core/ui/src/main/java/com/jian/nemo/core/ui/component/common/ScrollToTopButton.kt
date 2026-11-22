@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -29,7 +30,9 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import com.jian.nemo.core.designsystem.theme.NemoTheme
 import com.jian.nemo.core.ui.R
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -114,7 +117,7 @@ fun TwoStageScrollToTopButton(
             modifier = Modifier.size(54.dp)
         ) {
             Icon(
-                imageVector = Icons.Rounded.KeyboardArrowUp,
+                painter = painterResource(id = R.drawable.ic_scroll_to_top),
                 contentDescription = stringResource(R.string.core_ui_scroll_to_top_cd_btn),
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
@@ -164,7 +167,7 @@ fun ScrollToTopButton(
             modifier = Modifier.size(54.dp)
         ) {
             Icon(
-                imageVector = Icons.Rounded.KeyboardArrowUp,
+                painter = painterResource(id = R.drawable.ic_scroll_to_top),
                 contentDescription = stringResource(R.string.core_ui_scroll_to_top_cd_btn),
                 tint = Color.White,
                 modifier = Modifier.size(28.dp)
@@ -226,6 +229,64 @@ fun BoxScope.LiquidScrollToTopButton(
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.size(buttonSize * (30f / 48f))
             )
+        }
+    }
+}
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "LiquidScrollToTopButton - 浅色模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun LiquidScrollToTopButtonLightPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            FrostedLiquidGlassButton(
+                onClick = {},
+                modifier = Modifier.size(56.dp),
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_scroll_to_top),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(35.dp)
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "LiquidScrollToTopButton - 深色模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun LiquidScrollToTopButtonDarkPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            FrostedLiquidGlassButton(
+                onClick = {},
+                modifier = Modifier.size(56.dp),
+                shape = CircleShape,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_scroll_to_top),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(35.dp)
+                )
+            }
         }
     }
 }

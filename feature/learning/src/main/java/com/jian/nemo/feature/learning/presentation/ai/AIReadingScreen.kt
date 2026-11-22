@@ -182,9 +182,9 @@ fun AIReadingScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.History,
+                                painter = painterResource(DesignR.drawable.ic_history_wght700),
                                 contentDescription = stringResource(R.string.learn_reading_desc_history),
-                                modifier = Modifier.size(30.dp),
+                                modifier = Modifier.size(28.dp),
                                 tint = colorScheme.onSurface
                             )
                         }
@@ -216,9 +216,9 @@ fun AIReadingScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Settings,
+                                painter = painterResource(DesignR.drawable.ic_tune_wght700),
                                 contentDescription = stringResource(R.string.learn_reading_desc_settings),
-                                modifier = Modifier.size(30.dp),
+                                modifier = Modifier.size(28.dp),
                                 tint = colorScheme.onSurface
                             )
                         }
@@ -763,6 +763,7 @@ private fun LevelCapabilityCard(
         }
     }
 }
+
 
 private data class ThemeCardInfo(
     val name: String,
@@ -2200,4 +2201,103 @@ private fun QuestionCardDarkPreview() {
         }
     }
 }
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "AIReadingHeader - 浅色模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun AIReadingHeaderLightPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 日语阅读",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_history_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_tune_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Preview(name = "AIReadingHeader - 深色模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun AIReadingHeaderDarkPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 日语阅读",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_history_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_tune_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
 

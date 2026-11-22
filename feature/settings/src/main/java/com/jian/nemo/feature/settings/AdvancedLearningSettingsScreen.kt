@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Alignment
 import com.jian.nemo.core.designsystem.theme.SystemColors
@@ -308,7 +309,7 @@ fun AdvancedLearningSettingsScreen(
                             modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Replay,
+                                painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_replay_wght700),
                                 contentDescription = stringResource(R.string.settings_algorithm_btn_reset_desc),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(30.dp)

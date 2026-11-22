@@ -36,10 +36,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.ArrowBackIos
 import androidx.compose.material.icons.automirrored.rounded.MenuBook
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.HourglassEmpty
+import androidx.compose.material.icons.rounded.HourglassFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -640,10 +640,10 @@ fun CollapsibleLibraryHeader(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                    painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_arrow_back_ios_wght700),
                     contentDescription = stringResource(com.jian.nemo.core.ui.R.string.core_common_btn_back),
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
         }
@@ -767,7 +767,7 @@ fun LibraryDiscoveryBar(
             ),
             DiscoveryOption(
                 label = tabUnlearnedText,
-                icon = Icons.Rounded.HourglassEmpty,
+                icon = Icons.Rounded.HourglassFull,
                 activeColor = SystemColors.Orange,
             ),
         )
@@ -805,12 +805,13 @@ fun LibraryDiscoveryBar(
             searchIconSize = 35.dp,
             textStyle = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ),
             activeTextStyle = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Black
             ),
             backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainer else Color.White,
             inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant

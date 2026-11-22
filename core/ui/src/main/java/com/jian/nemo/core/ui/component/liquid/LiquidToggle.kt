@@ -29,7 +29,9 @@ import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -81,6 +83,7 @@ fun LiquidToggle(
     val surfaceColor = MaterialTheme.colorScheme.surface
 
     val density = LocalDensity.current
+    val haptic = LocalHapticFeedback.current
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val dragWidth = with(density) { 20f.dp.toPx() }
     val animationScope = rememberCoroutineScope()
@@ -156,12 +159,16 @@ fun LiquidToggle(
                             if (!isDragging) {
                                 // 点击 (Tap)：切换状态并触发弹簧弹性滑动
                                 val nextState = !currentSelected()
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                 fraction = if (nextState) 1f else 0f
                                 dampedDragAnimation.animateToValue(fraction)
                                 onSelect(nextState)
                             } else {
                                 // 拖拽结束：吸附到 0 或 1
                                 val finalSelected = fraction >= 0.5f
+                                if (finalSelected != currentSelected()) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                }
                                 fraction = if (finalSelected) 1f else 0f
                                 dampedDragAnimation.animateToValue(fraction)
                                 onSelect(finalSelected)

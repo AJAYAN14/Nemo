@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
+import androidx.compose.ui.tooling.preview.Preview
+import com.jian.nemo.core.designsystem.theme.NemoTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -223,7 +225,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.Rounded.History, contentDescription = stringResource(R.string.learn_workshop_desc_history), modifier = Modifier.size(30.dp), tint = textPrimary)
+                            Icon(painterResource(DesignR.drawable.ic_history_wght700), contentDescription = stringResource(R.string.learn_workshop_desc_history), modifier = Modifier.size(28.dp), tint = textPrimary)
                         }
                         FrostedLiquidGlassButton(
                             onClick = { showHelp = true },
@@ -233,7 +235,7 @@ fun AIWorkshopScreen(
                             isInteractive = true,
                             modifier = Modifier.size(48.dp)
                         ) {
-                            Icon(Icons.AutoMirrored.Rounded.HelpOutline, contentDescription = stringResource(R.string.learn_workshop_desc_help), modifier = Modifier.size(30.dp), tint = textPrimary)
+                            Icon(painterResource(DesignR.drawable.ic_help_wght700), contentDescription = stringResource(R.string.learn_workshop_desc_help), modifier = Modifier.size(28.dp), tint = textPrimary)
                         }
                     }
                 }
@@ -1467,5 +1469,103 @@ private fun WorkshopHardDecodedText(
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )
+}
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "AIWorkshopHeader - 浅色模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun AIWorkshopHeaderLightPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 例文工坊",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_history_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = Color.Black)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_help_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = Color.Black)
+                        }
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Preview(name = "AIWorkshopHeader - 深色模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun AIWorkshopHeaderDarkPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            CommonHeader(
+                title = "AI 例文工坊",
+                onBack = {},
+                backgroundColor = Color.Transparent,
+                backButtonSize = 48.dp,
+                actions = {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_gemini), contentDescription = "Gemini", modifier = Modifier.size(30.dp), tint = Color.Unspecified)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_history_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = Color.White)
+                        }
+                        FrostedLiquidGlassButton(
+                            onClick = {},
+                            shape = CircleShape,
+                            contentPadding = PaddingValues(0.dp),
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(painterResource(DesignR.drawable.ic_help_wght700), contentDescription = null, modifier = Modifier.size(28.dp), tint = Color.White)
+                        }
+                    }
+                }
+            )
+        }
+    }
 }
 

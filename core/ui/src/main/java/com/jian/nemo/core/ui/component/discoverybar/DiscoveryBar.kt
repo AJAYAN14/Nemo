@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -194,7 +195,7 @@ fun DiscoveryBar(
                         .padding(start = searchStartPadding),
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Search,
+                        painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_search_wght700),
                         contentDescription = stringResource(R.string.core_ui_discovery_cd_search),
                         tint = searchIconTint,
                         modifier = Modifier.size(style.searchIconSize),
@@ -225,6 +226,7 @@ fun DiscoveryBar(
                                         Text(
                                             text = searchPlaceholder,
                                             style = style.textStyle.copy(
+                                                fontWeight = FontWeight.W900,
                                                 color = effectivePlaceholderColor,
                                             ),
                                         )
@@ -285,7 +287,7 @@ fun DiscoveryBar(
                         fullArea = true,
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
+                            painter = painterResource(com.jian.nemo.core.designsystem.R.drawable.ic_close_wght700),
                             contentDescription = stringResource(R.string.core_ui_discovery_cd_close),
                             tint = searchIconTint,
                             modifier = Modifier.size(style.searchIconSize),
@@ -470,8 +472,8 @@ private fun OptionsSelector(
                                 modifier = Modifier.weight(1f, fill = false),
                                 style = TextStyle(
                                     fontSize = style.textStyle.fontSize,
-                                    fontWeight = if (isSelected) FontWeight.W700
-                                    else FontWeight.W500,
+                                    fontWeight = if (isSelected) FontWeight.W900
+                                    else FontWeight.W700,
                                     color = textColor,
                                 ),
                             )

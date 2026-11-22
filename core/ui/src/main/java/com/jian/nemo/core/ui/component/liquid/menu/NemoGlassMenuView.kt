@@ -183,8 +183,8 @@ class NemoGlassMenuView @JvmOverloads constructor(
     private fun drawDefaultEllipsis(canvas: Canvas) {
         val cx = width / 2f
         val cy = height / 2f
-        val dotRadius = 2.4f * density
-        val spacing = 7.5f * density
+        val dotRadius = 3.6f * density
+        val spacing = 8.5f * density
         dotPaint.color = if (isDark()) android.graphics.Color.WHITE else android.graphics.Color.rgb(28, 28, 30)
         canvas.drawCircle(cx - spacing, cy, dotRadius, dotPaint)
         canvas.drawCircle(cx, cy, dotRadius, dotPaint)

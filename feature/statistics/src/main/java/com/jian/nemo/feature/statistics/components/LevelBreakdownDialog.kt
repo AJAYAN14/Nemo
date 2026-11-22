@@ -28,7 +28,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.jian.nemo.core.designsystem.theme.NemoTheme
+import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
 import androidx.compose.ui.text.font.FontWeight
 import com.jian.nemo.feature.statistics.R
 import androidx.compose.ui.text.style.TextAlign
@@ -48,9 +52,44 @@ import kotlinx.coroutines.delay
  * 
  * 展示单词/语法的等级占比，支持点击等级卡片展开预测达成日期与3秒自动收起
  */
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun LevelBreakdownDialog(
+    title: String,
+    data: Map<String, Int>,
+    totalData: Map<String, Int>,
+    themeColor: Color,
+    predictions: Map<String, LevelPredictionInfo> = emptyMap(),
+    overallPrediction: OverallPredictionSummary? = null,
+    itemUnit: String = stringResource(R.string.stats_breakdown_unit_word_default),
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false
+        )
+    ) {
+        NemoWindowBlurBehind()
+
+        LevelBreakdownDialogCard(
+            title = title,
+            data = data,
+            totalData = totalData,
+            themeColor = themeColor,
+            predictions = predictions,
+            overallPrediction = overallPrediction,
+            itemUnit = itemUnit,
+            onDismiss = onDismiss
+        )
+    }
+}
+
+/**
+ * 等级分布卡片主体组件（解耦平台 Window，支持纯净 Compose 预览与内嵌展示）
+ */
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+internal fun LevelBreakdownDialogCard(
     title: String,
     data: Map<String, Int>,
     totalData: Map<String, Int>,
@@ -88,15 +127,7 @@ fun LevelBreakdownDialog(
         }
     }
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        )
-    ) {
-        NemoWindowBlurBehind()
-
-        Surface(
+    Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp)
@@ -125,34 +156,22 @@ fun LevelBreakdownDialog(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     
-                    val closeInteractionSource = remember { MutableInteractionSource() }
-                    val isClosePressed by closeInteractionSource.collectIsPressedAsState()
-                    val closeScale by animateFloatAsState(
-                        targetValue = if (isClosePressed) 0.90f else 1f,
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioLowBouncy),
-                        label = "closeScale"
-                    )
-
-                    IconButton(
+                    FrostedLiquidGlassButton(
                         onClick = {
                             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             onDismiss()
                         },
-                        interactionSource = closeInteractionSource,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .graphicsLayer {
-                                scaleX = closeScale
-                                scaleY = closeScale
-                            }
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                        shape = CircleShape,
+                        hasLens = true,
+                        contentPadding = PaddingValues(0.dp),
+                        isInteractive = true,
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Close,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            modifier = Modifier.size(16.dp)
+                            painter = painterResource(id = com.jian.nemo.core.designsystem.R.drawable.ic_google_close_rounded_bold),
+                            contentDescription = stringResource(com.jian.nemo.core.ui.R.string.core_ui_dialog_cd_close),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(34.dp)
                         )
                     }
                 }
@@ -542,6 +561,51 @@ fun LevelBreakdownDialog(
                     )
                 }
             }
+        }
+    }
+
+// ==========================================
+// Jetpack Compose Previews
+// ==========================================
+
+@Preview(name = "LevelBreakdownDialog - 浅色模式", showBackground = true, backgroundColor = 0xFFF7F8FA)
+@Composable
+private fun LevelBreakdownDialogLightPreview() {
+    NemoTheme(darkTheme = false) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            LevelBreakdownDialogCard(
+                title = "单词等级分布",
+                data = mapOf("N5" to 120, "N4" to 85, "N3" to 40, "N2" to 15, "N1" to 5),
+                totalData = mapOf("N5" to 200, "N4" to 250, "N3" to 300, "N2" to 200, "N1" to 100),
+                themeColor = SystemColors.Indigo,
+                onDismiss = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "LevelBreakdownDialog - 深色模式", showBackground = true, backgroundColor = 0xFF121212)
+@Composable
+private fun LevelBreakdownDialogDarkPreview() {
+    NemoTheme(darkTheme = true) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            LevelBreakdownDialogCard(
+                title = "语法等级分布",
+                data = mapOf("N5" to 45, "N4" to 30, "N3" to 20, "N2" to 10, "N1" to 2),
+                totalData = mapOf("N5" to 60, "N4" to 80, "N3" to 100, "N2" to 80, "N1" to 50),
+                themeColor = SystemColors.Pink,
+                onDismiss = {}
+            )
         }
     }
 }

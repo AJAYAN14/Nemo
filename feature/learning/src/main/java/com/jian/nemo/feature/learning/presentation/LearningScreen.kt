@@ -386,7 +386,7 @@ fun LearningScreen(
                                     painter = painterResource(id = R.drawable.ic_share_ios),
                                     contentDescription = stringResource(R.string.learn_screen_desc_share),
                                     tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(30.dp)
                                 )
                             }
                         }

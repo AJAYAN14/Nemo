@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.jian.nemo.core.designsystem.theme.NemoNeutrals
 import com.jian.nemo.core.designsystem.theme.NemoPrimary
@@ -39,6 +41,7 @@ fun NemoGooeyToggle(
     activeColor: Color = NemoPrimary,
     inactiveColor: Color = NemoNeutrals.Gray200
 ) {
+    val haptic = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val transition = updateTransition(checked, label = "GooeyToggleTransition")
 
@@ -88,7 +91,10 @@ fun NemoGooeyToggle(
                 interactionSource = interactionSource,
                 indication = null, // 移除系统默认水波纹，使用自定义动效
                 enabled = enabled,
-                onClick = { onCheckedChange(!checked) }
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onCheckedChange(!checked)
+                }
             ),
         contentAlignment = Alignment.CenterStart
     ) {
