@@ -1,11 +1,10 @@
-package com.jian.nemo.feature.learning.presentation.components.cards
+package com.jian.nemo.feature.learning.presentation.category.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,41 +34,35 @@ import androidx.compose.ui.res.stringResource
 import com.jian.nemo.feature.learning.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.luminance
 import com.jian.nemo.core.ui.modifier.softCardShadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jian.nemo.core.domain.model.Word
-import com.jian.nemo.core.designsystem.theme.NemoPrimary
-import com.jian.nemo.core.designsystem.theme.NemoPrimaryDark
 import com.jian.nemo.core.designsystem.theme.NemoTextLight
 import com.jian.nemo.core.ui.component.text.FuriganaText
 import com.jian.nemo.core.designsystem.theme.NotoSerifJP
 import com.jian.nemo.core.ui.component.speaker.SpeakerButton
 
 /**
- * 单词卡片组件 (3D Flip)
+ * 分类词汇浏览卡片组件 (3D Flip)
  *
  * 特性：
  * 1. 3D 翻转动画 (Spring stiffness=200f)
  * 2. 增强透视效果 (CameraDistance 16f)
- * 3. 单 Surface + 条件渲染：任何时刻只有一面存在于组合树，彻底消除手势冲突
+ * 3. 单 Surface + 条件渲染：任何时刻只有一面存在于组合树，消除手势冲突
  */
 @Composable
-fun WordCard(
+fun CategoryWordCard(
     word: Word,
     isFlipped: Boolean,
     onFlip: () -> Unit,
@@ -78,7 +71,7 @@ fun WordCard(
     isPlaying: Boolean = false,
     playingText: String? = null,
     cardColor: Color = MaterialTheme.colorScheme.surface,
-    categoryId: String? = null, // 锁定的分类 ID
+    categoryId: String? = null,
     modifier: Modifier = Modifier
 ) {
     val rotation by animateFloatAsState(
@@ -89,14 +82,11 @@ fun WordCard(
     val density = LocalDensity.current.density
     val isDarkTheme = MaterialTheme.colorScheme.background.luminance() < 0.5
 
-    // UI/UX PRO: 优先基于锁定的分类色，其次基于单词词性
     val posColor = remember(word.pos, categoryId, isDarkTheme) {
         getThemeColorForCategory(categoryId, word.pos, isDarkTheme)
     }
 
-    // 90° 临界点切换内容：卡片侧立时不可见，切换无感知
     val isFrontVisible = rotation < 90f
-
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     Surface(
@@ -162,7 +152,6 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // UI/UX PRO: 增强排版感
             FuriganaText(
                 text = word.japanese,
                 baseTextStyle = MaterialTheme.typography.headlineLarge.copy(
@@ -176,10 +165,10 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 furiganaTextColor = NemoTextLight.copy(alpha = 0.7f),
                 furiganaFontFamily = NotoSerifJP
             )
-            
+
             if (word.hiragana != word.japanese) {
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Text(
                     text = word.hiragana,
                     style = MaterialTheme.typography.headlineSmall.copy(
@@ -191,10 +180,9 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                     color = NemoTextLight.copy(alpha = 0.8f)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
-            // 48dp 规格液态玻璃磨砂朗读按钮（无背景折射，杜绝闪退）
+
             FrostedLiquidGlassButton(
                 onClick = onSpeak,
                 shape = CircleShape,
@@ -217,7 +205,7 @@ private fun WordCardFront(word: Word, onFlip: () -> Unit, onSpeak: () -> Unit, t
                 }
             }
         }
-        
+
         Text(
             text = stringResource(R.string.learn_word_card_hint_tap_to_flip),
             style = MaterialTheme.typography.labelMedium.copy(
@@ -251,7 +239,6 @@ private fun WordCardBack(
             .padding(horizontal = 28.dp, vertical = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // UI/UX PRO: 词性标签置于显著位置
         word.pos?.let {
             Box(
                 modifier = Modifier
@@ -378,8 +365,7 @@ private fun ExampleSentence(
                 )
             }
         }
-        
-        // UI/UX PRO: 带有声纹跳动与液态交互的例句播放按钮
+
         val isSentencePlaying = playingText != null && playingText == sentence
         SpeakerButton(
             isPlaying = isSentencePlaying,
@@ -392,7 +378,6 @@ private fun ExampleSentence(
 
 /**
  * 获取基于分类 ID 或词性的调色盘单一标准主题色
- * 优先使用 categoryId，如果为空则回退到 pos
  */
 fun getThemeColorForCategory(categoryId: String?, pos: String?, isDark: Boolean): Color {
     return if (!categoryId.isNullOrBlank()) {
@@ -407,7 +392,7 @@ fun getThemeColorForPos(pos: String?, isDark: Boolean): Color = getThemeColorFor
 
 @Preview
 @Composable
-private fun WordCardPreview() {
+private fun CategoryWordCardPreview() {
     MaterialTheme {
         val word = Word(
             id = 1,
@@ -420,6 +405,6 @@ private fun WordCardPreview() {
             example1 = stringResource(R.string.learning_card_preview_mock_example),
             gloss1 = "Eat rice"
         )
-        WordCard(word = word, isFlipped = false, onFlip = {}, onSpeak = {})
+        CategoryWordCard(word = word, isFlipped = false, onFlip = {}, onSpeak = {})
     }
 }

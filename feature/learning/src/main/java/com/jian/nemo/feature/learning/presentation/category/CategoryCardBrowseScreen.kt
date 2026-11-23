@@ -48,7 +48,8 @@ import com.jian.nemo.core.designsystem.theme.NemoSurfaceCardDark
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackground
 import com.jian.nemo.core.designsystem.theme.NemoSurfaceBackgroundDark
 import com.jian.nemo.feature.learning.presentation.components.dialogs.TypingPracticeDialog
-import com.jian.nemo.feature.learning.presentation.components.cards.WordCard
+import com.jian.nemo.feature.learning.presentation.category.components.CategoryWordCard
+import com.jian.nemo.feature.learning.presentation.category.components.getThemeColorForCategory
 import com.jian.nemo.core.ui.component.animation.NemoChasingDotsLoader
 import com.jian.nemo.core.ui.component.liquid.LiquidButton
 import com.jian.nemo.core.ui.component.liquid.FrostedLiquidGlassButton
@@ -77,7 +78,7 @@ fun CategoryCardBrowseScreen(
 
     // UI/UX PRO: 根据分类锁定全局主题色 (不再随单词动态切换)
     val fixedThemeColor = remember(category, isDarkTheme) {
-        com.jian.nemo.feature.learning.presentation.components.cards.getThemeColorForCategory(
+        getThemeColorForCategory(
             categoryId = category,
             pos = null,
             isDark = isDarkTheme
@@ -262,7 +263,7 @@ fun CategoryCardBrowseScreen(
                             }
  
 
-                            WordCard(
+                            CategoryWordCard(
                                 word = word,
                                 isFlipped = localFlippedState, // 使用本地状态
                                 isPlaying = if (isCurrentWord) uiState.isPlaying else false,
