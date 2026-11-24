@@ -94,7 +94,7 @@
     <string name="user_account_btn_delete_account">注销账户</string>
     <string name="user_account_btn_logout">退出登录</string>
     <string name="user_account_default_username">用户</string>
-    <string name="user_account_desc_edit_avatar">Edit</string>
+    <string name="user_account_desc_edit_avatar">编辑头像</string>
     <string name="user_account_label_not_logged_in">未登录</string>
     <string name="user_account_desc_google_account">Google 快捷登录账号</string>
 
